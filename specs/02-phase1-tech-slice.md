@@ -1002,30 +1002,31 @@ after 300 frames `frameStats().p95FrameMs <= 16.7`.
 
 ## 8. Issue breakdown (Phase 1 queue)
 
-Opened by roadmap task 0.11. For each issue, the tier S author first commits
+Opened by roadmap task 0.11 as issues #10..#26 (label `phase:1`, blocked-by
+relationships set in GitHub). For each issue, the tier S author first commits
 the failing tests listed in §7 for its criteria (RED, D-08); the implementer
 then makes them pass without touching them. Estimated sizes exclude those
 tests. Labels: tier + area.
 
-| ID | Title | Criteria | Files allowed (production) | Est. lines | Tier | Area | Depends on |
-|---|---|---|---|---|---|---|---|
-| P1-01 | Rules checker and determinism clippy config | AC-01-01..04 | `scripts/check-rules.mjs`, `clippy.toml`, `package.json` | 120 | ready-local | area:infra | — |
-| P1-02 | Fixed-point math and SplitMix64 | AC-02-01..04 | `crates/sim/src/{fixed,rng,lib}.rs` | 180 | ready-local | area:sim | — |
-| P1-03 | Map grid and tech-slice layout | AC-02-05, AC-02-12 (`nearest_passable` part) | `crates/sim/src/{map,lib}.rs` | 150 | ready-local | area:sim | P1-02 |
-| P1-04 | Flow field computation | AC-02-08..10, AC-02-11 (field part) | `crates/sim/src/{flow,lib}.rs` | 200 | ready-pro | area:sim | P1-03 |
-| P1-05 | World, move orders and movement | AC-02-06, 07, 11 (world part), 12, 13, 14, 15, 18 | `crates/sim/src/{world,lib}.rs` | 280 | ready-pro | area:sim | P1-04 |
-| P1-06 | Separation and contact arrival | AC-02-16, AC-02-17 | `crates/sim/src/world.rs` | 150 | ready-pro | area:sim | P1-05 |
-| P1-07 | State hash and snapshot encoding | AC-02-19..21 | `crates/sim/src/{hash,snapshot,lib}.rs` | 120 | ready-local | area:sim | P1-05 |
-| P1-08 | WASM `Sim` API, API version 1 | AC-02-22, AC-01-05 (Rust) | `crates/sim/src/{wasm_api,lib}.rs`, skeleton tests in `crates/sim/src/lib.rs` and `crates/headless/src/main.rs` (version 0 → 1) | 120 | ready-local | area:sim | P1-07 |
-| P1-09 | Headless `hash` subcommand and fixture script | AC-02-23 | `crates/headless/src/{main,script}.rs`, `crates/headless/Cargo.toml`, root `Cargo.toml`, `crates/sim/tests/fixtures/tech-slice-script.json` | 150 | ready-local | area:sim | P1-08 |
-| P1-10 | Client protocol, fixed conversion and snapshots | AC-02-25..27 | `client/src/sim/{protocol,fixed,snapshot}.ts` | 130 | ready-local | area:client | — |
-| P1-11 | WASM wiring and native/WASM parity | AC-02-24 | `client/src/sim/script.ts`, `client/{vite,vitest}.config.ts`, `client/tsconfig.json` | 100 | ready-pro | area:client | P1-09, P1-10 |
-| P1-12 | Worker handler, worker entry and sim client | AC-02-28..31, AC-01-05 (client) | `client/src/sim/{workerHandler,sim.worker,simClient}.ts` | 240 | ready-pro | area:client | P1-10, P1-11 |
-| P1-13 | i18n module and HUD | AC-02-35 | `client/src/i18n/{index.ts,en.json}`, `client/src/hud.ts` | 90 | ready-local | area:client | — |
-| P1-14 | Terrain and instanced unit renderers | AC-02-36, AC-02-37 | `client/src/render/{terrain,units}.ts`, `client/src/camera.ts` | 170 | ready-pro | area:client | P1-10 |
-| P1-15 | Selection and camera pan logic | AC-02-32..34 | `client/src/input/{selection,cameraPan}.ts` | 110 | ready-local | area:client | P1-10 |
-| P1-16 | App wiring, input controller, debug API and E2E | AC-02-38..43 | `client/src/{main,debug}.ts`, `client/src/input/controller.ts`, `client/index.html` | 280 | ready-pro | area:client | P1-12, P1-13, P1-14, P1-15 |
-| P1-17 | Performance project and `test:perf` | AC-02-44 | `client/playwright.config.ts`, `client/package.json`, `package.json` | 60 | ready-pro | area:client | P1-16 |
+| ID | Issue | Title | Criteria | Files allowed (production) | Est. lines | Tier | Area | Depends on |
+|---|---|---|---|---|---|---|---|---|
+| P1-01 | #10 | Rules checker and determinism clippy config | AC-01-01..04 | `scripts/check-rules.mjs`, `clippy.toml`, `package.json` | 120 | ready-local | area:infra | — |
+| P1-02 | #11 | Fixed-point math and SplitMix64 | AC-02-01..04 | `crates/sim/src/{fixed,rng,lib}.rs` | 180 | ready-local | area:sim | — |
+| P1-03 | #12 | Map grid and tech-slice layout | AC-02-05, AC-02-12 (`nearest_passable` part) | `crates/sim/src/{map,lib}.rs` | 150 | ready-local | area:sim | P1-02 |
+| P1-04 | #13 | Flow field computation | AC-02-08..10, AC-02-11 (field part) | `crates/sim/src/{flow,lib}.rs` | 200 | ready-pro | area:sim | P1-03 |
+| P1-05 | #14 | World, move orders and movement | AC-02-06, 07, 11 (world part), 12, 13, 14, 15, 18 | `crates/sim/src/{world,lib}.rs` | 280 | ready-pro | area:sim | P1-04 |
+| P1-06 | #15 | Separation and contact arrival | AC-02-16, AC-02-17 | `crates/sim/src/world.rs` | 150 | ready-pro | area:sim | P1-05 |
+| P1-07 | #16 | State hash and snapshot encoding | AC-02-19..21 | `crates/sim/src/{hash,snapshot,lib}.rs` | 120 | ready-local | area:sim | P1-05 |
+| P1-08 | #17 | WASM `Sim` API, API version 1 | AC-02-22, AC-01-05 (Rust) | `crates/sim/src/{wasm_api,lib}.rs`, skeleton tests in `crates/sim/src/lib.rs` and `crates/headless/src/main.rs` (version 0 → 1) | 120 | ready-local | area:sim | P1-07 |
+| P1-09 | #18 | Headless `hash` subcommand and fixture script | AC-02-23 | `crates/headless/src/{main,script}.rs`, `crates/headless/Cargo.toml`, root `Cargo.toml`, `crates/sim/tests/fixtures/tech-slice-script.json` | 150 | ready-local | area:sim | P1-08 |
+| P1-10 | #19 | Client protocol, fixed conversion and snapshots | AC-02-25..27 | `client/src/sim/{protocol,fixed,snapshot}.ts` | 130 | ready-local | area:client | — |
+| P1-11 | #20 | WASM wiring and native/WASM parity | AC-02-24 | `client/src/sim/script.ts`, `client/{vite,vitest}.config.ts`, `client/tsconfig.json` | 100 | ready-pro | area:client | P1-09, P1-10 |
+| P1-12 | #21 | Worker handler, worker entry and sim client | AC-02-28..31, AC-01-05 (client) | `client/src/sim/{workerHandler,sim.worker,simClient}.ts` | 240 | ready-pro | area:client | P1-10, P1-11 |
+| P1-13 | #22 | i18n module and HUD | AC-02-35 | `client/src/i18n/{index.ts,en.json}`, `client/src/hud.ts` | 90 | ready-local | area:client | — |
+| P1-14 | #23 | Terrain and instanced unit renderers | AC-02-36, AC-02-37 | `client/src/render/{terrain,units}.ts`, `client/src/camera.ts` | 170 | ready-pro | area:client | P1-10 |
+| P1-15 | #24 | Selection and camera pan logic | AC-02-32..34 | `client/src/input/{selection,cameraPan}.ts` | 110 | ready-local | area:client | P1-10 |
+| P1-16 | #25 | App wiring, input controller, debug API and E2E | AC-02-38..43 | `client/src/{main,debug}.ts`, `client/src/input/controller.ts`, `client/index.html` | 280 | ready-pro | area:client | P1-12, P1-13, P1-14, P1-15 |
+| P1-17 | #26 | Performance project and `test:perf` | AC-02-44 | `client/playwright.config.ts`, `client/package.json`, `package.json` | 60 | ready-pro | area:client | P1-16 |
 
 Every issue's "Done when" is `node --run verify` green (P1-17 additionally
 `node --run test:perf` green on the reference machine, reported in the PR).
