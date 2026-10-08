@@ -1,0 +1,11 @@
+[package]
+name = "mgra_core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+glam = { workspace = true }
+thiserror = { workspace = true }
+rand = { workspace = true }

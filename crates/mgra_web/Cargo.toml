@@ -1,0 +1,19 @@
+[package]
+name = "mgra_web"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+mgra_core = { path = "../mgra_core" }
+bevy = { version = "0.15", default-features = false, features = [
+    "bevy_winit",
+    "bevy_render",
+    "bevy_core_pipeline",
+    "bevy_pbr",
+    "bevy_gltf",
+    "bevy_asset",
+    "bevy_ui",
+    "x11",
+    "tonemapping_luts",
+    "webgl2",
+] }

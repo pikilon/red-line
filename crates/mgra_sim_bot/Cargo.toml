@@ -1,0 +1,10 @@
+[package]
+name = "mgra_sim_bot"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+mgra_core = { path = "../mgra_core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+rand = { workspace = true }
