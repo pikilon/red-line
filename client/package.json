@@ -1,0 +1,29 @@
+{
+  "name": "red-line-client",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "license": "AGPL-3.0-or-later",
+  "engines": {
+    "node": ">=26.9.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "check": "biome check .",
+    "typecheck": "tsc --noEmit",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@playwright/test": "1.64.0",
+    "@types/three": "0.186.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.4",
+    "vitest": "5.0.3"
+  },
+  "dependencies": {
+    "three": "0.186.1"
+  }
+}

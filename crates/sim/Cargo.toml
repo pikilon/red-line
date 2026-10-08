@@ -1,0 +1,17 @@
+[package]
+name = "sim"
+description = "Deterministic fixed-point simulation for Modern Conquest: Red Line"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = { workspace = true }
+
+[lints]
+workspace = true
