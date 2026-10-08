@@ -1,0 +1,9 @@
+/target/
+/client/dist/
+/client/test-results/
+/client/playwright-report/
+node_modules/
+.DS_Store
+.env.local
+/tools/**/.venv/
+/assets/build/
