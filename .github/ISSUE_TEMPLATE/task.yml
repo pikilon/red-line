@@ -1,0 +1,46 @@
+name: Task
+description: A unit of work small enough for one PR, ready for an agent.
+labels: []
+body:
+  - type: input
+    id: spec
+    attributes:
+      label: Spec
+      description: Link to the spec and criteria covered (e.g. specs/02-phase1-tech-slice.md AC-02-03).
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What must be true when this is done.
+    validations:
+      required: true
+  - type: textarea
+    id: allowed
+    attributes:
+      label: Files allowed to change
+    validations:
+      required: true
+  - type: textarea
+    id: forbidden
+    attributes:
+      label: Files forbidden to change
+      value: "- Any test written in the spec phase\n- AGENTS.md and .agents/skills/"
+  - type: textarea
+    id: interface
+    attributes:
+      label: Exact interface
+      description: Types, signatures, schemas to implement.
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: Exact commands that must pass.
+    validations:
+      required: true
+  - type: input
+    id: deps
+    attributes:
+      label: Depends on
+      description: Issue numbers that must be closed first.
