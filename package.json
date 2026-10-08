@@ -1,0 +1,19 @@
+{
+  "name": "red-line",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-or-later",
+  "engines": { "node": ">=26.9.0" },
+  "scripts": {
+    "install:client": "cd client && npm ci",
+    "check": "cd client && node --run check",
+    "typecheck": "cd client && node --run typecheck",
+    "test:unit": "cd client && node --run test:unit",
+    "test:e2e": "cd client && node --run test:e2e",
+    "build": "cd client && node --run build",
+    "check:data": "node scripts/check-data.mjs",
+    "check:rust": "cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo nextest run",
+    "build:wasm": "wasm-pack build crates/sim --target web",
+    "verify": "node --run check:rust && node --run build:wasm && node --run check && node --run typecheck && node --run test:unit && node --run build && node --run test:e2e && node --run check:data"
+  }
+}

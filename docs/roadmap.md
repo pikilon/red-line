@@ -15,7 +15,7 @@ quality.
 | 0.3 | `scripts/gh.sh` identity wrapper and `scripts/doctor.sh` | done |
 | 0.4 | Install core toolchain (Rust wasm target, wasm-pack, nextest, Blender, ffmpeg) | done |
 | 0.5 | Public GitHub repository, labels, issue/PR templates, project board | done |
-| 0.6 | Toolchain skeleton: Cargo workspace (`crates/sim`, `crates/headless`), `client/` (Vite + TS + Three.js), Biome, Vitest, Playwright, empty green CI | todo |
+| 0.6 | Toolchain skeleton: Cargo workspace (`crates/sim`, `crates/headless`), `client/` (Vite + TS + Three.js), Biome, Vitest, Playwright, empty green CI | done |
 | 0.7 | Specs: `00-vision`, `01-architecture`, `02-phase1-tech-slice` | todo |
 | 0.8 | Harness smoke test (Antigravity, Claude Code, OpenCode, DeepSeek) | todo |
 | 0.9 | Overnight runner: OpenCode + LM Studio (Ornith) + worktrees, dry run on a trivial issue | todo |

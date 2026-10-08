@@ -19,8 +19,8 @@ you touched. Run all of them when unsure.
 | Data | `node --run check:data` |
 
 Commands for layers that do not exist yet are skipped; say so in the report.
-The canonical full sequence will be `node --run verify` once task 0.6 lands;
-when it exists, run it instead of the table.
+The canonical full sequence is `node --run verify` (run `node --run install:client`
+first on a fresh clone); run it before completing any change.
 
 `node --run` does not execute `pre`/`post` hooks: put every step inside the
 script itself.
