@@ -20,7 +20,7 @@ quality.
 | 0.8 | Harness smoke test (Antigravity, Claude Code, OpenCode, DeepSeek) | todo |
 | 0.9 | Overnight runner: OpenCode + LM Studio (Ornith) + worktrees, dry run on a trivial issue | todo |
 | 0.10 | Local AI asset tooling: ComfyUI, Hunyuan3D-2 (MPS), ACE-Step, Kokoro/Piper; Blender procedural model pipeline proof (one tank) | todo |
-| 0.11 | Break spec 02 into Phase 1 issues | todo |
+| 0.11 | Break spec 02 into Phase 1 issues (#10..#26) | done |
 
 Exit: CI green, every harness passes the smoke test, the overnight runner closed
 one trivial issue, and a Phase 1 issue queue exists.
