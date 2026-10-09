@@ -1,0 +1,10 @@
+{
+  "seed": 42,
+  "units": 500,
+  "ticks": 600,
+  "commands": [
+    { "tick": 0, "unitRange": [0, 250], "target": [6586368, 1343488] },
+    { "tick": 0, "unitRange": [250, 500], "target": [6586368, 6586368] },
+    { "tick": 300, "unitRange": [0, 100], "target": [1343488, 6586368] }
+  ]
+}
