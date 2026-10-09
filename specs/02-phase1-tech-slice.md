@@ -620,6 +620,10 @@ export function rectFromDrag(a: ScreenPoint, b: ScreenPoint): ScreenRect;
 /** Ids (ascending) whose projected point lies inside rect, edges inclusive. */
 export function unitsInRect(units: readonly UnitState[], rect: ScreenRect, project: (x: number, y: number) => ScreenPoint): number[];
 export function isDrag(a: ScreenPoint, b: ScreenPoint): boolean;  // max(|dx|, |dy|) > DRAG_THRESHOLD_PX
+/** Every unit id, ascending (AC-02-45). */
+export function selectAll(units: readonly UnitState[]): number[];
+/** code === "KeyA" && (ctrlKey || metaKey); physical key, like PAN_KEYS. */
+export function isSelectAllShortcut(event: Pick<KeyboardEvent, "code" | "ctrlKey" | "metaKey">): boolean;
 ```
 
 `client/src/input/cameraPan.ts`:
@@ -652,7 +656,12 @@ b) => a - b), toRaw(groundX), toRaw(groundZ))` (numeric ascending order, not
 the default lexicographic `.sort()`); `keydown`/`keyup` on `window` maintain
 the pressed set used by `panDelta` each frame, so panning works without
 focusing the canvas, and a `window` `blur` clears it; the camera target is
-clamped to `[0, mapWidth] x [0, mapHeight]`.
+clamped to `[0, mapWidth] x [0, mapHeight]`. The `keydown` handler first
+checks `isSelectAllShortcut(event)`: if true it calls `event.preventDefault()`
+(no page text selection), sets selection = `selectAll(options.units())`
+through the same path as box selection (so `onSelectionChange` updates the
+HUD), and returns without adding `event.code` to the pressed set (so the chord
+never pans with `KeyA`).
 
 ### 5.9 i18n and HUD
 
@@ -959,7 +968,21 @@ tile of `(10.5, 10.5)`.
 **AC-02-44 60 fps with 500 units (`@perf`, reference machine only).** Given
 `/?debug=1` (500 units) in the `perf` project, when all units are ordered to
 `(100.5, 100.5)` via `commandMove` and `resetFrameStats()` is called, then
-after 300 frames `frameStats().p95FrameMs <= 16.7`.
+after 300 frames `frameStats().p95FrameMs <= 19`. (A clean run on a 60 Hz
+display measures 16.7–16.8 ms at 0.1 ms timer resolution; 19 ms still fails on
+any dropped frame, which costs about 33 ms.)
+
+**AC-02-45 Select all shortcut.** Given `/?debug=1&units=20` after ready and
+an empty selection, when the user presses `Control+A` (`Meta+A` on macOS, via
+Playwright `ControlOrMeta+A`) while the page has focus, then `selectedIds()`
+is `[0, 1, ..., 19]`, `#hud-selected` reads `Selected: 20`, the browser
+default is prevented (`window.getSelection()?.toString()` is `""`), and
+`cameraTarget()` is unchanged (the chord does not pan with `KeyA`). Unit part:
+`selectAll` of units `5 (0, 0)`, `2 (1, 1)`, `9 (2, 2)` is `[2, 5, 9]` and of
+`[]` is `[]`; `isSelectAllShortcut` is true for `{code: "KeyA", ctrlKey: true,
+metaKey: false}` and `{code: "KeyA", ctrlKey: false, metaKey: true}`, false for
+`{code: "KeyA", ctrlKey: false, metaKey: false}` and `{code: "KeyB", ctrlKey:
+true, metaKey: false}`.
 
 ## 7. Traceability
 
@@ -1009,6 +1032,8 @@ after 300 frames `frameStats().p95FrameMs <= 16.7`.
 | AC-02-42 | `client/tests/e2e/tech-slice.spec.ts` | `AC-02-42: renders 500 units in at most 4 draw calls` |
 | AC-02-43 | `client/tests/e2e/tech-slice.spec.ts` | `AC-02-43: pans the camera with arrow keys` |
 | AC-02-44 | `client/tests/e2e/perf.spec.ts` | `AC-02-44: keeps 60 fps with 500 moving units @perf` |
+| AC-02-45 | `client/src/input/selection.test.ts` | `AC-02-45: selects every unit and recognises the shortcut` |
+| AC-02-45 | `client/tests/e2e/tech-slice.spec.ts` | `AC-02-45: selects all units with Ctrl+A` |
 
 ## 8. Issue breakdown (Phase 1 queue)
 
@@ -1037,6 +1062,7 @@ tests. Labels: tier + area.
 | P1-15 | #24 | Selection and camera pan logic | AC-02-32..34 | `client/src/input/{selection,cameraPan}.ts` | 110 | ready-local | area:client | P1-10 |
 | P1-16 | #25 | App wiring, input controller, debug API and E2E | AC-02-38..43 | `client/src/{main,debug}.ts`, `client/src/input/controller.ts`, `client/index.html` | 280 | ready-pro | area:client | P1-12, P1-13, P1-14, P1-15 |
 | P1-17 | #26 | Performance project and `test:perf` | AC-02-44 | `client/playwright.config.ts`, `client/package.json`, `package.json` | 60 | ready-pro | area:client | P1-16 |
+| P1-18 | — | Select all units shortcut | AC-02-45 | `client/src/input/{selection,controller}.ts` | 40 | ready-local | area:client | P1-16 |
 
 Every issue's "Done when" is `node --run verify` green (P1-17 additionally
 `node --run test:perf` green on the reference machine, reported in the PR).
