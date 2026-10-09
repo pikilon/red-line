@@ -28,6 +28,8 @@ test("night-runner: reads defaults and overrides from the environment", () => {
   assert.equal(custom.engine, "opencode");
   assert.equal(custom.maxAttempts, 2);
   assert.equal(custom.issue, 9);
+  assert.equal(config.autoMerge, false);
+  assert.equal(readConfig({ RUNNER_AUTO_MERGE: "1" }).autoMerge, true);
   assert.throws(() => readConfig({ RUNNER_ENGINE: "other" }), /RUNNER_ENGINE/);
 });
 
@@ -97,7 +99,7 @@ test("night-runner: builds the dsh and opencode invocations", () => {
   assert.deepEqual(oc.args, ["run", "--auto", "--model", "lmstudio/ornith-1.5-35b-a3b-mlx", "do it"]);
 });
 
-function fakeWorld({ verifyStatus, attempts = 0, prStatus = 0 }) {
+function fakeWorld({ verifyStatus, attempts = 0, prStatus = 0, checksStatus = 0 }) {
   const calls = [];
   const run = (cmd, args, opts = {}) => {
     const line = [cmd, ...args].join(" ");
@@ -109,6 +111,7 @@ function fakeWorld({ verifyStatus, attempts = 0, prStatus = 0 }) {
     }
     if (line === "node --run verify") return { status: verifyStatus, stdout: "" };
     if (line.startsWith("scripts/gh.sh pr create")) return { status: prStatus, stdout: "" };
+    if (line.startsWith("scripts/gh.sh pr checks")) return { status: checksStatus, stdout: "" };
     if (line.startsWith("git status --porcelain")) return { status: 0, stdout: " M file\n" };
     return { status: 0, stdout: "" };
   };
@@ -167,4 +170,31 @@ test("night-runner: counts a PR that cannot be opened as a failed attempt", asyn
   const result = await processIssue({ number: 12, title: "Trivial fix" }, ctx);
   assert.equal(result, "escalated");
   assert.ok(world.calls.some((c) => c.includes(FAILURE_MARKER) && c.includes("could not push or open the PR")));
+});
+
+const merges = (world) => world.calls.filter((c) => c.startsWith("scripts/gh.sh pr merge"));
+
+test("night-runner: leaves the PR open when auto-merge is off", async () => {
+  const world = fakeWorld({ verifyStatus: 0 });
+  const { ctx } = context(world);
+  assert.equal(await processIssue({ number: 12, title: "Trivial fix" }, ctx), "opened");
+  assert.deepEqual(merges(world), []);
+});
+
+test("night-runner: squash-merges its PR after green CI when auto-merge is on", async () => {
+  const world = fakeWorld({ verifyStatus: 0 });
+  const { ctx } = context(world, { RUNNER_AUTO_MERGE: "1" });
+  assert.equal(await processIssue({ number: 12, title: "Trivial fix" }, ctx), "merged");
+  const checks = world.calls.findIndex((c) => c.startsWith("scripts/gh.sh pr checks 12-trivial-fix --watch"));
+  assert.ok(checks > world.calls.findIndex((c) => c.startsWith("scripts/gh.sh pr create")));
+  assert.deepEqual(merges(world), ["scripts/gh.sh pr merge 12-trivial-fix --squash --delete-branch"]);
+  assert.ok(world.calls.indexOf(merges(world)[0]) > checks);
+});
+
+test("night-runner: keeps the PR open for review when CI fails with auto-merge on", async () => {
+  const world = fakeWorld({ verifyStatus: 0, checksStatus: 1 });
+  const { ctx } = context(world, { RUNNER_AUTO_MERGE: "1" });
+  assert.equal(await processIssue({ number: 12, title: "Trivial fix" }, ctx), "opened");
+  assert.deepEqual(merges(world), []);
+  assert.equal(world.calls.some((c) => c.includes(FAILURE_MARKER)), false);
 });
