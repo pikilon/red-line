@@ -34,6 +34,8 @@ pub fn state_hash(world: &World) -> u64 {
                 bytes.extend_from_slice(&target.x.raw().to_le_bytes());
                 bytes.extend_from_slice(&target.y.raw().to_le_bytes());
             }
+            // Phase 2 orders are hashed by state hash v2 (P2-05).
+            _ => {}
         }
     }
     fnv1a64(&bytes)
