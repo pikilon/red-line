@@ -5,6 +5,14 @@ export const ISOMETRIC_ELEVATION = Math.atan(1 / Math.SQRT2);
 
 const VIEW_HEIGHT = 20;
 const DISTANCE = 50;
+const HORIZONTAL_DIAGONAL =
+  (Math.cos(ISOMETRIC_ELEVATION) * DISTANCE) / Math.SQRT2;
+/** Camera position relative to the point it looks at. */
+const OFFSET = {
+  x: HORIZONTAL_DIAGONAL,
+  y: Math.sin(ISOMETRIC_ELEVATION) * DISTANCE,
+  z: HORIZONTAL_DIAGONAL,
+} as const;
 
 export function createIsometricCamera(aspect: number): OrthographicCamera {
   const halfHeight = VIEW_HEIGHT / 2;
@@ -16,19 +24,16 @@ export function createIsometricCamera(aspect: number): OrthographicCamera {
     0.1,
     200,
   );
-  const horizontal = Math.cos(ISOMETRIC_ELEVATION) * DISTANCE;
-  const diagonal = horizontal / Math.SQRT2;
-  camera.position.set(
-    diagonal,
-    Math.sin(ISOMETRIC_ELEVATION) * DISTANCE,
-    diagonal,
-  );
-  camera.lookAt(0, 0, 0);
+  setCameraTarget(camera, 0, 0);
   return camera;
 }
 
+/** Keeps the isometric offset of createIsometricCamera, looks at (x, 0, z). */
 export function setCameraTarget(
-  _camera: OrthographicCamera,
-  _x: number,
-  _z: number,
-): void {}
+  camera: OrthographicCamera,
+  x: number,
+  z: number,
+): void {
+  camera.position.set(x + OFFSET.x, OFFSET.y, z + OFFSET.z);
+  camera.lookAt(x, 0, z);
+}
