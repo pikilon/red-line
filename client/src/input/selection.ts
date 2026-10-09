@@ -68,3 +68,15 @@ export function unitsInRect(
 export function isDrag(a: ScreenPoint, b: ScreenPoint): boolean {
   return Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) > DRAG_THRESHOLD_PX;
 }
+
+/** Every unit id, ascending (AC-02-45). */
+export function selectAll(_units: readonly UnitState[]): number[] {
+  return [];
+}
+
+/** code === "KeyA" && (ctrlKey || metaKey); physical key, like PAN_KEYS. */
+export function isSelectAllShortcut(
+  _event: Pick<KeyboardEvent, "code" | "ctrlKey" | "metaKey">,
+): boolean {
+  return false;
+}

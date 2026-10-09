@@ -163,3 +163,17 @@ test("AC-02-43: pans the camera with arrow keys", async ({ page }) => {
   expect(after.x).toBeGreaterThan(before.x);
   expect(after.y).toBeLessThan(before.y);
 });
+
+test("AC-02-45: selects all units with Ctrl+A", async ({ page }) => {
+  await bootDebug(page, "&units=20");
+  expect(await debugCall(page, (api) => api.selectedIds())).toEqual([]);
+  const before = await debugCall(page, (api) => api.cameraTarget());
+  await page.keyboard.press("ControlOrMeta+A");
+  await expect
+    .poll(() => debugCall(page, (api) => api.selectedIds()))
+    .toEqual(Array.from({ length: 20 }, (_, i) => i));
+  await expect(page.locator("#hud-selected")).toHaveText("Selected: 20");
+  expect(await page.evaluate(() => window.getSelection()?.toString())).toBe("");
+  await page.waitForTimeout(300);
+  expect(await debugCall(page, (api) => api.cameraTarget())).toEqual(before);
+});

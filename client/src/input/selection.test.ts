@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { UnitState } from "../sim/snapshot";
-import { isDrag, pickUnit, rectFromDrag, unitsInRect } from "./selection";
+import {
+  isDrag,
+  isSelectAllShortcut,
+  pickUnit,
+  rectFromDrag,
+  selectAll,
+  unitsInRect,
+} from "./selection";
 
 const unit = (id: number, x: number, y: number): UnitState => ({
   id,
@@ -24,5 +31,25 @@ describe("selection", () => {
     expect(unitsInRect(units, rect, (x, y) => ({ x, y }))).toEqual([0, 1]);
     expect(isDrag({ x: 0, y: 0 }, { x: 4, y: 4 })).toBe(false);
     expect(isDrag({ x: 0, y: 0 }, { x: 5, y: 0 })).toBe(true);
+  });
+});
+
+describe("select all", () => {
+  it("AC-02-45: selects every unit and recognises the shortcut", () => {
+    const units = [unit(5, 0, 0), unit(2, 1, 1), unit(9, 2, 2)];
+    expect(selectAll(units)).toEqual([2, 5, 9]);
+    expect(selectAll([])).toEqual([]);
+    expect(
+      isSelectAllShortcut({ code: "KeyA", ctrlKey: true, metaKey: false }),
+    ).toBe(true);
+    expect(
+      isSelectAllShortcut({ code: "KeyA", ctrlKey: false, metaKey: true }),
+    ).toBe(true);
+    expect(
+      isSelectAllShortcut({ code: "KeyA", ctrlKey: false, metaKey: false }),
+    ).toBe(false);
+    expect(
+      isSelectAllShortcut({ code: "KeyB", ctrlKey: true, metaKey: false }),
+    ).toBe(false);
   });
 });
