@@ -19,6 +19,10 @@ export interface RedlineDebug {
   resetFrameStats(): void;
   /** rAF deltas since the last reset. */
   frameStats(): { frames: number; p95FrameMs: number };
+  /** Replaces the perf panel window and ignores real rAF deltas until resumeFrameTimes(). */
+  injectFrameTimes(frameTimesMs: number[]): void;
+  /** Clears the perf panel window and resumes recording real rAF deltas. */
+  resumeFrameTimes(): void;
 }
 
 export function installDebugApi(
