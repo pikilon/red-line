@@ -8,6 +8,7 @@ pub mod hash;
 pub mod map;
 pub mod rng;
 pub mod snapshot;
+pub mod wasm_api;
 pub mod world;
 
 /// Version of the simulation API exposed to the client through WASM.
