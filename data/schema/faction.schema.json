@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "faction.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "hq", "dozer", "weapons", "types"],
+  "properties": {
+    "id": { "$ref": "#/$defs/id" },
+    "hq": { "$ref": "#/$defs/id" },
+    "dozer": { "$ref": "#/$defs/id" },
+    "weapons": { "type": "array", "items": { "$ref": "#/$defs/weapon" } },
+    "types": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          { "$ref": "#/$defs/type" },
+          { "properties": { "category": { "enum": ["unit", "building"] } } }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "key": { "type": "string", "pattern": "^[a-z][a-zA-Z0-9]*$" },
+    "ids": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+    "count": { "type": "integer", "minimum": 0 },
+    "positive": { "type": "integer", "minimum": 1 },
+    "weapon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "damageType", "damage", "rangeCenti", "cooldownTicks"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "damageType": { "$ref": "#/$defs/key" },
+        "damage": { "$ref": "#/$defs/positive" },
+        "rangeCenti": { "$ref": "#/$defs/positive" },
+        "cooldownTicks": { "$ref": "#/$defs/positive" },
+        "minRangeCenti": { "$ref": "#/$defs/count" },
+        "splashCenti": { "$ref": "#/$defs/count" },
+        "projectileTicks": { "$ref": "#/$defs/count" }
+      }
+    },
+    "type": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "category", "armor", "render"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "category": { "enum": ["unit", "building", "depot"] },
+        "armor": { "$ref": "#/$defs/key" },
+        "hp": { "$ref": "#/$defs/positive" },
+        "sightCenti": { "$ref": "#/$defs/count" },
+        "speedCenti": { "$ref": "#/$defs/positive" },
+        "cost": { "$ref": "#/$defs/count" },
+        "buildTicks": { "$ref": "#/$defs/count" },
+        "weapon": { "$ref": "#/$defs/id" },
+        "requires": { "$ref": "#/$defs/ids" },
+        "builds": { "$ref": "#/$defs/ids" },
+        "produces": { "$ref": "#/$defs/ids" },
+        "capacity": { "$ref": "#/$defs/count" },
+        "loadTicks": { "$ref": "#/$defs/count" },
+        "unloadTicks": { "$ref": "#/$defs/count" },
+        "footprint": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "integer", "minimum": 1, "maximum": 8 }
+        },
+        "power": { "type": "integer" },
+        "requiresPower": { "type": "boolean" },
+        "dropOff": { "type": "boolean" },
+        "freeUnit": { "$ref": "#/$defs/id" },
+        "render": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "size": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": { "$ref": "#/$defs/positive" }
+            },
+            "height": { "$ref": "#/$defs/positive" }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "category": { "const": "unit" } } },
+          "then": {
+            "required": ["hp", "sightCenti", "speedCenti"],
+            "properties": {
+              "footprint": false, "produces": false, "power": false, "requiresPower": false,
+              "dropOff": false, "freeUnit": false,
+              "render": { "required": ["size"], "properties": { "height": false } }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "category": { "const": "building" } } },
+          "then": {
+            "required": ["hp", "sightCenti", "footprint"],
+            "properties": {
+              "speedCenti": false, "builds": false, "capacity": false, "loadTicks": false, "unloadTicks": false,
+              "render": { "required": ["height"], "properties": { "size": false } }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "category": { "const": "depot" } } },
+          "then": {
+            "required": ["footprint"],
+            "properties": {
+              "hp": false, "sightCenti": false, "speedCenti": false, "cost": false, "buildTicks": false,
+              "weapon": false, "requires": false, "builds": false, "produces": false, "capacity": false,
+              "loadTicks": false, "unloadTicks": false, "power": false, "requiresPower": false,
+              "dropOff": false, "freeUnit": false,
+              "render": { "required": ["height"], "properties": { "size": false } }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
