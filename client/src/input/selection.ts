@@ -70,13 +70,13 @@ export function isDrag(a: ScreenPoint, b: ScreenPoint): boolean {
 }
 
 /** Every unit id, ascending (AC-02-45). */
-export function selectAll(_units: readonly UnitState[]): number[] {
-  return [];
+export function selectAll(units: readonly UnitState[]): number[] {
+  return units.map((unit) => unit.id).sort((a, b) => a - b);
 }
 
 /** code === "KeyA" && (ctrlKey || metaKey); physical key, like PAN_KEYS. */
 export function isSelectAllShortcut(
-  _event: Pick<KeyboardEvent, "code" | "ctrlKey" | "metaKey">,
+  event: Pick<KeyboardEvent, "code" | "ctrlKey" | "metaKey">,
 ): boolean {
-  return false;
+  return event.code === "KeyA" && (event.ctrlKey || event.metaKey);
 }
