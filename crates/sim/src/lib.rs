@@ -4,8 +4,10 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 pub mod fixed;
 pub mod flow;
+pub mod hash;
 pub mod map;
 pub mod rng;
+pub mod snapshot;
 pub mod world;
 
 /// Version of the simulation API exposed to the client through WASM.
