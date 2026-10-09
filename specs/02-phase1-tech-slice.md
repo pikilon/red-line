@@ -28,7 +28,7 @@ In:
 * `client/`: worker protocol and handler, sim client, snapshot decoding and
   interpolation, terrain and instanced unit rendering, click and box selection,
   right-click move, keyboard camera pan, HUD with i18n, debug API for tests,
-  performance test project.
+  performance test project, debug-only performance panel (AC-02-46).
 * Repository: rules checker (`scripts/check-rules.mjs`) and `clippy.toml`
   from spec 01.
 
@@ -62,6 +62,9 @@ Out (later phases):
 | `CLICK_PICK_RADIUS_TILES` | `0.5` | `client/src/input/selection.ts` |
 | `DRAG_THRESHOLD_PX` | `4` | `client/src/input/selection.ts` |
 | `PAN_SPEED_TILES_PER_SECOND` | `20` | `client/src/input/cameraPan.ts` |
+| `PERF_WINDOW_FRAMES` | `120` | `client/src/perfPanel.ts` |
+| `PERF_BAD_P95_MS` | `19` (same threshold as AC-02-44) | `client/src/perfPanel.ts` |
+| `PERF_PANEL_UPDATE_MS` | `250` | `client/src/perfPanel.ts` |
 
 Performance target (AC-02-44) is measured only on the reference machine
 (Apple M2 Max, D-09) by `node --run test:perf`; CI runs on GPU-less runners, so
@@ -666,7 +669,7 @@ never pans with `KeyA`).
 ### 5.9 i18n and HUD
 
 * `client/src/i18n/en.json`:
-  `{ "hud.selectedCount": "Selected: {count}", "hud.tick": "Tick {tick}", "error.simInit": "The simulation failed to start: {detail}" }`
+  `{ "hud.selectedCount": "Selected: {count}", "hud.tick": "Tick {tick}", "error.simInit": "The simulation failed to start: {detail}", "perf.fps": "FPS {fps}", "perf.p95": "p95 {ms} ms" }`
 * `client/src/i18n/index.ts`:
 
 ```ts
@@ -708,6 +711,13 @@ export interface RedlineDebug {
   drawCalls(): number;                         // renderer.info.render.calls of the last frame
   resetFrameStats(): void;
   frameStats(): { frames: number; p95FrameMs: number };  // rAF deltas since reset
+  /** AC-02-46: replaces the perf panel window with frameTimesMs (last
+   *  PERF_WINDOW_FRAMES entries), ignores real rAF deltas until
+   *  resumeFrameTimes(), and re-renders the panel immediately. Does not touch
+   *  frameStats(). */
+  injectFrameTimes(frameTimesMs: number[]): void;
+  /** AC-02-46: clears the perf panel window and resumes recording real rAF deltas. */
+  resumeFrameTimes(): void;
 }
 export function installDebugApi(target: { __redline?: RedlineDebug }, api: RedlineDebug): void;
 ```
@@ -735,6 +745,55 @@ export interface ScriptSim { command_move(ids: Uint32Array, x: number, y: number
 /** Same semantics as headless run_script; returns state_hash_hex(). */
 export function runScript(sim: ScriptSim, script: Script): string;
 ```
+
+### 5.12 Performance panel (`client/src/perfPanel.ts`)
+
+Debug-only overlay the owner watches while testing manually (owner request,
+2026-10-09). It consumes the same rAF delta that `main.ts` already records into
+`frameStats` (no second timing loop or `requestAnimationFrame`).
+
+```ts
+export const PERF_WINDOW_FRAMES = 120;
+export const PERF_BAD_P95_MS = 19;
+export const PERF_PANEL_UPDATE_MS = 250;
+export interface PerfSummary { fps: number; p95FrameMs: number; bad: boolean }
+/** Pure. Uses only the last PERF_WINDOW_FRAMES entries of frameTimesMs (all
+ *  of them if fewer). Empty window -> { fps: 0, p95FrameMs: 0, bad: false }.
+ *  fps = Math.round(1000 / mean) (0 if mean is 0); p95FrameMs uses the same
+ *  nearest-rank rule as createFrameStats: ascending sorted[max(0,
+ *  ceil(n * 0.95) - 1)]; bad = p95FrameMs > PERF_BAD_P95_MS (strict). */
+export function summarizeFrames(frameTimesMs: readonly number[]): PerfSummary;
+export interface PerfPanel {
+  /** Appends frameMs to the rolling window (dropping entries older than the
+   *  last PERF_WINDOW_FRAMES) unless injected mode is on, then renders if
+   *  nowMs - lastRenderMs >= PERF_PANEL_UPDATE_MS, then sets lastRenderMs =
+   *  nowMs. lastRenderMs starts at -Infinity (first record renders) and is
+   *  only changed here. */
+  record(frameMs: number, nowMs: number): void;
+  /** Injected mode on: window = last PERF_WINDOW_FRAMES of frameTimesMs; renders now. */
+  inject(frameTimesMs: readonly number[]): void;
+  /** Injected mode off: window = []; renders now. */
+  resume(): void;
+}
+/** Appends <div id="perf-panel"> containing <div id="perf-fps"> and
+ *  <div id="perf-p95"> to parent and renders once immediately. Rendering sets
+ *  #perf-fps to t("perf.fps", { fps }), #perf-p95 to
+ *  t("perf.p95", { ms: p95FrameMs.toFixed(1) }) and
+ *  classList.toggle("perf-bad", bad) on #perf-panel. */
+export function createPerfPanel(parent: HTMLElement): PerfPanel;
+```
+
+* `client/src/main.ts`, only when `params.get("debug") === "1"`, calls
+  `createPerfPanel(document.body)` before the first frame; in `frame(now)` it
+  calls `perfPanel.record(dtMs, now)` right where it calls
+  `frameStats.record(dtMs)` (same guard, same value). The debug API's
+  `injectFrameTimes` / `resumeFrameTimes` delegate to `inject` / `resume`.
+  Without `debug=1` no panel element exists.
+* `client/index.html` styles: `#perf-panel { position: fixed; top: 8px;
+  right: 8px; pointer-events: none; color: #fff; font: 14px/1.4 system-ui,
+  sans-serif; text-shadow: 0 1px 2px #000; }` and
+  `#perf-panel.perf-bad { color: #ff4d4d; }`. The HUD stays top-left, so the
+  two never overlap.
 
 ## 6. Acceptance criteria
 
@@ -984,6 +1043,23 @@ metaKey: false}` and `{code: "KeyA", ctrlKey: false, metaKey: true}`, false for
 `{code: "KeyA", ctrlKey: false, metaKey: false}` and `{code: "KeyB", ctrlKey:
 true, metaKey: false}`.
 
+**AC-02-46 Performance panel.** Given `/?debug=1` after ready, then
+`#perf-panel` is visible, its bounding box lies within 16 px of the viewport's
+top-right corner and does not intersect `#hud-selected` or `#hud-tick`, and
+within 2 s `#perf-fps` no longer reads `FPS 0` (real frames are recorded and the
+panel re-renders at least every `PERF_PANEL_UPDATE_MS` = 250 ms, well under
+500 ms). When `injectFrameTimes` is called with 120 × `40`, then `#perf-panel`
+has class `perf-bad`, `#perf-fps` reads `FPS 25` and `#perf-p95` reads
+`p95 40.0 ms`; when it is then called with 120 × `10`, `#perf-panel` no longer
+has `perf-bad`, `#perf-fps` reads `FPS 100` and `#perf-p95` reads `p95 10.0 ms`.
+Given `/` (no `debug=1`) once `#hud-tick` has text, then no `#perf-panel`
+element exists. Unit part (`summarizeFrames`): `[]` → `{ fps: 0, p95FrameMs: 0,
+bad: false }`; 120 × `16` → `{ fps: 63, p95FrameMs: 16, bad: false }`; 113 ×
+`16` followed by 7 × `40` → `{ fps: 57, p95FrameMs: 40, bad: true }`; 114 ×
+`16` followed by 6 × `40` → `p95FrameMs: 16, bad: false`; 120 × `19` →
+`bad: false`; 120 × `19.5` → `bad: true`; 80 × `100` followed by 120 × `10` →
+`{ fps: 100, p95FrameMs: 10, bad: false }` (only the last 120 frames count).
+
 ## 7. Traceability
 
 | Criterion | Test file | Test name |
@@ -1034,6 +1110,8 @@ true, metaKey: false}`.
 | AC-02-44 | `client/tests/e2e/perf.spec.ts` | `AC-02-44: keeps 60 fps with 500 moving units @perf` |
 | AC-02-45 | `client/src/input/selection.test.ts` | `AC-02-45: selects every unit and recognises the shortcut` |
 | AC-02-45 | `client/tests/e2e/tech-slice.spec.ts` | `AC-02-45: selects all units with Ctrl+A` |
+| AC-02-46 | `client/src/perfPanel.test.ts` | `AC-02-46: summarizes a rolling window of frame times` |
+| AC-02-46 | `client/tests/e2e/tech-slice.spec.ts` | `AC-02-46: shows a performance panel only in debug mode` |
 
 ## 8. Issue breakdown (Phase 1 queue)
 
@@ -1062,7 +1140,8 @@ tests. Labels: tier + area.
 | P1-15 | #24 | Selection and camera pan logic | AC-02-32..34 | `client/src/input/{selection,cameraPan}.ts` | 110 | ready-local | area:client | P1-10 |
 | P1-16 | #25 | App wiring, input controller, debug API and E2E | AC-02-38..43 | `client/src/{main,debug}.ts`, `client/src/input/controller.ts`, `client/index.html` | 280 | ready-pro | area:client | P1-12, P1-13, P1-14, P1-15 |
 | P1-17 | #26 | Performance project and `test:perf` | AC-02-44 | `client/playwright.config.ts`, `client/package.json`, `package.json` | 60 | ready-pro | area:client | P1-16 |
-| P1-18 | — | Select all units shortcut | AC-02-45 | `client/src/input/{selection,controller}.ts` | 40 | ready-local | area:client | P1-16 |
+| P1-18 | #46 | Select all units shortcut | AC-02-45 | `client/src/input/{selection,controller}.ts` | 40 | ready-local | area:client | P1-16 |
+| P1-19 | — | Performance panel | AC-02-46 | `client/src/{perfPanel,main,debug}.ts`, `client/src/i18n/en.json`, `client/index.html` | 100 | ready-local | area:client | P1-18 |
 
 Every issue's "Done when" is `node --run verify` green (P1-17 additionally
 `node --run test:perf` green on the reference machine, reported in the PR).
