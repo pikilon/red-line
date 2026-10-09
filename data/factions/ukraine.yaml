@@ -1,0 +1,165 @@
+id: ukraine                          # required, must equal the file name
+hq: ua-hq                            # required, a building type of this file
+dozer: ua-dozer                      # required, a unit type of this file
+weapons:                             # required
+  - { id: ua-rifle, damageType: smallArms, damage: 10, rangeCenti: 450, cooldownTicks: 15 }
+  - { id: ua-stugna-p, damageType: antiTank, damage: 120, rangeCenti: 900, minRangeCenti: 200, cooldownTicks: 75 }
+  - { id: ua-kozak-hmg, damageType: smallArms, damage: 12, rangeCenti: 500, cooldownTicks: 10 }
+  - { id: ua-bushmaster, damageType: autocannon, damage: 18, rangeCenti: 600, cooldownTicks: 8 }
+  - { id: ua-rh120, damageType: antiTank, damage: 100, rangeCenti: 700, cooldownTicks: 30 }
+  - { id: ua-gmlrs, damageType: highExplosive, damage: 250, rangeCenti: 2400, minRangeCenti: 600, cooldownTicks: 150, projectileTicks: 30 }
+  - { id: ua-stugna-emplacement, damageType: antiTank, damage: 110, rangeCenti: 1000, cooldownTicks: 60 }
+types:                               # required
+  - id: ua-rifleman
+    category: unit
+    armor: infantry
+    hp: 100
+    sightCenti: 600
+    cost: 100
+    buildTicks: 75
+    speedCenti: 8
+    weapon: ua-rifle
+    render: { size: [30, 60, 30] }
+  - id: ua-stugna-team
+    category: unit
+    armor: infantry
+    hp: 90
+    sightCenti: 650
+    cost: 350
+    buildTicks: 150
+    speedCenti: 6
+    weapon: ua-stugna-p
+    render: { size: [40, 50, 40] }
+  - id: ua-kozak-scout
+    category: unit
+    armor: light
+    hp: 250
+    sightCenti: 1200
+    cost: 400
+    buildTicks: 150
+    speedCenti: 26
+    weapon: ua-kozak-hmg
+    render: { size: [60, 50, 90] }
+  - id: ua-bradley
+    category: unit
+    armor: light
+    hp: 500
+    sightCenti: 700
+    cost: 800
+    buildTicks: 240
+    speedCenti: 22
+    weapon: ua-bushmaster
+    render: { size: [70, 60, 110] }
+  - id: ua-leopard-2a4
+    category: unit
+    armor: armored
+    hp: 750
+    sightCenti: 700
+    cost: 1200
+    buildTicks: 330
+    speedCenti: 17
+    weapon: ua-rh120
+    render: { size: [80, 55, 130] }
+  - id: ua-himars
+    category: unit
+    armor: light
+    hp: 200
+    sightCenti: 600
+    cost: 1500
+    buildTicks: 360
+    speedCenti: 18
+    weapon: ua-gmlrs
+    render: { size: [60, 70, 120] }
+  - id: ua-dozer
+    category: unit
+    armor: light
+    hp: 300
+    sightCenti: 500
+    cost: 800
+    buildTicks: 200
+    speedCenti: 15
+    builds: [ua-power-plant, ua-supply-center, ua-barracks, ua-vehicle-factory, ua-defense]
+    render: { size: [80, 60, 100] }
+  - id: ua-supply-truck
+    category: unit
+    armor: light
+    hp: 250
+    sightCenti: 500
+    cost: 600
+    buildTicks: 150
+    speedCenti: 20
+    capacity: 300
+    loadTicks: 45
+    unloadTicks: 15
+    render: { size: [60, 60, 100] }
+  - id: ua-hq
+    category: building
+    armor: structure
+    hp: 3000
+    sightCenti: 900
+    cost: 0
+    buildTicks: 0
+    footprint: [4, 4]
+    power: 0
+    produces: [ua-dozer]
+    render: { height: 150 }
+  - id: ua-power-plant
+    category: building
+    armor: structure
+    hp: 1000
+    sightCenti: 500
+    cost: 600
+    buildTicks: 150
+    footprint: [3, 3]
+    power: 10
+    render: { height: 120 }
+  - id: ua-supply-center
+    category: building
+    armor: structure
+    hp: 1500
+    sightCenti: 500
+    cost: 1500
+    buildTicks: 225
+    footprint: [4, 3]
+    power: -2
+    produces: [ua-supply-truck]
+    dropOff: true
+    freeUnit: ua-supply-truck
+    render: { height: 100 }
+  - id: ua-barracks
+    category: building
+    armor: structure
+    hp: 1000
+    sightCenti: 500
+    cost: 500
+    buildTicks: 150
+    footprint: [3, 3]
+    power: -2
+    produces: [ua-rifleman, ua-stugna-team]
+    requires: [ua-power-plant]
+    render: { height: 90 }
+  - id: ua-vehicle-factory
+    category: building
+    armor: structure
+    hp: 2000
+    sightCenti: 500
+    cost: 2000
+    buildTicks: 300
+    footprint: [4, 4]
+    power: -4
+    produces: [ua-kozak-scout, ua-bradley, ua-leopard-2a4, ua-himars]
+    requires: [ua-supply-center]
+    render: { height: 110 }
+  - id: ua-defense
+    category: building
+    armor: structure
+    hp: 1200
+    sightCenti: 1100
+    cost: 800
+    buildTicks: 150
+    footprint: [2, 2]
+    power: -3
+    requires: [ua-barracks]
+    requiresPower: true
+    weapon: ua-stugna-emplacement
+    render: { height: 80 }
