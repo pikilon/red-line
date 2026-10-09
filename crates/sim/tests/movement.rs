@@ -120,3 +120,110 @@ fn ac_02_18_flow_field_cache() {
     assert!(world.units().iter().all(|u| is_idle(u.order)));
     assert_eq!(world.flow_field_count(), 0);
 }
+
+#[test]
+fn ac_02_16_group_arrives_separated() {
+    let mut world = World::new(MapGrid::open(64, 64));
+    for y in 5..=14 {
+        for x in 5..=14 {
+            world.spawn_unit_at(raw((x << 16) + 32768, (y << 16) + 32768));
+        }
+    }
+    let target = raw(2654208, 2654208);
+    world.enqueue(Command::Move {
+        units: (0..100).collect(),
+        target,
+    });
+    for _ in 0..600 {
+        world.step();
+    }
+    let units = world.units();
+    assert_eq!(units.len(), 100);
+    for unit in units {
+        assert_eq!(
+            unit.order,
+            Order::Idle { last_order_id: 1 },
+            "unit {} did not arrive",
+            unit.id
+        );
+        assert!(
+            (unit.pos - target).length() <= Fx::from_int(12),
+            "unit {} is too far from the target: {:?}",
+            unit.id,
+            unit.pos
+        );
+    }
+    for (i, a) in units.iter().enumerate() {
+        for b in &units[i + 1..] {
+            assert!(
+                (a.pos - b.pos).length() >= Fx::from_raw(16384),
+                "units {} and {} overlap: {:?} {:?}",
+                a.id,
+                b.id,
+                a.pos,
+                b.pos
+            );
+        }
+    }
+}
+
+/// Fixture command: `(tick, unit_range_start, unit_range_end, target)`.
+type ScriptCommand = (u32, u32, u32, FxVec2);
+
+/// Reads `tests/fixtures/tech-slice-script.json` without a JSON dependency:
+/// the fixture's integers appear in a fixed order (seed, units, ticks, then
+/// tick, unitRange[0], unitRange[1], target[0], target[1] per command).
+fn fixture_script() -> (u32, u32, u32, Vec<ScriptCommand>) {
+    let text = include_str!("fixtures/tech-slice-script.json");
+    let numbers: Vec<i64> = text
+        .split(|c: char| !(c.is_ascii_digit() || c == '-'))
+        .filter(|token| !token.is_empty())
+        .map(|token| token.parse().unwrap())
+        .collect();
+    let (header, rest) = numbers.split_at(3);
+    assert_eq!(rest.len() % 5, 0, "malformed fixture script");
+    let commands = rest
+        .chunks(5)
+        .map(|c| {
+            (
+                c[0] as u32,
+                c[1] as u32,
+                c[2] as u32,
+                raw(c[3] as i32, c[4] as i32),
+            )
+        })
+        .collect();
+    (
+        header[0] as u32,
+        header[1] as u32,
+        header[2] as u32,
+        commands,
+    )
+}
+
+#[test]
+fn ac_02_17_units_never_enter_blocked_cells() {
+    let (seed, units, ticks, commands) = fixture_script();
+    assert_eq!(commands.len(), 3);
+    let mut world = World::tech_slice(u64::from(seed), units).unwrap();
+    for t in 0..ticks {
+        for &(tick, start, end, target) in &commands {
+            if tick == t {
+                world.enqueue(Command::Move {
+                    units: (start..end).collect(),
+                    target,
+                });
+            }
+        }
+        world.step();
+        for unit in world.units() {
+            let cell = cell_of(unit.pos);
+            assert!(
+                world.map().is_passable(cell),
+                "tick {}: unit {} in blocked cell {cell:?}",
+                world.tick(),
+                unit.id
+            );
+        }
+    }
+}

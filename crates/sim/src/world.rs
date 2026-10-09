@@ -116,7 +116,8 @@ impl World {
     pub fn step(&mut self) {
         self.apply_commands();
         self.move_units();
-        // Separation and contact arrival (phases 3 and 4) belong to P1-06.
+        self.separate_units();
+        self.arrive_on_contact();
         self.drop_unused_fields();
         self.tick += 1;
     }
@@ -199,6 +200,107 @@ impl World {
                 }
             }
         }
+    }
+
+    /// Phase 3: pushes apart units closer than `SEPARATION_DISTANCE`, per
+    /// axis and only into passable cells.
+    fn separate_units(&mut self) {
+        let before: Vec<FxVec2> = self.units.iter().map(|unit| unit.pos).collect();
+        let buckets = self.bucket_by_cell(&before);
+        let half_push = Fx::from_raw(SEPARATION_DISTANCE.raw() / 2);
+        for a in 0..self.units.len() {
+            let mut push = FxVec2::ZERO;
+            for b in self.neighbours(&buckets, cell_of(before[a])) {
+                if b == a {
+                    continue;
+                }
+                let offset = before[a] - before[b];
+                let d = offset.length();
+                if d >= SEPARATION_DISTANCE {
+                    continue;
+                }
+                let term = if d == Fx::ZERO {
+                    let x = if a < b { -half_push } else { half_push };
+                    FxVec2::new(x, Fx::ZERO)
+                } else {
+                    offset
+                        .normalize()
+                        .scale(Fx::from_raw((SEPARATION_DISTANCE - d).raw() / 2))
+                };
+                push = push + term;
+            }
+            if push.length() > MAX_SEPARATION_PUSH {
+                push = push.normalize().scale(MAX_SEPARATION_PUSH);
+            }
+            let pos = self.units[a].pos;
+            let x = FxVec2::new(pos.x + push.x, pos.y);
+            let pos = if self.map.is_passable(cell_of(x)) {
+                x
+            } else {
+                pos
+            };
+            let y = FxVec2::new(pos.x, pos.y + push.y);
+            self.units[a].pos = if self.map.is_passable(cell_of(y)) {
+                y
+            } else {
+                pos
+            };
+        }
+    }
+
+    /// Phase 4: a moving unit stops when it touches a unit that already
+    /// completed the same order.
+    fn arrive_on_contact(&mut self) {
+        let orders: Vec<Order> = self.units.iter().map(|unit| unit.order).collect();
+        let positions: Vec<FxVec2> = self.units.iter().map(|unit| unit.pos).collect();
+        let buckets = self.bucket_by_cell(&positions);
+        for a in 0..self.units.len() {
+            let Order::Move { order_id, .. } = orders[a] else {
+                continue;
+            };
+            let touches = self.neighbours(&buckets, cell_of(positions[a])).any(|b| {
+                orders[b]
+                    == Order::Idle {
+                        last_order_id: order_id,
+                    }
+                    && (positions[a] - positions[b]).length() <= ARRIVAL_CONTACT
+            });
+            if touches {
+                self.units[a].order = Order::Idle {
+                    last_order_id: order_id,
+                };
+            }
+        }
+    }
+
+    /// Unit indices grouped by the cell of `positions`, ascending within a cell.
+    /// Units are always in passable (hence in-bounds) cells.
+    fn bucket_by_cell(&self, positions: &[FxVec2]) -> Vec<Vec<usize>> {
+        let cells = usize::from(self.map.width()) * usize::from(self.map.height());
+        let mut buckets = vec![Vec::new(); cells];
+        for (i, &pos) in positions.iter().enumerate() {
+            buckets[self.map.index(cell_of(pos)) as usize].push(i);
+        }
+        buckets
+    }
+
+    /// Unit indices in the 3 x 3 cells around `center`. Both
+    /// `SEPARATION_DISTANCE` and `ARRIVAL_CONTACT` are below one tile, so
+    /// this covers every candidate.
+    fn neighbours<'a>(
+        &'a self,
+        buckets: &'a [Vec<usize>],
+        center: Cell,
+    ) -> impl Iterator<Item = usize> + 'a {
+        (-1..=1)
+            .flat_map(move |dy| {
+                (-1..=1).map(move |dx| Cell {
+                    x: center.x + dx,
+                    y: center.y + dy,
+                })
+            })
+            .filter(|&cell| self.map.in_bounds(cell))
+            .flat_map(move |cell| buckets[self.map.index(cell) as usize].iter().copied())
     }
 
     /// Phase 5: removes flow fields no move order uses any more.
