@@ -177,3 +177,56 @@ test("AC-02-45: selects all units with Ctrl+A", async ({ page }) => {
   await page.waitForTimeout(300);
   expect(await debugCall(page, (api) => api.cameraTarget())).toEqual(before);
 });
+
+test("AC-02-46: shows a performance panel only in debug mode", async ({
+  page,
+}) => {
+  type PerfDebug = RedlineDebugView & {
+    injectFrameTimes(frameTimesMs: number[]): void;
+    resumeFrameTimes(): void;
+  };
+  await bootDebug(page, "");
+  const panel = page.locator("#perf-panel");
+  await expect(panel).toBeVisible();
+  const viewport = page.viewportSize();
+  const box = await panel.boundingBox();
+  expect(viewport).not.toBeNull();
+  expect(box).not.toBeNull();
+  if (viewport === null || box === null) return;
+  expect(box.y).toBeLessThanOrEqual(16);
+  expect(viewport.width - (box.x + box.width)).toBeLessThanOrEqual(16);
+  for (const id of ["#hud-selected", "#hud-tick"]) {
+    const other = await page.locator(id).boundingBox();
+    expect(other).not.toBeNull();
+    if (other === null) continue;
+    const apart =
+      box.x >= other.x + other.width ||
+      other.x >= box.x + box.width ||
+      box.y >= other.y + other.height ||
+      other.y >= box.y + box.height;
+    expect(apart).toBe(true);
+  }
+  await expect(page.locator("#perf-fps")).not.toHaveText("FPS 0", {
+    timeout: 2000,
+  });
+  await page.evaluate(() =>
+    (window as unknown as { __redline: PerfDebug }).__redline.injectFrameTimes(
+      Array.from({ length: 120 }, () => 40),
+    ),
+  );
+  await expect(panel).toHaveClass(/perf-bad/);
+  await expect(page.locator("#perf-fps")).toHaveText("FPS 25");
+  await expect(page.locator("#perf-p95")).toHaveText("p95 40.0 ms");
+  await page.evaluate(() =>
+    (window as unknown as { __redline: PerfDebug }).__redline.injectFrameTimes(
+      Array.from({ length: 120 }, () => 10),
+    ),
+  );
+  await expect(panel).not.toHaveClass(/perf-bad/);
+  await expect(page.locator("#perf-fps")).toHaveText("FPS 100");
+  await expect(page.locator("#perf-p95")).toHaveText("p95 10.0 ms");
+
+  await page.goto("/");
+  await expect(page.locator("#hud-tick")).toHaveText(/\S/, { timeout: 10_000 });
+  await expect(page.locator("#perf-panel")).toHaveCount(0);
+});
