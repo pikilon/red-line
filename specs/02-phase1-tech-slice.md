@@ -537,10 +537,13 @@ dictionary):
   `snapshot` (the `Int32Array` buffer in the transfer list).
 
 `client/src/sim/sim.worker.ts` (not unit-tested; covered by E2E): imports
-`init, { Sim, api_version }` from `@sim/sim.js`, awaits `init()`, builds the
-handler with `(seed, n) => new Sim(seed, n)`, sets `onmessage` to
-`handler.handle(event.data)`, and calls `handler.advance(performance.now())`
-every `1000 / 60` ms with `setInterval`. It types `self` through a local
+`init, { Sim, api_version }` from `@sim/sim.js`. Before awaiting `init()` it
+sets `onmessage` to push `event.data` into an `early` queue, so messages posted
+while the WASM module loads are not dropped. After `init()` resolves it builds
+the handler with `(seed, n) => new Sim(seed, n)`, sets `onmessage` to
+`handler.handle(event.data)`, replays the queued messages in arrival order
+through `handler.handle` (emptying the queue), and calls
+`handler.advance(performance.now())` every `1000 / 60` ms with `setInterval`. It types `self` through a local
 `interface WorkerScope { postMessage(m: WorkerToMain, t?: Transferable[]): void; onmessage: ((e: MessageEvent<MainToWorker>) => void) | null }`.
 
 ### 5.6 Sim client (`client/src/sim/simClient.ts`)
@@ -635,14 +638,21 @@ export const PAN_KEYS = {
 export function panDelta(pressed: ReadonlySet<string>, dtSeconds: number): { x: number; y: number };
 ```
 
-`client/src/input/controller.ts` wires DOM events on the canvas (covered by
-E2E): left press + release without drag → `pickUnit` on the ground point under
-the cursor (raycast to plane y = 0), selection = `{id}` or empty; left drag →
-selection = `unitsInRect`; right click (`contextmenu`, default prevented) on
-the ground with a non-empty selection → `simClient.move([...selected].sort(),
-toRaw(groundX), toRaw(groundZ))`; `keydown`/`keyup` maintain the pressed set
-used by `panDelta` each frame; the camera target is clamped to
-`[0, mapWidth] x [0, mapHeight]`.
+`client/src/input/controller.ts` wires pointer events on the canvas and
+keyboard events on `window` (covered by E2E): left press + release without
+drag → `pickUnit` on the ground point under the cursor (raycast to plane
+y = 0), selection = `{id}` or empty; left drag → selection = `unitsInRect`;
+`pointermove` and `pointerdown` record the last pointer position (sub-pixel
+`clientX`/`clientY`); right click (`contextmenu`, default prevented) with a
+non-empty selection raycasts that last pointer position (the `contextmenu`
+event's own coordinates only if no pointer event has been seen yet, because
+browsers round them to whole pixels, which exceeds AC-02-41's 0.01-tile
+tolerance) and, on a ground hit, calls `simClient.move([...selected].sort((a,
+b) => a - b), toRaw(groundX), toRaw(groundZ))` (numeric ascending order, not
+the default lexicographic `.sort()`); `keydown`/`keyup` on `window` maintain
+the pressed set used by `panDelta` each frame, so panning works without
+focusing the canvas, and a `window` `blur` clears it; the camera target is
+clamped to `[0, mapWidth] x [0, mapHeight]`.
 
 ### 5.9 i18n and HUD
 
