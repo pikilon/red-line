@@ -99,11 +99,13 @@ test("night-runner: builds the dsh and opencode invocations", () => {
   assert.deepEqual(oc.args, ["run", "--auto", "--model", "lmstudio/ornith-1.5-35b-a3b-mlx", "do it"]);
 });
 
-function fakeWorld({ verifyStatus, attempts = 0, prStatus = 0, checksStatus = 0 }) {
+function fakeWorld({ verifyStatus, attempts = 0, prStatus = 0, checksStatus = 0, strayInMain = false }) {
   const calls = [];
+  let agentRan = false;
   const run = (cmd, args, opts = {}) => {
     const line = [cmd, ...args].join(" ");
     calls.push(line);
+    if (cmd === "npx" || cmd === "opencode") agentRan = true;
     if (opts.logFile) writeFileSync(opts.logFile, `output of ${cmd}\n`, { flag: "a" });
     if (line.startsWith("scripts/gh.sh issue view")) {
       const comments = Array.from({ length: attempts }, () => ({ body: FAILURE_MARKER }));
@@ -112,6 +114,9 @@ function fakeWorld({ verifyStatus, attempts = 0, prStatus = 0, checksStatus = 0 
     if (line === "node --run verify") return { status: verifyStatus, stdout: "" };
     if (line.startsWith("scripts/gh.sh pr create")) return { status: prStatus, stdout: "" };
     if (line.startsWith("scripts/gh.sh pr checks")) return { status: checksStatus, stdout: "" };
+    if (line.startsWith("git status --porcelain") && !opts.cwd.includes(".night-runner")) {
+      return { status: 0, stdout: strayInMain && agentRan ? " M scripts/a.mjs\n?? data/stray.yaml\n" : "" };
+    }
     if (line.startsWith("git status --porcelain")) return { status: 0, stdout: " M file\n" };
     return { status: 0, stdout: "" };
   };
@@ -197,4 +202,15 @@ test("night-runner: keeps the PR open for review when CI fails with auto-merge o
   assert.equal(await processIssue({ number: 12, title: "Trivial fix" }, ctx), "opened");
   assert.deepEqual(merges(world), []);
   assert.equal(world.calls.some((c) => c.includes(FAILURE_MARKER)), false);
+});
+
+test("night-runner: fails the attempt when the agent changes the main checkout", async () => {
+  const world = fakeWorld({ verifyStatus: 0, attempts: 2, strayInMain: true });
+  const { ctx } = context(world);
+  assert.equal(await processIssue({ number: 12, title: "Trivial fix" }, ctx), "escalated");
+  assert.equal(world.calls.some((c) => c.startsWith("scripts/gh.sh pr create")), false);
+  const failure = world.calls.find((c) => c.includes(FAILURE_MARKER));
+  assert.match(failure, /changed the main checkout/);
+  assert.match(failure, /data\/stray\.yaml/);
+  assert.match(failure, /scripts\/a\.mjs/);
 });
