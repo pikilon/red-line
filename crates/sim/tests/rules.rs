@@ -48,8 +48,8 @@ fn ac_03_05_ruleset_parsing() {
         Ok(_) => panic!("a weapon index out of range must be rejected"),
     }
 
-    // maxQueue out of range (1..=5) is rejected, naming the field.
-    let queue_broken = text.replace(r#""maxQueue": 3"#, r#""maxQueue": 6"#);
+    // maxQueue out of range (1..=9) is rejected, naming the field.
+    let queue_broken = text.replace(r#""maxQueue": 3"#, r#""maxQueue": 10"#);
     match Ruleset::from_json(&queue_broken) {
         Err(ref e) => assert!(e.contains("maxQueue"), "error should name the field: {e}"),
         Ok(_) => panic!("a maxQueue out of range must be rejected"),

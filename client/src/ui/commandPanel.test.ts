@@ -110,7 +110,17 @@ describe("command panel", () => {
     const fullQueue: QueueState = {
       building: 10,
       headPermille: 1000,
-      items: [RIFLEMAN, STUGNA_TEAM, RIFLEMAN, STUGNA_TEAM, RIFLEMAN],
+      items: [
+        RIFLEMAN,
+        STUGNA_TEAM,
+        RIFLEMAN,
+        STUGNA_TEAM,
+        RIFLEMAN,
+        STUGNA_TEAM,
+        RIFLEMAN,
+        STUGNA_TEAM,
+        RIFLEMAN,
+      ],
     };
 
     const buttons = commandButtons({
@@ -187,6 +197,6 @@ describe("command panel", () => {
       DEFENSE,
     ]);
     // The queue is only consulted for a producing building.
-    expect(RULES.maxQueue).toBe(5);
+    expect(RULES.maxQueue).toBe(9);
   });
 });

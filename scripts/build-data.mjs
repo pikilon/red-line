@@ -11,7 +11,7 @@ import { parse } from "yaml";
 /** @typedef {{ file: string, pointer: string, code: DataErrorCode, message: string }} DataError */
 
 const FORMAT_VERSION = 1;
-const QUEUE_SLOTS = 5;
+const QUEUE_SLOTS = 9;
 const SCHEMA_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "data", "schema");
 const GLOBALS_FILE = "data/rules/globals.yaml";
 

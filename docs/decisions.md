@@ -125,3 +125,13 @@ Owner answers to the Phase 2 design questions; elaborated in
   asks in chat; a script asks interactively and uses local models when there is
   no answer (unattended runs never spend money).
 * Code, tests, CI and the game runtime never call a paid AI API.
+
+## D-12 Production queue and Phase 1 test amendment (2026-10-10)
+
+* Production queues work as in C&C Generals: each production building has one
+  queue of up to nine items (`QUEUE_SLOTS = 9`, builtin `maxQueue: 9`), any mix
+  of the types it produces, each paid in full when queued. More parallel
+  production needs more buildings.
+* Phase 2 entities hold a growable production queue, so `Entity` is `Clone` but
+  not `Copy`. When P2-04 lands, the Phase 1 test `ac_02_15_units_route_through_the_gap` in `crates/sim/tests/movement.rs`
+  clones the unit instead of copying it; the assertions are unchanged.

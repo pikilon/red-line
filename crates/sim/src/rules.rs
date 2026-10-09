@@ -19,7 +19,7 @@ pub type FactionId = u8;
 /// Version of the generated ruleset format (`data/generated/ruleset.json`).
 pub const FORMAT_VERSION: u32 = 1;
 /// Maximum allowed `maxQueue` (queue slots).
-pub const QUEUE_SLOTS: usize = 5;
+pub const QUEUE_SLOTS: usize = 9;
 
 /// `fx_centi(c)` = `Fx::from_raw((c as i64 * 65536 / 100) as i32)`.
 ///

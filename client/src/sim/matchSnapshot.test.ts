@@ -25,9 +25,9 @@ describe("matchSnapshot", () => {
       10, 0, 10, 0, 0, 3000, 0, 1000, -1,
       // queue_count = 1
       1,
-      // queue (QUEUE_STRIDE = 8): building_id, headPermille, queue_len, kind_0..kind_4 (-1 slots dropped)
+      // queue (QUEUE_STRIDE = 12): building_id, headPermille, queue_len, kind_0..kind_8 (-1 slots dropped)
       12,
-      500, 2, 3, 4, -1, -1, -1,
+      500, 2, 3, 4, -1, -1, -1, -1, -1, -1, -1,
     ]);
 
     expect(decodeMatchSnapshot(player)).toEqual({
@@ -114,8 +114,8 @@ describe("matchSnapshot", () => {
     // Layout constants.
     expect(MATCH_HEADER_LEN).toBe(8);
     expect(ENTITY_STRIDE).toBe(9);
-    expect(QUEUE_SLOTS).toBe(5);
-    expect(QUEUE_STRIDE).toBe(8);
+    expect(QUEUE_SLOTS).toBe(9);
+    expect(QUEUE_STRIDE).toBe(12);
     expect(OUTCOMES).toEqual(["ongoing", "winner", "draw"]);
   });
 
