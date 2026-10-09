@@ -59,8 +59,8 @@ Out (later phases):
 |---|---|---|
 | `API_VERSION` / `EXPECTED_API_VERSION` | `2` | `crates/sim/src/lib.rs`, `client/src/sim/protocol.ts` |
 | `NEUTRAL` / `OBSERVER` | `255` (`PlayerId`) | `crates/sim/src/entity.rs`, `client/src/sim/matchSnapshot.ts` |
-| `QUEUE_SLOTS` | `5` (maximum allowed `maxQueue`) | `crates/sim/src/rules.rs`, `client/src/sim/matchSnapshot.ts` |
-| `MATCH_HEADER_LEN` / `ENTITY_STRIDE` / `QUEUE_STRIDE` | `8` / `9` / `8` | `crates/sim/src/snapshot.rs`, `client/src/sim/matchSnapshot.ts` |
+| `QUEUE_SLOTS` | `9` (maximum allowed `maxQueue`, D-12) | `crates/sim/src/rules.rs`, `client/src/sim/matchSnapshot.ts` |
+| `MATCH_HEADER_LEN` / `ENTITY_STRIDE` / `QUEUE_STRIDE` | `8` / `9` / `12` | `crates/sim/src/snapshot.rs`, `client/src/sim/matchSnapshot.ts` |
 | `FORMAT_VERSION` | `1` (generated ruleset) | `scripts/build-data.mjs`, `crates/sim/src/rules.rs` |
 | `DEFAULT_MAP` | `"first-line"` | `client/src/app/skirmish.ts` |
 | `MAX_SPEED` | `8` (debug `speed` URL parameter, clamped to `1..=8`) | `client/src/app/skirmish.ts` |
@@ -112,7 +112,7 @@ damageModifiers:                     # required: one entry per damage type, one 
 startingCredits: 5000                # required, >= 0
 lowPowerMinSpeedPercent: 25          # required, 1..100
 lowPowerMaxSpeedPercent: 75          # required, 1..100
-maxQueue: 5                          # required, 1..5 (semantic check: <= QUEUE_SLOTS)
+maxQueue: 9                          # required, 1..9 (semantic check: <= QUEUE_SLOTS)
 dockRangeCenti: 100                  # required, >= 1
 commonTypes: [ ... ]                 # required; type objects with no faction (placeholder, depot)
 ```
@@ -187,7 +187,7 @@ export function readSources(rootDir /* : string */) /* : Sources */;
  *  pointer of the later occurrence, e.g. "/types/3/id"); unknown damage type,
  *  armour class, weapon, type or faction ids ("unknown-reference", pointer of
  *  the referencing value, e.g. "/types/2/weapon"); and "invalid-value" for: a
- *  damageModifiers entry missing a damage type or armour class, maxQueue > 5,
+ *  damageModifiers entry missing a damage type or armour class, maxQueue > 9,
  *  lowPowerMinSpeedPercent > lowPowerMaxSpeedPercent, a faction file whose id
  *  differs from its file name, hq not a building of the same faction, dozer
  *  not a unit of the same faction with non-empty builds, a map rectangle,
@@ -226,7 +226,7 @@ indices; every key is present (defaults filled) in exactly this order:
   "startingCredits": 5000,
   "lowPowerMinSpeedPercent": 25,
   "lowPowerMaxSpeedPercent": 75,
-  "maxQueue": 5,
+  "maxQueue": 9,
   "dockRangeCenti": 100,
   "weapons": [
     { "id": "ua-rifle", "damageType": 0, "damage": 10, "rangeCenti": 450, "minRangeCenti": 0,
@@ -258,7 +258,7 @@ indices; every key is present (defaults filled) in exactly this order:
 ### 4.5 Builtin content
 
 `globals.yaml` values: `startingCredits 5000`, `lowPowerMinSpeedPercent 25`,
-`lowPowerMaxSpeedPercent 75`, `maxQueue 5`, `dockRangeCenti 100`.
+`lowPowerMaxSpeedPercent 75`, `maxQueue 9`, `dockRangeCenti 100`.
 
 Damage modifiers (percent):
 
@@ -423,7 +423,7 @@ pub type TypeId = u16;
 pub type WeaponId = u16;
 pub type FactionId = u8;
 pub const FORMAT_VERSION: u32 = 1;
-pub const QUEUE_SLOTS: usize = 5;
+pub const QUEUE_SLOTS: usize = 9;
 /// Fx::from_raw((c as i64 * 65536 / 100) as i32)
 pub fn fx_centi(c: u32) -> Fx;
 
@@ -922,7 +922,7 @@ commands are not hashed.
 ```rust
 pub const MATCH_HEADER_LEN: usize = 8;
 pub const ENTITY_STRIDE: usize = 9;
-pub const QUEUE_STRIDE: usize = 8;     // 3 + QUEUE_SLOTS
+pub const QUEUE_STRIDE: usize = 12;    // 3 + QUEUE_SLOTS
 pub const FLAG_MOVING: i32 = 1;               // unit with a non-Idle order
 pub const FLAG_UNDER_CONSTRUCTION: i32 = 2;
 pub const FLAG_GHOST: i32 = 4;
@@ -945,7 +945,7 @@ A viewer that is not a player id is the observer. Layout:
   centre from the ghost, `hp -1`, `flags FLAG_GHOST`, `progress 0`, `target -1`.
 * Queues: `queue_count`, then per building owned by the viewer with a
   non-empty queue (ascending id): `building_id, head progress * 1000 / total,
-  queue_len, kind_0 .. kind_4` (missing slots `-1`). Observer: `0`.
+  queue_len, kind_0 .. kind_8` (missing slots `-1`). Observer: `0`.
 
 ### 5.16 WASM API v2 (`wasm_api.rs`)
 
@@ -1096,7 +1096,7 @@ export function factionName(faction: number): string;   // t(`faction.${id}`)
 
 ```ts
 export const MATCH_HEADER_LEN = 8; export const ENTITY_STRIDE = 9;
-export const QUEUE_SLOTS = 5; export const QUEUE_STRIDE = 8;
+export const QUEUE_SLOTS = 9; export const QUEUE_STRIDE = 12;
 export const NEUTRAL = 255; export const OBSERVER = 255;
 export const ENTITY_FLAGS = { moving: 1, underConstruction: 2, ghost: 4, fired: 8, poweredOff: 16 } as const;
 export const OUTCOMES = ["ongoing", "winner", "draw"] as const;
@@ -1431,7 +1431,7 @@ invalid YAML (`"id: [unclosed"`) → `code "parse"`.
 **AC-03-03 Reference and semantic errors.** Same approach: weapon `nope` on
 `ua-rifleman` → `unknown-reference` at `/types/0/weapon`; a second type with id
 `ua-rifleman` in `russia.yaml` → `duplicate-id` at `/types/<index>/id`;
-`requires: [ua-nope]` on `ua-barracks` → `unknown-reference`; `maxQueue: 6` →
+`requires: [ua-nope]` on `ua-barracks` → `unknown-reference`; `maxQueue: 10` →
 `invalid-value` (or `schema`, either code accepted for this one); a depot at
 `[127, 0]` in `first-line` (out of bounds) → `invalid-value`; a depot at
 `[63, 10]` (river) → `invalid-value`.
@@ -1456,7 +1456,7 @@ weapons, 13 types, 1 faction and 1 map; `type_index("tank") == Some(10)`,
 `type_index("nope") == None`; `modifier(1, 0) == 50`; `depot_type() == 1`;
 `fx_centi(500).raw() == 327680`, `fx_centi(150).raw() == 98304`,
 `fx_centi(8).raw() == 5242`; `from_json("not json")` is `Err`; the fixture with
-type 9 `"weapon": 9` is `Err` containing `weapon`; with `"maxQueue": 6` is
+type 9 `"weapon": 9` is `Err` containing `weapon`; with `"maxQueue": 10` is
 `Err` containing `maxQueue`; and `Ruleset::builtin()` has factions `ukraine`,
 `russia`, map `first-line` and `type_index("ua-leopard-2a4").is_some()`.
 
@@ -1831,7 +1831,7 @@ credits 700 and an own complete `ua-power-plant` give buttons
 (action `construct`) with `enabled` `true, false, true, false, false` and label
 `"Power plant (600)"` first; a selected own complete `ua-barracks` with credits
 5000 gives `ua-rifleman, ua-stugna-team` (action `produce`) enabled, and both
-disabled with a queue of length 5; an under-construction barracks or an enemy
+disabled with a queue of length 9; an under-construction barracks or an enemy
 entity gives `[]`.
 
 **AC-03-52 Resource bar and outcome text.** `resourceText` for credits 4400 and

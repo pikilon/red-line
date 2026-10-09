@@ -5,7 +5,7 @@ import { factionName, RULES, typeDef, typeIndex, typeName } from "./rules";
 describe("rules", () => {
   it("AC-03-43: exposes the ruleset and type names", () => {
     // RULES is the imported @data/ruleset.json.
-    expect(RULES.maxQueue).toBe(5);
+    expect(RULES.maxQueue).toBe(9);
     expect(RULES.types.length).toBe(30);
     expect(RULES.factions.map((f) => f.id)).toEqual(["ukraine", "russia"]);
 

@@ -2,8 +2,8 @@ import { fromRaw } from "./fixed";
 
 export const MATCH_HEADER_LEN = 8;
 export const ENTITY_STRIDE = 9;
-export const QUEUE_SLOTS = 5;
-export const QUEUE_STRIDE = 8; // building_id, headPermille, queue_len, kind_0..kind_4
+export const QUEUE_SLOTS = 9;
+export const QUEUE_STRIDE = 12; // building_id, headPermille, queue_len, kind_0..kind_8
 export const NEUTRAL = 255;
 export const OBSERVER = 255;
 

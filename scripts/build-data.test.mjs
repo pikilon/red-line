@@ -62,7 +62,7 @@ const baseline = () => ({
     startingCredits: 5000,
     lowPowerMinSpeedPercent: 25,
     lowPowerMaxSpeedPercent: 75,
-    maxQueue: 5,
+    maxQueue: 9,
     dockRangeCenti: 100,
     commonTypes: [
       {
@@ -152,7 +152,7 @@ test("AC-03-03: reports reference and semantic errors", () => {
     code: "unknown-reference", file: FILES.ukraine,
   });
 
-  const { ruleset, errors } = buildRuleset(changed((d) => { d.globals.maxQueue = 6; }));
+  const { ruleset, errors } = buildRuleset(changed((d) => { d.globals.maxQueue = 10; }));
   assert.equal(ruleset, null);
   assert.ok(errors.some((e) => ["invalid-value", "schema"].includes(e.code)));
 

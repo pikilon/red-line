@@ -48,7 +48,7 @@
   "startingCredits": 5000,
   "lowPowerMinSpeedPercent": 25,
   "lowPowerMaxSpeedPercent": 75,
-  "maxQueue": 5,
+  "maxQueue": 9,
   "dockRangeCenti": 100,
   "weapons": [
     {

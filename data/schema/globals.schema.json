@@ -22,7 +22,7 @@
     "startingCredits": { "type": "integer", "minimum": 0 },
     "lowPowerMinSpeedPercent": { "$ref": "#/$defs/percent" },
     "lowPowerMaxSpeedPercent": { "$ref": "#/$defs/percent" },
-    "maxQueue": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "maxQueue": { "type": "integer", "minimum": 1, "maximum": 9 },
     "dockRangeCenti": { "type": "integer", "minimum": 1 },
     "commonTypes": { "type": "array", "items": { "$ref": "faction.schema.json#/$defs/type" } }
   },

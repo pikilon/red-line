@@ -11,7 +11,7 @@ damageModifiers:                     # required: one entry per damage type, one 
 startingCredits: 5000                # required, >= 0
 lowPowerMinSpeedPercent: 25          # required, 1..100
 lowPowerMaxSpeedPercent: 75          # required, 1..100
-maxQueue: 5                          # required, 1..5 (semantic check: <= QUEUE_SLOTS)
+maxQueue: 9                          # required, 1..9 (semantic check: <= QUEUE_SLOTS)
 dockRangeCenti: 100                  # required, >= 1
 commonTypes:                       # required; type objects with no faction (placeholder, depot)
   - id: tech-slice-placeholder
