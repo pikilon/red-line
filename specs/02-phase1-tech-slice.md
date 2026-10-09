@@ -901,7 +901,8 @@ fixture commands, when stepped 600 ticks, then their `state_hash` values are
 equal; and `World::tech_slice(43, 500)` stepped the same way gives a
 different hash.
 
-**AC-02-20 Hash definition.** Given byte strings, `fnv1a64(b"") ==
+**AC-02-20 Hash definition.** (Phase 2: the empty-world byte vector is
+superseded by AC-03-08; the FNV vectors and the change after a step remain.) Given byte strings, `fnv1a64(b"") ==
 0xcbf29ce484222325` and `fnv1a64(b"a") == 0xaf63dc4c8601ec8c`; and given
 `World::new(MapGrid::open(4, 4))` with no units, `state_hash` equals
 `fnv1a64` of 12 zero bytes except bytes 4..8 = `1u32` LE (tick 0,
@@ -998,6 +999,9 @@ are `PASSABLE_COLOR`.
 `UNIT_COLOR`, and instance 2's matrix translation is `(x, 0.25, y)` of unit 2.
 
 ### End to end (Playwright, `?debug=1`)
+
+Since Phase 2 the default mode is the skirmish; these tests open the tech slice
+with `mode=tech-slice` added to every URL (spec 03 §6.7).
 
 **AC-02-38 Boot.** Given `/?debug=1`, when the page loads, then within 10 s
 `isReady()` is true, `unitCount()` is 500, the page has a Web Worker whose URL

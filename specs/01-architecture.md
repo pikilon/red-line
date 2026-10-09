@@ -111,7 +111,7 @@ the same hash after the same number of ticks.
 * `pub const API_VERSION: u32` in `crates/sim/src/lib.rs` and
   `#[wasm_bindgen] pub fn api_version() -> u32`. Every breaking change to the
   exported API or to the hash serialisation increments it. Phase 1 sets it to
-  `1`.
+  `1`; Phase 2 sets it to `2` (spec 03).
 * The client declares `EXPECTED_API_VERSION` in `client/src/sim/protocol.ts`;
   the worker reports `api_version()` in its `ready` message and the main thread
   refuses to start on mismatch.

@@ -34,7 +34,13 @@ state hash in native and WASM.
 ## Phase 2 — Core RTS loop
 
 Resources and harvesting, power, construction, production, combat, fog of war.
-Ukraine vs Russia with about six units each.
+Ukraine vs Russia with six combat units each. Spec:
+`specs/03-phase2-core-loop.md` (design decisions D-10); issue queue P2-01..P2-25
+(label `phase:2`).
+
+Exit: every criterion of spec 03 green in CI (AC-03-63 on the reference
+machine), and the owner builds a base, harvests, produces and wins a hot-seat
+skirmish by destroying every enemy building.
 
 ## Phase 3 — Computer AI and balance
 
