@@ -1,0 +1,33 @@
+# DeepSeek Harness overlay used by scripts/night-runner.sh (`--patch`): adds an
+# LM Studio route, selects the runner's provider/model for fresh agents and
+# approves tool calls without a human while keeping the workspace-write sandbox.
+- id: llm-pi-ai
+  config:
+    providers:
+      lmstudio:
+        displayName: LM Studio (local)
+        api: openai-completions
+        baseURL: !!js process.env.RUNNER_LMSTUDIO_URL
+        # LM Studio needs no key, but the OpenAI-compatible client requires one.
+        headers:
+          Authorization: Bearer lm-studio
+        models:
+          - id: !!js process.env.RUNNER_LOCAL_MODEL
+            contextWindow: 131072
+- id: agent-default-model
+  config:
+    provider: !!js process.env.RUNNER_PROVIDER
+    model: !!js process.env.RUNNER_MODEL
+- id: approval
+  config:
+    policy: never
+- id: permission
+  config:
+    presets:
+      workspace-write:
+        sandbox: workspace-write
+        approval: ask
+      unattended:
+        sandbox: workspace-write
+        approval: never
+    defaultPreset: unattended
