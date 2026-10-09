@@ -1,10 +1,14 @@
-import type en from "./en.json";
+import en from "./en.json";
 
 export type MessageKey = keyof typeof en;
 
+/** Replaces each {name} with String(params[name]); unknown placeholders stay verbatim. */
 export function t(
   key: MessageKey,
-  _params?: Readonly<Record<string, string | number>>,
+  params?: Readonly<Record<string, string | number>>,
 ): string {
-  return String(key);
+  return en[key].replace(/\{(\w+)\}/g, (placeholder, name: string) => {
+    const value = params?.[name];
+    return value === undefined ? placeholder : String(value);
+  });
 }
