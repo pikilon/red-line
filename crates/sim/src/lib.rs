@@ -3,6 +3,7 @@
 use wasm_bindgen::prelude::wasm_bindgen;
 
 pub mod fixed;
+pub mod map;
 pub mod rng;
 
 /// Version of the simulation API exposed to the client through WASM.
