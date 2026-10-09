@@ -45,9 +45,13 @@ not write code: agents implement, the owner reviews quality.
 
 ## AI Providers and Tokens
 
-* Paid remote AI APIs must never be called by code, tests or scripts. Local
-  generation (LM Studio on `http://127.0.0.1:1234/v1`, ComfyUI, Blender) is
-  allowed in tooling only, never at game runtime.
+* Default to local models (LM Studio on `http://127.0.0.1:1234/v1`, ComfyUI,
+  Blender), run through an agent harness (DeepSeek Harness `dsh`, OpenCode).
+  Never at game runtime.
+* A paid remote AI API (e.g. official DeepSeek) is used only after the owner
+  confirms it for that run: agents ask in chat, scripts ask interactively and
+  fall back to local models when nobody answers. Code, tests, CI and the game
+  never call one (D-11).
 
 ## Instruction Subtrees
 
