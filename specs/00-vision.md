@@ -54,7 +54,8 @@ asymmetric armies. It runs fully offline in the browser once loaded (D-03).
 * Online matchmaking, accounts, servers, telemetry or monetisation.
 * A general-purpose game engine (Bevy and Godot were rejected, D-05).
 * Kev/Jev-style decision models for the AI (D-06).
-* Calling paid remote AI APIs from code, tests, scripts or the game runtime.
+* Calling paid remote AI APIs from code, tests, CI or the game runtime; agent
+  tooling only with the owner's confirmation (D-11).
 * Photorealistic graphics.
 
 ## 7. Phased delivery

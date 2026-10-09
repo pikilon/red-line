@@ -74,7 +74,7 @@ approval, and record the change here with its date.
 * Model tiers:
   * **S** (Opus): specs, failing tests, issue breakdown, PR review, 3D models.
   * **A** (Sonnet, DeepSeek): complex implementation.
-  * **B** (Ornith via LM Studio + OpenCode, overnight): small, fully specified
+  * **B** (Ornith via LM Studio + DeepSeek Harness or OpenCode, overnight): small, fully specified
     issues labelled `ready-local`.
   * **C** (Haiku): trivial edits.
 * GitHub issues are the task queue; one branch/worktree per issue; PR + CI.
@@ -84,3 +84,14 @@ approval, and record the change here with its date.
 
 * Owner machine: Apple M2 Max, 64 GB unified memory. Local LLMs up to ~30B
   quantized run well. LLM work and asset generation are not run concurrently.
+
+## D-11 Paid AI APIs need confirmation (2026-10-09)
+
+* Local models are the default for agent work: LM Studio (Ornith) through an
+  agent harness, preferably DeepSeek Harness (`npx @deepseek-ai/dsh`, headless
+  mode for unattended runs), with OpenCode as an alternative.
+* A paid remote API (for example DeepSeek V4 Flash on the official API) may be
+  used by agent tooling only after the owner confirms it for that run. An agent
+  asks in chat; a script asks interactively and uses local models when there is
+  no answer (unattended runs never spend money).
+* Code, tests, CI and the game runtime never call a paid AI API.
