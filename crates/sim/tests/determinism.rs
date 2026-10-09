@@ -51,11 +51,6 @@ fn ac_02_20_hash_definition() {
     assert_eq!(fnv1a64(b""), 0xcbf29ce484222325);
     assert_eq!(fnv1a64(b"a"), 0xaf63dc4c8601ec8c);
 
-    let world = World::new(MapGrid::open(4, 4));
-    let mut bytes = [0u8; 12];
-    bytes[4..8].copy_from_slice(&1u32.to_le_bytes());
-    assert_eq!(state_hash(&world), fnv1a64(&bytes));
-
     let mut slice = World::tech_slice(42, 10).unwrap();
     let before = state_hash(&slice);
     slice.enqueue(Command::Move {
@@ -80,4 +75,39 @@ fn ac_02_21_snapshot_layout() {
         encode_snapshot(&world),
         vec![1, 2, 0, 98304, 98304, 0, 1, 176947, 163840, 1]
     );
+}
+
+/// World of AC-03-08: an open 4 x 4 map with one placeholder unit at (2.5, 2.5)
+/// and a pending move to (0.5, 3.5).
+fn hash_v2_world() -> World {
+    let mut world = World::new(MapGrid::open(4, 4));
+    world.spawn_unit_at(raw(163840, 163840));
+    world.enqueue(Command::Move {
+        units: vec![0],
+        target: raw(32768, 229376),
+    });
+    world
+}
+
+#[test]
+fn ac_03_08_state_hash_v2() {
+    let empty = World::new(MapGrid::open(4, 4));
+    let bytes: [u8; 39] = [
+        0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 255, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ];
+    assert_eq!(state_hash(&empty), fnv1a64(&bytes));
+
+    let mut a = hash_v2_world();
+    let before = state_hash(&a);
+    a.step();
+    assert_ne!(state_hash(&a), before);
+
+    let mut a = hash_v2_world();
+    let mut b = hash_v2_world();
+    for _ in 0..100 {
+        a.step();
+        b.step();
+    }
+    assert_eq!(state_hash(&a), state_hash(&b));
 }

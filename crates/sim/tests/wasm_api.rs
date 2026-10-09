@@ -2,7 +2,7 @@ use sim::wasm_api::Sim;
 
 #[test]
 fn ac_01_05_api_version_is_one() {
-    assert_eq!(sim::api_version(), 1);
+    assert_eq!(sim::api_version(), 2);
 }
 
 #[test]

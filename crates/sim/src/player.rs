@@ -14,7 +14,6 @@ pub struct Player {
     pub(crate) power_produced: u32,
     pub(crate) power_consumed: u32,
     /// Per cell, row-major.
-    #[expect(dead_code, reason = "read by the vision phase (P2-07)")]
     pub(crate) explored: Vec<bool>,
     /// Derived each vision phase, not hashed.
     #[expect(dead_code, reason = "read by the vision phase (P2-07)")]

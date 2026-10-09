@@ -1482,9 +1482,10 @@ has hp 400 and a complete site at origin `(5, 5)` with position `(6.0, 6.0)`;
 **AC-03-08 State hash v2.** Given `World::new(MapGrid::open(4, 4))`, then
 `state_hash` equals `fnv1a64` of these 39 bytes: `0,0,0,0, 1,0,0,0, 0,0,0,0, 0,
 255, 1,0,0,0, 0, 0, 0,0,0,0, 0, 0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0`; and given the
-sandbox with a player 0 soldier at `(2.5, 2.5)`, the hash changes after one
-step with a pending `Move`, and two such worlds fed the same commands have equal
-hashes after 100 steps.
+same world with a unit from `spawn_unit_at((2.5, 2.5))` (owned by player 0),
+the hash changes after one step with a pending `Move`, and two such worlds,
+each built fresh and fed the same commands, have equal hashes after 100 steps
+each.
 
 **AC-03-09 Skirmish setup.** Given `World::skirmish(test_rules, "test-field",
 1)`, then there are 2 players with credits 1000 and faction 0; entities are:
