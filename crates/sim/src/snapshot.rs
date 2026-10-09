@@ -13,9 +13,10 @@ pub fn encode_snapshot(world: &World) -> Vec<i32> {
     out.push(world.tick() as i32);
     out.push(world.units().len() as i32);
     for unit in world.units() {
-        let flags = match unit.order {
-            Order::Move { .. } => FLAG_MOVING,
-            Order::Idle { .. } => 0,
+        let flags = if matches!(unit.order, Order::Move { .. }) {
+            FLAG_MOVING
+        } else {
+            0
         };
         out.extend_from_slice(&[unit.id as i32, unit.pos.x.raw(), unit.pos.y.raw(), flags]);
     }

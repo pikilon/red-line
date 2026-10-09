@@ -21,6 +21,7 @@ impl Sim {
             SimError::TooManyUnits { requested, max } => {
                 format!("too many units: requested {requested}, max {max}")
             }
+            SimError::UnknownMap { id } => format!("unknown map: {id}"),
         })?;
         Ok(Sim { world })
     }
