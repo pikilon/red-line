@@ -6,6 +6,7 @@ pub mod fixed;
 pub mod flow;
 pub mod map;
 pub mod rng;
+pub mod world;
 
 /// Version of the simulation API exposed to the client through WASM.
 pub const API_VERSION: u32 = 0;

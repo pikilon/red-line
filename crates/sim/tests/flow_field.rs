@@ -1,6 +1,8 @@
 use sim::fixed::Fx;
+use sim::fixed::FxVec2;
 use sim::flow::{Dir8, FlowField, UNREACHABLE, can_step};
 use sim::map::{Cell, MapGrid};
+use sim::world::{Command, Order, World};
 
 fn c(x: i32, y: i32) -> Cell {
     Cell { x, y }
@@ -54,4 +56,16 @@ fn ac_02_11_unreachable_cells() {
     let field = FlowField::compute(&map, c(4, 2));
     assert_eq!(field.integration(c(0, 0)), UNREACHABLE);
     assert_eq!(field.direction(c(0, 0)), None);
+
+    let mut world = World::new(map);
+    let start = FxVec2::new(Fx::from_raw(32768), Fx::from_raw(32768));
+    let id = world.spawn_unit_at(start);
+    world.enqueue(Command::Move {
+        units: vec![id],
+        target: FxVec2::new(Fx::from_raw(294912), Fx::from_raw(163840)),
+    });
+    world.step();
+    let unit = world.unit(id).unwrap();
+    assert_eq!(unit.order, Order::Idle { last_order_id: 1 });
+    assert_eq!(unit.pos, start);
 }
