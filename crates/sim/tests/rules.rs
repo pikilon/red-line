@@ -4,7 +4,10 @@
 //! traceability table §8). The implementer must make this pass without
 //! modifying it.
 
+use sim::fixed::{Fx, FxVec2};
+use sim::map::MapGrid;
 use sim::rules::{Ruleset, fx_centi};
+use sim::world::{UNIT_SPEED, World};
 
 /// The spec-fixed fixture (generated format, two-space JSON), §4.6.
 fn fixture() -> String {
@@ -61,4 +64,28 @@ fn ac_03_05_ruleset_parsing() {
     assert!(builtin.factions.iter().any(|f| f.id == "russia"));
     assert!(builtin.map("first-line").is_some());
     assert!(builtin.type_index("ua-leopard-2a4").is_some());
+}
+
+#[test]
+fn ac_03_06_phase1_compatibility() {
+    let mut world = World::new(MapGrid::open(4, 4));
+
+    // One player: id 0, credits 0.
+    assert_eq!(world.players().len(), 1);
+    assert_eq!(world.players()[0].id, 0);
+    assert_eq!(world.players()[0].credits, 0);
+
+    // The placeholder moves at the Phase 1 unit speed.
+    let t = world
+        .rules()
+        .type_index("tech-slice-placeholder")
+        .expect("builtin rules contain the placeholder");
+    assert_eq!(world.rules().ty(t).speed_centi, 20);
+    assert_eq!(fx_centi(20), UNIT_SPEED);
+
+    // spawn_unit_at spawns a placeholder owned by player 0.
+    let id = world.spawn_unit_at(FxVec2::new(Fx::from_raw(98304), Fx::from_raw(98304)));
+    let unit = world.unit(id).expect("the spawned unit exists");
+    assert_eq!(unit.kind, t);
+    assert_eq!(unit.owner, 0);
 }

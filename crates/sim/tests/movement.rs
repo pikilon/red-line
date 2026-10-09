@@ -79,7 +79,7 @@ fn ac_02_15_units_route_through_the_gap() {
     let mut arrived = false;
     while world.tick() < 1500 {
         world.step();
-        let unit = *world.unit(id).unwrap();
+        let unit = world.unit(id).unwrap().clone();
         let cell = cell_of(unit.pos);
         assert!(
             world.map().is_passable(cell),
