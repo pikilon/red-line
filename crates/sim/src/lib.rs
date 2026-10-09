@@ -7,6 +7,7 @@ pub mod flow;
 pub mod hash;
 pub mod map;
 pub mod rng;
+pub mod rules;
 pub mod snapshot;
 pub mod wasm_api;
 pub mod world;

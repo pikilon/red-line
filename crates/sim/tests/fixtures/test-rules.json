@@ -1,0 +1,44 @@
+{
+  "formatVersion": 1,
+  "damageTypes": ["kinetic", "explosive"],
+  "armorClasses": ["soft", "hard", "structure"],
+  "damageModifiers": [[100, 0, 50], [50, 100, 100]],
+  "startingCredits": 1000,
+  "lowPowerMinSpeedPercent": 25,
+  "lowPowerMaxSpeedPercent": 75,
+  "maxQueue": 3,
+  "dockRangeCenti": 100,
+  "weapons": [
+    { "id": "gun", "damageType": 0, "damage": 10, "rangeCenti": 500, "minRangeCenti": 0, "cooldownTicks": 5, "splashCenti": 0, "projectileTicks": 0 },
+    { "id": "cannon", "damageType": 1, "damage": 40, "rangeCenti": 600, "minRangeCenti": 0, "cooldownTicks": 10, "splashCenti": 0, "projectileTicks": 0 },
+    { "id": "mortar", "damageType": 1, "damage": 30, "rangeCenti": 1000, "minRangeCenti": 300, "cooldownTicks": 20, "splashCenti": 150, "projectileTicks": 4 },
+    { "id": "turret-gun", "damageType": 1, "damage": 25, "rangeCenti": 700, "minRangeCenti": 0, "cooldownTicks": 10, "splashCenti": 0, "projectileTicks": 0 },
+    { "id": "missile", "damageType": 1, "damage": 20, "rangeCenti": 800, "minRangeCenti": 0, "cooldownTicks": 30, "splashCenti": 0, "projectileTicks": 3 }
+  ],
+  "types": [
+    { "id": "tech-slice-placeholder", "faction": -1, "category": "unit", "armor": 0, "hp": 1, "sightCenti": 0, "cost": 0, "buildTicks": 0, "speedCenti": 20, "weapon": -1, "requires": [], "produces": [], "builds": [], "footprint": [0, 0], "power": 0, "requiresPower": false, "dropOff": false, "capacity": 0, "loadTicks": 0, "unloadTicks": 0, "freeUnit": -1, "render": { "size": [40, 50, 40] } },
+    { "id": "supply-depot", "faction": -1, "category": "depot", "armor": 2, "hp": 0, "sightCenti": 0, "cost": 0, "buildTicks": 0, "speedCenti": 0, "weapon": -1, "requires": [], "produces": [], "builds": [], "footprint": [2, 2], "power": 0, "requiresPower": false, "dropOff": false, "capacity": 0, "loadTicks": 0, "unloadTicks": 0, "freeUnit": -1, "render": { "size": [200, 60, 200] } },
+    { "id": "hq", "faction": 0, "category": "building", "armor": 2, "hp": 1000, "sightCenti": 800, "cost": 0, "buildTicks": 0, "speedCenti": 0, "weapon": -1, "requires": [], "produces": [7], "builds": [], "footprint": [3, 3], "power": 0, "requiresPower": false, "dropOff": false, "capacity": 0, "loadTicks": 0, "unloadTicks": 0, "freeUnit": -1, "render": { "size": [300, 150, 300] } },
+    { "id": "power", "faction": 0, "category": "building", "armor": 2, "hp": 400, "sightCenti": 300, "cost": 300, "buildTicks": 20, "speedCenti": 0, "weapon": -1, "requires": [], "produces": [], "builds": [], "footprint": [2, 2], "power": 10, "requiresPower": false, "dropOff": false, "capacity": 0, "loadTicks": 0, "unloadTicks": 0, "freeUnit": -1, "render": { "size": [200, 120, 200] } },
+    { "id": "center", "faction": 0, "category": "building", "armor": 2, "hp": 500, "sightCenti": 300, "cost": 400, "buildTicks": 30, "speedCenti": 0, "weapon": -1, "requires": [], "produces": [8], "builds": [], "footprint": [3, 2], "power": -4, "requiresPower": false, "dropOff": true, "capacity": 0, "loadTicks": 0, "unloadTicks": 0, "freeUnit": 8, "render": { "size": [300, 100, 200] } },
+    { "id": "factory", "faction": 0, "category": "building", "armor": 2, "hp": 600, "sightCenti": 300, "cost": 200, "buildTicks": 20, "speedCenti": 0, "weapon": -1, "requires": [3], "produces": [9, 10, 11, 12], "builds": [], "footprint": [3, 3], "power": -4, "requiresPower": false, "dropOff": false, "capacity": 0, "loadTicks": 0, "unloadTicks": 0, "freeUnit": -1, "render": { "size": [300, 110, 300] } },
+    { "id": "turret", "faction": 0, "category": "building", "armor": 2, "hp": 300, "sightCenti": 500, "cost": 150, "buildTicks": 10, "speedCenti": 0, "weapon": 3, "requires": [3], "produces": [], "builds": [], "footprint": [1, 1], "power": -6, "requiresPower": true, "dropOff": false, "capacity": 0, "loadTicks": 0, "unloadTicks": 0, "freeUnit": -1, "render": { "size": [100, 80, 100] } },
+    { "id": "dozer", "faction": 0, "category": "unit", "armor": 1, "hp": 100, "sightCenti": 600, "cost": 200, "buildTicks": 10, "speedCenti": 20, "weapon": -1, "requires": [], "produces": [], "builds": [3, 4, 5, 6], "footprint": [0, 0], "power": 0, "requiresPower": false, "dropOff": false, "capacity": 0, "loadTicks": 0, "unloadTicks": 0, "freeUnit": -1, "render": { "size": [80, 60, 100] } },
+    { "id": "truck", "faction": 0, "category": "unit", "armor": 1, "hp": 100, "sightCenti": 300, "cost": 100, "buildTicks": 10, "speedCenti": 20, "weapon": -1, "requires": [], "produces": [], "builds": [], "footprint": [0, 0], "power": 0, "requiresPower": false, "dropOff": false, "capacity": 100, "loadTicks": 3, "unloadTicks": 2, "freeUnit": -1, "render": { "size": [60, 60, 100] } },
+    { "id": "soldier", "faction": 0, "category": "unit", "armor": 0, "hp": 50, "sightCenti": 600, "cost": 50, "buildTicks": 10, "speedCenti": 10, "weapon": 0, "requires": [], "produces": [], "builds": [], "footprint": [0, 0], "power": 0, "requiresPower": false, "dropOff": false, "capacity": 0, "loadTicks": 0, "unloadTicks": 0, "freeUnit": -1, "render": { "size": [30, 60, 30] } },
+    { "id": "tank", "faction": 0, "category": "unit", "armor": 1, "hp": 200, "sightCenti": 600, "cost": 150, "buildTicks": 20, "speedCenti": 15, "weapon": 1, "requires": [4], "produces": [], "builds": [], "footprint": [0, 0], "power": 0, "requiresPower": false, "dropOff": false, "capacity": 0, "loadTicks": 0, "unloadTicks": 0, "freeUnit": -1, "render": { "size": [80, 55, 130] } },
+    { "id": "mortar-unit", "faction": 0, "category": "unit", "armor": 0, "hp": 60, "sightCenti": 1100, "cost": 100, "buildTicks": 15, "speedCenti": 10, "weapon": 2, "requires": [], "produces": [], "builds": [], "footprint": [0, 0], "power": 0, "requiresPower": false, "dropOff": false, "capacity": 0, "loadTicks": 0, "unloadTicks": 0, "freeUnit": -1, "render": { "size": [40, 50, 40] } },
+    { "id": "launcher", "faction": 0, "category": "unit", "armor": 1, "hp": 80, "sightCenti": 900, "cost": 100, "buildTicks": 10, "speedCenti": 10, "weapon": 4, "requires": [], "produces": [], "builds": [], "footprint": [0, 0], "power": 0, "requiresPower": false, "dropOff": false, "capacity": 0, "loadTicks": 0, "unloadTicks": 0, "freeUnit": -1, "render": { "size": [60, 70, 120] } }
+  ],
+  "factions": [{ "id": "alpha", "hq": 2, "dozer": 7 }],
+  "maps": [
+    {
+      "id": "test-field", "width": 40, "height": 24, "blocked": [[19, 6, 20, 17]],
+      "depots": [{ "origin": [8, 4], "amount": 300 }, { "origin": [30, 18], "amount": 300 }],
+      "starts": [
+        { "faction": 0, "hq": [2, 10], "dozerCenti": [650, 1150] },
+        { "faction": 0, "hq": [35, 11], "dozerCenti": [3350, 1250] }
+      ]
+    }
+  ]
+}
