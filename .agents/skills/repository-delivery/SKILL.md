@@ -19,6 +19,9 @@ description: Create commits, branches or worktrees, or use GitHub for issues, pu
 
 * One issue = one branch `<issue-number>-<kebab-summary>` = one worktree.
   Never share a worktree between agents.
+* Write, build and test only inside your issue's worktree. Never copy or write
+  files into the main checkout: `git status` there must be unchanged when you
+  hand back (the overnight runner fails the attempt otherwise).
 * Never push to `main` directly once the repository is public; open a PR that
   references the issue (`Closes #N`).
 
