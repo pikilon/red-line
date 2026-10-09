@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "map.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "width", "height", "blocked", "depots", "starts"],
+  "properties": {
+    "id": { "$ref": "faction.schema.json#/$defs/id" },
+    "width": { "type": "integer", "minimum": 16, "maximum": 256 },
+    "height": { "type": "integer", "minimum": 16, "maximum": 256 },
+    "blocked": { "type": "array", "items": { "$ref": "#/$defs/cells4" } },
+    "depots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["origin", "amount"],
+        "properties": {
+          "origin": { "$ref": "#/$defs/pair" },
+          "amount": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "starts": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["faction", "hq", "dozerCenti"],
+        "properties": {
+          "faction": { "$ref": "faction.schema.json#/$defs/id" },
+          "hq": { "$ref": "#/$defs/pair" },
+          "dozerCenti": { "$ref": "#/$defs/pair" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "pair": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "type": "integer", "minimum": 0 }
+    },
+    "cells4": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": { "type": "integer", "minimum": 0 }
+    }
+  }
+}

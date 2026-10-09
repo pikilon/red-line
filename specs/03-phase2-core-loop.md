@@ -93,8 +93,9 @@ data/generated/ruleset.json       generated, committed, canonical (§4.4); never
 
 Every schema sets `"additionalProperties": false` on every object, requires the
 fields marked required below, uses `"type": "integer"` with `"minimum"` for
-every number (non-integers are invalid), and ids match
-`^[a-z0-9]+(-[a-z0-9]+)*$`.
+every number (non-integers are invalid). Ids of weapons, types, factions and
+maps match `^[a-z0-9]+(-[a-z0-9]+)*$`; damage type and armour class ids match
+`^[a-z][a-zA-Z0-9]*$` (e.g. `smallArms`).
 
 ### 4.2 Source format
 

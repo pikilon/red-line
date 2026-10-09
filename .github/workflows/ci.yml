@@ -14,7 +14,9 @@ jobs:
         with:
           node-version: 26.9.0
           cache: npm
-          cache-dependency-path: client/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
@@ -23,6 +25,7 @@ jobs:
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest,wasm-pack
+      - run: node --run install:root
       - run: node --run install:client
       - run: cd client && npx playwright install --with-deps chromium
       - run: node --run verify
