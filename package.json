@@ -10,6 +10,7 @@
     "typecheck": "cd client && node --run typecheck",
     "test:unit": "cd client && node --run test:unit",
     "test:e2e": "cd client && node --run test:e2e",
+    "test:perf": "cd client && node --run test:perf",
     "build": "cd client && node --run build",
     "check:data": "node scripts/check-data.mjs",
     "check:rules": "node scripts/check-rules.mjs",
