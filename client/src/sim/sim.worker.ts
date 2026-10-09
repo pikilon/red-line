@@ -9,6 +9,11 @@ interface WorkerScope {
 
 const scope = self as unknown as WorkerScope;
 
+// Messages that arrive while the WASM module loads would be dropped if no
+// listener were attached yet, so they are queued until the handler exists.
+const early: MainToWorker[] = [];
+scope.onmessage = (event) => early.push(event.data);
+
 await init();
 
 const handler = createWorkerHandler(
@@ -18,5 +23,6 @@ const handler = createWorkerHandler(
 );
 
 scope.onmessage = (event) => handler.handle(event.data);
+for (const message of early.splice(0)) handler.handle(message);
 
 setInterval(() => handler.advance(performance.now()), 1000 / 60);
