@@ -1,4 +1,4 @@
-export const EXPECTED_API_VERSION = 1;
+export const EXPECTED_API_VERSION = 2;
 export const TICK_RATE_HZ = 15;
 export const TICK_MS = 1000 / TICK_RATE_HZ;
 export const MAX_STEPS_PER_ADVANCE = 4;

@@ -15,7 +15,7 @@ pub mod wasm_api;
 pub mod world;
 
 /// Version of the simulation API exposed to the client through WASM.
-pub const API_VERSION: u32 = 1;
+pub const API_VERSION: u32 = 2;
 
 /// Returns the simulation API version.
 #[wasm_bindgen]
