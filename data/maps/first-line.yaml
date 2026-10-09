@@ -1,0 +1,16 @@
+id: first-line                       # required, equals the file name
+width: 128                           # required, 16..256
+height: 128                          # required, 16..256
+blocked: [[62, 0, 65, 27], [62, 36, 65, 91], [62, 100, 65, 127],   # river, two fords at y 28..=35 and 92..=99
+           [28, 40, 33, 47], [94, 80, 99, 87],   # two woods (point-symmetric)
+           [40, 70, 45, 75], [82, 52, 87, 57]]   # two woods (point-symmetric)
+depots:                              # required; origin = top-left cell, ids 0..=6 in a skirmish
+  - { origin: [12, 54], amount: 15000 }
+  - { origin: [114, 72], amount: 15000 }
+  - { origin: [36, 20], amount: 10000 }
+  - { origin: [90, 106], amount: 10000 }
+  - { origin: [36, 100], amount: 10000 }
+  - { origin: [90, 26], amount: 10000 }
+starts:                              # required, exactly 2 entries; start i is player i
+  - { faction: ukraine, hq: [12, 60], dozerCenti: [1850, 6150] }
+  - { faction: russia, hq: [112, 64], dozerCenti: [10950, 6650] }

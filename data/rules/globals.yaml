@@ -1,0 +1,28 @@
+factions: [ukraine, russia]          # required; file order of data/factions/<id>.yaml
+maps: [first-line]                   # required; file order of data/maps/<id>.yaml
+damageTypes: [smallArms, autocannon, antiTank, highExplosive, thermobaric]   # required, ids
+armorClasses: [infantry, light, armored, structure]                           # required, ids
+damageModifiers:                     # required: one entry per damage type, one key per armour class, 0..1000
+  smallArms: { infantry: 100, light: 30, armored: 0, structure: 10 }
+  autocannon: { infantry: 75, light: 100, armored: 20, structure: 40 }
+  antiTank: { infantry: 30, light: 100, armored: 100, structure: 60 }
+  highExplosive: { infantry: 100, light: 80, armored: 60, structure: 100 }
+  thermobaric: { infantry: 150, light: 70, armored: 20, structure: 120 }
+startingCredits: 5000                # required, >= 0
+lowPowerMinSpeedPercent: 25          # required, 1..100
+lowPowerMaxSpeedPercent: 75          # required, 1..100
+maxQueue: 5                          # required, 1..5 (semantic check: <= QUEUE_SLOTS)
+dockRangeCenti: 100                  # required, >= 1
+commonTypes:                       # required; type objects with no faction (placeholder, depot)
+  - id: tech-slice-placeholder
+    category: unit
+    armor: infantry
+    hp: 1
+    sightCenti: 0
+    speedCenti: 20
+    render: { size: [40, 50, 40] }
+  - id: supply-depot
+    category: depot
+    armor: structure
+    footprint: [2, 2]
+    render: { height: 60 }

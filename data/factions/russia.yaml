@@ -1,0 +1,165 @@
+id: russia                           # required, must equal the file name
+hq: ru-hq                            # required, a building type of this file
+dozer: ru-dozer                      # required, a unit type of this file
+weapons:                             # required
+  - { id: ru-ak74, damageType: smallArms, damage: 9, rangeCenti: 420, cooldownTicks: 15 }
+  - { id: ru-rpg7, damageType: antiTank, damage: 90, rangeCenti: 450, cooldownTicks: 45 }
+  - { id: ru-kpvt, damageType: smallArms, damage: 14, rangeCenti: 500, cooldownTicks: 10 }
+  - { id: ru-2a42, damageType: autocannon, damage: 16, rangeCenti: 600, cooldownTicks: 8 }
+  - { id: ru-2a46m, damageType: antiTank, damage: 85, rangeCenti: 650, cooldownTicks: 33 }
+  - { id: ru-tos-thermobaric, damageType: thermobaric, damage: 120, rangeCenti: 1000, minRangeCenti: 300, cooldownTicks: 180, splashCenti: 250, projectileTicks: 20 }
+  - { id: ru-kornet-emplacement, damageType: antiTank, damage: 120, rangeCenti: 1100, cooldownTicks: 75 }
+types:                               # required
+  - id: ru-rifleman
+    category: unit
+    armor: infantry
+    hp: 90
+    sightCenti: 550
+    cost: 80
+    buildTicks: 60
+    speedCenti: 8
+    weapon: ru-ak74
+    render: { size: [30, 60, 30] }
+  - id: ru-rpg-gunner
+    category: unit
+    armor: infantry
+    hp: 90
+    sightCenti: 550
+    cost: 200
+    buildTicks: 90
+    speedCenti: 8
+    weapon: ru-rpg7
+    render: { size: [35, 55, 35] }
+  - id: ru-brdm-scout
+    category: unit
+    armor: light
+    hp: 220
+    sightCenti: 1000
+    cost: 300
+    buildTicks: 120
+    speedCenti: 30
+    weapon: ru-kpvt
+    render: { size: [60, 50, 90] }
+  - id: ru-bmp-2
+    category: unit
+    armor: light
+    hp: 450
+    sightCenti: 650
+    cost: 600
+    buildTicks: 200
+    speedCenti: 22
+    weapon: ru-2a42
+    render: { size: [70, 55, 110] }
+  - id: ru-t-72b3
+    category: unit
+    armor: armored
+    hp: 850
+    sightCenti: 650
+    cost: 900
+    buildTicks: 270
+    speedCenti: 17
+    weapon: ru-2a46m
+    render: { size: [80, 55, 125] }
+  - id: ru-tos-1a
+    category: unit
+    armor: armored
+    hp: 350
+    sightCenti: 600
+    cost: 1400
+    buildTicks: 330
+    speedCenti: 16
+    weapon: ru-tos-thermobaric
+    render: { size: [80, 70, 125] }
+  - id: ru-dozer
+    category: unit
+    armor: light
+    hp: 300
+    sightCenti: 500
+    cost: 800
+    buildTicks: 200
+    speedCenti: 15
+    builds: [ru-power-plant, ru-supply-center, ru-barracks, ru-vehicle-factory, ru-defense]
+    render: { size: [80, 60, 100] }
+  - id: ru-supply-truck
+    category: unit
+    armor: light
+    hp: 250
+    sightCenti: 500
+    cost: 600
+    buildTicks: 150
+    speedCenti: 20
+    capacity: 300
+    loadTicks: 45
+    unloadTicks: 15
+    render: { size: [60, 60, 100] }
+  - id: ru-hq
+    category: building
+    armor: structure
+    hp: 3000
+    sightCenti: 900
+    cost: 0
+    buildTicks: 0
+    footprint: [4, 4]
+    power: 0
+    produces: [ru-dozer]
+    render: { height: 150 }
+  - id: ru-power-plant
+    category: building
+    armor: structure
+    hp: 1000
+    sightCenti: 500
+    cost: 600
+    buildTicks: 150
+    footprint: [3, 3]
+    power: 10
+    render: { height: 120 }
+  - id: ru-supply-center
+    category: building
+    armor: structure
+    hp: 1500
+    sightCenti: 500
+    cost: 1500
+    buildTicks: 225
+    footprint: [4, 3]
+    power: -2
+    produces: [ru-supply-truck]
+    dropOff: true
+    freeUnit: ru-supply-truck
+    render: { height: 100 }
+  - id: ru-barracks
+    category: building
+    armor: structure
+    hp: 1000
+    sightCenti: 500
+    cost: 500
+    buildTicks: 150
+    footprint: [3, 3]
+    power: -2
+    produces: [ru-rifleman, ru-rpg-gunner]
+    requires: [ru-power-plant]
+    render: { height: 90 }
+  - id: ru-vehicle-factory
+    category: building
+    armor: structure
+    hp: 2000
+    sightCenti: 500
+    cost: 2000
+    buildTicks: 300
+    footprint: [4, 4]
+    power: -4
+    produces: [ru-brdm-scout, ru-bmp-2, ru-t-72b3, ru-tos-1a]
+    requires: [ru-supply-center]
+    render: { height: 110 }
+  - id: ru-defense
+    category: building
+    armor: structure
+    hp: 1200
+    sightCenti: 1100
+    cost: 800
+    buildTicks: 150
+    footprint: [2, 2]
+    power: -3
+    requires: [ru-barracks]
+    requiresPower: true
+    weapon: ru-kornet-emplacement
+    render: { height: 80 }
