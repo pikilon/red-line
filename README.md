@@ -4,7 +4,7 @@ An open-source, browser-based 2.5D real-time strategy game set in modern
 real-world conflicts — drones, electronic warfare, artillery and asymmetric
 armies. Inspired by Red Alert 2 and C&C Generals.
 
-> Status: Phase 0 — project bootstrap. Nothing playable yet.
+> Status: Phase 2 — core RTS loop in progress. Phase 1 tech slice done.
 
 ## Highlights (planned)
 
