@@ -6,7 +6,10 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "types": ["vite/client", "node"],
     "resolveJsonModule": true,
-    "paths": { "@sim/*": ["../crates/sim/pkg/*"] },
+    "paths": {
+      "@sim/*": ["../crates/sim/pkg/*"],
+      "@data/*": ["../data/generated/*"]
+    },
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,

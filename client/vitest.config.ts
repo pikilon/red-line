@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@sim": fileURLToPath(new URL("../crates/sim/pkg", import.meta.url)),
+      "@data": fileURLToPath(new URL("../data/generated", import.meta.url)),
     },
   },
   test: { include: ["src/**/*.test.ts"] },
