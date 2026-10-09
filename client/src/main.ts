@@ -3,6 +3,7 @@ import { createIsometricCamera } from "./camera";
 import { createFrameStats, installDebugApi, type RedlineDebug } from "./debug";
 import { createHud } from "./hud";
 import { type Controller, createController } from "./input/controller";
+import { createPerfPanel } from "./perfPanel";
 import { createTerrain } from "./render/terrain";
 import { createUnitsRenderer, type UnitsRenderer } from "./render/units";
 import { toRaw } from "./sim/fixed";
@@ -115,13 +116,18 @@ function start(): void {
 }
 
 const frameStats = createFrameStats();
+const perfPanel =
+  params.get("debug") === "1" ? createPerfPanel(document.body) : null;
 let drawCalls = 0;
 let lastFrameMs: number | null = null;
 
 function frame(now: number): void {
   requestAnimationFrame(frame);
   const dtMs = lastFrameMs === null ? 0 : now - lastFrameMs;
-  if (lastFrameMs !== null) frameStats.record(dtMs);
+  if (lastFrameMs !== null) {
+    frameStats.record(dtMs);
+    perfPanel?.record(dtMs, now);
+  }
   lastFrameMs = now;
   if (controller !== null && prev !== null && next !== null) {
     controller.update(dtMs / 1000);
@@ -156,6 +162,8 @@ if (params.get("debug") === "1") {
     drawCalls: () => drawCalls,
     resetFrameStats: () => frameStats.reset(),
     frameStats: () => frameStats.read(),
+    injectFrameTimes: (frameTimesMs) => perfPanel?.inject(frameTimesMs),
+    resumeFrameTimes: () => perfPanel?.resume(),
   };
   installDebugApi(window as { __redline?: RedlineDebug }, api);
 }
