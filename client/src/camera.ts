@@ -26,3 +26,9 @@ export function createIsometricCamera(aspect: number): OrthographicCamera {
   camera.lookAt(0, 0, 0);
   return camera;
 }
+
+export function setCameraTarget(
+  _camera: OrthographicCamera,
+  _x: number,
+  _z: number,
+): void {}
