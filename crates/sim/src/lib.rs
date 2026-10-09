@@ -3,6 +3,7 @@
 use wasm_bindgen::prelude::wasm_bindgen;
 
 pub mod fixed;
+pub mod flow;
 pub mod map;
 pub mod rng;
 
