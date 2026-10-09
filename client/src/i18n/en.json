@@ -1,0 +1,5 @@
+{
+  "hud.selectedCount": "Selected: {count}",
+  "hud.tick": "Tick {tick}",
+  "error.simInit": "The simulation failed to start: {detail}"
+}
