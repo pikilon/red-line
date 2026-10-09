@@ -1141,7 +1141,7 @@ tests. Labels: tier + area.
 | P1-16 | #25 | App wiring, input controller, debug API and E2E | AC-02-38..43 | `client/src/{main,debug}.ts`, `client/src/input/controller.ts`, `client/index.html` | 280 | ready-pro | area:client | P1-12, P1-13, P1-14, P1-15 |
 | P1-17 | #26 | Performance project and `test:perf` | AC-02-44 | `client/playwright.config.ts`, `client/package.json`, `package.json` | 60 | ready-pro | area:client | P1-16 |
 | P1-18 | #46 | Select all units shortcut | AC-02-45 | `client/src/input/{selection,controller}.ts` | 40 | ready-local | area:client | P1-16 |
-| P1-19 | — | Performance panel | AC-02-46 | `client/src/{perfPanel,main,debug}.ts`, `client/src/i18n/en.json`, `client/index.html` | 100 | ready-local | area:client | P1-18 |
+| P1-19 | #50 | Performance panel | AC-02-46 | `client/src/{perfPanel,main,debug}.ts`, `client/src/i18n/en.json`, `client/index.html` | 100 | ready-local | area:client | P1-18 |
 
 Every issue's "Done when" is `node --run verify` green (P1-17 additionally
 `node --run test:perf` green on the reference machine, reported in the PR).
