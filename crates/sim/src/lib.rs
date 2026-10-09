@@ -29,6 +29,6 @@ mod tests {
 
     #[test]
     fn api_version_is_zero_in_the_skeleton() {
-        assert_eq!(api_version(), 1);
+        assert_eq!(api_version(), 2);
     }
 }

@@ -18,7 +18,7 @@ class FakeWorker implements WorkerLike {
 
 const READY: WorkerToMain = {
   type: "ready",
-  apiVersion: 1,
+  apiVersion: 2,
   mapWidth: 2,
   mapHeight: 2,
   tiles: new Uint8Array([0, 1, 0, 0]),
@@ -78,9 +78,9 @@ describe("sim client", () => {
   it("AC-01-05: rejects a worker with a mismatched api version", async () => {
     const worker = new FakeWorker();
     const client = createSimClient(worker, { seed: 1, unitCount: 1 });
-    worker.emit({ ...READY, apiVersion: 2 } as WorkerToMain);
+    worker.emit({ ...READY, apiVersion: 3 } as WorkerToMain);
     await expect(client.ready).rejects.toThrow(
-      "api version mismatch: expected 1, got 2",
+      "api version mismatch: expected 2, got 3",
     );
   });
 });
