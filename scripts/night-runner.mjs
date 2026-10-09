@@ -112,6 +112,11 @@ function taskPrompt(issue, branch, previousFailure) {
   return lines.join("\n");
 }
 
+function changedLines(before, after) {
+  const known = new Set(before.split("\n"));
+  return after.split("\n").filter((line) => line.trim() !== "" && !known.has(line)).map((line) => line.slice(3));
+}
+
 function tail(file) {
   if (!existsSync(file)) return "";
   return readFileSync(file, "utf8").trimEnd().split("\n").slice(-LOG_TAIL_LINES).join("\n");
@@ -151,6 +156,9 @@ export async function processIssue(issue, ctx) {
       ).status === 0;
   };
 
+  // Agents must leave the main checkout alone; nothing is deleted on their behalf.
+  const mainStatus = () => run("git", ["status", "--porcelain"], { cwd: root }).stdout;
+
   let previousFailure = "";
   while (attempts < config.maxAttempts && Date.now() < until.getTime()) {
     attempts += 1;
@@ -158,11 +166,14 @@ export async function processIssue(issue, ctx) {
     log(`#${number} attempt ${attempts}/${config.maxAttempts} with ${model}`);
     const agent = agentInvocation(config, taskPrompt(issue, branch, previousFailure), root);
     const timeoutMs = Math.min(config.agentTimeoutMinutes * 60_000, until.getTime() - Date.now());
+    const mainBefore = mainStatus();
     const agentRun = run(agent.cmd, agent.args, { cwd: worktree, env: agent.env, timeoutMs, logFile });
+    const strays = changedLines(mainBefore, mainStatus());
     const verify = agentRun.status === 0 ? run("node", ["--run", "verify"], { cwd: worktree, logFile }) : null;
     const dirty = run("git", ["status", "--porcelain"], { cwd: worktree }).stdout.trim() !== "";
     const ahead = Number(run("git", ["rev-list", "--count", "origin/main..HEAD"], { cwd: worktree }).stdout || 0);
-    const reason = agentRun.status !== 0 ? "agent exited with an error or timed out"
+    const reason = strays.length > 0 ? `the agent changed the main checkout (${strays.join(", ")}); clean it by hand`
+      : agentRun.status !== 0 ? "agent exited with an error or timed out"
       : verify.status !== 0 ? "`node --run verify` failed"
       : !dirty && ahead === 0 ? "the agent made no changes"
       : !deliver(dirty) ? "could not push or open the PR" : null;
