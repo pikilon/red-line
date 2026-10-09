@@ -66,7 +66,7 @@ The roadmap (`docs/roadmap.md`) is authoritative. Summary:
 |---|---|---|
 | 0 | Tooling, agent workflow, specs | this file, `01-architecture.md` |
 | 1 | Tech slice: isometric map, selection, flow-field movement, deterministic WASM sim in a Web Worker, 500 placeholder units at 60 fps, identical state hash native vs WASM | `02-phase1-tech-slice.md` |
-| 2 | Core RTS loop: resources, power, construction, production, combat, fog of war; Ukraine vs Russia with ~6 units each | future `03-*` |
+| 2 | Core RTS loop: resources, power, construction, production, combat, fog of war; Ukraine vs Russia with 6 combat units each | `03-phase2-core-loop.md` |
 | 3 | Data-driven skirmish AI and balance tournaments | future |
 | 4 | Art and audio | future |
 | 5+ | Campaigns, more blocks, LAN multiplayer, PWA release | future |

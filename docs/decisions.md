@@ -85,6 +85,36 @@ approval, and record the change here with its date.
 * Owner machine: Apple M2 Max, 64 GB unified memory. Local LLMs up to ~30B
   quantized run well. LLM work and asset generation are not run concurrently.
 
+## D-10 Phase 2 game design (2026-10-09)
+
+Owner answers to the Phase 2 design questions; elaborated in
+`specs/03-phase2-core-loop.md`.
+
+* Economy: Generals-style finite supply depots on the map, harvested by supply
+  trucks that unload at a supply center. A completed supply center comes with a
+  free truck.
+* Construction: a dozer (engineering vehicle) is ordered to place a building
+  anywhere on explored, free ground; it drives there and the building rises
+  over time, vulnerable while under construction. No build radius, no
+  sidebar-and-place.
+* Power: plants produce, other buildings consume. A deficit slows production
+  and construction in proportion to the shortfall (25 % to 75 % speed) and
+  switches off buildings that require power (defenses).
+* Fog of war: black shroud on unexplored ground, grey fog on explored ground
+  without vision, enemy buildings remembered as last seen; enemy units only
+  visible in vision.
+* Phase 2 is ground only: drones, aircraft and anti-air come later. No unit
+  crushing in Phase 2.
+* Victory: a player is defeated when it has no buildings left; units do not
+  count.
+* Opponent in Phase 2: no AI. With `?debug=1` the player can switch control
+  between both sides (hot-seat) and reveal the map.
+* Roster per faction: six combat units (rifleman, AT infantry, scout, IFV, main
+  battle tank, unique artillery: HIMARS for Ukraine, TOS-1A for Russia), plus
+  dozer and supply truck; six buildings (HQ, power plant, supply center,
+  barracks, vehicle factory, powered AT defense). Ukraine is expensive and
+  precise; Russia is cheaper, tougher and saturating.
+
 ## D-11 Paid AI APIs need confirmation (2026-10-09)
 
 * Local models are the default for agent work: LM Studio (Ornith) through an
