@@ -97,7 +97,7 @@ test("night-runner: builds the dsh and opencode invocations", () => {
   assert.deepEqual(oc.args, ["run", "--auto", "--model", "lmstudio/ornith-1.5-35b-a3b-mlx", "do it"]);
 });
 
-function fakeWorld({ verifyStatus, attempts = 0 }) {
+function fakeWorld({ verifyStatus, attempts = 0, prStatus = 0 }) {
   const calls = [];
   const run = (cmd, args, opts = {}) => {
     const line = [cmd, ...args].join(" ");
@@ -108,6 +108,7 @@ function fakeWorld({ verifyStatus, attempts = 0 }) {
       return { status: 0, stdout: JSON.stringify({ comments }) };
     }
     if (line === "node --run verify") return { status: verifyStatus, stdout: "" };
+    if (line.startsWith("scripts/gh.sh pr create")) return { status: prStatus, stdout: "" };
     if (line.startsWith("git status --porcelain")) return { status: 0, stdout: " M file\n" };
     return { status: 0, stdout: "" };
   };
@@ -158,4 +159,12 @@ test("night-runner: comments each failure and escalates to needs-pro after the l
     "scripts/gh.sh issue edit 12 --remove-label ready-local --add-label needs-pro --remove-assignee @me"));
   assert.equal(world.calls.some((c) => c.startsWith("scripts/gh.sh pr create")), false);
   assert.ok(readFileSync(join(ctx.logDir, "12-attempt-3.log"), "utf8").includes("output of"));
+});
+
+test("night-runner: counts a PR that cannot be opened as a failed attempt", async () => {
+  const world = fakeWorld({ verifyStatus: 0, attempts: 2, prStatus: 1 });
+  const { ctx } = context(world);
+  const result = await processIssue({ number: 12, title: "Trivial fix" }, ctx);
+  assert.equal(result, "escalated");
+  assert.ok(world.calls.some((c) => c.includes(FAILURE_MARKER) && c.includes("could not push or open the PR")));
 });
