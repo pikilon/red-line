@@ -11,9 +11,11 @@ import type { UnitState } from "../sim/snapshot";
 import { panDelta } from "./cameraPan";
 import {
   isDrag,
+  isSelectAllShortcut,
   pickUnit,
   rectFromDrag,
   type ScreenPoint,
+  selectAll,
   unitsInRect,
 } from "./selection";
 
@@ -127,6 +129,11 @@ export function createController(options: ControllerOptions): Controller {
   });
 
   options.keyTarget.addEventListener("keydown", (event) => {
+    if (isSelectAllShortcut(event)) {
+      event.preventDefault();
+      setSelection(selectAll(options.units()));
+      return;
+    }
     pressed.add(event.code);
   });
   options.keyTarget.addEventListener("keyup", (event) => {
