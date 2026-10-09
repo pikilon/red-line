@@ -12,8 +12,10 @@
     "test:e2e": "cd client && node --run test:e2e",
     "build": "cd client && node --run build",
     "check:data": "node scripts/check-data.mjs",
+    "check:rules": "node scripts/check-rules.mjs",
+    "test:scripts": "node --test scripts/",
     "check:rust": "cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo nextest run",
     "build:wasm": "wasm-pack build crates/sim --target web",
-    "verify": "node --run check:rust && node --run build:wasm && node --run check && node --run typecheck && node --run test:unit && node --run build && node --run test:e2e && node --run check:data"
+    "verify": "node --run check:rust && node --run check:rules && node --run test:scripts && node --run build:wasm && node --run check && node --run typecheck && node --run test:unit && node --run build && node --run test:e2e && node --run check:data"
   }
 }
