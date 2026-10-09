@@ -8,3 +8,4 @@ node_modules/
 /tools/**/.venv/
 /assets/build/
 /crates/sim/pkg/
+/.night-runner/
