@@ -42,6 +42,7 @@ export function readConfig(env) {
     agentTimeoutMinutes: Number(env.RUNNER_AGENT_TIMEOUT_MINUTES ?? 90),
     confirmTimeoutSeconds: Number(env.RUNNER_CONFIRM_TIMEOUT_SECONDS ?? 60),
     issue: env.RUNNER_ISSUE ? Number(env.RUNNER_ISSUE) : null,
+    autoMerge: env.RUNNER_AUTO_MERGE === "1",
   };
 }
 
@@ -168,7 +169,7 @@ export async function processIssue(issue, ctx) {
 
     if (!reason) {
       run("git", ["worktree", "remove", "--force", worktree], { cwd: root });
-      return "opened";
+      return config.autoMerge ? mergeWhenGreen(branch, ctx) : "opened";
     }
 
     previousFailure = tail(logFile);
@@ -185,6 +186,17 @@ export async function processIssue(issue, ctx) {
   }
   gh("issue", "edit", String(number), "--remove-assignee", "@me");
   return "failed";
+}
+
+// RUNNER_AUTO_MERGE=1: merge on green CI so issues blocked by this one unblock
+// in the same run; a red or missing CI leaves the PR open for review.
+function mergeWhenGreen(branch, { run, root, log }) {
+  const gh = (...args) => run("scripts/gh.sh", args, { cwd: root }).status === 0;
+  run("sleep", ["30"]); // let GitHub register the CI checks first
+  const merged = gh("pr", "checks", branch, "--watch", "--fail-fast", "--interval", "30") &&
+    gh("pr", "merge", branch, "--squash", "--delete-branch");
+  if (!merged) log(`${branch}: CI did not pass or the merge failed; PR left open for review`);
+  return merged ? "merged" : "opened";
 }
 
 function run(cmd, args, { cwd, env, timeoutMs, logFile } = {}) {
