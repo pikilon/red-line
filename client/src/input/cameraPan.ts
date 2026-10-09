@@ -11,9 +11,23 @@ export const PAN_KEYS = {
   KeyD: [1, -1],
 } as const;
 
+/** Sum of pressed PAN_KEYS vectors, normalised and scaled by speed * dt. */
 export function panDelta(
-  _pressed: ReadonlySet<string>,
-  _dtSeconds: number,
+  pressed: ReadonlySet<string>,
+  dtSeconds: number,
 ): { x: number; y: number } {
-  return { x: 0, y: 0 };
+  let x = 0;
+  let y = 0;
+  for (const code of pressed) {
+    const vector = Object.hasOwn(PAN_KEYS, code)
+      ? (PAN_KEYS as Record<string, readonly [number, number]>)[code]
+      : undefined;
+    if (vector === undefined) continue;
+    x += vector[0];
+    y += vector[1];
+  }
+  const length = Math.hypot(x, y);
+  if (length === 0) return { x: 0, y: 0 };
+  const scale = (PAN_SPEED_TILES_PER_SECOND * dtSeconds) / length;
+  return { x: x * scale, y: y * scale };
 }
