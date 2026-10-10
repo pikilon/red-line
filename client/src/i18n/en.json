@@ -10,6 +10,8 @@
   "ui.victory": "Victory",
   "ui.defeat": "Defeat",
   "ui.draw": "Draw",
+  "ui.placementHint": "Left click on the ground to build · right click or Esc to cancel",
+  "ui.placementIllegal": "Cannot build here",
   "error.simInit": "The simulation failed to start: {detail}",
   "faction.ukraine": "Ukraine",
   "faction.russia": "Russia",

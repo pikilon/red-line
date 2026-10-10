@@ -151,7 +151,13 @@ export function createCommandPanel(
     onProduce(kind: number): void;
     onCancel(): void;
   },
-): { render(buttons: CommandButton[], queue: QueueState | null): void } {
+): {
+  render(
+    buttons: CommandButton[],
+    queue: QueueState | null,
+    placing?: number | null,
+  ): void;
+} {
   const panel = appendDiv(root, "command-panel");
   const elements: HTMLButtonElement[] = [];
   let rendered: CommandButton[] = [];
@@ -196,7 +202,7 @@ export function createCommandPanel(
   }
 
   return {
-    render(buttons, queue) {
+    render(buttons, queue, placing = null) {
       rendered = buttons;
       for (let i = 0; i < buttons.length; i++) {
         const button = buttons[i];
@@ -206,6 +212,10 @@ export function createCommandPanel(
         element.dataset.type = def?.id ?? String(button.typeIndex);
         element.textContent = button.label;
         element.disabled = !button.enabled;
+        const active =
+          button.action === "construct" && button.typeIndex === placing;
+        element.classList.toggle("active", active);
+        element.setAttribute("aria-pressed", String(active));
         panel.insertBefore(element, queueView?.container ?? null);
       }
       while (elements.length > buttons.length) elements.pop()?.remove();
