@@ -47,7 +47,9 @@ interface SkirmishDebugView {
 type DebugWindow = Window & { __redline?: SkirmishDebugView };
 
 async function bootDebug(page: Page, query: string): Promise<void> {
-  await page.goto(`/?${query}`);
+  // Skirmish attaches the `russia-balanced` AI to player 1 by default
+  // (spec 05 §7); these Phase 2/3 tests exercise Phase 2 hot-seat behaviour.
+  await page.goto(`/?${query}&ai=off`);
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,

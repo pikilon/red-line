@@ -18,7 +18,7 @@ class FakeWorker {
 
 const READY: WorkerToMain = {
   type: "ready",
-  apiVersion: 2,
+  apiVersion: 3,
   mapWidth: 2,
   mapHeight: 2,
   tiles: new Uint8Array([0, 1, 0, 0]),
@@ -70,9 +70,9 @@ describe("skirmish client", () => {
 
     const failingWorker = new FakeWorker();
     const failing = createSkirmishClient(failingWorker, options);
-    failingWorker.emit({ ...READY, apiVersion: 3 });
+    failingWorker.emit({ ...READY, apiVersion: 4 });
     await expect(failing.ready).rejects.toThrow(
-      "api version mismatch: expected 2, got 3",
+      "api version mismatch: expected 3, got 4",
     );
 
     const errorWorker = new FakeWorker();

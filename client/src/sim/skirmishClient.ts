@@ -42,6 +42,8 @@ export function createSkirmishClient(
     viewer: number;
     speed: number;
     debug: boolean;
+    /** Personality attached to player 1, `null` for none (§7). */
+    ai?: string | null;
   },
   now: () => number = () => performance.now(),
 ): SkirmishClient {
@@ -97,6 +99,9 @@ export function createSkirmishClient(
     speed: options.speed,
     debug: options.debug,
   };
+  if (options.ai !== undefined) {
+    init.ai = options.ai;
+  }
   worker.postMessage(init);
 
   return {

@@ -1,4 +1,4 @@
-export const EXPECTED_API_VERSION = 2;
+export const EXPECTED_API_VERSION = 3;
 export const TICK_RATE_HZ = 15;
 export const TICK_MS = 1000 / TICK_RATE_HZ;
 export const MAX_STEPS_PER_ADVANCE = 4;
@@ -60,6 +60,8 @@ export type InitSkirmishMessage = {
   viewer: number;
   speed: number;
   debug: boolean;
+  /** Personality attached to player 1, `null` for none (§7). */
+  ai?: string | null;
 };
 export type CommandMessage = { type: "command"; command: SimCommand };
 export type SetViewerMessage = { type: "setViewer"; viewer: number };
