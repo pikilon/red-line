@@ -1953,9 +1953,9 @@ These test edits are part of the RED commits of P2-05 and P2-23 (tier S).
 | AC-03-16 | `crates/sim/tests/economy.rs` | `ac_03_16_queue_rules` |
 | AC-03-17 | `crates/sim/tests/economy.rs` | `ac_03_17_low_power_slows_production` |
 | AC-03-18 | `crates/sim/tests/economy.rs` | `ac_03_18_rally_point` |
-| AC-03-19 | `crates/sim/tests/construction.rs` | `ac_03_19_construction_progress_and_hp` |
+| AC-03-19 | `crates/sim/tests/construction.rs` | `ac_03_19_construction_progress_and_hit_points` |
 | AC-03-20 | `crates/sim/tests/construction.rs` | `ac_03_20_placement_validation` |
-| AC-03-21 | `crates/sim/tests/construction.rs` | `ac_03_21_dozer_travels_and_sites_block_paths` |
+| AC-03-21 | `crates/sim/tests/construction.rs` | `ac_03_21_dozer_travels_to_the_site_and_sites_block_paths` |
 | AC-03-22 | `crates/sim/tests/construction.rs` | `ac_03_22_stop_and_resume` |
 | AC-03-23 | `crates/sim/tests/construction.rs` | `ac_03_23_free_unit_on_completion` |
 | AC-03-24 | `crates/sim/tests/harvest.rs` | `ac_03_24_truck_cycle` |
