@@ -2,9 +2,9 @@ id: ukraine                          # required, must equal the file name
 hq: ua-hq                            # required, a building type of this file
 dozer: ua-dozer                      # required, a unit type of this file
 weapons:                             # required
-  - { id: ua-rifle, damageType: smallArms, damage: 10, rangeCenti: 450, cooldownTicks: 15 }
+  - { id: ua-rifle, damageType: smallArms, damage: 14, rangeCenti: 450, cooldownTicks: 15 }
   - { id: ua-stugna-p, damageType: antiTank, damage: 120, rangeCenti: 900, minRangeCenti: 200, cooldownTicks: 75 }
-  - { id: ua-kozak-hmg, damageType: smallArms, damage: 12, rangeCenti: 500, cooldownTicks: 10 }
+  - { id: ua-kozak-hmg, damageType: smallArms, damage: 15, rangeCenti: 500, cooldownTicks: 10 }
   - { id: ua-bushmaster, damageType: autocannon, damage: 18, rangeCenti: 600, cooldownTicks: 8 }
   - { id: ua-rh120, damageType: antiTank, damage: 100, rangeCenti: 700, cooldownTicks: 30 }
   - { id: ua-gmlrs, damageType: highExplosive, damage: 250, rangeCenti: 2400, minRangeCenti: 600, cooldownTicks: 150, projectileTicks: 30 }
@@ -16,14 +16,14 @@ types:                               # required
     hp: 100
     sightCenti: 600
     cost: 100
-    buildTicks: 75
+    buildTicks: 60
     speedCenti: 8
     weapon: ua-rifle
     render: { size: [30, 60, 30] }
   - id: ua-stugna-team
     category: unit
     armor: infantry
-    hp: 90
+    hp: 70
     sightCenti: 650
     cost: 350
     buildTicks: 150
@@ -33,9 +33,9 @@ types:                               # required
   - id: ua-kozak-scout
     category: unit
     armor: light
-    hp: 250
+    hp: 420
     sightCenti: 1200
-    cost: 400
+    cost: 300
     buildTicks: 150
     speedCenti: 26
     weapon: ua-kozak-hmg
@@ -43,9 +43,9 @@ types:                               # required
   - id: ua-bradley
     category: unit
     armor: light
-    hp: 500
+    hp: 400
     sightCenti: 700
-    cost: 800
+    cost: 900
     buildTicks: 240
     speedCenti: 22
     weapon: ua-bushmaster
@@ -53,9 +53,9 @@ types:                               # required
   - id: ua-leopard-2a4
     category: unit
     armor: armored
-    hp: 750
+    hp: 600
     sightCenti: 700
-    cost: 1200
+    cost: 1300
     buildTicks: 330
     speedCenti: 17
     weapon: ua-rh120
@@ -63,7 +63,7 @@ types:                               # required
   - id: ua-himars
     category: unit
     armor: light
-    hp: 200
+    hp: 150
     sightCenti: 600
     cost: 1500
     buildTicks: 360

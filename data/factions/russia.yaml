@@ -2,13 +2,13 @@ id: russia                           # required, must equal the file name
 hq: ru-hq                            # required, a building type of this file
 dozer: ru-dozer                      # required, a unit type of this file
 weapons:                             # required
-  - { id: ru-ak74, damageType: smallArms, damage: 9, rangeCenti: 420, cooldownTicks: 15 }
-  - { id: ru-rpg7, damageType: antiTank, damage: 90, rangeCenti: 450, cooldownTicks: 45 }
-  - { id: ru-kpvt, damageType: smallArms, damage: 14, rangeCenti: 500, cooldownTicks: 10 }
-  - { id: ru-2a42, damageType: autocannon, damage: 16, rangeCenti: 600, cooldownTicks: 8 }
-  - { id: ru-2a46m, damageType: antiTank, damage: 85, rangeCenti: 650, cooldownTicks: 33 }
-  - { id: ru-tos-thermobaric, damageType: thermobaric, damage: 120, rangeCenti: 1000, minRangeCenti: 300, cooldownTicks: 180, splashCenti: 250, projectileTicks: 20 }
-  - { id: ru-kornet-emplacement, damageType: antiTank, damage: 120, rangeCenti: 1100, cooldownTicks: 75 }
+  - { id: ru-ak74, damageType: smallArms, damage: 6, rangeCenti: 420, cooldownTicks: 15 }
+  - { id: ru-rpg7, damageType: antiTank, damage: 70, rangeCenti: 450, cooldownTicks: 45 }
+  - { id: ru-kpvt, damageType: smallArms, damage: 22, rangeCenti: 500, cooldownTicks: 8 }
+  - { id: ru-2a42, damageType: autocannon, damage: 11, rangeCenti: 600, cooldownTicks: 8 }
+  - { id: ru-2a46m, damageType: antiTank, damage: 65, rangeCenti: 650, cooldownTicks: 33 }
+  - { id: ru-tos-thermobaric, damageType: thermobaric, damage: 85, rangeCenti: 1000, minRangeCenti: 300, cooldownTicks: 180, splashCenti: 250, projectileTicks: 20 }
+  - { id: ru-kornet-emplacement, damageType: antiTank, damage: 95, rangeCenti: 1100, cooldownTicks: 75 }
 types:                               # required
   - id: ru-rifleman
     category: unit
@@ -33,9 +33,9 @@ types:                               # required
   - id: ru-brdm-scout
     category: unit
     armor: light
-    hp: 220
+    hp: 1200
     sightCenti: 1000
-    cost: 300
+    cost: 180
     buildTicks: 120
     speedCenti: 30
     weapon: ru-kpvt
@@ -43,7 +43,7 @@ types:                               # required
   - id: ru-bmp-2
     category: unit
     armor: light
-    hp: 450
+    hp: 350
     sightCenti: 650
     cost: 600
     buildTicks: 200
@@ -53,7 +53,7 @@ types:                               # required
   - id: ru-t-72b3
     category: unit
     armor: armored
-    hp: 850
+    hp: 650
     sightCenti: 650
     cost: 900
     buildTicks: 270
@@ -63,7 +63,7 @@ types:                               # required
   - id: ru-tos-1a
     category: unit
     armor: armored
-    hp: 350
+    hp: 250
     sightCenti: 600
     cost: 1400
     buildTicks: 330
@@ -153,7 +153,7 @@ types:                               # required
   - id: ru-defense
     category: building
     armor: structure
-    hp: 1200
+    hp: 1000
     sightCenti: 1100
     cost: 800
     buildTicks: 150
