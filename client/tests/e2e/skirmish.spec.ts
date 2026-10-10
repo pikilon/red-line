@@ -714,3 +714,85 @@ test("AC-03-62: renders a skirmish in at most 8 draw calls", async ({
   expect(drawCalls).toBeGreaterThanOrEqual(1);
   expect(drawCalls).toBeLessThanOrEqual(MAX_DRAW_CALLS_SKIRMISH);
 });
+
+test("AC-03-67: draws the selection box while dragging", async ({ page }) => {
+  await bootDebug(page, "debug=1&speed=4");
+  const riflemanKind = await kindOf(page, "ua-rifleman");
+  // The camera is isometric, so the rectangle (20 px wide) is the strip left of
+  // the start point's vertical: the riflemen sit 0.2 tiles off the diagonal.
+  await spawnAt(page, 0, riflemanKind, 22.3, 62.7);
+  await spawnAt(page, 0, riflemanKind, 21.3, 61.7);
+  await expect
+    .poll(() =>
+      debugCall(
+        page,
+        (api, kind: number) =>
+          api.entities().filter((e) => e.owner === 0 && e.kind === kind).length,
+        riflemanKind,
+      ),
+    )
+    .toBe(2);
+  expect(await debugCall(page, (api) => api.selectedIds())).toEqual([]);
+
+  const start = await debugCall(
+    page,
+    (api) => api.worldToScreen(20.5, 60.5),
+    undefined,
+  );
+  const far = await debugCall(
+    page,
+    (api) => api.worldToScreen(24.5, 64.5),
+    undefined,
+  );
+  const end = { x: far.x - 20, y: far.y - 20 };
+  const box = page.locator("#selection-box");
+
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x + 2, start.y, { steps: 2 });
+  await expect(box).toBeHidden();
+
+  await page.mouse.move(end.x, end.y, { steps: 5 });
+  await expect(box).toBeVisible();
+  const style = await box.evaluate((element) => {
+    const css = getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    return {
+      width: css.borderTopWidth,
+      color: css.borderTopColor,
+      rect: { x: rect.x, y: rect.y, w: rect.width, h: rect.height },
+    };
+  });
+  expect(style.width).toBe("2px");
+  expect(style.color).toBe("rgba(51, 255, 51, 0.6)");
+  expect(Math.abs(style.rect.x - Math.min(start.x, end.x))).toBeLessThanOrEqual(
+    1,
+  );
+  expect(Math.abs(style.rect.y - Math.min(start.y, end.y))).toBeLessThanOrEqual(
+    1,
+  );
+  expect(
+    Math.abs(style.rect.w - Math.abs(end.x - start.x)),
+  ).toBeLessThanOrEqual(1);
+  expect(
+    Math.abs(style.rect.h - Math.abs(end.y - start.y)),
+  ).toBeLessThanOrEqual(1);
+  expect(await debugCall(page, (api) => api.selectedIds())).toEqual([]);
+
+  await page.mouse.up();
+  await expect(box).toBeHidden();
+  const owned = await debugCall(
+    page,
+    (api, kind: number) =>
+      api
+        .entities()
+        .filter((e) => e.owner === 0 && e.kind === kind)
+        .map((e) => e.id),
+    riflemanKind,
+  );
+  await expect
+    .poll(async () =>
+      (await debugCall(page, (api) => api.selectedIds())).sort(),
+    )
+    .toEqual([...owned].sort());
+});

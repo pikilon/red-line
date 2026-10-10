@@ -45,6 +45,7 @@ import {
 import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
 import { createResourceBar } from "../ui/resourceBar";
+import { createSelectionBox } from "../ui/selectionBox";
 
 export const DEFAULT_MAP = "first-line";
 export const DEFAULT_SEED = 1;
@@ -251,6 +252,7 @@ export function startSkirmish(params: SkirmishOptions): void {
     scene.add(placementGhost.mesh);
     controller = createSkirmishController({
       canvas: renderer.domElement,
+      selectionBox: createSelectionBox(document.body),
       keyTarget: window,
       camera,
       mapWidth: mapInfo.mapWidth,
