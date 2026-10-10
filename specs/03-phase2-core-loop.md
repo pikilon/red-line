@@ -1877,12 +1877,16 @@ exists and `#res-credits` reads `Credits 4400`; within 30 s it is complete and
 `#res-power` reads `Power 10/0`. Right click while placing cancels placement
 (no second building after another ground click).
 
-**AC-03-57 Produce and cancel through the UI.** Given `/?debug=1&speed=4` and,
+**AC-03-57 Produce and cancel through the UI.** Given `/?debug=1&speed=1` and,
 via `command`, a power plant at `(18, 64)` then (once complete) a barracks at
 `(12, 65)`, once the barracks is complete, when the user clicks it, then the
 panel shows `ua-rifleman` and `ua-stugna-team`; two clicks on `ua-rifleman`
 make `#queue .queue-item` count 2 and credits 3700; a right click on that button
 makes the count 1 and credits 3800; within 20 s an owner-0 `ua-rifleman` exists.
+Speed 1, unlike the other UI criteria: a `ua-rifleman` takes 75 ticks
+(1.25 s at speed 4), and production advances on the worker clock while the
+test drives the page, so at speed 4 the queue head could finish between the
+produce clicks and the right click.
 
 **AC-03-58 Harvest.** Given `/?debug=1&speed=4` and, via `command`, a
 `ua-supply-center` at `(15, 55)`, then within 30 s an owner-0 `ua-supply-truck`
