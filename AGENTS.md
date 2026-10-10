@@ -20,8 +20,11 @@ not write code: agents implement, the owner reviews quality.
 
 ## Repository Language
 
-* Every message, text, comment, commit, issue and PR must be in English.
-  Player-facing strings go through i18n files, never hardcoded.
+* Everything written into the repository or GitHub (code, comments, specs,
+  commits, issues, PRs, subagent notes) must be in English. Player-facing
+  strings go through i18n files, never hardcoded.
+* Chat with the owner is in Spanish: summaries, questions and confirmation
+  requests are written in Spanish, quoting identifiers and paths unchanged.
 
 ## GitHub Identity
 
