@@ -6,13 +6,16 @@ import { test } from "node:test";
 import {
   FAILURE_MARKER,
   agentInvocation,
+  allowedFiles,
   branchName,
+  compactLog,
   deadline,
   isPaid,
   previousAttempts,
   processIssue,
   readConfig,
   resolveModel,
+  scopeProblem,
   selectIssues,
 } from "./night-runner.mjs";
 
@@ -99,7 +102,8 @@ test("night-runner: builds the dsh and opencode invocations", () => {
   assert.deepEqual(oc.args, ["run", "--auto", "--model", "lmstudio/ornith-1.5-35b-a3b-mlx", "do it"]);
 });
 
-function fakeWorld({ verifyStatus, attempts = 0, prStatus = 0, checksStatus = 0, strayInMain = false }) {
+function fakeWorld({ verifyStatus, attempts = 0, prStatus = 0, checksStatus = 0, strayInMain = false,
+  body = "", changed = [] }) {
   const calls = [];
   let agentRan = false;
   const run = (cmd, args, opts = {}) => {
@@ -109,9 +113,10 @@ function fakeWorld({ verifyStatus, attempts = 0, prStatus = 0, checksStatus = 0,
     if (opts.logFile) writeFileSync(opts.logFile, `output of ${cmd}\n`, { flag: "a" });
     if (line.startsWith("scripts/gh.sh issue view")) {
       const comments = Array.from({ length: attempts }, () => ({ body: FAILURE_MARKER }));
-      return { status: 0, stdout: JSON.stringify({ comments }) };
+      return { status: 0, stdout: JSON.stringify({ comments, body }) };
     }
     if (line === "node --run verify") return { status: verifyStatus, stdout: "" };
+    if (line === "git diff --name-only --cached origin/main") return { status: 0, stdout: changed.join("\n") };
     if (line.startsWith("scripts/gh.sh pr create")) return { status: prStatus, stdout: "" };
     if (line.startsWith("scripts/gh.sh pr checks")) return { status: checksStatus, stdout: "" };
     if (line.startsWith("git status --porcelain") && !opts.cwd.includes(".night-runner")) {
@@ -213,4 +218,56 @@ test("night-runner: fails the attempt when the agent changes the main checkout",
   assert.match(failure, /changed the main checkout/);
   assert.match(failure, /data\/stray\.yaml/);
   assert.match(failure, /scripts\/a\.mjs/);
+});
+
+const ISSUE_BODY = [
+  "### Goal", "", "Do it.", "",
+  "### Files allowed to change", "", "- `crates/sim/src/vision.rs`", "- `crates/sim/src/world.rs`", "",
+  "### Files forbidden to change", "", "- `AGENTS.md`",
+].join("\n");
+
+test("night-runner: reads the allowed files from the issue body", () => {
+  assert.deepEqual(allowedFiles(ISSUE_BODY), ["crates/sim/src/vision.rs", "crates/sim/src/world.rs"]);
+  assert.deepEqual(allowedFiles("no such section"), []);
+});
+
+test("night-runner: accepts allowed files plus tests, rejects anything else", () => {
+  const allowed = ["crates/sim/src/vision.rs", "crates/sim/src/world.rs"];
+  assert.equal(scopeProblem(["crates/sim/src/vision.rs", "crates/sim/tests/vision.rs"], allowed), null);
+  assert.equal(scopeProblem(["client/src/render/fog.test.ts", "crates/sim/src/world.rs"], allowed), null);
+  assert.match(scopeProblem(["crates/sim/src/world.rs", "scripts/gh.sh"], allowed), /outside.*scripts\/gh\.sh/);
+  assert.match(scopeProblem(["crates/sim/tests/vision.rs"], allowed), /no allowed file/);
+  assert.equal(scopeProblem(["anything.txt"], []), null);
+});
+
+test("night-runner: fails the attempt when the agent changes files outside the issue's list", async () => {
+  const world = fakeWorld({ verifyStatus: 0, attempts: 2, body: ISSUE_BODY, changed: ["scripts/gh.sh"] });
+  const { ctx } = context(world, { RUNNER_AUTO_MERGE: "1" });
+  assert.equal(await processIssue({ number: 61, title: "Vision" }, ctx), "escalated");
+  assert.equal(world.calls.some((c) => c.startsWith("scripts/gh.sh pr create")), false);
+  assert.match(world.calls.find((c) => c.includes(FAILURE_MARKER)), /outside the issue's allowed files.*scripts\/gh\.sh/);
+});
+
+test("night-runner: formats the worktree before verifying", async () => {
+  const world = fakeWorld({ verifyStatus: 0, body: ISSUE_BODY, changed: ["crates/sim/src/vision.rs"] });
+  const { ctx } = context(world);
+  assert.equal(await processIssue({ number: 61, title: "Vision" }, ctx), "opened");
+  const format = world.calls.indexOf("node --run format");
+  assert.ok(format > world.calls.findIndex((c) => c.startsWith("npx -y @deepseek-ai/dsh")));
+  assert.ok(format < world.calls.indexOf("node --run verify"));
+});
+
+test("night-runner: gives the agent the issue body and the anti-stall rules", async () => {
+  const world = fakeWorld({ verifyStatus: 0, body: ISSUE_BODY, changed: ["crates/sim/src/vision.rs"] });
+  const { ctx } = context(world);
+  await processIssue({ number: 61, title: "Vision" }, ctx);
+  const agent = world.calls.find((c) => c.startsWith("npx -y @deepseek-ai/dsh"));
+  assert.match(agent, /crates\/sim\/src\/vision\.rs/);
+  assert.match(agent, /scratch test/);
+  assert.match(agent, /only the files listed/);
+});
+
+test("night-runner: collapses repeated lines in the log tail given to the next attempt", () => {
+  const log = ["start", ...Array(30).fill("Let me check Player::new."), "end"].join("\n");
+  assert.equal(compactLog(log), ["start", "Let me check Player::new.", "[previous line repeated 29 more times]", "end"].join("\n"));
 });

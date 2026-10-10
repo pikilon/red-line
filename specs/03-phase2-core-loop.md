@@ -1512,14 +1512,15 @@ y 10..=11` blocked on `MapGrid::open(32, 32)`,
 
 ### Vision
 
-**AC-03-11 Visibility and exploration.** Given a sandbox with
+**AC-03-11 Visibility and exploration.** Given
+`World::sandbox(test_rules, MapGrid::open(40, 24), &[0, 0])` with
 `spawn(0, 9, (10.5, 10.5))` (sight 6), when one step runs, then for player 0
 cells `(16, 10)` and `(14, 14)` have fog 2, `(17, 10)` and `(15, 15)` fog 0,
 `fog(OBSERVER, (0, 0)) == 2`; and after a move to `(30.5, 10.5)` and 220 more
 steps, `fog(0, (5, 10)) == 1`, `fog(0, (30, 10)) == 2`, `fog(0, (0, 0)) == 0`.
 
-**AC-03-12 Entity visibility.** Given a sandbox with `spawn(0, 9, (10.5,
-10.5))`, player 1 dozers at `(14.5, 10.5)` (id 1) and `(25.5, 20.5)` (id 2) and
+**AC-03-12 Entity visibility.** Given the same sandbox
+(`MapGrid::open(40, 24)`, factions `[0, 0]`) with `spawn(0, 9, (10.5, 10.5))`, player 1 dozers at `(14.5, 10.5)` (id 1) and `(25.5, 20.5)` (id 2) and
 `place_building(1, 3, (30, 2), true)` (id 3), when one step runs, then
 `is_entity_visible(0, 1)` is true, `(0, 2)` and `(0, 3)` are false,
 `(1, 0)` is true (dozer 1 is 4 tiles from the soldier, sight 6),

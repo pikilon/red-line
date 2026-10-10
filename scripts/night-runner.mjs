@@ -96,20 +96,82 @@ export function agentInvocation(config, prompt, root) {
   return { ...ENGINES[config.engine](config, prompt, root), env };
 }
 
+// Small local models stall in long internal debates; these rules keep them
+// moving with tools instead of reasoning in circles.
+const WORK_RULES = [
+  "How to work:",
+  "1. Read the spec sections the issue names, then the code you will touch. Do not re-read a file you already read.",
+  "2. Write the issue's acceptance tests first if they are missing (names from the spec traceability table),",
+  "   run them and see them fail, then implement.",
+  "3. The expected numbers in the spec are correct. Never derive them in your head: write a scratch test that",
+  "   prints the value, run it, read the output and delete the scratch test.",
+  "4. If you notice you are repeating yourself or have thought about one question for more than a few",
+  "   steps, stop thinking and run a command (cargo test, a scratch test, grep) instead.",
+  "5. Change only the files listed under 'Files allowed to change' plus test files; the runner rejects",
+  "   any other change, and an attempt that changes no allowed file.",
+  "6. Run `cargo nextest run` (and the client tests if you touched client/) until they pass, then stop.",
+  "   The runner formats the code and runs `node --run verify` itself.",
+];
+
 function taskPrompt(issue, branch, previousFailure) {
   const lines = [
     `You are the overnight runner's agent for GitHub issue #${issue.number} ("${issue.title}").`,
-    "Follow AGENTS.md. Load and execute .agents/skills/task-intake/SKILL.md for this issue;",
-    `read it with \`scripts/gh.sh issue view ${issue.number}\` and follow its spec with the sdd-workflow skill.`,
+    "Follow AGENTS.md and the task-intake and sdd-workflow skills (.agents/skills/).",
     `The runner already claimed the issue and created this worktree on branch ${branch}; work only here.`,
     "You may commit locally, but do not push, open PRs, comment on or relabel issues:",
     "when you finish, the runner runs `node --run verify`, commits what is left and opens the PR.",
     "Never call a paid AI API (D-11). Never edit, skip or weaken tests written in the spec phase.",
+    "",
+    ...WORK_RULES,
+    "",
+    "The issue:",
+    "```markdown",
+    issue.body || `(read it with \`scripts/gh.sh issue view ${issue.number}\`)`,
+    "```",
   ];
   if (previousFailure) {
     lines.push("", "The previous attempt failed. Tail of its log:", "```", previousFailure, "```");
   }
   return lines.join("\n");
+}
+
+// Paths listed under "### Files allowed to change" in the issue body.
+export function allowedFiles(body) {
+  const section = /### Files allowed to change\s*\n([\s\S]*?)(\n###|$)/.exec(body ?? "");
+  if (!section) return [];
+  return [...section[1].matchAll(/^- `([^`]+)`/gm)].map((match) => match[1]);
+}
+
+const isTestPath = (path) => /(^|\/)tests\//.test(path) || /\.test\.[cm]?[jt]s$/.test(path);
+
+// Why a change set does not fit the issue, or null. Test files are always allowed;
+// an issue without the section is not checked.
+export function scopeProblem(changed, allowed) {
+  if (allowed.length === 0) return null;
+  const outside = changed.filter((path) => !allowed.includes(path) && !isTestPath(path));
+  if (outside.length > 0) return `changed files outside the issue's allowed files (${outside.join(", ")})`;
+  if (!changed.some((path) => allowed.includes(path))) return "no allowed file was changed";
+  return null;
+}
+
+// Collapses runs of identical lines so a looping agent's tail stays readable.
+export function compactLog(text) {
+  const out = [];
+  let repeats = 0;
+  const flush = () => {
+    if (repeats > 0) out.push(`[previous line repeated ${repeats} more times]`);
+    repeats = 0;
+  };
+  for (const line of text.split("\n")) {
+    if (out.length > 0 && line === out.at(-1) && line.trim() !== "") {
+      repeats += 1;
+      continue;
+    }
+    flush();
+    out.push(line);
+  }
+  flush();
+  return out.join("\n");
 }
 
 function changedLines(before, after) {
@@ -119,7 +181,7 @@ function changedLines(before, after) {
 
 function tail(file) {
   if (!existsSync(file)) return "";
-  return readFileSync(file, "utf8").trimEnd().split("\n").slice(-LOG_TAIL_LINES).join("\n");
+  return compactLog(readFileSync(file, "utf8").trimEnd()).split("\n").slice(-LOG_TAIL_LINES).join("\n");
 }
 
 export async function processIssue(issue, ctx) {
@@ -131,8 +193,9 @@ export async function processIssue(issue, ctx) {
   const model = `${config.engine} ${config.provider}/${config.model}`;
   mkdirSync(logDir, { recursive: true });
 
-  const view = gh("issue", "view", String(number), "--json", "comments");
-  let attempts = previousAttempts(JSON.parse(view.stdout || "{}").comments ?? []);
+  const view = JSON.parse(gh("issue", "view", String(number), "--json", "comments,body").stdout || "{}");
+  let attempts = previousAttempts(view.comments ?? []);
+  const allowed = allowedFiles(view.body);
   gh("issue", "edit", String(number), "--add-assignee", "@me");
   gh("issue", "comment", String(number), "--body", `Claimed by night-runner / ${model}`);
 
@@ -164,19 +227,25 @@ export async function processIssue(issue, ctx) {
     attempts += 1;
     const logFile = join(logDir, `${number}-attempt-${attempts}.log`);
     log(`#${number} attempt ${attempts}/${config.maxAttempts} with ${model}`);
-    const agent = agentInvocation(config, taskPrompt(issue, branch, previousFailure), root);
+    const agent = agentInvocation(config, taskPrompt({ ...issue, body: view.body }, branch, previousFailure), root);
     const timeoutMs = Math.min(config.agentTimeoutMinutes * 60_000, until.getTime() - Date.now());
     const mainBefore = mainStatus();
     const agentRun = run(agent.cmd, agent.args, { cwd: worktree, env: agent.env, timeoutMs, logFile });
     const strays = changedLines(mainBefore, mainStatus());
+    if (agentRun.status === 0) run("node", ["--run", "format"], { cwd: worktree, logFile });
     const verify = agentRun.status === 0 ? run("node", ["--run", "verify"], { cwd: worktree, logFile }) : null;
     const dirty = run("git", ["status", "--porcelain"], { cwd: worktree }).stdout.trim() !== "";
+    run("git", ["add", "-A"], { cwd: worktree });
+    const changed = run("git", ["diff", "--name-only", "--cached", "origin/main"], { cwd: worktree })
+      .stdout.split("\n").filter(Boolean);
+    const outOfScope = scopeProblem(changed, allowed);
     const ahead = Number(run("git", ["rev-list", "--count", "origin/main..HEAD"], { cwd: worktree }).stdout || 0);
     const reason = strays.length > 0 ? `the agent changed the main checkout (${strays.join(", ")}); clean it by hand`
       : agentRun.status !== 0 ? "agent exited with an error or timed out"
       : verify.status !== 0 ? "`node --run verify` failed"
       : !dirty && ahead === 0 ? "the agent made no changes"
-      : !deliver(dirty) ? "could not push or open the PR" : null;
+      : outOfScope
+      ?? (!deliver(dirty) ? "could not push or open the PR" : null);
 
     if (!reason) {
       run("git", ["worktree", "remove", "--force", worktree], { cwd: root });
