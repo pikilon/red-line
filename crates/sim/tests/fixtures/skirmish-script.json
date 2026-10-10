@@ -1,0 +1,21 @@
+{
+  "seed": 7,
+  "map": "first-line",
+  "ticks": 3000,
+  "commands": [
+    { "tick": 0, "player": 0, "command": { "type": "construct", "dozer": 7, "kind": "ua-power-plant", "origin": [18, 64] } },
+    { "tick": 0, "player": 1, "command": { "type": "construct", "dozer": 9, "kind": "ru-power-plant", "origin": [107, 61] } },
+    { "tick": 200, "player": 0, "command": { "type": "construct", "dozer": 7, "kind": "ua-supply-center", "origin": [15, 55] } },
+    { "tick": 200, "player": 1, "command": { "type": "construct", "dozer": 9, "kind": "ru-supply-center", "origin": [109, 70] } },
+    { "tick": 600, "player": 0, "command": { "type": "construct", "dozer": 7, "kind": "ua-barracks", "origin": [12, 65] } },
+    { "tick": 600, "player": 1, "command": { "type": "construct", "dozer": 9, "kind": "ru-barracks", "origin": [113, 60] } },
+    { "tick": 900, "player": 0, "command": { "type": "rally", "building": 16, "target": [4194304, 2097152] } },
+    { "tick": 900, "player": 1, "command": { "type": "rally", "building": 17, "target": [4194304, 2097152] } },
+    { "tick": 900, "player": 0, "command": { "type": "produce", "building": 16, "kind": "ua-rifleman" } },
+    { "tick": 900, "player": 0, "command": { "type": "produce", "building": 16, "kind": "ua-rifleman" } },
+    { "tick": 900, "player": 0, "command": { "type": "produce", "building": 16, "kind": "ua-rifleman" } },
+    { "tick": 900, "player": 1, "command": { "type": "produce", "building": 17, "kind": "ru-rifleman" } },
+    { "tick": 900, "player": 1, "command": { "type": "produce", "building": 17, "kind": "ru-rifleman" } },
+    { "tick": 900, "player": 1, "command": { "type": "produce", "building": 17, "kind": "ru-rifleman" } }
+  ]
+}
