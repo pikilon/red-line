@@ -111,3 +111,75 @@ fn ac_03_08_state_hash_v2() {
     }
     assert_eq!(state_hash(&a), state_hash(&b));
 }
+
+#[test]
+fn ac_03_37_match_snapshot_layout() {
+    use sim::map::Cell;
+    use sim::rules::{Ruleset, fx_centi};
+    use sim::snapshot::{ENTITY_STRIDE, FLAG_POWERED_OFF, MATCH_HEADER_LEN, encode_match_snapshot};
+
+    let test_rules = || Ruleset::from_json(include_str!("fixtures/test-rules.json")).unwrap();
+    let at = |x_centi: u32, y_centi: u32| FxVec2::new(fx_centi(x_centi), fx_centi(y_centi));
+
+    // Complete power plant (id 0) and soldier (id 1) on an open 8 x 8 map.
+    let mut world = World::sandbox(test_rules(), MapGrid::open(8, 8), &[0]);
+    assert_eq!(world.place_building(0, 3, Cell { x: 0, y: 0 }, true), 0);
+    assert_eq!(world.spawn(0, 9, at(550, 550)), 1);
+    world.step();
+    assert_eq!(
+        encode_match_snapshot(&world, 0),
+        vec![
+            1, 0, 1000, 10, 0, 0, -1, 2, // header
+            0, 0, 3, 65536, 65536, 400, 0, 1000, -1, // power plant
+            1, 0, 9, 360448, 360448, 50, 0, 0, -1, // soldier
+            0,  // queue_count
+        ]
+    );
+
+    // A second such world adds a complete factory (id 2) producing two
+    // soldiers; the queue section holds count, building, head permille,
+    // length and the nine kind slots.
+    let mut world = World::sandbox(test_rules(), MapGrid::open(8, 8), &[0]);
+    world.place_building(0, 3, Cell { x: 0, y: 0 }, true);
+    world.spawn(0, 9, at(550, 550));
+    assert_eq!(world.place_building(0, 5, Cell { x: 4, y: 0 }, true), 2);
+    world.enqueue(Command::Produce {
+        building: 2,
+        kind: 9,
+    });
+    world.enqueue(Command::Produce {
+        building: 2,
+        kind: 9,
+    });
+    world.step();
+    let snapshot = encode_match_snapshot(&world, 0);
+    let queue = &snapshot[snapshot.len() - 13..];
+    assert_eq!(
+        &queue[..9],
+        &[1, 2, 100, 2, 9, 9, -1, -1, -1],
+        "AC-03-37 queue section"
+    );
+    assert_eq!(
+        queue,
+        &[1, 2, 100, 2, 9, 9, -1, -1, -1, -1, -1, -1, -1],
+        "the nine kind slots pad the record to QUEUE_STRIDE"
+    );
+
+    // AC-03-33 world with a power deficit (10 produced / 14 consumed): the
+    // complete requires_power turret (id 1) is flagged as powered off.
+    let mut world = World::sandbox(test_rules(), MapGrid::open(40, 24), &[0, 0]);
+    world.place_building(0, 3, Cell { x: 0, y: 0 }, true);
+    world.place_building(0, 6, Cell { x: 10, y: 10 }, true);
+    world.place_building(0, 5, Cell { x: 20, y: 0 }, true);
+    world.place_building(0, 5, Cell { x: 24, y: 0 }, true);
+    world.spawn(1, 9, at(1450, 1050));
+    for _ in 0..20 {
+        world.step();
+    }
+    assert_eq!(world.player(0).unwrap().power(), (10, 14));
+    let snapshot = encode_match_snapshot(&world, 0);
+    assert_eq!(
+        snapshot[MATCH_HEADER_LEN + ENTITY_STRIDE + 6],
+        FLAG_POWERED_OFF
+    );
+}
