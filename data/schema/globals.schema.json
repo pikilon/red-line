@@ -4,12 +4,13 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "factions", "maps", "damageTypes", "armorClasses", "damageModifiers", "startingCredits",
+    "factions", "maps", "ai", "damageTypes", "armorClasses", "damageModifiers", "startingCredits",
     "lowPowerMinSpeedPercent", "lowPowerMaxSpeedPercent", "maxQueue", "dockRangeCenti", "commonTypes"
   ],
   "properties": {
     "factions": { "$ref": "#/$defs/idList" },
     "maps": { "$ref": "#/$defs/idList" },
+    "ai": { "$ref": "#/$defs/idList" },
     "damageTypes": { "$ref": "#/$defs/keyList" },
     "armorClasses": { "$ref": "#/$defs/keyList" },
     "damageModifiers": {

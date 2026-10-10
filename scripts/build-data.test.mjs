@@ -52,10 +52,21 @@ const faction = (id, prefix) => ({
   ],
 });
 
+const personality = () => ({
+  id: "ukraine-balanced",
+  faction: "ukraine",
+  harvesters: 3,
+  defenseRadiusCenti: 2000,
+  buildOrder: ["ua-power-plant", "ua-barracks"],
+  taskForces: [{ id: "infantry", units: { "ua-rifleman": 2 } }],
+  triggers: [{ taskForce: "infantry", weight: 50, minTick: 0 }],
+});
+
 const baseline = () => ({
   globals: {
     factions: ["ukraine", "russia"],
     maps: ["first-line"],
+    ai: ["ukraine-balanced"],
     damageTypes: ["smallArms"],
     armorClasses: ["infantry", "structure"],
     damageModifiers: { smallArms: { infantry: 100, structure: 10 } },
@@ -85,6 +96,7 @@ const baseline = () => ({
       { faction: "russia", hq: [112, 64], dozerCenti: [10950, 6650] },
     ],
   },
+  ai: personality(),
 });
 
 const FILES = {
@@ -92,6 +104,7 @@ const FILES = {
   ukraine: "data/factions/ukraine.yaml",
   russia: "data/factions/russia.yaml",
   map: "data/maps/first-line.yaml",
+  ai: "data/ai/ukraine-balanced.yaml",
 };
 
 const toSources = (data, overrides = {}) => {
@@ -101,6 +114,7 @@ const toSources = (data, overrides = {}) => {
     globals: source("globals"),
     factions: [source("ukraine"), source("russia")],
     maps: [source("map")],
+    ai: [source("ai")],
   };
 };
 
@@ -234,4 +248,114 @@ test("AC-03-04: rosters and the first-line map follow the design", () => {
   assert.equal(s1.faction, 1 - s0.faction);
   assert.deepEqual(s1.hq, [124 - s0.hq[0], 124 - s0.hq[1]]);
   assert.deepEqual(s1.dozerCenti, [12800 - s0.dozerCenti[0], 12800 - s0.dozerCenti[1]]);
+});
+
+test("AC-05-01: personality sources build", () => {
+  const root = repoRoot();
+  const { ruleset, errors } = buildRuleset(readSources(root));
+  assert.deepEqual(errors, []);
+  assert.equal(serializeRuleset(ruleset), readFileSync(join(root, "data/generated/ruleset.json"), "utf8"));
+
+  const typeIndex = new Map(ruleset.types.map((t, i) => [t.id, i]));
+  const kinds = (pairs) => pairs.map(([id, count]) => [typeIndex.get(id), count]);
+  const buildOrder = (ids) => ids.map((id) => typeIndex.get(id));
+  const factionIndex = (id) => ruleset.factions.findIndex((f) => f.id === id);
+
+  assert.deepEqual(ruleset.ai, [
+    {
+      id: "ukraine-balanced",
+      faction: factionIndex("ukraine"),
+      harvesters: 3,
+      defenseRadiusCenti: 2000,
+      buildOrder: buildOrder([
+        "ua-power-plant", "ua-supply-center", "ua-barracks", "ua-power-plant",
+        "ua-vehicle-factory", "ua-defense", "ua-power-plant", "ua-defense",
+      ]),
+      taskForces: [
+        { id: "infantry", units: kinds([["ua-rifleman", 4], ["ua-stugna-team", 2]]) },
+        { id: "mechanized", units: kinds([["ua-bradley", 2], ["ua-rifleman", 3]]) },
+        { id: "armor", units: kinds([["ua-leopard-2a4", 2], ["ua-bradley", 1]]) },
+        { id: "fires", units: kinds([["ua-himars", 1], ["ua-leopard-2a4", 1], ["ua-stugna-team", 2]]) },
+      ],
+      triggers: [
+        { taskForce: 0, weight: 50, minTick: 0 },
+        { taskForce: 1, weight: 40, minTick: 2700 },
+        { taskForce: 2, weight: 40, minTick: 4500 },
+        { taskForce: 3, weight: 20, minTick: 6300 },
+      ],
+    },
+    {
+      id: "ukraine-rush",
+      faction: factionIndex("ukraine"),
+      harvesters: 2,
+      defenseRadiusCenti: 1500,
+      buildOrder: buildOrder([
+        "ua-power-plant", "ua-barracks", "ua-supply-center", "ua-vehicle-factory", "ua-power-plant",
+      ]),
+      taskForces: [
+        { id: "rifles", units: kinds([["ua-rifleman", 5]]) },
+        { id: "raid", units: kinds([["ua-kozak-scout", 2], ["ua-rifleman", 2]]) },
+        { id: "hunters", units: kinds([["ua-stugna-team", 2], ["ua-kozak-scout", 1]]) },
+      ],
+      triggers: [
+        { taskForce: 0, weight: 60, minTick: 0 },
+        { taskForce: 1, weight: 50, minTick: 1800 },
+        { taskForce: 2, weight: 30, minTick: 2700 },
+      ],
+    },
+    {
+      id: "russia-balanced",
+      faction: factionIndex("russia"),
+      harvesters: 3,
+      defenseRadiusCenti: 2000,
+      buildOrder: buildOrder([
+        "ru-power-plant", "ru-supply-center", "ru-barracks", "ru-power-plant",
+        "ru-vehicle-factory", "ru-defense", "ru-power-plant", "ru-defense",
+      ]),
+      taskForces: [
+        { id: "infantry", units: kinds([["ru-rifleman", 6], ["ru-rpg-gunner", 2]]) },
+        { id: "mechanized", units: kinds([["ru-bmp-2", 2], ["ru-rifleman", 4]]) },
+        { id: "armor", units: kinds([["ru-t-72b3", 3], ["ru-bmp-2", 1]]) },
+        { id: "fires", units: kinds([["ru-tos-1a", 1], ["ru-t-72b3", 2]]) },
+      ],
+      triggers: [
+        { taskForce: 0, weight: 50, minTick: 0 },
+        { taskForce: 1, weight: 40, minTick: 2700 },
+        { taskForce: 2, weight: 40, minTick: 4500 },
+        { taskForce: 3, weight: 20, minTick: 6300 },
+      ],
+    },
+    {
+      id: "russia-rush",
+      faction: factionIndex("russia"),
+      harvesters: 2,
+      defenseRadiusCenti: 1500,
+      buildOrder: buildOrder([
+        "ru-power-plant", "ru-barracks", "ru-supply-center", "ru-vehicle-factory", "ru-power-plant",
+      ]),
+      taskForces: [
+        { id: "rifles", units: kinds([["ru-rifleman", 6]]) },
+        { id: "raid", units: kinds([["ru-brdm-scout", 2], ["ru-rifleman", 3]]) },
+        { id: "hunters", units: kinds([["ru-rpg-gunner", 3], ["ru-brdm-scout", 1]]) },
+      ],
+      triggers: [
+        { taskForce: 0, weight: 60, minTick: 0 },
+        { taskForce: 1, weight: 50, minTick: 1800 },
+        { taskForce: 2, weight: 30, minTick: 2700 },
+      ],
+    },
+  ]);
+});
+
+test("AC-05-02: personality semantic checks", () => {
+  const file = FILES.ai;
+  expectError(changed((d) => { d.ai.buildOrder = ["ua-rifleman"]; }), {
+    code: "invalid-value", file, pointer: "/buildOrder/0",
+  });
+  expectError(changed((d) => { d.ai.taskForces[0].units = { "ru-rifleman": 2 }; }), {
+    code: "unknown-reference", file, pointer: "/taskForces/0/units/ru-rifleman",
+  });
+  expectError(changed((d) => { d.ai.triggers[0].taskForce = "nope"; }), {
+    code: "unknown-reference", file, pointer: "/triggers/0/taskForce",
+  });
 });

@@ -6,7 +6,7 @@ import Ajv2020 from "ajv/dist/2020.js";
 import { parse } from "yaml";
 
 /** @typedef {{ file: string, text: string }} SourceFile */
-/** @typedef {{ globals: SourceFile, factions: SourceFile[], maps: SourceFile[] }} Sources */
+/** @typedef {{ globals: SourceFile, factions: SourceFile[], maps: SourceFile[], ai: SourceFile[] }} Sources */
 /** @typedef {"parse"|"schema"|"duplicate-id"|"unknown-reference"|"invalid-value"} DataErrorCode */
 /** @typedef {{ file: string, pointer: string, code: DataErrorCode, message: string }} DataError */
 
@@ -24,6 +24,7 @@ const createValidators = () => {
     globals: ajv.compile(readSchema("globals")),
     faction: ajv.getSchema("faction.schema.json"),
     map: ajv.compile(readSchema("map")),
+    ai: ajv.compile(readSchema("ai")),
   };
 };
 
@@ -36,7 +37,7 @@ const listedIds = (text, key) => {
   }
 };
 
-/** Reads globals, then the factions and maps it lists, as repository-relative files. */
+/** Reads globals, then the factions, maps and AI personalities it lists, as repository-relative files. */
 export function readSources(rootDir) {
   const read = (file) => ({ file, text: readFileSync(join(rootDir, file), "utf8") });
   const globals = read(GLOBALS_FILE);
@@ -44,6 +45,7 @@ export function readSources(rootDir) {
     globals,
     factions: listedIds(globals.text, "factions").map((id) => read(`data/factions/${id}.yaml`)),
     maps: listedIds(globals.text, "maps").map((id) => read(`data/maps/${id}.yaml`)),
+    ai: listedIds(globals.text, "ai").map((id) => read(`data/ai/${id}.yaml`)),
   };
 }
 
@@ -72,15 +74,17 @@ export function buildRuleset(sources) {
   const globals = load(sources.globals, validators.globals);
   const factions = sources.factions.map((source) => load(source, validators.faction));
   const maps = sources.maps.map((source) => load(source, validators.map));
+  const ai = (sources.ai ?? []).map((source) => load(source, validators.ai));
   if (errors.length > 0) return { ruleset: null, errors };
 
   checkGlobals(sources.globals.file, globals, fail);
   const index = checkReferences(sources, globals, factions, fail);
   sources.factions.forEach((source, i) => checkFaction(source.file, factions[i], fail));
   sources.maps.forEach((source, i) => checkMap(source.file, maps[i], globals, factions, index, fail));
+  (sources.ai ?? []).forEach((source, i) => checkAi(source.file, ai[i], factions, fail));
   if (errors.length > 0) return { ruleset: null, errors };
 
-  return { ruleset: assemble(globals, factions, maps), errors };
+  return { ruleset: assemble(globals, factions, maps, ai), errors };
 }
 
 function checkGlobals(file, globals, fail) {
@@ -197,7 +201,44 @@ function checkMap(file, map, globals, factions, index, fail) {
   });
 }
 
-const assemble = (globals, factions, maps) => {
+/** Semantic checks for one AI personality file (specs/05 §4.1). */
+function checkAi(file, ai, factions, fail) {
+  const expected = basename(file, ".yaml");
+  if (ai.id !== expected) fail(file, "/id", "invalid-value", `id ${ai.id} differs from file name ${expected}`);
+  const faction = factions.find((f) => f.id === ai.faction);
+  if (!faction) {
+    fail(file, "/faction", "unknown-reference", `unknown faction ${ai.faction}`);
+    return;
+  }
+  const dozer = faction.types.find((t) => t.id === faction.dozer);
+  ai.buildOrder.forEach((id, i) => {
+    const type = faction.types.find((t) => t.id === id);
+    if (type?.category !== "building" || !dozer.builds?.includes(id)) {
+      fail(file, `/buildOrder/${i}`, "invalid-value", `${id} is not a building of faction ${ai.faction} built by its dozer`);
+    }
+  });
+  const produced = (id) => faction.types.some((t) => t.category === "building" && (t.produces ?? []).includes(id));
+  const taskForces = new Set();
+  ai.taskForces.forEach((taskForce, i) => {
+    if (taskForces.has(taskForce.id)) fail(file, `/taskForces/${i}/id`, "duplicate-id", `duplicate task force ${taskForce.id}`);
+    taskForces.add(taskForce.id);
+    for (const id of Object.keys(taskForce.units)) {
+      const type = faction.types.find((t) => t.id === id);
+      if (!type) {
+        fail(file, `/taskForces/${i}/units/${id}`, "unknown-reference", `unknown type ${id} for faction ${ai.faction}`);
+      } else if (type.category !== "unit" || type.weapon === undefined || !produced(id)) {
+        fail(file, `/taskForces/${i}/units/${id}`, "invalid-value", `${id} is not an armed unit produced by faction ${ai.faction}`);
+      }
+    }
+  });
+  ai.triggers.forEach((trigger, i) => {
+    if (!taskForces.has(trigger.taskForce)) {
+      fail(file, `/triggers/${i}/taskForce`, "unknown-reference", `unknown task force ${trigger.taskForce}`);
+    }
+  });
+}
+
+const assemble = (globals, factions, maps, ai) => {
   const weaponList = factions.flatMap((f) => f.weapons);
   const typeList = [
     ...globals.commonTypes.map((t) => ({ t, faction: -1 })),
@@ -265,6 +306,22 @@ const assemble = (globals, factions, maps) => {
         faction: factions.findIndex((f) => f.id === s.faction),
         hq: s.hq,
         dozerCenti: s.dozerCenti,
+      })),
+    })),
+    ai: ai.map((a) => ({
+      id: a.id,
+      faction: factions.findIndex((f) => f.id === a.faction),
+      harvesters: a.harvesters,
+      defenseRadiusCenti: a.defenseRadiusCenti,
+      buildOrder: types(a.buildOrder),
+      taskForces: a.taskForces.map((tf) => ({
+        id: tf.id,
+        units: Object.entries(tf.units).map(([id, count]) => [typeIndex.get(id), count]),
+      })),
+      triggers: a.triggers.map((t) => ({
+        taskForce: a.taskForces.findIndex((tf) => tf.id === t.taskForce),
+        weight: t.weight,
+        minTick: t.minTick,
       })),
     })),
   };

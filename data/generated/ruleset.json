@@ -1362,5 +1362,329 @@
         }
       ]
     }
+  ],
+  "ai": [
+    {
+      "id": "ukraine-balanced",
+      "faction": 0,
+      "harvesters": 3,
+      "defenseRadiusCenti": 2000,
+      "buildOrder": [
+        11,
+        12,
+        13,
+        11,
+        14,
+        15,
+        11,
+        15
+      ],
+      "taskForces": [
+        {
+          "id": "infantry",
+          "units": [
+            [
+              2,
+              4
+            ],
+            [
+              3,
+              2
+            ]
+          ]
+        },
+        {
+          "id": "mechanized",
+          "units": [
+            [
+              5,
+              2
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        },
+        {
+          "id": "armor",
+          "units": [
+            [
+              6,
+              2
+            ],
+            [
+              5,
+              1
+            ]
+          ]
+        },
+        {
+          "id": "fires",
+          "units": [
+            [
+              7,
+              1
+            ],
+            [
+              6,
+              1
+            ],
+            [
+              3,
+              2
+            ]
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "taskForce": 0,
+          "weight": 50,
+          "minTick": 0
+        },
+        {
+          "taskForce": 1,
+          "weight": 40,
+          "minTick": 2700
+        },
+        {
+          "taskForce": 2,
+          "weight": 40,
+          "minTick": 4500
+        },
+        {
+          "taskForce": 3,
+          "weight": 20,
+          "minTick": 6300
+        }
+      ]
+    },
+    {
+      "id": "ukraine-rush",
+      "faction": 0,
+      "harvesters": 2,
+      "defenseRadiusCenti": 1500,
+      "buildOrder": [
+        11,
+        13,
+        12,
+        14,
+        11
+      ],
+      "taskForces": [
+        {
+          "id": "rifles",
+          "units": [
+            [
+              2,
+              5
+            ]
+          ]
+        },
+        {
+          "id": "raid",
+          "units": [
+            [
+              4,
+              2
+            ],
+            [
+              2,
+              2
+            ]
+          ]
+        },
+        {
+          "id": "hunters",
+          "units": [
+            [
+              3,
+              2
+            ],
+            [
+              4,
+              1
+            ]
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "taskForce": 0,
+          "weight": 60,
+          "minTick": 0
+        },
+        {
+          "taskForce": 1,
+          "weight": 50,
+          "minTick": 1800
+        },
+        {
+          "taskForce": 2,
+          "weight": 30,
+          "minTick": 2700
+        }
+      ]
+    },
+    {
+      "id": "russia-balanced",
+      "faction": 1,
+      "harvesters": 3,
+      "defenseRadiusCenti": 2000,
+      "buildOrder": [
+        25,
+        26,
+        27,
+        25,
+        28,
+        29,
+        25,
+        29
+      ],
+      "taskForces": [
+        {
+          "id": "infantry",
+          "units": [
+            [
+              16,
+              6
+            ],
+            [
+              17,
+              2
+            ]
+          ]
+        },
+        {
+          "id": "mechanized",
+          "units": [
+            [
+              19,
+              2
+            ],
+            [
+              16,
+              4
+            ]
+          ]
+        },
+        {
+          "id": "armor",
+          "units": [
+            [
+              20,
+              3
+            ],
+            [
+              19,
+              1
+            ]
+          ]
+        },
+        {
+          "id": "fires",
+          "units": [
+            [
+              21,
+              1
+            ],
+            [
+              20,
+              2
+            ]
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "taskForce": 0,
+          "weight": 50,
+          "minTick": 0
+        },
+        {
+          "taskForce": 1,
+          "weight": 40,
+          "minTick": 2700
+        },
+        {
+          "taskForce": 2,
+          "weight": 40,
+          "minTick": 4500
+        },
+        {
+          "taskForce": 3,
+          "weight": 20,
+          "minTick": 6300
+        }
+      ]
+    },
+    {
+      "id": "russia-rush",
+      "faction": 1,
+      "harvesters": 2,
+      "defenseRadiusCenti": 1500,
+      "buildOrder": [
+        25,
+        27,
+        26,
+        28,
+        25
+      ],
+      "taskForces": [
+        {
+          "id": "rifles",
+          "units": [
+            [
+              16,
+              6
+            ]
+          ]
+        },
+        {
+          "id": "raid",
+          "units": [
+            [
+              18,
+              2
+            ],
+            [
+              16,
+              3
+            ]
+          ]
+        },
+        {
+          "id": "hunters",
+          "units": [
+            [
+              17,
+              3
+            ],
+            [
+              18,
+              1
+            ]
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "taskForce": 0,
+          "weight": 60,
+          "minTick": 0
+        },
+        {
+          "taskForce": 1,
+          "weight": 50,
+          "minTick": 1800
+        },
+        {
+          "taskForce": 2,
+          "weight": 30,
+          "minTick": 2700
+        }
+      ]
+    }
   ]
 }
