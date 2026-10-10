@@ -63,6 +63,8 @@ export interface SkirmishDebug {
   setCameraTarget(x: number, y: number): void;
   command(command: SimCommand): void;
   stateHash(): Promise<string>;
+  /** Command panel render calls so far (spec §6.7, #140). */
+  uiRenders(): number;
   /** renderer.info.render.calls of the last frame. */
   drawCalls(): number;
   resetFrameStats(): void;

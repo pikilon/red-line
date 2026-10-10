@@ -36,7 +36,12 @@ import {
   type SkirmishClient,
 } from "../sim/skirmishClient";
 import { MAX_SPEED } from "../sim/workerHandler";
-import { commandButtons, createCommandPanel } from "../ui/commandPanel";
+import {
+  commandButtons,
+  createCommandPanel,
+  type PanelInput,
+  samePanelInput,
+} from "../ui/commandPanel";
 import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
 import { createResourceBar } from "../ui/resourceBar";
@@ -156,9 +161,11 @@ export function startSkirmish(params: SkirmishOptions): void {
     }),
     { seed, mapId, viewer, speed, debug },
   );
+  let uiRenders = 0;
   const commandPanel = createCommandPanel(document.body, {
     onConstruct: (kind) => {
       placementKind = kind;
+      refreshOverlay();
     },
     onProduce: (kind) => {
       const building = selectedProductionBuilding(kind);
@@ -254,10 +261,14 @@ export function startSkirmish(params: SkirmishOptions): void {
       placementKind: () => placementKind,
       exitPlacement: () => {
         placementKind = null;
+        refreshOverlay();
       },
       player: () => controlled,
       command: (command) => interact.command(command),
-      onSelectionChange: (ids) => hud.setSelectedCount(ids.size),
+      onSelectionChange: (ids) => {
+        hud.setSelectedCount(ids.size);
+        refreshOverlay();
+      },
       debug,
       setControlledPlayer,
       toggleReveal,
@@ -276,12 +287,43 @@ export function startSkirmish(params: SkirmishOptions): void {
       interact.setViewer(viewer);
     }
     setHudPlayer();
+    refreshOverlay();
   }
 
   /** Applies the debug-only F3 reveal toggle (§6.5). */
   function toggleReveal(): void {
     viewer = viewer === OBSERVER ? controlled : OBSERVER;
     interact.setViewer(viewer);
+  }
+
+  /** Last command panel input, to skip renders that would change nothing. */
+  let lastPanel: PanelInput | null = null;
+
+  /** Refreshes the DOM overlay; called on events only, never per frame
+   *  (spec §6.7, #140). */
+  function refreshOverlay(): void {
+    resourceBar.render(next);
+    outcome.render(next === null ? null : outcomeText(next, controlled));
+    const queue = next === null ? null : selectedQueue();
+    const panel: PanelInput = {
+      buttons:
+        next === null
+          ? []
+          : commandButtons({
+              selected: selectedEntities(),
+              ownEntities: next.entities.filter(
+                (entity) => entity.owner === controlled,
+              ),
+              credits: next.credits,
+              queue,
+            }),
+      queue,
+      placing: placementKind,
+    };
+    if (lastPanel !== null && samePanelInput(lastPanel, panel)) return;
+    lastPanel = panel;
+    uiRenders++;
+    commandPanel.render(panel.buttons, panel.queue, panel.placing);
   }
 
   /** Positions and tints the footprint ghost while placing (spec §6.5). */
@@ -318,6 +360,7 @@ export function startSkirmish(params: SkirmishOptions): void {
     // Only the first snapshot of a controlled player re-centres the camera.
     if (!ready) centreOnOwnHq(snapshot);
     start();
+    refreshOverlay();
   });
   interact.ready.then(
     (message) => {
@@ -351,25 +394,6 @@ export function startSkirmish(params: SkirmishOptions): void {
     }
     updatePlacementGhost();
     fogOverlay?.update(fog);
-    resourceBar.render(next);
-    outcome.render(next === null ? null : outcomeText(next, controlled));
-    if (next === null) {
-      commandPanel.render([], null, placementKind);
-    } else {
-      const queue = selectedQueue();
-      commandPanel.render(
-        commandButtons({
-          selected: selectedEntities(),
-          ownEntities: next.entities.filter(
-            (entity) => entity.owner === controlled,
-          ),
-          credits: next.credits,
-          queue,
-        }),
-        queue,
-        placementKind,
-      );
-    }
     renderer.render(scene, camera);
     drawCalls = renderer.info.render.calls;
   }
@@ -378,6 +402,7 @@ export function startSkirmish(params: SkirmishOptions): void {
   if (debug) {
     const api: SkirmishDebug = {
       isReady: () => ready,
+      uiRenders: () => uiRenders,
       mode: () => "skirmish",
       tick: () => next?.tick ?? 0,
       controlledPlayer: () => controlled,

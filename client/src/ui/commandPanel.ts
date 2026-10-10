@@ -22,6 +22,38 @@ export interface CommandButton {
   action: "construct" | "produce";
 }
 
+/** What one command panel render shows (spec §6.7). */
+export interface PanelInput {
+  buttons: CommandButton[];
+  queue: QueueState | null;
+  placing: number | null;
+}
+
+/** True when rendering `b` would show exactly what `a` showed (spec §6.7). */
+export function samePanelInput(a: PanelInput, b: PanelInput): boolean {
+  if (a.placing !== b.placing || a.buttons.length !== b.buttons.length)
+    return false;
+  const sameButtons = a.buttons.every((button, i) => {
+    const other = b.buttons[i];
+    return (
+      other !== undefined &&
+      button.typeIndex === other.typeIndex &&
+      button.label === other.label &&
+      button.cost === other.cost &&
+      button.enabled === other.enabled &&
+      button.action === other.action
+    );
+  });
+  if (!sameButtons) return false;
+  if (a.queue === null || b.queue === null) return a.queue === b.queue;
+  return (
+    a.queue.building === b.queue.building &&
+    a.queue.headPermille === b.queue.headPermille &&
+    a.queue.items.length === b.queue.items.length &&
+    a.queue.items.every((item, i) => item === b.queue?.items[i])
+  );
+}
+
 /** Arguments for `commandButtons` (spec §6.6). */
 export interface CommandPanelArgs {
   /** Own entities currently selected. */

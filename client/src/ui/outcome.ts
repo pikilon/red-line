@@ -1,6 +1,6 @@
 import { t } from "../i18n";
 import type { MatchSnapshot } from "../sim/matchSnapshot";
-import { appendDiv } from "./dom";
+import { appendDiv, setText } from "./dom";
 
 /** Returns the outcome text for `player`, or null while the match is ongoing (spec §6.6). */
 export function outcomeText(
@@ -22,8 +22,8 @@ export function createOutcomeOverlay(root: HTMLElement): {
   element.hidden = true;
   return {
     render(text) {
-      element.textContent = text ?? "";
-      element.hidden = text === null;
+      setText(element, text ?? "");
+      if (element.hidden !== (text === null)) element.hidden = text === null;
     },
   };
 }
