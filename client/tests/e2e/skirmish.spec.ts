@@ -399,6 +399,52 @@ test("AC-03-64: shows placement feedback", async ({ page }) => {
   await expect(plantButton).toHaveAttribute("aria-pressed", "false");
 });
 
+test("AC-03-65: keeps the command panel stable under a held click", async ({
+  page,
+}) => {
+  await bootDebug(page, "debug=1&speed=4");
+  const dozerKind = await kindOf(page, "ua-dozer");
+  const dozer = await entityOf(page, 0, dozerKind);
+  if (dozer === null) throw new Error("missing ua-dozer");
+  await clickTiles(page, dozer.x, dozer.y);
+  const plantButton = page.locator(
+    '#command-panel button[data-type="ua-power-plant"]',
+  );
+  await expect(plantButton).toBeEnabled();
+
+  const mutations = await page.evaluate(
+    () =>
+      new Promise<number>((resolve) => {
+        const panel = document.getElementById("command-panel");
+        if (panel === null) throw new Error("missing #command-panel");
+        let count = 0;
+        const observer = new MutationObserver((records) => {
+          count += records.length;
+        });
+        observer.observe(panel, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          characterData: true,
+        });
+        setTimeout(() => {
+          observer.disconnect();
+          resolve(count);
+        }, 500);
+      }),
+  );
+  expect(mutations).toBe(0);
+
+  // A human click spans several frames.
+  const box = await plantButton.boundingBox();
+  if (box === null) throw new Error("panel button is not rendered");
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(200);
+  await page.mouse.up();
+  await expect(plantButton).toHaveAttribute("aria-pressed", "true");
+});
+
 test("AC-03-57: produces and cancels through the UI", async ({ page }) => {
   // At speed 1 the two buildings take 10 s of sim time each (spec §6.7).
   test.setTimeout(120_000);
