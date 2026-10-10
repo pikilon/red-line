@@ -199,4 +199,85 @@ describe("command panel", () => {
     // The queue is only consulted for a producing building.
     expect(RULES.maxQueue).toBe(9);
   });
+
+  it("AC-03-51: reads the permille progress of the match snapshot", () => {
+    // §5.15: snapshot progress is permille and a complete building is exactly
+    // 1000, so `build_ticks * 100` is never the completeness threshold.
+    const HQ = 10;
+    const PERMILLE_FULL = 1000;
+    // The HQ has build_ticks 0: only the permille total makes it complete.
+    const unfinishedHq = entity({
+      id: 4,
+      owner: 0,
+      kind: HQ,
+      flags: ENTITY_FLAGS.underConstruction,
+      progress: 900,
+    });
+    const dozer = entity({ id: 1, owner: 0, kind: DOZER });
+    const powerPlant = entity({
+      id: 2,
+      owner: 0,
+      kind: POWER_PLANT,
+      progress: PERMILLE_FULL,
+    });
+    const barracks = entity({
+      id: 3,
+      owner: 0,
+      kind: BARRACKS,
+      progress: PERMILLE_FULL,
+    });
+
+    // The complete power plant satisfies the barracks requirement.
+    const construct = commandButtons({
+      selected: [dozer],
+      ownEntities: [dozer, powerPlant, unfinishedHq],
+      credits: 700,
+      queue: null,
+    });
+    expect(construct.map((button) => button.enabled)).toEqual([
+      true,
+      false,
+      true,
+      false,
+      false,
+    ]);
+
+    // The complete barracks at the permille total offers its produce buttons.
+    const produce = commandButtons({
+      selected: [barracks],
+      ownEntities: [barracks],
+      credits: 5000,
+      queue: { building: 3, headPermille: 0, items: [] },
+    });
+    expect(produce.map((button) => button.typeIndex)).toEqual([
+      RIFLEMAN,
+      STUGNA_TEAM,
+    ]);
+
+    // Below the permille total the building is still under construction, even
+    // when its build_ticks are 0 (the HQ) or just one permille short.
+    expect(
+      commandButtons({
+        selected: [unfinishedHq],
+        ownEntities: [unfinishedHq],
+        credits: 5000,
+        queue: { building: 4, headPermille: 0, items: [] },
+      }),
+    ).toEqual([]);
+    const almostBarracks = entity({
+      id: 5,
+      owner: 0,
+      kind: BARRACKS,
+      flags: ENTITY_FLAGS.underConstruction,
+      progress: 999,
+    });
+    expect(
+      commandButtons({
+        selected: [almostBarracks],
+        ownEntities: [almostBarracks],
+        credits: 5000,
+        queue: { building: 5, headPermille: 0, items: [] },
+      }),
+    ).toEqual([]);
+  });
 });
