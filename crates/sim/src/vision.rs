@@ -1,10 +1,10 @@
 //! Per-player visibility, exploration and entity visibility (P2-07, spec §5.4,
 //! §5.12).
 
-use crate::entity::{EntityId, NEUTRAL, PlayerId};
+use crate::entity::{EntityId, Ghost, NEUTRAL, PlayerId};
 use crate::map::{Cell, cell_of};
 use crate::nav::footprint_cells;
-use crate::rules::fx_centi;
+use crate::rules::{Category, TypeId, fx_centi};
 use crate::world::World;
 
 const HALF_TILE: i64 = 32768;
@@ -54,6 +54,65 @@ impl World {
                 *explored |= visible;
             }
         }
+    }
+
+    /// Memory phase (§5.7 step 9, §5.12): every enemy building with a visible
+    /// footprint cell is recorded, then every ghost whose entity no longer
+    /// exists is forgotten as soon as its footprint is visible again.
+    pub(crate) fn update_memory(&mut self) {
+        for index in 0..self.players.len() {
+            let player_id = self.players[index].id;
+            let mut recorded = Vec::new();
+            for entity in &self.entities {
+                if entity.owner == player_id {
+                    continue;
+                }
+                let Some(site) = &entity.site else {
+                    continue;
+                };
+                if self.rules.ty(entity.kind).category != Category::Building {
+                    continue;
+                }
+                if !self.footprint_seen(index, entity.kind, site.origin) {
+                    continue;
+                }
+                recorded.push((
+                    entity.id,
+                    Ghost {
+                        kind: entity.kind,
+                        owner: entity.owner,
+                        origin: site.origin,
+                    },
+                ));
+            }
+            let forgotten: Vec<EntityId> = self.players[index]
+                .ghosts
+                .iter()
+                .filter(|&(&id, ghost)| {
+                    self.entity(id).is_none()
+                        && self.footprint_seen(index, ghost.kind, ghost.origin)
+                })
+                .map(|(&id, _)| id)
+                .collect();
+            let player = &mut self.players[index];
+            for (id, ghost) in recorded {
+                player.ghosts.insert(id, ghost);
+            }
+            for id in forgotten {
+                player.ghosts.remove(&id);
+            }
+        }
+    }
+
+    /// Whether any footprint cell of `kind` at `origin` is currently visible to
+    /// the player at `index`.
+    fn footprint_seen(&self, index: usize, kind: TypeId, origin: Cell) -> bool {
+        let player = &self.players[index];
+        footprint_cells(origin, self.rules.ty(kind).footprint)
+            .iter()
+            .any(|&cell| {
+                self.terrain.in_bounds(cell) && player.visible[self.terrain.index(cell) as usize]
+            })
     }
 
     /// Marks every cell of `player`'s map as explored. Unknown players are

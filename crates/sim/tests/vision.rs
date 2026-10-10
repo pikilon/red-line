@@ -1,6 +1,6 @@
 //! AC-03-11 and AC-03-12: vision phase, fog queries and entity visibility.
 
-use sim::entity::OBSERVER;
+use sim::entity::{Ghost, OBSERVER};
 use sim::fixed::FxVec2;
 use sim::map::{Cell, MapGrid};
 use sim::rules::{Ruleset, fx_centi};
@@ -73,4 +73,50 @@ fn ac_03_12_entity_visibility() {
             entity.owner
         );
     }
+}
+
+#[test]
+fn ac_03_35_last_seen_buildings() {
+    let mut world = World::sandbox(test_rules(), MapGrid::open(40, 24), &[0, 0]);
+    assert_eq!(world.place_building(1, 3, Cell { x: 20, y: 10 }, true), 0);
+    assert_eq!(world.spawn(0, 7, at(1650, 1150)), 1);
+
+    // The dozer sees the enemy power plant and remembers it.
+    world.step();
+    assert!(world.is_entity_visible(0, 0));
+    assert_eq!(
+        world.player(0).unwrap().ghosts().get(&0),
+        Some(&Ghost {
+            kind: 3,
+            owner: 1,
+            origin: Cell { x: 20, y: 10 },
+        })
+    );
+
+    // Out of sight the entity is hidden but the ghost stays.
+    world.enqueue(Command::Move {
+        units: vec![1],
+        target: at(250, 1150),
+    });
+    for _ in 0..80 {
+        world.step();
+    }
+    assert!(!world.is_entity_visible(0, 0));
+    assert!(world.player(0).unwrap().ghosts().contains_key(&0));
+
+    // Destroyed while unseen: the entity is gone and the ghost stays.
+    world.set_hp(0, 0);
+    world.step();
+    assert!(world.entity(0).is_none());
+    assert!(world.player(0).unwrap().ghosts().contains_key(&0));
+
+    // Seen again, the stale ghost is forgotten.
+    world.enqueue(Command::Move {
+        units: vec![1],
+        target: at(1650, 1150),
+    });
+    for _ in 0..80 {
+        world.step();
+    }
+    assert!(world.player(0).unwrap().ghosts().is_empty());
 }
