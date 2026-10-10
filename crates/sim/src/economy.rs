@@ -133,7 +133,7 @@ impl World {
     }
 
     /// True if `player` owns a complete building of every kind in `kinds`.
-    fn requirements_met(&self, player: PlayerId, kinds: &[TypeId]) -> bool {
+    pub(crate) fn requirements_met(&self, player: PlayerId, kinds: &[TypeId]) -> bool {
         kinds.iter().all(|&kind| {
             self.entities.iter().any(|e| {
                 e.owner == player
@@ -312,17 +312,8 @@ impl World {
         {
             return;
         }
-        let ty = self.rules.ty(kind);
-        let (cost, size, requires) = (ty.cost, ty.footprint, ty.requires.clone());
-        let Some(owner) = self.players.get(usize::from(player)) else {
-            return;
-        };
-        if ty.category != Category::Building
-            || owner.credits < cost
-            || !self.requirements_met(player, &requires)
-            || !self.footprint_free(origin, size)
-            || !self.footprint_explored(player, origin, size)
-        {
+        let cost = self.rules.ty(kind).cost;
+        if !self.can_construct(player, kind, origin) {
             return;
         }
         self.players[usize::from(player)].credits -= cost;
@@ -335,7 +326,12 @@ impl World {
     }
 
     /// Every footprint cell is explored by `player`.
-    fn footprint_explored(&self, player: PlayerId, origin: Cell, size: [u16; 2]) -> bool {
+    pub(crate) fn footprint_explored(
+        &self,
+        player: PlayerId,
+        origin: Cell,
+        size: [u16; 2],
+    ) -> bool {
         let Some(owner) = self.player(player) else {
             return false;
         };
