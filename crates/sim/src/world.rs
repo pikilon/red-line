@@ -422,6 +422,7 @@ impl World {
 
     pub fn step(&mut self) {
         self.apply_commands();
+        self.update_economy();
         self.move_units();
         self.separate_units();
         self.arrive_on_contact();
@@ -433,20 +434,19 @@ impl World {
     /// Phase 1: applies pending commands in enqueue order.
     fn apply_commands(&mut self) {
         for (player, command) in std::mem::take(&mut self.pending) {
-            if let Command::Move { units, target } = command {
-                self.apply_move(player, &units, target);
+            match command {
+                Command::Move { units, target } => self.apply_move(player, &units, target),
+                Command::Produce { building, kind } => self.apply_produce(player, building, kind),
+                Command::Cancel { building } => self.apply_cancel(player, building),
+                Command::Rally { building, target } => self.apply_rally(player, building, target),
+                _ => {}
             }
         }
     }
 
     /// Only units owned by `player` receive the order.
-    fn apply_move(&mut self, player: PlayerId, units: &[EntityId], target: FxVec2) {
-        let max_x = i32::from(self.nav.width()) * 65536 - 1;
-        let max_y = i32::from(self.nav.height()) * 65536 - 1;
-        let mut target = FxVec2::new(
-            Fx::from_raw(target.x.raw().clamp(0, max_x)),
-            Fx::from_raw(target.y.raw().clamp(0, max_y)),
-        );
+    pub(crate) fn apply_move(&mut self, player: PlayerId, units: &[EntityId], target: FxVec2) {
+        let mut target = self.clamp_to_map(target);
         let cell = cell_of(target);
         if !self.nav.is_passable(cell) {
             let Some(found) = self.nav.nearest_passable(cell) else {
@@ -474,6 +474,16 @@ impl World {
                 }
             }
         }
+    }
+
+    /// Phase 1 move step 1: clamps `target` into the map bounds.
+    pub(crate) fn clamp_to_map(&self, target: FxVec2) -> FxVec2 {
+        let max_x = i32::from(self.nav.width()) * 65536 - 1;
+        let max_y = i32::from(self.nav.height()) * 65536 - 1;
+        FxVec2::new(
+            Fx::from_raw(target.x.raw().clamp(0, max_x)),
+            Fx::from_raw(target.y.raw().clamp(0, max_y)),
+        )
     }
 
     /// Phase 2: moves every unit with a move order one tick along its field.
@@ -636,7 +646,7 @@ impl World {
     }
 
     /// Index of `id` in `entities` (binary search).
-    fn index_of(&self, id: EntityId) -> Option<usize> {
+    pub(crate) fn index_of(&self, id: EntityId) -> Option<usize> {
         self.entities.binary_search_by_key(&id, |e| e.id).ok()
     }
 

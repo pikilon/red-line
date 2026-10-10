@@ -101,7 +101,15 @@ fn ac_03_16_queue_rules() {
         produce(&mut world, factory, 9);
     }
     world.step();
-    let len = |w: &World| w.entity(factory).unwrap().site.as_ref().unwrap().queue.len();
+    let len = |w: &World| {
+        w.entity(factory)
+            .unwrap()
+            .site
+            .as_ref()
+            .unwrap()
+            .queue
+            .len()
+    };
     assert_eq!((len(&world), world.player(0).unwrap().credits), (3, 850));
     world.enqueue(Command::Cancel { building: factory });
     world.step();
@@ -187,5 +195,8 @@ fn ac_03_18_rally_point() {
             goal: Cell { x: 15, y: 20 },
         }
     );
-    assert_eq!(world.entity(power).unwrap().site.as_ref().unwrap().rally, None);
+    assert_eq!(
+        world.entity(power).unwrap().site.as_ref().unwrap().rally,
+        None
+    );
 }

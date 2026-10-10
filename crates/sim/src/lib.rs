@@ -2,6 +2,7 @@
 
 use wasm_bindgen::prelude::wasm_bindgen;
 
+pub mod economy;
 pub mod entity;
 pub mod fixed;
 pub mod flow;
