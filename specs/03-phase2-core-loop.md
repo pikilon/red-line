@@ -1606,7 +1606,9 @@ step 11 gives progress 600 after step 11 (one increment per tick), both dozers
 **AC-03-23 Free unit on completion.** Given the AC-03-19 setup followed by
 `place_depot((20, 2), 300)` and `Construct` kind 4 (`center`) at origin `(10, 6)`,
 then after step 30 the center is complete, credits are 600 and a truck (kind 8)
-of player 0 exists at raw `(753664, 557056)` (`exit_cell` `(11, 8)`) with
+of player 0 exists at raw `(766771, 557056)` (spawned at the `exit_cell` `(11, 8)`
+centre `(753664, 557056)` in the economy phase, then one step of speed 20 east
+toward the depot in the same tick's movement phase) with
 `Harvest { order_id: 2, depot: <depot id>, center: None, phase: ToDepot,
 timer: 0 }`.
 

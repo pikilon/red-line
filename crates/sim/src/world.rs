@@ -446,6 +446,7 @@ impl World {
                 } => self.apply_construct(player, dozer, kind, origin),
                 Command::Resume { units, building } => self.apply_resume(player, &units, building),
                 Command::Stop { units } => self.apply_stop(player, &units),
+                Command::Harvest { units, depot } => self.apply_harvest(player, &units, depot),
                 _ => {}
             }
         }
@@ -503,6 +504,7 @@ impl World {
                     goal,
                 } => self.step_move(index, order_id, target, goal),
                 Order::Build { order_id, building } => self.step_build(index, order_id, building),
+                Order::Harvest { .. } => self.step_harvest(index),
                 _ => {}
             }
         }
@@ -701,14 +703,13 @@ impl World {
 
     /// Phase 5: removes flow fields no move order uses any more.
     fn drop_unused_fields(&mut self) {
-        let used: BTreeSet<CellIndex> = self
-            .entities
-            .iter()
-            .filter_map(|unit| match unit.order {
+        let used: BTreeSet<CellIndex> = (0..self.entities.len())
+            .filter_map(|index| match self.entities[index].order {
                 Order::Move { goal, .. } => Some(self.nav.index(goal)),
                 Order::Build { building, .. } => {
                     self.build_goal(building).map(|goal| self.nav.index(goal))
                 }
+                Order::Harvest { .. } => self.harvest_goal(index).map(|goal| self.nav.index(goal)),
                 _ => None,
             })
             .collect();
