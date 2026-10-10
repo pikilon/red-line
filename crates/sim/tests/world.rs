@@ -134,3 +134,62 @@ fn ac_03_09_skirmish_setup() {
         Err(error) => assert_eq!(error, SimError::UnknownMap { id: "nope".into() }),
     }
 }
+
+#[test]
+fn ac_03_34_deaths_release_cells() {
+    let mut world = World::sandbox(test_rules(), MapGrid::open(16, 16), &[0, 0]);
+    assert_eq!(world.place_building(0, 3, Cell { x: 10, y: 6 }, true), 0);
+    assert_eq!(world.spawn(0, 9, at(1450, 650)), 1);
+
+    world.set_hp(0, 0);
+    world.set_hp(1, 0);
+    world.step();
+
+    // The building releases its footprint and both ids are gone for good.
+    assert!(world.entities().is_empty());
+    assert!(world.map().is_passable(Cell { x: 10, y: 6 }));
+    assert_eq!(world.spawn(0, 9, at(1450, 650)), 2);
+}
+
+#[test]
+fn ac_03_36_victory_and_draw() {
+    let mut world = World::skirmish(test_rules(), "test-field", 1).unwrap();
+    world.set_hp(4, 0);
+    world.step();
+
+    // Player 1 lost its HQ (id 4) but keeps its dozer (id 5).
+    assert!(world.player(1).unwrap().defeated);
+    assert!(world.entity(5).is_some());
+    assert_eq!(world.outcome(), Outcome::Winner(0));
+
+    // Once the match is over, pending commands are discarded.
+    let orders = world.next_order_id();
+    world.enqueue_as(
+        0,
+        Command::Move {
+            units: vec![3],
+            target: at(350, 1150),
+        },
+    );
+    world.step();
+    assert_eq!(world.next_order_id(), orders);
+    assert_eq!(
+        world.entity(3).unwrap().order,
+        Order::Idle { last_order_id: 0 }
+    );
+
+    // Both HQs down in the same step: nobody is left, so it is a draw.
+    let mut draw = World::skirmish(test_rules(), "test-field", 1).unwrap();
+    draw.set_hp(2, 0);
+    draw.set_hp(4, 0);
+    draw.step();
+    assert!(draw.player(0).unwrap().defeated);
+    assert!(draw.player(1).unwrap().defeated);
+    assert_eq!(draw.outcome(), Outcome::Draw);
+
+    // A sandbox never changes its outcome while victory is disabled.
+    let mut sandbox = World::sandbox(test_rules(), MapGrid::open(16, 16), &[0, 0]);
+    sandbox.spawn(0, 9, at(250, 250));
+    sandbox.step();
+    assert_eq!(sandbox.outcome(), Outcome::Ongoing);
+}
