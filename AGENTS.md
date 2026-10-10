@@ -11,13 +11,20 @@ not write code: agents implement, the owner reviews quality.
   functional change, load and execute `.agents/skills/sdd-workflow/SKILL.md`.
 * **Project decisions** (architecture, factions, licensing, model tiers) live in
   `docs/decisions.md`. Read it before proposing anything that contradicts it.
+* **Doubts about how the original game behaves** (pathfinding, production,
+  economy, damage, AI...): do not guess; delegate to the subagent
+  defined in `.agents/agents/generals-precedent/agent.md` and cite its note in
+  the spec or issue. Never read the original source in the main conversation.
 * **State lives in the repository and GitHub, never in a chat.** Work is taken
   from GitHub issues; see `.agents/skills/task-intake/SKILL.md`.
 
 ## Repository Language
 
-* Every message, text, comment, commit, issue and PR must be in English.
-  Player-facing strings go through i18n files, never hardcoded.
+* Everything written into the repository or GitHub (code, comments, specs,
+  commits, issues, PRs, subagent notes) must be in English. Player-facing
+  strings go through i18n files, never hardcoded.
+* Chat with the owner is in Spanish: summaries, questions and confirmation
+  requests are written in Spanish, quoting identifiers and paths unchanged.
 
 ## GitHub Identity
 
@@ -61,6 +68,7 @@ Before reading or editing files under a subtree, read its `AGENTS.md` if present
 ## Configuration Portability
 
 * Rules live only in `AGENTS.md` files and `.agents/skills/<name>/SKILL.md`.
+  Subagent definitions live in `.agents/agents/<name>/agent.md`.
 * Creating `CLAUDE.md`, `GEMINI.md`, `.cursor/`, `copilot-instructions.md` or
   any agent-specific rule file is forbidden. A `CLAUDE.md` would make Claude
   Code ignore this file.
@@ -69,5 +77,7 @@ Before reading or editing files under a subtree, read its `AGENTS.md` if present
 
 * Run `scripts/doctor.sh` when a tool seems missing.
 * Package scripts run with `node --run <script>`, never `npm run`.
-* Before completing any change, load and execute
-  `.agents/skills/verification/SKILL.md`.
+* Before completing any change, delegate verification to the subagent defined
+  in `.agents/agents/verification-runner/agent.md`; it executes
+  `.agents/skills/verification/SKILL.md`. The main model only acts on its
+  report and never runs the checks itself.

@@ -59,5 +59,5 @@ goals or actual code, report the conflict instead of silently preserving it.
 * Confirm the selected layer covers all affected work and no unrelated work.
 * Measure `AGENTS.md` size changes when altering always-loaded context.
 * Validate every new or changed skill with the available skill validator.
-* Load and execute `.agents/skills/verification/SKILL.md` before closing the
-  configuration change.
+* Delegate verification to `.agents/agents/verification-runner/agent.md` before
+  closing the configuration change.
