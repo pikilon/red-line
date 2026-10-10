@@ -1,14 +1,17 @@
-//! Weapons, targeting and attack orders (P2-12, spec §5.11).
+//! Weapons, targeting, attack orders and projectiles (P2-12/P2-13, spec §5.11).
 //!
 //! The combat phase resets every `last_target`, then each entity with a weapon
 //! (ascending id, skipping the dead, incomplete buildings and unpowered
 //! defenses) decrements its cooldown, picks a target — the ordered one when it
 //! is valid and in range, the nearest valid one otherwise — and fires: an
-//! instant hit when `projectile_ticks == 0`, a projectile otherwise. P2-13 adds
-//! the projectile impact and splash branches of §5.11 steps 3 and 4.
+//! instant hit when `projectile_ticks == 0`, a projectile otherwise. Due
+//! projectiles then hit in creation order and are removed: a plain projectile
+//! damages only its target wherever it moved, a splash one damages every enemy
+//! of the shooter inside its radius around the impact point frozen at fire time
+//! (no friendly fire).
 
-use crate::entity::{NEUTRAL, Order, Projectile};
-use crate::fixed::Fx;
+use crate::entity::{NEUTRAL, Order, PlayerId, Projectile};
+use crate::fixed::{Fx, FxVec2};
 use crate::rules::{TypeId, WeaponDef, WeaponId, fx_centi};
 use crate::world::World;
 
@@ -22,8 +25,8 @@ pub fn damage_dealt(base: u32, modifier_percent: u32) -> u32 {
 }
 
 impl World {
-    /// Spec §5.11 combat phase: `last_target` reset, then one fire step per
-    /// entity in ascending id order.
+    /// Spec §5.11 combat phase: `last_target` reset, one fire step per entity in
+    /// ascending id order, then the due projectiles hit and leave.
     pub(crate) fn update_combat(&mut self) {
         for entity in &mut self.entities {
             entity.last_target = None;
@@ -31,6 +34,7 @@ impl World {
         for index in 0..self.entities.len() {
             self.fire(index);
         }
+        self.impact_projectiles();
     }
 
     /// One entity's combat step: cooldown, target selection and fire.
@@ -57,11 +61,14 @@ impl World {
         };
         let target = self.entities[target_index].id;
         if weapon.projectile_ticks == 0 {
-            // Instant branch of §5.11 step 4. P2-13 adds the splash branch
-            // (`splash_centi > 0`); no rule carries both splash and an instant
-            // projectile.
+            // Instant branch of §5.11 step 4, with the target's position as the
+            // impact point for splash.
             if weapon.splash_centi == 0 {
                 self.apply_hit(target_index, &weapon);
+            } else {
+                let impact = self.entities[target_index].pos;
+                let owner = self.entities[index].owner;
+                self.apply_splash(owner, &weapon, impact);
             }
         } else {
             let projectile = Projectile {
@@ -98,6 +105,42 @@ impl World {
         let index = usize::try_from(self.rules.ty(kind).weapon).ok()?;
         let weapon = self.rules.weapons.get(index)?.clone();
         Some((WeaponId::try_from(index).ok()?, weapon))
+    }
+
+    /// Weapon definition of a weapon id; `None` out of range.
+    fn weapon_def(&self, weapon: WeaponId) -> Option<WeaponDef> {
+        self.rules.weapons.get(usize::from(weapon)).cloned()
+    }
+
+    /// §5.11 step 3: every projectile whose `impact_tick` is the current tick
+    /// hits, in creation order, and is removed; the rest stay airborne.
+    fn impact_projectiles(&mut self) {
+        let tick = self.tick;
+        let mut flying = Vec::with_capacity(self.projectiles.len());
+        for projectile in std::mem::take(&mut self.projectiles) {
+            if projectile.impact_tick == tick {
+                self.resolve_projectile(&projectile);
+            } else {
+                flying.push(projectile);
+            }
+        }
+        self.projectiles = flying;
+    }
+
+    /// §5.11 step 4: a plain projectile hits only its target, when it still
+    /// exists with `hp > 0`; a splash projectile hits every enemy of the
+    /// shooter inside the radius around its frozen impact point.
+    fn resolve_projectile(&mut self, projectile: &Projectile) {
+        let Some(weapon) = self.weapon_def(projectile.weapon) else {
+            return;
+        };
+        if weapon.splash_centi == 0 {
+            if let Some(index) = self.index_of(projectile.target) {
+                self.apply_hit(index, &weapon);
+            }
+        } else {
+            self.apply_splash(projectile.owner, &weapon, projectile.impact);
+        }
     }
 
     /// The ordered target when it exists, is valid and in range; otherwise the
@@ -156,5 +199,27 @@ impl World {
             .modifier(weapon.damage_type, self.rules.ty(target.kind).armor);
         let damage = damage_dealt(weapon.damage, modifier);
         self.entities[target_index].hp = self.entities[target_index].hp.saturating_sub(damage);
+    }
+
+    /// §5.11 step 4 splash: every entity with `hp > 0` that belongs to neither
+    /// the shooter nor `NEUTRAL` and lies within `splash_centi` of the impact
+    /// point loses the modified damage (no friendly fire).
+    fn apply_splash(&mut self, owner: PlayerId, weapon: &WeaponDef, impact: FxVec2) {
+        let radius = fx_centi(weapon.splash_centi);
+        for index in 0..self.entities.len() {
+            let entity = &self.entities[index];
+            if entity.hp == 0
+                || entity.owner == owner
+                || entity.owner == NEUTRAL
+                || self.entity_distance(impact, entity) > radius
+            {
+                continue;
+            }
+            let modifier = self
+                .rules
+                .modifier(weapon.damage_type, self.rules.ty(entity.kind).armor);
+            let damage = damage_dealt(weapon.damage, modifier);
+            self.entities[index].hp = self.entities[index].hp.saturating_sub(damage);
+        }
     }
 }
