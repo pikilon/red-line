@@ -3,7 +3,7 @@
 use sim::fixed::FxVec2;
 use sim::map::{Cell, MapGrid};
 use sim::rules::{Ruleset, fx_centi};
-use sim::world::{Command, Order, World};
+use sim::world::{Command, Order, Outcome, SimError, World};
 
 fn test_rules() -> Ruleset {
     Ruleset::from_json(include_str!("fixtures/test-rules.json")).unwrap()
@@ -59,4 +59,78 @@ fn ac_03_07_sandbox_ownership_and_speed() {
     });
     world.step();
     assert!(matches!(world.entity(0).unwrap().order, Order::Move { .. }));
+}
+
+#[test]
+fn ac_03_09_skirmish_setup() {
+    let world = World::skirmish(test_rules(), "test-field", 1).unwrap();
+
+    // Two players, both faction 0 (`alpha`), starting credits.
+    assert_eq!(world.players().len(), 2);
+    for player in world.players() {
+        assert_eq!(player.credits, 1000);
+        assert_eq!(player.faction, 0);
+    }
+
+    // Entities in normative id order: depots, then per start HQ and dozer.
+    let depot0 = world.entity(0).unwrap();
+    assert_eq!(depot0.kind, 1);
+    assert_eq!(depot0.owner, 255);
+    assert_eq!(depot0.hp, 300);
+    assert_eq!((depot0.pos.x.raw(), depot0.pos.y.raw()), (589824, 327680));
+
+    let depot1 = world.entity(1).unwrap();
+    assert_eq!(depot1.kind, 1);
+    assert_eq!(depot1.owner, 255);
+    assert_eq!((depot1.pos.x.raw(), depot1.pos.y.raw()), (2031616, 1245184));
+
+    let hq0 = world.entity(2).unwrap();
+    assert_eq!(hq0.kind, 2);
+    assert_eq!(hq0.owner, 0);
+    assert_eq!(hq0.hp, 1000);
+    assert!(hq0.site.as_ref().unwrap().complete);
+    assert_eq!((hq0.pos.x.raw(), hq0.pos.y.raw()), (229376, 753664));
+
+    let dozer0 = world.entity(3).unwrap();
+    assert_eq!(dozer0.kind, 7);
+    assert_eq!(dozer0.owner, 0);
+    assert_eq!((dozer0.pos.x.raw(), dozer0.pos.y.raw()), (425984, 753664));
+
+    let hq1 = world.entity(4).unwrap();
+    assert_eq!(hq1.kind, 2);
+    assert_eq!(hq1.owner, 1);
+    assert_eq!(hq1.site.as_ref().unwrap().origin, Cell { x: 35, y: 11 });
+    assert_eq!((hq1.pos.x.raw(), hq1.pos.y.raw()), (2392064, 819200));
+
+    let dozer1 = world.entity(5).unwrap();
+    assert_eq!(dozer1.kind, 7);
+    assert_eq!(dozer1.owner, 1);
+    assert_eq!((dozer1.pos.x.raw(), dozer1.pos.y.raw()), (2195456, 819200));
+
+    assert_eq!(world.next_entity_id(), 6);
+
+    // Navigation blocks footprints and the terrain rectangle.
+    for cell in [
+        Cell { x: 2, y: 10 },
+        Cell { x: 4, y: 12 },
+        Cell { x: 8, y: 4 },
+        Cell { x: 9, y: 5 },
+        Cell { x: 19, y: 6 },
+    ] {
+        assert!(!world.map().is_passable(cell), "nav should block {cell:?}");
+    }
+    assert!(!world.terrain().is_passable(Cell { x: 19, y: 6 }));
+    assert!(world.terrain().is_passable(Cell { x: 2, y: 10 }));
+    assert!(world.terrain().is_passable(Cell { x: 8, y: 4 }));
+
+    assert_eq!(world.outcome(), Outcome::Ongoing);
+
+    // Initial visibility from the owned entities.
+    assert_eq!(world.fog(0, Cell { x: 3, y: 11 }), 2);
+    assert_eq!(world.fog(0, Cell { x: 36, y: 12 }), 0);
+
+    match World::skirmish(test_rules(), "nope", 1) {
+        Ok(_) => panic!("an unknown map must fail"),
+        Err(error) => assert_eq!(error, SimError::UnknownMap { id: "nope".into() }),
+    }
 }

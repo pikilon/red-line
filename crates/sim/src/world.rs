@@ -146,6 +146,69 @@ impl World {
         world
     }
 
+    /// AC-03-09, spec §5.6: builds a skirmish from `map_id`: terrain from the
+    /// blocked rectangles, one player per start, every depot, then each start's
+    /// HQ and dozer in normative id order, victory enabled and initial
+    /// visibility. `seed` is reserved for later phases and does not affect the
+    /// Phase 2 state.
+    pub fn skirmish(rules: Ruleset, map_id: &str, _seed: u64) -> Result<World, SimError> {
+        let map = rules
+            .map(map_id)
+            .cloned()
+            .ok_or_else(|| SimError::UnknownMap {
+                id: map_id.to_string(),
+            })?;
+
+        let mut terrain = MapGrid::open(map.width, map.height);
+        for rect in &map.blocked {
+            for y in rect[1]..=rect[3] {
+                for x in rect[0]..=rect[2] {
+                    terrain.set_blocked(Cell { x, y }, true);
+                }
+            }
+        }
+
+        let factions: Vec<FactionId> = map.starts.iter().map(|start| start.faction).collect();
+        let mut world = World::sandbox(rules, terrain, &factions);
+
+        for depot in &map.depots {
+            world.place_depot(
+                Cell {
+                    x: depot.origin[0],
+                    y: depot.origin[1],
+                },
+                depot.amount,
+            );
+        }
+
+        for (index, start) in map.starts.iter().enumerate() {
+            let player = index as PlayerId;
+            let faction = &world.rules.factions[usize::from(start.faction)];
+            let (hq, dozer) = (faction.hq, faction.dozer);
+            world.place_building(
+                player,
+                hq,
+                Cell {
+                    x: start.hq[0],
+                    y: start.hq[1],
+                },
+                true,
+            );
+            world.spawn(
+                player,
+                dozer,
+                FxVec2::new(
+                    fx_centi(start.dozer_centi[0]),
+                    fx_centi(start.dozer_centi[1]),
+                ),
+            );
+        }
+
+        world.victory_enabled = true;
+        world.refresh_visibility();
+        Ok(world)
+    }
+
     pub fn tech_slice(seed: u64, unit_count: u32) -> Result<World, SimError> {
         if unit_count > MAX_UNITS {
             return Err(SimError::TooManyUnits {
