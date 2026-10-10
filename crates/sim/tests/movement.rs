@@ -206,17 +206,17 @@ fn ac_04_01_group_move_destination_spreading() {
     );
 }
 
-/// AC-04-02, spec §5.1: near-to-far sorting gives the unit closest to the
-/// target the perimeter goal cell closest to the building centre.
+/// AC-04-02, spec §5.1: units are allocated near-to-far, so when two
+/// candidates share cell `(34, 34)` the nearer unit claims the first cell of
+/// the ring search even though it was spawned and listed second.
 #[test]
 fn ac_04_02_near_to_far_allocation_priority() {
     let mut world = World::new(MapGrid::tech_slice());
-    let near = world.spawn_unit_at(cell_center_raw(25, 34));
-    let far = world.spawn_unit_at(cell_center_raw(10, 34));
-    let target = cell_center_raw(34, 34);
+    let far = world.spawn_unit_at(raw(1753088, 2260992));
+    let near = world.spawn_unit_at(raw(1769472, 2260992));
     world.enqueue(Command::Move {
-        units: vec![near, far],
-        target,
+        units: vec![far, near],
+        target: raw(2260992, 2260992),
     });
     world.step();
 
@@ -229,19 +229,8 @@ fn ac_04_02_near_to_far_allocation_priority() {
     let Order::Move { goal: far_goal, .. } = world.unit(far).unwrap().order else {
         panic!("the far unit should have a move order");
     };
-    assert!(
-        tile_distance_sq(cell_center_raw(near_goal.x, near_goal.y), target)
-            < tile_distance_sq(cell_center_raw(far_goal.x, far_goal.y), target),
-        "near goal {near_goal:?} is not closer to the building centre than far goal {far_goal:?}"
-    );
-}
-
-/// Squared tile distance from `pos` to `target`: integer only, so its ordering
-/// equals the ordering by `(pos - target).length()`.
-fn tile_distance_sq(pos: FxVec2, target: FxVec2) -> i64 {
-    let dx = i64::from(pos.x.raw() - target.x.raw());
-    let dy = i64::from(pos.y.raw() - target.y.raw());
-    (dx * dx + dy * dy) >> 32
+    assert_eq!(near_goal, Cell { x: 38, y: 30 });
+    assert_eq!(far_goal, Cell { x: 38, y: 31 });
 }
 
 fn cell_center_raw(x: i32, y: i32) -> FxVec2 {
