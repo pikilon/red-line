@@ -224,3 +224,108 @@ fn ac_03_30_attack_order() {
         Order::Idle { last_order_id: 0 }
     );
 }
+
+#[test]
+fn ac_03_31_area_projectiles() {
+    let mut world = sandbox();
+    let mortar = world.spawn(0, 11, at(550, 1050));
+    let b1 = world.spawn(1, 9, at(1350, 1050));
+    let b2 = world.spawn(1, 9, at(1450, 1050));
+    let b3 = world.spawn(1, 9, at(1350, 1250));
+    let dozer = world.spawn(0, 7, at(1350, 950));
+    assert_eq!((mortar, b1, b2, b3, dozer), (0, 1, 2, 3, 4));
+
+    // The mortar (projectile_ticks 4) fires on step 1 with the impact point
+    // frozen at the target's fire-time position.
+    world.step();
+    assert_eq!(world.projectiles().len(), 1);
+    let projectile = &world.projectiles()[0];
+    assert_eq!(projectile.target, b1);
+    assert_eq!(projectile.impact, at(1350, 1050));
+    assert_eq!(projectile.impact_tick, 4);
+
+    // The shell is airborne through step 4: nobody takes damage yet.
+    steps(&mut world, 3);
+    for soldier in [b1, b2, b3] {
+        assert_eq!(world.entity(soldier).unwrap().hp, 50);
+    }
+    assert_eq!(world.entity(dozer).unwrap().hp, 100);
+
+    // Step 5: splash 150 centi reaches B1 and B2 but not B3, and the shooter's
+    // own dozer takes no friendly fire.
+    world.step();
+    assert_eq!(world.entity(b1).unwrap().hp, 35);
+    assert_eq!(world.entity(b2).unwrap().hp, 35);
+    assert_eq!(world.entity(b3).unwrap().hp, 50);
+    assert_eq!(world.entity(dozer).unwrap().hp, 100);
+    assert!(world.projectiles().is_empty());
+}
+
+#[test]
+fn ac_03_32_guided_projectiles() {
+    let mut world = sandbox();
+    world.spawn(0, 12, at(550, 550));
+    let soldier = world.spawn(1, 9, at(1150, 550));
+    world.enqueue_as(
+        1,
+        Command::Move {
+            units: vec![soldier],
+            target: at(1150, 2050),
+        },
+    );
+    world.step();
+    assert_eq!(world.projectiles().len(), 1);
+    assert_eq!(world.projectiles()[0].target, soldier);
+    assert_eq!(world.projectiles()[0].impact_tick, 3);
+
+    // The missile homes on the moving soldier: still airborne after step 3,
+    // it lands on step 4 wherever the soldier is by then.
+    steps(&mut world, 2);
+    assert_eq!(world.projectiles().len(), 1);
+    assert_eq!(world.entity(soldier).unwrap().hp, 50);
+    world.step();
+    assert!(world.projectiles().is_empty());
+    assert_eq!(world.entity(soldier).unwrap().hp, 40);
+
+    // A projectile whose target is gone at impact time hits nothing.
+    let mut world = sandbox();
+    let launcher = world.spawn(0, 12, at(550, 550));
+    let soldier = world.spawn(1, 9, at(1150, 550));
+    world.enqueue_as(
+        1,
+        Command::Move {
+            units: vec![soldier],
+            target: at(1150, 2050),
+        },
+    );
+    world.step();
+    world.set_hp(soldier, 0);
+    steps(&mut world, 3);
+    assert!(world.entity(soldier).is_none());
+    assert_eq!(world.entities().len(), 1);
+    assert_eq!(world.entity(launcher).unwrap().hp, 80);
+    assert!(world.projectiles().is_empty());
+}
+
+#[test]
+fn ac_03_33_powered_defenses() {
+    // Powered: the requires_power turret fires its instant gun on step 1.
+    let mut world = sandbox();
+    world.place_building(0, 3, Cell { x: 0, y: 0 }, true);
+    world.place_building(0, 6, Cell { x: 10, y: 10 }, true);
+    let soldier = world.spawn(1, 9, at(1450, 1050));
+    world.step();
+    assert_eq!(world.entity(soldier).unwrap().hp, 38);
+
+    // Two factories (4 each) plus the turret (6) consume 14 against 10
+    // produced, so the unpowered turret holds fire.
+    let mut world = sandbox();
+    world.place_building(0, 3, Cell { x: 0, y: 0 }, true);
+    world.place_building(0, 6, Cell { x: 10, y: 10 }, true);
+    world.place_building(0, 5, Cell { x: 20, y: 0 }, true);
+    world.place_building(0, 5, Cell { x: 24, y: 0 }, true);
+    let soldier = world.spawn(1, 9, at(1450, 1050));
+    steps(&mut world, 20);
+    assert_eq!(world.player(0).unwrap().power(), (10, 14));
+    assert_eq!(world.entity(soldier).unwrap().hp, 50);
+}
