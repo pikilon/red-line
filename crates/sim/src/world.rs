@@ -20,6 +20,10 @@ pub const UNIT_SPEED: Fx = Fx::from_raw(13107);
 pub const SEPARATION_DISTANCE: Fx = Fx::from_raw(32768);
 pub const MAX_SEPARATION_PUSH: Fx = Fx::from_raw(6553);
 pub const ARRIVAL_CONTACT: Fx = Fx::from_raw(39321);
+/// Spec 04 §4: per-axis clamp of a unit's offset from the group centroid.
+pub const MAX_CENTROID_OFFSET: Fx = Fx::from_raw(393216);
+/// Spec 04 §5.1: largest ring searched for an unclaimed goal cell.
+const MAX_GOAL_SEARCH_RING: i32 = 20;
 
 /// Commands issued by a player, applied at the start of the next step (§5.8).
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -541,15 +545,14 @@ impl World {
 
     /// Only units owned by `player` receive the order.
     pub(crate) fn apply_move(&mut self, player: PlayerId, units: &[EntityId], target: FxVec2) {
-        let mut target = self.clamp_to_map(target);
-        let cell = cell_of(target);
-        if !self.nav.is_passable(cell) {
-            let Some(found) = self.nav.nearest_passable(cell) else {
-                return;
-            };
-            target = cell_center(found);
-        }
+        let target = self.clamp_to_map(target);
         let goal = cell_of(target);
+        if !self.nav.is_passable(goal) {
+            if self.nav.nearest_passable(goal).is_some() {
+                self.apply_spread_move(player, units, target);
+            }
+            return;
+        }
         let map = &self.nav;
         self.fields
             .entry(map.index(goal))
@@ -568,6 +571,69 @@ impl World {
                     entity.order = order;
                 }
             }
+        }
+    }
+
+    /// Spec 04 §5.1: a move into an impassable cell gives every commanded unit
+    /// its own goal: centroid offset, near-to-far order, ring search over the
+    /// cells not yet claimed by this command.
+    fn apply_spread_move(&mut self, player: PlayerId, units: &[EntityId], target: FxVec2) {
+        let order_id = self.next_order_id;
+        self.next_order_id += 1;
+        let commanded: Vec<usize> = units
+            .iter()
+            .filter_map(|&id| self.index_of(id))
+            .filter(|&index| {
+                let entity = &self.entities[index];
+                entity.owner == player && entity.site.is_none()
+            })
+            .collect::<BTreeSet<usize>>()
+            .into_iter()
+            .collect();
+        if commanded.is_empty() {
+            return;
+        }
+        let count = commanded.len() as i64;
+        let sum = commanded.iter().fold((0_i64, 0_i64), |(x, y), &index| {
+            let pos = self.entities[index].pos;
+            (x + i64::from(pos.x.raw()), y + i64::from(pos.y.raw()))
+        });
+        let centroid = ((sum.0 / count) as i32, (sum.1 / count) as i32);
+        let mut sorted = commanded;
+        sorted.sort_by_key(|&index| {
+            let pos = self.entities[index].pos;
+            let dx = i64::from(pos.x.raw() - target.x.raw());
+            let dy = i64::from(pos.y.raw() - target.y.raw());
+            (dx * dx + dy * dy, self.entities[index].id)
+        });
+        let limit = MAX_CENTROID_OFFSET.raw();
+        let mut claimed = BTreeSet::new();
+        for index in sorted {
+            let pos = self.entities[index].pos;
+            let dx = (pos.x.raw() - centroid.0).clamp(-limit, limit);
+            let dy = (pos.y.raw() - centroid.1).clamp(-limit, limit);
+            let dest = self.clamp_to_map(FxVec2::new(
+                Fx::from_raw(target.x.raw() + dx),
+                Fx::from_raw(target.y.raw() + dy),
+            ));
+            let candidate = cell_of(dest);
+            let goal = self
+                .nav
+                .ring_search(candidate, MAX_GOAL_SEARCH_RING, |c| !claimed.contains(&c))
+                .or_else(|| self.nav.nearest_passable(candidate));
+            let Some(goal) = goal else {
+                continue;
+            };
+            claimed.insert(goal);
+            let map = &self.nav;
+            self.fields
+                .entry(map.index(goal))
+                .or_insert_with(|| FlowField::compute(map, goal));
+            self.entities[index].order = Order::Move {
+                order_id,
+                target: cell_center(goal),
+                goal,
+            };
         }
     }
 
