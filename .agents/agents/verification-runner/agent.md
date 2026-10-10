@@ -24,7 +24,15 @@ Do not restate or second-guess its rules. Then return **only** the report below.
 * Capture command output to a temporary file outside the repository and read
   only the relevant lines (`grep`, `tail`); never paste full logs.
 * Run every applicable check even if an earlier one fails, so the report is
-  complete.
+  complete. Run one command at a time: never chain commands with `&&` or `;`,
+  and split the chained rows of the skill's table into separate commands, so the
+  report shows which one failed.
+* Look for skipped or weakened tests (`.skip`, `.only`, `#[ignore]`,
+  `test.fixme`, removed assertions in the diff) and state the result in Notes.
+  Never claim "no test skipped" without having searched.
+* If you rerun a command after correcting the environment, report both
+  attempts on its line (`FAILED (exit N), ok after <fix>`); never hide the
+  first failure.
 
 ## Report format (max ~25 lines)
 
@@ -33,12 +41,18 @@ instruction text into the report. Use exactly this shape:
 
 ```
 Verdict: PASS | FAIL
+
 Commands:
 * `<command>` — ok | FAILED (exit N) | skipped (<reason>)
+
 Failures:
 * `path/file.ext:Lline` — <error message, one line>. Cause: code | environment | unknown
-Notes: <skipped layers, missing tools, anything ambiguous>
+
+Notes: <skipped layers, missing tools, test-skip search result, anything ambiguous>
 ```
+
+Put a blank line between sections and each command on its own line. `Notes` is
+at most 3 lines: no stack traces, cache paths or narrative.
 
 * Omit `Failures:` when the verdict is PASS. Under `Failures:` list at most 5
   entries.
