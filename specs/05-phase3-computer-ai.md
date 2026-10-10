@@ -103,7 +103,9 @@ the index in `taskForces`; `units` pairs keep YAML key order.
 | `russia-balanced` | russia | full base, mixed forces, attacks from ~4 min |
 | `russia-rush` | russia | barracks first, cheap infantry/BRDM waves from ~2 min |
 
-Exact contents (normative for P3-01, tunable later by the balance issue):
+Starting contents for P3-01. The balance issue (P3-09) tunes them; AC-05-01 checks
+the assembly against the sources, not these numbers, and AC-05-03 keeps
+`ukraine-balanced`'s first build item and first task force.
 
 ```yaml
 # data/ai/ukraine-balanced.yaml
@@ -384,7 +386,8 @@ player order). With no AI attached behaviour is identical to v2.
 
 **AC-05-01 Personality sources build.** `node --run build:data` emits an `ai`
 array with the four builtin personalities in `globals.ai` order, with type
-indices and task-force indices as in §4.2; `ruleset.json` is regenerated.
+indices and task-force indices as in §4.2, equal to what the YAML sources
+say; `ruleset.json` is regenerated.
 
 **AC-05-02 Personality semantic checks.** Given a source set where a
 personality's `buildOrder` names a unit, a task force names a type of the other
@@ -495,7 +498,13 @@ reveal); with `?ai=off` it owns exactly one.
 **AC-05-22 Balance report.** `docs/balance/phase3-first-line.md` contains the
 tournament command, config, and summary table for 10 seeds over all four
 personality pairs; no pair has a side winning more than 70 % (non-draws).
-This criterion is checked by review, not CI.
+Tuning rules (amended 2026-10-11 by the owner after the first attempt):
+personalities are tuned first; a unit or weapon field changes by at most
+±25 % of its Phase 2 value; the D-10 identity holds (Ukraine units cost more
+and outrange or out-damage their Russian counterparts; Russia units are cheaper
+with equal or more hit points per credit; a scout never has more hit points
+than its faction's IFV); every stat change is listed in the report with its
+reason. This criterion is checked by review, not CI.
 
 ## 9. Traceability
 
