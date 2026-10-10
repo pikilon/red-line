@@ -97,6 +97,19 @@ impl MapGrid {
     /// each in row-major order, and returns the first passable cell.
     pub fn nearest_passable(&self, cell: Cell) -> Option<Cell> {
         let max_r = i32::from(self.width.max(self.height));
+        self.ring_search(cell, max_r, |_| true)
+    }
+
+    /// Spec 04 §5.1: visits the cells at Chebyshev distance `0..=max_r` from
+    /// `cell`, each ring row-major (`y` ascending, then `x` ascending; only the
+    /// two side cells of inner rows), and returns the first passable cell that
+    /// `accept` admits.
+    pub fn ring_search(
+        &self,
+        cell: Cell,
+        max_r: i32,
+        mut accept: impl FnMut(Cell) -> bool,
+    ) -> Option<Cell> {
         for r in 0..=max_r {
             for y in (cell.y - r)..=(cell.y + r) {
                 let full_row = (y - cell.y).abs() == r;
@@ -104,7 +117,7 @@ impl MapGrid {
                 let mut x = cell.x - r;
                 while x <= cell.x + r {
                     let candidate = Cell { x, y };
-                    if self.is_passable(candidate) {
+                    if self.is_passable(candidate) && accept(candidate) {
                         return Some(candidate);
                     }
                     x += step;

@@ -167,6 +167,76 @@ fn ac_02_16_group_arrives_separated() {
     }
 }
 
+/// AC-04-01, spec §5.1: a group move into an impassable `Block A` gives every
+/// commanded unit its own goal cell instead of collapsing the group onto the
+/// single cell `nearest_passable` returned.
+#[test]
+fn ac_04_01_group_move_destination_spreading() {
+    let mut world = World::new(MapGrid::tech_slice());
+    let mut units = Vec::new();
+    // Ten units in a cluster south of `Block A` (x 30..=37, y 30..=37).
+    for y in 25..=26 {
+        for x in 32..=36 {
+            units.push(world.spawn_unit_at(cell_center_raw(x, y)));
+        }
+    }
+    assert_eq!(units.len(), 10);
+    world.enqueue(Command::Move {
+        units: units.clone(),
+        target: cell_center_raw(34, 34),
+    });
+    world.step();
+
+    let mut goals = Vec::new();
+    for &id in &units {
+        let Order::Move { goal, .. } = world.unit(id).unwrap().order else {
+            panic!("unit {id} should have a move order");
+        };
+        assert!(
+            world.map().is_passable(goal),
+            "unit {id} got impassable goal {goal:?}"
+        );
+        goals.push(goal);
+    }
+    let claimed: std::collections::BTreeSet<Cell> = goals.iter().copied().collect();
+    assert_eq!(
+        claimed.len(),
+        10,
+        "expected 10 distinct goal cells, got {goals:?}"
+    );
+}
+
+/// AC-04-02, spec §5.1: units are allocated near-to-far, so when two
+/// candidates share cell `(34, 34)` the nearer unit claims the first cell of
+/// the ring search even though it was spawned and listed second.
+#[test]
+fn ac_04_02_near_to_far_allocation_priority() {
+    let mut world = World::new(MapGrid::tech_slice());
+    let far = world.spawn_unit_at(raw(1753088, 2260992));
+    let near = world.spawn_unit_at(raw(1769472, 2260992));
+    world.enqueue(Command::Move {
+        units: vec![far, near],
+        target: raw(2260992, 2260992),
+    });
+    world.step();
+
+    let Order::Move {
+        goal: near_goal, ..
+    } = world.unit(near).unwrap().order
+    else {
+        panic!("the near unit should have a move order");
+    };
+    let Order::Move { goal: far_goal, .. } = world.unit(far).unwrap().order else {
+        panic!("the far unit should have a move order");
+    };
+    assert_eq!(near_goal, Cell { x: 38, y: 30 });
+    assert_eq!(far_goal, Cell { x: 38, y: 31 });
+}
+
+fn cell_center_raw(x: i32, y: i32) -> FxVec2 {
+    raw((x << 16) + 32768, (y << 16) + 32768)
+}
+
 /// Fixture command: `(tick, unit_range_start, unit_range_end, target)`.
 type ScriptCommand = (u32, u32, u32, FxVec2);
 
