@@ -11,6 +11,10 @@ not write code: agents implement, the owner reviews quality.
   functional change, load and execute `.agents/skills/sdd-workflow/SKILL.md`.
 * **Project decisions** (architecture, factions, licensing, model tiers) live in
   `docs/decisions.md`. Read it before proposing anything that contradicts it.
+* **Doubts about how the original game behaves** (pathfinding, production,
+  economy, damage, AI...): do not guess; delegate to the subagent
+  defined in `.agents/agents/generals-precedent/agent.md` and cite its note in
+  the spec or issue. Never read the original source in the main conversation.
 * **State lives in the repository and GitHub, never in a chat.** Work is taken
   from GitHub issues; see `.agents/skills/task-intake/SKILL.md`.
 
@@ -61,6 +65,7 @@ Before reading or editing files under a subtree, read its `AGENTS.md` if present
 ## Configuration Portability
 
 * Rules live only in `AGENTS.md` files and `.agents/skills/<name>/SKILL.md`.
+  Subagent definitions live in `.agents/agents/<name>/agent.md`.
 * Creating `CLAUDE.md`, `GEMINI.md`, `.cursor/`, `copilot-instructions.md` or
   any agent-specific rule file is forbidden. A `CLAUDE.md` would make Claude
   Code ignore this file.
