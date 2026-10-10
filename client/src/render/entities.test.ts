@@ -1,5 +1,5 @@
 import { Color, type InstancedMesh, Matrix4, Quaternion, Vector3 } from "three";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { typeIndex } from "../rules";
 import { ENTITY_FLAGS, type EntityState, NEUTRAL } from "../sim/matchSnapshot";
 import { createEntityRenderer, OWNER_COLORS, SELECTED_COLOR } from "./entities";
@@ -83,5 +83,42 @@ describe("entity renderer", () => {
     expect(renderer.ghosts.count).toBe(1);
     expect(renderer.bars.count).toBe(2);
     expect(renderer.tracers.geometry.drawRange.count).toBe(2);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("rebuilds no id lookup Map per frame and keeps tracers", () => {
+    const renderer = createEntityRenderer(100);
+    const entities: EntityState[] = [
+      entity(0, 0, "ua-rifleman", 1, 2, 100),
+      entity(1, 1, "ru-rifleman", 3, 4, 90, {
+        flags: ENTITY_FLAGS.fired,
+        target: 0,
+      }),
+    ];
+    renderer.update(entities, new Set());
+    let maps = 0;
+    const NativeMap = Map;
+    vi.stubGlobal(
+      "Map",
+      class<K, V> extends NativeMap<K, V> {
+        constructor(entries?: Iterable<readonly [K, V]> | null) {
+          super(entries);
+          maps++;
+        }
+      },
+    );
+    renderer.update(entities, new Set());
+    vi.unstubAllGlobals();
+    expect(maps).toBe(0);
+    expect(renderer.tracers.geometry.drawRange.count).toBe(2);
+    const positions = renderer.tracers.geometry.getAttribute("position");
+    expect(positions.getX(1)).toBeCloseTo(1, 6);
+    expect(positions.getZ(1)).toBeCloseTo(2, 6);
+
+    renderer.update([entities[1] as EntityState], new Set());
+    expect(renderer.tracers.geometry.drawRange.count).toBe(0);
   });
 });
