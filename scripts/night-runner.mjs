@@ -43,6 +43,7 @@ export function readConfig(env) {
     confirmTimeoutSeconds: Number(env.RUNNER_CONFIRM_TIMEOUT_SECONDS ?? 60),
     issue: env.RUNNER_ISSUE ? Number(env.RUNNER_ISSUE) : null,
     autoMerge: env.RUNNER_AUTO_MERGE === "1",
+    paidConfirmed: env.RUNNER_PAID_CONFIRMED ?? "",
   };
 }
 
@@ -76,9 +77,15 @@ export function isPaid(config) {
   return config.provider !== LOCAL_PROVIDER;
 }
 
-// D-11: a paid model needs an interactive "yes" for this run; otherwise local.
+// D-11: the owner confirmed this exact paid provider/model for this run.
+export function isOwnerConfirmed(config) {
+  return isPaid(config) && config.paidConfirmed === `${config.provider}/${config.model}`;
+}
+
+// D-11: a paid model needs the owner's confirmation for this run (an exact
+// RUNNER_PAID_CONFIRMED match or an interactive "yes"); otherwise local.
 export async function resolveModel(config, ask) {
-  if (!isPaid(config)) return config;
+  if (!isPaid(config) || isOwnerConfirmed(config)) return config;
   const answer = await ask(
     `${config.provider}/${config.model} is a paid remote API. Type "yes" to use it for this run: `,
   );
@@ -332,6 +339,7 @@ async function main() {
   };
   const requested = readConfig(process.env);
   const config = await resolveModel(requested, askOnTerminal(requested.confirmTimeoutSeconds));
+  if (isOwnerConfirmed(config)) log("paid model confirmed by the owner for this run");
   if (config.model !== requested.model) log(`No confirmation for ${requested.model}; using local ${config.model}`);
   const until = deadline(new Date(), config.stopAt);
   log(`Starting with ${config.engine} ${config.provider}/${config.model}, stopping at ${until.toISOString()}`);

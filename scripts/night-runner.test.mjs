@@ -10,6 +10,7 @@ import {
   branchName,
   compactLog,
   deadline,
+  isOwnerConfirmed,
   isPaid,
   previousAttempts,
   processIssue,
@@ -89,6 +90,23 @@ test("night-runner: uses a paid model only after an interactive yes, else falls 
   let asked = false;
   await resolveModel(readConfig({}), async () => { asked = true; return "yes"; });
   assert.equal(asked, false);
+});
+
+test("night-runner: RUNNER_PAID_CONFIRMED skips the question only on an exact provider/model match", async () => {
+  const env = { RUNNER_PROVIDER: "deepseek-official", RUNNER_MODEL: "deepseek-flash" };
+  const asked = [];
+  const ask = async (question) => { asked.push(question); return "no"; };
+  const confirmed = await resolveModel(readConfig({ ...env, RUNNER_PAID_CONFIRMED: "deepseek-official/deepseek-flash" }), ask);
+  assert.equal(confirmed.model, "deepseek-flash");
+  assert.equal(asked.length, 0);
+  assert.equal(isOwnerConfirmed(readConfig({ ...env, RUNNER_PAID_CONFIRMED: "deepseek-official/deepseek-flash" })), true);
+  for (const value of ["deepseek-official/other", "other/deepseek-flash", "deepseek-official", "yes", ""]) {
+    const config = readConfig({ ...env, RUNNER_PAID_CONFIRMED: value });
+    assert.equal(isOwnerConfirmed(config), false);
+    assert.equal((await resolveModel(config, ask)).provider, "lmstudio");
+  }
+  assert.equal(asked.length, 5);
+  assert.equal(isOwnerConfirmed(readConfig({ RUNNER_PAID_CONFIRMED: "lmstudio/ornith-1.5-35b-a3b-mlx" })), false);
 });
 
 test("night-runner: builds the dsh and opencode invocations", () => {
