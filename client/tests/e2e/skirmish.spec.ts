@@ -439,6 +439,10 @@ test("AC-03-59: attacks with a right click", async ({ page }) => {
     .poll(() => entityCount(page, 1, tankKind), { timeout: 5000 })
     .toBeGreaterThan(0);
 
+  // The app boots centred on the own HQ; pan to the engagement so both units
+  // are on screen and clickable, as a player would before giving the order.
+  await debugCall(page, (api) => api.setCameraTarget(35.5, 63.5));
+
   const leopard = await entityOf(page, 0, leopardKind);
   if (leopard === null) throw new Error("missing ua-leopard-2a4");
   const tank = await entityOf(page, 1, tankKind);
