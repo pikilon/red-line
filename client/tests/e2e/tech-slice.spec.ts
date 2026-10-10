@@ -22,7 +22,7 @@ interface RedlineDebugView {
 type DebugWindow = Window & { __redline?: RedlineDebugView };
 
 async function bootDebug(page: Page, query: string): Promise<void> {
-  await page.goto(`/?debug=1${query}`);
+  await page.goto(`/?mode=tech-slice&debug=1${query}`);
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
@@ -226,7 +226,7 @@ test("AC-02-46: shows a performance panel only in debug mode", async ({
   await expect(page.locator("#perf-fps")).toHaveText("FPS 100");
   await expect(page.locator("#perf-p95")).toHaveText("p95 10.0 ms");
 
-  await page.goto("/");
+  await page.goto("/?mode=tech-slice");
   await expect(page.locator("#hud-tick")).toHaveText(/\S/, { timeout: 10_000 });
   await expect(page.locator("#perf-panel")).toHaveCount(0);
 });

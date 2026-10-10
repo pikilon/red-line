@@ -14,7 +14,7 @@ const MEASURED_FRAMES = 300;
 
 test("AC-02-44: keeps 60 fps with 500 moving units @perf", async ({ page }) => {
   test.setTimeout(60_000);
-  await page.goto("/?debug=1");
+  await page.goto("/?mode=tech-slice&debug=1");
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,

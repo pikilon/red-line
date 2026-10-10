@@ -1,6 +1,7 @@
 {
   "hud.selectedCount": "Selected: {count}",
   "hud.tick": "Tick {tick}",
+  "hud.player": "Player {player}: {faction}",
   "perf.fps": "FPS {fps}",
   "perf.p95": "p95 {ms} ms",
   "ui.credits": "Credits {credits}",
