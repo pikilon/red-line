@@ -42,8 +42,8 @@ description: Step-by-step Spec-Driven Development. Use when implementing a featu
 
 ## 4. Refactor
 
-* Clean up without breaking tests, then load and execute
-  `.agents/skills/verification/SKILL.md`.
+* Clean up without breaking tests, then delegate verification to
+  `.agents/agents/verification-runner/agent.md`.
 
 ## Close-out checklist
 
