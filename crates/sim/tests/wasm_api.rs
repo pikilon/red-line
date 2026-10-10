@@ -2,7 +2,7 @@ use sim::wasm_api::Sim;
 
 #[test]
 fn ac_01_05_api_version_is_one() {
-    assert_eq!(sim::api_version(), 2);
+    assert_eq!(sim::api_version(), 3);
 }
 
 #[test]
@@ -64,4 +64,35 @@ fn ac_03_39_wasm_api_v2_natively() {
     sim.step();
     assert_eq!(sim.snapshot_for(0)[5], 1);
     assert_eq!(sim.snapshot_for(0)[6], 0);
+}
+
+#[test]
+fn ac_05_20_wasm_api_v3() {
+    assert_eq!(sim::api_version(), 3);
+
+    let mut sim = Sim::skirmish(1, "first-line").unwrap();
+    assert!(sim.attach_ai(1, "russia-balanced").is_ok());
+    assert!(sim.attach_ai(1, "ukraine-balanced").is_err());
+
+    sim.step_n(900);
+
+    let rules = sim::rules::Ruleset::builtin();
+    let buildings: Vec<i32> = rules
+        .types
+        .iter()
+        .enumerate()
+        .filter(|(_, ty)| ty.category == sim::rules::Category::Building)
+        .map(|(index, _)| index as i32)
+        .collect();
+    const MATCH_HEADER_LEN: usize = 8;
+    const ENTITY_STRIDE: usize = 9;
+    let data = sim.snapshot_for(255);
+    let count = data[7] as usize;
+    let owned = (0..count)
+        .filter(|&row| {
+            let base = MATCH_HEADER_LEN + row * ENTITY_STRIDE;
+            data[base + 1] == 1 && buildings.contains(&data[base + 2])
+        })
+        .count();
+    assert!(owned > 1, "player 1 owns {owned} buildings");
 }

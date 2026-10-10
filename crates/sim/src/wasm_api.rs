@@ -1,7 +1,8 @@
-//! `wasm_bindgen` facade over the simulation (API version 2).
+//! `wasm_bindgen` facade over the simulation (API version 3).
 
 use wasm_bindgen::prelude::wasm_bindgen;
 
+use crate::ai::{Ai, step_with_ai};
 use crate::fixed::{Fx, FxVec2};
 use crate::hash::state_hash;
 use crate::map::Cell;
@@ -22,6 +23,10 @@ fn error_text(error: SimError) -> String {
 #[wasm_bindgen]
 pub struct Sim {
     world: World,
+    /// Seed the world was built with; the AI rng seed (§5.7).
+    seed: u64,
+    /// Attached AIs, ascending player order (§5.7).
+    ais: Vec<Ai>,
 }
 
 #[wasm_bindgen]
@@ -30,7 +35,11 @@ impl Sim {
     #[wasm_bindgen(constructor)]
     pub fn new(seed: u32, unit_count: u32) -> Result<Sim, String> {
         let world = World::tech_slice(u64::from(seed), unit_count).map_err(error_text)?;
-        Ok(Sim { world })
+        Ok(Sim {
+            world,
+            seed: u64::from(seed),
+            ais: Vec::new(),
+        })
     }
 
     /// Skirmish scenario (§5.6) on the builtin ruleset; the error text contains
@@ -38,7 +47,22 @@ impl Sim {
     pub fn skirmish(seed: u32, map_id: &str) -> Result<Sim, String> {
         let world =
             World::skirmish(Ruleset::builtin(), map_id, u64::from(seed)).map_err(error_text)?;
-        Ok(Sim { world })
+        Ok(Sim {
+            world,
+            seed: u64::from(seed),
+            ais: Vec::new(),
+        })
+    }
+
+    /// Attaches an AI with the given personality to `player` (seed = the Sim
+    /// seed). Errors with `Ai::new`'s message. A player may have at most one
+    /// AI; attaching again replaces it (§5.7).
+    pub fn attach_ai(&mut self, player: u8, personality: &str) -> Result<(), String> {
+        let ai = Ai::new(&self.world, player, personality, self.seed)?;
+        self.ais.retain(|existing| existing.player() != player);
+        self.ais.push(ai);
+        self.ais.sort_by_key(Ai::player);
+        Ok(())
     }
 
     pub fn map_width(&self) -> u32 {
@@ -191,12 +215,12 @@ impl Sim {
     }
 
     pub fn step(&mut self) {
-        self.world.step();
+        step_with_ai(&mut self.world, &mut self.ais);
     }
 
     pub fn step_n(&mut self, n: u32) {
         for _ in 0..n {
-            self.world.step();
+            step_with_ai(&mut self.world, &mut self.ais);
         }
     }
 

@@ -36,6 +36,7 @@ export interface SkirmishSimLike {
   step(): void;
   state_hash_hex(): string;
   enable_debug_commands(): void;
+  attach_ai(player: number, personality: string): void;
   snapshot_for(viewer: number): Int32Array;
   fog_for(viewer: number): Uint8Array;
   command_move(
@@ -81,6 +82,8 @@ export interface WorkerHandler {
 }
 
 export const MAX_SPEED = 8;
+/** Skirmish AI opponent player (spec 05 §7). */
+const AI_PLAYER = 1;
 
 type Dispatch = (sim: SkirmishSimLike, command: SimCommand) => void;
 
@@ -271,6 +274,14 @@ export function createWorkerHandler(
       speed = Math.min(MAX_SPEED, Math.max(1, message.speed));
       if (message.debug) {
         created.enable_debug_commands();
+      }
+      if (message.ai != null) {
+        try {
+          created.attach_ai(AI_PLAYER, message.ai);
+        } catch (error) {
+          post({ type: "error", detail: String(error) });
+          return;
+        }
       }
       attachSkirmish(created);
     },

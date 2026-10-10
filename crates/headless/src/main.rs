@@ -80,6 +80,6 @@ mod tests {
 
     #[test]
     fn banner_reports_the_sim_api_version() {
-        assert_eq!(banner(), "red-line headless (sim api v2)");
+        assert_eq!(banner(), "red-line headless (sim api v3)");
     }
 }

@@ -49,6 +49,8 @@ import { createSelectionBox } from "../ui/selectionBox";
 
 export const DEFAULT_MAP = "first-line";
 export const DEFAULT_SEED = 1;
+/** Opponent personality attached to player 1 by default (spec 05 §7). */
+export const DEFAULT_AI = "russia-balanced";
 export const MAX_SPEED_SKIRMISH = MAX_SPEED;
 
 /** Default entity renderer capacity; AC-03-62 and AC-03-63 stay below it. */
@@ -116,6 +118,9 @@ export function startSkirmish(params: SkirmishOptions): void {
   const seed = readInt(params, "seed", DEFAULT_SEED);
   const mapId = params.get("map") ?? DEFAULT_MAP;
   const debug = params.get("debug") === "1";
+  // `?ai=off` keeps the Phase 2 hot-seat behaviour (spec 05 §7).
+  const aiParam = params.get("ai");
+  const ai = aiParam === "off" ? null : (aiParam ?? DEFAULT_AI);
   const speed = debug
     ? Math.min(MAX_SPEED_SKIRMISH, Math.max(1, readInt(params, "speed", 1)))
     : 1;
@@ -160,7 +165,7 @@ export function startSkirmish(params: SkirmishOptions): void {
     new Worker(new URL("../sim/sim.worker.ts", import.meta.url), {
       type: "module",
     }),
-    { seed, mapId, viewer, speed, debug },
+    { seed, mapId, viewer, speed, debug, ai },
   );
   let uiRenders = 0;
   const commandPanel = createCommandPanel(document.body, {
