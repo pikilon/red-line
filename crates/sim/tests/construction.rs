@@ -263,7 +263,8 @@ fn ac_03_23_free_unit_on_completion() {
     assert_eq!(world.player(0).unwrap().credits, 600);
     let truck = world.entity(center + 1).unwrap();
     assert_eq!((truck.kind, truck.owner), (8, 0));
-    assert_eq!((truck.pos.x.raw(), truck.pos.y.raw()), (753664, 557056));
+    // Spawned at the exit cell (11, 8) centre, then one harvest step east.
+    assert_eq!((truck.pos.x.raw(), truck.pos.y.raw()), (766771, 557056));
     assert_eq!(
         truck.order,
         Order::Harvest {
