@@ -18,10 +18,13 @@ import {
   isSelectAllShortcut,
   rectFromDrag,
   type ScreenPoint,
+  type ScreenRect,
 } from "./selection";
 
 export interface SkirmishControllerOptions {
   canvas: HTMLCanvasElement;
+  /** Drag feedback; shown while the pointer is dragged, hidden on release. */
+  selectionBox: { show(rect: ScreenRect | null): void };
   /** Receives keydown/keyup; the window, so keys work without focusing the canvas. */
   keyTarget: Pick<Window, "addEventListener">;
   camera: OrthographicCamera;
@@ -169,6 +172,13 @@ export function createSkirmishController(
 
   canvas.addEventListener("pointermove", (event) => {
     lastPointer = { x: event.clientX, y: event.clientY };
+    if (dragStart !== null && isDrag(dragStart, lastPointer)) {
+      options.selectionBox.show(rectFromDrag(dragStart, lastPointer));
+    }
+  });
+  canvas.addEventListener("pointercancel", () => {
+    dragStart = null;
+    options.selectionBox.show(null);
   });
   canvas.addEventListener("pointerdown", (event) => {
     lastPointer = { x: event.clientX, y: event.clientY };
@@ -181,6 +191,7 @@ export function createSkirmishController(
     const end = { x: event.clientX, y: event.clientY };
     const start = dragStart;
     dragStart = null;
+    options.selectionBox.show(null);
     if (isDrag(start, end)) {
       setSelection(
         boxSelect(
