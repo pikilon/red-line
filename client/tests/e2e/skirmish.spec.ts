@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Locator, type Page, test } from "@playwright/test";
 
 interface Point {
   x: number;
@@ -165,4 +165,334 @@ test("AC-03-61: shows victory and defeat", async ({ page }) => {
     .poll(() => debugCall(page, (api) => api.controlledPlayer()))
     .toBe(1);
   await expect(page.locator("#outcome")).toHaveText("Defeat");
+});
+
+/** Fixed-point scale, `client/src/sim/fixed.ts` (spec §3). */
+const FX_ONE = 65536;
+/** Entity flags, `client/src/sim/matchSnapshot.ts` (spec §5.15). */
+const FLAG_MOVING = 1;
+const FLAG_UNDER_CONSTRUCTION = 2;
+
+interface OwnedKind {
+  owner: number;
+  kind: number;
+}
+
+interface CountArgs extends OwnedKind {
+  requireFlags: number;
+  forbidFlags: number;
+}
+
+/** Entities of an owner and kind, optionally filtered by flag bits. */
+function entityCount(
+  page: Page,
+  owner: number,
+  kind: number,
+  requireFlags = 0,
+  forbidFlags = 0,
+): Promise<number> {
+  return debugCall(
+    page,
+    (api, args: CountArgs) =>
+      api
+        .entities()
+        .filter(
+          (entity) =>
+            entity.owner === args.owner &&
+            entity.kind === args.kind &&
+            (entity.flags & args.requireFlags) === args.requireFlags &&
+            (entity.flags & args.forbidFlags) === 0,
+        ).length,
+    { owner, kind, requireFlags, forbidFlags },
+  );
+}
+
+/** The first entity of an owner and kind, or null. */
+function entityOf(
+  page: Page,
+  owner: number,
+  kind: number,
+): Promise<EntityView | null> {
+  return debugCall(
+    page,
+    (api, args: OwnedKind) =>
+      api
+        .entities()
+        .find(
+          (entity) => entity.owner === args.owner && entity.kind === args.kind,
+        ) ?? null,
+    { owner, kind },
+  );
+}
+
+/** Left click (or right click) on the page position of a tile point. */
+async function clickTiles(
+  page: Page,
+  x: number,
+  y: number,
+  button: "left" | "right" = "left",
+): Promise<void> {
+  const point = await debugCall(
+    page,
+    (api, tiles: Point) => api.worldToScreen(tiles.x, tiles.y),
+    { x, y },
+  );
+  await page.mouse.click(point.x, point.y, { button });
+}
+
+/** Clicks a panel button on its live box with a real mouse event. The AC-03-57
+ *  sequence must stay far inside the queued item's build time, and
+ *  `locator.click()` waits for two stable animation frames plus a hit-target
+ *  check, which a loaded runner can stretch past it. */
+async function clickButton(
+  page: Page,
+  locator: Locator,
+  button: "left" | "right" = "left",
+): Promise<void> {
+  const box = await locator.boundingBox();
+  if (box === null) throw new Error("panel button is not rendered");
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, {
+    button,
+  });
+}
+
+/** Sends a `construct` command for `dozer` (spec §5.8). */
+function constructAt(
+  page: Page,
+  dozer: number,
+  kind: number,
+  originX: number,
+  originY: number,
+): Promise<void> {
+  return debugCall(
+    page,
+    (
+      api,
+      args: { dozer: number; kind: number; originX: number; originY: number },
+    ) => {
+      api.command({
+        kind: "construct",
+        player: 0,
+        dozer: args.dozer,
+        typeIndex: args.kind,
+        originX: args.originX,
+        originY: args.originY,
+      });
+    },
+    { dozer, kind, originX, originY },
+  );
+}
+
+/** Sends a `debugSpawn` command at (x, y) tiles (spec §5.8, §5.16). */
+function spawnAt(
+  page: Page,
+  owner: number,
+  kind: number,
+  x: number,
+  y: number,
+): Promise<void> {
+  return debugCall(
+    page,
+    (
+      api,
+      args: { owner: number; kind: number; xRaw: number; yRaw: number },
+    ) => {
+      api.command({
+        kind: "debugSpawn",
+        player: args.owner,
+        typeIndex: args.kind,
+        xRaw: args.xRaw,
+        yRaw: args.yRaw,
+      });
+    },
+    { owner, kind, xRaw: Math.round(x * FX_ONE), yRaw: Math.round(y * FX_ONE) },
+  );
+}
+
+test("AC-03-56: builds a power plant through the UI", async ({ page }) => {
+  await bootDebug(page, "debug=1&speed=4");
+  const dozerKind = await kindOf(page, "ua-dozer");
+  const plantKind = await kindOf(page, "ua-power-plant");
+
+  const dozer = await entityOf(page, 0, dozerKind);
+  if (dozer === null) throw new Error("missing ua-dozer");
+  await clickTiles(page, dozer.x, dozer.y);
+
+  const plantButton = page.locator(
+    '#command-panel button[data-type="ua-power-plant"]',
+  );
+  await expect(plantButton).toBeEnabled();
+  await plantButton.click();
+  // The 3x3 footprint centred on (19.5, 65.5) has origin (18, 64).
+  await clickTiles(page, 19.5, 65.5);
+
+  await expect
+    .poll(() => entityCount(page, 0, plantKind, FLAG_UNDER_CONSTRUCTION), {
+      timeout: 2000,
+    })
+    .toBeGreaterThan(0);
+  await expect(page.locator("#res-credits")).toHaveText("Credits 4400");
+  await expect
+    .poll(() => entityCount(page, 0, plantKind, 0, FLAG_UNDER_CONSTRUCTION), {
+      timeout: 30_000,
+    })
+    .toBeGreaterThan(0);
+  await expect(page.locator("#res-power")).toHaveText("Power 10/0", {
+    timeout: 30_000,
+  });
+
+  // A right click while placing cancels it, so the next ground click, which is
+  // a legal 3x3 site, must not start a second building.
+  const builder = await entityOf(page, 0, dozerKind);
+  if (builder === null) throw new Error("missing ua-dozer");
+  await clickTiles(page, builder.x, builder.y);
+  await expect(plantButton).toBeEnabled();
+  await plantButton.click();
+  await clickTiles(page, 25.5, 68.5, "right");
+  await clickTiles(page, 19.5, 58.5);
+  await page.waitForTimeout(1000);
+  expect(await entityCount(page, 0, plantKind)).toBe(1);
+});
+
+test("AC-03-57: produces and cancels through the UI", async ({ page }) => {
+  // At speed 1 the two buildings take 10 s of sim time each (spec §6.7).
+  test.setTimeout(120_000);
+  // Speed 1 instead of the 4 of the spec's Given: a ua-rifleman is 75 ticks,
+  // which is 1.25 s at speed 4 and 5 s at speed 1. Production advances on the
+  // worker clock while Playwright drives the page, so at speed 4 a loaded
+  // runner can take longer than 1.25 s between the produce clicks and the
+  // right click; the queued head then completes by itself, the cancel removes
+  // the only remaining item and the queue empties (CI flake). At speed 1 the
+  // head cannot complete during the sequence, and the "within 20 s" check below
+  // still holds (75 ticks = 5 s).
+  await bootDebug(page, "debug=1&speed=1");
+  const dozerKind = await kindOf(page, "ua-dozer");
+  const plantKind = await kindOf(page, "ua-power-plant");
+  const barracksKind = await kindOf(page, "ua-barracks");
+  const riflemanKind = await kindOf(page, "ua-rifleman");
+
+  const dozer = await entityOf(page, 0, dozerKind);
+  if (dozer === null) throw new Error("missing ua-dozer");
+  await constructAt(page, dozer.id, plantKind, 18, 64);
+  await expect
+    .poll(() => entityCount(page, 0, plantKind, 0, FLAG_UNDER_CONSTRUCTION), {
+      timeout: 60_000,
+    })
+    .toBeGreaterThan(0);
+  await constructAt(page, dozer.id, barracksKind, 12, 65);
+  await expect
+    .poll(
+      () => entityCount(page, 0, barracksKind, 0, FLAG_UNDER_CONSTRUCTION),
+      { timeout: 60_000 },
+    )
+    .toBeGreaterThan(0);
+
+  // Click the barracks on its footprint cell farthest from the dozer, so the
+  // unit is never picked instead of the building (its origin is (12, 65)).
+  const builder = await entityOf(page, 0, dozerKind);
+  if (builder === null) throw new Error("missing ua-dozer");
+  let click = { x: 12.5, y: 65.5 };
+  let best = -1;
+  for (let dy = 0; dy < 3; dy++) {
+    for (let dx = 0; dx < 3; dx++) {
+      const point = { x: 12.5 + dx, y: 65.5 + dy };
+      const distance = Math.hypot(point.x - builder.x, point.y - builder.y);
+      if (distance > best) {
+        best = distance;
+        click = point;
+      }
+    }
+  }
+  await clickTiles(page, click.x, click.y);
+
+  const rifleButton = page.locator(
+    '#command-panel button[data-type="ua-rifleman"]',
+  );
+  await expect(rifleButton).toBeVisible();
+  await expect(
+    page.locator('#command-panel button[data-type="ua-stugna-team"]'),
+  ).toBeVisible();
+
+  await clickButton(page, rifleButton);
+  await clickButton(page, rifleButton);
+  await expect(page.locator("#queue .queue-item")).toHaveCount(2);
+  await expect(page.locator("#res-credits")).toHaveText("Credits 3700");
+  await clickButton(page, rifleButton, "right");
+  await expect(page.locator("#queue .queue-item")).toHaveCount(1);
+  await expect(page.locator("#res-credits")).toHaveText("Credits 3800");
+  await expect
+    .poll(() => entityCount(page, 0, riflemanKind), { timeout: 20_000 })
+    .toBeGreaterThan(0);
+});
+
+test("AC-03-58: harvests supplies", async ({ page }) => {
+  await bootDebug(page, "debug=1&speed=4");
+  const dozerKind = await kindOf(page, "ua-dozer");
+  const centerKind = await kindOf(page, "ua-supply-center");
+  const truckKind = await kindOf(page, "ua-supply-truck");
+
+  const dozer = await entityOf(page, 0, dozerKind);
+  if (dozer === null) throw new Error("missing ua-dozer");
+  await constructAt(page, dozer.id, centerKind, 15, 55);
+  await expect
+    .poll(() => entityCount(page, 0, truckKind), { timeout: 30_000 })
+    .toBeGreaterThan(0);
+
+  const before = await debugCall(page, (api) => api.credits());
+  await expect
+    .poll(
+      async () => (await debugCall(page, (api) => api.credits())) > before,
+      {
+        timeout: 30_000,
+      },
+    )
+    .toBe(true);
+});
+
+test("AC-03-59: attacks with a right click", async ({ page }) => {
+  await bootDebug(page, "debug=1&speed=4");
+  const kozakKind = await kindOf(page, "ua-kozak-scout");
+  const leopardKind = await kindOf(page, "ua-leopard-2a4");
+  const tankKind = await kindOf(page, "ru-t-72b3");
+
+  await spawnAt(page, 0, kozakKind, 30.5, 62.5);
+  await spawnAt(page, 0, leopardKind, 30.5, 64.5);
+  await spawnAt(page, 1, tankKind, 40.5, 62.5);
+  await expect
+    .poll(() => entityCount(page, 0, leopardKind), { timeout: 5000 })
+    .toBeGreaterThan(0);
+  await expect
+    .poll(() => entityCount(page, 1, tankKind), { timeout: 5000 })
+    .toBeGreaterThan(0);
+
+  // The app boots centred on the own HQ; pan to the engagement so both units
+  // are on screen and clickable, as a player would before giving the order.
+  await debugCall(page, (api) => api.setCameraTarget(35.5, 63.5));
+
+  const leopard = await entityOf(page, 0, leopardKind);
+  if (leopard === null) throw new Error("missing ua-leopard-2a4");
+  const tank = await entityOf(page, 1, tankKind);
+  if (tank === null) throw new Error("missing ru-t-72b3");
+
+  await clickTiles(page, leopard.x, leopard.y);
+  await expect
+    .poll(() =>
+      debugCall(
+        page,
+        (api, id: number) => api.selectedIds().includes(id),
+        leopard.id,
+      ),
+    )
+    .toBe(true);
+
+  await clickTiles(page, tank.x, tank.y, "right");
+  await expect
+    .poll(() => entityCount(page, 0, leopardKind, FLAG_MOVING), {
+      timeout: 2000,
+    })
+    .toBeGreaterThan(0);
+  await expect
+    .poll(() => entityCount(page, 1, tankKind), { timeout: 30_000 })
+    .toBe(0);
+  expect(await entityCount(page, 0, leopardKind)).toBeGreaterThan(0);
 });
