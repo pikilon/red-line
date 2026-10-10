@@ -143,16 +143,16 @@ export function createSkirmishController(
   }
 
   /**
-   * Handles a left click in placement mode: a legal site sends `construct` with
-   * the lowest-id selected own dozer and leaves placement; an illegal one keeps
-   * placement mode (spec §6.5). Returns false when not placing.
+   * Handles a left click in placement mode: a legal site with a selected own
+   * dozer sends `construct` and leaves placement; an illegal site, or one with
+   * no dozer to build it, keeps placement mode (spec §6.5). Returns false when
+   * not placing.
    */
   function tryPlace(x: number, y: number): boolean {
     const kind = options.placementKind();
     if (kind === null) return false;
     const origin = footprintOrigin(kind, x, y);
     if (!placeable(kind, origin)) return true;
-    options.exitPlacement();
     const dozer = placementDozer(kind);
     if (dozer === null) return true;
     options.command({
@@ -163,6 +163,7 @@ export function createSkirmishController(
       originX: origin.x,
       originY: origin.y,
     });
+    options.exitPlacement();
     return true;
   }
 

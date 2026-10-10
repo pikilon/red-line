@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Locator, type Page, test } from "@playwright/test";
 
 interface Point {
   x: number;
@@ -240,6 +240,22 @@ async function clickTiles(
   await page.mouse.click(point.x, point.y, { button });
 }
 
+/** Clicks a panel button on its live box with a real mouse event. The AC-03-57
+ *  sequence must stay far inside the queued item's build time, and
+ *  `locator.click()` waits for two stable animation frames plus a hit-target
+ *  check, which a loaded runner can stretch past it. */
+async function clickButton(
+  page: Page,
+  locator: Locator,
+  button: "left" | "right" = "left",
+): Promise<void> {
+  const box = await locator.boundingBox();
+  if (box === null) throw new Error("panel button is not rendered");
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, {
+    button,
+  });
+}
+
 /** Sends a `construct` command for `dozer` (spec §5.8). */
 function constructAt(
   page: Page,
@@ -339,7 +355,17 @@ test("AC-03-56: builds a power plant through the UI", async ({ page }) => {
 });
 
 test("AC-03-57: produces and cancels through the UI", async ({ page }) => {
-  await bootDebug(page, "debug=1&speed=4");
+  // At speed 1 the two buildings take 10 s of sim time each (spec §6.7).
+  test.setTimeout(120_000);
+  // Speed 1 instead of the 4 of the spec's Given: a ua-rifleman is 75 ticks,
+  // which is 1.25 s at speed 4 and 5 s at speed 1. Production advances on the
+  // worker clock while Playwright drives the page, so at speed 4 a loaded
+  // runner can take longer than 1.25 s between the produce clicks and the
+  // right click; the queued head then completes by itself, the cancel removes
+  // the only remaining item and the queue empties (CI flake). At speed 1 the
+  // head cannot complete during the sequence, and the "within 20 s" check below
+  // still holds (75 ticks = 5 s).
+  await bootDebug(page, "debug=1&speed=1");
   const dozerKind = await kindOf(page, "ua-dozer");
   const plantKind = await kindOf(page, "ua-power-plant");
   const barracksKind = await kindOf(page, "ua-barracks");
@@ -350,14 +376,14 @@ test("AC-03-57: produces and cancels through the UI", async ({ page }) => {
   await constructAt(page, dozer.id, plantKind, 18, 64);
   await expect
     .poll(() => entityCount(page, 0, plantKind, 0, FLAG_UNDER_CONSTRUCTION), {
-      timeout: 30_000,
+      timeout: 60_000,
     })
     .toBeGreaterThan(0);
   await constructAt(page, dozer.id, barracksKind, 12, 65);
   await expect
     .poll(
       () => entityCount(page, 0, barracksKind, 0, FLAG_UNDER_CONSTRUCTION),
-      { timeout: 30_000 },
+      { timeout: 60_000 },
     )
     .toBeGreaterThan(0);
 
@@ -387,11 +413,11 @@ test("AC-03-57: produces and cancels through the UI", async ({ page }) => {
     page.locator('#command-panel button[data-type="ua-stugna-team"]'),
   ).toBeVisible();
 
-  await rifleButton.click();
-  await rifleButton.click();
+  await clickButton(page, rifleButton);
+  await clickButton(page, rifleButton);
   await expect(page.locator("#queue .queue-item")).toHaveCount(2);
   await expect(page.locator("#res-credits")).toHaveText("Credits 3700");
-  await rifleButton.click({ button: "right" });
+  await clickButton(page, rifleButton, "right");
   await expect(page.locator("#queue .queue-item")).toHaveCount(1);
   await expect(page.locator("#res-credits")).toHaveText("Credits 3800");
   await expect
