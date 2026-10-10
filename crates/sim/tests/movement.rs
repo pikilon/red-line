@@ -167,6 +167,87 @@ fn ac_02_16_group_arrives_separated() {
     }
 }
 
+/// AC-04-01, spec §5.1: a group move into an impassable `Block A` gives every
+/// commanded unit its own goal cell instead of collapsing the group onto the
+/// single cell `nearest_passable` returned.
+#[test]
+fn ac_04_01_group_move_destination_spreading() {
+    let mut world = World::new(MapGrid::tech_slice());
+    let mut units = Vec::new();
+    // Ten units in a cluster south of `Block A` (x 30..=37, y 30..=37).
+    for y in 25..=26 {
+        for x in 32..=36 {
+            units.push(world.spawn_unit_at(cell_center_raw(x, y)));
+        }
+    }
+    assert_eq!(units.len(), 10);
+    world.enqueue(Command::Move {
+        units: units.clone(),
+        target: cell_center_raw(34, 34),
+    });
+    world.step();
+
+    let mut goals = Vec::new();
+    for &id in &units {
+        let Order::Move { goal, .. } = world.unit(id).unwrap().order else {
+            panic!("unit {id} should have a move order");
+        };
+        assert!(
+            world.map().is_passable(goal),
+            "unit {id} got impassable goal {goal:?}"
+        );
+        goals.push(goal);
+    }
+    let claimed: std::collections::BTreeSet<Cell> = goals.iter().copied().collect();
+    assert_eq!(
+        claimed.len(),
+        10,
+        "expected 10 distinct goal cells, got {goals:?}"
+    );
+}
+
+/// AC-04-02, spec §5.1: near-to-far sorting gives the unit closest to the
+/// target the perimeter goal cell closest to the building centre.
+#[test]
+fn ac_04_02_near_to_far_allocation_priority() {
+    let mut world = World::new(MapGrid::tech_slice());
+    let near = world.spawn_unit_at(cell_center_raw(25, 34));
+    let far = world.spawn_unit_at(cell_center_raw(10, 34));
+    let target = cell_center_raw(34, 34);
+    world.enqueue(Command::Move {
+        units: vec![near, far],
+        target,
+    });
+    world.step();
+
+    let Order::Move {
+        goal: near_goal, ..
+    } = world.unit(near).unwrap().order
+    else {
+        panic!("the near unit should have a move order");
+    };
+    let Order::Move { goal: far_goal, .. } = world.unit(far).unwrap().order else {
+        panic!("the far unit should have a move order");
+    };
+    assert!(
+        tile_distance_sq(cell_center_raw(near_goal.x, near_goal.y), target)
+            < tile_distance_sq(cell_center_raw(far_goal.x, far_goal.y), target),
+        "near goal {near_goal:?} is not closer to the building centre than far goal {far_goal:?}"
+    );
+}
+
+/// Squared tile distance from `pos` to `target`: integer only, so its ordering
+/// equals the ordering by `(pos - target).length()`.
+fn tile_distance_sq(pos: FxVec2, target: FxVec2) -> i64 {
+    let dx = i64::from(pos.x.raw() - target.x.raw());
+    let dy = i64::from(pos.y.raw() - target.y.raw());
+    (dx * dx + dy * dy) >> 32
+}
+
+fn cell_center_raw(x: i32, y: i32) -> FxVec2 {
+    raw((x << 16) + 32768, (y << 16) + 32768)
+}
+
 /// Fixture command: `(tick, unit_range_start, unit_range_end, target)`.
 type ScriptCommand = (u32, u32, u32, FxVec2);
 
