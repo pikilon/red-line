@@ -1311,7 +1311,9 @@ export function canPlace(args: { kind: number; origin: { x: number; y: number };
 `skirmishController.ts` (E2E-covered): like the Phase 1 controller (pointer and
 key wiring, pan, clamp) plus: left click → placement mode ? (`canPlace` →
 `construct` with the lowest-id selected own dozer, then leave placement) :
-`clickSelect`; left drag → `boxSelect`; right click → placement mode ?
+`clickSelect`; left drag → `boxSelect` on release, and while the pointer is
+down past `isDrag` the selection box is shown and resized every pointer move
+(`createSelectionBox`, below); right click → placement mode ?
 leave placement : send `resolveRightClick`; `Escape` leaves placement;
 `Ctrl/Meta+A` → `selectAllOwnUnits`; with `debug` only, `F2` toggles the
 controlled player 0 ↔ 1 (clears selection, viewer follows unless revealed) and
@@ -1348,6 +1350,23 @@ export function createCommandPanel(root: HTMLElement, handlers: { onConstruct(ki
  *  what changed: re-rendering the same input performs no DOM mutation, so a
  *  button is never detached or rewritten while the player presses it (#138). */
 ```
+
+`selectionBox.ts` (drag feedback, screen space only, no effect on the sim):
+
+```ts
+/** A <div id="selection-box"> appended to root, absolutely positioned, with
+ *  pointer-events none, border 2 px solid rgba(51, 255, 51, 0.6), no fill.
+ *  show(rect) sets its left/top/width/height to the rect in client pixels and
+ *  makes it visible; show(null) hides it. Repeated calls with the same rect
+ *  perform no DOM mutation. */
+export function createSelectionBox(root: HTMLElement): { show(rect: ScreenRect | null): void };
+```
+
+Rules: the controller calls `show(rectFromDrag(start, pointer))` on every
+pointer move while `isDrag(start, pointer)` is true, and `show(null)` on
+release or when the drag is cancelled. The box does not change the selection
+set; units inside the box are not highlighted during the drag (the selection
+is applied on release, as in `boxSelect`).
 
 `placementHint.ts` (#136):
 
@@ -1978,6 +1997,17 @@ with the owner-0 `ua-dozer` selected by a click and nothing queued, when 1 s
 passes, then `uiRenders()` is unchanged; and when the `ua-power-plant` button
 is clicked, then `uiRenders()` increases.
 
+**AC-03-67 Drag selection box.** Given `/?debug=1&speed=4` with nothing
+selected, when the mouse is pressed on empty passable ground at the screen
+point of `(20.5, 60.5)` and moved 2 px, then `#selection-box` is hidden; when
+it is moved to 20 px above-left of the screen point of `(24.5, 64.5)`, then
+`#selection-box` is visible, its border is 2 px wide, its colour is
+`rgba(51, 255, 51, 0.6)`, its rectangle matches `rectFromDrag` of the two
+points within 1 px, and `selectedIds()` is still `[]`; when the mouse is
+released, then `#selection-box` is hidden and `selectedIds()` contains every
+owner-0 unit whose screen point lies inside the rectangle (the test spawns
+two owner-0 riflemen there with `debugSpawn`).
+
 ### Updated Phase 1 criteria
 
 * AC-01-05: the API version is now `2` (`ac_01_05_api_version_is_one` asserts
@@ -2059,6 +2089,7 @@ These test edits are part of the RED commits of P2-05 and P2-23 (tier S).
 | AC-03-64 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-64: shows placement feedback` |
 | AC-03-65 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-65: keeps the command panel stable under a held click` |
 | AC-03-66 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-66: renders the overlay on change only` |
+| AC-03-67 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-67: draws the selection box while dragging` |
 
 ## 9. Issue breakdown (Phase 2 queue)
 
