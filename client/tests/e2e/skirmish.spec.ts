@@ -37,6 +37,7 @@ interface SkirmishDebugView {
   command(command: Record<string, unknown>): void;
   stateHash(): Promise<string>;
   drawCalls(): number;
+  uiRenders(): number;
   resetFrameStats(): void;
   frameStats(): { frames: number; p95FrameMs: number };
   injectFrameTimes(frameTimesMs: number[]): void;
