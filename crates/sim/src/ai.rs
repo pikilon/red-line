@@ -1,13 +1,15 @@
 //! Computer opponent (spec 05 §5.3, §5.4).
 //!
 //! P3-03 implements the skeleton and the first three steps of the decision
-//! pass: harvesting, truck production and the starting dozer. Later issues add
-//! the build, defense, production, launch and retarget steps.
+//! pass: harvesting, truck production and the starting dozer. P3-04 adds step 4
+//! (build order, site search, power substitution and resume). Later issues add
+//! the defense, production, launch and retarget steps.
 
 use crate::entity::{EntityId, Order, PlayerId};
 use crate::fixed::FxVec2;
+use crate::map::{Cell, cell_of};
 use crate::rng::SplitMix64;
-use crate::rules::{Category, FactionId, Ruleset, TypeId};
+use crate::rules::{AiDef, Category, FactionId, Ruleset, TypeId};
 use crate::world::{Command, Outcome, World};
 
 /// Ticks between two decision passes (1 s at 15 Hz).
@@ -100,6 +102,11 @@ impl Ai {
         let mut commands = Vec::new();
         let mut budget = state.credits;
 
+        // No own building means no anchor, and the AI does nothing (§5.3).
+        let Some(anchor) = anchor(world, player, faction) else {
+            return Vec::new();
+        };
+
         // 1. Harvest: every idle truck drives to the nearest depot.
         if let Some(truck) = truck_kind(rules, faction) {
             for entity in world.entities() {
@@ -134,18 +141,64 @@ impl Ai {
         }
 
         // 3. Dozer: replace the starting one only when none is left.
-        let dozer = rules.factions[usize::from(faction)].dozer;
-        if count_kind(world, player, dozer) + queued(world, player, dozer) == 0
-            && let Some(producer) = producer_of(world, player, dozer)
+        let dozer_kind = rules.factions[usize::from(faction)].dozer;
+        if count_kind(world, player, dozer_kind) + queued(world, player, dozer_kind) == 0
+            && let Some(producer) = producer_of(world, player, dozer_kind)
         {
-            let cost = rules.ty(dozer).cost;
+            let cost = rules.ty(dozer_kind).cost;
             if budget >= cost {
+                budget -= cost;
                 commands.push(Command::Produce {
                     building: producer,
-                    kind: dozer,
+                    kind: dozer_kind,
                 });
             }
         }
+
+        // 4. Build: resume an orphan site, else follow the build order.
+        if let Some(dozer) = lowest_idle_dozer(world, player, dozer_kind) {
+            if let Some(building) = lowest_incomplete_building(world, player) {
+                // One site at a time: resume it unless a dozer already does.
+                let claimed = world.entities().iter().any(|entity| {
+                    entity.owner == player
+                        && entity.kind == dozer_kind
+                        && matches!(
+                            entity.order,
+                            Order::Build { building: b, .. } if b == building
+                        )
+                });
+                if !claimed {
+                    commands.push(Command::Resume {
+                        units: vec![dozer],
+                        building,
+                    });
+                }
+            } else if let Some(mut kind) = next_build_entry(world, player, def) {
+                let (produced, consumed) = state.power();
+                let power = rules.ty(kind).power;
+                if power < 0
+                    && i64::from(produced) - i64::from(consumed) + i64::from(power) < 0
+                    && let Some(power_plant) = power_kind(rules, faction)
+                {
+                    kind = power_plant;
+                }
+                let cost = rules.ty(kind).cost;
+                if budget >= cost
+                    && let Some(origin) = find_site(world, player, kind, anchor)
+                {
+                    budget -= cost;
+                    commands.push(Command::Construct {
+                        dozer,
+                        kind,
+                        origin,
+                    });
+                }
+            }
+        }
+
+        // Steps 5..8 (defense, production, launch, retarget) spend the rest in
+        // P3-05; `budget` always stays within the player's credits.
+        debug_assert!(budget <= state.credits);
 
         commands
     }
@@ -237,4 +290,126 @@ fn nearest_depot(world: &World, pos: FxVec2) -> Option<EntityId> {
         }
     }
     best.map(|(_, id)| id)
+}
+
+/// Lowest-id own dozer whose order is `Idle` (§5.4 step 4).
+fn lowest_idle_dozer(world: &World, player: PlayerId, dozer: TypeId) -> Option<EntityId> {
+    world
+        .entities()
+        .iter()
+        .find(|entity| {
+            entity.owner == player
+                && entity.kind == dozer
+                && matches!(entity.order, Order::Idle { .. })
+        })
+        .map(|entity| entity.id)
+}
+
+/// Lowest-id own incomplete building (§5.4 step 4).
+fn lowest_incomplete_building(world: &World, player: PlayerId) -> Option<EntityId> {
+    world
+        .entities()
+        .iter()
+        .find(|entity| {
+            entity.owner == player && entity.site.as_ref().is_some_and(|site| !site.complete)
+        })
+        .map(|entity| entity.id)
+}
+
+/// First build-order entry `i` with fewer own buildings than occurrences of its
+/// kind in `build_order[0..=i]` (§5.4 step 4).
+fn next_build_entry(world: &World, player: PlayerId, def: &AiDef) -> Option<TypeId> {
+    for (index, &kind) in def.build_order.iter().enumerate() {
+        let built = count_kind(world, player, kind);
+        let wanted = def.build_order[..=index]
+            .iter()
+            .filter(|&&candidate| candidate == kind)
+            .count() as u32;
+        if built < wanted {
+            return Some(kind);
+        }
+    }
+    None
+}
+
+/// First building type of `faction` with `power > 0` (§5.3 power kind).
+fn power_kind(rules: &Ruleset, faction: FactionId) -> Option<TypeId> {
+    rules
+        .types
+        .iter()
+        .position(|ty| {
+            ty.faction == i32::from(faction) && ty.category == Category::Building && ty.power > 0
+        })
+        .map(|index| index as TypeId)
+}
+
+/// HQ origin, or the lowest-id own building's origin, or `None` with no own
+/// building (§5.3).
+fn anchor(world: &World, player: PlayerId, faction: FactionId) -> Option<Cell> {
+    let hq = world.rules().factions[usize::from(faction)].hq;
+    let mut own_buildings = world
+        .entities()
+        .iter()
+        .filter(|entity| entity.owner == player && entity.site.is_some());
+    if let Some(hq_entity) = own_buildings
+        .clone()
+        .find(|entity| entity.kind == hq && entity.site.as_ref().is_some_and(|site| site.complete))
+    {
+        return hq_entity.site.as_ref().map(|site| site.origin);
+    }
+    own_buildings
+        .next()
+        .and_then(|entity| entity.site.as_ref().map(|site| site.origin))
+}
+
+/// §5.5 site search: first candidate on the rings `BASE_RING_MIN..=BASE_RING_MAX`
+/// around `anchor` that is constructible and whose margin is clear.
+fn find_site(world: &World, player: PlayerId, kind: TypeId, anchor: Cell) -> Option<Cell> {
+    let size = world.rules().ty(kind).footprint;
+    for ring in BASE_RING_MIN..=BASE_RING_MAX {
+        for y in (anchor.y - ring)..=(anchor.y + ring) {
+            let full_row = (y - anchor.y).abs() == ring;
+            let step = if full_row { 1 } else { 2 * ring };
+            let mut x = anchor.x - ring;
+            while x <= anchor.x + ring {
+                let origin = Cell { x, y };
+                if world.can_construct(player, kind, origin) && margin_clear(world, origin, size) {
+                    return Some(origin);
+                }
+                x += step;
+            }
+        }
+    }
+    None
+}
+
+/// §5.5 margin: the in-bounds cells at Chebyshev distance 1 around the
+/// footprint must be passable and hold no unit.
+fn margin_clear(world: &World, origin: Cell, size: [u16; 2]) -> bool {
+    let (width, height) = (i32::from(size[0]), i32::from(size[1]));
+    for dy in -1..=height {
+        for dx in -1..=width {
+            if dx >= 0 && dx < width && dy >= 0 && dy < height {
+                continue;
+            }
+            let cell = Cell {
+                x: origin.x + dx,
+                y: origin.y + dy,
+            };
+            if !world.map().in_bounds(cell) {
+                continue;
+            }
+            if !world.map().is_passable(cell) {
+                return false;
+            }
+            if world
+                .entities()
+                .iter()
+                .any(|entity| entity.site.is_none() && cell_of(entity.pos) == cell)
+            {
+                return false;
+            }
+        }
+    }
+    true
 }
