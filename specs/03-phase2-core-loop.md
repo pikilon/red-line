@@ -1249,6 +1249,11 @@ export function createFogOverlay(width: number, height: number): { mesh: Mesh; u
 Draw calls in skirmish: terrain, units, buildings, ghosts, bars, tracers, fog,
 placement ghost: at most 8.
 
+Placement ghost (`app/skirmish.ts`): a unit `BoxGeometry` scaled to the
+footprint, `MeshBasicMaterial` transparent at opacity `0.6`, white `0xffffff`
+over a legal site and red `0xef4444` over an illegal one, so it stands out
+from the green terrain (#136).
+
 ### 6.5 Input (`client/src/input/`)
 
 `entitySelection.ts`:
@@ -1335,7 +1340,23 @@ export function commandButtons(args: { selected: readonly EntityState[]; ownEnti
  *  onProduce(typeIndex); contextmenu on a produce button → onCancel()
  *  (default prevented). */
 export function createCommandPanel(root: HTMLElement, handlers: { onConstruct(kind: number): void;
-  onProduce(kind: number): void; onCancel(): void }): { render(buttons: CommandButton[], queue: QueueState | null): void };
+  onProduce(kind: number): void; onCancel(): void }): { render(buttons: CommandButton[], queue: QueueState | null,
+  placing?: number | null): void };
+/** The construct button whose typeIndex equals placing (default null) has
+ *  class "active" and aria-pressed="true"; every other button has no "active"
+ *  class and aria-pressed="false". */
+```
+
+`placementHint.ts` (#136):
+
+```ts
+export type PlacementHintState = "hidden" | "legal" | "illegal";
+/** <div id="placement-hint" role="status">, hidden for "hidden"; text
+ *  t("ui.placementHint") for "legal" and t("ui.placementIllegal") for
+ *  "illegal". The app renders "illegal" when the placement preview is
+ *  illegal, "legal" in placement mode otherwise (also before the pointer
+ *  reaches the map), "hidden" outside placement mode. */
+export function createPlacementHint(root: HTMLElement): { render(state: PlacementHintState): void };
 ```
 
 `resourceBar.ts`:
@@ -1359,10 +1380,13 @@ export function createOutcomeOverlay(root: HTMLElement): { render(text: string |
 i18n keys: `ui.credits` "Credits {credits}", `ui.power` "Power
 {produced}/{consumed}", `ui.buttonLabel` "{name} ({cost})", `ui.victory`
 "Victory", `ui.defeat` "Defeat", `ui.draw` "Draw", `hud.player` "Player
-{player}: {faction}" (`player` 1-based).
+{player}: {faction}" (`player` 1-based), `ui.placementHint` "Left click on
+the ground to build · right click or Esc to cancel", `ui.placementIllegal`
+"Cannot build here".
 
 `client/index.html` styles: `#resource-bar` fixed top centre; `#command-panel`
-fixed bottom centre; `#outcome` fixed centre, large text; `.cmd[disabled]`
+fixed bottom centre; `.cmd.active` highlighted (outline and background);
+`#placement-hint` fixed top centre, below the resource bar; `#outcome` fixed centre, large text; `.cmd[disabled]`
 dimmed; `.power-low` red. The HUD stays top-left and the perf panel top-right;
 none overlap.
 
@@ -1924,6 +1948,15 @@ unit to `(50.5, 6.5)`, `F3` pressed and the camera centred on `(50, 12)`, when
 `resetFrameStats()` is called, then after 300 frames `frameStats().p95FrameMs
 <= 19`.
 
+**AC-03-64 Placement feedback (#136).** Given `/?debug=1&speed=4` with the
+owner-0 `ua-dozer` selected by a click, when the `ua-power-plant` button is
+clicked, then it has `aria-pressed="true"` and class `active` and
+`#placement-hint` is visible, and with the pointer over the legal site
+`(19.5, 65.5)` its text is `ui.placementHint`; with the pointer
+over the HQ centre, `#placement-hint` shows `ui.placementIllegal`; after
+`Escape`, `#placement-hint` is hidden and the button has
+`aria-pressed="false"`.
+
 ### Updated Phase 1 criteria
 
 * AC-01-05: the API version is now `2` (`ac_01_05_api_version_is_one` asserts
@@ -2002,6 +2035,7 @@ These test edits are part of the RED commits of P2-05 and P2-23 (tier S).
 | AC-03-61 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-61: shows victory and defeat` |
 | AC-03-62 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-62: renders a skirmish in at most 8 draw calls` |
 | AC-03-63 | `client/tests/e2e/perf.spec.ts` | `AC-03-63: keeps 60 fps in a 400-unit skirmish @perf` |
+| AC-03-64 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-64: shows placement feedback` |
 
 ## 9. Issue breakdown (Phase 2 queue)
 

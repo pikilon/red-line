@@ -38,6 +38,7 @@ import {
 import { MAX_SPEED } from "../sim/workerHandler";
 import { commandButtons, createCommandPanel } from "../ui/commandPanel";
 import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
+import { createPlacementHint } from "../ui/placementHint";
 import { createResourceBar } from "../ui/resourceBar";
 
 export const DEFAULT_MAP = "first-line";
@@ -47,11 +48,11 @@ export const MAX_SPEED_SKIRMISH = MAX_SPEED;
 /** Default entity renderer capacity; AC-03-62 and AC-03-63 stay below it. */
 const ENTITY_CAPACITY = 2048;
 /** Opacity of the placement ghost (spec §6.4). */
-const PLACEMENT_GHOST_OPACITY = 0.4;
+const PLACEMENT_GHOST_OPACITY = 0.6;
 /** The unit cube ghost rests on the ground. */
 const PLACEMENT_GHOST_Y = 0.5;
 /** Ghost tint from the client-side `canPlace` prediction (spec §6.5). */
-const PLACEMENT_VALID_COLOR = 0x22c55e;
+const PLACEMENT_VALID_COLOR = 0xffffff;
 const PLACEMENT_INVALID_COLOR = 0xef4444;
 /** Selection used before the controller exists (spec §6.7). */
 const NO_SELECTION: ReadonlySet<number> = new Set<number>();
@@ -182,6 +183,7 @@ export function startSkirmish(params: SkirmishOptions): void {
   let entities: EntityRenderer | null = null;
   let fogOverlay: FogOverlay | null = null;
   const placementGhost = createPlacementGhost();
+  const placementHint = createPlacementHint(document.body);
 
   /** The queue of the selected production building, if any. */
   function selectedQueue(): QueueState | null {
@@ -286,6 +288,13 @@ export function startSkirmish(params: SkirmishOptions): void {
   function updatePlacementGhost(): void {
     const preview = controller?.placementPreview() ?? null;
     placementGhost.mesh.visible = preview !== null;
+    placementHint.render(
+      placementKind === null
+        ? "hidden"
+        : preview === null || preview.valid
+          ? "legal"
+          : "illegal",
+    );
     if (preview === null) return;
     const [width, height] = typeDef(preview.kind).footprint;
     placementGhost.mesh.position.set(
@@ -345,7 +354,7 @@ export function startSkirmish(params: SkirmishOptions): void {
     resourceBar.render(next);
     outcome.render(next === null ? null : outcomeText(next, controlled));
     if (next === null) {
-      commandPanel.render([], null);
+      commandPanel.render([], null, placementKind);
     } else {
       const queue = selectedQueue();
       commandPanel.render(
@@ -358,6 +367,7 @@ export function startSkirmish(params: SkirmishOptions): void {
           queue,
         }),
         queue,
+        placementKind,
       );
     }
     renderer.render(scene, camera);
