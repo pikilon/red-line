@@ -10,9 +10,17 @@ fn banner() -> String {
 
 fn hash_file(path: &str) -> Result<String, String> {
     let text = std::fs::read_to_string(path).map_err(|e| format!("cannot read {path}: {e}"))?;
-    let parsed: script::Script =
+    let value: serde_json::Value =
         serde_json::from_str(&text).map_err(|e| format!("invalid script {path}: {e}"))?;
-    let hash = script::run_script(&parsed).map_err(|e| format!("cannot run {path}: {e:?}"))?;
+    let hash = if value.get("map").is_some() {
+        let parsed: script::MatchScript =
+            serde_json::from_value(value).map_err(|e| format!("invalid script {path}: {e}"))?;
+        script::run_match_script(&parsed).map_err(|e| format!("cannot run {path}: {e}"))?
+    } else {
+        let parsed: script::Script =
+            serde_json::from_value(value).map_err(|e| format!("invalid script {path}: {e}"))?;
+        script::run_script(&parsed).map_err(|e| format!("cannot run {path}: {e:?}"))?
+    };
     Ok(format!("{hash:016x}\n"))
 }
 
