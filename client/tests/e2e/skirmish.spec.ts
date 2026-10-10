@@ -354,6 +354,42 @@ test("AC-03-56: builds a power plant through the UI", async ({ page }) => {
   expect(await entityCount(page, 0, plantKind)).toBe(1);
 });
 
+test("AC-03-64: shows placement feedback", async ({ page }) => {
+  await bootDebug(page, "debug=1&speed=4");
+  const dozerKind = await kindOf(page, "ua-dozer");
+  const hqKind = await kindOf(page, "ua-hq");
+  const dozer = await entityOf(page, 0, dozerKind);
+  const hq = await entityOf(page, 0, hqKind);
+  if (dozer === null || hq === null) throw new Error("missing ua-dozer or ua-hq");
+  await clickTiles(page, dozer.x, dozer.y);
+
+  const plantButton = page.locator(
+    '#command-panel button[data-type="ua-power-plant"]',
+  );
+  const hint = page.locator("#placement-hint");
+  await expect(plantButton).toHaveAttribute("aria-pressed", "false");
+  await expect(hint).toBeHidden();
+  await plantButton.click();
+  await expect(plantButton).toHaveAttribute("aria-pressed", "true");
+  await expect(plantButton).toHaveClass(/\bactive\b/);
+  await expect(hint).toBeVisible();
+  await expect(hint).toHaveText(
+    "Left click on the ground to build · right click or Esc to cancel",
+  );
+
+  const overHq = await debugCall(
+    page,
+    (api, tiles: Point) => api.worldToScreen(tiles.x, tiles.y),
+    { x: hq.x, y: hq.y },
+  );
+  await page.mouse.move(overHq.x, overHq.y);
+  await expect(hint).toHaveText("Cannot build here");
+
+  await page.keyboard.press("Escape");
+  await expect(hint).toBeHidden();
+  await expect(plantButton).toHaveAttribute("aria-pressed", "false");
+});
+
 test("AC-03-57: produces and cancels through the UI", async ({ page }) => {
   // At speed 1 the two buildings take 10 s of sim time each (spec §6.7).
   test.setTimeout(120_000);
