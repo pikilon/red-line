@@ -1,11 +1,11 @@
 //! Power, production speed, production queues and rally points (P2-09, spec
 //! §5.8 Produce / Cancel / Rally and §5.9).
 
-use crate::entity::{EntityId, HarvestPhase, Order, PlayerId, QueueItem};
-use crate::fixed::FxVec2;
-use crate::map::cell_center;
-use crate::nav::exit_cell;
-use crate::rules::{Category, TypeId};
+use crate::entity::{Entity, EntityId, HarvestPhase, Order, PlayerId, QueueItem};
+use crate::fixed::{Fx, FxVec2};
+use crate::map::{Cell, cell_center};
+use crate::nav::{exit_cell, footprint_cells, footprint_distance};
+use crate::rules::{Category, TypeId, fx_centi};
 use crate::world::{MAX_UNITS, World};
 
 /// 100 if `produced >= consumed` (including `consumed == 0`); otherwise
@@ -38,6 +38,7 @@ impl World {
             self.players[index].power_produced = produced;
             self.players[index].power_consumed = consumed;
         }
+        self.update_construction();
         self.update_production();
     }
 
@@ -117,7 +118,7 @@ impl World {
 
     /// Nearest depot with `hp > 0` by distance to its centre, ties lowest id.
     fn nearest_depot(&self, pos: FxVec2) -> Option<EntityId> {
-        let mut best: Option<(crate::fixed::Fx, EntityId)> = None;
+        let mut best: Option<(Fx, EntityId)> = None;
         for depot in &self.entities {
             if self.rules.ty(depot.kind).category != Category::Depot || depot.hp == 0 {
                 continue;
@@ -207,6 +208,186 @@ impl World {
         let target = self.clamp_to_map(target);
         if let Some(site) = self.entities[index].site.as_mut() {
             site.rally = Some(target);
+        }
+    }
+
+    /// Spec 5.4 entity distance: to a unit the Euclidean distance, to a
+    /// building or depot the distance to its footprint rectangle.
+    pub(crate) fn entity_distance(&self, from: FxVec2, to: &Entity) -> Fx {
+        match &to.site {
+            Some(site) => footprint_distance(from, site.origin, self.rules.ty(to.kind).footprint),
+            None => (from - to.pos).length(),
+        }
+    }
+
+    /// Every incomplete building with a docked builder gains one speed step of
+    /// progress and the matching hit points; at the total it completes.
+    fn update_construction(&mut self) {
+        let dock = fx_centi(self.rules.dock_range_centi);
+        for index in 0..self.entities.len() {
+            let site_entity = &self.entities[index];
+            let Some(site) = &site_entity.site else {
+                continue;
+            };
+            if site.complete {
+                continue;
+            }
+            let (id, owner) = (site_entity.id, site_entity.owner);
+            let builders: Vec<usize> = (0..self.entities.len())
+                .filter(|&i| {
+                    let unit = &self.entities[i];
+                    unit.owner == owner
+                        && matches!(unit.order, Order::Build { building, .. } if building == id)
+                })
+                .collect();
+            let docked = builders.iter().any(|&i| {
+                self.entity_distance(self.entities[i].pos, &self.entities[index]) <= dock
+            });
+            if !docked {
+                continue;
+            }
+            let ty = self.rules.ty(site_entity.kind);
+            let total = u64::from(ty.build_ticks) * 100;
+            let initial = (ty.hp / 10).max(1);
+            let gain = |progress: u64| {
+                (u64::from(ty.hp.saturating_sub(initial)) * progress)
+                    .checked_div(total)
+                    .unwrap_or(0)
+            };
+            let old = u64::from(site.progress);
+            let new = (old + u64::from(self.production_speed(owner))).min(total);
+            let (free_unit, kind) = (ty.free_unit, site_entity.kind);
+            let building = &mut self.entities[index];
+            building.hp += (gain(new) - gain(old)) as u32;
+            let site = building.site.as_mut().expect("building site");
+            site.progress = new as u32;
+            if new < total {
+                continue;
+            }
+            site.complete = true;
+            let origin = site.origin;
+            for &i in &builders {
+                if let Order::Build { order_id, .. } = self.entities[i].order {
+                    self.entities[i].order = Order::Idle {
+                        last_order_id: order_id,
+                    };
+                }
+            }
+            self.spawn_free_unit(owner, kind, free_unit, origin);
+        }
+    }
+
+    /// The free unit of a completed building appears at its exit cell.
+    fn spawn_free_unit(&mut self, owner: PlayerId, kind: TypeId, free_unit: i32, origin: Cell) {
+        if free_unit < 0 || self.entities.len() as u32 >= MAX_UNITS {
+            return;
+        }
+        let size = self.rules.ty(kind).footprint;
+        let Some(exit) = exit_cell(&self.nav, origin, size) else {
+            return;
+        };
+        let unit_kind = free_unit as TypeId;
+        let unit = self.spawn(owner, unit_kind, cell_center(exit));
+        if self.rules.ty(unit_kind).capacity > 0 {
+            self.send_to_harvest(unit);
+        }
+    }
+
+    pub(crate) fn apply_construct(
+        &mut self,
+        player: PlayerId,
+        dozer: EntityId,
+        kind: TypeId,
+        origin: Cell,
+    ) {
+        let Some(index) = self.index_of(dozer) else {
+            return;
+        };
+        let builder = &self.entities[index];
+        if builder.owner != player
+            || builder.site.is_some()
+            || usize::from(kind) >= self.rules.types.len()
+            || !self.rules.ty(builder.kind).builds.contains(&kind)
+        {
+            return;
+        }
+        let ty = self.rules.ty(kind);
+        let (cost, size, requires) = (ty.cost, ty.footprint, ty.requires.clone());
+        let Some(owner) = self.players.get(usize::from(player)) else {
+            return;
+        };
+        if ty.category != Category::Building
+            || owner.credits < cost
+            || !self.requirements_met(player, &requires)
+            || !self.footprint_free(origin, size)
+            || !self.footprint_explored(player, origin, size)
+        {
+            return;
+        }
+        self.players[usize::from(player)].credits -= cost;
+        let building = self.place_building(player, kind, origin, false);
+        let order_id = self.next_order_id;
+        self.next_order_id += 1;
+        if let Some(index) = self.index_of(dozer) {
+            self.entities[index].order = Order::Build { order_id, building };
+        }
+    }
+
+    /// Every footprint cell is explored by `player`.
+    fn footprint_explored(&self, player: PlayerId, origin: Cell, size: [u16; 2]) -> bool {
+        let Some(owner) = self.player(player) else {
+            return false;
+        };
+        footprint_cells(origin, size)
+            .iter()
+            .all(|&c| owner.explored.get(self.terrain.index(c) as usize) == Some(&true))
+    }
+
+    pub(crate) fn apply_resume(
+        &mut self,
+        player: PlayerId,
+        units: &[EntityId],
+        building: EntityId,
+    ) {
+        let incomplete = self.entity(building).is_some_and(|b| {
+            b.owner == player && b.site.as_ref().is_some_and(|site| !site.complete)
+        });
+        if !incomplete {
+            return;
+        }
+        let order_id = self.next_order_id;
+        self.next_order_id += 1;
+        for &id in units {
+            let Some(index) = self.index_of(id) else {
+                continue;
+            };
+            let unit = &self.entities[index];
+            if unit.owner == player
+                && unit.site.is_none()
+                && !self.rules.ty(unit.kind).builds.is_empty()
+            {
+                self.entities[index].order = Order::Build { order_id, building };
+            }
+        }
+    }
+
+    pub(crate) fn apply_stop(&mut self, player: PlayerId, units: &[EntityId]) {
+        for &id in units {
+            let Some(index) = self.index_of(id) else {
+                continue;
+            };
+            let unit = &mut self.entities[index];
+            if unit.owner != player || unit.site.is_some() {
+                continue;
+            }
+            let last_order_id = match unit.order {
+                Order::Idle { last_order_id } => last_order_id,
+                Order::Move { order_id, .. }
+                | Order::Attack { order_id, .. }
+                | Order::Harvest { order_id, .. }
+                | Order::Build { order_id, .. } => order_id,
+            };
+            unit.order = Order::Idle { last_order_id };
         }
     }
 }

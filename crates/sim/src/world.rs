@@ -7,7 +7,7 @@ pub use crate::entity::{EntityId, Order, Unit};
 use crate::fixed::{Fx, FxVec2};
 use crate::flow::FlowField;
 use crate::map::{Cell, CellIndex, MapGrid, SPAWN_MAX, SPAWN_MIN, cell_center, cell_of};
-use crate::nav::{footprint_cells, footprint_center};
+use crate::nav::{approach_cell, footprint_cells, footprint_center};
 use crate::player::Player;
 use crate::rng::SplitMix64;
 use crate::rules::{Category, FactionId, Ruleset, TypeId, fx_centi};
@@ -439,6 +439,13 @@ impl World {
                 Command::Produce { building, kind } => self.apply_produce(player, building, kind),
                 Command::Cancel { building } => self.apply_cancel(player, building),
                 Command::Rally { building, target } => self.apply_rally(player, building, target),
+                Command::Construct {
+                    dozer,
+                    kind,
+                    origin,
+                } => self.apply_construct(player, dozer, kind, origin),
+                Command::Resume { units, building } => self.apply_resume(player, &units, building),
+                Command::Stop { units } => self.apply_stop(player, &units),
                 _ => {}
             }
         }
@@ -486,43 +493,103 @@ impl World {
         )
     }
 
-    /// Phase 2: moves every unit with a move order one tick along its field.
+    /// Phase 2: moves every unit one tick along its field toward its goal.
     fn move_units(&mut self) {
-        for unit in &mut self.entities {
-            let speed = fx_centi(self.rules.ty(unit.kind).speed_centi);
-            let Order::Move {
-                order_id,
-                target,
-                goal,
-            } = unit.order
-            else {
-                continue;
+        for index in 0..self.entities.len() {
+            match self.entities[index].order {
+                Order::Move {
+                    order_id,
+                    target,
+                    goal,
+                } => self.step_move(index, order_id, target, goal),
+                Order::Build { order_id, building } => self.step_build(index, order_id, building),
+                _ => {}
+            }
+        }
+    }
+
+    /// Phase 1 `Move` rule at the type's speed.
+    fn step_move(&mut self, index: usize, order_id: u32, target: FxVec2, goal: Cell) {
+        let unit = &mut self.entities[index];
+        let speed = fx_centi(self.rules.ty(unit.kind).speed_centi);
+        let cell = cell_of(unit.pos);
+        if cell == goal {
+            let delta = target - unit.pos;
+            if delta.length() <= speed {
+                unit.pos = target;
+                unit.order = Order::Idle {
+                    last_order_id: order_id,
+                };
+            } else {
+                unit.pos = unit.pos + delta.normalize().scale(speed);
+            }
+            return;
+        }
+        let direction = self
+            .fields
+            .get(&self.nav.index(goal))
+            .and_then(|field| field.direction(cell));
+        match direction {
+            Some(dir) => unit.pos = unit.pos + dir.unit_vector().scale(speed),
+            None => {
+                unit.order = Order::Idle {
+                    last_order_id: order_id,
+                }
+            }
+        }
+    }
+
+    /// `Build`: idle if the site is gone or complete; no move when docked;
+    /// otherwise a step toward the site's approach cell.
+    fn step_build(&mut self, index: usize, order_id: u32, building: EntityId) {
+        let unit = &self.entities[index];
+        let pos = unit.pos;
+        let site = self
+            .entity(building)
+            .filter(|b| b.site.as_ref().is_some_and(|site| !site.complete));
+        let Some(site) = site else {
+            self.entities[index].order = Order::Idle {
+                last_order_id: order_id,
             };
-            let cell = cell_of(unit.pos);
-            if cell == goal {
-                let delta = target - unit.pos;
-                if delta.length() <= speed {
-                    unit.pos = target;
-                    unit.order = Order::Idle {
-                        last_order_id: order_id,
-                    };
-                } else {
-                    unit.pos = unit.pos + delta.normalize().scale(speed);
-                }
-                continue;
+            return;
+        };
+        if self.entity_distance(pos, site) <= fx_centi(self.rules.dock_range_centi) {
+            return;
+        }
+        let Some(goal) = self.build_goal(building) else {
+            return;
+        };
+        self.step_toward_goal(index, goal);
+    }
+
+    /// Approach cell of a building's footprint.
+    pub(crate) fn build_goal(&self, building: EntityId) -> Option<Cell> {
+        let entity = self.entity(building)?;
+        let site = entity.site.as_ref()?;
+        approach_cell(&self.nav, site.origin, self.rules.ty(entity.kind).footprint)
+    }
+
+    /// Spec 5.10 "step toward the goal": inside the goal cell move to its
+    /// centre, otherwise follow the (on demand) flow field; no direction means
+    /// the unit stays this tick.
+    pub(crate) fn step_toward_goal(&mut self, index: usize, goal: Cell) {
+        let map = &self.nav;
+        let field = self
+            .fields
+            .entry(map.index(goal))
+            .or_insert_with(|| FlowField::compute(map, goal));
+        let unit = &mut self.entities[index];
+        let speed = fx_centi(self.rules.ty(unit.kind).speed_centi);
+        let cell = cell_of(unit.pos);
+        if cell == goal {
+            let delta = cell_center(goal) - unit.pos;
+            if delta.length() <= speed {
+                unit.pos = cell_center(goal);
+            } else {
+                unit.pos = unit.pos + delta.normalize().scale(speed);
             }
-            let direction = self
-                .fields
-                .get(&self.nav.index(goal))
-                .and_then(|field| field.direction(cell));
-            match direction {
-                Some(dir) => unit.pos = unit.pos + dir.unit_vector().scale(speed),
-                None => {
-                    unit.order = Order::Idle {
-                        last_order_id: order_id,
-                    }
-                }
-            }
+        } else if let Some(dir) = field.direction(cell) {
+            unit.pos = unit.pos + dir.unit_vector().scale(speed);
         }
     }
 
@@ -639,6 +706,9 @@ impl World {
             .iter()
             .filter_map(|unit| match unit.order {
                 Order::Move { goal, .. } => Some(self.nav.index(goal)),
+                Order::Build { building, .. } => {
+                    self.build_goal(building).map(|goal| self.nav.index(goal))
+                }
                 _ => None,
             })
             .collect();
