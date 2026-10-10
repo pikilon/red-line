@@ -2,6 +2,9 @@ import { t } from "../i18n";
 import { RULES, typeDef, typeName } from "../rules";
 import type { EntityState, QueueState } from "../sim/matchSnapshot";
 
+/** Snapshot progress is permille and a complete building is exactly full (spec §5.15). */
+const PROGRESS_FULL = 1000;
+
 /** A single construct/produce button offered by the command panel. */
 export interface CommandButton {
   /** Type index of the unit/building this button constructs or produces. */
@@ -122,7 +125,7 @@ function requiresSatisfied(
   return true;
 }
 
-/** A building is complete when its progress reaches build_ticks * 100. */
+/** A building is complete when its permille progress reaches the total (spec §5.15). */
 function isComplete(entity: EntityState): boolean {
-  return entity.progress >= typeDef(entity.kind).buildTicks * 100;
+  return entity.progress >= PROGRESS_FULL;
 }

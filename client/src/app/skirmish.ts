@@ -356,19 +356,6 @@ export function startSkirmish(params: SkirmishOptions): void {
     );
   }
 
-  /**
-   * `commandButtons` (spec §6.6) measures building progress as
-   * `build_ticks * 100`, while the match snapshot encodes it as permille with
-   * `1000` complete (spec §5.15): convert so the panel sees the same fraction.
-   * Tracked as #122 (`isComplete` in `client/src/ui/commandPanel.ts` uses the
-   * wrong scale); delete this adapter once #122 is fixed.
-   */
-  function panelEntity(entity: EntityState): EntityState {
-    const total = typeDef(entity.kind).buildTicks * 100;
-    if (total === 0) return entity;
-    return { ...entity, progress: (entity.progress * total) / 1000 };
-  }
-
   function centreOnOwnHq(snapshot: MatchSnapshot): void {
     const hq = ownHeadquarters(snapshot.entities, controlled);
     if (hq === null) return;
@@ -507,10 +494,10 @@ export function startSkirmish(params: SkirmishOptions): void {
       const queue = selectedQueue();
       commandPanel.render(
         commandButtons({
-          selected: selectedEntities().map(panelEntity),
-          ownEntities: next.entities
-            .filter((entity) => entity.owner === controlled)
-            .map(panelEntity),
+          selected: selectedEntities(),
+          ownEntities: next.entities.filter(
+            (entity) => entity.owner === controlled,
+          ),
           credits: next.credits,
           queue,
         }),
