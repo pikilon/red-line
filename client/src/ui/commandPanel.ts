@@ -193,11 +193,12 @@ export function createCommandPanel(
         view.items[i] = item;
       }
       const kind = queue.items[i] ?? -1;
-      item.dataset.type = RULES.types[kind]?.id ?? String(kind);
-      view.container.insertBefore(item, view.progress);
+      setData(item, RULES.types[kind]?.id ?? String(kind));
+      placeAfter(view.container, item, view.items[i - 1] ?? null);
     }
     while (view.items.length > queue.items.length) view.items.pop()?.remove();
-    view.progress.value = queue.headPermille;
+    if (view.progress.value !== queue.headPermille)
+      view.progress.value = queue.headPermille;
     return view;
   }
 
@@ -209,14 +210,18 @@ export function createCommandPanel(
         if (button === undefined) continue;
         const element = buttonAt(i);
         const def = RULES.types[button.typeIndex];
-        element.dataset.type = def?.id ?? String(button.typeIndex);
-        element.textContent = button.label;
-        element.disabled = !button.enabled;
+        setData(element, def?.id ?? String(button.typeIndex));
+        if (element.textContent !== button.label)
+          element.textContent = button.label;
+        if (element.disabled === button.enabled)
+          element.disabled = !button.enabled;
         const active =
           button.action === "construct" && button.typeIndex === placing;
-        element.classList.toggle("active", active);
-        element.setAttribute("aria-pressed", String(active));
-        panel.insertBefore(element, queueView?.container ?? null);
+        if (element.classList.contains("active") !== active)
+          element.classList.toggle("active", active);
+        if (element.getAttribute("aria-pressed") !== String(active))
+          element.setAttribute("aria-pressed", String(active));
+        placeAfter(panel, element, elements[i - 1] ?? null);
       }
       while (elements.length > buttons.length) elements.pop()?.remove();
       if (queue === null) {
@@ -229,6 +234,25 @@ export function createCommandPanel(
         panel.appendChild(view.container);
     },
   };
+}
+
+/** Sets `data-type` only when it differs, so re-rendering mutates nothing. */
+function setData(element: HTMLElement, type: string): void {
+  if (element.dataset.type !== type) element.dataset.type = type;
+}
+
+/** Puts `node` right after `previous` (first when null) in `parent`, moving it
+ *  only when it is not already there: moving a node detaches it, which cancels
+ *  a click whose press started before the move (#138). */
+function placeAfter(
+  parent: HTMLElement,
+  node: HTMLElement,
+  previous: HTMLElement | null,
+): void {
+  const reference =
+    previous === null ? parent.firstChild : previous.nextSibling;
+  if (node === reference) return;
+  parent.insertBefore(node, reference);
 }
 
 function createQueueView(): QueueView {
