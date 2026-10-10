@@ -496,3 +496,108 @@ test("AC-03-59: attacks with a right click", async ({ page }) => {
     .toBe(0);
   expect(await entityCount(page, 0, leopardKind)).toBeGreaterThan(0);
 });
+
+/** `MAX_DRAW_CALLS_SKIRMISH` (spec §3). */
+const MAX_DRAW_CALLS_SKIRMISH = 8;
+
+/** One rifleman block of AC-03-62; positions are cell centres. */
+interface SpawnBlock {
+  owner: number;
+  typeId: string;
+  x0: number;
+  x1: number;
+  y0: number;
+  y1: number;
+}
+
+const DRAW_CALL_BLOCKS: readonly SpawnBlock[] = [
+  { owner: 0, typeId: "ua-rifleman", x0: 20, x1: 34, y0: 20, y1: 29 },
+  { owner: 1, typeId: "ru-rifleman", x0: 93, x1: 107, y0: 98, y1: 107 },
+];
+
+function blockSize(block: SpawnBlock): number {
+  return (block.x1 - block.x0 + 1) * (block.y1 - block.y0 + 1);
+}
+
+/** Spawns one unit of `kind` at the centre of every cell of `block` (spec §5.16). */
+function spawnBlock(
+  page: Page,
+  block: SpawnBlock,
+  kind: number,
+): Promise<void> {
+  return debugCall(
+    page,
+    (api, args: SpawnRequest[]) => {
+      for (const spawn of args) {
+        api.command({
+          kind: "debugSpawn",
+          player: spawn.owner,
+          typeIndex: spawn.kind,
+          xRaw: spawn.xRaw,
+          yRaw: spawn.yRaw,
+        });
+      }
+    },
+    spawnRequests(block, kind),
+  );
+}
+
+interface SpawnRequest {
+  owner: number;
+  kind: number;
+  xRaw: number;
+  yRaw: number;
+}
+
+/** One `debugSpawn` per cell centre of `block`, already in fixed-point raw. */
+function spawnRequests(block: SpawnBlock, kind: number): SpawnRequest[] {
+  const requests: SpawnRequest[] = [];
+  for (let x = block.x0; x <= block.x1; x++) {
+    for (let y = block.y0; y <= block.y1; y++) {
+      requests.push({
+        owner: block.owner,
+        kind,
+        xRaw: Math.round((x + 0.5) * FX_ONE),
+        yRaw: Math.round((y + 0.5) * FX_ONE),
+      });
+    }
+  }
+  return requests;
+}
+
+test("AC-03-62: renders a skirmish in at most 8 draw calls", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  await bootDebug(page, "debug=1");
+
+  for (const block of DRAW_CALL_BLOCKS) {
+    const kind = await kindOf(page, block.typeId);
+    await spawnBlock(page, block, kind);
+    // Owner 0's block lies in explored terrain, so it is visible at once.
+    if (block.owner === 0) {
+      await expect
+        .poll(() => entityCount(page, block.owner, kind), { timeout: 10_000 })
+        .toBe(blockSize(block));
+    }
+  }
+
+  await page.keyboard.press("F3");
+  await expect.poll(() => debugCall(page, (api) => api.viewer())).toBe(255);
+  // Owner 1's block is only in the snapshot while revealed.
+  const enemy = DRAW_CALL_BLOCKS[1];
+  if (enemy === undefined) throw new Error("missing enemy block");
+  const enemyKind = await kindOf(page, enemy.typeId);
+  await expect
+    .poll(() => entityCount(page, enemy.owner, enemyKind), { timeout: 10_000 })
+    .toBe(blockSize(enemy));
+
+  // `drawCalls()` is `renderer.info.render.calls` of the last frame (spec §6.7).
+  await expect
+    .poll(() => debugCall(page, (api) => api.drawCalls()), { timeout: 10_000 })
+    .toBeGreaterThan(0);
+  const drawCalls = await debugCall(page, (api) => api.drawCalls());
+  console.log(`AC-03-62 drawCalls=${drawCalls}`);
+  expect(drawCalls).toBeGreaterThanOrEqual(1);
+  expect(drawCalls).toBeLessThanOrEqual(MAX_DRAW_CALLS_SKIRMISH);
+});
