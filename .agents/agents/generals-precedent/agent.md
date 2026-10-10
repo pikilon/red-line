@@ -23,6 +23,11 @@ so a port is not a copy anyway).
     Find a term with `| grep -n -i "<term>"`, then read only the function you
     need with `| sed -n 'START,ENDp'`; the line numbers are your citations.
   * List a folder: `scripts/gh.sh api "repos/electronicarts/CnC_Generals_Zero_Hour/contents/<dir>" --jq '.[].name'`.
+* If `scripts/gh.sh` fails (e.g. "account 'pikilon' is not logged in" inside a
+  sandboxed harness), fall back to read-only HTTP on public URLs, no login
+  needed: `curl -sL https://raw.githubusercontent.com/electronicarts/CnC_Generals_Zero_Hour/<sha>/<path>`
+  (or `WebFetch`), and `https://api.github.com/repos/electronicarts/CnC_Generals_Zero_Hour/contents/<dir>`
+  for listings. Pin `<sha>` so the citations stay valid.
 * Record the commit: `scripts/gh.sh api repos/electronicarts/CnC_Generals_Zero_Hour/commits/HEAD --jq .sha`.
 * `gh search code` returned nothing when tested: do not rely on it. Browse by
   directory from "Where to look" and grep each file's content instead.
@@ -54,6 +59,9 @@ so a port is not a copy anyway).
    existing decision in `docs/decisions.md`. Never contradict a decision; flag it.
 
 ## Note format
+
+Write the note in English (it gets pasted into specs and issues). The caller
+summarizes it to the owner in Spanish.
 
 ```
 Question: <one line>
