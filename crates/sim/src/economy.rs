@@ -40,6 +40,7 @@ impl World {
         }
         self.update_construction();
         self.update_production();
+        self.update_harvesting();
     }
 
     fn production_speed(&self, owner: PlayerId) -> u32 {
@@ -388,6 +389,191 @@ impl World {
                 | Order::Build { order_id, .. } => order_id,
             };
             unit.order = Order::Idle { last_order_id };
+        }
+    }
+
+    /// Spec 5.8 `Harvest`: valid if `depot` is a depot; every listed unit of
+    /// `player` with `capacity > 0` starts toward it (cargo kept).
+    pub(crate) fn apply_harvest(&mut self, player: PlayerId, units: &[EntityId], depot: EntityId) {
+        if !self.is_depot(depot) {
+            return;
+        }
+        let order_id = self.next_order_id;
+        self.next_order_id += 1;
+        for &id in units {
+            let Some(index) = self.index_of(id) else {
+                continue;
+            };
+            let unit = &self.entities[index];
+            if unit.owner == player && unit.site.is_none() && self.rules.ty(unit.kind).capacity > 0
+            {
+                self.entities[index].order = Order::Harvest {
+                    order_id,
+                    depot,
+                    center: None,
+                    phase: HarvestPhase::ToDepot,
+                    timer: 0,
+                };
+            }
+        }
+    }
+
+    fn is_depot(&self, id: EntityId) -> bool {
+        self.entity(id)
+            .is_some_and(|e| self.rules.ty(e.kind).category == Category::Depot)
+    }
+
+    /// Entity distance from unit `index` to `target` is within dock range.
+    fn docked(&self, index: usize, target: EntityId) -> bool {
+        let dock = fx_centi(self.rules.dock_range_centi);
+        self.entity(target)
+            .is_some_and(|t| self.entity_distance(self.entities[index].pos, t) <= dock)
+    }
+
+    /// Nearest complete drop-off building of `owner` by distance to its
+    /// centre, ties lowest id.
+    fn nearest_center(&self, owner: PlayerId, pos: FxVec2) -> Option<EntityId> {
+        let mut best: Option<(Fx, EntityId)> = None;
+        for e in self.entities.iter().filter(|e| self.is_drop_off(owner, e)) {
+            let distance = (e.pos - pos).length();
+            if best.is_none_or(|(d, _)| distance < d) {
+                best = Some((distance, e.id));
+            }
+        }
+        best.map(|(_, id)| id)
+    }
+
+    fn is_drop_off(&self, owner: PlayerId, e: &Entity) -> bool {
+        e.owner == owner
+            && self.rules.ty(e.kind).drop_off
+            && e.site.as_ref().is_some_and(|site| site.complete)
+    }
+
+    /// Spec 5.9 harvesting: advances every `Harvest` order one tick.
+    fn update_harvesting(&mut self) {
+        for index in 0..self.entities.len() {
+            let Order::Harvest {
+                order_id,
+                mut depot,
+                mut center,
+                mut phase,
+                mut timer,
+            } = self.entities[index].order
+            else {
+                continue;
+            };
+            let (owner, pos, kind) = {
+                let unit = &self.entities[index];
+                (unit.owner, unit.pos, unit.kind)
+            };
+            match phase {
+                HarvestPhase::ToDepot => {
+                    let alive = self.entity(depot).is_some_and(|d| d.hp > 0);
+                    if !alive {
+                        let Some(found) = self.nearest_depot(pos) else {
+                            self.entities[index].order = Order::Idle {
+                                last_order_id: order_id,
+                            };
+                            continue;
+                        };
+                        depot = found;
+                    }
+                    if self.docked(index, depot) {
+                        phase = HarvestPhase::Loading;
+                        timer = self.rules.ty(kind).load_ticks;
+                    }
+                }
+                HarvestPhase::Loading => {
+                    timer = timer.saturating_sub(1);
+                    if timer == 0 {
+                        let capacity = self.rules.ty(kind).capacity;
+                        let cargo = self.entities[index].cargo;
+                        let take = self.index_of(depot).map_or(0, |d| {
+                            let take = capacity.saturating_sub(cargo).min(self.entities[d].hp);
+                            self.entities[d].hp -= take;
+                            take
+                        });
+                        let cargo = cargo + take;
+                        self.entities[index].cargo = cargo;
+                        if cargo > 0 {
+                            phase = HarvestPhase::ToCenter;
+                            center = None;
+                        } else {
+                            phase = HarvestPhase::ToDepot;
+                        }
+                    }
+                }
+                HarvestPhase::ToCenter => {
+                    let valid = center
+                        .and_then(|c| self.entity(c))
+                        .is_some_and(|c| self.is_drop_off(owner, c));
+                    if !valid {
+                        center = self.nearest_center(owner, pos);
+                    }
+                    if center.is_some_and(|c| self.docked(index, c)) {
+                        phase = HarvestPhase::Unloading;
+                        timer = self.rules.ty(kind).unload_ticks;
+                    }
+                }
+                HarvestPhase::Unloading => {
+                    timer = timer.saturating_sub(1);
+                    if timer == 0 {
+                        let cargo = std::mem::take(&mut self.entities[index].cargo);
+                        if let Some(player) = self.players.get_mut(usize::from(owner)) {
+                            player.credits = player.credits.saturating_add(cargo);
+                        }
+                        phase = HarvestPhase::ToDepot;
+                    }
+                }
+            }
+            self.entities[index].order = Order::Harvest {
+                order_id,
+                depot,
+                center,
+                phase,
+                timer,
+            };
+        }
+    }
+
+    /// Spec 5.10 `Harvest`: the footprint being driven to (`ToDepot` the
+    /// depot, `ToCenter` the center when set); `None` while not moving.
+    fn harvest_target(&self, index: usize) -> Option<EntityId> {
+        let Order::Harvest {
+            depot,
+            center,
+            phase,
+            ..
+        } = self.entities[index].order
+        else {
+            return None;
+        };
+        let target = match phase {
+            HarvestPhase::ToDepot => Some(depot),
+            HarvestPhase::ToCenter => center,
+            HarvestPhase::Loading | HarvestPhase::Unloading => None,
+        }?;
+        self.entity(target)?;
+        Some(target)
+    }
+
+    /// Approach cell of the current harvest target, if the truck is driving.
+    pub(crate) fn harvest_goal(&self, index: usize) -> Option<Cell> {
+        self.harvest_target(index)
+            .and_then(|target| self.build_goal(target))
+    }
+
+    /// Movement phase for a `Harvest` order: a step toward the target's
+    /// approach cell unless docked or not driving.
+    pub(crate) fn step_harvest(&mut self, index: usize) {
+        let Some(target) = self.harvest_target(index) else {
+            return;
+        };
+        if self.docked(index, target) {
+            return;
+        }
+        if let Some(goal) = self.build_goal(target) {
+            self.step_toward_goal(index, goal);
         }
     }
 }
