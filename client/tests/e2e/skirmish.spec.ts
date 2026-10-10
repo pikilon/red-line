@@ -360,7 +360,8 @@ test("AC-03-64: shows placement feedback", async ({ page }) => {
   const hqKind = await kindOf(page, "ua-hq");
   const dozer = await entityOf(page, 0, dozerKind);
   const hq = await entityOf(page, 0, hqKind);
-  if (dozer === null || hq === null) throw new Error("missing ua-dozer or ua-hq");
+  if (dozer === null || hq === null)
+    throw new Error("missing ua-dozer or ua-hq");
   await clickTiles(page, dozer.x, dozer.y);
 
   const plantButton = page.locator(
@@ -373,6 +374,14 @@ test("AC-03-64: shows placement feedback", async ({ page }) => {
   await expect(plantButton).toHaveAttribute("aria-pressed", "true");
   await expect(plantButton).toHaveClass(/\bactive\b/);
   await expect(hint).toBeVisible();
+  // The last pointer position is the dozer, an illegal site; (19.5, 65.5)
+  // centres a legal 3x3 footprint (AC-03-56).
+  const legal = await debugCall(
+    page,
+    (api, tiles: Point) => api.worldToScreen(tiles.x, tiles.y),
+    { x: 19.5, y: 65.5 },
+  );
+  await page.mouse.move(legal.x, legal.y);
   await expect(hint).toHaveText(
     "Left click on the ground to build · right click or Esc to cancel",
   );
