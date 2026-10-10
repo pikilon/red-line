@@ -427,8 +427,29 @@ impl World {
         self.separate_units();
         self.arrive_on_contact();
         self.update_visibility();
+        self.update_combat();
+        self.remove_dead();
         self.drop_unused_fields();
         self.tick += 1;
+    }
+
+    /// Deaths phase: units and buildings at `hp == 0` are removed, empty depots
+    /// stay, and a removed building releases its footprint cells (§5.7 step 8).
+    fn remove_dead(&mut self) {
+        let mut removed_building = false;
+        let mut kept = Vec::with_capacity(self.entities.len());
+        for entity in std::mem::take(&mut self.entities) {
+            let depot = self.rules.ty(entity.kind).category == Category::Depot;
+            if entity.hp == 0 && !depot {
+                removed_building |= entity.site.is_some();
+            } else {
+                kept.push(entity);
+            }
+        }
+        self.entities = kept;
+        if removed_building {
+            self.rebuild_nav();
+        }
     }
 
     /// Phase 1: applies pending commands in enqueue order.
@@ -447,6 +468,7 @@ impl World {
                 Command::Resume { units, building } => self.apply_resume(player, &units, building),
                 Command::Stop { units } => self.apply_stop(player, &units),
                 Command::Harvest { units, depot } => self.apply_harvest(player, &units, depot),
+                Command::Attack { units, target } => self.apply_attack(player, &units, target),
                 _ => {}
             }
         }
@@ -484,6 +506,36 @@ impl World {
         }
     }
 
+    /// Spec §5.8 `Attack`: valid when the target exists, has `hp > 0`, is owned
+    /// by neither `player` nor `NEUTRAL`, and is visible to `player`. It
+    /// consumes one order id and every listed unit of `player` with a weapon
+    /// receives the order. Anything else is ignored.
+    pub(crate) fn apply_attack(&mut self, player: PlayerId, units: &[EntityId], target: EntityId) {
+        let valid = self.entity(target).is_some_and(|entity| {
+            entity.hp > 0
+                && entity.owner != player
+                && entity.owner != NEUTRAL
+                && self.is_entity_visible(player, target)
+        });
+        if !valid {
+            return;
+        }
+        let order_id = self.next_order_id;
+        self.next_order_id += 1;
+        let order = Order::Attack { order_id, target };
+        for &id in units {
+            if let Some(index) = self.index_of(id) {
+                let entity = &mut self.entities[index];
+                if entity.owner == player
+                    && entity.site.is_none()
+                    && self.rules.weapon_of(entity.kind).is_some()
+                {
+                    entity.order = order;
+                }
+            }
+        }
+    }
+
     /// Phase 1 move step 1: clamps `target` into the map bounds.
     pub(crate) fn clamp_to_map(&self, target: FxVec2) -> FxVec2 {
         let max_x = i32::from(self.nav.width()) * 65536 - 1;
@@ -505,8 +557,53 @@ impl World {
                 } => self.step_move(index, order_id, target, goal),
                 Order::Build { order_id, building } => self.step_build(index, order_id, building),
                 Order::Harvest { .. } => self.step_harvest(index),
+                Order::Attack { order_id, target } => self.step_attack(index, order_id, target),
                 _ => {}
             }
+        }
+    }
+
+    /// Spec §5.10 `Attack`: back to idle when the target is gone, dead or
+    /// hidden to the owner; no move inside the weapon range; a step toward the
+    /// target's goal beyond it.
+    fn step_attack(&mut self, index: usize, order_id: u32, target: EntityId) {
+        let (owner, pos, kind) = {
+            let unit = &self.entities[index];
+            (unit.owner, unit.pos, unit.kind)
+        };
+        let alive = self
+            .entity(target)
+            .is_some_and(|entity| entity.hp > 0 && self.is_entity_visible(owner, target));
+        if !alive {
+            self.entities[index].order = Order::Idle {
+                last_order_id: order_id,
+            };
+            return;
+        }
+        let range = self
+            .rules
+            .weapon_of(kind)
+            .map_or(Fx::ZERO, |weapon| fx_centi(weapon.range_centi));
+        let distance = self
+            .entity(target)
+            .map(|entity| self.entity_distance(pos, entity));
+        if distance.is_some_and(|distance| distance <= range) {
+            return;
+        }
+        if let Some(goal) = self.attack_goal(target) {
+            self.step_toward_goal(index, goal);
+        }
+    }
+
+    /// Goal of an `Attack` order: the target's cell, or the approach cell of a
+    /// building's footprint (§5.5).
+    pub(crate) fn attack_goal(&self, target: EntityId) -> Option<Cell> {
+        let entity = self.entity(target)?;
+        match &entity.site {
+            Some(site) => {
+                approach_cell(&self.nav, site.origin, self.rules.ty(entity.kind).footprint)
+            }
+            None => Some(cell_of(entity.pos)),
         }
     }
 
@@ -710,6 +807,9 @@ impl World {
                     self.build_goal(building).map(|goal| self.nav.index(goal))
                 }
                 Order::Harvest { .. } => self.harvest_goal(index).map(|goal| self.nav.index(goal)),
+                Order::Attack { target, .. } => {
+                    self.attack_goal(target).map(|goal| self.nav.index(goal))
+                }
                 _ => None,
             })
             .collect();
