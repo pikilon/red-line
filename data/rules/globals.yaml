@@ -1,5 +1,6 @@
 factions: [ukraine, russia]          # required; file order of data/factions/<id>.yaml
 maps: [first-line]                   # required; file order of data/maps/<id>.yaml
+ai: [ukraine-balanced, ukraine-rush, russia-balanced, russia-rush]   # required; file order of data/ai/<id>.yaml
 damageTypes: [smallArms, autocannon, antiTank, highExplosive, thermobaric]   # required, ids
 armorClasses: [infantry, light, armored, structure]                           # required, ids
 damageModifiers:                     # required: one entry per damage type, one key per armour class, 0..1000

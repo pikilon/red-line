@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ai.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "faction", "harvesters", "defenseRadiusCenti", "buildOrder", "taskForces", "triggers"],
+  "properties": {
+    "id": { "$ref": "faction.schema.json#/$defs/id" },
+    "faction": { "$ref": "faction.schema.json#/$defs/id" },
+    "harvesters": { "type": "integer", "minimum": 0, "maximum": 20 },
+    "defenseRadiusCenti": { "type": "integer", "minimum": 0, "maximum": 12800 },
+    "buildOrder": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "faction.schema.json#/$defs/id" }
+    },
+    "taskForces": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/taskForce" }
+    },
+    "triggers": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/trigger" }
+    }
+  },
+  "$defs": {
+    "taskForce": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "units"],
+      "properties": {
+        "id": { "$ref": "faction.schema.json#/$defs/id" },
+        "units": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": "integer", "minimum": 1, "maximum": 20 }
+        }
+      }
+    },
+    "trigger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["taskForce", "weight", "minTick"],
+      "properties": {
+        "taskForce": { "$ref": "faction.schema.json#/$defs/id" },
+        "weight": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "minTick": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}
