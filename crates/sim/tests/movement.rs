@@ -233,6 +233,36 @@ fn ac_04_02_near_to_far_allocation_priority() {
     assert_eq!(far_goal, Cell { x: 38, y: 31 });
 }
 
+/// AC-04-03, spec 04 §5.2: 300 units crowding one passable goal all go idle
+/// within 300 ticks and then nobody moves at all between ticks 300 and 301.
+#[test]
+fn ac_04_03_zero_jitter_equilibrium_settling() {
+    let mut world = World::tech_slice(42, 300).unwrap();
+    world.enqueue(Command::Move {
+        units: (0..300).collect(),
+        target: raw(1343488, 1343488),
+    });
+    for _ in 0..300 {
+        world.step();
+    }
+    assert!(
+        world.units().iter().all(|u| is_idle(u.order)),
+        "every unit should be idle by tick 300"
+    );
+    let before: Vec<FxVec2> = world.units().iter().map(|u| u.pos).collect();
+    world.step();
+    let moved = world
+        .units()
+        .iter()
+        .zip(&before)
+        .filter(|(u, pos)| u.pos != **pos)
+        .count();
+    assert_eq!(
+        moved, 0,
+        "{moved} units still moved between ticks 300 and 301"
+    );
+}
+
 fn cell_center_raw(x: i32, y: i32) -> FxVec2 {
     raw((x << 16) + 32768, (y << 16) + 32768)
 }
