@@ -16,7 +16,6 @@ pub struct Player {
     /// Per cell, row-major.
     pub(crate) explored: Vec<bool>,
     /// Derived each vision phase, not hashed.
-    #[expect(dead_code, reason = "read by the vision phase (P2-07)")]
     pub(crate) visible: Vec<bool>,
     pub(crate) ghosts: BTreeMap<EntityId, Ghost>,
 }
