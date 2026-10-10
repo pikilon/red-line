@@ -12,7 +12,7 @@ quality.
 |---|---|---|
 | 0.1 | Repository, licenses, notice, decisions log | done |
 | 0.2 | Root `AGENTS.md` and core skills | done |
-| 0.3 | `scripts/gh.sh` identity wrapper and `scripts/doctor.sh` | done |
+| 0.3 | `scripts/doctor.sh` (the `scripts/gh.sh` identity wrapper was removed in #157) | done |
 | 0.4 | Install core toolchain (Rust wasm target, wasm-pack, nextest, Blender, ffmpeg) | done |
 | 0.5 | Public GitHub repository, labels, issue/PR templates, project board | done |
 | 0.6 | Toolchain skeleton: Cargo workspace (`crates/sim`, `crates/headless`), `client/` (Vite + TS + Three.js), Biome, Vitest, Playwright, empty green CI | done |

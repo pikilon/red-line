@@ -7,8 +7,9 @@ description: Create commits, branches or worktrees, or use GitHub for issues, pu
 
 ## Identity
 
-* Run GitHub CLI commands only through `scripts/gh.sh <args>`; it selects the
-  `pikilon` account itself. Do not run `gh auth status` first.
+* GitHub operations act as `pikilon`. If `gh` answers with another account or
+  fails to authenticate, stop and ask the owner to fix the login; do not switch
+  accounts yourself.
 * Commits must be authored as `pikilon <pikilon@gmail.com>`. The repository
   sets this in its local git config; in a fresh clone or worktree run
   `git config user.name pikilon && git config user.email pikilon@gmail.com`.

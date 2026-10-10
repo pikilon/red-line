@@ -17,7 +17,7 @@ Do not restate or second-guess its rules. Then return **only** the report below.
 * Report only: never fix code, never edit, create or delete files, never
   commit. If a check needs a fix, say what and where.
 * Never skip, weaken or silence a test or lint rule to obtain a PASS.
-* Use `scripts/gh.sh` instead of `gh`; package scripts run with `node --run`.
+* Package scripts run with `node --run`, never `npm run`.
 * Non-interactive shells may lack `$HOME/.cargo/bin`: run every command with
   `PATH="$HOME/.cargo/bin:$PATH"`. Run `scripts/doctor.sh` when a tool seems
   missing, and report what it says.

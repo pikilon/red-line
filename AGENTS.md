@@ -26,11 +26,10 @@ not write code: agents implement, the owner reviews quality.
 * Chat with the owner is in Spanish: summaries, questions and confirmation
   requests are written in Spanish, quoting identifiers and paths unchanged.
 
-## GitHub Identity
+## Git and GitHub
 
-* Never call `gh` directly: use `scripts/gh.sh <args>`. It switches to the
-  `pikilon` account before running, so do not check the account yourself.
-* Before any commit or push, load `.agents/skills/repository-delivery/SKILL.md`.
+* Before any commit, push or GitHub operation, load
+  `.agents/skills/repository-delivery/SKILL.md`.
 
 ## Architecture Boundaries
 

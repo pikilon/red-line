@@ -15,9 +15,9 @@ description: Pick, claim, execute and hand back a GitHub issue. Use when startin
 
 ## Pick
 
-1. `scripts/gh.sh issue list --label <tier> --state open --search "no:assignee"`
+1. `gh issue list --label <tier> --state open --search "no:assignee"`
 2. Take the lowest-numbered issue whose dependencies are closed.
-3. Claim it: `scripts/gh.sh issue edit <N> --add-assignee @me` and comment the
+3. Claim it: `gh issue edit <N> --add-assignee @me` and comment the
    harness and model you are (e.g. `Claimed by OpenCode / Ornith`).
 
 ## Execute
