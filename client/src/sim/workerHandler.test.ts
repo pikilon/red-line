@@ -166,26 +166,20 @@ describe("worker handler", () => {
         ) => void
       >();
     const command_resume =
-      vi.fn<
-        (player: number, unitIds: Uint32Array, building: number) => void
-      >();
+      vi.fn<(player: number, unitIds: Uint32Array, building: number) => void>();
     const command_produce =
       vi.fn<(player: number, building: number, kind: number) => void>();
-    const command_cancel =
-      vi.fn<(player: number, building: number) => void>();
+    const command_cancel = vi.fn<(player: number, building: number) => void>();
     const command_rally =
       vi.fn<
-        (
-          player: number,
-          building: number,
-          xRaw: number,
-          yRaw: number,
-        ) => void
+        (player: number, building: number, xRaw: number, yRaw: number) => void
       >();
     const command_stop =
       vi.fn<(player: number, unitIds: Uint32Array) => void>();
     const debug_spawn =
-      vi.fn<(player: number, kind: number, xRaw: number, yRaw: number) => void>();
+      vi.fn<
+        (player: number, kind: number, xRaw: number, yRaw: number) => void
+      >();
     const debug_set_hp = vi.fn<(entity: number, hp: number) => void>();
     const skirmishSim: SkirmishSimLike = {
       map_width: () => 2,

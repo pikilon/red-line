@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { MainToWorker, WorkerToMain } from "./protocol";
-import {
-  createSkirmishClient,
-  type SkirmishClient,
-} from "./skirmishClient";
 import type { MatchSnapshot } from "./matchSnapshot";
+import type { MainToWorker, SimCommand, WorkerToMain } from "./protocol";
+import { createSkirmishClient, type SkirmishClient } from "./skirmishClient";
 
 class FakeWorker {
   readonly sent: MainToWorker[] = [];
@@ -83,13 +80,13 @@ describe("skirmish client", () => {
     errorWorker.emit({ type: "error", detail: "unknown map: nope" });
     await expect(errored.ready).rejects.toThrow("unknown map: nope");
 
-    const command = {
+    const command: SimCommand = {
       kind: "move",
       player: 1,
       units: [4, 5],
       xRaw: 65536,
       yRaw: 131072,
-    } as const;
+    };
     client.command(command);
     expect(worker.sent[1]).toEqual({ type: "command", command });
 

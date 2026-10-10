@@ -18,9 +18,7 @@ const wasmPath = fileURLToPath(
 
 describe("skirmish native/WASM parity", () => {
   it("AC-03-42: native and WASM skirmish hashes are identical", () => {
-    const script = JSON.parse(
-      readFileSync(fixturePath, "utf8"),
-    ) as MatchScript;
+    const script = JSON.parse(readFileSync(fixturePath, "utf8")) as MatchScript;
     initSync({ module: readFileSync(wasmPath) });
     const sim = Sim.skirmish(script.seed, script.map);
     const wasmHash = runMatchScript(sim, script);
