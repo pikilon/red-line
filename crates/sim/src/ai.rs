@@ -2,14 +2,17 @@
 //!
 //! P3-03 implements the skeleton and the first three steps of the decision
 //! pass: harvesting, truck production and the starting dozer. P3-04 adds step 4
-//! (build order, site search, power substitution and resume). Later issues add
-//! the defense, production, launch and retarget steps.
+//! (build order, site search, power substitution and resume). P3-05 adds steps
+//! 5-8: defense, task-force production, launch and retarget (§5.6).
 
-use crate::entity::{EntityId, Order, PlayerId};
-use crate::fixed::FxVec2;
+use std::collections::BTreeMap;
+
+use crate::entity::{Entity, EntityId, NEUTRAL, Order, PlayerId};
+use crate::fixed::{Fx, FxVec2};
 use crate::map::{Cell, cell_of};
+use crate::nav::footprint_center;
 use crate::rng::SplitMix64;
-use crate::rules::{AiDef, Category, FactionId, Ruleset, TypeId};
+use crate::rules::{AiDef, Category, FactionId, Ruleset, TypeId, fx_centi};
 use crate::world::{Command, Outcome, World};
 
 /// Ticks between two decision passes (1 s at 15 Hz).
@@ -24,12 +27,10 @@ pub struct Ai {
     player: PlayerId,
     /// Index into `Ruleset::ai`.
     personality: usize,
-    /// Seeded for the weighted trigger roll (§5.4 step 6); used from P3-05.
-    #[allow(dead_code)]
+    /// Seeded for the weighted trigger roll (§5.4 step 6).
     rng: SplitMix64,
     /// Task force selected by step 6, as an index into the personality's
-    /// `taskForces`; used from P3-05.
-    #[allow(dead_code)]
+    /// `taskForces`.
     force: Option<u16>,
     /// Units committed to the current attack.
     attackers: Vec<EntityId>,
@@ -196,10 +197,116 @@ impl Ai {
             }
         }
 
-        // Steps 5..8 (defense, production, launch, retarget) spend the rest in
-        // P3-05; `budget` always stays within the player's credits.
-        debug_assert!(budget <= state.credits);
+        // 5. Defense: visible enemy units inside the defense radius of an own
+        // building. A defense attack skips task-force production and launch.
+        let threats = threats(world, player, def.defense_radius_centi);
+        let defending = !threats.is_empty();
+        if defending {
+            let center = anchor_center(world, player, faction).unwrap_or(FxVec2::ZERO);
+            if let Some(&target) = threats
+                .iter()
+                .min_by_key(|&&id| squared_distance(entity_pos(world, id), center))
+            {
+                let units: Vec<EntityId> = pool(world, player, faction, &self.attackers)
+                    .into_iter()
+                    .filter(|&id| {
+                        !matches!(
+                            world.entity(id).map(|entity| &entity.order),
+                            Some(Order::Attack { .. })
+                        )
+                    })
+                    .collect();
+                if !units.is_empty() {
+                    commands.push(Command::Attack { units, target });
+                }
+            }
+        }
 
+        // Units that received the launch order this pass, so step 8 does not
+        // target them twice.
+        let mut launched: Vec<EntityId> = Vec::new();
+
+        if !defending {
+            // 6. Production: select a task force, then produce its missing
+            // units, stopping when the budget or the producers run out.
+            if self.force.is_none() {
+                self.force = choose_force(def, world.tick(), &mut self.rng);
+            }
+            if let Some(force_index) = self.force {
+                let force = &def.task_forces[usize::from(force_index)];
+                let mut extra: BTreeMap<EntityId, u32> = BTreeMap::new();
+                'produce: for &(kind, count) in &force.units {
+                    let have = pool_of_kind(world, player, faction, &self.attackers, kind)
+                        + queued(world, player, kind);
+                    let missing = count.saturating_sub(have);
+                    for _ in 0..missing {
+                        let Some(producer) = producer_of_with(world, player, kind, &extra) else {
+                            break 'produce;
+                        };
+                        let cost = rules.ty(kind).cost;
+                        if budget < cost {
+                            break 'produce;
+                        }
+                        budget -= cost;
+                        *extra.entry(producer).or_insert(0) += 1;
+                        commands.push(Command::Produce {
+                            building: producer,
+                            kind,
+                        });
+                    }
+                }
+            }
+
+            // 7. Launch: once the whole force waits in the pool, commit it.
+            if let Some(force_index) = self.force {
+                let force = &def.task_forces[usize::from(force_index)];
+                let ready = force.units.iter().all(|&(kind, count)| {
+                    pool_of_kind(world, player, faction, &self.attackers, kind) >= count
+                });
+                if ready {
+                    let members = pool(world, player, faction, &self.attackers);
+                    for &(kind, count) in &force.units {
+                        launched.extend(
+                            members
+                                .iter()
+                                .copied()
+                                .filter(|&id| {
+                                    world.entity(id).is_some_and(|entity| entity.kind == kind)
+                                })
+                                .take(count as usize),
+                        );
+                    }
+                    self.attackers.extend(launched.iter().copied());
+                    self.force = None;
+                    if !launched.is_empty()
+                        && let Some(target) =
+                            target_from_centroid(world, player, centroid(world, &launched))
+                    {
+                        commands.push(order_for(target, launched.clone()));
+                    }
+                }
+            }
+        }
+
+        // 8. Retarget: attackers whose order finished go on the offensive.
+        let idle: Vec<EntityId> = self
+            .attackers
+            .iter()
+            .copied()
+            .filter(|id| !launched.contains(id))
+            .filter(|&id| {
+                world
+                    .entity(id)
+                    .is_some_and(|entity| matches!(entity.order, Order::Idle { .. }))
+            })
+            .collect();
+        if !idle.is_empty()
+            && let Some(target) = target_from_centroid(world, player, centroid(world, &idle))
+        {
+            commands.push(order_for(target, idle));
+        }
+
+        debug_assert!(budget <= state.credits);
         commands
     }
 }
@@ -412,4 +519,290 @@ fn margin_clear(world: &World, origin: Cell, size: [u16; 2]) -> bool {
         }
     }
     true
+}
+
+/// Squared raw distance between two positions (§5.3 *dist²*).
+fn squared_distance(a: FxVec2, b: FxVec2) -> i64 {
+    let dx = i64::from(a.x.raw()) - i64::from(b.x.raw());
+    let dy = i64::from(a.y.raw()) - i64::from(b.y.raw());
+    dx * dx + dy * dy
+}
+
+/// Position of `id`, or the origin when it vanished (callers only pass live
+/// ids).
+fn entity_pos(world: &World, id: EntityId) -> FxVec2 {
+    world.entity(id).map_or(FxVec2::ZERO, |entity| entity.pos)
+}
+
+/// Footprint centre of the anchor building (§5.3, §5.4 step 5).
+fn anchor_center(world: &World, player: PlayerId, faction: FactionId) -> Option<FxVec2> {
+    let hq = world.rules().factions[usize::from(faction)].hq;
+    let mut own_buildings = world
+        .entities()
+        .iter()
+        .filter(|entity| entity.owner == player && entity.site.is_some());
+    let entity = own_buildings
+        .clone()
+        .find(|entity| entity.kind == hq && entity.site.as_ref().is_some_and(|site| site.complete))
+        .or_else(|| own_buildings.next())?;
+    let origin = entity.site.as_ref()?.origin;
+    Some(footprint_center(
+        origin,
+        world.rules().ty(entity.kind).footprint,
+    ))
+}
+
+/// Combat units of `player` that are not in `attackers`, ascending id (§5.3
+/// *pool*).
+fn pool(
+    world: &World,
+    player: PlayerId,
+    faction: FactionId,
+    attackers: &[EntityId],
+) -> Vec<EntityId> {
+    let rules = world.rules();
+    let dozer = rules.factions[usize::from(faction)].dozer;
+    let truck = truck_kind(rules, faction);
+    world
+        .entities()
+        .iter()
+        .filter(|entity| {
+            entity.owner == player
+                && rules.ty(entity.kind).category == Category::Unit
+                && rules.weapon_of(entity.kind).is_some()
+                && entity.kind != dozer
+                && Some(entity.kind) != truck
+                && !attackers.contains(&entity.id)
+        })
+        .map(|entity| entity.id)
+        .collect()
+}
+
+/// Pool units of `kind` (ascending id).
+fn pool_of_kind(
+    world: &World,
+    player: PlayerId,
+    faction: FactionId,
+    attackers: &[EntityId],
+    kind: TypeId,
+) -> u32 {
+    pool(world, player, faction, attackers)
+        .into_iter()
+        .filter(|&id| world.entity(id).is_some_and(|entity| entity.kind == kind))
+        .count() as u32
+}
+
+/// Enemy unit threats inside the defense radius of any own building (§5.4
+/// step 5), ascending id.
+fn threats(world: &World, player: PlayerId, radius_centi: u32) -> Vec<EntityId> {
+    let radius = i64::from(fx_centi(radius_centi).raw());
+    let threshold = radius * radius;
+    let centers: Vec<FxVec2> = world
+        .entities()
+        .iter()
+        .filter(|entity| entity.owner == player && entity.site.is_some())
+        .filter_map(|entity| {
+            let origin = entity.site.as_ref()?.origin;
+            Some(footprint_center(
+                origin,
+                world.rules().ty(entity.kind).footprint,
+            ))
+        })
+        .collect();
+    if centers.is_empty() {
+        return Vec::new();
+    }
+    world
+        .entities()
+        .iter()
+        .filter(|entity| {
+            entity.owner != player
+                && entity.owner != NEUTRAL
+                && world.rules().ty(entity.kind).category == Category::Unit
+                && world.is_entity_visible(player, entity.id)
+                && centers
+                    .iter()
+                    .any(|&center| squared_distance(entity.pos, center) <= threshold)
+        })
+        .map(|entity| entity.id)
+        .collect()
+}
+
+/// Picks the eligible trigger of the weighted §5.4 step 6 roll.
+fn choose_force(def: &AiDef, tick: u32, rng: &mut SplitMix64) -> Option<u16> {
+    let total: u64 = def
+        .triggers
+        .iter()
+        .filter(|trigger| trigger.min_tick <= tick)
+        .map(|trigger| u64::from(trigger.weight))
+        .sum();
+    if total == 0 {
+        return None;
+    }
+    let roll = rng.next_u64() % total;
+    let mut cumulative = 0u64;
+    for trigger in def
+        .triggers
+        .iter()
+        .filter(|trigger| trigger.min_tick <= tick)
+    {
+        cumulative += u64::from(trigger.weight);
+        if cumulative > roll {
+            return Some(trigger.task_force);
+        }
+    }
+    None
+}
+
+/// Producer of `kind` accounting for `Produce` commands already emitted this
+/// pass (§5.4 step 6).
+fn producer_of_with(
+    world: &World,
+    player: PlayerId,
+    kind: TypeId,
+    extra: &BTreeMap<EntityId, u32>,
+) -> Option<EntityId> {
+    let max_queue = world.rules().max_queue;
+    let mut best: Option<(u32, EntityId)> = None;
+    for entity in world.entities() {
+        if entity.owner != player {
+            continue;
+        }
+        let Some(site) = &entity.site else {
+            continue;
+        };
+        if !site.complete || !world.rules().ty(entity.kind).produces.contains(&kind) {
+            continue;
+        }
+        let queued = site.queue.len() as u32 + extra.get(&entity.id).copied().unwrap_or(0);
+        if queued >= max_queue {
+            continue;
+        }
+        if best.is_none_or(|(len, _)| queued < len) {
+            best = Some((queued, entity.id));
+        }
+    }
+    best.map(|(_, id)| id)
+}
+
+/// Integer mean of the positions of `ids`, truncated (§5.6).
+fn centroid(world: &World, ids: &[EntityId]) -> FxVec2 {
+    if ids.is_empty() {
+        return FxVec2::ZERO;
+    }
+    let mut sum_x: i64 = 0;
+    let mut sum_y: i64 = 0;
+    for &id in ids {
+        let pos = entity_pos(world, id);
+        sum_x += i64::from(pos.x.raw());
+        sum_y += i64::from(pos.y.raw());
+    }
+    let count = ids.len() as i64;
+    FxVec2::new(
+        Fx::from_raw((sum_x / count) as i32),
+        Fx::from_raw((sum_y / count) as i32),
+    )
+}
+
+/// The shape of the §5.6 order chosen from a centroid.
+enum OrderTarget {
+    /// A visible enemy entity: `Attack`.
+    Entity(EntityId),
+    /// A position: `Move`.
+    Position(FxVec2),
+}
+
+fn order_for(target: OrderTarget, units: Vec<EntityId>) -> Command {
+    match target {
+        OrderTarget::Entity(target) => Command::Attack { units, target },
+        OrderTarget::Position(target) => Command::Move { units, target },
+    }
+}
+
+/// §5.6 target choice from a centroid `c`.
+fn target_from_centroid(world: &World, player: PlayerId, c: FxVec2) -> Option<OrderTarget> {
+    // 1. Visible enemy building of least dist² to `c`.
+    if let Some(id) = nearest_visible(world, player, c, |entity| {
+        entity.owner != player
+            && entity.owner != NEUTRAL
+            && world.rules().ty(entity.kind).category == Category::Building
+    }) {
+        return Some(OrderTarget::Entity(id));
+    }
+    // 2. Own ghost of least dist² from its footprint centre to `c`.
+    if let Some(center) = nearest_ghost(world, player, c) {
+        return Some(OrderTarget::Position(center));
+    }
+    // 3. Visible enemy unit of least dist² to `c`.
+    if let Some(id) = nearest_visible(world, player, c, |entity| {
+        entity.owner != player
+            && entity.owner != NEUTRAL
+            && world.rules().ty(entity.kind).category == Category::Unit
+    }) {
+        return Some(OrderTarget::Entity(id));
+    }
+    // 4. The first map start that is not `player`.
+    enemy_start_center(world, player).map(OrderTarget::Position)
+}
+
+/// Least-dist² visible entity matching `accept`, ties the lowest id.
+fn nearest_visible(
+    world: &World,
+    player: PlayerId,
+    c: FxVec2,
+    mut accept: impl FnMut(&Entity) -> bool,
+) -> Option<EntityId> {
+    let mut best: Option<(i64, EntityId)> = None;
+    for entity in world.entities() {
+        if !accept(entity) || !world.is_entity_visible(player, entity.id) {
+            continue;
+        }
+        let distance = squared_distance(entity.pos, c);
+        if best.is_none_or(|(d, _)| distance < d) {
+            best = Some((distance, entity.id));
+        }
+    }
+    best.map(|(_, id)| id)
+}
+
+/// Footprint centre of the own ghost of least dist² to `c`, ties the lowest id.
+fn nearest_ghost(world: &World, player: PlayerId, c: FxVec2) -> Option<FxVec2> {
+    let state = world.player(player)?;
+    let mut best: Option<(i64, FxVec2)> = None;
+    for ghost in state.ghosts().values() {
+        let center = footprint_center(ghost.origin, world.rules().ty(ghost.kind).footprint);
+        let distance = squared_distance(center, c);
+        if best.is_none_or(|(d, _)| distance < d) {
+            best = Some((distance, center));
+        }
+    }
+    best.map(|(_, center)| center)
+}
+
+/// Footprint centre of the HQ of the first map start that is not `player`
+/// (§5.6 step 4).
+///
+/// `World` does not retain the map it was built from, so the map is found among
+/// `Ruleset::maps` by matching the public start factions to the players
+/// (`skirmish` builds start `i` as player `i`).
+fn enemy_start_center(world: &World, player: PlayerId) -> Option<FxVec2> {
+    let players = world.players();
+    let map = world.rules().maps.iter().find(|map| {
+        map.starts.len() == players.len()
+            && map
+                .starts
+                .iter()
+                .zip(players)
+                .all(|(start, state)| start.faction == state.faction)
+    })?;
+    let index = (0..map.starts.len()).find(|&index| index != usize::from(player))?;
+    let start = &map.starts[index];
+    let hq = world.rules().factions[usize::from(start.faction)].hq;
+    Some(footprint_center(
+        Cell {
+            x: start.hq[0],
+            y: start.hq[1],
+        },
+        world.rules().ty(hq).footprint,
+    ))
 }
