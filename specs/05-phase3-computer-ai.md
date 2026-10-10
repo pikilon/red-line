@@ -528,12 +528,12 @@ This criterion is checked by review, not CI.
 
 | Issue | Scope | Criteria | Tier | Depends on |
 |---|---|---|---|---|
-| P3-01 | data: schema, four YAMLs, build-data assembly and checks | AC-05-01, 02 | ready-local | — |
-| P3-02 | sim: `AiDef` parsing/validation, `World::can_construct` | AC-05-03..05 | ready-local | P3-01 |
-| P3-03 | sim: `ai.rs` skeleton, `Ai::new`, harvest, trucks, dozer, `step_with_ai` | AC-05-06..08, 17 | ready-local | P3-02 |
-| P3-04 | sim: build order, site search, power substitution, resume | AC-05-09..11 | ready-local | P3-03 |
-| P3-05 | sim: task forces, launch, retarget, defense | AC-05-12..14 | ready-local | P3-04 |
-| P3-06 | sim: full-match criteria pass (tuning of §5 only if a test proves a rule wrong → needs-pro) | AC-05-15, 16 | ready-pro | P3-05 |
-| P3-07 | headless: `match` and `tournament` | AC-05-18, 19 | ready-local | P3-05 |
-| P3-08 | WASM API v3 + client AI opponent | AC-05-20, 21 | ready-pro | P3-05 |
-| P3-09 | balance report and data tuning | AC-05-22 | ready-pro | P3-06, P3-07 |
+| P3-01 (#144) | data: schema, four YAMLs, build-data assembly and checks | AC-05-01, 02 | ready-local | — |
+| P3-02 (#145) | sim: `AiDef` parsing/validation, `World::can_construct` | AC-05-03..05 | ready-local | P3-01 |
+| P3-03 (#146) | sim: `ai.rs` skeleton, `Ai::new`, harvest, trucks, dozer, `step_with_ai` | AC-05-06..08, 17 | ready-local | P3-02 |
+| P3-04 (#147) | sim: build order, site search, power substitution, resume | AC-05-09..11 | ready-local | P3-03 |
+| P3-05 (#148) | sim: task forces, launch, retarget, defense | AC-05-12..14 | ready-local | P3-04 |
+| P3-06 (#149) | sim: full-match criteria pass (tuning of §5 only if a test proves a rule wrong → needs-pro) | AC-05-15, 16 | ready-pro | P3-05 |
+| P3-07 (#150) | headless: `match` and `tournament` | AC-05-18, 19 | ready-local | P3-05 |
+| P3-08 (#151) | WASM API v3 + client AI opponent | AC-05-20, 21 | ready-pro | P3-05 |
+| P3-09 (#152) | balance report and data tuning | AC-05-22 | ready-pro | P3-06, P3-07 |
