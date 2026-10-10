@@ -2,14 +2,15 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::entity::{Entity, PlayerId, Projectile};
+use crate::entity::{Entity, NEUTRAL, PlayerId, Projectile, Site};
 pub use crate::entity::{EntityId, Order, Unit};
 use crate::fixed::{Fx, FxVec2};
 use crate::flow::FlowField;
 use crate::map::{Cell, CellIndex, MapGrid, SPAWN_MAX, SPAWN_MIN, cell_center, cell_of};
+use crate::nav::{footprint_cells, footprint_center};
 use crate::player::Player;
 use crate::rng::SplitMix64;
-use crate::rules::{Ruleset, TypeId, fx_centi};
+use crate::rules::{Category, FactionId, Ruleset, TypeId, fx_centi};
 
 pub type UnitId = EntityId;
 
@@ -102,9 +103,7 @@ pub struct World {
     /// Keyed by goal cell index.
     pub(crate) fields: BTreeMap<CellIndex, FlowField>,
     pub(crate) outcome: Outcome,
-    #[expect(dead_code, reason = "read by the victory phase (P2-14)")]
     pub(crate) victory_enabled: bool,
-    #[expect(dead_code, reason = "read by the debug commands (P2-08)")]
     pub(crate) debug_commands: bool,
 }
 
@@ -129,6 +128,22 @@ impl World {
             victory_enabled: false,
             debug_commands: false,
         }
+    }
+
+    /// Players `0..factions.len()` with credits = `rules.starting_credits`;
+    /// victory and debug commands disabled; nothing explored.
+    pub fn sandbox(rules: Ruleset, map: MapGrid, factions: &[FactionId]) -> World {
+        let mut world = World::new(map);
+        let cells = world.players[0].explored.len();
+        world.players = factions
+            .iter()
+            .enumerate()
+            .map(|(id, &faction)| {
+                Player::new(id as PlayerId, faction, rules.starting_credits, cells)
+            })
+            .collect();
+        world.rules = rules;
+        world
     }
 
     pub fn tech_slice(seed: u64, unit_count: u32) -> Result<World, SimError> {
@@ -166,21 +181,170 @@ impl World {
             .rules
             .type_index("tech-slice-placeholder")
             .expect("the rules define tech-slice-placeholder");
+        let hp = self.rules.ty(kind).hp;
+        self.push_entity(0, kind, pos, hp, None)
+    }
+
+    /// Unit of `kind` (category Unit), order `Idle { last_order_id: 0 }`, hp =
+    /// type hp. Panics if not a unit type, the cell is not nav-passable, or
+    /// `MAX_UNITS` entities exist.
+    pub fn spawn(&mut self, owner: PlayerId, kind: TypeId, pos: FxVec2) -> EntityId {
+        let ty = self.rules.ty(kind);
+        assert_eq!(ty.category, Category::Unit, "type {kind} is not a unit");
+        assert!(
+            self.nav.is_passable(cell_of(pos)),
+            "spawn position {pos:?} is not in a passable cell"
+        );
+        assert!(
+            (self.entities.len() as u32) < MAX_UNITS,
+            "MAX_UNITS entities exist"
+        );
+        let hp = ty.hp;
+        self.push_entity(owner, kind, pos, hp, None)
+    }
+
+    /// Building (category Building). complete: hp = type hp, progress =
+    /// build_ticks * 100; else hp = max(1, type hp / 10), progress 0. Panics
+    /// unless the footprint is free. Rebuilds the nav grid.
+    pub fn place_building(
+        &mut self,
+        owner: PlayerId,
+        kind: TypeId,
+        origin: Cell,
+        complete: bool,
+    ) -> EntityId {
+        let ty = self.rules.ty(kind);
+        assert_eq!(
+            ty.category,
+            Category::Building,
+            "type {kind} is not a building"
+        );
+        let (hp, progress) = if complete {
+            (ty.hp, ty.build_ticks * 100)
+        } else {
+            ((ty.hp / 10).max(1), 0)
+        };
+        self.place_site(owner, kind, origin, hp, progress, complete)
+    }
+
+    /// Depot of `rules.depot_type()`, owner `NEUTRAL`, hp = amount, complete.
+    /// Panics unless the footprint is free. Rebuilds the nav grid.
+    pub fn place_depot(&mut self, origin: Cell, amount: u32) -> EntityId {
+        let kind = self.rules.depot_type();
+        self.place_site(NEUTRAL, kind, origin, amount, 0, true)
+    }
+
+    pub fn set_credits(&mut self, player: PlayerId, credits: u32) {
+        self.players[usize::from(player)].credits = credits;
+    }
+
+    /// Removal happens in the next deaths phase.
+    pub fn set_hp(&mut self, id: EntityId, hp: u32) {
+        if let Some(index) = self.index_of(id) {
+            self.entities[index].hp = hp;
+        }
+    }
+
+    pub fn enable_victory(&mut self) {
+        self.victory_enabled = true;
+    }
+
+    pub fn enable_debug_commands(&mut self) {
+        self.debug_commands = true;
+    }
+
+    fn place_site(
+        &mut self,
+        owner: PlayerId,
+        kind: TypeId,
+        origin: Cell,
+        hp: u32,
+        progress: u32,
+        complete: bool,
+    ) -> EntityId {
+        let size = self.rules.ty(kind).footprint;
+        assert!(
+            self.footprint_free(origin, size),
+            "footprint at {origin:?} is not free"
+        );
+        let site = Site {
+            origin,
+            progress,
+            complete,
+            queue: Vec::new(),
+            rally: None,
+        };
+        let id = self.push_entity(owner, kind, footprint_center(origin, size), hp, Some(site));
+        self.rebuild_nav();
+        id
+    }
+
+    fn push_entity(
+        &mut self,
+        owner: PlayerId,
+        kind: TypeId,
+        pos: FxVec2,
+        hp: u32,
+        site: Option<Site>,
+    ) -> EntityId {
         let id = self.next_entity_id;
         self.next_entity_id += 1;
         self.entities.push(Entity {
             id,
-            owner: 0,
+            owner,
             kind,
             pos,
-            hp: self.rules.ty(kind).hp,
+            hp,
             order: Order::Idle { last_order_id: 0 },
             cooldown: 0,
             cargo: 0,
             last_target: None,
-            site: None,
+            site,
         });
         id
+    }
+
+    /// Every cell is in bounds and nav-passable, and no unit stands inside.
+    pub(crate) fn footprint_free(&self, origin: Cell, size: [u16; 2]) -> bool {
+        let cells = footprint_cells(origin, size);
+        cells.iter().all(|&cell| self.nav.is_passable(cell))
+            && !self
+                .entities
+                .iter()
+                .any(|e| e.site.is_none() && cells.contains(&cell_of(e.pos)))
+    }
+
+    /// `nav = terrain` plus every building and depot footprint; clears the flow
+    /// fields and remaps every `Move` whose goal became blocked (Phase 1 rule).
+    pub(crate) fn rebuild_nav(&mut self) {
+        let mut nav = self.terrain.clone();
+        for entity in &self.entities {
+            if let Some(site) = &entity.site {
+                for cell in footprint_cells(site.origin, self.rules.ty(entity.kind).footprint) {
+                    nav.set_blocked(cell, true);
+                }
+            }
+        }
+        self.nav = nav;
+        self.fields.clear();
+        for entity in &mut self.entities {
+            let Order::Move { order_id, goal, .. } = entity.order else {
+                continue;
+            };
+            if self.nav.is_passable(goal) {
+                continue;
+            }
+            entity.order = match self.nav.nearest_passable(goal) {
+                None => Order::Idle {
+                    last_order_id: order_id,
+                },
+                Some(found) => Order::Move {
+                    order_id,
+                    target: cell_center(found),
+                    goal: found,
+                },
+            };
+        }
     }
 
     /// == `enqueue_as(0, command)`.
@@ -204,14 +368,15 @@ impl World {
 
     /// Phase 1: applies pending commands in enqueue order.
     fn apply_commands(&mut self) {
-        for (_, command) in std::mem::take(&mut self.pending) {
+        for (player, command) in std::mem::take(&mut self.pending) {
             if let Command::Move { units, target } = command {
-                self.apply_move(&units, target);
+                self.apply_move(player, &units, target);
             }
         }
     }
 
-    fn apply_move(&mut self, units: &[EntityId], target: FxVec2) {
+    /// Only units owned by `player` receive the order.
+    fn apply_move(&mut self, player: PlayerId, units: &[EntityId], target: FxVec2) {
         let max_x = i32::from(self.nav.width()) * 65536 - 1;
         let max_y = i32::from(self.nav.height()) * 65536 - 1;
         let mut target = FxVec2::new(
@@ -239,7 +404,10 @@ impl World {
         };
         for &id in units {
             if let Some(index) = self.index_of(id) {
-                self.entities[index].order = order;
+                let entity = &mut self.entities[index];
+                if entity.owner == player && entity.site.is_none() {
+                    entity.order = order;
+                }
             }
         }
     }
@@ -290,10 +458,15 @@ impl World {
         let before: Vec<FxVec2> = self.entities.iter().map(|unit| unit.pos).collect();
         let buckets = self.bucket_by_cell(&before);
         let half_push = Fx::from_raw(SEPARATION_DISTANCE.raw() / 2);
+        // Buildings and depots neither push nor are pushed.
+        let is_unit: Vec<bool> = self.entities.iter().map(|e| e.site.is_none()).collect();
         for a in 0..self.entities.len() {
+            if !is_unit[a] {
+                continue;
+            }
             let mut push = FxVec2::ZERO;
             for b in self.neighbours(&buckets, cell_of(before[a])) {
-                if b == a {
+                if b == a || !is_unit[b] {
                     continue;
                 }
                 let offset = before[a] - before[b];
