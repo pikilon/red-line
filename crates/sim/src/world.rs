@@ -21,8 +21,7 @@ pub const SEPARATION_DISTANCE: Fx = Fx::from_raw(32768);
 pub const MAX_SEPARATION_PUSH: Fx = Fx::from_raw(6553);
 pub const ARRIVAL_CONTACT: Fx = Fx::from_raw(39321);
 
-/// Behaviour of every variant but `Move` arrives in later issues; until then
-/// they are ignored.
+/// Commands issued by a player, applied at the start of the next step (§5.8).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Command {
     /// Phase 1 shape.
@@ -508,9 +507,36 @@ impl World {
                 Command::Stop { units } => self.apply_stop(player, &units),
                 Command::Harvest { units, depot } => self.apply_harvest(player, &units, depot),
                 Command::Attack { units, target } => self.apply_attack(player, &units, target),
-                _ => {}
+                Command::DebugSpawn { kind, pos } => self.apply_debug_spawn(player, kind, pos),
+                Command::DebugSetHp { entity, hp } => self.apply_debug_set_hp(entity, hp),
             }
         }
+    }
+
+    /// §5.8: ignored unless `debug_commands`. Spawns a unit of `kind` for
+    /// `player` at `pos` when `kind` is a unit type, the cell is nav-passable
+    /// and fewer than `MAX_UNITS` entities exist; credits, prerequisites and
+    /// fog are not consulted.
+    fn apply_debug_spawn(&mut self, player: PlayerId, kind: TypeId, pos: FxVec2) {
+        if !self.debug_commands
+            || usize::from(kind) >= self.rules.types.len()
+            || self.rules.ty(kind).category != Category::Unit
+            || !self.nav.is_passable(cell_of(pos))
+            || self.entities.len() as u32 >= MAX_UNITS
+        {
+            return;
+        }
+        let hp = self.rules.ty(kind).hp;
+        self.push_entity(player, kind, pos, hp, None);
+    }
+
+    /// §5.8: ignored unless `debug_commands`. Sets the hp of any entity, of any
+    /// owner; removal happens in the next deaths phase (§5.7 step 8).
+    fn apply_debug_set_hp(&mut self, entity: EntityId, hp: u32) {
+        if !self.debug_commands {
+            return;
+        }
+        self.set_hp(entity, hp);
     }
 
     /// Only units owned by `player` receive the order.
