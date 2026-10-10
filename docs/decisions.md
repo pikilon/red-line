@@ -123,7 +123,10 @@ Owner answers to the Phase 2 design questions; elaborated in
 * A paid remote API (for example DeepSeek V4 Flash on the official API) may be
   used by agent tooling only after the owner confirms it for that run. An agent
   asks in chat; a script asks interactively and uses local models when there is
-  no answer (unattended runs never spend money).
+  no answer (unattended runs never spend money). For an unattended run the
+  owner sets `RUNNER_PAID_CONFIRMED=<provider>/<model>` for that run only; the
+  runner skips the question when it matches the configured paid provider and
+  model exactly, and any other value behaves as if unset.
 * Code, tests, CI and the game runtime never call a paid AI API.
 
 ## D-12 Production queue and Phase 1 test amendment (2026-10-10)
