@@ -129,14 +129,14 @@ function fakeWorld({ verifyStatus, attempts = 0, prStatus = 0, checksStatus = 0,
     calls.push(line);
     if (cmd === "npx" || cmd === "opencode") agentRan = true;
     if (opts.logFile) writeFileSync(opts.logFile, `output of ${cmd}\n`, { flag: "a" });
-    if (line.startsWith("scripts/gh.sh issue view")) {
+    if (line.startsWith("gh issue view")) {
       const comments = Array.from({ length: attempts }, () => ({ body: FAILURE_MARKER }));
       return { status: 0, stdout: JSON.stringify({ comments, body }) };
     }
     if (line === "node --run verify") return { status: verifyStatus, stdout: "" };
     if (line === "git diff --name-only --cached origin/main") return { status: 0, stdout: changed.join("\n") };
-    if (line.startsWith("scripts/gh.sh pr create")) return { status: prStatus, stdout: "" };
-    if (line.startsWith("scripts/gh.sh pr checks")) return { status: checksStatus, stdout: "" };
+    if (line.startsWith("gh pr create")) return { status: prStatus, stdout: "" };
+    if (line.startsWith("gh pr checks")) return { status: checksStatus, stdout: "" };
     if (line.startsWith("git status --porcelain") && !opts.cwd.includes(".night-runner")) {
       return { status: 0, stdout: strayInMain && agentRan ? " M scripts/a.mjs\n?? data/stray.yaml\n" : "" };
     }
@@ -167,13 +167,13 @@ test("night-runner: claims, runs the agent, verifies and opens a PR", async () =
   const result = await processIssue({ number: 12, title: "Trivial fix" }, ctx);
   assert.equal(result, "opened");
   const index = (prefix) => world.calls.findIndex((c) => c.startsWith(prefix));
-  assert.ok(index("scripts/gh.sh issue edit 12 --add-assignee @me") >= 0);
+  assert.ok(index("gh issue edit 12 --add-assignee @me") >= 0);
   assert.ok(index("git worktree add -B 12-trivial-fix") >= 0);
   assert.ok(index("npx -y @deepseek-ai/dsh") > index("git worktree add"));
   assert.ok(index("node --run verify") > index("npx -y @deepseek-ai/dsh"));
   assert.ok(index("git commit") > index("node --run verify"));
   assert.ok(index("git push -u origin 12-trivial-fix") > index("git commit"));
-  const pr = world.calls[index("scripts/gh.sh pr create")];
+  const pr = world.calls[index("gh pr create")];
   assert.match(pr, /--head 12-trivial-fix/);
   assert.match(pr, /Closes #12/);
 });
@@ -183,12 +183,12 @@ test("night-runner: comments each failure and escalates to needs-pro after the l
   const { ctx } = context(world);
   const result = await processIssue({ number: 12, title: "Trivial fix" }, ctx);
   assert.equal(result, "escalated");
-  const failures = world.calls.filter((c) => c.startsWith("scripts/gh.sh issue comment 12") && c.includes(FAILURE_MARKER));
+  const failures = world.calls.filter((c) => c.startsWith("gh issue comment 12") && c.includes(FAILURE_MARKER));
   assert.equal(failures.length, 2);
   assert.match(failures[1], /Attempt 3\/3/);
   assert.ok(world.calls.includes(
-    "scripts/gh.sh issue edit 12 --remove-label ready-local --add-label needs-pro --remove-assignee @me"));
-  assert.equal(world.calls.some((c) => c.startsWith("scripts/gh.sh pr create")), false);
+    "gh issue edit 12 --remove-label ready-local --add-label needs-pro --remove-assignee @me"));
+  assert.equal(world.calls.some((c) => c.startsWith("gh pr create")), false);
   assert.ok(readFileSync(join(ctx.logDir, "12-attempt-3.log"), "utf8").includes("output of"));
 });
 
@@ -200,7 +200,7 @@ test("night-runner: counts a PR that cannot be opened as a failed attempt", asyn
   assert.ok(world.calls.some((c) => c.includes(FAILURE_MARKER) && c.includes("could not push or open the PR")));
 });
 
-const merges = (world) => world.calls.filter((c) => c.startsWith("scripts/gh.sh pr merge"));
+const merges = (world) => world.calls.filter((c) => c.startsWith("gh pr merge"));
 
 test("night-runner: leaves the PR open when auto-merge is off", async () => {
   const world = fakeWorld({ verifyStatus: 0 });
@@ -213,9 +213,9 @@ test("night-runner: squash-merges its PR after green CI when auto-merge is on", 
   const world = fakeWorld({ verifyStatus: 0 });
   const { ctx } = context(world, { RUNNER_AUTO_MERGE: "1" });
   assert.equal(await processIssue({ number: 12, title: "Trivial fix" }, ctx), "merged");
-  const checks = world.calls.findIndex((c) => c.startsWith("scripts/gh.sh pr checks 12-trivial-fix --watch"));
-  assert.ok(checks > world.calls.findIndex((c) => c.startsWith("scripts/gh.sh pr create")));
-  assert.deepEqual(merges(world), ["scripts/gh.sh pr merge 12-trivial-fix --squash --delete-branch"]);
+  const checks = world.calls.findIndex((c) => c.startsWith("gh pr checks 12-trivial-fix --watch"));
+  assert.ok(checks > world.calls.findIndex((c) => c.startsWith("gh pr create")));
+  assert.deepEqual(merges(world), ["gh pr merge 12-trivial-fix --squash --delete-branch"]);
   assert.ok(world.calls.indexOf(merges(world)[0]) > checks);
 });
 
@@ -231,7 +231,7 @@ test("night-runner: fails the attempt when the agent changes the main checkout",
   const world = fakeWorld({ verifyStatus: 0, attempts: 2, strayInMain: true });
   const { ctx } = context(world);
   assert.equal(await processIssue({ number: 12, title: "Trivial fix" }, ctx), "escalated");
-  assert.equal(world.calls.some((c) => c.startsWith("scripts/gh.sh pr create")), false);
+  assert.equal(world.calls.some((c) => c.startsWith("gh pr create")), false);
   const failure = world.calls.find((c) => c.includes(FAILURE_MARKER));
   assert.match(failure, /changed the main checkout/);
   assert.match(failure, /data\/stray\.yaml/);
@@ -253,17 +253,17 @@ test("night-runner: accepts allowed files plus tests, rejects anything else", ()
   const allowed = ["crates/sim/src/vision.rs", "crates/sim/src/world.rs"];
   assert.equal(scopeProblem(["crates/sim/src/vision.rs", "crates/sim/tests/vision.rs"], allowed), null);
   assert.equal(scopeProblem(["client/src/render/fog.test.ts", "crates/sim/src/world.rs"], allowed), null);
-  assert.match(scopeProblem(["crates/sim/src/world.rs", "scripts/gh.sh"], allowed), /outside.*scripts\/gh\.sh/);
+  assert.match(scopeProblem(["crates/sim/src/world.rs", "scripts/doctor.sh"], allowed), /outside.*scripts\/doctor\.sh/);
   assert.match(scopeProblem(["crates/sim/tests/vision.rs"], allowed), /no allowed file/);
   assert.equal(scopeProblem(["anything.txt"], []), null);
 });
 
 test("night-runner: fails the attempt when the agent changes files outside the issue's list", async () => {
-  const world = fakeWorld({ verifyStatus: 0, attempts: 2, body: ISSUE_BODY, changed: ["scripts/gh.sh"] });
+  const world = fakeWorld({ verifyStatus: 0, attempts: 2, body: ISSUE_BODY, changed: ["scripts/doctor.sh"] });
   const { ctx } = context(world, { RUNNER_AUTO_MERGE: "1" });
   assert.equal(await processIssue({ number: 61, title: "Vision" }, ctx), "escalated");
-  assert.equal(world.calls.some((c) => c.startsWith("scripts/gh.sh pr create")), false);
-  assert.match(world.calls.find((c) => c.includes(FAILURE_MARKER)), /outside the issue's allowed files.*scripts\/gh\.sh/);
+  assert.equal(world.calls.some((c) => c.startsWith("gh pr create")), false);
+  assert.match(world.calls.find((c) => c.includes(FAILURE_MARKER)), /outside the issue's allowed files.*scripts\/doctor\.sh/);
 });
 
 test("night-runner: formats the worktree before verifying", async () => {

@@ -18,17 +18,16 @@ so a port is not a copy anyway).
 * Official repo: `https://github.com/electronicarts/CnC_Generals_Zero_Hour`
   (GPL-3.0). Red Alert 1 / Remastered: `electronicarts/CnC_Remastered_Collection`.
 * Read it **online, read-only**; never clone or download the repository. Use
-  `scripts/gh.sh` (never `gh` directly):
-  * Read a file: `scripts/gh.sh api -H "Accept: application/vnd.github.raw" "repos/electronicarts/CnC_Generals_Zero_Hour/contents/<path>"`
+  `gh`:
+  * Read a file: `gh api -H "Accept: application/vnd.github.raw" "repos/electronicarts/CnC_Generals_Zero_Hour/contents/<path>"`
     Find a term with `| grep -n -i "<term>"`, then read only the function you
     need with `| sed -n 'START,ENDp'`; the line numbers are your citations.
-  * List a folder: `scripts/gh.sh api "repos/electronicarts/CnC_Generals_Zero_Hour/contents/<dir>" --jq '.[].name'`.
-* If `scripts/gh.sh` fails (e.g. "account 'pikilon' is not logged in" inside a
-  sandboxed harness), fall back to read-only HTTP on public URLs, no login
-  needed: `curl -sL https://raw.githubusercontent.com/electronicarts/CnC_Generals_Zero_Hour/<sha>/<path>`
+  * List a folder: `gh api "repos/electronicarts/CnC_Generals_Zero_Hour/contents/<dir>" --jq '.[].name'`.
+* If `gh` fails (e.g. not logged in inside a sandboxed harness), fall back to
+  read-only HTTP on public URLs, no login needed: `curl -sL https://raw.githubusercontent.com/electronicarts/CnC_Generals_Zero_Hour/<sha>/<path>`
   (or `WebFetch`), and `https://api.github.com/repos/electronicarts/CnC_Generals_Zero_Hour/contents/<dir>`
   for listings. Pin `<sha>` so the citations stay valid.
-* Record the commit: `scripts/gh.sh api repos/electronicarts/CnC_Generals_Zero_Hour/commits/HEAD --jq .sha`.
+* Record the commit: `gh api repos/electronicarts/CnC_Generals_Zero_Hour/commits/HEAD --jq .sha`.
 * `gh search code` returned nothing when tested: do not rely on it. Browse by
   directory from "Where to look" and grep each file's content instead.
 * If a local clone already exists at `$GENERALS_SRC`, you may use `rg` on it

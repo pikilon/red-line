@@ -30,8 +30,9 @@ echo "Identity"
 email="$(git config user.email || true)"
 [ "$email" = "pikilon@gmail.com" ] && ok "git user.email = $email" \
   || bad "git user.email is '$email'; run: git config user.email pikilon@gmail.com"
-gh auth status 2>/dev/null | grep -q "account pikilon" && ok "gh account pikilon logged in" \
-  || bad "gh account pikilon not logged in"
+login="$(gh api user --jq .login 2>/dev/null || true)"
+[ "$login" = "pikilon" ] && ok "gh acts as pikilon" \
+  || bad "gh acts as '${login:-nobody}'; the owner must log in as pikilon"
 
 echo "Assets and local AI (optional per area)"
 need "Blender" blender optional

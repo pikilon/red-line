@@ -133,7 +133,7 @@ function taskPrompt(issue, branch, previousFailure) {
     "",
     "The issue:",
     "```markdown",
-    issue.body || `(read it with \`scripts/gh.sh issue view ${issue.number}\`)`,
+    issue.body || `(read it with \`gh issue view ${issue.number}\`)`,
     "```",
   ];
   if (previousFailure) {
@@ -193,7 +193,7 @@ function tail(file) {
 
 export async function processIssue(issue, ctx) {
   const { config, run, root, logDir, until, log } = ctx;
-  const gh = (...args) => run("scripts/gh.sh", args, { cwd: root });
+  const gh = (...args) => run("gh", args, { cwd: root });
   const { number, title } = issue;
   const branch = branchName(number, title);
   const worktree = join(root, ".night-runner", "worktrees", branch);
@@ -278,7 +278,7 @@ export async function processIssue(issue, ctx) {
 // RUNNER_AUTO_MERGE=1: merge on green CI so issues blocked by this one unblock
 // in the same run; a red or missing CI leaves the PR open for review.
 function mergeWhenGreen(branch, { run, root, log }) {
-  const gh = (...args) => run("scripts/gh.sh", args, { cwd: root }).status === 0;
+  const gh = (...args) => run("gh", args, { cwd: root }).status === 0;
   run("sleep", ["30"]); // let GitHub register the CI checks first
   const merged = gh("pr", "checks", branch, "--watch", "--fail-fast", "--interval", "30") &&
     gh("pr", "merge", branch, "--squash", "--delete-branch");
@@ -316,7 +316,7 @@ function askOnTerminal(timeoutSeconds) {
 
 function nextIssue(ctx, done) {
   const { config, run, root } = ctx;
-  const gh = (...args) => JSON.parse(run("scripts/gh.sh", args, { cwd: root }).stdout || "null");
+  const gh = (...args) => JSON.parse(run("gh", args, { cwd: root }).stdout || "null");
   if (config.issue !== null) {
     return done.has(config.issue) ? null : gh("issue", "view", String(config.issue), "--json", "number,title");
   }
