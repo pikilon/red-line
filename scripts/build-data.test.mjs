@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { stringify } from "yaml";
+import { parse, stringify } from "yaml";
 import { buildRuleset, readSources, serializeRuleset } from "./build-data.mjs";
 
 // Repository root (this file lives in scripts/), used by the two criteria that
@@ -261,90 +261,23 @@ test("AC-05-01: personality sources build", () => {
   const buildOrder = (ids) => ids.map((id) => typeIndex.get(id));
   const factionIndex = (id) => ruleset.factions.findIndex((f) => f.id === id);
 
-  assert.deepEqual(ruleset.ai, [
-    {
-      id: "ukraine-balanced",
-      faction: factionIndex("ukraine"),
-      harvesters: 3,
-      defenseRadiusCenti: 2000,
-      buildOrder: buildOrder([
-        "ua-power-plant", "ua-supply-center", "ua-barracks", "ua-power-plant",
-        "ua-vehicle-factory", "ua-defense", "ua-power-plant", "ua-defense",
-      ]),
-      taskForces: [
-        { id: "infantry", units: kinds([["ua-rifleman", 4], ["ua-stugna-team", 2]]) },
-        { id: "mechanized", units: kinds([["ua-bradley", 2], ["ua-rifleman", 3]]) },
-        { id: "armor", units: kinds([["ua-leopard-2a4", 2], ["ua-bradley", 1]]) },
-        { id: "fires", units: kinds([["ua-himars", 1], ["ua-leopard-2a4", 1], ["ua-stugna-team", 2]]) },
-      ],
-      triggers: [
-        { taskForce: 0, weight: 50, minTick: 0 },
-        { taskForce: 1, weight: 40, minTick: 2700 },
-        { taskForce: 2, weight: 40, minTick: 4500 },
-        { taskForce: 3, weight: 20, minTick: 6300 },
-      ],
-    },
-    {
-      id: "ukraine-rush",
-      faction: factionIndex("ukraine"),
-      harvesters: 2,
-      defenseRadiusCenti: 1500,
-      buildOrder: buildOrder([
-        "ua-power-plant", "ua-barracks", "ua-supply-center", "ua-vehicle-factory", "ua-power-plant",
-      ]),
-      taskForces: [
-        { id: "rifles", units: kinds([["ua-rifleman", 5]]) },
-        { id: "raid", units: kinds([["ua-kozak-scout", 2], ["ua-rifleman", 2]]) },
-        { id: "hunters", units: kinds([["ua-stugna-team", 2], ["ua-kozak-scout", 1]]) },
-      ],
-      triggers: [
-        { taskForce: 0, weight: 60, minTick: 0 },
-        { taskForce: 1, weight: 50, minTick: 1800 },
-        { taskForce: 2, weight: 30, minTick: 2700 },
-      ],
-    },
-    {
-      id: "russia-balanced",
-      faction: factionIndex("russia"),
-      harvesters: 3,
-      defenseRadiusCenti: 2000,
-      buildOrder: buildOrder([
-        "ru-power-plant", "ru-supply-center", "ru-barracks", "ru-power-plant",
-        "ru-vehicle-factory", "ru-defense", "ru-power-plant", "ru-defense",
-      ]),
-      taskForces: [
-        { id: "infantry", units: kinds([["ru-rifleman", 6], ["ru-rpg-gunner", 2]]) },
-        { id: "mechanized", units: kinds([["ru-bmp-2", 2], ["ru-rifleman", 4]]) },
-        { id: "armor", units: kinds([["ru-t-72b3", 3], ["ru-bmp-2", 1]]) },
-        { id: "fires", units: kinds([["ru-tos-1a", 1], ["ru-t-72b3", 2]]) },
-      ],
-      triggers: [
-        { taskForce: 0, weight: 50, minTick: 0 },
-        { taskForce: 1, weight: 40, minTick: 2700 },
-        { taskForce: 2, weight: 40, minTick: 4500 },
-        { taskForce: 3, weight: 20, minTick: 6300 },
-      ],
-    },
-    {
-      id: "russia-rush",
-      faction: factionIndex("russia"),
-      harvesters: 2,
-      defenseRadiusCenti: 1500,
-      buildOrder: buildOrder([
-        "ru-power-plant", "ru-barracks", "ru-supply-center", "ru-vehicle-factory", "ru-power-plant",
-      ]),
-      taskForces: [
-        { id: "rifles", units: kinds([["ru-rifleman", 6]]) },
-        { id: "raid", units: kinds([["ru-brdm-scout", 2], ["ru-rifleman", 3]]) },
-        { id: "hunters", units: kinds([["ru-rpg-gunner", 3], ["ru-brdm-scout", 1]]) },
-      ],
-      triggers: [
-        { taskForce: 0, weight: 60, minTick: 0 },
-        { taskForce: 1, weight: 50, minTick: 1800 },
-        { taskForce: 2, weight: 30, minTick: 2700 },
-      ],
-    },
-  ]);
+  // Personality values are tuned by the balance work (spec 05 §4.3), so this
+  // checks the assembly against the YAML sources instead of pinning numbers.
+  const ids = ["ukraine-balanced", "ukraine-rush", "russia-balanced", "russia-rush"];
+  assert.deepEqual(ruleset.ai.map((ai) => ai.id), ids);
+  ids.forEach((id, i) => {
+    const source = parse(readFileSync(join(root, `data/ai/${id}.yaml`), "utf8"));
+    const forceIds = source.taskForces.map((force) => force.id);
+    assert.deepEqual(ruleset.ai[i], {
+      id,
+      faction: factionIndex(source.faction),
+      harvesters: source.harvesters,
+      defenseRadiusCenti: source.defenseRadiusCenti,
+      buildOrder: buildOrder(source.buildOrder),
+      taskForces: source.taskForces.map((force) => ({ id: force.id, units: kinds(Object.entries(force.units)) })),
+      triggers: source.triggers.map((t) => ({ taskForce: forceIds.indexOf(t.taskForce), weight: t.weight, minTick: t.minTick })),
+    });
+  });
 });
 
 test("AC-05-02: personality semantic checks", () => {
