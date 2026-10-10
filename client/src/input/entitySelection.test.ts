@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { type EntityState, ENTITY_FLAGS } from "../sim/matchSnapshot";
 import { typeIndex } from "../rules";
+import { ENTITY_FLAGS, type EntityState } from "../sim/matchSnapshot";
 import {
   boxSelect,
   clickSelect,
@@ -50,21 +50,30 @@ describe("entity selection", () => {
 
     const project = (x: number, y: number) => ({ x, y });
     expect(
+      boxSelect(entities, { minX: 0, minY: 0, maxX: 30, maxY: 30 }, project, 0),
+    ).toEqual([2]);
+    expect(
       boxSelect(
         entities,
-        { minX: 0, minY: 0, maxX: 30, maxY: 30 },
+        { minX: 0, minY: 0, maxX: 0.5, maxY: 0.5 },
         project,
         0,
       ),
-    ).toEqual([2]);
-    expect(boxSelect(entities, { minX: 0, minY: 0, maxX: 0.5, maxY: 0.5 }, project, 0)).toEqual([]);
+    ).toEqual([]);
     expect(selectAllOwnUnits(entities, 0)).toEqual([2]);
   });
 
   it("AC-03-48: ignores ghosts and neutral or enemy entities when selecting", () => {
     const withGhost = [
       ...entities,
-      entity({ id: 7, owner: 0, kind: "ua-barracks", x: 10, y: 10, flags: ENTITY_FLAGS.ghost }),
+      entity({
+        id: 7,
+        owner: 0,
+        kind: "ua-barracks",
+        x: 10,
+        y: 10,
+        flags: ENTITY_FLAGS.ghost,
+      }),
     ];
     expect(pickEntity(entities, 1.3, 1)).toBe(3);
     expect(clickSelect(entities, 20.9, 20.9, 0)).toEqual([]);
@@ -74,7 +83,9 @@ describe("entity selection", () => {
 
   it("AC-03-48: picks buildings by footprint and keeps box selection inclusive", () => {
     const project = (x: number, y: number) => ({ x: x * 10, y: y * 10 });
-    expect(boxSelect(entities, { minX: 0, minY: 0, maxX: 10, maxY: 10 }, project, 0)).toEqual([2]);
+    expect(
+      boxSelect(entities, { minX: 0, minY: 0, maxX: 10, maxY: 10 }, project, 0),
+    ).toEqual([2]);
     expect(selectAllOwnUnits(entities, 1)).toEqual([3]);
     expect(selectAllOwnUnits([], 0)).toEqual([]);
   });
