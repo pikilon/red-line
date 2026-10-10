@@ -37,6 +37,7 @@ interface SkirmishDebugView {
   command(command: Record<string, unknown>): void;
   stateHash(): Promise<string>;
   drawCalls(): number;
+  uiRenders(): number;
   resetFrameStats(): void;
   frameStats(): { frames: number; p95FrameMs: number };
   injectFrameTimes(frameTimesMs: number[]): void;
@@ -443,6 +444,27 @@ test("AC-03-65: keeps the command panel stable under a held click", async ({
   await page.waitForTimeout(200);
   await page.mouse.up();
   await expect(plantButton).toHaveAttribute("aria-pressed", "true");
+});
+
+test("AC-03-66: renders the overlay on change only", async ({ page }) => {
+  await bootDebug(page, "debug=1&speed=4");
+  const dozerKind = await kindOf(page, "ua-dozer");
+  const dozer = await entityOf(page, 0, dozerKind);
+  if (dozer === null) throw new Error("missing ua-dozer");
+  await clickTiles(page, dozer.x, dozer.y);
+  const plantButton = page.locator(
+    '#command-panel button[data-type="ua-power-plant"]',
+  );
+  await expect(plantButton).toBeEnabled();
+
+  const before = await debugCall(page, (api) => api.uiRenders());
+  await page.waitForTimeout(1000);
+  expect(await debugCall(page, (api) => api.uiRenders())).toBe(before);
+
+  await plantButton.click();
+  await expect
+    .poll(() => debugCall(page, (api) => api.uiRenders()))
+    .toBeGreaterThan(before);
 });
 
 test("AC-03-57: produces and cancels through the UI", async ({ page }) => {

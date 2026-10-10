@@ -1404,7 +1404,13 @@ none overlap.
   overlay, entity renderer, placement ghost, HUD (`#hud-selected`, `#hud-tick`,
   `#hud-player`), resource bar, command panel and outcome overlay; centres the
   camera on the controlled player's HQ from the first snapshot; renders
-  `interpolateEntities` every frame; the perf panel as in Phase 1 when
+  `interpolateEntities` every frame. The DOM overlay is not part of the frame
+  loop (#140): the resource bar, outcome overlay and command panel are
+  refreshed only on events (a snapshot arrives, the selection changes,
+  placement starts or ends, the controlled player changes), and the command
+  panel's `render` is called only when its buttons, queue or `placing` differ
+  from the previous call. The frame loop updates only the 3D scene, the
+  placement ghost and the placement hint. The perf panel as in Phase 1 when
   `debug=1`.
 * `client/src/debug.ts` adds:
 
@@ -1425,6 +1431,7 @@ export interface SkirmishDebug {
   stateHash(): Promise<string>;
   drawCalls(): number; resetFrameStats(): void; frameStats(): { frames: number; p95FrameMs: number };
   injectFrameTimes(frameTimesMs: number[]): void; resumeFrameTimes(): void;
+  uiRenders(): number;                             // command panel render calls so far (#140)
 }
 export function installSkirmishDebugApi(target: { __redline?: SkirmishDebug }, api: SkirmishDebug): void;
 ```
@@ -1966,6 +1973,11 @@ then it records 0 mutations; and when the mouse is pressed on the
 `ua-power-plant` button, held for 200 ms and released, then the button has
 `aria-pressed="true"`.
 
+**AC-03-66 Overlay renders on change only (#140).** Given `/?debug=1&speed=4`
+with the owner-0 `ua-dozer` selected by a click and nothing queued, when 1 s
+passes, then `uiRenders()` is unchanged; and when the `ua-power-plant` button
+is clicked, then `uiRenders()` increases.
+
 ### Updated Phase 1 criteria
 
 * AC-01-05: the API version is now `2` (`ac_01_05_api_version_is_one` asserts
@@ -2046,6 +2058,7 @@ These test edits are part of the RED commits of P2-05 and P2-23 (tier S).
 | AC-03-63 | `client/tests/e2e/perf.spec.ts` | `AC-03-63: keeps 60 fps in a 400-unit skirmish @perf` |
 | AC-03-64 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-64: shows placement feedback` |
 | AC-03-65 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-65: keeps the command panel stable under a held click` |
+| AC-03-66 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-66: renders the overlay on change only` |
 
 ## 9. Issue breakdown (Phase 2 queue)
 

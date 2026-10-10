@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { RULES, typeDef } from "../rules";
 import type { EntityState, QueueState } from "../sim/matchSnapshot";
 import { ENTITY_FLAGS } from "../sim/matchSnapshot";
-import { commandButtons } from "./commandPanel";
+import { commandButtons, samePanelInput } from "./commandPanel";
 
 // Type indices from the builtin ruleset.
 const RIFLEMAN = 2;
@@ -279,5 +279,44 @@ describe("command panel", () => {
         queue: { building: 5, headPermille: 0, items: [] },
       }),
     ).toEqual([]);
+  });
+});
+
+describe("samePanelInput", () => {
+  const button = {
+    typeIndex: POWER_PLANT,
+    label: "Power plant (600)",
+    cost: 600,
+    enabled: true,
+    action: "construct" as const,
+  };
+  const queue = { building: 4, headPermille: 100, items: [RIFLEMAN] };
+
+  it("is true for equal content in fresh objects", () => {
+    expect(
+      samePanelInput(
+        { buttons: [button], queue, placing: null },
+        {
+          buttons: [{ ...button }],
+          queue: { ...queue, items: [RIFLEMAN] },
+          placing: null,
+        },
+      ),
+    ).toBe(true);
+  });
+
+  it("is false when a button, the queue or placing changes", () => {
+    const base = { buttons: [button], queue, placing: null };
+    expect(
+      samePanelInput(base, {
+        ...base,
+        buttons: [{ ...button, enabled: false }],
+      }),
+    ).toBe(false);
+    expect(
+      samePanelInput(base, { ...base, queue: { ...queue, headPermille: 200 } }),
+    ).toBe(false);
+    expect(samePanelInput(base, { ...base, queue: null })).toBe(false);
+    expect(samePanelInput(base, { ...base, placing: POWER_PLANT })).toBe(false);
   });
 });
