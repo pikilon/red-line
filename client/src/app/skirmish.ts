@@ -14,11 +14,15 @@ import {
   type SkirmishDebug,
 } from "../debug";
 import { createHud } from "../hud";
+import {
+  createSkirmishController,
+  type SkirmishController,
+} from "../input/skirmishController";
 import { createPerfPanel } from "../perfPanel";
 import { createEntityRenderer, type EntityRenderer } from "../render/entities";
 import { createFogOverlay } from "../render/fog";
 import { createTerrain } from "../render/terrain";
-import { RULES, typeIndex } from "../rules";
+import { RULES, typeDef, typeIndex } from "../rules";
 import {
   type EntityState,
   interpolateEntities,
@@ -42,10 +46,17 @@ export const MAX_SPEED_SKIRMISH = MAX_SPEED;
 
 /** Default entity renderer capacity; AC-03-62 and AC-03-63 stay below it. */
 const ENTITY_CAPACITY = 2048;
-/** Opacity of the not-yet-wired placement ghost (spec §6.4). */
+/** Opacity of the placement ghost (spec §6.4). */
 const PLACEMENT_GHOST_OPACITY = 0.4;
+/** The unit cube ghost rests on the ground. */
+const PLACEMENT_GHOST_Y = 0.5;
+/** Ghost tint from the client-side `canPlace` prediction (spec §6.5). */
+const PLACEMENT_VALID_COLOR = 0x22c55e;
+const PLACEMENT_INVALID_COLOR = 0xef4444;
 /** Queue progress bar maximum (spec §6.6). */
 const QUEUE_PROGRESS_MAX = 1000;
+/** Selection used before the controller exists (spec §6.7). */
+const NO_SELECTION: ReadonlySet<number> = new Set<number>();
 
 /** URL parameters of the skirmish app (spec §6.7). */
 export type SkirmishOptions = URLSearchParams;
@@ -107,8 +118,17 @@ export function createResourceBar(root: HTMLElement): {
   };
 }
 
+/** `#queue` view of one production building; items and progress update in place. */
+interface QueueView {
+  container: HTMLDivElement;
+  items: HTMLSpanElement[];
+  progress: HTMLProgressElement;
+}
+
 /** `<div id="command-panel">` with one `.cmd` button per offer and, for a
- *  production building, `<div id="queue">` (spec §6.6). */
+ *  production building, `<div id="queue">` (spec §6.6). The panel re-renders
+ *  every frame, so its nodes are reused: replacing them would detach the
+ *  element under the pointer between frames. */
 export function createCommandPanel(
   root: HTMLElement,
   handlers: {
@@ -118,49 +138,81 @@ export function createCommandPanel(
   },
 ): { render(buttons: CommandButton[], queue: QueueState | null): void } {
   const panel = appendDiv(root, "command-panel");
+  const elements: HTMLButtonElement[] = [];
+  let rendered: CommandButton[] = [];
+  let queueView: QueueView | null = null;
+
+  function buttonAt(index: number): HTMLButtonElement {
+    const existing = elements[index];
+    if (existing !== undefined) return existing;
+    const element = document.createElement("button");
+    element.className = "cmd";
+    element.addEventListener("click", () => {
+      const button = rendered[index];
+      if (button === undefined) return;
+      if (button.action === "construct") handlers.onConstruct(button.typeIndex);
+      else handlers.onProduce(button.typeIndex);
+    });
+    element.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+      if (rendered[index]?.action === "produce") handlers.onCancel();
+    });
+    elements[index] = element;
+    return element;
+  }
+
+  function updateQueue(queue: QueueState): QueueView {
+    queueView ??= createQueueView();
+    const view = queueView;
+    for (let i = 0; i < queue.items.length; i++) {
+      let item = view.items[i];
+      if (item === undefined) {
+        item = document.createElement("span");
+        item.className = "queue-item";
+        view.items[i] = item;
+      }
+      const kind = queue.items[i] ?? -1;
+      item.dataset.type = RULES.types[kind]?.id ?? String(kind);
+      view.container.insertBefore(item, view.progress);
+    }
+    while (view.items.length > queue.items.length) view.items.pop()?.remove();
+    view.progress.value = queue.headPermille;
+    return view;
+  }
+
   return {
     render(buttons, queue) {
-      panel.replaceChildren(
-        ...buttons.map((button) => {
-          const element = document.createElement("button");
-          element.className = "cmd";
-          const def = RULES.types[button.typeIndex];
-          element.dataset.type = def?.id ?? String(button.typeIndex);
-          element.textContent = button.label;
-          element.disabled = !button.enabled;
-          element.addEventListener("click", () => {
-            if (button.action === "construct") {
-              handlers.onConstruct(button.typeIndex);
-              return;
-            }
-            handlers.onProduce(button.typeIndex);
-          });
-          element.addEventListener("contextmenu", (event) => {
-            event.preventDefault();
-            if (button.action === "produce") handlers.onCancel();
-          });
-          return element;
-        }),
-        ...(queue === null ? [] : [createQueueView(queue)]),
-      );
+      rendered = buttons;
+      for (let i = 0; i < buttons.length; i++) {
+        const button = buttons[i];
+        if (button === undefined) continue;
+        const element = buttonAt(i);
+        const def = RULES.types[button.typeIndex];
+        element.dataset.type = def?.id ?? String(button.typeIndex);
+        element.textContent = button.label;
+        element.disabled = !button.enabled;
+        panel.insertBefore(element, queueView?.container ?? null);
+      }
+      while (elements.length > buttons.length) elements.pop()?.remove();
+      if (queue === null) {
+        queueView?.container.remove();
+        queueView = null;
+        return;
+      }
+      const view = updateQueue(queue);
+      if (view.container.parentNode !== panel)
+        panel.appendChild(view.container);
     },
   };
 }
 
-function createQueueView(queue: QueueState): HTMLElement {
+function createQueueView(): QueueView {
   const container = appendDiv(document.createElement("div"), "queue");
-  for (const kind of queue.items) {
-    const item = document.createElement("span");
-    item.className = "queue-item";
-    item.dataset.type = RULES.types[kind]?.id ?? String(kind);
-    container.appendChild(item);
-  }
   const progress = document.createElement("progress");
   progress.id = "queue-progress";
   progress.max = QUEUE_PROGRESS_MAX;
-  progress.value = queue.headPermille;
   container.appendChild(progress);
-  return container;
+  return { container, items: [], progress };
 }
 
 /** The complete own HQ of `player` in `entities`, or null; the camera anchor. */
@@ -177,16 +229,17 @@ function ownHeadquarters(
   );
 }
 
-function createPlacementGhost(): Mesh {
-  const mesh = new Mesh(
-    new BoxGeometry(1, 1, 1),
-    new MeshBasicMaterial({
-      transparent: true,
-      opacity: PLACEMENT_GHOST_OPACITY,
-    }),
-  );
+function createPlacementGhost(): {
+  mesh: Mesh;
+  material: MeshBasicMaterial;
+} {
+  const material = new MeshBasicMaterial({
+    transparent: true,
+    opacity: PLACEMENT_GHOST_OPACITY,
+  });
+  const mesh = new Mesh(new BoxGeometry(1, 1, 1), material);
   mesh.visible = false;
-  return mesh;
+  return { mesh, material };
 }
 
 /** Skirmish app (default mode): boots the worker, renders the match and wires
@@ -236,8 +289,9 @@ export function startSkirmish(params: SkirmishOptions): void {
   let controlled = 0;
   let viewer = 0;
   let ready = false;
-  let selectedIds: number[] = [];
-  const selected = new Set<number>();
+  /** Type index being placed, or null; the command panel starts placement. */
+  let placementKind: number | null = null;
+  let controller: SkirmishController | null = null;
   let cameraTarget = { x: 0, y: 0 };
   const interact: SkirmishClient = createSkirmishClient(
     new Worker(new URL("../sim/sim.worker.ts", import.meta.url), {
@@ -246,11 +300,28 @@ export function startSkirmish(params: SkirmishOptions): void {
     { seed, mapId, viewer, speed, debug },
   );
   const commandPanel = createCommandPanel(document.body, {
-    // Placement, production and cancellation are wired by P2-24; until then the
-    // panel renders the offers of §6.6 and these handlers are inert.
-    onConstruct: () => {},
-    onProduce: () => {},
-    onCancel: () => {},
+    onConstruct: (kind) => {
+      placementKind = kind;
+    },
+    onProduce: (kind) => {
+      const building = selectedProductionBuilding(kind);
+      if (building === null) return;
+      interact.command({
+        kind: "produce",
+        player: controlled,
+        building: building.id,
+        typeIndex: kind,
+      });
+    },
+    onCancel: () => {
+      const queue = selectedQueue();
+      if (queue === null) return;
+      interact.command({
+        kind: "cancel",
+        player: controlled,
+        building: queue.building,
+      });
+    },
   });
   let entities: EntityRenderer | null = null;
   let fogOverlay: FogOverlay | null = null;
@@ -258,21 +329,53 @@ export function startSkirmish(params: SkirmishOptions): void {
 
   /** The queue of the selected production building, if any. */
   function selectedQueue(): QueueState | null {
-    if (next === null) return null;
-    return next.queues.find((queue) => selected.has(queue.building)) ?? null;
+    const active = controller;
+    if (next === null || active === null) return null;
+    return (
+      next.queues.find((queue) => active.selected.has(queue.building)) ?? null
+    );
   }
 
   /** Own entities currently selected. */
   function selectedEntities(): EntityState[] {
-    if (next === null) return [];
+    const active = controller;
+    if (next === null || active === null) return [];
     return next.entities.filter(
-      (entity) => entity.owner === controlled && selected.has(entity.id),
+      (entity) => entity.owner === controlled && active.selected.has(entity.id),
     );
+  }
+
+  /** The selected complete own building that produces `kind`, if any. */
+  function selectedProductionBuilding(kind: number): EntityState | null {
+    return (
+      selectedEntities().find(
+        (entity) =>
+          typeDef(entity.kind).category === "building" &&
+          typeDef(entity.kind).produces.includes(kind),
+      ) ?? null
+    );
+  }
+
+  /**
+   * `commandButtons` (spec §6.6) measures building progress as
+   * `build_ticks * 100`, while the match snapshot encodes it as permille with
+   * `1000` complete (spec §5.15): convert so the panel sees the same fraction.
+   * Tracked as #122 (`isComplete` in `client/src/ui/commandPanel.ts` uses the
+   * wrong scale); delete this adapter once #122 is fixed.
+   */
+  function panelEntity(entity: EntityState): EntityState {
+    const total = typeDef(entity.kind).buildTicks * 100;
+    if (total === 0) return entity;
+    return { ...entity, progress: (entity.progress * total) / 1000 };
   }
 
   function centreOnOwnHq(snapshot: MatchSnapshot): void {
     const hq = ownHeadquarters(snapshot.entities, controlled);
     if (hq === null) return;
+    if (controller !== null) {
+      controller.setTarget(hq.x, hq.y);
+      return;
+    }
     cameraTarget = { x: hq.x, y: hq.y };
     setCameraTarget(camera, hq.x, hq.y);
   }
@@ -285,12 +388,35 @@ export function startSkirmish(params: SkirmishOptions): void {
   /** Builds the scene once the map and the first snapshot are known. */
   function start(): void {
     if (ready || map === null || next === null) return;
-    scene.add(createTerrain(map.mapWidth, map.mapHeight, map.tiles));
+    const mapInfo = map;
+    scene.add(
+      createTerrain(mapInfo.mapWidth, mapInfo.mapHeight, mapInfo.tiles),
+    );
     entities = createEntityRenderer(ENTITY_CAPACITY);
     scene.add(entities.group);
-    fogOverlay = createFogOverlay(map.mapWidth, map.mapHeight);
+    fogOverlay = createFogOverlay(mapInfo.mapWidth, mapInfo.mapHeight);
     scene.add(fogOverlay.mesh);
-    scene.add(placementGhost);
+    scene.add(placementGhost.mesh);
+    controller = createSkirmishController({
+      canvas: renderer.domElement,
+      keyTarget: window,
+      camera,
+      mapWidth: mapInfo.mapWidth,
+      mapHeight: mapInfo.mapHeight,
+      entities: () => next?.entities ?? [],
+      tiles: () => mapInfo.tiles,
+      fog: () => fog,
+      placementKind: () => placementKind,
+      exitPlacement: () => {
+        placementKind = null;
+      },
+      player: () => controlled,
+      command: (command) => interact.command(command),
+      onSelectionChange: (ids) => hud.setSelectedCount(ids.size),
+      debug,
+      setControlledPlayer,
+      toggleReveal,
+    });
     setHudPlayer();
     centreOnOwnHq(next);
     ready = true;
@@ -304,9 +430,6 @@ export function startSkirmish(params: SkirmishOptions): void {
       viewer = player;
       interact.setViewer(viewer);
     }
-    selectedIds = [];
-    selected.clear();
-    hud.setSelectedCount(0);
     setHudPlayer();
   }
 
@@ -316,16 +439,21 @@ export function startSkirmish(params: SkirmishOptions): void {
     interact.setViewer(viewer);
   }
 
-  if (debug) {
-    window.addEventListener("keydown", (event) => {
-      if (event.key === "F2") {
-        event.preventDefault();
-        setControlledPlayer(controlled === 0 ? 1 : 0);
-      } else if (event.key === "F3") {
-        event.preventDefault();
-        toggleReveal();
-      }
-    });
+  /** Positions and tints the footprint ghost while placing (spec §6.5). */
+  function updatePlacementGhost(): void {
+    const preview = controller?.placementPreview() ?? null;
+    placementGhost.mesh.visible = preview !== null;
+    if (preview === null) return;
+    const [width, height] = typeDef(preview.kind).footprint;
+    placementGhost.mesh.position.set(
+      preview.origin.x + width / 2,
+      PLACEMENT_GHOST_Y,
+      preview.origin.y + height / 2,
+    );
+    placementGhost.mesh.scale.set(width, 1, height);
+    placementGhost.material.color.set(
+      preview.valid ? PLACEMENT_VALID_COLOR : PLACEMENT_INVALID_COLOR,
+    );
   }
 
   interact.onSnapshot((snapshot, receivedFog, at) => {
@@ -362,12 +490,14 @@ export function startSkirmish(params: SkirmishOptions): void {
       perfPanel?.record(dtMs, now);
     }
     lastFrameMs = now;
+    controller?.update(dtMs / 1000);
     if (next !== null && prev !== null && entities !== null) {
       entities.update(
         interpolateEntities(prev, next, (now - receivedAt) / TICK_MS),
-        selected,
+        controller?.selected ?? NO_SELECTION,
       );
     }
+    updatePlacementGhost();
     fogOverlay?.update(fog);
     resourceBar.render(next);
     outcome.render(next === null ? null : outcomeText(next, controlled));
@@ -377,10 +507,10 @@ export function startSkirmish(params: SkirmishOptions): void {
       const queue = selectedQueue();
       commandPanel.render(
         commandButtons({
-          selected: selectedEntities(),
-          ownEntities: next.entities.filter(
-            (entity) => entity.owner === controlled,
-          ),
+          selected: selectedEntities().map(panelEntity),
+          ownEntities: next.entities
+            .filter((entity) => entity.owner === controlled)
+            .map(panelEntity),
           credits: next.credits,
           queue,
         }),
@@ -415,7 +545,8 @@ export function startSkirmish(params: SkirmishOptions): void {
         outcome: next?.outcome ?? "ongoing",
         winner: next?.winner ?? null,
       }),
-      selectedIds: () => [...selectedIds],
+      selectedIds: () =>
+        [...(controller?.selected ?? [])].sort((a, b) => a - b),
       worldToScreen: (x, y) => {
         const ndc = new Vector3(x, 0, y).project(camera);
         const rect = renderer.domElement.getBoundingClientRect();
@@ -424,8 +555,12 @@ export function startSkirmish(params: SkirmishOptions): void {
           y: rect.top + ((1 - ndc.y) / 2) * rect.height,
         };
       },
-      cameraTarget: () => ({ ...cameraTarget }),
+      cameraTarget: () => controller?.cameraTarget() ?? { ...cameraTarget },
       setCameraTarget: (x, y) => {
+        if (controller !== null) {
+          controller.setTarget(x, y);
+          return;
+        }
         cameraTarget = { x, y };
         setCameraTarget(camera, x, y);
       },
