@@ -362,6 +362,7 @@ impl World {
         self.move_units();
         self.separate_units();
         self.arrive_on_contact();
+        self.update_visibility();
         self.drop_unused_fields();
         self.tick += 1;
     }
