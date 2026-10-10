@@ -20,6 +20,7 @@ const handler = createWorkerHandler(
   (seed, n) => new Sim(seed, n),
   api_version(),
   (message, transfer) => scope.postMessage(message, transfer ?? []),
+  (seed, mapId) => Sim.skirmish(seed, mapId),
 );
 
 scope.onmessage = (event) => handler.handle(event.data);
