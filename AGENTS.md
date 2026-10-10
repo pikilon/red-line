@@ -74,5 +74,7 @@ Before reading or editing files under a subtree, read its `AGENTS.md` if present
 
 * Run `scripts/doctor.sh` when a tool seems missing.
 * Package scripts run with `node --run <script>`, never `npm run`.
-* Before completing any change, load and execute
-  `.agents/skills/verification/SKILL.md`.
+* Before completing any change, delegate verification to the subagent defined
+  in `.agents/agents/verification-runner/agent.md`; it executes
+  `.agents/skills/verification/SKILL.md`. The main model only acts on its
+  report and never runs the checks itself.
