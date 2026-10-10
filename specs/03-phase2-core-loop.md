@@ -1386,7 +1386,7 @@ the ground to build · right click or Esc to cancel", `ui.placementIllegal`
 
 `client/index.html` styles: `#resource-bar` fixed top centre; `#command-panel`
 fixed bottom centre; `.cmd.active` highlighted (outline and background);
-`#placement-hint` fixed above the command panel; `#outcome` fixed centre, large text; `.cmd[disabled]`
+`#placement-hint` fixed top centre, below the resource bar; `#outcome` fixed centre, large text; `.cmd[disabled]`
 dimmed; `.power-low` red. The HUD stays top-left and the perf panel top-right;
 none overlap.
 
@@ -1951,7 +1951,8 @@ unit to `(50.5, 6.5)`, `F3` pressed and the camera centred on `(50, 12)`, when
 **AC-03-64 Placement feedback (#136).** Given `/?debug=1&speed=4` with the
 owner-0 `ua-dozer` selected by a click, when the `ua-power-plant` button is
 clicked, then it has `aria-pressed="true"` and class `active` and
-`#placement-hint` is visible with text `ui.placementHint`; with the pointer
+`#placement-hint` is visible, and with the pointer over the legal site
+`(19.5, 65.5)` its text is `ui.placementHint`; with the pointer
 over the HQ centre, `#placement-hint` shows `ui.placementIllegal`; after
 `Escape`, `#placement-hint` is hidden and the button has
 `aria-pressed="false"`.
