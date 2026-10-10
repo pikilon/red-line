@@ -14,14 +14,21 @@ const FOG_Y = 0.02;
 /** 4 bytes per cell: 0, 0, 0, FOG_ALPHA[value]. */
 export function fogRgba(fog: Uint8Array): Uint8Array {
   const rgba = new Uint8Array(fog.length * 4);
-  fog.forEach((value, cell) => {
-    rgba[cell * 4 + 3] = FOG_ALPHA[value as 0 | 1 | 2] ?? FOG_ALPHA[0];
-  });
+  writeFogAlpha(fog, rgba);
   return rgba;
 }
 
+/** Writes the alpha byte of every cell that fits in `rgba`, in place. */
+function writeFogAlpha(fog: Uint8Array, rgba: Uint8Array): void {
+  const cells = Math.min(fog.length, rgba.length / 4);
+  for (let cell = 0; cell < cells; cell++) {
+    rgba[cell * 4 + 3] = FOG_ALPHA[fog[cell] as 0 | 1 | 2] ?? FOG_ALPHA[0];
+  }
+}
+
 /** One plane at y = 0.02 covering the map, DataTexture (NearestFilter),
- *  transparent, depthWrite false; update() uploads fogRgba(fog). */
+ *  transparent, depthWrite false; update() rewrites the texture's own buffer
+ *  with the fogRgba(fog) alphas and allocates nothing. */
 export function createFogOverlay(
   width: number,
   height: number,
@@ -53,7 +60,7 @@ export function createFogOverlay(
   return {
     mesh,
     update(fog) {
-      data.set(fogRgba(fog).subarray(0, data.length));
+      writeFogAlpha(fog, data);
       texture.needsUpdate = true;
     },
   };
