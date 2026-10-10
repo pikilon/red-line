@@ -429,6 +429,8 @@ impl World {
         self.update_visibility();
         self.update_combat();
         self.remove_dead();
+        self.update_memory();
+        self.update_victory();
         self.drop_unused_fields();
         self.tick += 1;
     }
@@ -452,9 +454,46 @@ impl World {
         }
     }
 
-    /// Phase 1: applies pending commands in enqueue order.
+    /// Victory phase (§5.7 step 10, §5.13): only while victory is enabled and
+    /// the match is ongoing, every non-defeated player without a building
+    /// becomes defeated; exactly one player left wins, none left is a draw.
+    fn update_victory(&mut self) {
+        if !self.victory_enabled || self.outcome != Outcome::Ongoing {
+            return;
+        }
+        for index in 0..self.players.len() {
+            if self.players[index].defeated {
+                continue;
+            }
+            let id = self.players[index].id;
+            let owns_building = self.entities.iter().any(|entity| {
+                entity.owner == id && self.rules.ty(entity.kind).category == Category::Building
+            });
+            if !owns_building {
+                self.players[index].defeated = true;
+            }
+        }
+        let standing: Vec<PlayerId> = self
+            .players
+            .iter()
+            .filter(|player| !player.defeated)
+            .map(|player| player.id)
+            .collect();
+        match standing.as_slice() {
+            [] => self.outcome = Outcome::Draw,
+            [winner] => self.outcome = Outcome::Winner(*winner),
+            _ => {}
+        }
+    }
+
+    /// Phase 1: applies pending commands in enqueue order; once the match is
+    /// over every pending command is discarded instead (§5.7 step 1).
     fn apply_commands(&mut self) {
-        for (player, command) in std::mem::take(&mut self.pending) {
+        let pending = std::mem::take(&mut self.pending);
+        if self.outcome != Outcome::Ongoing {
+            return;
+        }
+        for (player, command) in pending {
             match command {
                 Command::Move { units, target } => self.apply_move(player, &units, target),
                 Command::Produce { building, kind } => self.apply_produce(player, building, kind),
