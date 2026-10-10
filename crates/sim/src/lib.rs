@@ -7,6 +7,7 @@ pub mod fixed;
 pub mod flow;
 pub mod hash;
 pub mod map;
+pub mod nav;
 pub mod player;
 pub mod rng;
 pub mod rules;
