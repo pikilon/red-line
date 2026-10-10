@@ -71,9 +71,24 @@ fn ac_03_28_zero_modifiers_are_never_targeted() {
     let soldier = world.spawn(0, 9, at(1050, 1050));
     let tank = world.spawn(1, 10, at(1450, 1050));
 
-    // Kinetic damage has a zero modifier against the tank's hard armor, so the
-    // soldier never targets it while the cannon kills it on steps 1, 11 and 21.
-    steps(&mut world, 21);
+    // The gun's kinetic damage has a zero modifier against the tank's hard
+    // armor, so the soldier never acquires it as a target: no `last_target`, no
+    // cooldown and therefore no shot. The tank is unharmed either way, because
+    // a zero-modifier hit deals no damage, so the target filter has to be
+    // observed directly.
+    world.step();
+    assert_eq!(world.entity(soldier).unwrap().last_target, None);
+    assert_eq!(world.entity(soldier).unwrap().cooldown, 0);
+    assert_eq!(world.entity(tank).unwrap().last_target, Some(soldier));
+
+    // Second cannon volley on step 11: still alive, still not targeting.
+    steps(&mut world, 10);
+    assert_eq!(world.entity(soldier).unwrap().last_target, None);
+    assert_eq!(world.entity(soldier).unwrap().cooldown, 0);
+    assert_eq!(world.entity(tank).unwrap().last_target, Some(soldier));
+
+    // The cannon kills the soldier on step 21, which never harmed the tank.
+    steps(&mut world, 10);
     assert_eq!(world.entity(tank).unwrap().hp, 200);
     assert!(world.entity(soldier).is_none());
 }
