@@ -115,6 +115,36 @@ pub struct MapDef {
     pub starts: Vec<StartDef>,
 }
 
+/// A named unit mix of an AI personality (spec 05 §5.1).
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct TaskForceDef {
+    pub id: String,
+    pub units: Vec<(TypeId, u32)>,
+}
+
+/// A weighted trigger that selects a task force (spec 05 §5.1).
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct TriggerDef {
+    pub task_force: u16,
+    pub weight: u32,
+    pub min_tick: u32,
+}
+
+/// An AI personality (spec 05 §5.1).
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct AiDef {
+    pub id: String,
+    pub faction: FactionId,
+    pub harvesters: u32,
+    pub defense_radius_centi: u32,
+    pub build_order: Vec<TypeId>,
+    pub task_forces: Vec<TaskForceDef>,
+    pub triggers: Vec<TriggerDef>,
+}
+
 /// The full ruleset: weapons, types, factions and maps.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -132,6 +162,8 @@ pub struct Ruleset {
     pub types: Vec<TypeDef>,
     pub factions: Vec<FactionDef>,
     pub maps: Vec<MapDef>,
+    #[serde(default)]
+    pub ai: Vec<AiDef>,
 }
 
 impl Ruleset {
@@ -162,6 +194,11 @@ impl Ruleset {
     /// Map by `id`, or `None`.
     pub fn map(&self, id: &str) -> Option<&MapDef> {
         self.maps.iter().find(|m| m.id == id)
+    }
+
+    /// First AI personality whose `id` matches, or `None`.
+    pub fn ai_index(&self, id: &str) -> Option<usize> {
+        self.ai.iter().position(|ai| ai.id == id)
     }
 
     /// Type at `kind`; panics out of range.
@@ -316,6 +353,37 @@ impl Ruleset {
                         "maps[{}].starts[{}].faction {} is out of range",
                         mi, si, s.faction
                     ));
+                }
+            }
+        }
+
+        for (i, ai) in self.ai.iter().enumerate() {
+            if usize::from(ai.faction) >= self.factions.len() {
+                return Err(format!("ai[{}].faction out of range", i));
+            }
+            for (j, kind) in ai.build_order.iter().enumerate() {
+                if usize::from(*kind) >= n_types
+                    || self.types[usize::from(*kind)].category != Category::Building
+                {
+                    return Err(format!("ai[{}].buildOrder[{}] out of range", i, j));
+                }
+            }
+            for (j, force) in ai.task_forces.iter().enumerate() {
+                for &(kind, count) in &force.units {
+                    if usize::from(kind) >= n_types
+                        || self.types[usize::from(kind)].category != Category::Unit
+                        || count == 0
+                    {
+                        return Err(format!("ai[{}].taskForces[{}].units out of range", i, j));
+                    }
+                }
+            }
+            for (j, trigger) in ai.triggers.iter().enumerate() {
+                if usize::from(trigger.task_force) >= ai.task_forces.len() {
+                    return Err(format!("ai[{}].triggers[{}].taskForce out of range", i, j));
+                }
+                if trigger.weight == 0 {
+                    return Err(format!("ai[{}].triggers[{}].weight out of range", i, j));
                 }
             }
         }

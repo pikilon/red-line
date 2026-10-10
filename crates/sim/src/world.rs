@@ -372,6 +372,26 @@ impl World {
         id
     }
 
+    /// True when `player` could place `kind` at `origin` right now: `kind` is a
+    /// building, the player exists and has `credits >= cost`, its `requires` are
+    /// met, the footprint is free (`footprint_free`) and fully explored by
+    /// `player`.
+    pub fn can_construct(&self, player: PlayerId, kind: TypeId, origin: Cell) -> bool {
+        let Some(ty) = self.rules.types.get(usize::from(kind)) else {
+            return false;
+        };
+        if ty.category != Category::Building {
+            return false;
+        }
+        let Some(owner) = self.players.get(usize::from(player)) else {
+            return false;
+        };
+        owner.credits >= ty.cost
+            && self.requirements_met(player, &ty.requires)
+            && self.footprint_free(origin, ty.footprint)
+            && self.footprint_explored(player, origin, ty.footprint)
+    }
+
     /// Every cell is in bounds and nav-passable, and no unit stands inside.
     pub(crate) fn footprint_free(&self, origin: Cell, size: [u16; 2]) -> bool {
         let cells = footprint_cells(origin, size);

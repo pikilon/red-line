@@ -405,7 +405,7 @@ a zero unit count fails with the matching §5.1 message.
 ### World
 
 **AC-05-05 can_construct.** In the first-line skirmish at tick 0, player 0 can
-construct `ua-power-plant` at `(18, 60)`, cannot at the HQ origin `(12, 60)`
+construct `ua-power-plant` at `(18, 64)` (clear of the starting dozer at cell `(18, 61)`), cannot at the HQ origin `(12, 60)`
 (occupied), cannot construct `ua-barracks` (requires power plant), and cannot
 construct anything at an unexplored cell `(100, 60)`; with credits set to 0 it
 cannot construct the power plant.
