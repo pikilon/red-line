@@ -36,9 +36,9 @@ import {
   type SkirmishClient,
 } from "../sim/skirmishClient";
 import { MAX_SPEED } from "../sim/workerHandler";
-import { type CommandButton, commandButtons } from "../ui/commandPanel";
-import { outcomeText } from "../ui/outcome";
-import { resourceText } from "../ui/resourceBar";
+import { commandButtons, createCommandPanel } from "../ui/commandPanel";
+import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
+import { createResourceBar } from "../ui/resourceBar";
 
 export const DEFAULT_MAP = "first-line";
 export const DEFAULT_SEED = 1;
@@ -53,8 +53,6 @@ const PLACEMENT_GHOST_Y = 0.5;
 /** Ghost tint from the client-side `canPlace` prediction (spec §6.5). */
 const PLACEMENT_VALID_COLOR = 0x22c55e;
 const PLACEMENT_INVALID_COLOR = 0xef4444;
-/** Queue progress bar maximum (spec §6.6). */
-const QUEUE_PROGRESS_MAX = 1000;
 /** Selection used before the controller exists (spec §6.7). */
 const NO_SELECTION: ReadonlySet<number> = new Set<number>();
 
@@ -71,148 +69,6 @@ function readInt(
 ): number {
   const value = Number.parseInt(params.get(name) ?? "", 10);
   return Number.isFinite(value) ? value : fallback;
-}
-
-function appendDiv(root: HTMLElement, id: string): HTMLDivElement {
-  const element = document.createElement("div");
-  element.id = id;
-  root.appendChild(element);
-  return element;
-}
-
-/** `<div id="outcome" role="status">`, hidden while null (spec §6.6). */
-export function createOutcomeOverlay(root: HTMLElement): {
-  render(text: string | null): void;
-} {
-  const element = appendDiv(root, "outcome");
-  element.setAttribute("role", "status");
-  element.hidden = true;
-  return {
-    render(text) {
-      element.textContent = text ?? "";
-      element.hidden = text === null;
-    },
-  };
-}
-
-/** `<div id="resource-bar">` with `#res-credits` and `#res-power` (spec §6.6). */
-export function createResourceBar(root: HTMLElement): {
-  render(snapshot: MatchSnapshot | null): void;
-} {
-  const bar = appendDiv(root, "resource-bar");
-  const credits = appendDiv(bar, "res-credits");
-  const power = appendDiv(bar, "res-power");
-  return {
-    render(snapshot) {
-      if (snapshot === null) {
-        credits.textContent = "";
-        power.textContent = "";
-        power.classList.remove("power-low");
-        return;
-      }
-      const text = resourceText(snapshot);
-      credits.textContent = text.credits;
-      power.textContent = text.power;
-      power.classList.toggle("power-low", text.low);
-    },
-  };
-}
-
-/** `#queue` view of one production building; items and progress update in place. */
-interface QueueView {
-  container: HTMLDivElement;
-  items: HTMLSpanElement[];
-  progress: HTMLProgressElement;
-}
-
-/** `<div id="command-panel">` with one `.cmd` button per offer and, for a
- *  production building, `<div id="queue">` (spec §6.6). The panel re-renders
- *  every frame, so its nodes are reused: replacing them would detach the
- *  element under the pointer between frames. */
-export function createCommandPanel(
-  root: HTMLElement,
-  handlers: {
-    onConstruct(kind: number): void;
-    onProduce(kind: number): void;
-    onCancel(): void;
-  },
-): { render(buttons: CommandButton[], queue: QueueState | null): void } {
-  const panel = appendDiv(root, "command-panel");
-  const elements: HTMLButtonElement[] = [];
-  let rendered: CommandButton[] = [];
-  let queueView: QueueView | null = null;
-
-  function buttonAt(index: number): HTMLButtonElement {
-    const existing = elements[index];
-    if (existing !== undefined) return existing;
-    const element = document.createElement("button");
-    element.className = "cmd";
-    element.addEventListener("click", () => {
-      const button = rendered[index];
-      if (button === undefined) return;
-      if (button.action === "construct") handlers.onConstruct(button.typeIndex);
-      else handlers.onProduce(button.typeIndex);
-    });
-    element.addEventListener("contextmenu", (event) => {
-      event.preventDefault();
-      if (rendered[index]?.action === "produce") handlers.onCancel();
-    });
-    elements[index] = element;
-    return element;
-  }
-
-  function updateQueue(queue: QueueState): QueueView {
-    queueView ??= createQueueView();
-    const view = queueView;
-    for (let i = 0; i < queue.items.length; i++) {
-      let item = view.items[i];
-      if (item === undefined) {
-        item = document.createElement("span");
-        item.className = "queue-item";
-        view.items[i] = item;
-      }
-      const kind = queue.items[i] ?? -1;
-      item.dataset.type = RULES.types[kind]?.id ?? String(kind);
-      view.container.insertBefore(item, view.progress);
-    }
-    while (view.items.length > queue.items.length) view.items.pop()?.remove();
-    view.progress.value = queue.headPermille;
-    return view;
-  }
-
-  return {
-    render(buttons, queue) {
-      rendered = buttons;
-      for (let i = 0; i < buttons.length; i++) {
-        const button = buttons[i];
-        if (button === undefined) continue;
-        const element = buttonAt(i);
-        const def = RULES.types[button.typeIndex];
-        element.dataset.type = def?.id ?? String(button.typeIndex);
-        element.textContent = button.label;
-        element.disabled = !button.enabled;
-        panel.insertBefore(element, queueView?.container ?? null);
-      }
-      while (elements.length > buttons.length) elements.pop()?.remove();
-      if (queue === null) {
-        queueView?.container.remove();
-        queueView = null;
-        return;
-      }
-      const view = updateQueue(queue);
-      if (view.container.parentNode !== panel)
-        panel.appendChild(view.container);
-    },
-  };
-}
-
-function createQueueView(): QueueView {
-  const container = appendDiv(document.createElement("div"), "queue");
-  const progress = document.createElement("progress");
-  progress.id = "queue-progress";
-  progress.max = QUEUE_PROGRESS_MAX;
-  container.appendChild(progress);
-  return { container, items: [], progress };
 }
 
 /** The complete own HQ of `player` in `entities`, or null; the camera anchor. */
