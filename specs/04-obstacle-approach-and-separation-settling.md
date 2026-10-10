@@ -8,7 +8,8 @@ bugfix and movement refinement.
 Amended 2026-10-10 (owner decision on the #108 escalation): spreading applies
 only to impassable targets, the search order is the Chebyshev ring scan of
 `nearest_passable()`, ties and centroid arithmetic are exact, and AC-04-02 is a
-contention test. §2 describes the reference; §3–§6 are normative and win where
+contention test. AC-04-03 uses a passable crowd, because spreading alone
+already settles the `Block A` case. §2 describes the reference; §3–§6 are normative and win where
 they differ from it.
 
 ---
@@ -210,15 +211,18 @@ $(2260992, 2260992)$ = $(34.5, 34.5)$ and one step runs,<br>
 search, and the far unit's goal is $(38, 31)$, the next unclaimed one.
 
 ### AC-04-03: Zero-Jitter Equilibrium Settling
-**Given** `World::tech_slice(42, 100)` with all 100 units commanded on tick 0
-to move to raw $(2260992, 2260992)$ = $(34.5, 34.5)$ inside `Block A`,<br>
+**Given** `World::tech_slice(42, 300)` with all 300 units commanded on tick 0
+to move to raw $(1343488, 1343488)$ = $(20.5, 20.5)$, a passable cell, so the
+whole group shares one goal and crowds around it (without settling, 162 units
+still move on tick 301),<br>
 **When** 300 ticks elapse from the command execution,<br>
 **Then** every unit has `Order::Idle`, and the count of units whose position changes
 between tick 300 and tick 301 is exactly $0$.
 
 ### AC-04-04: Determinism and Parity Preservation
-**Given** the AC-04-03 scenario run twice with seed 42 and once with seed 43,
-for 400 ticks each,<br>
+**Given** a tech-slice world with 100 units (seed 42 twice, seed 43 once)
+commanded on tick 0 to move to raw $(2260992, 2260992)$ = $(34.5, 34.5)$ inside
+`Block A`, so both spreading and settling run, for 400 ticks each,<br>
 **When** the state hashes are compared,<br>
 **Then** both seed-42 runs have the same `state_hash` and the seed-43 run
 differs; the existing determinism and native/WASM parity tests

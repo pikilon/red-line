@@ -183,3 +183,26 @@ fn ac_03_37_match_snapshot_layout() {
         FLAG_POWERED_OFF
     );
 }
+
+/// AC-04-04 scenario: 100 units spread into `Block A` and settle, 400 ticks.
+fn run_settling(seed: u64) -> World {
+    let mut world = World::tech_slice(seed, 100).unwrap();
+    world.enqueue(Command::Move {
+        units: range(0, 100),
+        target: raw(2260992, 2260992),
+    });
+    for _ in 0..400 {
+        world.step();
+    }
+    world
+}
+
+/// AC-04-04, spec 04 §6: spreading and settling stay deterministic.
+#[test]
+fn ac_04_04_settling_determinism_parity() {
+    let a = run_settling(42);
+    let b = run_settling(42);
+    assert_eq!(state_hash(&a), state_hash(&b));
+    let c = run_settling(43);
+    assert_ne!(state_hash(&a), state_hash(&c));
+}

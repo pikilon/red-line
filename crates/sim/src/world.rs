@@ -19,6 +19,8 @@ pub const MAX_UNITS: u32 = 2000;
 pub const UNIT_SPEED: Fx = Fx::from_raw(13107);
 pub const SEPARATION_DISTANCE: Fx = Fx::from_raw(32768);
 pub const MAX_SEPARATION_PUSH: Fx = Fx::from_raw(6553);
+/// Spec 04 §4: an idle unit ignores a net separation push shorter than this.
+pub const SEPARATION_SETTLE_EPSILON: Fx = Fx::from_raw(512);
 pub const ARRIVAL_CONTACT: Fx = Fx::from_raw(39321);
 /// Spec 04 §4: per-axis clamp of a unit's offset from the group centroid.
 pub const MAX_CENTROID_OFFSET: Fx = Fx::from_raw(393216);
@@ -831,6 +833,11 @@ impl World {
         let half_push = Fx::from_raw(SEPARATION_DISTANCE.raw() / 2);
         // Buildings and depots neither push nor are pushed.
         let is_unit: Vec<bool> = self.entities.iter().map(|e| e.site.is_none()).collect();
+        let is_idle: Vec<bool> = self
+            .entities
+            .iter()
+            .map(|e| matches!(e.order, Order::Idle { .. }))
+            .collect();
         for a in 0..self.entities.len() {
             if !is_unit[a] {
                 continue;
@@ -853,10 +860,22 @@ impl World {
                         .normalize()
                         .scale(Fx::from_raw((SEPARATION_DISTANCE - d).raw() / 2))
                 };
+                // Spec 04 §5.2: two idle units repel each other at half strength.
+                let term = if is_idle[a] && is_idle[b] {
+                    FxVec2::new(
+                        Fx::from_raw(term.x.raw() / 2),
+                        Fx::from_raw(term.y.raw() / 2),
+                    )
+                } else {
+                    term
+                };
                 push = push + term;
             }
             if push.length() > MAX_SEPARATION_PUSH {
                 push = push.normalize().scale(MAX_SEPARATION_PUSH);
+            }
+            if is_idle[a] && push.length() < SEPARATION_SETTLE_EPSILON {
+                push = FxVec2::ZERO;
             }
             let pos = self.entities[a].pos;
             let x = FxVec2::new(pos.x + push.x, pos.y);
