@@ -149,8 +149,8 @@ diff over 5 %).
 
 | Issue | Scope | Criteria | Tier | Depends on |
 |---|---|---|---|---|
-| P4-01 | `lib.py`, `build.mjs`, `check.mjs`, exemplar `ru-t-72b3.py` and `ua-leopard-2a4.py` (tier S per D-07) | AC-06-01, 02 | S (Opus) | — |
-| P4-02 | Ukraine vehicles and infantry scripts + `.glb` | AC-06-01 | ready-pro | P4-01 |
-| P4-03 | Russia vehicles and infantry scripts + `.glb` | AC-06-01 | ready-pro | P4-01 |
-| P4-04 | Buildings of both factions and the depot + `.glb` | AC-06-01 | ready-pro | P4-01 |
-| P4-05 | Client model registry, instanced rendering, heading, lights | AC-06-03..07 | ready-pro | P4-01 |
+| P4-01 (this PR) | `lib.py`, `build.mjs`, `check.mjs`, exemplar `ru-t-72b3.py` and `ua-leopard-2a4.py` (tier S per D-07) | AC-06-01, 02 | S (Opus) | — |
+| P4-02 (#165) | Ukraine vehicles and infantry scripts + `.glb` | AC-06-01 | ready-pro | P4-01 |
+| P4-03 (#166) | Russia vehicles and infantry scripts + `.glb` | AC-06-01 | ready-pro | P4-01 |
+| P4-04 (#167) | Buildings of both factions and the depot + `.glb` | AC-06-01 | ready-pro | P4-01 |
+| P4-05 (#168) | Client model registry, instanced rendering, heading, lights | AC-06-03..07 | ready-pro | P4-01 |
