@@ -340,3 +340,178 @@ fn ac_05_11_resume_orphan_sites() {
         "expected no Construct while an orphan site exists, got {commands:?}"
     );
 }
+
+// AC-05-12..AC-05-14: task forces, launch, retarget and defense
+// (spec 05 §5.4 steps 5-8, §5.6).
+//
+// Committed in the RED phase (D-08). The implementer must make these pass
+// without modifying them.
+
+/// §5.6 step 4: footprint centre of the HQ of the first `first-line` start
+/// whose index is not `player`. Computed independently of the implementation.
+fn enemy_start_center(world: &World, player: u8) -> FxVec2 {
+    let map = world.rules().map("first-line").unwrap();
+    let index = (0..map.starts.len())
+        .find(|&i| i != usize::from(player))
+        .unwrap();
+    let start = &map.starts[index];
+    let hq = world.rules().factions[usize::from(start.faction)].hq;
+    sim::nav::footprint_center(
+        Cell {
+            x: start.hq[0],
+            y: start.hq[1],
+        },
+        world.rules().ty(hq).footprint,
+    )
+}
+
+fn produces_of(commands: &[Command], building: u32, kind: TypeId) -> usize {
+    commands
+        .iter()
+        .filter(|command| {
+            matches!(
+                command,
+                Command::Produce { building: b, kind: k } if *b == building && *k == kind
+            )
+        })
+        .count()
+}
+
+/// The `Move`/`Attack` commands that reference any of `ids`.
+fn commands_referencing<'a>(commands: &'a [Command], ids: &[u32]) -> Vec<&'a Command> {
+    commands
+        .iter()
+        .filter(|command| match command {
+            Command::Move { units, .. } | Command::Attack { units, .. } => {
+                !units.is_empty() && units.iter().any(|id| ids.contains(id))
+            }
+            _ => false,
+        })
+        .collect()
+}
+
+#[test]
+fn ac_05_12_task_force_production() {
+    let mut world = skirmish();
+    let barracks_kind = world.rules().type_index("ua-barracks").unwrap();
+    let rifleman = world.rules().type_index("ua-rifleman").unwrap();
+    let stugna = world.rules().type_index("ua-stugna-team").unwrap();
+    world.set_credits(0, 10_000);
+    let barracks = world.place_building(0, barracks_kind, cell(18, 64), true);
+    let mut ai = ukraine_ai(&world);
+
+    let commands = ai.think(&world);
+    assert_eq!(
+        produces_of(&commands, barracks, rifleman),
+        4,
+        "expected 4 Produce ua-rifleman at {barracks}, got {commands:?}"
+    );
+    assert_eq!(
+        produces_of(&commands, barracks, stugna),
+        2,
+        "expected 2 Produce ua-stugna-team at {barracks}, got {commands:?}"
+    );
+
+    // A second pass once the queue holds them emits none.
+    for command in commands {
+        world.enqueue_as(0, command);
+    }
+    world.step();
+    let commands = ai.think(&world);
+    assert_eq!(
+        produces_of(&commands, barracks, rifleman),
+        0,
+        "expected no ua-rifleman Produce while queued, got {commands:?}"
+    );
+    assert_eq!(
+        produces_of(&commands, barracks, stugna),
+        0,
+        "expected no ua-stugna-team Produce while queued, got {commands:?}"
+    );
+}
+
+#[test]
+fn ac_05_13_launch_attack() {
+    let mut world = skirmish();
+    let barracks_kind = world.rules().type_index("ua-barracks").unwrap();
+    let rifleman = world.rules().type_index("ua-rifleman").unwrap();
+    let stugna = world.rules().type_index("ua-stugna-team").unwrap();
+    world.set_credits(0, 10_000);
+    world.place_building(0, barracks_kind, cell(18, 64), true);
+    let mut ai = ukraine_ai(&world);
+    // The first pass selects `infantry`, the only eligible trigger at tick 0.
+    let _ = ai.think(&world);
+
+    // 4 riflemen and 2 Stugna teams idle near the HQ.
+    let near = FxVec2::new(fx_centi(1650), fx_centi(6250));
+    let mut units = Vec::new();
+    for _ in 0..4 {
+        units.push(world.spawn(0, rifleman, near));
+    }
+    for _ in 0..2 {
+        units.push(world.spawn(0, stugna, near));
+    }
+
+    let target = enemy_start_center(&world, 0);
+    let commands = ai.think(&world);
+    let launched = commands_referencing(&commands, &units);
+    assert_eq!(
+        launched.len(),
+        1,
+        "expected exactly one command for the task force, got {commands:?}"
+    );
+    assert_eq!(
+        launched[0],
+        &Command::Move {
+            units: units.clone(),
+            target,
+        },
+        "expected a Move to the enemy start HQ centre, got {commands:?}"
+    );
+
+    // Once the launch is applied the units are busy, so the next pass leaves
+    // them alone.
+    for command in commands {
+        world.enqueue_as(0, command);
+    }
+    world.step();
+    let commands = ai.think(&world);
+    assert!(
+        commands_referencing(&commands, &units).is_empty(),
+        "expected the launched units to stay uncommanded while busy, got {commands:?}"
+    );
+}
+
+#[test]
+fn ac_05_14_defense() {
+    let mut world = skirmish();
+    let rifleman = world.rules().type_index("ua-rifleman").unwrap();
+    let stugna = world.rules().type_index("ua-stugna-team").unwrap();
+    let enemy_kind = world.rules().type_index("ru-rifleman").unwrap();
+    let near = FxVec2::new(fx_centi(1650), fx_centi(6250));
+    let pool_a = world.spawn(0, rifleman, near);
+    let pool_b = world.spawn(0, stugna, near);
+    // A visible enemy rifleman within the defense radius of the HQ.
+    let enemy = world.spawn(1, enemy_kind, FxVec2::new(fx_centi(1650), fx_centi(6150)));
+    world.refresh_visibility();
+    assert!(
+        world.is_entity_visible(0, enemy),
+        "the enemy rifleman must be visible to player 0"
+    );
+    let mut ai = ukraine_ai(&world);
+
+    let commands = ai.think(&world);
+    assert!(
+        commands.contains(&Command::Attack {
+            units: vec![pool_a, pool_b],
+            target: enemy,
+        }),
+        "expected a defense Attack on {enemy} with the pool, got {commands:?}"
+    );
+    assert!(
+        !commands
+            .iter()
+            .any(|command| matches!(command, Command::Move { .. })),
+        "expected no launch while defending, got {commands:?}"
+    );
+}
