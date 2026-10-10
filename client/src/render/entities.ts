@@ -113,6 +113,7 @@ export function createEntityRenderer(capacity: number): EntityRenderer {
   const position = new Vector3();
   const scale = new Vector3();
   const color = new Color();
+  const byId = new Map<number, EntityState>();
 
   function place(mesh: InstancedMesh, index: number, hex: number): void {
     matrix.compose(position, rotation, scale);
@@ -129,7 +130,8 @@ export function createEntityRenderer(capacity: number): EntityRenderer {
     tracers,
     update(entities, selected) {
       const counts = { units: 0, buildings: 0, ghosts: 0, bars: 0 };
-      const byId = new Map(entities.map((entity) => [entity.id, entity]));
+      byId.clear();
+      for (const entity of entities) byId.set(entity.id, entity);
       let tracerCount = 0;
 
       for (const entity of entities) {
