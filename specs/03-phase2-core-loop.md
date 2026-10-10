@@ -1344,7 +1344,9 @@ export function createCommandPanel(root: HTMLElement, handlers: { onConstruct(ki
   placing?: number | null): void };
 /** The construct button whose typeIndex equals placing (default null) has
  *  class "active" and aria-pressed="true"; every other button has no "active"
- *  class and aria-pressed="false". */
+ *  class and aria-pressed="false". render runs every frame and only touches
+ *  what changed: re-rendering the same input performs no DOM mutation, so a
+ *  button is never detached or rewritten while the player presses it (#138). */
 ```
 
 `placementHint.ts` (#136):
@@ -1957,6 +1959,13 @@ over the HQ centre, `#placement-hint` shows `ui.placementIllegal`; after
 `Escape`, `#placement-hint` is hidden and the button has
 `aria-pressed="false"`.
 
+**AC-03-65 Stable command panel (#138).** Given `/?debug=1&speed=4` with the
+owner-0 `ua-dozer` selected by a click, when a `MutationObserver` watches
+`#command-panel` (child list, subtree, attributes, character data) for 500 ms,
+then it records 0 mutations; and when the mouse is pressed on the
+`ua-power-plant` button, held for 200 ms and released, then the button has
+`aria-pressed="true"`.
+
 ### Updated Phase 1 criteria
 
 * AC-01-05: the API version is now `2` (`ac_01_05_api_version_is_one` asserts
@@ -2036,6 +2045,7 @@ These test edits are part of the RED commits of P2-05 and P2-23 (tier S).
 | AC-03-62 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-62: renders a skirmish in at most 8 draw calls` |
 | AC-03-63 | `client/tests/e2e/perf.spec.ts` | `AC-03-63: keeps 60 fps in a 400-unit skirmish @perf` |
 | AC-03-64 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-64: shows placement feedback` |
+| AC-03-65 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-65: keeps the command panel stable under a held click` |
 
 ## 9. Issue breakdown (Phase 2 queue)
 
