@@ -7,7 +7,7 @@ import {
   Vector3,
 } from "three";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { typeIndex } from "../rules";
+import { typeDef, typeIndex } from "../rules";
 import { ENTITY_FLAGS, type EntityState, NEUTRAL } from "../sim/matchSnapshot";
 import { bobHeight, createAnimator, RECOIL_TILES } from "./animation";
 import {
@@ -15,6 +15,7 @@ import {
   type EntityRenderer,
   OWNER_COLORS,
   SELECTED_COLOR,
+  scaffoldGeometry,
 } from "./entities";
 import type {
   MaterialName,
@@ -328,5 +329,60 @@ describe("entity renderer", () => {
     const rifleHull = instanceTranslation(hullSlot(withAnim, "ua-rifleman"));
     expect(rifleHull.y).toBeCloseTo(bobHeight(8, now), 6);
     expect(rifleHull.y).toBeGreaterThan(0);
+  });
+
+  it("AC-09-04: scaffolding", () => {
+    // `scaffoldGeometry()` is 16 beams (16 x 12 triangles) inside the unit box.
+    const geometry = scaffoldGeometry();
+    // `scaffoldGeometry()` returns a non-indexed geometry, so the triangle
+    // count is the vertex count divided by 3.
+    const triangleCount = (geometry.attributes.position?.count ?? 0) / 3;
+    expect(triangleCount).toBe(16 * 12);
+
+    // A base with nothing under construction keeps the draw-call bound:
+    // `scaffolds` draws no instances and stays invisible.
+    const empty = createEntityRenderer(100);
+    empty.update([entity(0, 0, "ua-power-plant", 6, 6, 1000)], new Set());
+    expect(empty.scaffolds.count).toBe(0);
+    expect(empty.scaffolds.visible).toBe(false);
+
+    // The full render box the scaffold is scaled to.
+    const [w, h, d] = typeDef(typeIndex("ua-power-plant")).render.size.map(
+      (size) => size / 100,
+    ) as [number, number, number];
+
+    // One building under construction adds exactly one instance at (x, 0, y)
+    // scaled to its render box; a finished building, a unit and a ghost add
+    // none.
+    const renderer = createEntityRenderer(100);
+    renderer.update(
+      [
+        entity(0, 0, "ua-power-plant", 6, 6, 1000, {
+          flags: ENTITY_FLAGS.underConstruction,
+          progress: 500,
+        }),
+        entity(1, 0, "ua-barracks", 10, 6, 10),
+        entity(2, 1, "ru-rifleman", 3, 4, 90, {
+          flags: ENTITY_FLAGS.underConstruction,
+        }),
+        entity(3, 1, "ru-hq", 20, 20, 3000, { flags: ENTITY_FLAGS.ghost }),
+      ],
+      new Set(),
+    );
+
+    expect(renderer.scaffolds.count).toBe(1);
+    expect(renderer.scaffolds.visible).toBe(true);
+
+    const matrix = new Matrix4();
+    renderer.scaffolds.getMatrixAt(0, matrix);
+    const translation = new Vector3();
+    const scale = new Vector3();
+    matrix.decompose(translation, new Quaternion(), scale);
+    expect(translation.x).toBeCloseTo(6, 6);
+    expect(translation.y).toBeCloseTo(0, 6);
+    expect(translation.z).toBeCloseTo(6, 6);
+    expect(scale.x).toBeCloseTo(w, 6);
+    expect(scale.y).toBeCloseTo(h, 6);
+    expect(scale.z).toBeCloseTo(d, 6);
   });
 });
