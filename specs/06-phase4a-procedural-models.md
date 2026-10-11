@@ -109,12 +109,6 @@ straight lines; a hull may briefly lag its direction of travel).
 
 ```ts
 // client/src/render/heading.ts
-export const TURN_RATES = {
-  vehicleHull: Math.PI,        // rad/s (180°/s)
-  infantryHull: 4 * Math.PI,   // rad/s
-  turret: 1.5 * Math.PI,       // rad/s (270°/s)
-} as const;
-
 export interface TurnRates {
   readonly hull: number;   // rad/s
   readonly turret: number; // rad/s
@@ -137,11 +131,34 @@ export interface HeadingTracker {
   `nowMs` minus the id's previous `nowMs` in seconds (clamped to [0, 0.25]).
   The desired hull yaw is §5's; the desired turret yaw is towards the target,
   else the current (smoothed) hull yaw. The tracker stores the smoothed yaws.
+* Turn rates are per type and come from the faction data (owner request
+  2026-10-11: "the army profile"), so balance can tune them and a later sim
+  spec can use them for gameplay (turning before moving, aiming before
+  firing). Faction YAML: every unit has `turnRateDeg` (hull, integer degrees
+  per second, required); a unit or building with a turning weapon has
+  `turretTurnRateDeg` (integer degrees per second). `faction.schema.json`
+  requires `turnRateDeg` for units and forbids it for buildings and depots;
+  `build-data.mjs` emits both in `ruleset.json` (0 when absent);
+  `client/src/rules.ts` `TypeDef` gains `turnRateDeg: number;
+  turretTurnRateDeg: number`. The simulation ignores both fields for now.
+* `heading.ts` exports `turnRatesOf(type: TypeDef): TurnRates` = `{ hull:
+  turnRateDeg × π / 180, turret: (turretTurnRateDeg or, when 0,
+  turnRateDeg) × π / 180 }`.
 * `entities.ts` passes `nowMs` (the effect clock, spec 09 §3) and
-  `{ hull: TURN_RATES.infantryHull or vehicleHull, turret: TURN_RATES.turret }`
-  per unit (infantry = category "unit" with armor 0); buildings with a turret
-  use only the turret rate (their hull yaw stays 0). While paused the clock
-  stops, so nothing turns.
+  `turnRatesOf(type)`; buildings keep hull yaw 0 and turn only the turret.
+  While paused the clock stops, so nothing turns.
+* Initial values (degrees per second, hull / turret):
+
+  | Type | Hull | Turret |
+  |---|---|---|
+  | `ua-rifleman`, `ru-rifleman` | 720 | — |
+  | `ua-stugna-team`, `ru-rpg-gunner` | 540 | — |
+  | `ua-kozak-scout` / `ru-brdm-scout` | 300 / 300 | 270 / 240 |
+  | `ua-bradley` / `ru-bmp-2` | 220 / 240 | 180 / 150 |
+  | `ua-leopard-2a4` / `ru-t-72b3` | 180 / 200 | 135 / 105 |
+  | `ua-himars` / `ru-tos-1a` | 140 / 160 | 90 / 75 |
+  | supply trucks and dozers | 150 | — |
+  | `ua-defense`, `ru-defense` | — | 120 |
 
 ## 6. Acceptance criteria
 
@@ -176,6 +193,13 @@ moving along +x snaps to π/2, then reversing to −x turns its hull by at most
 whose target jumps behind it turns at most 1.5π × dt; a `dt` over 250 ms is
 clamped; without rates the results equal AC-06-05.
 
+**AC-06-09 Turn rates from data.** In the generated ruleset every unit has
+`turnRateDeg > 0`, every type in `TURRETED` has `turretTurnRateDeg > 0`,
+buildings without a turret have both 0, and the values equal §5.1's table;
+a faction file with a unit missing `turnRateDeg` or a building with one fails
+`node --run check:data`; `turnRatesOf(ua-leopard-2a4)` is `{ hull: π, turret:
+0.75π }` and `turnRatesOf(ua-rifleman).turret` equals its hull rate.
+
 **AC-06-06 Models in the skirmish (Playwright).** The skirmish loads with no
 console error, `__redline.drawCalls()` stays within §5's bound, and a
 screenshot of the starting base differs from the Phase 2 box rendering (pixel
@@ -193,6 +217,7 @@ diff over 5 %).
 | AC-06-04 | `client/src/render/entities.test.ts` | `AC-06-04: instanced model rendering` |
 | AC-06-05 | `client/src/render/heading.test.ts` | `AC-06-05: heading and turret aim` |
 | AC-06-08 | `client/src/render/heading.test.ts` | `AC-06-08: gradual turning` |
+| AC-06-09 | `scripts/build-data.test.mjs`, `client/src/render/heading.test.ts` | `AC-06-09: turn rates from data` |
 | AC-06-06 | `client/tests/e2e/models.spec.ts` | `AC-06-06: models in the skirmish` |
 | AC-06-07 | existing perf tests | — |
 
@@ -205,4 +230,5 @@ diff over 5 %).
 | P4-03 (#166) | Russia vehicles and infantry scripts + `.glb` | AC-06-01 | ready-pro | P4-01 |
 | P4-04 (#167) | Buildings of both factions and the depot + `.glb` | AC-06-01 | ready-pro | P4-01 |
 | P4-05 (#168) | Client model registry, instanced rendering, heading, lights | AC-06-03..07 | ready-pro | P4-01 |
-| P4-15 (#202) | Gradual hull and turret turning (§5.1) | AC-06-08 | ready-local | P4-05 |
+| P4-15 (#202) | Gradual hull and turret turning (§5.1) | AC-06-08, AC-06-09 (`turnRatesOf`) | ready-local | P4-05, P4-16 |
+| P4-16 (#204) | Turn rates in the faction data (§5.1) | AC-06-09 (data) | ready-local | — |
