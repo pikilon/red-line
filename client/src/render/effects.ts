@@ -162,6 +162,8 @@ interface Instance {
   endMs: number;
   durationMs: number;
   fadeMs: number;
+  /** Drawn in at least one frame; an effect is never dropped unseen. */
+  shown: boolean;
 }
 
 /** Pooled, instanced combat effects (spec 07 §3). */
@@ -220,6 +222,7 @@ export function createEffects(): Effects {
       endMs: startMs + durationMs,
       durationMs,
       fadeMs: Math.min(style.fadeMs, durationMs),
+      shown: false,
     });
   }
 
@@ -232,7 +235,9 @@ export function createEffects(): Effects {
       let live = 0;
       for (let i = 0; i < pool.length; i++) {
         const instance = pool[i] as Instance;
-        if (instance.endMs > nowMs) {
+        // A slow frame must not drop an effect before it was ever drawn.
+        const unseen = !instance.shown && instance.startMs <= nowMs;
+        if (instance.endMs > nowMs || unseen) {
           if (live !== i) pool[live] = instance;
           live++;
         }
@@ -242,7 +247,15 @@ export function createEffects(): Effects {
       let visible = 0;
       for (const instance of pool) {
         if (instance.startMs > nowMs) continue;
-        const elapsed = nowMs - instance.startMs;
+        // An effect first drawn after its lifetime is shown once at full
+        // strength, as if the frame had come in time.
+        const elapsed = instance.shown
+          ? nowMs - instance.startMs
+          : Math.min(
+              nowMs - instance.startMs,
+              Math.max(0, instance.durationMs - instance.fadeMs),
+            );
+        instance.shown = true;
         const progress =
           instance.durationMs > 0 ? elapsed / instance.durationMs : 1;
         const fadeStart = instance.durationMs - instance.fadeMs;

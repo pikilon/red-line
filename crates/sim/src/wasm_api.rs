@@ -7,7 +7,10 @@ use crate::fixed::{Fx, FxVec2};
 use crate::hash::state_hash;
 use crate::map::Cell;
 use crate::rules::{Ruleset, TypeId};
-use crate::snapshot::{encode_fog, encode_match_snapshot, encode_snapshot};
+use std::collections::BTreeMap;
+
+use crate::entity::EntityId;
+use crate::snapshot::{encode_fog, encode_match_snapshot_with_shots, encode_snapshot};
 use crate::world::{Command, SimError, World};
 
 /// Client-facing text for a setup error; the client matches on these strings.
@@ -27,6 +30,9 @@ pub struct Sim {
     seed: u64,
     /// Attached AIs, ascending player order (§5.7).
     ais: Vec<Ai>,
+    /// Shots fired since the last match snapshot (shooter -> target), so a
+    /// snapshot taken after several steps still reports them.
+    shots: BTreeMap<EntityId, EntityId>,
 }
 
 #[wasm_bindgen]
@@ -39,6 +45,7 @@ impl Sim {
             world,
             seed: u64::from(seed),
             ais: Vec::new(),
+            shots: BTreeMap::new(),
         })
     }
 
@@ -51,6 +58,7 @@ impl Sim {
             world,
             seed: u64::from(seed),
             ais: Vec::new(),
+            shots: BTreeMap::new(),
         })
     }
 
@@ -216,11 +224,13 @@ impl Sim {
 
     pub fn step(&mut self) {
         step_with_ai(&mut self.world, &mut self.ais);
+        self.record_shots();
     }
 
     pub fn step_n(&mut self, n: u32) {
         for _ in 0..n {
             step_with_ai(&mut self.world, &mut self.ais);
+            self.record_shots();
         }
     }
 
@@ -229,8 +239,12 @@ impl Sim {
     }
 
     /// Match snapshot as seen by `viewer`; any other value is the observer (§5.15).
-    pub fn snapshot_for(&self, viewer: u8) -> Vec<i32> {
-        encode_match_snapshot(&self.world, viewer)
+    /// Shots fired since the previous call are reported with `FLAG_FIRED`
+    /// even when they happened in an earlier step.
+    pub fn snapshot_for(&mut self, viewer: u8) -> Vec<i32> {
+        let out = encode_match_snapshot_with_shots(&self.world, viewer, &self.shots);
+        self.shots.clear();
+        out
     }
 
     /// Row-major fog grid as seen by `viewer`; any other value is the observer.
@@ -240,5 +254,15 @@ impl Sim {
 
     pub fn state_hash_hex(&self) -> String {
         format!("{:016x}", state_hash(&self.world))
+    }
+}
+
+impl Sim {
+    fn record_shots(&mut self) {
+        for entity in self.world.entities() {
+            if let Some(target) = entity.last_target {
+                self.shots.insert(entity.id, target);
+            }
+        }
     }
 }
