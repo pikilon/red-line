@@ -1,0 +1,490 @@
+{
+  "matches": [
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-balanced",
+      "seed": 1,
+      "winner": 0,
+      "ticks": 8237,
+      "lost": [
+        8300,
+        24920
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-balanced",
+      "seed": 2,
+      "winner": 1,
+      "ticks": 11776,
+      "lost": [
+        32600,
+        18600
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-balanced",
+      "seed": 3,
+      "winner": 1,
+      "ticks": 14640,
+      "lost": [
+        30800,
+        26920
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-balanced",
+      "seed": 4,
+      "winner": null,
+      "ticks": 27000,
+      "lost": [
+        34100,
+        18440
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-balanced",
+      "seed": 5,
+      "winner": null,
+      "ticks": 27000,
+      "lost": [
+        19100,
+        40360
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-balanced",
+      "seed": 6,
+      "winner": 0,
+      "ticks": 8484,
+      "lost": [
+        10950,
+        19620
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-balanced",
+      "seed": 7,
+      "winner": null,
+      "ticks": 27000,
+      "lost": [
+        31900,
+        29660
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-balanced",
+      "seed": 8,
+      "winner": 1,
+      "ticks": 20614,
+      "lost": [
+        34100,
+        35980
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-balanced",
+      "seed": 9,
+      "winner": 0,
+      "ticks": 7267,
+      "lost": [
+        4150,
+        17640
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-balanced",
+      "seed": 10,
+      "winner": 1,
+      "ticks": 14318,
+      "lost": [
+        33450,
+        25780
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-rush",
+      "seed": 1,
+      "winner": 1,
+      "ticks": 12083,
+      "lost": [
+        28300,
+        15680
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-rush",
+      "seed": 2,
+      "winner": 0,
+      "ticks": 11223,
+      "lost": [
+        13700,
+        35240
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-rush",
+      "seed": 3,
+      "winner": 1,
+      "ticks": 13022,
+      "lost": [
+        31500,
+        24880
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-rush",
+      "seed": 4,
+      "winner": 0,
+      "ticks": 14968,
+      "lost": [
+        23950,
+        38740
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-rush",
+      "seed": 5,
+      "winner": 0,
+      "ticks": 10564,
+      "lost": [
+        14650,
+        33980
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-rush",
+      "seed": 6,
+      "winner": 0,
+      "ticks": 14075,
+      "lost": [
+        24100,
+        38240
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-rush",
+      "seed": 7,
+      "winner": 0,
+      "ticks": 9204,
+      "lost": [
+        9900,
+        27160
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-rush",
+      "seed": 8,
+      "winner": 1,
+      "ticks": 10354,
+      "lost": [
+        28100,
+        12720
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-rush",
+      "seed": 9,
+      "winner": 1,
+      "ticks": 8350,
+      "lost": [
+        28200,
+        5940
+      ]
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-rush",
+      "seed": 10,
+      "winner": 1,
+      "ticks": 13954,
+      "lost": [
+        34600,
+        20180
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-balanced",
+      "seed": 1,
+      "winner": 0,
+      "ticks": 7645,
+      "lost": [
+        7100,
+        22720
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-balanced",
+      "seed": 2,
+      "winner": 0,
+      "ticks": 7796,
+      "lost": [
+        9000,
+        24880
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-balanced",
+      "seed": 3,
+      "winner": 1,
+      "ticks": 6275,
+      "lost": [
+        19200,
+        2120
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-balanced",
+      "seed": 4,
+      "winner": null,
+      "ticks": 27000,
+      "lost": [
+        37400,
+        7580
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-balanced",
+      "seed": 5,
+      "winner": null,
+      "ticks": 27000,
+      "lost": [
+        33500,
+        5480
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-balanced",
+      "seed": 6,
+      "winner": 1,
+      "ticks": 11148,
+      "lost": [
+        35950,
+        20320
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-balanced",
+      "seed": 7,
+      "winner": 0,
+      "ticks": 9966,
+      "lost": [
+        20000,
+        24440
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-balanced",
+      "seed": 8,
+      "winner": null,
+      "ticks": 27000,
+      "lost": [
+        27500,
+        2120
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-balanced",
+      "seed": 9,
+      "winner": null,
+      "ticks": 27000,
+      "lost": [
+        23500,
+        4220
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-balanced",
+      "seed": 10,
+      "winner": 0,
+      "ticks": 10867,
+      "lost": [
+        26850,
+        26400
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-rush",
+      "seed": 1,
+      "winner": 0,
+      "ticks": 8519,
+      "lost": [
+        8300,
+        29240
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-rush",
+      "seed": 2,
+      "winner": 0,
+      "ticks": 10932,
+      "lost": [
+        18950,
+        35040
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-rush",
+      "seed": 3,
+      "winner": 1,
+      "ticks": 12020,
+      "lost": [
+        38900,
+        15060
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-rush",
+      "seed": 4,
+      "winner": 0,
+      "ticks": 7367,
+      "lost": [
+        4450,
+        21760
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-rush",
+      "seed": 5,
+      "winner": 0,
+      "ticks": 7645,
+      "lost": [
+        4600,
+        25260
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-rush",
+      "seed": 6,
+      "winner": 0,
+      "ticks": 7662,
+      "lost": [
+        4300,
+        26940
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-rush",
+      "seed": 7,
+      "winner": 1,
+      "ticks": 7995,
+      "lost": [
+        24350,
+        8260
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-rush",
+      "seed": 8,
+      "winner": 1,
+      "ticks": 8476,
+      "lost": [
+        23650,
+        3640
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-rush",
+      "seed": 9,
+      "winner": null,
+      "ticks": 27000,
+      "lost": [
+        35250,
+        29520
+      ]
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-rush",
+      "seed": 10,
+      "winner": 0,
+      "ticks": 7157,
+      "lost": [
+        5500,
+        24980
+      ]
+    }
+  ],
+  "summary": [
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-balanced",
+      "games": 10,
+      "wins0": 3,
+      "wins1": 4,
+      "draws": 3,
+      "avgTicks": 16633,
+      "lost0": 239450,
+      "lost1": 257920
+    },
+    {
+      "ai0": "ukraine-balanced",
+      "ai1": "russia-rush",
+      "games": 10,
+      "wins0": 5,
+      "wins1": 5,
+      "draws": 0,
+      "avgTicks": 11779,
+      "lost0": 237000,
+      "lost1": 252760
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-balanced",
+      "games": 10,
+      "wins0": 4,
+      "wins1": 2,
+      "draws": 4,
+      "avgTicks": 16169,
+      "lost0": 240000,
+      "lost1": 140280
+    },
+    {
+      "ai0": "ukraine-rush",
+      "ai1": "russia-rush",
+      "games": 10,
+      "wins0": 6,
+      "wins1": 3,
+      "draws": 1,
+      "avgTicks": 10477,
+      "lost0": 168250,
+      "lost1": 219700
+    }
+  ]
+}
