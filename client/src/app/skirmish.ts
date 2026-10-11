@@ -16,16 +16,25 @@ import {
   type SkirmishDebug,
 } from "../debug";
 import { createHud } from "../hud";
+import { t } from "../i18n";
 import {
   createSkirmishController,
   type SkirmishController,
 } from "../input/skirmishController";
 import { createPerfPanel } from "../perfPanel";
+import { detectDeaths, spawnDeathEffects } from "../render/deaths";
+import {
+  createEffects,
+  type EffectKind,
+  type Effects,
+  spawnShotEffects,
+} from "../render/effects";
 import { createEntityRenderer, type EntityRenderer } from "../render/entities";
 import { createFogOverlay } from "../render/fog";
 import { loadModels, type ModelRegistry } from "../render/models";
 import { createTerrain } from "../render/terrain";
 import { RULES, typeDef, typeIndex } from "../rules";
+import { loadSettings, type Settings, saveSettings } from "../settings";
 import {
   type EntityState,
   interpolateEntities,
@@ -67,6 +76,18 @@ const PLACEMENT_VALID_COLOR = 0xffffff;
 const PLACEMENT_INVALID_COLOR = 0xef4444;
 /** Selection used before the controller exists (spec §6.7). */
 const NO_SELECTION: ReadonlySet<number> = new Set<number>();
+/** How long the `G` toast stays on screen (spec 07 §5). */
+const TOAST_MS = 2000;
+/** Effect counts before the scene exists (spec 07 AC-07-06). */
+const NO_EFFECT_COUNTS: Record<EffectKind, number> = {
+  muzzle: 0,
+  impact: 0,
+  blast: 0,
+  explosion: 0,
+  wreck: 0,
+  body: 0,
+  blood: 0,
+};
 /** The builtin ruleset type without a committed `.glb` (spec 06 §3). */
 const PLACEHOLDER_TYPE = "tech-slice-placeholder";
 /** Model lighting (spec 06 §5): hemisphere fill plus a camera-side sun. */
@@ -146,6 +167,21 @@ export function startSkirmish(params: SkirmishOptions): void {
   const outcome = createOutcomeOverlay(document.body);
   hud.setSelectedCount(0);
 
+  let settings: Settings = loadSettings();
+  const toast = document.getElementById("toast");
+  let toastTimer: number | null = null;
+
+  /** Shows `message` in `#toast` for `TOAST_MS` (spec 07 §5). */
+  function showToast(message: string): void {
+    if (!(toast instanceof HTMLElement)) return;
+    toast.textContent = message;
+    toast.classList.add("visible");
+    if (toastTimer !== null) window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => {
+      toast.classList.remove("visible");
+    }, TOAST_MS);
+  }
+
   function resize(): void {
     const { clientWidth: width, clientHeight: height } =
       container as HTMLElement;
@@ -206,6 +242,7 @@ export function startSkirmish(params: SkirmishOptions): void {
     },
   });
   let entities: EntityRenderer | null = null;
+  let effects: Effects | null = null;
   let fogOverlay: FogOverlay | null = null;
   const placementGhost = createPlacementGhost();
   const placementHint = createPlacementHint(document.body);
@@ -284,6 +321,8 @@ export function startSkirmish(params: SkirmishOptions): void {
     );
     entities = createEntityRenderer(ENTITY_CAPACITY, registry);
     scene.add(entities.group);
+    effects = createEffects();
+    scene.add(effects.group);
     fogOverlay = createFogOverlay(mapInfo.mapWidth, mapInfo.mapHeight);
     scene.add(fogOverlay.mesh);
     scene.add(placementGhost.mesh);
@@ -390,7 +429,8 @@ export function startSkirmish(params: SkirmishOptions): void {
   }
 
   interact.onSnapshot((snapshot, receivedFog, at) => {
-    prev = next ?? snapshot;
+    const previous = next;
+    prev = previous ?? snapshot;
     next = snapshot;
     // The worker transfers a fresh ArrayBuffer per snapshot (spec §6.3).
     fog = receivedFog as Uint8Array<ArrayBuffer>;
@@ -399,6 +439,17 @@ export function startSkirmish(params: SkirmishOptions): void {
     // Only the first snapshot of a controlled player re-centres the camera.
     if (!ready) centreOnOwnHq(snapshot);
     start();
+    // Effects derive from the tick transition only; a re-post from `setViewer`
+    // repeats the same tick and must not duplicate shots.
+    if (
+      effects !== null &&
+      (previous === null || snapshot.tick > previous.tick)
+    ) {
+      spawnShotEffects(snapshot, effects, at);
+      const deaths =
+        previous === null ? [] : detectDeaths(previous, snapshot, viewer);
+      spawnDeathEffects(deaths, effects, settings.gore, at);
+    }
     refreshOverlay();
   });
   interact.ready.then(
@@ -410,6 +461,21 @@ export function startSkirmish(params: SkirmishOptions): void {
       hud.showError(error instanceof Error ? error.message : String(error));
     },
   );
+
+  /** Toggles the gore filter, persists it and shows a toast (spec 07 §5). */
+  function toggleGore(): void {
+    settings = { gore: !settings.gore };
+    saveSettings(settings);
+    if (!settings.gore) effects?.clear("blood");
+    showToast(t(settings.gore ? "settings.goreOn" : "settings.goreOff"));
+  }
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "g" || event.key === "G") {
+      event.preventDefault();
+      toggleGore();
+    }
+  });
 
   const frameStats = createFrameStats();
   const perfPanel = debug ? createPerfPanel(document.body) : null;
@@ -432,6 +498,7 @@ export function startSkirmish(params: SkirmishOptions): void {
       );
     }
     updatePlacementGhost();
+    effects?.update(now);
     fogOverlay?.update(fog);
     renderer.render(scene, camera);
     drawCalls = renderer.info.render.calls;
@@ -484,6 +551,8 @@ export function startSkirmish(params: SkirmishOptions): void {
       },
       command: (command) => interact.command(command),
       stateHash: () => interact.requestHash(),
+      effectCounts: () => effects?.counts() ?? NO_EFFECT_COUNTS,
+      gore: () => settings.gore,
       drawCalls: () => drawCalls,
       resetFrameStats: () => frameStats.reset(),
       frameStats: () => frameStats.read(),

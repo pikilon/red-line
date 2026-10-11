@@ -13,6 +13,8 @@
   "ui.placementHint": "Left click on the ground to build · right click or Esc to cancel",
   "ui.placementIllegal": "Cannot build here",
   "error.simInit": "The simulation failed to start: {detail}",
+  "settings.goreOn": "Gore on",
+  "settings.goreOff": "Gore off",
   "faction.ukraine": "Ukraine",
   "faction.russia": "Russia",
   "type.tech-slice-placeholder": "Placeholder",
