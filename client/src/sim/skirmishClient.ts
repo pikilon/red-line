@@ -6,6 +6,7 @@ import {
   type HashMessage,
   type InitSkirmishMessage,
   type ReadyMessage,
+  type SetPausedMessage,
   type SetViewerMessage,
   type SimCommand,
   type SnapshotMessage,
@@ -17,6 +18,7 @@ export interface SkirmishClient {
   readonly ready: Promise<ReadyMessage>;
   command(command: SimCommand): void;
   setViewer(viewer: number): void;
+  setPaused(paused: boolean): void;
   requestHash(): Promise<string>;
   /** Returns an unsubscribe function. */
   onSnapshot(
@@ -112,6 +114,10 @@ export function createSkirmishClient(
     },
     setViewer(viewer: number) {
       const message: SetViewerMessage = { type: "setViewer", viewer };
+      worker.postMessage(message);
+    },
+    setPaused(paused: boolean) {
+      const message: SetPausedMessage = { type: "setPaused", paused };
       worker.postMessage(message);
     },
     requestHash() {

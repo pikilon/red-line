@@ -371,4 +371,82 @@ describe("worker handler", () => {
     expect(untouched.command_produce).not.toHaveBeenCalled();
     expect(untouched.step).not.toHaveBeenCalled();
   });
+
+  it("AC-08-01: worker pause", () => {
+    const step = vi.fn<() => void>();
+    const command_move_as =
+      vi.fn<
+        (
+          player: number,
+          unitIds: Uint32Array,
+          xRaw: number,
+          yRaw: number,
+        ) => void
+      >();
+    const skirmishSim: SkirmishSimLike = {
+      map_width: () => 2,
+      map_height: () => 2,
+      map_tiles: () => new Uint8Array([0, 1, 0, 0]),
+      tick: () => 0,
+      step,
+      state_hash_hex: () => FAKE_HASH,
+      enable_debug_commands: vi.fn(),
+      attach_ai: vi.fn(),
+      snapshot_for: () => new Int32Array([0, 0]),
+      fog_for: () => new Uint8Array([0, 0, 0, 0]),
+      command_move: vi.fn(),
+      command_move_as,
+      command_attack: vi.fn(),
+      command_harvest: vi.fn(),
+      command_construct: vi.fn(),
+      command_resume: vi.fn(),
+      command_produce: vi.fn(),
+      command_cancel: vi.fn(),
+      command_rally: vi.fn(),
+      command_stop: vi.fn(),
+      debug_spawn: vi.fn(),
+      debug_set_hp: vi.fn(),
+    };
+    const posted: { message: WorkerToMain; transfer?: Transferable[] }[] = [];
+    const handler = createWorkerHandler(
+      vi.fn<SimFactory>(),
+      1,
+      (message, transfer) => {
+        posted.push({ message, transfer });
+      },
+      () => skirmishSim,
+    );
+
+    handler.handle({
+      type: "initSkirmish",
+      seed: 3,
+      mapId: "m",
+      viewer: 0,
+      speed: 1,
+      debug: false,
+    });
+    posted.length = 0;
+    handler.advance(0);
+
+    // Paused: 2000 ms of advances step and post nothing.
+    handler.handle({ type: "setPaused", paused: true });
+    for (let now = 100; now <= 2000; now += 100) handler.advance(now);
+    expect(step).not.toHaveBeenCalled();
+    expect(posted).toEqual([]);
+
+    // A command sent while paused is applied to the simulation (enqueued) and
+    // takes effect on the first tick after resuming.
+    handler.handle({
+      type: "command",
+      command: { kind: "move", player: 0, units: [4], xRaw: 1, yRaw: 2 },
+    });
+    expect(command_move_as).toHaveBeenCalledWith(0, new Uint32Array([4]), 1, 2);
+
+    // Resuming does not catch up the paused time: the 200 ms since the last
+    // paused advance step the simulation, i.e. 3 ticks at 15 Hz and speed 1.
+    handler.handle({ type: "setPaused", paused: false });
+    handler.advance(2200);
+    expect(step).toHaveBeenCalledTimes(3);
+    expect(posted).toHaveLength(1);
+  });
 });
