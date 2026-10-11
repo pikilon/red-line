@@ -52,6 +52,12 @@ tournaments with win-rate and cost-efficiency reports.
 Procedural Blender models, infantry pipeline, effects and gore filter, music and
 voices, final visual style.
 
+Slices: 4a procedural models (`specs/06-phase4a-procedural-models.md`, P4-01..05,
+done), 4b combat effects and gore filter (`specs/07-phase4b-combat-effects.md`,
+P4-06, done), 4c animation and visual finish
+(`specs/09-phase4c-animation-and-finish.md`, P4-07..10, #186..#189). Still to
+specify: textures, Hunyuan3D infantry, music and voices.
+
 ## Phase 5+ — Content and multiplayer
 
 Campaigns, more blocks and countries, LAN multiplayer (WebRTC lockstep),
