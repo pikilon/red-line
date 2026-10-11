@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { parse, stringify } from "yaml";
 import { buildRuleset, readSources, serializeRuleset } from "./build-data.mjs";
+import { TURRETED } from "../tools/models/check.mjs";
 
 // Repository root (this file lives in scripts/), used by the two criteria that
 // operate on the builtin data committed in the repository (specs/03 §7).
@@ -290,5 +291,66 @@ test("AC-05-02: personality semantic checks", () => {
   });
   expectError(changed((d) => { d.ai.triggers[0].taskForce = "nope"; }), {
     code: "unknown-reference", file, pointer: "/triggers/0/taskForce",
+  });
+});
+
+// Hull and turret turn rates of spec 06 §5.1, in integer degrees per second
+// (0 means "does not turn"). Supply trucks and dozers share the 150 hull rate.
+const TURN_RATES = {
+  "ua-rifleman": [720, 0],
+  "ru-rifleman": [720, 0],
+  "ua-stugna-team": [540, 0],
+  "ru-rpg-gunner": [540, 0],
+  "ua-kozak-scout": [300, 270],
+  "ru-brdm-scout": [300, 240],
+  "ua-bradley": [220, 180],
+  "ru-bmp-2": [240, 150],
+  "ua-leopard-2a4": [180, 135],
+  "ru-t-72b3": [200, 105],
+  "ua-himars": [140, 90],
+  "ru-tos-1a": [160, 75],
+  "ua-dozer": [150, 0],
+  "ru-dozer": [150, 0],
+  "ua-supply-truck": [150, 0],
+  "ru-supply-truck": [150, 0],
+  "ua-defense": [0, 120],
+  "ru-defense": [0, 120],
+};
+
+test("AC-06-09: turn rates from data", () => {
+  const root = repoRoot();
+  const { ruleset, errors } = buildRuleset(readSources(root));
+  assert.deepEqual(errors, []);
+  const byId = new Map(ruleset.types.map((t) => [t.id, t]));
+
+  // Every listed type carries the §5.1 table values.
+  for (const [id, [hull, turret]] of Object.entries(TURN_RATES)) {
+    const type = byId.get(id);
+    assert.ok(type, `missing type ${id}`);
+    assert.equal(type.turnRateDeg, hull, `${id} hull turn rate`);
+    assert.equal(type.turretTurnRateDeg, turret, `${id} turret turn rate`);
+  }
+
+  // Faction units turn, buildings and depots do not; exactly the types of
+  // TURRETED turn their turret. (The tech-slice placeholder is not a unit of
+  // any faction, so it keeps both rates at 0.)
+  const turreted = new Set(TURRETED);
+  for (const type of ruleset.types) {
+    if (type.category === "unit" && type.faction >= 0) {
+      assert.ok(type.turnRateDeg > 0, `${type.id} has no hull turn rate`);
+    }
+    if (type.category !== "unit") {
+      assert.equal(type.turnRateDeg, 0, `${type.id} is not a unit but has a hull turn rate`);
+    }
+    assert.equal(type.turretTurnRateDeg > 0, turreted.has(type.id), `${type.id} turret turn rate`);
+  }
+
+  // The schema makes turnRateDeg mandatory for faction units and forbidden for
+  // buildings and depots (spec 06 §5.1).
+  expectError(changed((d) => { delete d.ukraine.types[0].turnRateDeg; }), {
+    code: "schema", file: FILES.ukraine, pointer: "/types/0",
+  });
+  expectError(changed((d) => { d.ukraine.types[2].turnRateDeg = 100; }), {
+    code: "schema", file: FILES.ukraine,
   });
 });
