@@ -11,6 +11,8 @@ export interface TypeDef {
   cost: number;
   buildTicks: number;
   speedCenti: number;
+  turnRateDeg: number;
+  turretTurnRateDeg: number;
   weapon: number;
   requires: number[];
   produces: number[];

@@ -14,7 +14,15 @@
       "items": {
         "allOf": [
           { "$ref": "#/$defs/type" },
-          { "properties": { "category": { "enum": ["unit", "building"] } } }
+          { "properties": { "category": { "enum": ["unit", "building"] } } },
+          {
+            "if": { "type": "object", "required": ["category"], "properties": { "category": { "const": "unit" } } },
+            "then": { "type": "object", "required": ["turnRateDeg"] }
+          },
+          {
+            "if": { "type": "object", "required": ["category"], "properties": { "category": { "enum": ["building", "depot"] } } },
+            "then": { "type": "object", "properties": { "turnRateDeg": false } }
+          }
         ]
       }
     }
@@ -51,6 +59,8 @@
         "hp": { "$ref": "#/$defs/positive" },
         "sightCenti": { "$ref": "#/$defs/count" },
         "speedCenti": { "$ref": "#/$defs/positive" },
+        "turnRateDeg": { "$ref": "#/$defs/positive" },
+        "turretTurnRateDeg": { "$ref": "#/$defs/positive" },
         "cost": { "$ref": "#/$defs/count" },
         "buildTicks": { "$ref": "#/$defs/count" },
         "weapon": { "$ref": "#/$defs/id" },
