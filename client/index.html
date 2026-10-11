@@ -21,14 +21,17 @@
       #outcome { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; color: #fff; font: 48px/1.2 system-ui, sans-serif; text-shadow: 0 2px 6px #000; }
       #toast { position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%); padding: 6px 14px; border-radius: 4px; background: rgba(0, 0, 0, 0.7); pointer-events: none; color: #fff; font: 16px/1.4 system-ui, sans-serif; opacity: 0; transition: opacity 0.15s; }
       #toast.visible { opacity: 1; }
-      #pause-overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; color: #fff; font: 32px/1.2 system-ui, sans-serif; text-shadow: 0 2px 6px #000; }
+      #game-menu { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.55); pointer-events: auto; color: #fff; font: 14px/1.4 system-ui, sans-serif; }
+      #game-menu[hidden] { display: none; }
+      #game-menu-panel { display: flex; flex-direction: column; gap: 8px; min-width: 220px; padding: 20px 24px; border-radius: 6px; background: rgba(0, 0, 0, 0.85); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6); }
+      #game-menu-panel h2 { margin: 0 0 8px; font-size: 22px; text-align: center; }
+      #game-menu-panel button { cursor: pointer; padding: 6px 10px; }
     </style>
   </head>
   <body>
     <div id="app"></div>
     <div id="hud"></div>
     <div id="toast"></div>
-    <div id="pause-overlay" role="status" hidden></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
