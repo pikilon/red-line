@@ -195,4 +195,3 @@ describe("effects", () => {
     expect(effects.meshes.muzzle.count).toBe(0);
   });
 });
-
