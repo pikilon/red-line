@@ -57,8 +57,10 @@ export function createPerfPanel(parent: HTMLElement): PerfPanel {
   return {
     record(frameMs, nowMs) {
       if (!injected) window = [...window, frameMs].slice(-PERF_WINDOW_FRAMES);
-      if (nowMs - lastRenderMs >= PERF_PANEL_UPDATE_MS) render();
-      lastRenderMs = nowMs;
+      if (nowMs - lastRenderMs >= PERF_PANEL_UPDATE_MS) {
+        render();
+        lastRenderMs = nowMs;
+      }
     },
     inject(frameTimesMs) {
       injected = true;

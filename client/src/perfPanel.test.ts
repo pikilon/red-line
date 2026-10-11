@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { summarizeFrames } from "./perfPanel";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  createPerfPanel,
+  PERF_PANEL_UPDATE_MS,
+  summarizeFrames,
+} from "./perfPanel";
 
 const repeat = (value: number, count: number): number[] =>
   Array.from({ length: count }, () => value);
@@ -28,4 +32,38 @@ describe("perfPanel", () => {
       bad: false,
     });
   });
+
+  it("refreshes every PERF_PANEL_UPDATE_MS while frames keep arriving", () => {
+    interface FakeElement {
+      id: string;
+      textContent: string;
+      children: FakeElement[];
+      classList: { toggle(): void };
+      appendChild(child: FakeElement): FakeElement;
+    }
+    const element = (): FakeElement => ({
+      id: "",
+      textContent: "",
+      children: [],
+      classList: { toggle: () => undefined },
+      appendChild(child) {
+        this.children.push(child);
+        return child;
+      },
+    });
+    vi.stubGlobal("document", { createElement: element });
+    const root = element();
+    const panel = createPerfPanel(root as unknown as HTMLElement);
+    const fps = root.children[0]?.children[0];
+
+    panel.record(500, 0);
+    for (let now = 16; now <= PERF_PANEL_UPDATE_MS * 4; now += 16) {
+      panel.record(16, now);
+    }
+    expect(fps?.textContent).not.toContain(String(summarizeFrames([500]).fps));
+  });
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
