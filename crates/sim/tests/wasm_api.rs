@@ -96,3 +96,62 @@ fn ac_05_20_wasm_api_v3() {
         .count();
     assert!(owned > 1, "player 1 owns {owned} buildings");
 }
+
+/// Ids of the entities carrying `FLAG_FIRED` in a match snapshot.
+fn fired_ids(snapshot: &[i32]) -> Vec<i32> {
+    use sim::snapshot::{ENTITY_STRIDE, FLAG_FIRED, MATCH_HEADER_LEN};
+    let count = snapshot[MATCH_HEADER_LEN - 1] as usize;
+    (0..count)
+        .map(|i| &snapshot[MATCH_HEADER_LEN + i * ENTITY_STRIDE..][..ENTITY_STRIDE])
+        .filter(|row| row[6] & FLAG_FIRED != 0)
+        .map(|row| row[0])
+        .collect()
+}
+
+/// Two adjacent enemy riflemen in the first-line skirmish.
+fn duel() -> Sim {
+    let mut sim = Sim::skirmish(1, "first-line").unwrap();
+    sim.enable_debug_commands();
+    let ua = sim::rules::Ruleset::builtin()
+        .type_index("ua-rifleman")
+        .unwrap();
+    let ru = sim::rules::Ruleset::builtin()
+        .type_index("ru-rifleman")
+        .unwrap();
+    sim.debug_spawn(0, ua, 20 * 65536 + 32768, 62 * 65536 + 32768);
+    sim.debug_spawn(1, ru, 23 * 65536 + 32768, 62 * 65536 + 32768);
+    sim
+}
+
+#[test]
+fn shots_survive_multi_step_snapshots() {
+    // Find a tick t where someone fires and t + 1 where nobody does.
+    let mut probe = duel();
+    let mut previous_fired = false;
+    let mut shot_tick = None;
+    for _ in 0..300 {
+        probe.step();
+        let fired = !fired_ids(&probe.snapshot_for(0)).is_empty();
+        if previous_fired && !fired {
+            shot_tick = Some(probe.tick() - 1);
+            break;
+        }
+        previous_fired = fired;
+    }
+    let shot_tick = shot_tick.expect("the riflemen exchange fire");
+
+    // Step to t - 1, read (and clear) a snapshot, then advance two ticks at
+    // once like a slow frame does: the shot at t must still be reported.
+    let mut sim = duel();
+    sim.step_n(shot_tick - 1);
+    let _ = sim.snapshot_for(0);
+    sim.step_n(2);
+    assert!(!fired_ids(&sim.snapshot_for(0)).is_empty());
+    // Reported once: after the snapshot that carried the shot at t, the
+    // shot-free tick t + 1 reports nothing.
+    let mut once = duel();
+    once.step_n(shot_tick);
+    assert!(!fired_ids(&once.snapshot_for(0)).is_empty());
+    once.step();
+    assert!(fired_ids(&once.snapshot_for(0)).is_empty());
+}
