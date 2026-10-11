@@ -103,14 +103,16 @@ export function spawnDeathEffects(
     const infantry = type.category === "unit" && type.armor === 0;
 
     if (!infantry) {
-      effects.spawn("wreck", {
-        x: entity.x,
-        y: entity.y,
-        sizeXYZ: [width, height * WRECK_HEIGHT, depth],
-        startMs: nowMs,
-      });
+      // Buildings leave only their rubble; vehicles keep the wreck box (spec 10 §6).
       if (type.category === "building") {
         spawnDebris(effects, entity, width, depth, nowMs);
+      } else {
+        effects.spawn("wreck", {
+          x: entity.x,
+          y: entity.y,
+          sizeXYZ: [width, height * WRECK_HEIGHT, depth],
+          startMs: nowMs,
+        });
       }
       continue;
     }
@@ -130,9 +132,10 @@ export function spawnDeathEffects(
   }
 }
 
-/** Scatters `DEBRIS_PIECES` debris pieces around a destroyed building (spec 09 §6,
- *  AC-09-05). `width` and `depth` are the building render size in tiles. Units
- *  never call this, so they spawn no debris. */
+/** Scatters `DEBRIS_PIECES` debris pieces around a destroyed building (spec 10 §6,
+ *  AC-10-05). Each piece's height is `s × 0.8` and its colour is `0x4a4038`.
+ *  `width` and `depth` are the building render size in tiles. Units never call
+ *  this, so they spawn no debris. */
 function spawnDebris(
   effects: Effects,
   entity: EntityState,
@@ -148,7 +151,7 @@ function spawnDebris(
     effects.spawn("debris", {
       x: entity.x + Math.cos(angle) * radius,
       y: entity.y + Math.sin(angle) * radius,
-      sizeXYZ: [s, s * 0.6, s],
+      sizeXYZ: [s, s * 0.8, s],
       rotationY: angle,
       startMs: nowMs,
     });
