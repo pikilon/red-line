@@ -4,7 +4,7 @@ dozer: ua-dozer                      # required, a unit type of this file
 weapons:                             # required
   - { id: ua-rifle, damageType: smallArms, damage: 10, rangeCenti: 450, cooldownTicks: 15 }
   - { id: ua-stugna-p, damageType: antiTank, damage: 120, rangeCenti: 900, minRangeCenti: 200, cooldownTicks: 75 }
-  - { id: ua-kozak-hmg, damageType: smallArms, damage: 12, rangeCenti: 500, cooldownTicks: 10 }
+  - { id: ua-kozak-hmg, damageType: smallArms, damage: 12, rangeCenti: 550, cooldownTicks: 10 }
   - { id: ua-bushmaster, damageType: autocannon, damage: 18, rangeCenti: 600, cooldownTicks: 8 }
   - { id: ua-rh120, damageType: antiTank, damage: 100, rangeCenti: 700, cooldownTicks: 30 }
   - { id: ua-gmlrs, damageType: highExplosive, damage: 250, rangeCenti: 2400, minRangeCenti: 600, cooldownTicks: 150, projectileTicks: 30 }
