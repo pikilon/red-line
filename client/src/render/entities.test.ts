@@ -1,8 +1,26 @@
-import { Color, type InstancedMesh, Matrix4, Quaternion, Vector3 } from "three";
+import {
+  BoxGeometry,
+  Color,
+  type InstancedMesh,
+  Matrix4,
+  Quaternion,
+  Vector3,
+} from "three";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { typeIndex } from "../rules";
 import { ENTITY_FLAGS, type EntityState, NEUTRAL } from "../sim/matchSnapshot";
-import { createEntityRenderer, OWNER_COLORS, SELECTED_COLOR } from "./entities";
+import {
+  createEntityRenderer,
+  type EntityRenderer,
+  OWNER_COLORS,
+  SELECTED_COLOR,
+} from "./entities";
+import type {
+  MaterialName,
+  ModelPart,
+  ModelRegistry,
+  TypeModel,
+} from "./models";
 
 function expectInstanceColor(
   mesh: InstancedMesh,
@@ -38,6 +56,50 @@ function entity(
     target: null,
     ...extra,
   };
+}
+
+function modelRegistry(): ModelRegistry {
+  return {
+    get: (): TypeModel => ({
+      parts: new Map<MaterialName, ModelPart>([
+        [
+          "body",
+          {
+            material: "body",
+            geometry: new BoxGeometry(1, 1, 1),
+            color: 0x112233,
+          },
+        ],
+        [
+          "team",
+          {
+            material: "team",
+            geometry: new BoxGeometry(0.5, 0.5, 0.5),
+            color: 0xffffff,
+          },
+        ],
+      ]),
+      turret: new Map<MaterialName, ModelPart>(),
+      pivot: new Vector3(),
+      fallback: false,
+    }),
+  };
+}
+
+function partMesh(
+  renderer: EntityRenderer,
+  typeId: string,
+  material: MaterialName,
+): InstancedMesh {
+  const found = renderer.models.find(
+    (model) =>
+      model.typeId === typeId &&
+      model.group === "hull" &&
+      model.material === material,
+  );
+  if (found === undefined)
+    throw new Error(`missing ${typeId}/${material} mesh`);
+  return found.mesh;
 }
 
 describe("entity renderer", () => {
@@ -120,5 +182,34 @@ describe("entity renderer", () => {
 
     renderer.update([entities[1] as EntityState], new Set());
     expect(renderer.tracers.geometry.drawRange.count).toBe(0);
+  });
+
+  it("AC-06-04: instanced model rendering", () => {
+    const renderer = createEntityRenderer(100, modelRegistry());
+    renderer.update(
+      [
+        entity(0, 0, "ua-rifleman", 1, 1, 100),
+        entity(1, 1, "ua-rifleman", 2, 2, 100),
+        entity(2, 0, "ru-rifleman", 3, 3, 100),
+      ],
+      new Set([1]),
+    );
+
+    const body = partMesh(renderer, "ua-rifleman", "body");
+    const team = partMesh(renderer, "ua-rifleman", "team");
+    expect(body.count).toBe(2);
+    expect(team.count).toBe(2);
+    expectInstanceColor(body, 0, 0xffffff);
+    expectInstanceColor(body, 1, 0xffffff);
+    expectInstanceColor(team, 0, OWNER_COLORS[0]);
+    expectInstanceColor(team, 1, SELECTED_COLOR);
+
+    const enemyBody = partMesh(renderer, "ru-rifleman", "body");
+    const enemyTeam = partMesh(renderer, "ru-rifleman", "team");
+    expect(enemyBody.count).toBe(1);
+    expect(enemyTeam.count).toBe(1);
+    expectInstanceColor(enemyTeam, 0, OWNER_COLORS[0]);
+
+    expect(renderer.models.length).toBe(4);
   });
 });
