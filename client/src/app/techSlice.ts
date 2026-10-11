@@ -96,7 +96,15 @@ export function startTechSlice(params: URLSearchParams): void {
   /** Builds the scene once both the map and the first snapshot are known. */
   function start(): void {
     if (controller !== null || map === null || next === null) return;
-    scene.add(createTerrain(map.mapWidth, map.mapHeight, map.tiles));
+    // The tech slice has no ruleset map, so it keeps no rock tiles (spec 10 §4).
+    scene.add(
+      createTerrain(
+        map.mapWidth,
+        map.mapHeight,
+        new Uint8Array(map.mapWidth * map.mapHeight),
+        1,
+      ),
+    );
     unitsRenderer = createUnitsRenderer(MAX_UNIT_COUNT);
     scene.add(unitsRenderer.mesh);
     controller = createController({

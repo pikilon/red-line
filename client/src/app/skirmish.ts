@@ -1,3 +1,4 @@
+import ruleset from "@data/ruleset.json";
 import {
   BoxGeometry,
   Color,
@@ -33,7 +34,7 @@ import {
 import { createEntityRenderer, type EntityRenderer } from "../render/entities";
 import { createFogOverlay } from "../render/fog";
 import { loadModels, type ModelRegistry } from "../render/models";
-import { createTerrain } from "../render/terrain";
+import { createTerrain, rockCellsOf } from "../render/terrain";
 import { RULES, typeDef, typeIndex } from "../rules";
 import { loadSettings, type Settings, saveSettings } from "../settings";
 import {
@@ -314,8 +315,15 @@ export function startSkirmish(params: SkirmishOptions): void {
   function start(): void {
     if (ready || map === null || next === null) return;
     const mapInfo = map;
+    // Rock tiles are the static obstacles of the ruleset map; the ready
+    // message's `tiles` also marks buildings and depots (spec 10 §4).
+    const mapDefinition = ruleset.maps.find((entry) => entry.id === mapId);
+    const rockCells =
+      mapDefinition === undefined
+        ? new Uint8Array(mapInfo.mapWidth * mapInfo.mapHeight)
+        : rockCellsOf(mapDefinition);
     scene.add(
-      createTerrain(mapInfo.mapWidth, mapInfo.mapHeight, mapInfo.tiles),
+      createTerrain(mapInfo.mapWidth, mapInfo.mapHeight, rockCells, seed),
     );
     const sun = new DirectionalLight(SUN_COLOR, SUN_INTENSITY);
     sun.position.copy(SUN_POSITION);
