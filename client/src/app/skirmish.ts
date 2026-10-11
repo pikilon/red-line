@@ -22,6 +22,7 @@ import {
   type SkirmishController,
 } from "../input/skirmishController";
 import { createPerfPanel } from "../perfPanel";
+import { type Animator, createAnimator } from "../render/animation";
 import { detectDeaths, spawnDeathEffects } from "../render/deaths";
 import {
   createEffects,
@@ -247,6 +248,7 @@ export function startSkirmish(params: SkirmishOptions): void {
       });
     },
   });
+  let animator: Animator;
   let entities: EntityRenderer | null = null;
   let effects: Effects | null = null;
   let fogOverlay: FogOverlay | null = null;
@@ -325,7 +327,8 @@ export function startSkirmish(params: SkirmishOptions): void {
       ),
       sun,
     );
-    entities = createEntityRenderer(ENTITY_CAPACITY, registry);
+    animator = createAnimator();
+    entities = createEntityRenderer(ENTITY_CAPACITY, registry, animator);
     scene.add(entities.group);
     effects = createEffects();
     scene.add(effects.group);
@@ -452,6 +455,7 @@ export function startSkirmish(params: SkirmishOptions): void {
       (previous === null || snapshot.tick > previous.tick)
     ) {
       spawnShotEffects(snapshot, effects, effectTime(at));
+      animator.recordShots(snapshot.entities, at);
       const deaths =
         previous === null ? [] : detectDeaths(previous, snapshot, viewer);
       spawnDeathEffects(deaths, effects, settings.gore, effectTime(at));
@@ -533,6 +537,7 @@ export function startSkirmish(params: SkirmishOptions): void {
       entities.update(
         interpolateEntities(prev, next, (now - receivedAt) / TICK_MS),
         controller?.selected ?? NO_SELECTION,
+        effectTime(now),
       );
     }
     updatePlacementGhost();

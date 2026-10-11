@@ -9,6 +9,7 @@ import {
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { typeIndex } from "../rules";
 import { ENTITY_FLAGS, type EntityState, NEUTRAL } from "../sim/matchSnapshot";
+import { bobHeight, createAnimator, RECOIL_TILES } from "./animation";
 import {
   createEntityRenderer,
   type EntityRenderer,
@@ -99,6 +100,75 @@ function partMesh(
   );
   if (found === undefined)
     throw new Error(`missing ${typeId}/${material} mesh`);
+  return found.mesh;
+}
+
+/** A registry whose tank type carries a turret (so it can recoil) and whose
+ *  infantry type does not (spec 09 §4). */
+function turretedRegistry(): ModelRegistry {
+  const tank = (): TypeModel => ({
+    parts: new Map<MaterialName, ModelPart>([
+      [
+        "body",
+        {
+          material: "body",
+          geometry: new BoxGeometry(1, 1, 1),
+          color: 0x223344,
+        },
+      ],
+    ]),
+    turret: new Map<MaterialName, ModelPart>([
+      [
+        "body",
+        {
+          material: "body",
+          geometry: new BoxGeometry(0.3, 0.3, 0.7),
+          color: 0x443322,
+        },
+      ],
+    ]),
+    pivot: new Vector3(0, 0.4, 0.15),
+    fallback: false,
+  });
+  const infantry = (): TypeModel => ({
+    parts: new Map<MaterialName, ModelPart>([
+      [
+        "body",
+        {
+          material: "body",
+          geometry: new BoxGeometry(1, 1, 1),
+          color: 0x443322,
+        },
+      ],
+    ]),
+    turret: new Map<MaterialName, ModelPart>(),
+    pivot: new Vector3(),
+    fallback: false,
+  });
+  return {
+    get: (typeId) => (typeId === "ua-leopard-2a4" ? tank() : infantry()),
+  };
+}
+
+function instanceTranslation(mesh: InstancedMesh): Vector3 {
+  const matrix = new Matrix4();
+  mesh.getMatrixAt(0, matrix);
+  return new Vector3().setFromMatrixPosition(matrix);
+}
+
+function hullSlot(renderer: EntityRenderer, typeId: string): InstancedMesh {
+  const found = renderer.models.find(
+    (model) => model.typeId === typeId && model.group === "hull",
+  );
+  if (found === undefined) throw new Error(`no hull for ${typeId}`);
+  return found.mesh;
+}
+
+function turretSlot(renderer: EntityRenderer, typeId: string): InstancedMesh {
+  const found = renderer.models.find(
+    (model) => model.typeId === typeId && model.group === "turret",
+  );
+  if (found === undefined) throw new Error(`no turret for ${typeId}`);
   return found.mesh;
 }
 
@@ -211,5 +281,52 @@ describe("entity renderer", () => {
     expectInstanceColor(enemyTeam, 0, OWNER_COLORS[0]);
 
     expect(renderer.models.length).toBe(4);
+  });
+
+  it("AC-09-03: animated instances", () => {
+    const now = 1_000;
+    const animator = createAnimator();
+    const tank = entity(7, 0, "ua-leopard-2a4", 3, 4, 100, {
+      flags: ENTITY_FLAGS.fired,
+    });
+    const rifleman = entity(8, 0, "ua-rifleman", 5, 6, 100, {
+      flags: ENTITY_FLAGS.moving,
+    });
+
+    const withAnim = createEntityRenderer(50, turretedRegistry(), animator);
+    // Without an animator the output is today's: no recoil, no lift.
+    const without = createEntityRenderer(50, turretedRegistry());
+
+    animator.recordShots([tank], now);
+    withAnim.update([tank, rifleman], new Set(), now);
+    without.update([tank, rifleman], new Set());
+
+    const tankHull = instanceTranslation(hullSlot(withAnim, "ua-leopard-2a4"));
+    const tankTurret = instanceTranslation(
+      turretSlot(withAnim, "ua-leopard-2a4"),
+    );
+    const restTurret = instanceTranslation(
+      turretSlot(without, "ua-leopard-2a4"),
+    );
+
+    // A fired tank (armor != 0) does not bob; its hull is not moved by recoil.
+    expect(tankHull.y).toBeCloseTo(0, 6);
+
+    // The turret sits RECOIL_TILES behind its rest position along the facing
+    // (facing is world +Z here, hullYaw and turretYaw are 0).
+    expect(restTurret.z - tankTurret.z).toBeCloseTo(RECOIL_TILES, 6);
+
+    // Without an animator the turret does not recoil and the hull is at rest.
+    expect(
+      instanceTranslation(turretSlot(without, "ua-leopard-2a4")).z,
+    ).toBeCloseTo(restTurret.z, 6);
+    expect(
+      instanceTranslation(hullSlot(without, "ua-leopard-2a4")).y,
+    ).toBeCloseTo(0, 6);
+
+    // A moving infantry unit's hull is raised by its lift (bobHeight).
+    const rifleHull = instanceTranslation(hullSlot(withAnim, "ua-rifleman"));
+    expect(rifleHull.y).toBeCloseTo(bobHeight(8, now), 6);
+    expect(rifleHull.y).toBeGreaterThan(0);
   });
 });
