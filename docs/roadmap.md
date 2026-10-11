@@ -57,6 +57,8 @@ done), 4b combat effects and gore filter (`specs/07-phase4b-combat-effects.md`,
 P4-06, done), 4c animation and visual finish
 (`specs/09-phase4c-animation-and-finish.md`, P4-07..10, #186..#189). Still to
 specify: textures, Hunyuan3D infantry, music and voices.
+4d Remastered look and classic mode (`specs/10-phase4d-remastered-look.md`):
+style reference *Red Alert Remastered*, `V` toggles the classic pixelated look.
 
 ## Phase 5+ — Content and multiplayer
 

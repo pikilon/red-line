@@ -1,6 +1,9 @@
 # 09 — Phase 4c animation and visual finish
 
 Status: proposed for owner review (written for the 2026-10-11 unattended run).
+§6 (building death) is amended and §7–8 (pixel-art pass) are superseded by
+`10-phase4d-remastered-look.md` §6–7 after the owner named Red Alert
+Remastered as the style reference.
 Depends on `06-phase4a-procedural-models.md`, `07-phase4b-combat-effects.md`
 and `08-player-controls.md` §3 (pause freezes the effect clock). Roadmap:
 Phase 4. Decisions: D-05 (2.5D low-poly, orthographic isometric camera), D-07.
