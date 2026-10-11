@@ -281,6 +281,8 @@ const assemble = (globals, factions, maps, ai) => {
       cost: t.cost ?? 0,
       buildTicks: t.buildTicks ?? 0,
       speedCenti: t.speedCenti ?? 0,
+      turnRateDeg: t.turnRateDeg ?? 0,
+      turretTurnRateDeg: t.turretTurnRateDeg ?? 0,
       weapon: t.weapon === undefined ? -1 : weaponIndex.get(t.weapon),
       requires: types(t.requires),
       produces: types(t.produces),

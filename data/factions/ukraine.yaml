@@ -18,6 +18,7 @@ types:                               # required
     cost: 100
     buildTicks: 75
     speedCenti: 8
+    turnRateDeg: 720
     weapon: ua-rifle
     render: { size: [30, 60, 30] }
   - id: ua-stugna-team
@@ -28,6 +29,7 @@ types:                               # required
     cost: 350
     buildTicks: 150
     speedCenti: 6
+    turnRateDeg: 540
     weapon: ua-stugna-p
     render: { size: [40, 50, 40] }
   - id: ua-kozak-scout
@@ -38,6 +40,8 @@ types:                               # required
     cost: 400
     buildTicks: 150
     speedCenti: 26
+    turnRateDeg: 300
+    turretTurnRateDeg: 270
     weapon: ua-kozak-hmg
     render: { size: [60, 50, 90] }
   - id: ua-bradley
@@ -48,6 +52,8 @@ types:                               # required
     cost: 800
     buildTicks: 240
     speedCenti: 22
+    turnRateDeg: 220
+    turretTurnRateDeg: 180
     weapon: ua-bushmaster
     render: { size: [70, 60, 110] }
   - id: ua-leopard-2a4
@@ -58,6 +64,8 @@ types:                               # required
     cost: 1200
     buildTicks: 330
     speedCenti: 17
+    turnRateDeg: 180
+    turretTurnRateDeg: 135
     weapon: ua-rh120
     render: { size: [80, 55, 130] }
   - id: ua-himars
@@ -68,6 +76,8 @@ types:                               # required
     cost: 1500
     buildTicks: 360
     speedCenti: 18
+    turnRateDeg: 140
+    turretTurnRateDeg: 90
     weapon: ua-gmlrs
     render: { size: [60, 70, 120] }
   - id: ua-dozer
@@ -78,6 +88,7 @@ types:                               # required
     cost: 800
     buildTicks: 200
     speedCenti: 15
+    turnRateDeg: 150
     builds: [ua-power-plant, ua-supply-center, ua-barracks, ua-vehicle-factory, ua-defense]
     render: { size: [80, 60, 100] }
   - id: ua-supply-truck
@@ -88,6 +99,7 @@ types:                               # required
     cost: 600
     buildTicks: 150
     speedCenti: 20
+    turnRateDeg: 150
     capacity: 300
     loadTicks: 45
     unloadTicks: 15
@@ -162,4 +174,5 @@ types:                               # required
     requires: [ua-barracks]
     requiresPower: true
     weapon: ua-stugna-emplacement
+    turretTurnRateDeg: 120
     render: { height: 80 }

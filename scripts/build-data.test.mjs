@@ -30,11 +30,11 @@ const faction = (id, prefix) => ({
   types: [
     {
       id: `${prefix}-rifleman`, category: "unit", armor: "infantry", hp: 100, sightCenti: 600,
-      cost: 100, buildTicks: 75, speedCenti: 8, weapon: `${prefix}-rifle`, render: { size: [30, 60, 30] },
+      cost: 100, buildTicks: 75, speedCenti: 8, turnRateDeg: 300, weapon: `${prefix}-rifle`, render: { size: [30, 60, 30] },
     },
     {
       id: `${prefix}-dozer`, category: "unit", armor: "infantry", hp: 300, sightCenti: 500,
-      cost: 800, buildTicks: 200, speedCenti: 15, builds: [`${prefix}-power-plant`, `${prefix}-barracks`],
+      cost: 800, buildTicks: 200, speedCenti: 15, turnRateDeg: 150, builds: [`${prefix}-power-plant`, `${prefix}-barracks`],
       render: { size: [80, 60, 100] },
     },
     {
