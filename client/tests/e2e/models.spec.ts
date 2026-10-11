@@ -144,6 +144,7 @@ test("AC-06-06: models in the skirmish", async ({ page }) => {
 
   expect(errors).toEqual([]);
   expect(drawCalls).toBeGreaterThanOrEqual(1);
-  expect(drawCalls).toBeLessThanOrEqual(2 * types + 6);
+  // Spec 10 §3 bound: the shadow pass draws every caster once more.
+  expect(drawCalls).toBeLessThanOrEqual(4 * types + 10);
   expect(diff).toBeGreaterThan(DIFF_THRESHOLD);
 });

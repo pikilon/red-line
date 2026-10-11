@@ -1,11 +1,13 @@
 import ruleset from "@data/ruleset.json";
 import {
+  ACESFilmicToneMapping,
   BoxGeometry,
   Color,
   DirectionalLight,
   HemisphereLight,
   Mesh,
   MeshBasicMaterial,
+  PCFShadowMap,
   Scene,
   Vector3,
   WebGLRenderer,
@@ -93,13 +95,24 @@ const NO_EFFECT_COUNTS: Record<EffectKind, number> = {
 };
 /** The builtin ruleset type without a committed `.glb` (spec 06 §3). */
 const PLACEHOLDER_TYPE = "tech-slice-placeholder";
-/** Model lighting (spec 06 §5): hemisphere fill plus a camera-side sun. */
-const HEMISPHERE_SKY = 0xffffff;
-const HEMISPHERE_GROUND = 0x444444;
-const HEMISPHERE_INTENSITY = 1.2;
-const SUN_COLOR = 0xffffff;
-const SUN_INTENSITY = 1.5;
+/** Model lighting (spec 06 §5, spec 10 §3): hemisphere fill plus a warm sun. */
+const HEMISPHERE_SKY = 0xdde8ff;
+const HEMISPHERE_GROUND = 0x3a3020;
+const HEMISPHERE_INTENSITY = 0.9;
+const SUN_COLOR = 0xfff1d6;
+const SUN_INTENSITY = 2.2;
 const SUN_POSITION = new Vector3(50, 40, 50);
+/** Unit vector of `SUN_POSITION`; the sun sits `SUN_DISTANCE` along it. */
+const SUN_DIRECTION = SUN_POSITION.clone().normalize();
+const SUN_DISTANCE = 50;
+/** Half-size in tiles of the sun's orthographic shadow camera (spec 10 §3). */
+const SHADOW_EXTENT = 24;
+const SHADOW_MAP_SIZE = 2048;
+const SHADOW_BIAS = -0.0005;
+/** Shadows and the ACES tone mapping of the remastered look (spec 10 §3). */
+const TONE_MAPPING_NAMES: Readonly<Record<number, string>> = {
+  [ACESFilmicToneMapping]: "ACESFilmic",
+};
 
 /** URL parameters of the skirmish app (spec §6.7). */
 export type SkirmishOptions = URLSearchParams;
@@ -162,6 +175,11 @@ export function startSkirmish(params: SkirmishOptions): void {
     : 1;
 
   const renderer = new WebGLRenderer({ antialias: true });
+  // Remastered look (spec 10 §3): hard PCF shadows and ACES tone mapping.
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = PCFShadowMap;
+  renderer.toneMapping = ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
   const scene = new Scene();
   scene.background = new Color(0x101820);
   const camera = createIsometricCamera(1);
@@ -216,6 +234,8 @@ export function startSkirmish(params: SkirmishOptions): void {
   /** Type index being placed, or null; the command panel starts placement. */
   let placementKind: number | null = null;
   let controller: SkirmishController | null = null;
+  /** Shadow-casting sun; its shadow camera follows the camera target (spec 10 §3). */
+  let sunLight: DirectionalLight | null = null;
   let cameraTarget = { x: 0, y: 0 };
   const interact: SkirmishClient = createSkirmishClient(
     new Worker(new URL("../sim/sim.worker.ts", import.meta.url), {
@@ -326,7 +346,16 @@ export function startSkirmish(params: SkirmishOptions): void {
       createTerrain(mapInfo.mapWidth, mapInfo.mapHeight, rockCells, seed),
     );
     const sun = new DirectionalLight(SUN_COLOR, SUN_INTENSITY);
-    sun.position.copy(SUN_POSITION);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+    sun.shadow.camera.left = -SHADOW_EXTENT;
+    sun.shadow.camera.right = SHADOW_EXTENT;
+    sun.shadow.camera.top = SHADOW_EXTENT;
+    sun.shadow.camera.bottom = -SHADOW_EXTENT;
+    sun.shadow.bias = SHADOW_BIAS;
+    sun.shadow.camera.updateProjectionMatrix();
+    sunLight = sun;
+    updateSun();
     scene.add(
       new HemisphereLight(
         HEMISPHERE_SKY,
@@ -334,6 +363,7 @@ export function startSkirmish(params: SkirmishOptions): void {
         HEMISPHERE_INTENSITY,
       ),
       sun,
+      sun.target,
     );
     animator = createAnimator();
     entities = createEntityRenderer(ENTITY_CAPACITY, registry, animator);
@@ -371,6 +401,18 @@ export function startSkirmish(params: SkirmishOptions): void {
     setHudPlayer();
     centreOnOwnHq(next);
     ready = true;
+  }
+
+  /** Centres the sun's shadow camera on the camera's ground target (spec 10 §3):
+   *  the sun sits `SUN_DISTANCE` along `SUN_DIRECTION` from it. */
+  function updateSun(): void {
+    if (sunLight === null) return;
+    const target = controller?.cameraTarget() ?? cameraTarget;
+    sunLight.target.position.set(target.x, 0, target.y);
+    sunLight.position
+      .copy(sunLight.target.position)
+      .addScaledVector(SUN_DIRECTION, SUN_DISTANCE);
+    sunLight.target.updateMatrixWorld();
   }
 
   /** Applies the controlled-player change of the debug-only F2 key (§6.5). */
@@ -541,6 +583,7 @@ export function startSkirmish(params: SkirmishOptions): void {
     }
     lastFrameMs = now;
     controller?.update(dtMs / 1000);
+    updateSun();
     if (next !== null && prev !== null && entities !== null) {
       entities.update(
         interpolateEntities(prev, next, (now - receivedAt) / TICK_MS),
@@ -606,6 +649,11 @@ export function startSkirmish(params: SkirmishOptions): void {
       effectCounts: () => effects?.counts() ?? NO_EFFECT_COUNTS,
       gore: () => settings.gore,
       drawCalls: () => drawCalls,
+      renderInfo: () => ({
+        shadowMap: renderer.shadowMap.enabled,
+        sunCastsShadow: sunLight?.castShadow ?? false,
+        toneMapping: TONE_MAPPING_NAMES[renderer.toneMapping] ?? "unknown",
+      }),
       resetFrameStats: () => frameStats.reset(),
       frameStats: () => frameStats.read(),
       injectFrameTimes: (frameTimesMs) => perfPanel?.inject(frameTimesMs),
