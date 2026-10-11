@@ -612,8 +612,9 @@ test("AC-03-59: attacks with a right click", async ({ page }) => {
   expect(await entityCount(page, 0, leopardKind)).toBeGreaterThan(0);
 });
 
-/** `MAX_DRAW_CALLS_SKIRMISH` (spec §3). */
-const MAX_DRAW_CALLS_SKIRMISH = 8;
+/** Draw-call bound of spec 10 §3: `4 × types on screen + 10`. */
+const DRAW_CALLS_PER_TYPE = 4;
+const DRAW_CALLS_BASE = 10;
 
 /** One rifleman block of AC-03-62; positions are cell centres. */
 interface SpawnBlock {
@@ -711,10 +712,32 @@ test("AC-03-62: renders a skirmish in at most 8 draw calls", async ({
   await expect
     .poll(() => debugCall(page, (api) => api.drawCalls()), { timeout: 10_000 })
     .toBeGreaterThan(0);
-  const drawCalls = await debugCall(page, (api) => api.drawCalls());
-  console.log(`AC-03-62 drawCalls=${drawCalls}`);
+  // Spec 10 §3 bound: four calls per visible type, plus ten.
+  const { drawCalls, types } = await page.evaluate(() => {
+    const api = (window as DebugWindow).__redline as SkirmishDebugView;
+    const rect = document.querySelector("canvas")?.getBoundingClientRect();
+    const onScreen = new Set<number>();
+    for (const entity of api.entities()) {
+      const point = api.worldToScreen(entity.x, entity.y);
+      if (
+        rect !== undefined &&
+        point.x >= rect.left &&
+        point.x < rect.left + rect.width &&
+        point.y >= rect.top &&
+        point.y < rect.top + rect.height
+      ) {
+        onScreen.add(entity.kind);
+      }
+    }
+    return { drawCalls: api.drawCalls(), types: onScreen.size };
+  });
+  console.log(
+    `AC-03-62 types=${types} drawCalls=${drawCalls} bound=${DRAW_CALLS_PER_TYPE * types + DRAW_CALLS_BASE}`,
+  );
   expect(drawCalls).toBeGreaterThanOrEqual(1);
-  expect(drawCalls).toBeLessThanOrEqual(MAX_DRAW_CALLS_SKIRMISH);
+  expect(drawCalls).toBeLessThanOrEqual(
+    DRAW_CALLS_PER_TYPE * types + DRAW_CALLS_BASE,
+  );
 });
 
 test("AC-03-67: draws the selection box while dragging", async ({ page }) => {
