@@ -124,7 +124,7 @@ const EFFECT_STYLES: Readonly<Record<EffectKind, EffectStyle>> = {
     durationMs: 15_000,
     fadeMs: 3000,
     size: [0.3, 0.18, 0.3],
-    color: 0x3a3530,
+    color: 0x4a4038,
     additive: false,
   },
 };
