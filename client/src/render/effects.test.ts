@@ -185,4 +185,14 @@ describe("effects", () => {
     expect(counts(effects).blast).toBe(0);
     expect(counts(effects).explosion).toBe(0);
   });
+
+  it("draws an effect at least once when the first frame comes after its lifetime", () => {
+    const effects = createEffects();
+    effects.spawn("muzzle", { x: 0, y: 0, startMs: 0 });
+    effects.update(200);
+    expect(effects.meshes.muzzle.count).toBe(1);
+    effects.update(216);
+    expect(effects.meshes.muzzle.count).toBe(0);
+  });
 });
+
