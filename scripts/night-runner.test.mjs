@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
   FAILURE_MARKER,
+  acquireLock,
   agentInvocation,
   allowedFiles,
   branchName,
@@ -12,6 +13,7 @@ import {
   deadline,
   isOwnerConfirmed,
   isPaid,
+  mergeBaseDiffArgs,
   previousAttempts,
   processIssue,
   readConfig,
@@ -19,6 +21,10 @@ import {
   scopeProblem,
   selectIssues,
 } from "./night-runner.mjs";
+
+function lockDir() {
+  return mkdtempSync(join(tmpdir(), "night-runner-lock-"));
+}
 
 test("night-runner: reads defaults and overrides from the environment", () => {
   const config = readConfig({});
@@ -121,7 +127,7 @@ test("night-runner: builds the dsh and opencode invocations", () => {
 });
 
 function fakeWorld({ verifyStatus, attempts = 0, prStatus = 0, checksStatus = 0, strayInMain = false,
-  body = "", changed = [] }) {
+  body = "", changed = [], mergeBase = "abc123" }) {
   const calls = [];
   let agentRan = false;
   const run = (cmd, args, opts = {}) => {
@@ -134,7 +140,8 @@ function fakeWorld({ verifyStatus, attempts = 0, prStatus = 0, checksStatus = 0,
       return { status: 0, stdout: JSON.stringify({ comments, body }) };
     }
     if (line === "node --run verify") return { status: verifyStatus, stdout: "" };
-    if (line === "git diff --name-only --cached origin/main") return { status: 0, stdout: changed.join("\n") };
+    if (line === "git merge-base HEAD origin/main") return { status: 0, stdout: `${mergeBase}\n` };
+    if (line.startsWith("git diff --name-only --cached")) return { status: 0, stdout: changed.join("\n") };
     if (line.startsWith("gh pr create")) return { status: prStatus, stdout: "" };
     if (line.startsWith("gh pr checks")) return { status: checksStatus, stdout: "" };
     if (line.startsWith("git status --porcelain") && !opts.cwd.includes(".night-runner")) {
@@ -283,6 +290,54 @@ test("night-runner: gives the agent the issue body and the anti-stall rules", as
   assert.match(agent, /crates\/sim\/src\/vision\.rs/);
   assert.match(agent, /scratch test/);
   assert.match(agent, /only the files listed/);
+});
+
+test("night-runner: builds the git diff arguments from the merge base", () => {
+  assert.deepEqual(mergeBaseDiffArgs("abc123"), ["diff", "--name-only", "--cached", "abc123"]);
+});
+
+test("night-runner: diffs the agent's changes against the merge base, not origin/main", async () => {
+  const world = fakeWorld({ verifyStatus: 0, body: ISSUE_BODY, changed: ["crates/sim/src/vision.rs"] });
+  const { ctx } = context(world);
+  assert.equal(await processIssue({ number: 61, title: "Vision" }, ctx), "opened");
+  const fetch = world.calls.lastIndexOf("git fetch origin main");
+  const base = world.calls.indexOf("git merge-base HEAD origin/main");
+  const diff = world.calls.indexOf("git diff --name-only --cached abc123");
+  assert.ok(fetch >= 0, "fetches origin/main before the merge base");
+  assert.ok(base > fetch, "computes the merge base after fetching");
+  assert.ok(diff > base, "diffs the index against the merge base");
+  assert.equal(world.calls.some((c) => c === "git diff --name-only --cached origin/main"), false);
+});
+
+test("night-runner: takes the lock and refuses while a live pid holds it", () => {
+  const lockFile = join(lockDir(), "lock");
+  const live = new Set([101]);
+  const isAlive = (pid) => live.has(pid);
+  const release = acquireLock(lockFile, 101, { isAlive });
+  assert.equal(typeof release, "function");
+  assert.equal(readFileSync(lockFile, "utf8").trim(), "101");
+  assert.equal(acquireLock(lockFile, 202, { isAlive }), null);
+  assert.equal(readFileSync(lockFile, "utf8").trim(), "101");
+  release();
+  assert.equal(existsSync(lockFile), false);
+});
+
+test("night-runner: takes over a stale lock whose pid is not alive", () => {
+  const lockFile = join(lockDir(), "lock");
+  writeFileSync(lockFile, "999\n");
+  const release = acquireLock(lockFile, 202, { isAlive: () => false });
+  assert.equal(typeof release, "function");
+  assert.equal(readFileSync(lockFile, "utf8").trim(), "202");
+  release();
+});
+
+test("night-runner: takes over a lock whose contents are not a pid", () => {
+  const lockFile = join(lockDir(), "lock");
+  writeFileSync(lockFile, "garbage\n");
+  const release = acquireLock(lockFile, 7, { isAlive: () => true });
+  assert.equal(typeof release, "function");
+  assert.equal(readFileSync(lockFile, "utf8").trim(), "7");
+  release();
 });
 
 test("night-runner: collapses repeated lines in the log tail given to the next attempt", () => {
