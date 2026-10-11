@@ -21,7 +21,7 @@
     "assets:check": "node tools/models/check.mjs",
     "check:rust": "cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo nextest run",
     "build:wasm": "wasm-pack build crates/sim --target web",
-    "verify": "node --run check:rust && node --run check:rules && node --run test:scripts && node --run build:wasm && node --run check && node --run typecheck && node --run test:unit && node --run build && node --run test:e2e && node --run check:data && node --run assets:check",
+    "verify": "node --run check:rust && node --run check:rules && node --run test:scripts && node --run build:wasm && node --run check && node --run typecheck && node --run test:unit && node --run build && node --run test:e2e && node --run check:data && node --run assets:check -- --strict",
     "format": "cargo fmt --all && cd client && npx biome check --write ."
   },
   "devDependencies": {

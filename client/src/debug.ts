@@ -39,6 +39,8 @@ export function installDebugApi(
 export interface SkirmishDebug {
   isReady(): boolean;
   mode(): "skirmish";
+  /** True once the model registry has been loaded and applied. */
+  modelsReady(): boolean;
   /** Tick of the latest snapshot. */
   tick(): number;
   controlledPlayer(): number;

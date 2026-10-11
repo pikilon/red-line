@@ -1,6 +1,8 @@
 import {
   BoxGeometry,
   Color,
+  DirectionalLight,
+  HemisphereLight,
   Mesh,
   MeshBasicMaterial,
   Scene,
@@ -21,6 +23,7 @@ import {
 import { createPerfPanel } from "../perfPanel";
 import { createEntityRenderer, type EntityRenderer } from "../render/entities";
 import { createFogOverlay } from "../render/fog";
+import { loadModels, type ModelRegistry } from "../render/models";
 import { createTerrain } from "../render/terrain";
 import { RULES, typeDef, typeIndex } from "../rules";
 import {
@@ -64,6 +67,15 @@ const PLACEMENT_VALID_COLOR = 0xffffff;
 const PLACEMENT_INVALID_COLOR = 0xef4444;
 /** Selection used before the controller exists (spec §6.7). */
 const NO_SELECTION: ReadonlySet<number> = new Set<number>();
+/** The builtin ruleset type without a committed `.glb` (spec 06 §3). */
+const PLACEHOLDER_TYPE = "tech-slice-placeholder";
+/** Model lighting (spec 06 §5): hemisphere fill plus a camera-side sun. */
+const HEMISPHERE_SKY = 0xffffff;
+const HEMISPHERE_GROUND = 0x444444;
+const HEMISPHERE_INTENSITY = 1.2;
+const SUN_COLOR = 0xffffff;
+const SUN_INTENSITY = 1.5;
+const SUN_POSITION = new Vector3(50, 40, 50);
 
 /** URL parameters of the skirmish app (spec §6.7). */
 export type SkirmishOptions = URLSearchParams;
@@ -197,6 +209,16 @@ export function startSkirmish(params: SkirmishOptions): void {
   let fogOverlay: FogOverlay | null = null;
   const placementGhost = createPlacementGhost();
   const placementHint = createPlacementHint(document.body);
+  /** Models applied to the entity renderer; fallback boxes until they load. */
+  let models: ModelRegistry | null = null;
+  let modelsReady = false;
+  const registry: ModelRegistry = { get: (typeId) => models?.get(typeId) };
+  void loadModels(
+    RULES.types.filter((type) => type.id !== PLACEHOLDER_TYPE),
+  ).then((loaded) => {
+    models = loaded;
+    modelsReady = true;
+  });
 
   /** The queue of the selected production building, if any. */
   function selectedQueue(): QueueState | null {
@@ -250,7 +272,17 @@ export function startSkirmish(params: SkirmishOptions): void {
     scene.add(
       createTerrain(mapInfo.mapWidth, mapInfo.mapHeight, mapInfo.tiles),
     );
-    entities = createEntityRenderer(ENTITY_CAPACITY);
+    const sun = new DirectionalLight(SUN_COLOR, SUN_INTENSITY);
+    sun.position.copy(SUN_POSITION);
+    scene.add(
+      new HemisphereLight(
+        HEMISPHERE_SKY,
+        HEMISPHERE_GROUND,
+        HEMISPHERE_INTENSITY,
+      ),
+      sun,
+    );
+    entities = createEntityRenderer(ENTITY_CAPACITY, registry);
     scene.add(entities.group);
     fogOverlay = createFogOverlay(mapInfo.mapWidth, mapInfo.mapHeight);
     scene.add(fogOverlay.mesh);
@@ -411,6 +443,7 @@ export function startSkirmish(params: SkirmishOptions): void {
       isReady: () => ready,
       uiRenders: () => uiRenders,
       mode: () => "skirmish",
+      modelsReady: () => modelsReady,
       tick: () => next?.tick ?? 0,
       controlledPlayer: () => controlled,
       viewer: () => viewer,
