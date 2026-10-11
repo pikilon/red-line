@@ -35,6 +35,7 @@ import type {
 export const OWNER_COLORS = [0x2563eb, 0xdc2626] as const;
 export const NEUTRAL_COLOR = 0x8b5a2b;
 export const SELECTED_COLOR = 0xfacc15;
+export const SCAFFOLD_COLOR = 0xc8a165;
 export const HEALTH_COLORS = {
   high: 0x22c55e,
   mid: 0xeab308,
@@ -47,6 +48,7 @@ const BAR_GAP = 0.3;
 const BAR_MIN_SCALE = 0.05;
 const TRACER_Y = 0.5;
 const PROGRESS_FULL = 1000;
+const SCAFFOLD_BEAM = 0.03;
 const UP = new Vector3(0, 1, 0);
 
 export type ModelGroup = "hull" | "turret";
@@ -69,6 +71,8 @@ export interface EntityRenderer {
   readonly tracers: LineSegments;
   /** Lazily created instanced meshes of the types with a loaded `.glb`. */
   readonly models: readonly ModelInstance[];
+  /** Scaffolding around buildings under construction (spec 09 §5). */
+  readonly scaffolds: InstancedMesh;
   update(
     entities: readonly EntityState[],
     selected: ReadonlySet<number>,
@@ -155,6 +159,53 @@ function modelMaterial(material: MaterialName): MeshLambertMaterial {
     : new MeshLambertMaterial({ vertexColors: true, flatShading: true });
 }
 
+/** Unit box scaffolding frame (spec 09 §5): the 12 edges of a unit box plus 4
+ *  horizontal beams around the middle (y = 0.5), 16 beams of cross-section
+ *  `SCAFFOLD_BEAM` merged into one geometry, centred on the origin with its
+ *  base at y = 0. */
+export function scaffoldGeometry(): BufferGeometry {
+  const b = SCAFFOLD_BEAM;
+  const beams: BoxGeometry[] = [];
+  // 4 vertical edges at the corners, from the base (y = 0) to the top (y = 1).
+  for (const px of [-0.5, 0.5]) {
+    for (const pz of [-0.5, 0.5]) {
+      const edge = new BoxGeometry(b, 1, b);
+      edge.translate(px, 0.5, pz);
+      beams.push(edge);
+    }
+  }
+  // 4 bottom (y = 0) and 4 top (y = 1) edges: two along x, two along z.
+  for (const y of [0, 1]) {
+    for (const pz of [-0.5, 0.5]) {
+      const edge = new BoxGeometry(1, b, b);
+      edge.translate(0, y, pz);
+      beams.push(edge);
+    }
+    for (const px of [-0.5, 0.5]) {
+      const edge = new BoxGeometry(b, b, 1);
+      edge.translate(px, y, 0);
+      beams.push(edge);
+    }
+  }
+  // 4 horizontal beams around the middle (y = 0.5).
+  for (const pz of [-0.5, 0.5]) {
+    const beam = new BoxGeometry(1, b, b);
+    beam.translate(0, 0.5, pz);
+    beams.push(beam);
+  }
+  for (const px of [-0.5, 0.5]) {
+    const beam = new BoxGeometry(b, b, 1);
+    beam.translate(px, 0.5, 0);
+    beams.push(beam);
+  }
+  return (
+    mergeGeometries(
+      beams.map((beam) => beam.toNonIndexed()),
+      false,
+    ) ?? new BufferGeometry()
+  );
+}
+
 /** Default animator: no recoil, no lift. Keeps the renderer output unchanged
  *  when no animator is supplied (spec 09 §4). */
 const NO_ANIMATOR: Animator = {
@@ -182,6 +233,12 @@ export function createEntityRenderer(
     new MeshBasicMaterial({ side: DoubleSide }),
     capacity,
   );
+  const scaffolds = instanced(
+    scaffoldGeometry(),
+    new MeshBasicMaterial({ color: SCAFFOLD_COLOR }),
+    capacity,
+  );
+  scaffolds.visible = false;
   const tracerPositions = new Float32BufferAttribute(capacity * 2 * 3, 3);
   const tracerColors = new Float32BufferAttribute(capacity * 2 * 3, 3);
   const tracerGeometry = new BufferGeometry();
@@ -195,7 +252,7 @@ export function createEntityRenderer(
   tracers.frustumCulled = false;
 
   const group = new Group();
-  group.add(units, buildings, ghosts, bars, tracers);
+  group.add(units, buildings, ghosts, bars, tracers, scaffolds);
 
   const matrix = new Matrix4();
   const turretMatrix = new Matrix4();
@@ -282,6 +339,7 @@ export function createEntityRenderer(
     ghosts,
     bars,
     tracers,
+    scaffolds,
     get models() {
       return slots;
     },
@@ -291,6 +349,7 @@ export function createEntityRenderer(
       for (const entity of entities) byId.set(entity.id, entity);
       for (const slot of slots) slot.count = 0;
       let tracerCount = 0;
+      let scaffoldCount = 0;
 
       for (const entity of entities) {
         const type = typeDef(entity.kind);
@@ -386,6 +445,19 @@ export function createEntityRenderer(
         }
 
         if (
+          !isGhost &&
+          type.category !== "unit" &&
+          hasFlag(entity, ENTITY_FLAGS.underConstruction) &&
+          scaffoldCount < capacity
+        ) {
+          position.set(entity.x, 0, entity.y);
+          scale.set(w, h, d);
+          matrix.compose(position, rotation.identity(), scale);
+          scaffolds.setMatrixAt(scaffoldCount, matrix);
+          scaffoldCount++;
+        }
+
+        if (
           type.category !== "depot" &&
           (isSelected || entity.hp < type.hp) &&
           counts.bars < capacity
@@ -415,11 +487,13 @@ export function createEntityRenderer(
       finish(buildings, counts.buildings);
       finish(ghosts, counts.ghosts);
       finish(bars, counts.bars);
+      finish(scaffolds, scaffoldCount);
       for (const slot of slots) {
         finish(slot.mesh, slot.count);
         slot.mesh.computeBoundingSphere();
       }
       tracers.visible = tracerCount > 0;
+      scaffolds.visible = scaffoldCount > 0;
       tracerGeometry.setDrawRange(0, tracerCount * 2);
       tracerPositions.needsUpdate = true;
       tracerColors.needsUpdate = true;
