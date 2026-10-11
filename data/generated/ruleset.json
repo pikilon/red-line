@@ -75,7 +75,7 @@
       "id": "ua-kozak-hmg",
       "damageType": 0,
       "damage": 12,
-      "rangeCenti": 500,
+      "rangeCenti": 550,
       "minRangeCenti": 0,
       "cooldownTicks": 10,
       "splashCenti": 0,
@@ -1398,11 +1398,11 @@
           "units": [
             [
               5,
-              2
+              3
             ],
             [
               2,
-              3
+              4
             ]
           ]
         },
@@ -1411,11 +1411,11 @@
           "units": [
             [
               6,
-              2
+              3
             ],
             [
               5,
-              1
+              2
             ]
           ]
         },
@@ -1424,15 +1424,15 @@
           "units": [
             [
               7,
-              1
+              2
             ],
             [
               6,
-              1
+              2
             ],
             [
               3,
-              2
+              3
             ]
           ]
         }
@@ -1463,13 +1463,14 @@
     {
       "id": "ukraine-rush",
       "faction": 0,
-      "harvesters": 2,
+      "harvesters": 6,
       "defenseRadiusCenti": 1500,
       "buildOrder": [
         11,
         13,
         12,
         14,
+        13,
         11
       ],
       "taskForces": [
@@ -1478,7 +1479,7 @@
           "units": [
             [
               2,
-              5
+              8
             ]
           ]
         },
@@ -1486,12 +1487,12 @@
           "id": "raid",
           "units": [
             [
-              4,
-              2
+              5,
+              3
             ],
             [
               2,
-              2
+              4
             ]
           ]
         },
@@ -1500,11 +1501,24 @@
           "units": [
             [
               3,
+              3
+            ],
+            [
+              2,
+              4
+            ]
+          ]
+        },
+        {
+          "id": "armor",
+          "units": [
+            [
+              6,
               2
             ],
             [
-              4,
-              1
+              5,
+              2
             ]
           ]
         }
@@ -1524,6 +1538,11 @@
           "taskForce": 2,
           "weight": 30,
           "minTick": 2700
+        },
+        {
+          "taskForce": 3,
+          "weight": 40,
+          "minTick": 3600
         }
       ]
     },
@@ -1538,9 +1557,7 @@
         27,
         25,
         28,
-        29,
-        25,
-        29
+        25
       ],
       "taskForces": [
         {
@@ -1622,13 +1639,15 @@
     {
       "id": "russia-rush",
       "faction": 1,
-      "harvesters": 2,
+      "harvesters": 4,
       "defenseRadiusCenti": 1500,
       "buildOrder": [
         25,
         27,
         26,
         28,
+        25,
+        29,
         25
       ],
       "taskForces": [
@@ -1637,7 +1656,7 @@
           "units": [
             [
               16,
-              6
+              8
             ]
           ]
         },
@@ -1646,11 +1665,11 @@
           "units": [
             [
               18,
-              2
+              3
             ],
             [
               16,
-              3
+              4
             ]
           ]
         },
@@ -1659,11 +1678,28 @@
           "units": [
             [
               17,
-              3
+              4
             ],
             [
               18,
+              2
+            ]
+          ]
+        },
+        {
+          "id": "armor",
+          "units": [
+            [
+              20,
+              3
+            ],
+            [
+              19,
               1
+            ],
+            [
+              16,
+              3
             ]
           ]
         }
@@ -1677,12 +1713,17 @@
         {
           "taskForce": 1,
           "weight": 50,
-          "minTick": 1800
+          "minTick": 2400
         },
         {
           "taskForce": 2,
           "weight": 30,
-          "minTick": 2700
+          "minTick": 3000
+        },
+        {
+          "taskForce": 3,
+          "weight": 40,
+          "minTick": 4200
         }
       ]
     }

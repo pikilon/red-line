@@ -1,13 +1,15 @@
 id: russia-rush
 faction: russia
-harvesters: 2
+harvesters: 4
 defenseRadiusCenti: 1500
-buildOrder: [ru-power-plant, ru-barracks, ru-supply-center, ru-vehicle-factory, ru-power-plant]
+buildOrder: [ru-power-plant, ru-barracks, ru-supply-center, ru-vehicle-factory, ru-power-plant, ru-defense, ru-power-plant]
 taskForces:
-  - { id: rifles, units: { ru-rifleman: 6 } }
-  - { id: raid, units: { ru-brdm-scout: 2, ru-rifleman: 3 } }
-  - { id: hunters, units: { ru-rpg-gunner: 3, ru-brdm-scout: 1 } }
+  - { id: rifles, units: { ru-rifleman: 8 } }
+  - { id: raid, units: { ru-brdm-scout: 3, ru-rifleman: 4 } }
+  - { id: hunters, units: { ru-rpg-gunner: 4, ru-brdm-scout: 2 } }
+  - { id: armor, units: { ru-t-72b3: 3, ru-bmp-2: 1, ru-rifleman: 3 } }
 triggers:
   - { taskForce: rifles, weight: 60, minTick: 0 }
-  - { taskForce: raid, weight: 50, minTick: 1800 }
-  - { taskForce: hunters, weight: 30, minTick: 2700 }
+  - { taskForce: raid, weight: 50, minTick: 2400 }
+  - { taskForce: hunters, weight: 30, minTick: 3000 }
+  - { taskForce: armor, weight: 40, minTick: 4200 }
