@@ -1,3 +1,4 @@
+import type { EffectKind } from "./render/effects";
 import type { EntityState, Outcome } from "./sim/matchSnapshot";
 import type { SimCommand } from "./sim/protocol";
 
@@ -63,6 +64,10 @@ export interface SkirmishDebug {
   setCameraTarget(x: number, y: number): void;
   command(command: SimCommand): void;
   stateHash(): Promise<string>;
+  /** Visible effect mesh counts of the last frame (spec 07 AC-07-06). */
+  effectCounts(): Record<EffectKind, number>;
+  /** Gore filter setting (spec 07 §5). */
+  gore(): boolean;
   /** Command panel render calls so far (spec §6.7, #140). */
   uiRenders(): number;
   /** renderer.info.render.calls of the last frame. */
