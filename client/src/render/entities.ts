@@ -23,6 +23,7 @@ import {
   hasFlag,
   NEUTRAL,
 } from "../sim/matchSnapshot";
+import type { Animator } from "./animation";
 import { createHeadingTracker } from "./heading";
 import type {
   MaterialName,
@@ -68,7 +69,11 @@ export interface EntityRenderer {
   readonly tracers: LineSegments;
   /** Lazily created instanced meshes of the types with a loaded `.glb`. */
   readonly models: readonly ModelInstance[];
-  update(entities: readonly EntityState[], selected: ReadonlySet<number>): void;
+  update(
+    entities: readonly EntityState[],
+    selected: ReadonlySet<number>,
+    nowMs?: number,
+  ): void;
 }
 
 interface MeshSlot extends ModelInstance {
@@ -150,9 +155,19 @@ function modelMaterial(material: MaterialName): MeshLambertMaterial {
     : new MeshLambertMaterial({ vertexColors: true, flatShading: true });
 }
 
+/** Default animator: no recoil, no lift. Keeps the renderer output unchanged
+ *  when no animator is supplied (spec 09 §4). */
+const NO_ANIMATOR: Animator = {
+  recordShots() {},
+  pose(): { recoil: number; lift: number } {
+    return { recoil: 0, lift: 0 };
+  },
+};
+
 export function createEntityRenderer(
   capacity: number,
   models?: ModelRegistry,
+  animator: Animator = NO_ANIMATOR,
 ): EntityRenderer {
   const box = new BoxGeometry(1, 1, 1);
   const units = instanced(box, new MeshBasicMaterial(), capacity);
@@ -184,6 +199,7 @@ export function createEntityRenderer(
 
   const matrix = new Matrix4();
   const turretMatrix = new Matrix4();
+  const recoilTranslation = new Matrix4();
   const pivotMatrix = new Matrix4();
   const rotationMatrix = new Matrix4();
   const rotation = new Quaternion();
@@ -269,7 +285,7 @@ export function createEntityRenderer(
     get models() {
       return slots;
     },
-    update(entities, selected) {
+    update(entities, selected, nowMs = 0) {
       const counts = { units: 0, buildings: 0, ghosts: 0, bars: 0 };
       byId.clear();
       for (const entity of entities) byId.set(entity.id, entity);
@@ -310,6 +326,10 @@ export function createEntityRenderer(
           target === null ? null : { x: target.x, y: target.y },
         );
 
+        const pose = animator.pose(entity, nowMs);
+        const recoil = pose.recoil;
+        const lift = pose.lift;
+
         if (isFallback || model === null) {
           if (type.category === "unit") {
             if (counts.units < capacity) {
@@ -336,7 +356,7 @@ export function createEntityRenderer(
           const turretYaw = heading.turretYaw;
           for (const slot of typeSlots.hull) {
             if (slot.count >= capacity) continue;
-            position.set(entity.x, 0, entity.y);
+            position.set(entity.x, lift, entity.y);
             rotation.setFromAxisAngle(UP, hullYaw);
             scale.set(1, f, 1);
             matrix.compose(position, rotation, scale);
@@ -345,7 +365,7 @@ export function createEntityRenderer(
           for (const slot of typeSlots.turret) {
             if (slot.count >= capacity) continue;
             const composeTurret = (): Matrix4 => {
-              position.set(entity.x, 0, entity.y);
+              position.set(entity.x, lift, entity.y);
               rotation.setFromAxisAngle(UP, hullYaw);
               scale.set(1, f, 1);
               turretMatrix.compose(position, rotation, scale);
@@ -357,6 +377,8 @@ export function createEntityRenderer(
               turretMatrix.multiply(pivotMatrix);
               rotationMatrix.makeRotationY(turretYaw - hullYaw);
               turretMatrix.multiply(rotationMatrix);
+              recoilTranslation.makeTranslation(0, 0, -recoil);
+              turretMatrix.multiply(recoilTranslation);
               return turretMatrix;
             };
             place(slot, slot.count, hex, composeTurret);
