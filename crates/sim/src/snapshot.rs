@@ -1,5 +1,7 @@
 //! `Int32Array` snapshot encoding for the client.
 
+use std::collections::BTreeMap;
+
 use crate::entity::{Entity, EntityId, Ghost, Order, PlayerId};
 use crate::map::Cell;
 use crate::nav::footprint_center;
@@ -48,6 +50,17 @@ pub const FLAG_POWERED_OFF: i32 = 16;
 /// `viewer` plus, for a player viewer, its ghosts, then the viewer's
 /// production queues. A viewer that is not a player id is the observer.
 pub fn encode_match_snapshot(world: &World, viewer: PlayerId) -> Vec<i32> {
+    encode_match_snapshot_with_shots(world, viewer, &BTreeMap::new())
+}
+
+/// `encode_match_snapshot`, where an entity that did not fire this tick but
+/// appears in `shots` (shooter id -> target id, e.g. shots from earlier ticks
+/// that no snapshot reported) is encoded with `FLAG_FIRED` and that target.
+pub fn encode_match_snapshot_with_shots(
+    world: &World,
+    viewer: PlayerId,
+    shots: &BTreeMap<EntityId, EntityId>,
+) -> Vec<i32> {
     let player = world.player(viewer);
     let mut out = Vec::new();
     out.push(world.tick() as i32);
@@ -73,7 +86,7 @@ pub fn encode_match_snapshot(world: &World, viewer: PlayerId) -> Vec<i32> {
     let mut rows: Vec<(EntityId, [i32; ENTITY_STRIDE])> = Vec::new();
     for entity in world.entities() {
         if world.is_entity_visible(viewer, entity.id) {
-            rows.push((entity.id, entity_row(world, entity)));
+            rows.push((entity.id, entity_row(world, entity, shots)));
         }
     }
     if let Some(player) = player {
@@ -144,7 +157,15 @@ pub fn encode_fog(world: &World, viewer: PlayerId) -> Vec<u8> {
 }
 
 /// `id, owner, kind, pos.x raw, pos.y raw, hp, flags, progress, target`.
-fn entity_row(world: &World, entity: &Entity) -> [i32; ENTITY_STRIDE] {
+fn entity_row(
+    world: &World,
+    entity: &Entity,
+    shots: &BTreeMap<EntityId, EntityId>,
+) -> [i32; ENTITY_STRIDE] {
+    let target = entity
+        .last_target
+        .or_else(|| shots.get(&entity.id).copied());
+    let fired = if target.is_some() { FLAG_FIRED } else { 0 };
     [
         entity.id as i32,
         i32::from(entity.owner),
@@ -152,9 +173,9 @@ fn entity_row(world: &World, entity: &Entity) -> [i32; ENTITY_STRIDE] {
         entity.pos.x.raw(),
         entity.pos.y.raw(),
         entity.hp as i32,
-        entity_flags(world, entity),
+        entity_flags(world, entity) | fired,
         entity_progress(world, entity),
-        entity.last_target.map_or(-1, |target| target as i32),
+        target.map_or(-1, |target| target as i32),
     ]
 }
 
