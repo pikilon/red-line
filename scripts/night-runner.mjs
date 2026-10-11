@@ -2,8 +2,10 @@
 // issues one by one with a local model, each in its own worktree, and opens a
 // PR when `node --run verify` passes. Entry point: scripts/night-runner.sh.
 import { spawnSync } from "node:child_process";
-import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import {
+  appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync,
+} from "node:fs";
+import { dirname, join } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { fileURLToPath } from "node:url";
 
@@ -161,6 +163,40 @@ export function scopeProblem(changed, allowed) {
   return null;
 }
 
+// Git arguments that list only the agent's own changes. Diffing against the
+// branch point (merge base) instead of a moving `origin/main` keeps files that
+// landed on main after the worktree was created out of the change set.
+export function mergeBaseDiffArgs(mergeBase) {
+  return ["diff", "--name-only", "--cached", mergeBase];
+}
+
+function pidAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return error.code === "EPERM"; // alive but owned by another user
+  }
+}
+
+// Takes `.night-runner/lock` for the whole run. The file holds the runner pid;
+// a lock whose pid is not alive (or whose contents are not a pid) is stale and
+// taken over. Returns a release function, or null while a live runner holds it.
+export function acquireLock(lockFile, pid, { isAlive = pidAlive } = {}) {
+  mkdirSync(dirname(lockFile), { recursive: true });
+  for (;;) {
+    try {
+      writeFileSync(lockFile, `${pid}\n`, { flag: "wx" });
+      return () => rmSync(lockFile, { force: true });
+    } catch (error) {
+      if (error.code !== "EEXIST") throw error;
+      const holder = Number.parseInt(readFileSync(lockFile, "utf8").trim(), 10);
+      if (Number.isInteger(holder) && holder > 0 && isAlive(holder)) return null;
+      rmSync(lockFile, { force: true });
+    }
+  }
+}
+
 // Collapses runs of identical lines so a looping agent's tail stays readable.
 export function compactLog(text) {
   const out = [];
@@ -243,7 +279,9 @@ export async function processIssue(issue, ctx) {
     const verify = agentRun.status === 0 ? run("node", ["--run", "verify"], { cwd: worktree, logFile }) : null;
     const dirty = run("git", ["status", "--porcelain"], { cwd: worktree }).stdout.trim() !== "";
     run("git", ["add", "-A"], { cwd: worktree });
-    const changed = run("git", ["diff", "--name-only", "--cached", "origin/main"], { cwd: worktree })
+    run("git", ["fetch", "origin", "main"], { cwd: worktree });
+    const mergeBase = run("git", ["merge-base", "HEAD", "origin/main"], { cwd: worktree }).stdout.trim();
+    const changed = run("git", mergeBaseDiffArgs(mergeBase), { cwd: worktree })
       .stdout.split("\n").filter(Boolean);
     const outOfScope = scopeProblem(changed, allowed);
     const ahead = Number(run("git", ["rev-list", "--count", "origin/main..HEAD"], { cwd: worktree }).stdout || 0);
@@ -330,6 +368,15 @@ function nextIssue(ctx, done) {
 
 async function main() {
   const root = fileURLToPath(new URL("..", import.meta.url));
+  const lockFile = join(root, ".night-runner", "lock");
+  const release = acquireLock(lockFile, process.pid);
+  if (release === null) {
+    const holder = existsSync(lockFile) ? readFileSync(lockFile, "utf8").trim() : "unknown";
+    console.error(`night-runner: another runner (pid ${holder}) holds ${lockFile}; exiting`);
+    process.exitCode = 1;
+    return;
+  }
+  process.on("exit", release);
   const logDir = join(root, ".night-runner", "logs", new Date().toISOString().replace(/[:.]/g, "-"));
   mkdirSync(logDir, { recursive: true });
   const log = (message) => {
