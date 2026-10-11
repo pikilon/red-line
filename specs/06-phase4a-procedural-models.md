@@ -101,6 +101,48 @@ Faction base colours (`body`): Ukraine `#5b6b3a` (olive), Russia `#6b6650`
   `DirectionalLight(0xffffff, 1.5)` from the camera side; terrain stays as is.
 * Draw calls: at most `2 × (number of types on screen) + 6`.
 
+### 5.1 Gradual turning (owner request 2026-10-11)
+
+Hull and turret headings no longer snap: they turn towards the heading of §5
+at a bounded rate, on the client only (the simulation still moves units in
+straight lines; a hull may briefly lag its direction of travel).
+
+```ts
+// client/src/render/heading.ts
+export const TURN_RATES = {
+  vehicleHull: Math.PI,        // rad/s (180°/s)
+  infantryHull: 4 * Math.PI,   // rad/s
+  turret: 1.5 * Math.PI,       // rad/s (270°/s)
+} as const;
+
+export interface TurnRates {
+  readonly hull: number;   // rad/s
+  readonly turret: number; // rad/s
+}
+
+/** `current` moved towards `desired` along the shorter arc by at most
+ *  `maxStep` radians; the result is normalised to (−π, π]. */
+export function turnTowards(current: number, desired: number, maxStep: number): number;
+
+export interface HeadingTracker {
+  update(id: number, x: number, y: number, target: Point | null,
+         nowMs?: number, rates?: TurnRates): Heading;
+  clear(): void;
+}
+```
+
+* Without `rates` the behaviour is §5 (instant), so AC-06-05 is unchanged.
+* With `rates`: the first `update` of an id snaps both yaws to their desired
+  values; later updates turn each yaw by at most `rate × dt`, where `dt` is
+  `nowMs` minus the id's previous `nowMs` in seconds (clamped to [0, 0.25]).
+  The desired hull yaw is §5's; the desired turret yaw is towards the target,
+  else the current (smoothed) hull yaw. The tracker stores the smoothed yaws.
+* `entities.ts` passes `nowMs` (the effect clock, spec 09 §3) and
+  `{ hull: TURN_RATES.infantryHull or vehicleHull, turret: TURN_RATES.turret }`
+  per unit (infantry = category "unit" with armor 0); buildings with a turret
+  use only the turret rate (their hull yaw stays 0). While paused the clock
+  stops, so nothing turns.
+
 ## 6. Acceptance criteria
 
 **AC-06-01 Model check passes.** `node --run assets:check` exits 0 on the
@@ -126,6 +168,14 @@ owner colour and `body` instances white; selected entities carry
 gets yaw `π/2`; a stationary unit keeps its yaw; a unit with a target at
 `(0, 1)` relative to it gets turret yaw `0`.
 
+**AC-06-08 Gradual turning.** `turnTowards(0, π/2, 0.1)` is 0.1;
+`turnTowards(3, −3, 1)` crosses ±π along the short arc (result ≈ −3.0 after
+two steps of 0.14); with rates `{ hull: π, turret: 1.5π }` a unit first seen
+moving along +x snaps to π/2, then reversing to −x turns its hull by at most
+π × 0.1 rad over a 100 ms update and reaches −π/2 after one second; a turret
+whose target jumps behind it turns at most 1.5π × dt; a `dt` over 250 ms is
+clamped; without rates the results equal AC-06-05.
+
 **AC-06-06 Models in the skirmish (Playwright).** The skirmish loads with no
 console error, `__redline.drawCalls()` stays within §5's bound, and a
 screenshot of the starting base differs from the Phase 2 box rendering (pixel
@@ -142,6 +192,7 @@ diff over 5 %).
 | AC-06-03 | `client/src/render/models.test.ts` | `AC-06-03: model registry` |
 | AC-06-04 | `client/src/render/entities.test.ts` | `AC-06-04: instanced model rendering` |
 | AC-06-05 | `client/src/render/heading.test.ts` | `AC-06-05: heading and turret aim` |
+| AC-06-08 | `client/src/render/heading.test.ts` | `AC-06-08: gradual turning` |
 | AC-06-06 | `client/tests/e2e/models.spec.ts` | `AC-06-06: models in the skirmish` |
 | AC-06-07 | existing perf tests | — |
 
@@ -154,3 +205,4 @@ diff over 5 %).
 | P4-03 (#166) | Russia vehicles and infantry scripts + `.glb` | AC-06-01 | ready-pro | P4-01 |
 | P4-04 (#167) | Buildings of both factions and the depot + `.glb` | AC-06-01 | ready-pro | P4-01 |
 | P4-05 (#168) | Client model registry, instanced rendering, heading, lights | AC-06-03..07 | ready-pro | P4-01 |
+| P4-15 (#202) | Gradual hull and turret turning (§5.1) | AC-06-08 | ready-local | P4-05 |
