@@ -6,6 +6,7 @@ import {
   MAX_STEPS_PER_ADVANCE,
   type MainToWorker,
   type MoveMessage,
+  type SetPausedMessage,
   type SetViewerMessage,
   type SimCommand,
   TICK_MS,
@@ -182,6 +183,7 @@ export function createWorkerHandler(
   let speed = 1;
   let lastMs: number | null = null;
   let accumulatorMs = 0;
+  let paused = false;
 
   const postSnapshot = (target: SimLike): void => {
     const data = target.snapshot();
@@ -298,6 +300,9 @@ export function createWorkerHandler(
       viewer = message.viewer;
       postSkirmishSnapshot(skirmish);
     },
+    setPaused: (message: SetPausedMessage): void => {
+      paused = message.paused;
+    },
   } as const;
 
   return {
@@ -314,8 +319,14 @@ export function createWorkerHandler(
         return;
       }
       const rate = skirmish === null ? 1 : speed;
-      accumulatorMs += Math.max(0, nowMs - lastMs) * rate;
+      const elapsedMs = Math.max(0, nowMs - lastMs);
       lastMs = nowMs;
+      // Paused: drop the elapsed time so resuming never catches it up.
+      if (paused) {
+        accumulatorMs = 0;
+        return;
+      }
+      accumulatorMs += elapsedMs * rate;
       const steps = Math.min(
         Math.floor(accumulatorMs / TICK_MS),
         MAX_STEPS_PER_ADVANCE,

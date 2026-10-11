@@ -65,13 +65,15 @@ export type InitSkirmishMessage = {
 };
 export type CommandMessage = { type: "command"; command: SimCommand };
 export type SetViewerMessage = { type: "setViewer"; viewer: number };
+export type SetPausedMessage = { type: "setPaused"; paused: boolean };
 export type MainToWorker =
   | InitMessage
   | MoveMessage
   | HashRequestMessage
   | InitSkirmishMessage
   | CommandMessage
-  | SetViewerMessage;
+  | SetViewerMessage
+  | SetPausedMessage;
 
 export type ReadyMessage = {
   type: "ready";

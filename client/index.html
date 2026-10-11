@@ -21,12 +21,14 @@
       #outcome { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; color: #fff; font: 48px/1.2 system-ui, sans-serif; text-shadow: 0 2px 6px #000; }
       #toast { position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%); padding: 6px 14px; border-radius: 4px; background: rgba(0, 0, 0, 0.7); pointer-events: none; color: #fff; font: 16px/1.4 system-ui, sans-serif; opacity: 0; transition: opacity 0.15s; }
       #toast.visible { opacity: 1; }
+      #pause-overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; color: #fff; font: 32px/1.2 system-ui, sans-serif; text-shadow: 0 2px 6px #000; }
     </style>
   </head>
   <body>
     <div id="app"></div>
     <div id="hud"></div>
     <div id="toast"></div>
+    <div id="pause-overlay" role="status" hidden></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

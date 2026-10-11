@@ -124,4 +124,21 @@ describe("skirmish client", () => {
     });
     expect(received).toHaveLength(1);
   });
+
+  it("AC-08-02: client pause message", () => {
+    const worker = new FakeWorker();
+    const options = {
+      seed: 7,
+      mapId: "first-line",
+      viewer: 1,
+      speed: 1,
+      debug: false,
+    };
+    const client = createSkirmishClient(worker, options);
+
+    client.setPaused(true);
+    expect(worker.sent[1]).toEqual({ type: "setPaused", paused: true });
+    client.setPaused(false);
+    expect(worker.sent[2]).toEqual({ type: "setPaused", paused: false });
+  });
 });

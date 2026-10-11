@@ -44,6 +44,8 @@ export interface SkirmishDebug {
   modelsReady(): boolean;
   /** Tick of the latest snapshot. */
   tick(): number;
+  /** True while the skirmish is paused (spec 08 §3). */
+  paused(): boolean;
   controlledPlayer(): number;
   /** Controlled player, or `OBSERVER` (255) while revealed. */
   viewer(): number;
