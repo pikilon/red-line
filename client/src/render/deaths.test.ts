@@ -1,5 +1,6 @@
+import { Matrix4, Quaternion, Vector3 } from "three";
 import { describe, expect, it } from "vitest";
-import { typeIndex } from "../rules";
+import { typeDef, typeIndex } from "../rules";
 import {
   ENTITY_FLAGS,
   type EntityState,
@@ -120,5 +121,70 @@ describe("death effects", () => {
     effects.clear("blood");
     effects.update(0);
     expect(effects.meshes.blood.count).toBe(0);
+  });
+
+  it("AC-09-05: debris", () => {
+    const effects = createEffects();
+    // Centered on the origin keeps the piece coordinates small, so the check
+    // matches the §6 formulas to full double precision despite the Matrix4
+    // round-trip.
+    const building = entity(6, 1, "ua-barracks", 0, 0, 1000);
+
+    // A dead building spawns one wreck and eight debris pieces at the §6 positions.
+    spawnDeathEffects([building], effects, true, 0);
+    effects.update(0);
+    expect(effects.meshes.wreck.count).toBe(1);
+    expect(effects.meshes.debris.count).toBe(8);
+
+    // Each piece i matches §6 exactly: angle, radius, position and size.
+    const type = typeDef(building.kind);
+    const [width, , depth] = type.render.size.map((size) => size / 100) as [
+      number,
+      number,
+      number,
+    ];
+    const id = building.id;
+    const matrix = new Matrix4();
+    const pos = new Vector3();
+    const q = new Quaternion();
+    const scale = new Vector3();
+    for (let i = 0; i < 8; i++) {
+      const angle = (i * 2 * Math.PI) / 8 + id * 0.7;
+      const radius = ((0.25 + 0.15 * (i % 3)) * Math.min(width, depth)) / 2;
+      const s = 0.2 + 0.1 * ((id + i) % 3);
+      const expectedX = building.x + Math.cos(angle) * radius;
+      const expectedY = building.y + Math.sin(angle) * radius;
+      effects.meshes.debris.getMatrixAt(i, matrix);
+      matrix.decompose(pos, q, scale);
+      // Values are read back through Three.js's Matrix4, so allow its ~1e-8
+      // round-trip error (6 decimals) while still catching any wrong formula.
+      expect(pos.x).toBeCloseTo(expectedX, 6);
+      expect(pos.y).toBeCloseTo((s * 0.6) / 2, 6);
+      expect(pos.z).toBeCloseTo(expectedY, 6);
+      expect(scale.x).toBeCloseTo(s, 6);
+      expect(scale.y).toBeCloseTo(s * 0.6, 6);
+      expect(scale.z).toBeCloseTo(s, 6);
+    }
+
+    // A dead vehicle or infantry spawns no debris.
+    effects.clear();
+    const vehicle = entity(1, 0, "ua-leopard-2a4", 5, 5, 100);
+    spawnDeathEffects([vehicle], effects, true, 0);
+    effects.update(0);
+    expect(effects.meshes.debris.count).toBe(0);
+
+    effects.clear();
+    const infantry = entity(2, 0, "ua-rifleman", 6, 6, 100);
+    spawnDeathEffects([infantry], effects, true, 0);
+    effects.update(0);
+    expect(effects.meshes.debris.count).toBe(0);
+
+    // Debris expires after 15 s.
+    effects.clear();
+    spawnDeathEffects([building], effects, true, 0);
+    effects.update(0);
+    expect(effects.meshes.debris.count).toBe(8);
+    effects.update(15_000);
+    expect(effects.meshes.debris.count).toBe(0);
   });
 });
