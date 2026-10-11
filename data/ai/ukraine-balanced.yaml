@@ -5,9 +5,9 @@ defenseRadiusCenti: 2000
 buildOrder: [ua-power-plant, ua-supply-center, ua-barracks, ua-power-plant, ua-vehicle-factory, ua-defense, ua-power-plant, ua-defense]
 taskForces:
   - { id: infantry, units: { ua-rifleman: 4, ua-stugna-team: 2 } }
-  - { id: mechanized, units: { ua-bradley: 2, ua-rifleman: 3 } }
-  - { id: armor, units: { ua-leopard-2a4: 2, ua-bradley: 1 } }
-  - { id: fires, units: { ua-himars: 1, ua-leopard-2a4: 1, ua-stugna-team: 2 } }
+  - { id: mechanized, units: { ua-bradley: 3, ua-rifleman: 4 } }
+  - { id: armor, units: { ua-leopard-2a4: 3, ua-bradley: 2 } }
+  - { id: fires, units: { ua-himars: 2, ua-leopard-2a4: 2, ua-stugna-team: 3 } }
 triggers:
   - { taskForce: infantry, weight: 50, minTick: 0 }
   - { taskForce: mechanized, weight: 40, minTick: 2700 }

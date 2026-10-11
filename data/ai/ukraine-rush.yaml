@@ -1,13 +1,15 @@
 id: ukraine-rush
 faction: ukraine
-harvesters: 2
+harvesters: 6
 defenseRadiusCenti: 1500
-buildOrder: [ua-power-plant, ua-barracks, ua-supply-center, ua-vehicle-factory, ua-power-plant]
+buildOrder: [ua-power-plant, ua-barracks, ua-supply-center, ua-vehicle-factory, ua-barracks, ua-power-plant]
 taskForces:
-  - { id: rifles, units: { ua-rifleman: 5 } }
-  - { id: raid, units: { ua-kozak-scout: 2, ua-rifleman: 2 } }
-  - { id: hunters, units: { ua-stugna-team: 2, ua-kozak-scout: 1 } }
+  - { id: rifles, units: { ua-rifleman: 8 } }
+  - { id: raid, units: { ua-bradley: 3, ua-rifleman: 4 } }
+  - { id: hunters, units: { ua-stugna-team: 3, ua-rifleman: 4 } }
+  - { id: armor, units: { ua-leopard-2a4: 2, ua-bradley: 2 } }
 triggers:
   - { taskForce: rifles, weight: 60, minTick: 0 }
   - { taskForce: raid, weight: 50, minTick: 1800 }
   - { taskForce: hunters, weight: 30, minTick: 2700 }
+  - { taskForce: armor, weight: 40, minTick: 3600 }
