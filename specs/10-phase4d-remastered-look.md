@@ -86,7 +86,14 @@ export function createTerrainTextures(seed: number): Record<TerrainKind, Texture
   transparent, whose per-vertex alpha is `smoothstep(0.55, 0.7,
   valueNoise(x, z, 12 tiles, seed))` — irregular dirt patches. Both receive
   shadows.
-* Blocked tiles become rock: one mesh of boxes, tile footprint, height
+* Rock tiles are the map's static obstacles only: the cells inside the
+  `blocked` rectangles of the map definition in the ruleset
+  (`ruleset.maps[i].blocked`, `[x0, y0, x1, y1]` inclusive). The `tiles` array
+  of the ready message is not used for rock, because it also marks cells
+  occupied by buildings and depots. `createTerrain(width, height, rockCells,
+  seed)` takes a `Uint8Array` (1 = rock) built from those rectangles by
+  `rockCellsOf(map)` in `terrain.ts`.
+* Rock tiles become rock: one mesh of boxes, tile footprint, height
   `0.35 + 0.4 × valueNoise(x, z, 3 tiles, seed + 1)` tiles, top vertices
   jittered ±0.08 tiles by the PRNG, `rock` texture, flat shading, cast and
   receive shadows.
@@ -143,11 +150,17 @@ identical for the same seed, differs for another seed, is seamless (column 0
 equals column 255 within 12 per channel, same for rows) and its mean colour is
 within 24 per channel of the kind's base colour.
 
-**AC-10-02 Terrain meshes.** `createTerrain` on a 4 × 4 map with two blocked
+**AC-10-02 Terrain meshes.** `rockCellsOf` marks exactly the cells of the
+map's `blocked` rectangles (first-line: the river and the four woods, nothing
+under the start HQs or depots). `createTerrain` on a 4 × 4 map with two blocked
 tiles returns a group with a grass mesh of 14 tiles, a dirt overlay of the same
 14 tiles whose vertex alphas are in [0, 1], and a rock mesh of 2 boxes whose
 heights are within [0.27, 0.83]; the ground meshes receive shadows and the
 rock mesh casts them.
+
+**AC-10-02b Terrain performance.** The terrain is built once at start (no
+per-frame texture or geometry work) with at most 3 draw calls; AC-03-62/63
+pass.
 
 **AC-10-03 Shadows and lighting.** In the skirmish (Playwright, `?debug=1&seed=1`)
 `__redline.renderInfo()` reports `shadowMap: true`, a shadow-casting sun, and
