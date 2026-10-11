@@ -84,6 +84,8 @@ export function detectDeaths(
 const WRECK_HEIGHT = 0.6;
 /** Overlapping blood decals under an infantry body (spec 07 §3). */
 const BLOOD_DECALS = 3;
+/** Rubble pieces scattered around a destroyed building (spec 09 §6). */
+const DEBRIS_PIECES = 8;
 
 /** Spawns the wreck, body and blood effects of `deaths` (spec 07 §3,
  *  AC-07-04). Blood is skipped when the gore filter is off. */
@@ -107,6 +109,9 @@ export function spawnDeathEffects(
         sizeXYZ: [width, height * WRECK_HEIGHT, depth],
         startMs: nowMs,
       });
+      if (type.category === "building") {
+        spawnDebris(effects, entity, width, depth, nowMs);
+      }
       continue;
     }
 
@@ -122,5 +127,30 @@ export function spawnDeathEffects(
         startMs: nowMs,
       });
     }
+  }
+}
+
+/** Scatters `DEBRIS_PIECES` debris pieces around a destroyed building (spec 09 §6,
+ *  AC-09-05). `width` and `depth` are the building render size in tiles. Units
+ *  never call this, so they spawn no debris. */
+function spawnDebris(
+  effects: Effects,
+  entity: EntityState,
+  width: number,
+  depth: number,
+  nowMs: number,
+): void {
+  const id = entity.id;
+  for (let i = 0; i < DEBRIS_PIECES; i++) {
+    const angle = (i * 2 * Math.PI) / 8 + id * 0.7;
+    const radius = ((0.25 + 0.15 * (i % 3)) * Math.min(width, depth)) / 2;
+    const s = 0.2 + 0.1 * ((id + i) % 3);
+    effects.spawn("debris", {
+      x: entity.x + Math.cos(angle) * radius,
+      y: entity.y + Math.sin(angle) * radius,
+      sizeXYZ: [s, s * 0.6, s],
+      rotationY: angle,
+      startMs: nowMs,
+    });
   }
 }

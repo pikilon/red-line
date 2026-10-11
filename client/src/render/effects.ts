@@ -30,6 +30,7 @@ export const EFFECT_KINDS = [
   "wreck",
   "body",
   "blood",
+  "debris",
 ] as const;
 export type EffectKind = (typeof EFFECT_KINDS)[number];
 
@@ -117,6 +118,13 @@ const EFFECT_STYLES: Readonly<Record<EffectKind, EffectStyle>> = {
     fadeMs: 5000,
     size: [0.5, 0.02, 0.5],
     color: 0x5a0a0a,
+    additive: false,
+  },
+  debris: {
+    durationMs: 15_000,
+    fadeMs: 3000,
+    size: [0.3, 0.18, 0.3],
+    color: 0x3a3530,
     additive: false,
   },
 };
