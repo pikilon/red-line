@@ -1,6 +1,6 @@
 //! AC-11-01: fixed-point angles (spec 11 section 3).
 
-use sim::angle::{atan2, deg_per_second_to_step, deg_to_units, Angle, TURN};
+use sim::angle::{Angle, TURN, atan2, deg_per_second_to_step, deg_to_units};
 use sim::fixed::Fx;
 
 fn fx(n: i32) -> Fx {
