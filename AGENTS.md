@@ -43,14 +43,15 @@ code: agents implement, the owner reviews quality hands-on.
 * Scripts run with `node --run <script>`, never `npm run`. `node --run` skips
   pre/post hooks, so every step lives inside the script itself.
 * Fresh clone or worktree: `node --run install:root && node --run install:client`.
-* Before declaring any change done, verify on the cheapest model and outside
-  your context: run `node --run verify:agent` and act on the report it prints.
-  It runs `.agents/agents/verification-runner/agent.md` on the local model, or
-  on DeepSeek Flash only with the owner's confirmation (D-11).
-  `Verdict: UNAVAILABLE` means no cheap model: Claude Code then uses its
-  `verification-runner` subagent (Haiku); other harnesses ask the owner.
-  `Verdict: ERROR`: stop and tell the owner.
-  `node --run verify` is the same check sequence CI runs.
+* Before declaring any change done, verify on a cheap model outside your
+  context: delegate to the `verification-runner` subagent
+  (`.agents/agents/verification-runner/agent.md`; Flash in Antigravity, Haiku
+  in Claude Code), which tries the local model first. Harnesses without
+  file-defined subagents run `node --run verify:agent` themselves: it uses the
+  local model, or DeepSeek Flash only with the owner's confirmation (D-11), and
+  prints a report starting with `Verdict:`. `UNAVAILABLE` means no cheap model:
+  ask the owner. `ERROR`: stop and tell the owner. `node --run verify` is the
+  same check sequence CI runs.
 * Non-interactive shells may lack cargo: prefix commands with
   `PATH="$HOME/.cargo/bin:$PATH"`. When a tool seems missing, run
   `scripts/doctor.sh`.
@@ -77,6 +78,7 @@ code: agents implement, the owner reviews quality hands-on.
 
 * Read the nearest `AGENTS.md` before editing under `crates/` or `client/`.
 * Each rule lives in one place: `AGENTS.md` files, `.agents/skills/<name>/SKILL.md`
-  or `.agents/agents/<name>/agent.md`. `.claude/` only holds symlinks to them
-  for Claude Code discovery. Never create `CLAUDE.md`, `GEMINI.md`, `.cursor/`
+  or `.agents/agents/<name>/agent.md` (subagent frontmatter in Antigravity
+  format). `.claude/` only holds a symlink to the skills and thin subagent
+  wrappers with Claude Code frontmatter. Never create `CLAUDE.md`, `GEMINI.md`, `.cursor/`
   or other agent-specific rule files.

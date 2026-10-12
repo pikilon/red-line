@@ -12,7 +12,7 @@ description: Verify code or configuration changes, run checks or tests, edit tes
   for iterating on one layer; always finish with the full `verify`.
 * To keep logs and tokens out of an expensive session, `node --run verify:agent`
   runs the whole verification on the local model and prints only the report
-  (see `AGENTS.md` for the fallback order).
+  (the `verification-runner` subagent calls it first; see `AGENTS.md`).
 * Shell scripts: `shellcheck scripts/*.sh` (if installed) and run the script once.
 * Fresh clone or worktree: `node --run install:root` and
   `node --run install:client` first.

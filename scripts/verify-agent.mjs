@@ -3,10 +3,10 @@
 // the local LM Studio model and prints only its report. Without a local model it
 // falls back to a paid route (default DeepSeek Flash) only with the owner's
 // confirmation for this run. The first stdout line is the verdict: PASS, FAIL,
-// UNAVAILABLE (no cheap model: Claude Code falls back to its Haiku subagent,
-// other harnesses ask the owner) or ERROR (the agent run failed: stop and tell
-// the owner). Exit codes 0/1/3/4 match them, but `node --run` reports every
-// non-zero code as 1.
+// UNAVAILABLE (no cheap model: the verification-runner subagent, on Haiku or
+// Flash, runs the checks itself; harnesses without it ask the owner) or ERROR
+// (the agent run failed: stop and tell the owner). Exit codes 0/1/3/4 match
+// them, but `node --run` reports every non-zero code as 1.
 // Entry point: node --run verify:agent
 import { spawnSync } from "node:child_process";
 import { cpSync, existsSync } from "node:fs";
@@ -45,7 +45,8 @@ export async function chooseRoute(config, { localUp, ask }) {
 export function verifyInvocation(config, route, root, target) {
   const prompt = [
     `You are the verification runner for the checkout at ${target}.`,
-    "Read .agents/agents/verification-runner/agent.md there and follow it exactly.",
+    "Read .agents/agents/verification-runner/agent.md there and follow it.",
+    "Do not run `node --run verify:agent`: you are already that local runner, so run the checks yourself.",
     "Your final answer is only the report it defines, starting with the `Verdict:` line.",
   ].join("\n");
   const invocation = agentInvocation({ ...config, ...route }, prompt, root);
@@ -91,8 +92,8 @@ export function noModelReport(config) {
   const route = `${config.fallbackProvider}/${config.fallbackModel}`;
   return [
     `Verdict: UNAVAILABLE — ${config.localModel} is not served at ${config.lmStudioUrl} and ${route} was not confirmed for this run (D-11).`,
-    "Claude Code: use the verification-runner subagent (Haiku).",
-    `Other harnesses: ask the owner, then rerun with RUNNER_PAID_CONFIRMED=${route}.`,
+    "If you are the verification-runner subagent: run the checks yourself.",
+    `Otherwise ask the owner, then rerun with RUNNER_PAID_CONFIRMED=${route}.`,
   ].join("\n");
 }
 
