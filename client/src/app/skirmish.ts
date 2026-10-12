@@ -245,7 +245,7 @@ export function startSkirmish(params: SkirmishOptions): void {
   /** Shadow-casting sun; its shadow camera follows the camera target (spec 10 §3). */
   let sunLight: DirectionalLight | null = null;
   let cameraTarget = { x: 0, y: 0 };
-  /** Per-player camera views for the hot-seat switch (spec 08 §3.2). */
+  /** Per-player camera views for hot-seat player changes (spec 08 §3.2). */
   const cameraMemory = createCameraMemory();
   /** True after F2 to a player with no stored view: the next snapshot built
    *  for that player centres the camera on their base. */
