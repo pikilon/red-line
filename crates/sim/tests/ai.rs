@@ -552,7 +552,10 @@ fn ac_08_05_ai_pause() {
         }]
     );
     assert!(!ai.is_active());
-    assert!(ai.set_active(false).is_empty(), "pausing twice stops nothing");
+    assert!(
+        ai.set_active(false).is_empty(),
+        "pausing twice stops nothing"
+    );
     assert!(ai.set_active(true).is_empty(), "resuming returns nothing");
     assert!(ai.is_active());
 

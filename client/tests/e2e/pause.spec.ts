@@ -27,7 +27,10 @@ interface SkirmishMenuDebugView {
 
 type DebugWindow = Window & { __redline?: SkirmishMenuDebugView };
 
-async function boot(page: Page, query = "?debug=1&seed=1&ai=off"): Promise<void> {
+async function boot(
+  page: Page,
+  query = "?debug=1&seed=1&ai=off",
+): Promise<void> {
   await page.goto(`/${query}`);
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,

@@ -454,8 +454,7 @@ describe("worker handler", () => {
   });
 
   it("AC-08-06: worker and client AI toggle", () => {
-    const set_ai_active =
-      vi.fn<(player: number, active: boolean) => boolean>();
+    const set_ai_active = vi.fn<(player: number, active: boolean) => boolean>();
     const skirmishSim: SkirmishSimLike = {
       map_width: () => 2,
       map_height: () => 2,
