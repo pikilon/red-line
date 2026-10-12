@@ -13,6 +13,21 @@ description: Pick, claim, execute and hand back a GitHub issue. Use when startin
 * Area: `area:sim`, `area:client`, `area:data`, `area:ai`, `area:assets`,
   `area:infra`.
 
+## Writing issues
+
+* Under "Files allowed to change", list every file as its own `` - `path` ``
+  line: `scripts/night-runner.sh` reads only the first backticked path of each
+  line and matches it exactly (no globs). Include knock-on files, e.g. the
+  `crates/headless` banner test when `API_VERSION` bumps.
+* To reset an escalated issue, remove the `<!-- night-runner:failure -->`
+  comments and restore its tier label.
+
+## Unattended runs
+
+* Run every unblocked `ready-local` issue through `scripts/night-runner.sh`
+  (local models, free) first. Take a `ready-pro` issue only when no
+  `ready-local` one is unblocked, and only a few per night.
+
 ## Pick
 
 1. `gh issue list --label <tier> --state open --search "no:assignee"`

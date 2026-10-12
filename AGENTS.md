@@ -1,82 +1,78 @@
 # AGENTS.md
 
-Modern Conquest: Red Line is an open-source, browser-based 2.5D RTS inspired by
-Red Alert 2 and C&C Generals, set in modern real-world conflicts. The owner does
-not write code: agents implement, the owner reviews quality.
+Modern Conquest: Red Line is an open-source, browser-based 2.5D RTS (Red Alert 2
+/ C&C Generals style, modern real-world conflicts). The owner does not write
+code: agents implement, the owner reviews quality hands-on.
 
-## Core Principles
+## Sources of Truth
 
-* **Spec-Driven Development:** `specs/*.md` is the absolute source of truth and
-  no production code is written without a test that failed first. For any
-  functional change, load and execute `.agents/skills/sdd-workflow/SKILL.md`.
-* **Project decisions** (architecture, factions, licensing, model tiers) live in
-  `docs/decisions.md`. Read it before proposing anything that contradicts it.
-* **Doubts about how the original game behaves** (pathfinding, production,
-  economy, damage, AI...): do not guess; delegate to the subagent
-  defined in `.agents/agents/generals-precedent/agent.md` and cite its note in
-  the spec or issue. Never read the original source in the main conversation.
-* **State lives in the repository and GitHub, never in a chat.** Work is taken
-  from GitHub issues; see `.agents/skills/task-intake/SKILL.md`.
+* `specs/*.md` defines behavior. Functional changes are test-first: write the
+  failing test and see it fail because the behavior is missing, then implement.
+  Never edit, skip or weaken a test written in the spec phase; if one looks
+  wrong, stop and report it on the issue with the `needs-pro` label.
+* `docs/decisions.md` (D-01, D-02...) holds architecture, licensing, faction and
+  model-tier decisions. Never contradict it; flag conflicts instead.
+* Work comes from GitHub issues. State lives in the repository and GitHub,
+  never only in a chat.
+* Unsure how the original game behaves (pathfinding, production, economy,
+  damage, AI...)? Do not guess: follow
+  `.agents/agents/generals-precedent/agent.md`, in a subagent or separate
+  session when your harness has one, and cite its note in the spec or issue.
 
-## Repository Language
+## Language
 
-* Everything written into the repository or GitHub (code, comments, specs,
-  commits, issues, PRs, subagent notes) must be in English. Player-facing
-  strings go through i18n files, never hardcoded.
-* Chat with the owner is in Spanish: summaries, questions and confirmation
-  requests are written in Spanish, quoting identifiers and paths unchanged.
+* Everything in the repository and GitHub is English. Player-facing strings go
+  through i18n files, never hardcoded.
+* Chat with the owner in Spanish, quoting identifiers and paths unchanged.
 
-## Git and GitHub
+## Architecture
 
-* Before any commit, push or GitHub operation, load
-  `.agents/skills/repository-delivery/SKILL.md`.
+* `crates/sim`: deterministic Rust simulation (WASM and native). No rendering,
+  time, I/O or browser. Fixed-point only: no floats, wall-clock time, unseeded
+  randomness or hash-order iteration.
+* `client/`: strict TypeScript + Three.js + Vite. Sends commands and renders
+  state; never decides game outcomes.
+* `data/`: YAML validated by JSON Schema. Balance changes touch data, not code.
+* Layers talk only through the documented WASM API and data schemas.
+* TypeScript: no `switch` (use a constant object dictionary) and no `enum` (use
+  `as const` objects with derived types). `node --run check:rules`, Biome and
+  clippy enforce these rules.
 
-## Architecture Boundaries
+## Commands
 
-* `crates/sim` — deterministic simulation in Rust, compiled to WASM and native.
-  It knows nothing about rendering, time, I/O or the browser.
-* `client/` — TypeScript + Three.js renderer, UI, input, audio and networking.
-  It never decides game outcomes; it sends commands and renders state.
-* `data/` — factions, units, weapons and AI scripts in YAML validated by JSON
-  Schema. Balance changes touch data, not code.
-* Communication between layers only happens through the documented WASM API
-  and data schemas.
+* Scripts run with `node --run <script>`, never `npm run`. `node --run` skips
+  pre/post hooks, so every step lives inside the script itself.
+* Fresh clone or worktree: `node --run install:root && node --run install:client`.
+* Before declaring any change done, run `node --run verify` (the same sequence
+  as CI) and report which checks ran or were skipped and that no test was
+  skipped or weakened. When your harness has subagents, run it in one
+  (`.agents/agents/verification-runner/agent.md`) to keep logs out of context.
+* Non-interactive shells may lack cargo: prefix commands with
+  `PATH="$HOME/.cargo/bin:$PATH"`. When a tool seems missing, run
+  `scripts/doctor.sh`.
 
-## Code Rules (all languages)
+## Done Means Owner-Tested
 
-* In JS/TS never use `switch`: use a constant object dictionary.
-* Never use TypeScript `enum`: use `as const` objects with derived types.
-* The simulation is deterministic: no floats in game logic (fixed-point only),
-  no wall-clock time, no unseeded randomness, no hash-order iteration.
+* A player-facing change is not done, and its PR is not merged, until the owner
+  has tested it. First test it yourself with real mouse input: synthetic or
+  one-frame clicks have hidden broken UI before. Then give the owner numbered
+  steps with the expected result, each with a working localhost URL from a dev
+  server started in the PR's worktree on its own port. Unattended agents open
+  the PR and leave these steps in its body instead of merging.
 
-## AI Providers and Tokens
+## AI Providers (D-11)
 
-* Default to local models (LM Studio on `http://127.0.0.1:1234/v1`, ComfyUI,
-  Blender), run through an agent harness (DeepSeek Harness `dsh`, OpenCode).
-  Never at game runtime.
-* A paid remote AI API (e.g. official DeepSeek) is used only after the owner
-  confirms it for that run: agents ask in chat, scripts ask interactively and
-  fall back to local models when nobody answers. Code, tests, CI and the game
-  never call one (D-11).
+* Agents may start local models (LM Studio on `http://127.0.0.1:1234/v1`,
+  through `dsh` or OpenCode) whenever useful, never at game runtime. If a local
+  model or harness fails, stop and tell the owner instead of working around it.
+* A paid remote AI API needs the owner's confirmation for that run: agents ask
+  in chat, scripts ask interactively and fall back to local models. Code,
+  tests, CI and the game never call one.
 
-## Instruction Subtrees
+## Instruction Files
 
-Before reading or editing files under a subtree, read its `AGENTS.md` if present
-(`crates/`, `client/`, `data/`, `tools/`).
-
-## Configuration Portability
-
-* Rules live only in `AGENTS.md` files and `.agents/skills/<name>/SKILL.md`.
-  Subagent definitions live in `.agents/agents/<name>/agent.md`.
-* Creating `CLAUDE.md`, `GEMINI.md`, `.cursor/`, `copilot-instructions.md` or
-  any agent-specific rule file is forbidden. A `CLAUDE.md` would make Claude
-  Code ignore this file.
-
-## Runtime and Completion
-
-* Run `scripts/doctor.sh` when a tool seems missing.
-* Package scripts run with `node --run <script>`, never `npm run`.
-* Before completing any change, delegate verification to the subagent defined
-  in `.agents/agents/verification-runner/agent.md`; it executes
-  `.agents/skills/verification/SKILL.md`. The main model only acts on its
-  report and never runs the checks itself.
+* Read the nearest `AGENTS.md` before editing under `crates/` or `client/`.
+* Each rule lives in one place: `AGENTS.md` files, `.agents/skills/<name>/SKILL.md`
+  or `.agents/agents/<name>/agent.md`. `.claude/` only holds symlinks to them
+  for Claude Code discovery. Never create `CLAUDE.md`, `GEMINI.md`, `.cursor/`
+  or other agent-specific rule files.
