@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "comfyui": {
+      "command": "${HOME}/.local/bin/comfy-mcp",
+      "env": {
+        "COMFY_BIN": "${HOME}/.local/bin/comfy",
+        "DO_NOT_TRACK": "1"
+      }
+    }
+  }
+}

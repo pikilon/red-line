@@ -48,6 +48,12 @@ print(f"torch {torch.__version__}, MPS available: {torch.backends.mps.is_availab
 raise SystemExit(0 if torch.backends.mps.is_available() else 1)
 PY
 
+# MCP bridge for agents (see MCP.md): comfy-cli drives the install, comfy-mcp serves it.
+uv tool install "comfy-cli>=1.14.0"
+uv tool install comfy-mcp
+DO_NOT_TRACK=1 "$bin_dir/comfy" tracking disable >/dev/null
+DO_NOT_TRACK=1 "$bin_dir/comfy" set-default "$home/ComfyUI" >/dev/null
+
 cat > "$bin_dir/comfyui" <<LAUNCHER
 #!/usr/bin/env bash
 # Starts ComfyUI on http://127.0.0.1:8188 (loopback only). Extra arguments go to ComfyUI.
