@@ -79,6 +79,44 @@ The owner asked for `Esc` to open a menu that also pauses, as in Red Alert;
   `#pause-overlay` are removed.
 * Debug API: `paused()` unchanged; new `menuOpen(): boolean`.
 
+## 3.2 Hot-seat camera (owner request 2026-10-12, issue #220)
+
+Switching the controlled player with the debug-only `F2` key (spec 03
+AC-03-60) left the camera where the previous player was looking, which made
+finding one's own base very hard. Each player now keeps their own view.
+
+* `client/src/app/cameraMemory.ts`:
+
+  ```ts
+  export interface ViewPoint {
+    x: number;
+    y: number;
+  }
+  export interface CameraMemory {
+    /** Stores `current` as `from`'s last view and returns `to`'s last view,
+     *  or null when `to` has none yet. */
+    switchPlayer(from: number, to: number, current: ViewPoint): ViewPoint | null;
+  }
+  export function createCameraMemory(): CameraMemory;
+  /** The player's main base: their HQ, else their first building in
+   *  `entities` order, else null. */
+  export function homeView(
+    entities: readonly EntityState[],
+    player: number,
+    hqKind: number | null,
+    isBuilding: (kind: number) => boolean,
+  ): ViewPoint | null;
+  ```
+
+* On `F2` (`setControlledPlayer` in `client/src/app/skirmish.ts`) the camera
+  target moves to the new player's last view when there is one. Otherwise it
+  moves to `homeView` of the first snapshot whose `viewer` is the new player
+  or `OBSERVER` (the snapshot still in flight was built for the old viewer and
+  hides the new player's base under fog); if `homeView` is null there, the
+  camera stays where it is.
+* Camera panning between switches is part of the stored view; nothing is
+  stored in the simulation, so determinism is unaffected.
+
 ## 4. Acceptance criteria
 
 **AC-08-01 Worker pause.** Given a skirmish worker handler at speed 1, after
@@ -102,6 +140,19 @@ order; `render` with an equal view does not touch the DOM (same button
 elements, no text writes); clicking each button calls its action once; the
 gore label follows `view.gore`; `open: false` sets `hidden`.
 
+**AC-08-05 Camera memory.** `createCameraMemory().switchPlayer(0, 1, {x: 10,
+y: 20})` returns null; a following `switchPlayer(1, 0, {x: 70, y: 80})`
+returns `{x: 10, y: 20}` and then `switchPlayer(0, 1, {x: 5, y: 5})` returns
+`{x: 70, y: 80}`. `homeView` returns the player's HQ position when present,
+the first own building when the HQ is gone, and null when the player owns no
+building; other players' entities are ignored.
+
+**AC-08-06 Hot-seat camera (Playwright).** In `?debug=1&seed=1` with the camera
+moved to `(10, 10)` via `setCameraTarget`, pressing `F2` moves
+`cameraTarget()` within 0.5 cells of the owner-1 `ru-hq` (read after `F3`
+reveal); after `setCameraTarget(100, 20)`, `F2` returns the camera to
+`(10, 10)` and a further `F2` to `(100, 20)`.
+
 ## 5. Queued requests (to be specified)
 
 1. Camera bookmarks: save with `Ctrl+F1..F4`, jump with `F1..F4`.
@@ -122,6 +173,8 @@ gore label follows `view.gore`; `open: false` sets `hidden`.
 | AC-08-02 | `client/src/sim/skirmishClient.test.ts` | `AC-08-02: client pause message` |
 | AC-08-03 | `client/tests/e2e/pause.spec.ts` | `AC-08-03: game menu in the skirmish` |
 | AC-08-04 | `client/src/ui/gameMenu.test.ts` | `AC-08-04: game menu view` |
+| AC-08-05 | `client/src/app/cameraMemory.test.ts` | `AC-08-05: camera memory` |
+| AC-08-06 | `client/tests/e2e/hotSeatCamera.spec.ts` | `AC-08-06: hot-seat camera` |
 
 ## 7. Issue breakdown
 
@@ -129,3 +182,4 @@ gore label follows `view.gore`; `open: false` sets `hidden`.
 |---|---|---|---|
 | P5-01 (#183) | pause (§3) | AC-08-01..03 | ready-pro |
 | P5-02 (#200) | game menu on Esc (§3.1) | AC-08-03, 04 | ready-local |
+| P5-03 (#220) | hot-seat camera (§3.2) | AC-08-05, 06 | ready-pro |
