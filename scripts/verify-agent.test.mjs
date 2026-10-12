@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { chooseRoute, exitCodeFor, isLocalUp, readVerifyConfig, verifyInvocation } from "./verify-agent.mjs";
+import {
+  agentFailedReport, chooseRoute, exitCodeFor, isLocalUp, noModelReport, readVerifyConfig, verifyInvocation,
+} from "./verify-agent.mjs";
 
 const MODELS = { data: [{ id: "ornith-1.5-35b-a3b-mlx" }, { id: "gemma-4-26b-a4b-it-mlx" }] };
 
@@ -57,4 +59,17 @@ test("verify-agent: maps the report verdict to the exit code", () => {
   assert.equal(exitCodeFor("\n\nVerdict: FAIL\n\nFailures:"), 1);
   assert.equal(exitCodeFor("I could not finish."), 4);
   assert.equal(exitCodeFor(""), 4);
+});
+
+test("verify-agent: reports a missing model or a failed run with its own verdict line", () => {
+  // `node --run` turns every non-zero exit code into 1, so callers read the verdict line.
+  const unavailable = noModelReport(readVerifyConfig({}));
+  assert.match(unavailable, /^Verdict: UNAVAILABLE\b/);
+  assert.match(unavailable, /verification-runner subagent \(Haiku\)/);
+  assert.match(unavailable, /RUNNER_PAID_CONFIRMED=deepseek-official\/deepseek-flash/);
+  const failed = agentFailedReport({ provider: "lmstudio", model: "ornith-1.5-35b-a3b-mlx" }, "exit 2", "boom");
+  assert.match(failed, /^Verdict: ERROR\b/);
+  assert.match(failed, /lmstudio\/ornith-1\.5-35b-a3b-mlx/);
+  assert.match(failed, /tell the owner/);
+  assert.match(failed, /boom/);
 });
