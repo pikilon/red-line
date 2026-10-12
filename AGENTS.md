@@ -46,7 +46,8 @@ code: agents implement, the owner reviews quality hands-on.
 * Before declaring any change done, verify on a cheap model outside your
   context: delegate to the `verification-runner` subagent
   (`.agents/agents/verification-runner/agent.md`; Flash in Antigravity, Haiku
-  in Claude Code), which tries the local model first. Harnesses without
+  in Claude Code), which tries the local model first and runs only the steps
+  the change can break (`node --run verify:plan`). Harnesses without
   file-defined subagents run `node --run verify:agent` themselves: it uses the
   local model, or DeepSeek Flash only with the owner's confirmation (D-11), and
   prints a report starting with `Verdict:`. `UNAVAILABLE` means no cheap model:

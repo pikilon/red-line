@@ -14,6 +14,7 @@ import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { agentInvocation, askOnTerminal, readConfig, resolveModel } from "./night-runner.mjs";
+import { plan } from "./verify-plan.mjs";
 
 const EXIT = { pass: 0, fail: 1, noModel: 3, agentFailed: 4 };
 const DEFAULT_FALLBACK = "deepseek-official/deepseek-flash";
@@ -42,13 +43,14 @@ export async function chooseRoute(config, { localUp, ask }) {
   return resolved.provider === config.fallbackProvider ? { provider: resolved.provider, model: resolved.model } : null;
 }
 
-export function verifyInvocation(config, route, root, target) {
+export function verifyInvocation(config, route, root, target, steps) {
   const prompt = [
     `You are the verification runner for the checkout at ${target}.`,
     "Read .agents/agents/verification-runner/agent.md there and follow it.",
     "Do not run `node --run verify:agent`: you are already that local runner, so run the checks yourself.",
+    steps && `Run only these verify steps: ${steps.map((step) => `\`node --run ${step}\``).join(", ")}.`,
     "Your final answer is only the report it defines, starting with the `Verdict:` line.",
-  ].join("\n");
+  ].filter(Boolean).join("\n");
   const invocation = agentInvocation({ ...config, ...route }, prompt, root);
   return { ...invocation, env: { ...invocation.env, WASM_PACK_CACHE: sandboxWasmPackCache(target) } };
 }
@@ -88,6 +90,17 @@ export function exitCodeFor(report) {
   return verdict === "PASS" ? EXIT.pass : verdict === "FAIL" ? EXIT.fail : EXIT.agentFailed;
 }
 
+export function skippedReport(files) {
+  return [
+    "Verdict: PASS",
+    "",
+    "Commands:",
+    "* no verify step needed — only documentation and agent configuration changed",
+    "",
+    `Notes: changed files: ${files.join(", ") || "none"}. CI runs the full \`node --run verify\` on the PR.`,
+  ].join("\n");
+}
+
 export function noModelReport(config) {
   const route = `${config.fallbackProvider}/${config.fallbackModel}`;
   return [
@@ -117,6 +130,11 @@ async function main() {
   const root = join(dirname(fileURLToPath(import.meta.url)), "..");
   const target = process.cwd();
   const config = readVerifyConfig(process.env);
+  const { files, steps } = plan(target, root);
+  if (steps.length === 0) {
+    console.log(skippedReport(files));
+    process.exit(EXIT.pass);
+  }
   const localUp = isLocalUp(await fetchModels(config.lmStudioUrl), config.localModel);
   const route = await chooseRoute(config, { localUp, ask: askOnTerminal(config.confirmTimeoutSeconds) });
   if (!route) {
@@ -125,7 +143,7 @@ async function main() {
   }
   console.error(`verify:agent using ${route.provider}/${route.model}`);
   seedWasmPackCache(target);
-  const { cmd, args, env } = verifyInvocation(config, route, root, target);
+  const { cmd, args, env } = verifyInvocation(config, route, root, target, steps);
   const result = spawnSync(cmd, args, {
     cwd: target,
     env: { ...process.env, ...env },

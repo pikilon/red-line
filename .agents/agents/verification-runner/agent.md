@@ -24,8 +24,11 @@ for Claude Code.
    * `PASS` or `FAIL`: return that report unchanged and stop.
    * `ERROR`: return it unchanged; the caller stops and tells the owner.
    * `UNAVAILABLE`: no local model; continue with step 2 yourself.
-2. Run the checks described in `.agents/skills/verification/SKILL.md` and
-   return only the report below.
+2. Run `node --run verify:plan`: it lists the changed files and the `verify`
+   steps they can break. Run only those steps (add one only if the diff
+   clearly needs it, never drop one) following
+   `.agents/skills/verification/SKILL.md`, and return only the report below.
+   When it lists no step, return a PASS report that says so.
 
 * Report only: never edit, create or delete repository files, never commit,
   never skip or weaken a test to obtain a PASS.
