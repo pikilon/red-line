@@ -85,6 +85,8 @@ async function clickTiles(page: Page, x: number, y: number): Promise<void> {
 }
 
 test("AC-08-03: game menu in the skirmish", async ({ page }) => {
+  // Many real-mouse steps; CI's software WebGL needs more than the default 30 s.
+  test.setTimeout(60_000);
   await boot(page);
   const menu = page.locator("#game-menu");
   const goreButton = page.locator("#game-menu button", { hasText: "Gore" });
