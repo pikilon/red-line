@@ -13,16 +13,27 @@ export interface CameraMemory {
 }
 
 export function createCameraMemory(): CameraMemory {
-  return { switchPlayer: () => null };
+  const views = new Map<number, ViewPoint>();
+  return {
+    switchPlayer(from, to, current) {
+      views.set(from, { x: current.x, y: current.y });
+      const view = views.get(to);
+      return view === undefined ? null : { x: view.x, y: view.y };
+    },
+  };
 }
 
 /** The player's main base: their HQ, else their first building in
  *  `entities` order, else null. */
 export function homeView(
-  _entities: readonly EntityState[],
-  _player: number,
-  _hqKind: number | null,
-  _isBuilding: (kind: number) => boolean,
+  entities: readonly EntityState[],
+  player: number,
+  hqKind: number | null,
+  isBuilding: (kind: number) => boolean,
 ): ViewPoint | null {
-  return null;
+  const own = entities.filter((entity) => entity.owner === player);
+  const home =
+    own.find((entity) => entity.kind === hqKind) ??
+    own.find((entity) => isBuilding(entity.kind));
+  return home === undefined ? null : { x: home.x, y: home.y };
 }
