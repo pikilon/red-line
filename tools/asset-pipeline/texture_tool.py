@@ -223,7 +223,15 @@ def cmd_apply(a):
     if not os.path.exists(src):
         sys.exit(f"{a.id} is not accepted yet (no {src})")
     os.makedirs(dest, exist_ok=True)
-    shutil.copy(src, os.path.join(dest, f"{a.id}.png"))
+    res = find(load(), a.id)
+    if res["kind"] == "material":
+        # Model materials multiply the faction's vertex colour: store a detail map (mean 0.9)
+        # so the model keeps its colour instead of getting darker (colour x colour).
+        arr = np.asarray(Image.open(src).convert("RGB"), dtype=np.float32)
+        detail = np.clip(arr / np.maximum(arr.reshape(-1, 3).mean(0), 1.0) * 0.9 * 255, 0, 255)
+        Image.fromarray(detail.astype(np.uint8)).save(os.path.join(dest, f"{a.id}.png"))
+    else:
+        shutil.copy(src, os.path.join(dest, f"{a.id}.png"))
     print("applied", a.id, "->", os.path.join(dest, f"{a.id}.png"))
 
 
