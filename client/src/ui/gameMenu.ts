@@ -7,6 +7,8 @@ export interface GameMenuView {
   gore: boolean;
   /** Whether the AI plays; null when no AI is attached (§3.3). */
   ai: boolean | null;
+  /** Generated textures on (spec 12 §3); absent counts as off. */
+  generatedTextures?: boolean;
 }
 
 /** Callbacks the game menu buttons invoke (spec 08 §3.1). */
@@ -17,6 +19,8 @@ export interface GameMenuActions {
   toggleGore(): void;
   /** Pauses or resumes the skirmish AI (§3.3). */
   toggleAi(): void;
+  /** Switches procedural/generated textures (spec 12 §3); no button when absent. */
+  toggleTextures?(): void;
   /** Reloads the page with the same query string. */
   restart(): void;
 }
@@ -61,6 +65,14 @@ export function createGameMenu(
   panel.appendChild(resume);
   panel.appendChild(gore);
   panel.appendChild(ai);
+  const toggleTextures = actions.toggleTextures;
+  const textures =
+    toggleTextures === undefined
+      ? null
+      : createButton("game-menu-textures", t("menu.texturesProcedural"), () =>
+          toggleTextures.call(actions),
+        );
+  if (textures !== null) panel.appendChild(textures);
   panel.appendChild(restart);
 
   /** Last rendered view; an equal render mutates nothing. */
@@ -73,13 +85,29 @@ export function createGameMenu(
         last !== null &&
         last.open === view.open &&
         last.gore === view.gore &&
-        last.ai === view.ai
+        last.ai === view.ai &&
+        last.generatedTextures === view.generatedTextures
       ) {
         return;
       }
-      last = { open: view.open, gore: view.gore, ai: view.ai };
+      last = {
+        open: view.open,
+        gore: view.gore,
+        ai: view.ai,
+        generatedTextures: view.generatedTextures,
+      };
       if (root.hidden !== !view.open) root.hidden = !view.open;
       setText(gore, t(view.gore ? "menu.goreOn" : "menu.goreOff"));
+      if (textures !== null) {
+        setText(
+          textures,
+          t(
+            view.generatedTextures === true
+              ? "menu.texturesGenerated"
+              : "menu.texturesProcedural",
+          ),
+        );
+      }
       if (ai.hidden !== (view.ai === null)) ai.hidden = view.ai === null;
       if (view.ai !== null) {
         setText(ai, t(view.ai ? "menu.aiOn" : "menu.aiOff"));

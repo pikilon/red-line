@@ -4,7 +4,6 @@ interface TexturesDebug {
   isReady(): boolean;
   paused(): boolean;
   tick(): number;
-  generatedTextures(): boolean;
 }
 
 type DebugWindow = Window & { __redline?: TexturesDebug };
@@ -34,7 +33,12 @@ test("AC-12-04: textures toggle in the game menu", async ({ page }) => {
   await expect
     .poll(() =>
       page.evaluate(
-        () => (window as DebugWindow).__redline?.generatedTextures() ?? false,
+        () =>
+          (
+            JSON.parse(localStorage.getItem("redline.settings.v1") ?? "{}") as {
+              generatedTextures?: boolean;
+            }
+          ).generatedTextures === true,
       ),
     )
     .toBe(true);

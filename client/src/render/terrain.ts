@@ -10,6 +10,7 @@ import {
 import {
   createRng,
   createTerrainTextures,
+  TERRAIN_KINDS,
   type TerrainKind,
   valueNoise,
 } from "./terrainTexture";
@@ -241,9 +242,10 @@ export function createTerrain(
   height: number,
   rockCells: Uint8Array,
   seed = 1,
-  _textures?: Partial<Record<TerrainKind, Texture>>,
+  generated?: Partial<Record<TerrainKind, Texture>>,
 ): Group {
-  const textures = createTerrainTextures(seed);
+  const procedural = createTerrainTextures(seed);
+  const textures = { ...procedural, ...definedOnly(generated) };
   const grass = new Mesh(
     groundGeometry(width, height, rockCells, false, seed),
     new MeshLambertMaterial({ map: textures.grass, vertexColors: true }),
@@ -272,14 +274,40 @@ export function createTerrain(
   rock.receiveShadow = true;
 
   const group = new Group();
+  group.userData.procedural = procedural;
   group.add(grass, dirt, rock);
   return group;
 }
 
-/** Swaps the maps of the grass, dirt and rock meshes live (spec 12 §5). */
+/** Swaps the maps of the grass, dirt and rock meshes live (spec 12 §5); null
+ *  or a missing kind restores the procedural texture. */
 export function setTerrainTextures(
-  _group: Group,
-  _textures: Partial<Record<TerrainKind, Texture>> | null,
+  group: Group,
+  textures: Partial<Record<TerrainKind, Texture>> | null,
 ): void {
-  // Not implemented yet (spec 12, red phase).
+  const procedural = group.userData.procedural as
+    | Record<TerrainKind, Texture>
+    | undefined;
+  if (procedural === undefined) return;
+  for (const kind of TERRAIN_KINDS) {
+    const mesh = group.getObjectByName(kind);
+    if (!(mesh instanceof Mesh)) continue;
+    const material = mesh.material as MeshLambertMaterial;
+    const next = textures?.[kind] ?? procedural[kind];
+    if (material.map === next) continue;
+    material.map = next;
+    material.needsUpdate = true;
+  }
+}
+
+/** `textures` without its undefined entries. */
+function definedOnly(
+  textures: Partial<Record<TerrainKind, Texture>> | undefined,
+): Partial<Record<TerrainKind, Texture>> {
+  const result: Partial<Record<TerrainKind, Texture>> = {};
+  for (const kind of TERRAIN_KINDS) {
+    const texture = textures?.[kind];
+    if (texture !== undefined) result[kind] = texture;
+  }
+  return result;
 }

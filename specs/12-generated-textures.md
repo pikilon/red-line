@@ -55,7 +55,7 @@ export function loadGeneratedTextures(source?: TextureSource): Promise<Generated
 export function boxProjectUvs(geometry: BufferGeometry): BufferGeometry;
 ```
 
-Box projection is applied in model space, so the texture stretches with the
+The merged `body` + `dark` mesh stays one draw call: a per-vertex `darkMask` attribute makes the body material sample `dark-metal` instead of the paint map. Box projection is applied in model space, so the texture stretches with the
 instance scale of non-uniform models.
 
 ## 5. Terrain
@@ -69,7 +69,7 @@ ones).
 
 ## 6. Models
 
-Vehicles (`category: "unit"`) use `<faction>-paint`, buildings and depots use
+The faction is the type id prefix (`ua-` / `ru-`; neutral types use `ua`). Vehicles (`category: "unit"`) use `<faction>-paint`, buildings and depots use
 `<faction>-concrete`, the `dark` material uses `dark-metal`; `team` stays flat
 colour. `EntityRenderer.setGeneratedTextures(textures | null)` applies them
 live. Vertex colours (ambient occlusion) are multiplied with the map.
@@ -85,7 +85,7 @@ live. Vertex colours (ambient occlusion) are multiplied with the map.
 * AC-12-03: Given a unit cube, When `boxProjectUvs` runs, Then each vertex UV
   follows the dominant-normal rule of §4.
 * AC-12-04: Given a running skirmish, When the player presses Esc and clicks
-  the textures button with a real mouse, Then the label changes, the game keeps
+  the textures button with a real mouse, Then the label changes, the setting is persisted in `localStorage`, the game keeps
   running without console errors and Resume closes the menu.
 
 ## Traceability
