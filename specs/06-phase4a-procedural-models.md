@@ -103,6 +103,10 @@ Faction base colours (`body`): Ukraine `#5b6b3a` (olive), Russia `#6b6650`
 
 ### 5.1 Gradual turning (owner request 2026-10-11)
 
+> **Superseded in part by spec 11** (`specs/11-phase4e-locomotor-and-turret-aim.md`): once its
+> issues land, hull and turret angles come from the simulation snapshot and the
+> client-only turning below is replaced (AC-11-15). Until then this section holds.
+
 Hull and turret headings no longer snap: they turn towards the heading of §5
 at a bounded rate, on the client only (the simulation still moves units in
 straight lines; a hull may briefly lag its direction of travel).
