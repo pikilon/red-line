@@ -51,6 +51,8 @@ test("verify-agent: runs the verification-runner definition through the harness 
   const prompt = invocation.args.at(-1);
   assert.match(prompt, /\.agents\/agents\/verification-runner\/agent\.md/);
   assert.match(prompt, /\/target/);
+  // The child is already the local runner: it must not call verify:agent again.
+  assert.match(prompt, /do not run `node --run verify:agent`/i);
   assert.equal(invocation.env.RUNNER_PROVIDER, "lmstudio");
   assert.equal(invocation.env.RUNNER_MODEL, "ornith-1.5-35b-a3b-mlx");
   // The dsh sandbox only writes inside the checkout, so wasm-pack uses a cache there.
@@ -81,7 +83,7 @@ test("verify-agent: reports a missing model or a failed run with its own verdict
   // `node --run` turns every non-zero exit code into 1, so callers read the verdict line.
   const unavailable = noModelReport(readVerifyConfig({}));
   assert.match(unavailable, /^Verdict: UNAVAILABLE\b/);
-  assert.match(unavailable, /verification-runner subagent \(Haiku\)/);
+  assert.match(unavailable, /verification-runner subagent: run the checks yourself/);
   assert.match(unavailable, /RUNNER_PAID_CONFIRMED=deepseek-official\/deepseek-flash/);
   const failed = agentFailedReport({ provider: "lmstudio", model: "ornith-1.5-35b-a3b-mlx" }, "exit 2", "boom");
   assert.match(failed, /^Verdict: ERROR\b/);
