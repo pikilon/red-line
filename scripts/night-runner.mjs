@@ -338,7 +338,7 @@ function run(cmd, args, { cwd, env, timeoutMs, logFile } = {}) {
   return { status: result.status ?? 1, stdout: result.stdout ?? "" };
 }
 
-function askOnTerminal(timeoutSeconds) {
+export function askOnTerminal(timeoutSeconds) {
   return async (question) => {
     if (!process.stdin.isTTY) return null;
     const terminal = createInterface({ input: process.stdin, output: process.stdout });

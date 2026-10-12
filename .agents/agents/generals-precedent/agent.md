@@ -1,8 +1,14 @@
 ---
 name: generals-precedent
 description: Subagent that finds how the original C&C Generals/Zero Hour source solved a gameplay or engine question and returns a short cited note. Use for any "how does the original handle X" doubt (pathfinding, production, economy, damage, AI, fog...). Give it ONE question.
-tools: Bash, Read, Grep, Glob, WebFetch
-model: haiku
+tools:
+  - run_command
+  - command_status
+  - view_file
+  - grep_search
+  - read_url_content
+model: flash
+mainAgent: false
 ---
 
 # Generals Precedent
@@ -25,7 +31,7 @@ so a port is not a copy anyway).
   * List a folder: `gh api "repos/electronicarts/CnC_Generals_Zero_Hour/contents/<dir>" --jq '.[].name'`.
 * If `gh` fails (e.g. not logged in inside a sandboxed harness), fall back to
   read-only HTTP on public URLs, no login needed: `curl -sL https://raw.githubusercontent.com/electronicarts/CnC_Generals_Zero_Hour/<sha>/<path>`
-  (or `WebFetch`), and `https://api.github.com/repos/electronicarts/CnC_Generals_Zero_Hour/contents/<dir>`
+  (or your URL-reading tool), and `https://api.github.com/repos/electronicarts/CnC_Generals_Zero_Hour/contents/<dir>`
   for listings. Pin `<sha>` so the citations stay valid.
 * Record the commit: `gh api repos/electronicarts/CnC_Generals_Zero_Hour/commits/HEAD --jq .sha`.
 * `gh search code` returned nothing when tested: do not rely on it. Browse by
@@ -71,6 +77,7 @@ Put the note in the PR/issue comment or the relevant `specs/*.md` section
 
 ## Model tier
 
-* A cheap model is enough (tier C/B in D-08); escalate to tier A when the
-  behavior spans many files, mixes code with INI data, or the answer is "not
-  found" twice. You do not edit repository files: the caller reviews the note.
+* A cheap model is enough (tier C/B in D-08: Flash in Antigravity, Haiku in
+  Claude Code through `.claude/agents/generals-precedent.md`); escalate to
+  tier A when the behavior spans many files, mixes code with INI data, or the
+  answer is "not found" twice. You do not edit repository files: the caller reviews the note.
