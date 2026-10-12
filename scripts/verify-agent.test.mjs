@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   agentFailedReport, chooseRoute, exitCodeFor, extractReport, globalWasmPackCache, isLocalUp, noModelReport,
-  readVerifyConfig, verifyInvocation,
+  readVerifyConfig, skippedReport, verifyInvocation,
 } from "./verify-agent.mjs";
 
 const MODELS = { data: [{ id: "ornith-1.5-35b-a3b-mlx" }, { id: "gemma-4-26b-a4b-it-mlx" }] };
@@ -90,4 +90,19 @@ test("verify-agent: reports a missing model or a failed run with its own verdict
   assert.match(failed, /lmstudio\/ornith-1\.5-35b-a3b-mlx/);
   assert.match(failed, /tell the owner/);
   assert.match(failed, /boom/);
+});
+
+test("verify-agent: asks the agent to run only the planned steps", () => {
+  const invocation = verifyInvocation(
+    readVerifyConfig({}), { provider: "lmstudio", model: "m" }, "/repo", "/target", ["test:scripts", "check:data"],
+  );
+  assert.match(invocation.args.at(-1), /Run only these verify steps: `node --run test:scripts`, `node --run check:data`/);
+});
+
+test("verify-agent: passes without any model when no step is needed", () => {
+  const report = skippedReport(["AGENTS.md", "docs/decisions.md"]);
+  assert.match(report, /^Verdict: PASS\b/);
+  assert.match(report, /no verify step needed/);
+  assert.match(report, /AGENTS\.md, docs\/decisions\.md/);
+  assert.equal(exitCodeFor(report), 0);
 });
