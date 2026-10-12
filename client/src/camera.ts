@@ -37,3 +37,25 @@ export function setCameraTarget(
   camera.position.set(x + OFFSET.x, OFFSET.y, z + OFFSET.z);
   camera.lookAt(x, 0, z);
 }
+
+/** Wheel zoom bounds (spec 08 §3.4): 1 is the default view. */
+export const ZOOM_MIN = 0.6;
+export const ZOOM_MAX = 3;
+/** Zoom factor of one wheel notch (`deltaY` = WHEEL_NOTCH pixels). */
+export const ZOOM_STEP = 1.15;
+export const WHEEL_NOTCH = 100;
+/** Lines (`deltaMode` 1, Firefox) to pixels. */
+export const WHEEL_LINE_PIXELS = 33;
+
+/** `zoom × ZOOM_STEP^(−pixels / WHEEL_NOTCH)` clamped to [ZOOM_MIN, ZOOM_MAX]
+ *  (spec 08 §3.4): wheel up (negative `deltaY`) zooms in; trackpads send
+ *  fractional notches. */
+export function zoomAfterWheel(
+  zoom: number,
+  deltaY: number,
+  deltaMode: number,
+): number {
+  const pixels = deltaMode === 1 ? deltaY * WHEEL_LINE_PIXELS : deltaY;
+  const next = zoom * ZOOM_STEP ** (-pixels / WHEEL_NOTCH);
+  return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, next));
+}

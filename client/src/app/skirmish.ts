@@ -444,9 +444,19 @@ export function startSkirmish(params: SkirmishOptions): void {
   }
 
   /** Centres the sun's shadow camera on the camera's ground target (spec 10 §3):
-   *  the sun sits `SUN_DISTANCE` along `SUN_DIRECTION` from it. */
+   *  the sun sits `SUN_DISTANCE` along `SUN_DIRECTION` from it. Zoomed out, the
+   *  shadow camera grows to `SHADOW_EXTENT / zoom` (spec 08 §3.4). */
   function updateSun(): void {
     if (sunLight === null) return;
+    const extent = SHADOW_EXTENT / Math.min(camera.zoom, 1);
+    const shadowCamera = sunLight.shadow.camera;
+    if (shadowCamera.right !== extent) {
+      shadowCamera.left = -extent;
+      shadowCamera.right = extent;
+      shadowCamera.top = extent;
+      shadowCamera.bottom = -extent;
+      shadowCamera.updateProjectionMatrix();
+    }
     const target = controller?.cameraTarget() ?? cameraTarget;
     sunLight.target.position.set(target.x, 0, target.y);
     sunLight.position
@@ -694,6 +704,7 @@ export function startSkirmish(params: SkirmishOptions): void {
         };
       },
       cameraTarget: () => controller?.cameraTarget() ?? { ...cameraTarget },
+      zoom: () => camera.zoom,
       setCameraTarget: moveCamera,
       command: (command) => interact.command(command),
       stateHash: () => interact.requestHash(),

@@ -5,7 +5,7 @@ import {
   Vector2,
   Vector3,
 } from "three";
-import { setCameraTarget } from "../camera";
+import { setCameraTarget, zoomAfterWheel } from "../camera";
 import { typeDef } from "../rules";
 import type { EntityState } from "../sim/matchSnapshot";
 import type { SimCommand } from "../sim/protocol";
@@ -63,6 +63,8 @@ export interface SkirmishController {
   setTarget(x: number, y: number): void;
   /** Drops the selection, e.g. when the controlled player changes. */
   clearSelection(): void;
+  /** Wheel zoom of the camera, 1 by default (spec 08 §3.4). */
+  zoom(): number;
   /** Applies keyboard panning for one frame. */
   update(dtSeconds: number): void;
   /** Sim tiles -> page CSS px. */
@@ -212,6 +214,17 @@ export function createSkirmishController(
     );
   });
 
+  // Non-passive so preventDefault keeps the page from scrolling (§3.4).
+  canvas.addEventListener(
+    "wheel",
+    (event) => {
+      event.preventDefault();
+      camera.zoom = zoomAfterWheel(camera.zoom, event.deltaY, event.deltaMode);
+      camera.updateProjectionMatrix();
+    },
+    { passive: false },
+  );
+
   canvas.addEventListener("contextmenu", (event) => {
     event.preventDefault();
     if (options.placementKind() !== null) {
@@ -265,6 +278,7 @@ export function createSkirmishController(
     selected,
     cameraTarget: () => ({ ...target }),
     setTarget,
+    zoom: () => camera.zoom,
     clearSelection() {
       setSelection([]);
     },
