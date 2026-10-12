@@ -1,7 +1,10 @@
 import {
   BoxGeometry,
+  type BufferGeometry,
   Color,
+  Float32BufferAttribute,
   type InstancedMesh,
+  type MeshLambertMaterial,
   Matrix4,
   Quaternion,
   Vector3,
@@ -384,5 +387,79 @@ describe("entity renderer", () => {
     expect(scale.x).toBeCloseTo(w, 6);
     expect(scale.y).toBeCloseTo(h, 6);
     expect(scale.z).toBeCloseTo(d, 6);
+  });
+
+  it("AC-10-04: model detail", () => {
+    /** A box carrying a glTF-style RGBA `COLOR_0` (three's `color`) of `ao`. */
+    const occluded = (size: number, ao: number): BufferGeometry => {
+      const geometry = new BoxGeometry(size, size, size);
+      const count = geometry.getAttribute("position").count;
+      const colors = new Float32Array(count * 4);
+      for (let i = 0; i < count; i++) colors.set([ao, ao, ao, 1], i * 4);
+      geometry.setAttribute("color", new Float32BufferAttribute(colors, 4));
+      return geometry;
+    };
+    const registry = (withAo: boolean): ModelRegistry => ({
+      get: (): TypeModel => ({
+        parts: new Map<MaterialName, ModelPart>([
+          [
+            "body",
+            {
+              material: "body",
+              geometry: withAo ? occluded(1, 0.5) : new BoxGeometry(1, 1, 1),
+              color: 0x88aacc,
+            },
+          ],
+          [
+            "team",
+            {
+              material: "team",
+              geometry: withAo
+                ? occluded(0.5, 0.5)
+                : new BoxGeometry(0.5, 0.5, 0.5),
+              color: 0xffffff,
+            },
+          ],
+        ]),
+        turret: new Map<MaterialName, ModelPart>(),
+        pivot: new Vector3(),
+        fallback: false,
+      }),
+    });
+    const render = (withAo: boolean): EntityRenderer => {
+      const renderer = createEntityRenderer(10, registry(withAo));
+      renderer.update([entity(0, 0, "ua-rifleman", 1, 1, 100)], new Set());
+      return renderer;
+    };
+    const material = new Color(0x88aacc);
+
+    // COLOR_0 = 0.5 on `body`: every vertex colour is half the material colour.
+    const shaded = render(true);
+    const body = partMesh(shaded, "ua-rifleman", "body");
+    const colors = body.geometry.getAttribute("color");
+    expect(colors.count).toBeGreaterThan(0);
+    for (let i = 0; i < colors.count; i++) {
+      expect(colors.getX(i)).toBeCloseTo(material.r * 0.5, 6);
+      expect(colors.getY(i)).toBeCloseTo(material.g * 0.5, 6);
+      expect(colors.getZ(i)).toBeCloseTo(material.b * 0.5, 6);
+    }
+    // The `team` material shades its instance colour by COLOR_0.
+    const team = partMesh(shaded, "ua-rifleman", "team");
+    expect((team.material as MeshLambertMaterial).vertexColors).toBe(true);
+
+    // Without COLOR_0 the output is today's: the plain material colour.
+    const plain = render(false);
+    const plainColors = partMesh(plain, "ua-rifleman", "body").geometry.getAttribute(
+      "color",
+    );
+    for (let i = 0; i < plainColors.count; i++) {
+      expect(plainColors.getX(i)).toBeCloseTo(material.r, 6);
+      expect(plainColors.getY(i)).toBeCloseTo(material.g, 6);
+      expect(plainColors.getZ(i)).toBeCloseTo(material.b, 6);
+    }
+    const plainTeam = partMesh(plain, "ua-rifleman", "team");
+    expect((plainTeam.material as MeshLambertMaterial).vertexColors).toBe(
+      false,
+    );
   });
 });

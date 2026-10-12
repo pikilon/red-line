@@ -25,6 +25,16 @@ export function parseGlb(buffer) {
   return JSON.parse(new TextDecoder().decode(buffer.subarray(20, 20 + length)));
 }
 
+/** The binary chunk of a GLB buffer (stub until AC-10-04 is implemented). */
+export function parseGlbBinary(_buffer) {
+  return null;
+}
+
+/** COLOR_0 rule violations of one model (stub until AC-10-04 is implemented). */
+export function checkColors(_file, _gltf, _bin) {
+  return [];
+}
+
 /** Types that need a model: every unit, building and depot but the placeholder. */
 export function modelTypes(ruleset) {
   return ruleset.types.filter((t) => t.category in BUDGETS && t.id !== "tech-slice-placeholder");
