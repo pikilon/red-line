@@ -75,6 +75,10 @@ approval, and record the change here with its date.
   Code discovers skills and subagents through the symlinks in `.claude/`
   (amended 2026-10-12). Only Claude Code registers the file-defined subagents
   in `.agents/agents/`; other harnesses follow them as instructions.
+* Verification runs on the cheapest model outside the caller's context
+  (2026-10-12): `node --run verify:agent` uses the local model, then DeepSeek
+  Flash only with the owner's confirmation (D-11); Claude Code falls back to its
+  Haiku `verification-runner` subagent.
 * Model tiers:
   * **S** (Opus): specs, failing tests, issue breakdown, PR review, 3D models.
   * **A** (Sonnet, DeepSeek): complex implementation.

@@ -43,10 +43,13 @@ code: agents implement, the owner reviews quality hands-on.
 * Scripts run with `node --run <script>`, never `npm run`. `node --run` skips
   pre/post hooks, so every step lives inside the script itself.
 * Fresh clone or worktree: `node --run install:root && node --run install:client`.
-* Before declaring any change done, run `node --run verify` (the same sequence
-  as CI) and report which checks ran or were skipped and that no test was
-  skipped or weakened. When your harness has subagents, run it in one
-  (`.agents/agents/verification-runner/agent.md`) to keep logs out of context.
+* Before declaring any change done, verify on the cheapest model and outside
+  your context: run `node --run verify:agent` and act on the report it prints.
+  It runs `.agents/agents/verification-runner/agent.md` on the local model, or
+  on DeepSeek Flash only with the owner's confirmation (D-11). Exit 3 means no
+  cheap model: Claude Code then uses its `verification-runner` subagent
+  (Haiku); other harnesses ask the owner. Exit 4: stop and tell the owner.
+  `node --run verify` is the same check sequence CI runs.
 * Non-interactive shells may lack cargo: prefix commands with
   `PATH="$HOME/.cargo/bin:$PATH"`. When a tool seems missing, run
   `scripts/doctor.sh`.
