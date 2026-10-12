@@ -33,10 +33,14 @@ orthographic isometric camera), any simulation change.
 
 ## 3. Lighting and shadows (`client/src/app/skirmish.ts`, `client/src/render/entities.ts`)
 
-* Renderer: `shadowMap.enabled = true`, `shadowMap.type = PCFShadowMap`,
+* Renderer: `shadowMap.enabled = true`, `shadowMap.type = BasicShadowMap`
+  (hard shadows as in Red Alert; PCF filtering cost about 30 % of a frame on
+  the software WebGL of CI and broke frame-dependent UI tests),
   `toneMapping = ACESFilmicToneMapping`, `toneMappingExposure = 1.1`.
-* Lights: `SUN_COLOR = 0xfff1d6`, `SUN_INTENSITY = 2.2`, sun direction
-  unchanged (`SUN_POSITION`); `HEMISPHERE_SKY = 0xdde8ff`,
+* Lights: `SUN_COLOR = 0xfff1d6`, `SUN_INTENSITY = 2.2`, `SUN_POSITION =
+  (-30, 60, 30)` (from the top left of the screen, so shadows fall to the
+  right of each object instead of hiding behind it as with the camera-side
+  sun of spec 06); `HEMISPHERE_SKY = 0xdde8ff`,
   `HEMISPHERE_GROUND = 0x3a3020`, `HEMISPHERE_INTENSITY = 0.9`.
 * The sun casts shadows: `castShadow = true`, `shadow.mapSize = 2048 × 2048`,
   orthographic shadow camera of half-size `SHADOW_EXTENT = 24` tiles,

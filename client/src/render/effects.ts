@@ -197,6 +197,8 @@ export function createEffects(): Effects {
     mesh.visible = false;
     // Instances move every frame; bounds computed at creation would cull them.
     mesh.frustumCulled = false;
+    // Only wrecks and debris enter the shadow pass (spec 10 §3).
+    mesh.castShadow = kind === "wreck" || kind === "debris";
     meshes[kind] = mesh;
     pools[kind] = [];
     group.add(mesh);

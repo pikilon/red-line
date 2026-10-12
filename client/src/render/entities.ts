@@ -32,7 +32,7 @@ import type {
   TypeModel,
 } from "./models";
 
-export const OWNER_COLORS = [0x2563eb, 0xdc2626] as const;
+export const OWNER_COLORS = [0x1d5fe0, 0xe01b1b] as const;
 export const NEUTRAL_COLOR = 0x8b5a2b;
 export const SELECTED_COLOR = 0xfacc15;
 export const SCAFFOLD_COLOR = 0xc8a165;
@@ -239,6 +239,14 @@ export function createEntityRenderer(
     capacity,
   );
   scaffolds.visible = false;
+  // Fallback boxes and scaffolds cast and receive shadows (spec 10 §3); the
+  // ghosts, bars and tracers stay out of the shadow pass.
+  units.castShadow = true;
+  units.receiveShadow = true;
+  buildings.castShadow = true;
+  buildings.receiveShadow = true;
+  scaffolds.castShadow = true;
+  scaffolds.receiveShadow = true;
   const tracerPositions = new Float32BufferAttribute(capacity * 2 * 3, 3);
   const tracerColors = new Float32BufferAttribute(capacity * 2 * 3, 3);
   const tracerGeometry = new BufferGeometry();
@@ -289,6 +297,8 @@ export function createEntityRenderer(
       );
       mesh.count = 0;
       mesh.frustumCulled = true;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
       const slot: MeshSlot = { typeId, group: kind, material, mesh, count: 0 };
       created.push(slot);
       slots.push(slot);

@@ -78,6 +78,12 @@ export interface SkirmishDebug {
   uiRenders(): number;
   /** renderer.info.render.calls of the last frame. */
   drawCalls(): number;
+  /** Shadows, sun and tone mapping of the skirmish renderer (spec 10 AC-10-03). */
+  renderInfo(): {
+    shadowMap: boolean;
+    sunCastsShadow: boolean;
+    toneMapping: string;
+  };
   resetFrameStats(): void;
   /** rAF deltas since the last reset. */
   frameStats(): { frames: number; p95FrameMs: number };
