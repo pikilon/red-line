@@ -5,6 +5,7 @@ import {
   BoxGeometry,
   Color,
   DirectionalLight,
+  type Group,
   HemisphereLight,
   Mesh,
   MeshBasicMaterial,
@@ -35,8 +36,16 @@ import {
 } from "../render/effects";
 import { createEntityRenderer, type EntityRenderer } from "../render/entities";
 import { createFogOverlay } from "../render/fog";
+import {
+  type GeneratedTextures,
+  loadGeneratedTextures,
+} from "../render/generatedTextures";
 import { loadModels, type ModelRegistry } from "../render/models";
-import { createTerrain, rockCellsOf } from "../render/terrain";
+import {
+  createTerrain,
+  rockCellsOf,
+  setTerrainTextures,
+} from "../render/terrain";
 import { RULES, typeDef, typeIndex } from "../rules";
 import { loadSettings, type Settings, saveSettings } from "../settings";
 import {
@@ -204,13 +213,19 @@ export function startSkirmish(params: SkirmishOptions): void {
     resume: () => setMenuOpen(false),
     toggleGore: () => toggleGore(),
     toggleAi: () => toggleAi(),
+    toggleTextures: () => toggleTextures(),
     restart: () => window.location.reload(),
   });
   renderMenu();
 
   /** Renders the game menu from the current state (spec 08 §3.1, §3.3). */
   function renderMenu(): void {
-    gameMenu.render({ open: paused, gore: settings.gore, ai: aiActive });
+    gameMenu.render({
+      open: paused,
+      gore: settings.gore,
+      ai: aiActive,
+      generatedTextures: settings.generatedTextures === true,
+    });
   }
 
   /** Shows `message` in `#toast` for `TOAST_MS` (spec 07 §5). */
@@ -292,6 +307,10 @@ export function startSkirmish(params: SkirmishOptions): void {
   });
   let animator: Animator;
   let entities: EntityRenderer | null = null;
+  let terrain: Group | null = null;
+  /** Generated PNGs, loaded the first time they are switched on (spec 12). */
+  let generated: GeneratedTextures | null = null;
+  let generatedLoading = false;
   let effects: Effects | null = null;
   let fogOverlay: FogOverlay | null = null;
   const placementGhost = createPlacementGhost();
@@ -382,9 +401,13 @@ export function startSkirmish(params: SkirmishOptions): void {
       mapDefinition === undefined
         ? new Uint8Array(mapInfo.mapWidth * mapInfo.mapHeight)
         : rockCellsOf(mapDefinition);
-    scene.add(
-      createTerrain(mapInfo.mapWidth, mapInfo.mapHeight, rockCells, seed),
+    terrain = createTerrain(
+      mapInfo.mapWidth,
+      mapInfo.mapHeight,
+      rockCells,
+      seed,
     );
+    scene.add(terrain);
     const sun = new DirectionalLight(SUN_COLOR, SUN_INTENSITY);
     sun.castShadow = true;
     sun.shadow.mapSize.set(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
@@ -441,6 +464,11 @@ export function startSkirmish(params: SkirmishOptions): void {
     setHudPlayer();
     centreOnOwnHq(next);
     ready = true;
+    // A saved "generated" choice loads the PNGs once the scene exists.
+    if (settings.generatedTextures === true) {
+      settings = { ...settings, generatedTextures: false };
+      toggleTextures();
+    }
   }
 
   /** Centres the sun's shadow camera on the camera's ground target (spec 10 §3):
@@ -584,11 +612,38 @@ export function startSkirmish(params: SkirmishOptions): void {
 
   /** Toggles the gore filter, persists it and shows a toast (spec 07 §5). */
   function toggleGore(): void {
-    settings = { gore: !settings.gore };
+    settings = { ...settings, gore: !settings.gore };
     saveSettings(settings);
     if (!settings.gore) effects?.clear("blood");
     showToast(t(settings.gore ? "settings.goreOn" : "settings.goreOff"));
     renderMenu();
+  }
+
+  /** Applies the generated textures to the terrain and the models when the
+   *  setting is on and they are loaded, the procedural ones otherwise. */
+  function applyTextures(): void {
+    const active = settings.generatedTextures === true ? generated : null;
+    if (terrain !== null) setTerrainTextures(terrain, active);
+    entities?.setGeneratedTextures(active);
+  }
+
+  /** Switches between procedural and generated textures live and persists the
+   *  choice (spec 12 §3); the PNGs load on first use. */
+  function toggleTextures(): void {
+    const on = settings.generatedTextures !== true;
+    settings = { ...settings, generatedTextures: on };
+    saveSettings(settings);
+    renderMenu();
+    if (on && generated === null && !generatedLoading) {
+      generatedLoading = true;
+      void loadGeneratedTextures().then((loaded) => {
+        generated = loaded;
+        generatedLoading = false;
+        applyTextures();
+      });
+      return;
+    }
+    applyTextures();
   }
 
   /** Pauses or resumes the skirmish AI (spec 08 §3.3). */

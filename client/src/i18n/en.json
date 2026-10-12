@@ -18,6 +18,8 @@
   "menu.goreOff": "Gore: off",
   "menu.aiOn": "AI: on",
   "menu.aiOff": "AI: off",
+  "menu.texturesProcedural": "Textures: procedural",
+  "menu.texturesGenerated": "Textures: generated",
   "menu.restart": "Restart match",
   "error.simInit": "The simulation failed to start: {detail}",
   "settings.goreOn": "Gore on",

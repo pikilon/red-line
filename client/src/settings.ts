@@ -4,6 +4,8 @@ export const SETTINGS_KEY = "redline.settings.v1";
 
 export interface Settings {
   gore: boolean;
+  /** Absent means false (spec 12 §2). */
+  generatedTextures?: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = { gore: true };
@@ -33,7 +35,9 @@ export function loadSettings(storage?: Storage): Settings {
     }
     const gore = (parsed as { gore?: unknown }).gore;
     if (typeof gore !== "boolean") return { ...DEFAULT_SETTINGS };
-    return { gore };
+    const generatedTextures = (parsed as { generatedTextures?: unknown })
+      .generatedTextures;
+    return generatedTextures === true ? { gore, generatedTextures } : { gore };
   } catch {
     return { ...DEFAULT_SETTINGS };
   }
@@ -44,7 +48,14 @@ export function saveSettings(settings: Settings, storage?: Storage): void {
   const target = resolveStorage(storage);
   if (target === null) return;
   try {
-    target.setItem(SETTINGS_KEY, JSON.stringify({ gore: settings.gore }));
+    target.setItem(
+      SETTINGS_KEY,
+      JSON.stringify(
+        settings.generatedTextures === true
+          ? { gore: settings.gore, generatedTextures: true }
+          : { gore: settings.gore },
+      ),
+    );
   } catch {
     // A full or locked storage must not break the game.
   }

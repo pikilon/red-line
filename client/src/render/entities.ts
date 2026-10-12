@@ -16,7 +16,7 @@ import {
   Vector3,
 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { typeDef } from "../rules";
+import { RULES, typeDef } from "../rules";
 import {
   ENTITY_FLAGS,
   type EntityState,
@@ -24,6 +24,14 @@ import {
   NEUTRAL,
 } from "../sim/matchSnapshot";
 import type { Animator } from "./animation";
+import {
+  applyBodyTextures,
+  bodyTextureId,
+  boxProjectUvs,
+  createBodyMaterial,
+  DARK_MASK,
+  type GeneratedTextures,
+} from "./generatedTextures";
 import { createHeadingTracker, turnRatesOf } from "./heading";
 import type {
   MaterialName,
@@ -73,6 +81,8 @@ export interface EntityRenderer {
   readonly models: readonly ModelInstance[];
   /** Scaffolding around buildings under construction (spec 09 §5). */
   readonly scaffolds: InstancedMesh;
+  /** Applies (or, with null, removes) the generated model textures. */
+  setGeneratedTextures(textures: GeneratedTextures | null): void;
   update(
     entities: readonly EntityState[],
     selected: ReadonlySet<number>,
@@ -122,7 +132,11 @@ function healthColor(ratio: number): number {
 
 /** `geometry` as non-indexed with a constant `color` attribute, multiplied by
  *  the baked ambient occlusion of its `COLOR_0` when present (spec 10 §5). */
-function withColor(geometry: BufferGeometry, hex: number): BufferGeometry {
+function withColor(
+  geometry: BufferGeometry,
+  hex: number,
+  dark: number,
+): BufferGeometry {
   const source =
     geometry.index !== null ? geometry.toNonIndexed() : geometry.clone();
   const position = source.getAttribute("position");
@@ -137,6 +151,10 @@ function withColor(geometry: BufferGeometry, hex: number): BufferGeometry {
     colors[i * 3 + 2] = color.b * (occlusion?.getZ(i) ?? 1);
   }
   source.setAttribute("color", new Float32BufferAttribute(colors, 3));
+  source.setAttribute(
+    DARK_MASK,
+    new Float32BufferAttribute(new Float32Array(position.count).fill(dark), 1),
+  );
   return source;
 }
 
@@ -148,13 +166,16 @@ function opaqueGeometry(
   for (const material of ["body", "dark"] as const) {
     const part = parts.get(material);
     if (part !== undefined) {
-      sources.push(withColor(part.geometry, part.color));
+      sources.push(
+        withColor(part.geometry, part.color, material === "dark" ? 1 : 0),
+      );
     }
   }
   const first = sources[0];
   if (first === undefined) return null;
-  if (sources.length === 1) return first;
-  return mergeGeometries(sources, false) ?? first;
+  const merged =
+    sources.length === 1 ? first : (mergeGeometries(sources, false) ?? first);
+  return boxProjectUvs(merged);
 }
 
 /** `team` is shaded by its `COLOR_0` occlusion when the geometry has one. */
@@ -168,7 +189,7 @@ function modelMaterial(
         vertexColors: geometry.hasAttribute("color"),
         flatShading: true,
       })
-    : new MeshLambertMaterial({ vertexColors: true, flatShading: true });
+    : createBodyMaterial();
 }
 
 /** Unit box scaffolding frame (spec 09 §5): the 12 edges of a unit box plus 4
@@ -289,6 +310,23 @@ export function createEntityRenderer(
   const headings = createHeadingTracker();
   const slots: MeshSlot[] = [];
   const byType = new Map<string, TypeSlots>();
+  let generated: GeneratedTextures | null = null;
+
+  /** Applies the current generated textures to one `body` slot (spec 12 §6). */
+  function texturize(slot: MeshSlot): void {
+    if (slot.material !== "body") return;
+    const material = slot.mesh.material as MeshLambertMaterial;
+    const type = RULES.types.find((entry) => entry.id === slot.typeId);
+    if (generated === null || type === undefined) {
+      applyBodyTextures(material, undefined, undefined);
+      return;
+    }
+    applyBodyTextures(
+      material,
+      generated[bodyTextureId(type.id, type.category)],
+      generated["dark-metal"],
+    );
+  }
 
   function createSlots(
     typeId: string,
@@ -314,6 +352,7 @@ export function createEntityRenderer(
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       const slot: MeshSlot = { typeId, group: kind, material, mesh, count: 0 };
+      texturize(slot);
       created.push(slot);
       slots.push(slot);
       group.add(mesh);
@@ -366,6 +405,10 @@ export function createEntityRenderer(
     scaffolds,
     get models() {
       return slots;
+    },
+    setGeneratedTextures(textures) {
+      generated = textures;
+      for (const slot of slots) texturize(slot);
     },
     update(entities, selected, nowMs = 0) {
       const counts = { units: 0, buildings: 0, ghosts: 0, bars: 0 };
