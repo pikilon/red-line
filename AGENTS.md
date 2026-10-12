@@ -57,14 +57,19 @@ code: agents implement, the owner reviews quality hands-on.
   `PATH="$HOME/.cargo/bin:$PATH"`. When a tool seems missing, run
   `scripts/doctor.sh`.
 
-## Done Means Owner-Tested
+## Done Means Self-Tested, Then Owner-Confirmed
 
-* A player-facing change is not done, and its PR is not merged, until the owner
-  has tested it. First test it yourself with real mouse input: synthetic or
-  one-frame clicks have hidden broken UI before. Then give the owner numbered
-  steps with the expected result, each with a working localhost URL from a dev
-  server started in the PR's worktree on its own port. Unattended agents open
-  the PR and leave these steps in its body instead of merging.
+* A player-facing change is tested by the agent first, with real mouse input:
+  synthetic or one-frame clicks have hidden broken UI before. When it works and
+  CI is green, the agent merges the PR itself, labels the issue
+  `needs-owner-test` and comments on it the manual steps the owner must try,
+  numbered, each with the expected result and a localhost URL from a dev server
+  on `main`.
+* The owner confirms in the morning. A failure becomes a new bug issue linked
+  to the original, fixed the same way. Remove `needs-owner-test` once confirmed.
+* Work issues one at a time, in order: merge a PR and delete its branch and
+  worktree before starting the next, so no stale branches or conflicting
+  rebases pile up.
 
 ## AI Providers (D-11)
 
