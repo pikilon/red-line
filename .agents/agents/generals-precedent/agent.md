@@ -45,17 +45,12 @@ so a port is not a copy anyway).
 
 ## Procedure
 
-1. Restate the question as one concrete behavior ("what happens when a unit
-   blocked by a stationary friendly cannot reach its goal?").
-2. Search, then read the whole relevant function and its callers, not a grep
-   hit. Follow constants to their INI/default values.
-3. Separate **what the code does** from **why** (comments, naming). Mark any
-   inference as inference.
-4. Write the note (format below). Do not guess when the code is unclear:
-   say "not found" with the paths searched.
-5. Recommend what Red Line should do, and whether it differs because of
-   determinism (fixed-point, no floats/hash order, D-rules in `AGENTS.md`) or an
-   existing decision in `docs/decisions.md`. Never contradict a decision; flag it.
+* Read the whole relevant function, its callers and the INI/default values its
+  constants come from, not a grep hit.
+* Mark each finding as fact (what the code does) or inference (why). When the
+  code is unclear, answer "not found" with the paths searched; never guess.
+* Recommend what Red Line should do and flag deviations required by
+  determinism (fixed-point, no hash order) or by `docs/decisions.md`.
 
 ## Note format
 
@@ -74,12 +69,8 @@ Red Line recommendation: <what to specify, and deviations with reasons>
 Put the note in the PR/issue comment or the relevant `specs/*.md` section
 (cite `path:line`, not code). Never create files in `docs/` unless the owner asks.
 
-## Model tiers
+## Model tier
 
-* Default tier **C/B**: Haiku, DeepSeek 4.1 Flash, Gemini 3.8 Flash or a local
-  model (Ornith via LM Studio). Give local models one narrow question each.
-  Paid remote APIs need the owner's confirmation for that run (D-11).
-* Escalate to tier **A** (Sonnet, DeepSeek Pro) when the behavior spans many
-  files, mixes code with INI data, or the answer is "not found" twice.
-* The final recommendation and any spec/decision change belong to tier **S** or
-  the owner. The caller reviews your note; you do not edit repository files.
+* A cheap model is enough (tier C/B in D-08); escalate to tier A when the
+  behavior spans many files, mixes code with INI data, or the answer is "not
+  found" twice. You do not edit repository files: the caller reviews the note.

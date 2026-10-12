@@ -1,0 +1,1 @@
+../../.agents/agents/generals-precedent/agent.md

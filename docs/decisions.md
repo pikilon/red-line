@@ -71,6 +71,10 @@ approval, and record the change here with its date.
 
 * Harnesses: Antigravity, Claude Code (>= 2.1.277, reads `AGENTS.md`),
   OpenCode, DeepSeek harness. All share `AGENTS.md` + `.agents/skills/`.
+  Antigravity and DeepSeek Harness discover `.agents/skills/` natively; Claude
+  Code discovers skills and subagents through the symlinks in `.claude/`
+  (amended 2026-10-12). Only Claude Code registers the file-defined subagents
+  in `.agents/agents/`; other harnesses follow them as instructions.
 * Model tiers:
   * **S** (Opus): specs, failing tests, issue breakdown, PR review, 3D models.
   * **A** (Sonnet, DeepSeek): complex implementation.

@@ -5,27 +5,20 @@ description: Verify code or configuration changes, run checks or tests, edit tes
 
 # Repository Verification
 
-## Close-out
-
-Follow every applicable nested `AGENTS.md`, then run the checks for each layer
-you touched. Run all of them when unsure.
-
-| Layer | Command |
-|---|---|
-| Shell scripts | `shellcheck scripts/*.sh` (if installed) and run the script once |
-| Simulation | `cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo nextest run` |
-| WASM build | `wasm-pack build crates/sim --target web` |
-| Client | `node --run check && node --run typecheck && node --run test:unit && node --run test:e2e && node --run build` |
-| Data | `node --run check:data` |
-
-Commands for layers that do not exist yet are skipped; say so in the report.
-The canonical full sequence is `node --run verify` (run `node --run install:root`
-and `node --run install:client` first on a fresh clone); run it before completing any change.
-
-`node --run` does not execute `pre`/`post` hooks: put every step inside the
-script itself.
+* The canonical sequence is the `verify` script in the root `package.json`
+  (the same one CI runs): `node --run verify`. Its steps are also separate
+  scripts (`check:rust`, `build:wasm`, `check:rules`, `test:scripts`, `check`,
+  `typecheck`, `test:unit`, `build`, `test:e2e`, `check:data`, `assets:check`)
+  for iterating on one layer; always finish with the full `verify`.
+* Shell scripts: `shellcheck scripts/*.sh` (if installed) and run the script once.
+* Fresh clone or worktree: `node --run install:root` and
+  `node --run install:client` first.
+* Non-interactive shells may lack cargo: `PATH="$HOME/.cargo/bin:$PATH"`. Run
+  `scripts/doctor.sh` when a tool seems missing.
 
 ## Report
 
-State which checks ran, which were skipped and why, and confirm that no test
-was skipped or weakened.
+State which checks ran, which failed (first failing `path:line` and message)
+and which were skipped and why. Search the diff for `.skip`, `.only`,
+`#[ignore]`, `test.fixme` and removed assertions, and confirm that no test was
+skipped or weakened. Never hide a first failure that passed on a rerun.

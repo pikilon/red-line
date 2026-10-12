@@ -20,6 +20,7 @@ body:
     id: allowed
     attributes:
       label: Files allowed to change
+      description: "One line per file written as - `path/to/file`, exact paths, no globs: the night-runner reads only the first backticked path of each line."
     validations:
       required: true
   - type: textarea
