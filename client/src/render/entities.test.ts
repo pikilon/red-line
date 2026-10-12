@@ -4,8 +4,8 @@ import {
   Color,
   Float32BufferAttribute,
   type InstancedMesh,
-  type MeshLambertMaterial,
   Matrix4,
+  type MeshLambertMaterial,
   Quaternion,
   Vector3,
 } from "three";
@@ -449,9 +449,11 @@ describe("entity renderer", () => {
 
     // Without COLOR_0 the output is today's: the plain material colour.
     const plain = render(false);
-    const plainColors = partMesh(plain, "ua-rifleman", "body").geometry.getAttribute(
-      "color",
-    );
+    const plainColors = partMesh(
+      plain,
+      "ua-rifleman",
+      "body",
+    ).geometry.getAttribute("color");
     for (let i = 0; i < plainColors.count; i++) {
       expect(plainColors.getX(i)).toBeCloseTo(material.r, 6);
       expect(plainColors.getY(i)).toBeCloseTo(material.g, 6);
