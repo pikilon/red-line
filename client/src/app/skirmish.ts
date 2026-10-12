@@ -102,7 +102,7 @@ const HEMISPHERE_GROUND = 0x3a3020;
 const HEMISPHERE_INTENSITY = 0.9;
 const SUN_COLOR = 0xfff1d6;
 const SUN_INTENSITY = 2.2;
-const SUN_POSITION = new Vector3(50, 40, 50);
+const SUN_POSITION = new Vector3(-30, 60, 30);
 /** Unit vector of `SUN_POSITION`; the sun sits `SUN_DISTANCE` along it. */
 const SUN_DIRECTION = SUN_POSITION.clone().normalize();
 const SUN_DISTANCE = 50;
