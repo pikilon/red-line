@@ -40,8 +40,8 @@ need "ffmpeg" ffmpeg optional
 need "uv (Python)" uv optional
 need "LM Studio CLI" lms optional
 need "OpenCode" opencode optional
-[ -x tools/asset-pipeline/.venv/bin/python ] && [ -f tools/asset-pipeline/vendor/ComfyUI/main.py ] \
-  && ok "ComfyUI installed (tools/asset-pipeline)" \
+command -v comfyui >/dev/null 2>&1 \
+  && ok "ComfyUI installed (command comfyui)" \
   || warn "ComfyUI not installed (optional): node --run assets:comfyui:setup"
 curl -fsS -m 2 http://127.0.0.1:1234/v1/models >/dev/null 2>&1 \
   && ok "LM Studio server reachable on :1234" || warn "LM Studio server not running on :1234"

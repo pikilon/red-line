@@ -9,4 +9,3 @@ node_modules/
 /assets/build/
 /crates/sim/pkg/
 /.night-runner/
-/tools/asset-pipeline/vendor/
