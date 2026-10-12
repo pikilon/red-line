@@ -46,9 +46,10 @@ code: agents implement, the owner reviews quality hands-on.
 * Before declaring any change done, verify on the cheapest model and outside
   your context: run `node --run verify:agent` and act on the report it prints.
   It runs `.agents/agents/verification-runner/agent.md` on the local model, or
-  on DeepSeek Flash only with the owner's confirmation (D-11). Exit 3 means no
-  cheap model: Claude Code then uses its `verification-runner` subagent
-  (Haiku); other harnesses ask the owner. Exit 4: stop and tell the owner.
+  on DeepSeek Flash only with the owner's confirmation (D-11).
+  `Verdict: UNAVAILABLE` means no cheap model: Claude Code then uses its
+  `verification-runner` subagent (Haiku); other harnesses ask the owner.
+  `Verdict: ERROR`: stop and tell the owner.
   `node --run verify` is the same check sequence CI runs.
 * Non-interactive shells may lack cargo: prefix commands with
   `PATH="$HOME/.cargo/bin:$PATH"`. When a tool seems missing, run

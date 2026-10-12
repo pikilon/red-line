@@ -1,6 +1,6 @@
 ---
 name: verification-runner
-description: Subagent that runs the repository verification (tests, lint, type checks, builds for Rust and TypeScript) and returns a short PASS/FAIL report, keeping logs out of the caller's context. `node --run verify:agent` runs it on the local model; spawn it directly only when that command exits 3 (no cheap model available).
+description: Subagent that runs the repository verification (tests, lint, type checks, builds for Rust and TypeScript) and returns a short PASS/FAIL report, keeping logs out of the caller's context. `node --run verify:agent` runs it on the local model; spawn it directly only when that command prints `Verdict: UNAVAILABLE`.
 tools: Bash, Read, Grep, Glob
 model: haiku
 ---

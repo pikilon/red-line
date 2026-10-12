@@ -2,9 +2,11 @@
 // runs .agents/agents/verification-runner/agent.md through the agent harness on
 // the local LM Studio model and prints only its report. Without a local model it
 // falls back to a paid route (default DeepSeek Flash) only with the owner's
-// confirmation for this run. Exit codes: 0 PASS, 1 FAIL, 3 no model available
-// (Claude Code falls back to its Haiku subagent, other harnesses ask the owner),
-// 4 the agent run failed (stop and tell the owner).
+// confirmation for this run. The first stdout line is the verdict: PASS, FAIL,
+// UNAVAILABLE (no cheap model: Claude Code falls back to its Haiku subagent,
+// other harnesses ask the owner) or ERROR (the agent run failed: stop and tell
+// the owner). Exit codes 0/1/3/4 match them, but `node --run` reports every
+// non-zero code as 1.
 // Entry point: node --run verify:agent
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
@@ -52,6 +54,22 @@ export function exitCodeFor(report) {
   return verdict === "PASS" ? EXIT.pass : verdict === "FAIL" ? EXIT.fail : EXIT.agentFailed;
 }
 
+export function noModelReport(config) {
+  const route = `${config.fallbackProvider}/${config.fallbackModel}`;
+  return [
+    `Verdict: UNAVAILABLE — ${config.localModel} is not served at ${config.lmStudioUrl} and ${route} was not confirmed for this run (D-11).`,
+    "Claude Code: use the verification-runner subagent (Haiku).",
+    `Other harnesses: ask the owner, then rerun with RUNNER_PAID_CONFIRMED=${route}.`,
+  ].join("\n");
+}
+
+export function agentFailedReport(route, reason, stderrTail) {
+  return [
+    `Verdict: ERROR — the ${route.provider}/${route.model} agent run failed (${reason}); stop and tell the owner.`,
+    stderrTail,
+  ].filter(Boolean).join("\n");
+}
+
 async function fetchModels(url) {
   try {
     const response = await fetch(`${url}/models`, { signal: AbortSignal.timeout(3000) });
@@ -68,12 +86,7 @@ async function main() {
   const localUp = isLocalUp(await fetchModels(config.lmStudioUrl), config.localModel);
   const route = await chooseRoute(config, { localUp, ask: askOnTerminal(config.confirmTimeoutSeconds) });
   if (!route) {
-    console.error(
-      `No cheap model available: ${config.localModel} is not served at ${config.lmStudioUrl} and ` +
-        `${config.fallbackProvider}/${config.fallbackModel} was not confirmed for this run (D-11).\n` +
-        "Claude Code: use the verification-runner subagent (Haiku). Other harnesses: ask the owner, then rerun " +
-        `with RUNNER_PAID_CONFIRMED=${config.fallbackProvider}/${config.fallbackModel}.`,
-    );
+    console.log(noModelReport(config));
     process.exit(EXIT.noModel);
   }
   console.error(`verify:agent using ${route.provider}/${route.model}`);
@@ -89,9 +102,9 @@ async function main() {
   const report = (result.stdout ?? "").trim();
   const code = result.status === 0 ? exitCodeFor(report) : EXIT.agentFailed;
   if (code === EXIT.agentFailed) {
-    const reason = result.error?.message ?? `exit ${result.status}`;
-    console.error(`The ${route.provider}/${route.model} agent run failed (${reason}); stop and tell the owner.`);
-    console.error((result.stderr ?? "").trim().split("\n").slice(-10).join("\n"));
+    const reason = result.error?.message ?? (result.status === 0 ? "no verdict line" : `exit ${result.status}`);
+    const stderrTail = (result.stderr ?? "").trim().split("\n").slice(-10).join("\n");
+    console.log(agentFailedReport(route, reason, stderrTail));
   }
   if (report) console.log(report);
   process.exit(code);
