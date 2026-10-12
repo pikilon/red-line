@@ -24,7 +24,7 @@ import {
   NEUTRAL,
 } from "../sim/matchSnapshot";
 import type { Animator } from "./animation";
-import { createHeadingTracker } from "./heading";
+import { createHeadingTracker, turnRatesOf } from "./heading";
 import type {
   MaterialName,
   ModelPart,
@@ -393,6 +393,8 @@ export function createEntityRenderer(
           entity.x,
           entity.y,
           target === null ? null : { x: target.x, y: target.y },
+          nowMs,
+          turnRatesOf(type),
         );
 
         const pose = animator.pose(entity, nowMs);
