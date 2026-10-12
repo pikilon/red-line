@@ -163,6 +163,43 @@ without being attacked, and back on later.
   not persisted across reloads (Restart brings the AI back).
 * Debug API: new `aiActive(): boolean | null`.
 
+## 3.4 Mouse-wheel zoom (owner request 2026-10-12, issue #226)
+
+The owner wants to zoom in to inspect units and buildings and out to see more
+of the battle (§5.3). The camera stays orthographic and isometric (D-05): zoom
+only scales the view.
+
+* `client/src/camera.ts`:
+
+  ```ts
+  export const ZOOM_MIN = 0.6;   // zoomed out: 1 / 0.6 ≈ 1.67 × today's view
+  export const ZOOM_MAX = 3;     // zoomed in
+  /** Zoom factor of one wheel notch (`deltaY` = WHEEL_NOTCH pixels). */
+  export const ZOOM_STEP = 1.15;
+  export const WHEEL_NOTCH = 100;
+  /** Lines (`deltaMode` 1, Firefox) to pixels. */
+  export const WHEEL_LINE_PIXELS = 33;
+  /** `zoom × ZOOM_STEP^(−pixels / WHEEL_NOTCH)` clamped to
+   *  [ZOOM_MIN, ZOOM_MAX], where `pixels` is `deltaY` in pixels: wheel up
+   *  (negative `deltaY`) zooms in. Trackpads send fractional notches. */
+  export function zoomAfterWheel(zoom: number, deltaY: number, deltaMode: number): number;
+  ```
+
+* The skirmish controller listens to `wheel` on the canvas (non-passive,
+  `preventDefault` so the page never scrolls), sets `camera.zoom` to
+  `zoomAfterWheel(camera.zoom, deltaY, deltaMode)` and updates the projection
+  matrix. The camera target (screen centre) does not move. Zoom starts at 1
+  (today's view), is shared by both hot-seat players and is not persisted.
+  `SkirmishController` gains `zoom(): number`.
+* Picking, box selection, placement and `worldToScreen` use the camera
+  projection and keep working at any zoom; health bars are world-space and
+  scale with the models. Window resize keeps the zoom.
+* Shadows (amends spec 10 §3): the sun's shadow camera half-size becomes
+  `SHADOW_EXTENT / min(zoom, 1)`, so zooming out keeps the whole view shadowed;
+  at zoom ≥ 1 it is today's 24 tiles.
+* Debug API: new `zoom(): number`.
+* Not in the tech-slice mode.
+
 ## 4. Acceptance criteria
 
 **AC-08-01 Worker pause.** Given a skirmish worker handler at speed 1, after
@@ -219,17 +256,29 @@ changes the label to "AI: off" and `aiActive()` to false, and a second click
 restores both. With `?debug=1&seed=1&ai=off`, `aiActive()` is null and the AI
 button is hidden in the open menu.
 
+**AC-08-10 Wheel zoom.** `zoomAfterWheel(1, -100, 0)` is 1.15 and
+`zoomAfterWheel(1, 100, 0)` is 1 / 1.15; `zoomAfterWheel(1, -3, 1)` equals
+`zoomAfterWheel(1, -99, 0)`; `zoomAfterWheel(1, 0, 0)` is 1; 30 notches in
+from 1 end at `ZOOM_MAX` and 30 notches out at `ZOOM_MIN`.
+
+**AC-08-11 Zoom in the skirmish (Playwright).** In `?debug=1&seed=1&ai=off`,
+`__redline.zoom()` is 1; three real mouse-wheel notches up over the canvas
+make it 1.15³ (±0.01), keep `cameraTarget()` unchanged, leave
+`window.scrollY` at 0 and multiply the screen distance between two ground
+points 4 tiles apart by the same factor (±5 %); a real click on the
+own dozer at its new screen position selects it; 30 notches down clamp
+`zoom()` to `ZOOM_MIN`; no console error.
+
 ## 5. Queued requests (to be specified)
 
 1. Camera bookmarks: save with `Ctrl+F1..F4`, jump with `F1..F4`.
 2. Clear selection indicator: ring under selected units and a selection panel
    showing the selected unit's name, portrait/icon and health.
-3. Zoom in/out with the mouse wheel (bounded).
-4. Camera rotation in 90° steps.
-5. Rally points for production buildings in the UI (the sim already supports
+3. Camera rotation in 90° steps.
+4. Rally points for production buildings in the UI (the sim already supports
    `Rally`) and unit waypoints.
-6. Unit stances: guard/defend, scout/explore, scatter, hold position.
-7. Rotating buildings before placing them (footprint rotation in the sim).
+5. Unit stances: guard/defend, scout/explore, scatter, hold position.
+6. Rotating buildings before placing them (footprint rotation in the sim).
 
 ## 6. Traceability
 
@@ -244,6 +293,8 @@ button is hidden in the open menu.
 | AC-08-07 | `crates/sim/tests/ai.rs` | `ac_08_07_ai_pause` |
 | AC-08-08 | `client/src/sim/skirmishClient.test.ts`, `client/src/sim/workerHandler.test.ts` | `AC-08-08: worker and client AI toggle` |
 | AC-08-09 | `client/tests/e2e/pause.spec.ts` | `AC-08-09: AI toggle in the skirmish` |
+| AC-08-10 | `client/src/camera.test.ts` | `AC-08-10: wheel zoom` |
+| AC-08-11 | `client/tests/e2e/zoom.spec.ts` | `AC-08-11: zoom in the skirmish` |
 
 ## 7. Issue breakdown
 
@@ -253,3 +304,4 @@ button is hidden in the open menu.
 | P5-02 (#200) | game menu on Esc (§3.1) | AC-08-03, 04 | ready-local |
 | P5-03 (#220) | hot-seat camera (§3.2) | AC-08-05, 06 | ready-pro |
 | P5-04 (#219) | AI toggle in the game menu (§3.3) | AC-08-04, 07..09 | ready-pro |
+| P5-05 (#226) | mouse-wheel zoom (§3.4) | AC-08-10, 11 | ready-pro |
