@@ -19,6 +19,8 @@
     "test:scripts": "node --test scripts/ tools/models/",
     "assets:build": "node tools/models/build.mjs",
     "assets:check": "node tools/models/check.mjs",
+    "assets:comfyui:setup": "tools/asset-pipeline/setup-comfyui.sh",
+    "assets:comfyui": "tools/asset-pipeline/run-comfyui.sh",
     "check:rust": "cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo nextest run",
     "build:wasm": "wasm-pack build crates/sim --target web",
     "verify:plan": "node scripts/verify-plan.mjs",
