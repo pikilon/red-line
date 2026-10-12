@@ -9,6 +9,8 @@
 // non-zero code as 1.
 // Entry point: node --run verify:agent
 import { spawnSync } from "node:child_process";
+import { cpSync, existsSync } from "node:fs";
+import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { agentInvocation, askOnTerminal, readConfig, resolveModel } from "./night-runner.mjs";
@@ -46,7 +48,38 @@ export function verifyInvocation(config, route, root, target) {
     "Read .agents/agents/verification-runner/agent.md there and follow it exactly.",
     "Your final answer is only the report it defines, starting with the `Verdict:` line.",
   ].join("\n");
-  return agentInvocation({ ...config, ...route }, prompt, root);
+  const invocation = agentInvocation({ ...config, ...route }, prompt, root);
+  return { ...invocation, env: { ...invocation.env, WASM_PACK_CACHE: sandboxWasmPackCache(target) } };
+}
+
+// The dsh sandbox only writes inside the checkout, where wasm-pack would have
+// to reinstall its tools; a copy of the global cache under target/ avoids it.
+function sandboxWasmPackCache(target) {
+  return join(target, "target", "wasm-pack-cache");
+}
+
+const CACHE_HOMES = {
+  darwin: ({ home }) => join(home, "Library", "Caches"),
+  linux: ({ home, env }) => env.XDG_CACHE_HOME ?? join(home, ".cache"),
+};
+
+export function globalWasmPackCache({ platform, home, env }) {
+  if (env.WASM_PACK_CACHE) return env.WASM_PACK_CACHE;
+  const cacheHome = CACHE_HOMES[platform];
+  return cacheHome ? join(cacheHome({ home, env }), ".wasm-pack") : null;
+}
+
+function seedWasmPackCache(target) {
+  const local = sandboxWasmPackCache(target);
+  const global = globalWasmPackCache({ platform: process.platform, home: homedir(), env: process.env });
+  if (!existsSync(local) && global && existsSync(global)) cpSync(global, local, { recursive: true });
+}
+
+export function extractReport(stdout) {
+  const lines = stdout.split("\n");
+  const start = lines.findIndex((line) => /^Verdict:/.test(line));
+  if (start === -1) return stdout.trim();
+  return lines.slice(start).filter((line) => !/^```/.test(line)).join("\n").trim();
 }
 
 export function exitCodeFor(report) {
@@ -90,6 +123,7 @@ async function main() {
     process.exit(EXIT.noModel);
   }
   console.error(`verify:agent using ${route.provider}/${route.model}`);
+  seedWasmPackCache(target);
   const { cmd, args, env } = verifyInvocation(config, route, root, target);
   const result = spawnSync(cmd, args, {
     cwd: target,
@@ -99,7 +133,7 @@ async function main() {
     timeout: config.timeoutMinutes * 60_000,
     maxBuffer: 64 * 1024 * 1024,
   });
-  const report = (result.stdout ?? "").trim();
+  const report = extractReport(result.stdout ?? "");
   const code = result.status === 0 ? exitCodeFor(report) : EXIT.agentFailed;
   if (code === EXIT.agentFailed) {
     const reason = result.error?.message ?? (result.status === 0 ? "no verdict line" : `exit ${result.status}`);
