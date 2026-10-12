@@ -68,6 +68,8 @@ export interface SkirmishDebug {
   /** Sim tiles -> page CSS px. */
   worldToScreen(x: number, y: number): { x: number; y: number };
   cameraTarget(): { x: number; y: number };
+  /** Wheel zoom of the camera, 1 by default (spec 08 §3.4). */
+  zoom(): number;
   /** Target in tiles. */
   setCameraTarget(x: number, y: number): void;
   command(command: SimCommand): void;

@@ -116,9 +116,9 @@ test("AC-08-11: zoom in the skirmish", async ({ page }) => {
     )
     .toEqual([unit.id]);
 
-  for (let i = 0; i < 30; i++) {
-    await page.mouse.wheel(0, 100);
-  }
+  // 30 notches in one event: each wheel event waits for a rendered frame,
+  // which is slow on the software WebGL of CI.
+  await page.mouse.wheel(0, 30 * 100);
   await expect.poll(() => zoom(page)).toBeCloseTo(ZOOM_MIN, 6);
   expect(errors).toEqual([]);
 });
