@@ -4,6 +4,9 @@ import {
   createIsometricCamera,
   ISOMETRIC_ELEVATION,
   setCameraTarget,
+  ZOOM_MAX,
+  ZOOM_MIN,
+  zoomAfterWheel,
 } from "./camera";
 
 describe("isometric camera", () => {
@@ -28,5 +31,22 @@ describe("isometric camera", () => {
     expect(camera.position.z).toBeCloseTo(offset.z + 30, 6);
     const moved = camera.getWorldDirection(new Vector3());
     expect(moved.distanceTo(direction)).toBeCloseTo(0, 6);
+  });
+});
+
+describe("wheel zoom", () => {
+  it("AC-08-10: wheel zoom", () => {
+    expect(zoomAfterWheel(1, -100, 0)).toBeCloseTo(1.15, 9);
+    expect(zoomAfterWheel(1, 100, 0)).toBeCloseTo(1 / 1.15, 9);
+    expect(zoomAfterWheel(1, -3, 1)).toBeCloseTo(zoomAfterWheel(1, -99, 0), 9);
+    expect(zoomAfterWheel(1, 0, 0)).toBe(1);
+    let zoomIn = 1;
+    let zoomOut = 1;
+    for (let i = 0; i < 30; i++) {
+      zoomIn = zoomAfterWheel(zoomIn, -100, 0);
+      zoomOut = zoomAfterWheel(zoomOut, 100, 0);
+    }
+    expect(zoomIn).toBe(ZOOM_MAX);
+    expect(zoomOut).toBe(ZOOM_MIN);
   });
 });

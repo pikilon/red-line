@@ -37,3 +37,20 @@ export function setCameraTarget(
   camera.position.set(x + OFFSET.x, OFFSET.y, z + OFFSET.z);
   camera.lookAt(x, 0, z);
 }
+
+export const ZOOM_MIN = 0.6;
+export const ZOOM_MAX = 3;
+/** Zoom factor of one wheel notch (`deltaY` = WHEEL_NOTCH pixels). */
+export const ZOOM_STEP = 1.15;
+export const WHEEL_NOTCH = 100;
+/** Lines (`deltaMode` 1, Firefox) to pixels. */
+export const WHEEL_LINE_PIXELS = 33;
+
+/** Stub until AC-08-10 is implemented (spec 08 §3.4). */
+export function zoomAfterWheel(
+  zoom: number,
+  _deltaY: number,
+  _deltaMode: number,
+): number {
+  return zoom;
+}
