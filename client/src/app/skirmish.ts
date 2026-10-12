@@ -7,7 +7,7 @@ import {
   HemisphereLight,
   Mesh,
   MeshBasicMaterial,
-  PCFShadowMap,
+  BasicShadowMap,
   Scene,
   Vector3,
   WebGLRenderer,
@@ -177,7 +177,7 @@ export function startSkirmish(params: SkirmishOptions): void {
   const renderer = new WebGLRenderer({ antialias: true });
   // Remastered look (spec 10 §3): hard PCF shadows and ACES tone mapping.
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = PCFShadowMap;
+  renderer.shadowMap.type = BasicShadowMap;
   renderer.toneMapping = ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.1;
   const scene = new Scene();
