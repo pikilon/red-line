@@ -24,6 +24,7 @@ import {
   NEUTRAL,
 } from "../sim/matchSnapshot";
 import type { Animator } from "./animation";
+import type { GeneratedTextures } from "./generatedTextures";
 import { createHeadingTracker, turnRatesOf } from "./heading";
 import type {
   MaterialName,
@@ -73,6 +74,8 @@ export interface EntityRenderer {
   readonly models: readonly ModelInstance[];
   /** Scaffolding around buildings under construction (spec 09 §5). */
   readonly scaffolds: InstancedMesh;
+  /** Applies (or, with null, removes) the generated model textures. */
+  setGeneratedTextures(textures: GeneratedTextures | null): void;
   update(
     entities: readonly EntityState[],
     selected: ReadonlySet<number>,
@@ -366,6 +369,9 @@ export function createEntityRenderer(
     scaffolds,
     get models() {
       return slots;
+    },
+    setGeneratedTextures() {
+      // Not implemented yet (spec 12, red phase).
     },
     update(entities, selected, nowMs = 0) {
       const counts = { units: 0, buildings: 0, ghosts: 0, bars: 0 };

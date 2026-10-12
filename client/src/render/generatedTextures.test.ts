@@ -1,0 +1,207 @@
+import {
+  BoxGeometry,
+  DataTexture,
+  type Material,
+  type Mesh,
+  type MeshLambertMaterial,
+  Texture,
+  Vector3,
+} from "three";
+import { describe, expect, it } from "vitest";
+import { typeIndex } from "../rules";
+import { loadSettings, SETTINGS_KEY, saveSettings } from "../settings";
+import type { EntityState } from "../sim/matchSnapshot";
+import { createEntityRenderer } from "./entities";
+import {
+  boxProjectUvs,
+  GENERATED_TEXTURE_IDS,
+  loadGeneratedTextures,
+} from "./generatedTextures";
+import type { MaterialName, ModelPart, TypeModel } from "./models";
+import { createTerrain, setTerrainTextures } from "./terrain";
+
+function memoryStorage(initial: Record<string, string> = {}): Storage {
+  const entries = new Map(Object.entries(initial));
+  return {
+    get length() {
+      return entries.size;
+    },
+    clear: () => entries.clear(),
+    getItem: (key: string) => entries.get(key) ?? null,
+    key: (index: number) => [...entries.keys()][index] ?? null,
+    removeItem: (key: string) => {
+      entries.delete(key);
+    },
+    setItem: (key: string, value: string) => {
+      entries.set(key, value);
+    },
+  };
+}
+
+function meshMap(group: ReturnType<typeof createTerrain>, name: string) {
+  const mesh = group.getObjectByName(name) as Mesh;
+  return (mesh.material as MeshLambertMaterial).map;
+}
+
+function entity(id: number, owner: number, type: string): EntityState {
+  return {
+    id,
+    owner,
+    kind: typeIndex(type),
+    x: 2,
+    y: 2,
+    hp: 100,
+    flags: 0,
+    progress: 0,
+    target: null,
+  };
+}
+
+function registry() {
+  return {
+    get: (): TypeModel => ({
+      parts: new Map<MaterialName, ModelPart>([
+        [
+          "body",
+          {
+            material: "body",
+            geometry: new BoxGeometry(1, 1, 1),
+            color: 0x112233,
+          },
+        ],
+        [
+          "dark",
+          {
+            material: "dark",
+            geometry: new BoxGeometry(0.5, 0.5, 0.5),
+            color: 0x222222,
+          },
+        ],
+      ]),
+      turret: new Map<MaterialName, ModelPart>(),
+      pivot: new Vector3(),
+      fallback: false,
+    }),
+  };
+}
+
+describe("generated textures", () => {
+  it("AC-12-01: procedural by default", () => {
+    // The setting is off unless saved as true.
+    expect(loadSettings(memoryStorage()).generatedTextures).not.toBe(true);
+    const storage = memoryStorage();
+    saveSettings({ gore: false, generatedTextures: true }, storage);
+    expect(loadSettings(storage)).toEqual({
+      gore: false,
+      generatedTextures: true,
+    });
+    // Settings saved before the field existed still load.
+    expect(
+      loadSettings(
+        memoryStorage({ [SETTINGS_KEY]: JSON.stringify({ gore: false }) }),
+      ),
+    ).toEqual({ gore: false });
+    // A non-boolean value is ignored; the valid gore survives.
+    const odd = loadSettings(
+      memoryStorage({
+        [SETTINGS_KEY]: JSON.stringify({ gore: false, generatedTextures: 3 }),
+      }),
+    );
+    expect(odd.gore).toBe(false);
+    expect(odd.generatedTextures).not.toBe(true);
+    // Without textures the terrain keeps the procedural data textures.
+    const group = createTerrain(3, 3, new Uint8Array(9), 1);
+    for (const name of ["grass", "dirt", "rock"]) {
+      expect(meshMap(group, name)).toBeInstanceOf(DataTexture);
+    }
+  });
+
+  it("AC-12-02: terrain swaps textures", async () => {
+    const generated = {
+      grass: new Texture(),
+      dirt: new Texture(),
+      rock: new Texture(),
+    };
+    const given = createTerrain(3, 3, new Uint8Array(9), 1, generated);
+    expect(meshMap(given, "grass")).toBe(generated.grass);
+    expect(meshMap(given, "dirt")).toBe(generated.dirt);
+    expect(meshMap(given, "rock")).toBe(generated.rock);
+
+    const live = createTerrain(3, 3, new Uint8Array(9), 1);
+    setTerrainTextures(live, generated);
+    expect(meshMap(live, "grass")).toBe(generated.grass);
+    setTerrainTextures(live, null);
+    expect(meshMap(live, "grass")).toBeInstanceOf(DataTexture);
+
+    // The loader skips files that fail.
+    const requested: string[] = [];
+    const loaded = await loadGeneratedTextures({
+      loadAsync: (url) => {
+        requested.push(url);
+        return url.includes("dirt")
+          ? Promise.reject(new Error("404"))
+          : Promise.resolve(new Texture());
+      },
+    });
+    expect(requested.length).toBe(GENERATED_TEXTURE_IDS.length);
+    expect(loaded.grass).toBeInstanceOf(Texture);
+    expect(loaded.dirt).toBeUndefined();
+
+    // Models: paint for vehicles, concrete for buildings, per faction.
+    const renderer = createEntityRenderer(8, registry());
+    renderer.update(
+      [entity(0, 0, "ua-rifleman"), entity(1, 1, "ru-power-plant")],
+      new Set(),
+    );
+    const textures = {
+      "ua-paint": new Texture(),
+      "ru-concrete": new Texture(),
+      "dark-metal": new Texture(),
+    };
+    renderer.setGeneratedTextures(textures);
+    const mapOf = (typeId: string): Material | Material[] | null => {
+      const slot = renderer.models.find(
+        (model) => model.typeId === typeId && model.material === "body",
+      );
+      return slot?.mesh.material ?? null;
+    };
+    expect((mapOf("ua-rifleman") as MeshLambertMaterial).map).toBe(
+      textures["ua-paint"],
+    );
+    expect((mapOf("ru-power-plant") as MeshLambertMaterial).map).toBe(
+      textures["ru-concrete"],
+    );
+    renderer.setGeneratedTextures(null);
+    expect((mapOf("ua-rifleman") as MeshLambertMaterial).map).toBeNull();
+  });
+
+  it("AC-12-03: box projection", () => {
+    const projected = boxProjectUvs(new BoxGeometry(1, 1, 1));
+    const position = projected.getAttribute("position");
+    const normal = projected.getAttribute("normal");
+    const uv = projected.getAttribute("uv");
+    const scale = 1.5;
+    for (let i = 0; i < position.count; i++) {
+      const ax = Math.abs(normal.getX(i));
+      const ay = Math.abs(normal.getY(i));
+      const az = Math.abs(normal.getZ(i));
+      const [u, v] =
+        ax >= ay && ax >= az
+          ? [position.getZ(i), position.getY(i)]
+          : ay >= az
+            ? [position.getX(i), position.getZ(i)]
+            : [position.getX(i), position.getY(i)];
+      expect(uv.getX(i)).toBeCloseTo(u / scale, 6);
+      expect(uv.getY(i)).toBeCloseTo(v / scale, 6);
+    }
+    // A +x face vertex at (0.5, 0.5, 0.5) maps to (z, y) / 1.5.
+    let found = false;
+    for (let i = 0; i < position.count; i++) {
+      if (normal.getX(i) === 1 && position.getZ(i) === 0.5) {
+        expect(uv.getX(i)).toBeCloseTo(0.5 / 1.5, 6);
+        found = true;
+      }
+    }
+    expect(found).toBe(true);
+  });
+});

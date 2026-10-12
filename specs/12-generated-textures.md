@@ -1,0 +1,98 @@
+# 12 — Generated textures preview
+
+Status: accepted (owner request 2026-10-13, issue #240).
+Depends on `10-phase4d-remastered-look.md` §4 (procedural terrain textures) and
+`08-player-controls.md` §3.1 (game menu). Roadmap: Phase 4. Decisions: D-05.
+
+## 1. Context
+
+`tools/asset-pipeline/texture_tool.py` produces AI-generated PNG textures that
+the owner approves each morning. The owner wants to see them applied in the
+game. The toggle is opt-in: the procedural textures of spec 10 §4 stay the
+default and AC-10-01 / AC-10-02 are unchanged.
+
+In scope: terrain (`grass`, `dirt`, `rock`) and the `body` / `dark` materials
+of the models. Out of scope: roofs (`roof-metal`), camo, `team` colour.
+
+## 2. Setting
+
+`Settings` (`client/src/settings.ts`) gains the optional field
+`generatedTextures?: boolean`. Absent means `false` (the default). It is
+persisted next to `gore`; each field is validated on its own, so settings saved
+before this field existed still load, and a non-boolean value is ignored.
+`saveSettings` only writes the field when it is `true`.
+
+## 3. Menu
+
+`GameMenuView` gains the optional `generatedTextures?: boolean` and
+`GameMenuActions` the optional `toggleTextures?(): void`. The button
+`#game-menu-textures` exists only when `toggleTextures` is provided, sits
+between the AI and Restart buttons and is labelled `menu.texturesProcedural`
+"Textures: procedural" or `menu.texturesGenerated` "Textures: generated".
+The choice applies live (the match continues): the skirmish loads the PNGs the
+first time it is switched on and swaps the textures of the terrain and of the
+model materials.
+
+## 4. Loading (`client/src/render/generatedTextures.ts`)
+
+```ts
+export const GENERATED_TEXTURE_IDS = [
+  "grass", "dirt", "rock", "ua-paint", "ru-paint",
+  "ua-concrete", "ru-concrete", "dark-metal",
+] as const;
+export type GeneratedTextureId = (typeof GENERATED_TEXTURE_IDS)[number];
+export type GeneratedTextures = Partial<Record<GeneratedTextureId, Texture>>;
+
+export interface TextureSource { loadAsync(url: string): Promise<Texture>; }
+
+/** Loads `textures/<id>.png` for every id; a file that fails is skipped.
+ *  Textures are sRGB, repeat-wrapped, mipmapped. */
+export function loadGeneratedTextures(source?: TextureSource): Promise<GeneratedTextures>;
+
+/** Per-vertex UVs by box projection: the dominant axis of the vertex normal
+ *  drops out and the other two coordinates, divided by `MODEL_TILE` (1.5 model
+ *  units), become `u, v`: normal x -> (z, y); y -> (x, z); z -> (x, y). */
+export function boxProjectUvs(geometry: BufferGeometry): BufferGeometry;
+```
+
+Box projection is applied in model space, so the texture stretches with the
+instance scale of non-uniform models.
+
+## 5. Terrain
+
+`createTerrain(width, height, rockCells, seed = 1, textures?)`: `textures` is
+an optional `Partial<Record<TerrainKind, Texture>>`; a kind present there
+replaces the procedural texture of its mesh (UVs unchanged: repeat every 4
+tiles). `setTerrainTextures(group, textures | null)` swaps `material.map` of
+the `grass`, `dirt` and `rock` meshes live (`null` restores the procedural
+ones).
+
+## 6. Models
+
+Vehicles (`category: "unit"`) use `<faction>-paint`, buildings and depots use
+`<faction>-concrete`, the `dark` material uses `dark-metal`; `team` stays flat
+colour. `EntityRenderer.setGeneratedTextures(textures | null)` applies them
+live. Vertex colours (ambient occlusion) are multiplied with the map.
+
+## Acceptance criteria
+
+* AC-12-01: Given `generatedTextures` is off (default), When the terrain is
+  created without textures, Then every mesh map is the procedural texture and
+  settings round-trip and load from older saved values.
+* AC-12-02: Given generated textures, When `createTerrain` receives them or
+  `setTerrainTextures` is called, Then the grass, dirt and rock maps are those
+  textures, and `null` restores the procedural ones.
+* AC-12-03: Given a unit cube, When `boxProjectUvs` runs, Then each vertex UV
+  follows the dominant-normal rule of §4.
+* AC-12-04: Given a running skirmish, When the player presses Esc and clicks
+  the textures button with a real mouse, Then the label changes, the game keeps
+  running without console errors and Resume closes the menu.
+
+## Traceability
+
+| Criterion | Test |
+| --- | --- |
+| AC-12-01 | `client/src/render/generatedTextures.test.ts` "AC-12-01: procedural by default" |
+| AC-12-02 | `client/src/render/generatedTextures.test.ts` "AC-12-02: terrain swaps textures" |
+| AC-12-03 | `client/src/render/generatedTextures.test.ts` "AC-12-03: box projection" |
+| AC-12-04 | `client/tests/e2e/textures.spec.ts` "AC-12-04: textures toggle in the game menu" |

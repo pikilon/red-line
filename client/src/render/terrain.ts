@@ -4,9 +4,15 @@ import {
   Group,
   Mesh,
   MeshLambertMaterial,
+  type Texture,
   Uint32BufferAttribute,
 } from "three";
-import { createRng, createTerrainTextures, valueNoise } from "./terrainTexture";
+import {
+  createRng,
+  createTerrainTextures,
+  type TerrainKind,
+  valueNoise,
+} from "./terrainTexture";
 
 export const PASSABLE_COLOR = 0x4a6b3a;
 export const BLOCKED_COLOR = 0x5a5a5a;
@@ -235,6 +241,7 @@ export function createTerrain(
   height: number,
   rockCells: Uint8Array,
   seed = 1,
+  _textures?: Partial<Record<TerrainKind, Texture>>,
 ): Group {
   const textures = createTerrainTextures(seed);
   const grass = new Mesh(
@@ -267,4 +274,12 @@ export function createTerrain(
   const group = new Group();
   group.add(grass, dirt, rock);
   return group;
+}
+
+/** Swaps the maps of the grass, dirt and rock meshes live (spec 12 §5). */
+export function setTerrainTextures(
+  _group: Group,
+  _textures: Partial<Record<TerrainKind, Texture>> | null,
+): void {
+  // Not implemented yet (spec 12, red phase).
 }

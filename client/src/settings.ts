@@ -4,6 +4,8 @@ export const SETTINGS_KEY = "redline.settings.v1";
 
 export interface Settings {
   gore: boolean;
+  /** Absent means false (spec 12 §2). */
+  generatedTextures?: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = { gore: true };
