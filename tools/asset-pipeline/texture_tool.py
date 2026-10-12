@@ -9,6 +9,7 @@
                                 write attempt-N.png, a 2x2 tile preview, a context preview
                                 and metrics (JSON on stdout)
   accept ID --attempt N         copy the pick to final/ID.png (+ 256 and 512)
+  apply ID                      copy final/ID-512.png into $RED_LINE_APPLY_DIR (client/public/textures of a checkout)
   sheet                         build review.html with every attempt and verdict
 
 Output root: $RED_LINE_TEXTURES_DIR (default /Volumes/Externo Mac SSD/red-line-textures).
@@ -178,7 +179,9 @@ def cmd_generate(a):
     res = find(cfg, a.id)
     run = os.path.join(ROOT, "runs", a.id)
     os.makedirs(run, exist_ok=True)
-    model = "flux" if flux_ready() else "sdxl"
+    if not flux_ready():
+        sys.exit("FLUX schnell is not fully downloaded yet")
+    model = "flux"
     prompt = f"Seamless tileable top-down texture: {res['subject']}. {cfg['style']}. {a.extra}".strip()
     negative = f"{cfg['negative']}, {a.neg_extra}".strip(", ")
     seed = 1000 * (cfg["resources"].index(res) + 1) + a.attempt
@@ -209,6 +212,19 @@ def cmd_accept(a):
     for s in (256, 512):
         img.resize((s, s), Image.LANCZOS).save(os.path.join(ROOT, "final", f"{a.id}-{s}.png"))
     print("accepted", a.id, a.attempt)
+
+
+def cmd_apply(a):
+    """Copy the accepted 512 px texture into the game checkout's public folder."""
+    dest = os.environ.get("RED_LINE_APPLY_DIR")
+    if not dest:
+        sys.exit("set RED_LINE_APPLY_DIR to <checkout>/client/public/textures")
+    src = os.path.join(ROOT, "final", f"{a.id}-512.png")
+    if not os.path.exists(src):
+        sys.exit(f"{a.id} is not accepted yet (no {src})")
+    os.makedirs(dest, exist_ok=True)
+    shutil.copy(src, os.path.join(dest, f"{a.id}.png"))
+    print("applied", a.id, "->", os.path.join(dest, f"{a.id}.png"))
 
 
 def cmd_sheet(_):
@@ -242,6 +258,7 @@ def main():
     g = sub.add_parser("generate"); g.add_argument("id"); g.add_argument("--attempt", type=int, required=True)
     g.add_argument("--extra", default=""); g.add_argument("--neg-extra", default="")
     c = sub.add_parser("accept"); c.add_argument("id"); c.add_argument("--attempt", type=int, required=True)
+    ap = sub.add_parser("apply"); ap.add_argument("id")
     sub.add_parser("sheet")
     a = p.parse_args()
     cfg = load()
@@ -254,6 +271,8 @@ def main():
         cmd_generate(a)
     elif a.cmd == "accept":
         cmd_accept(a)
+    elif a.cmd == "apply":
+        cmd_apply(a)
     else:
         cmd_sheet(a)
 

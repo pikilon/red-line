@@ -1,11 +1,11 @@
 # Texture loop: instructions for the judge agent (one resource per agent)
 
-You generate and judge texture candidates for ONE resource of `textures.yaml`.
+You generate and judge texture candidates for the resources of `textures.yaml` you are given, ONE AT A TIME in the order given (finish a resource, write its verdict, then start the next). Never run two generations at once; FLUX is used and each image takes well under a minute.
 You are the cheap judge: be strict about the rules, but the owner approves the final pick in the morning,
 so an imperfect best attempt is acceptable when flagged.
 
 Tool (from this folder): `~/.local/share/comfyui/.venv/bin/python texture_tool.py ...`
-Never run two generations at once. Use only this tool and local files. Download nothing, call no remote service.
+Several agents may run at once: ComfyUI queues the images. Use only this tool and local files. Download nothing, call no remote service.
 
 ## Loop (at most 4 attempts, one image per attempt)
 
