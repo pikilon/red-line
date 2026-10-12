@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  agentFailedReport, chooseRoute, exitCodeFor, isLocalUp, noModelReport, readVerifyConfig, verifyInvocation,
+  agentFailedReport, chooseRoute, exitCodeFor, extractReport, globalWasmPackCache, isLocalUp, noModelReport,
+  readVerifyConfig, verifyInvocation,
 } from "./verify-agent.mjs";
 
 const MODELS = { data: [{ id: "ornith-1.5-35b-a3b-mlx" }, { id: "gemma-4-26b-a4b-it-mlx" }] };
@@ -52,6 +53,21 @@ test("verify-agent: runs the verification-runner definition through the harness 
   assert.match(prompt, /\/target/);
   assert.equal(invocation.env.RUNNER_PROVIDER, "lmstudio");
   assert.equal(invocation.env.RUNNER_MODEL, "ornith-1.5-35b-a3b-mlx");
+  // The dsh sandbox only writes inside the checkout, so wasm-pack uses a cache there.
+  assert.equal(invocation.env.WASM_PACK_CACHE, "/target/target/wasm-pack-cache");
+});
+
+test("verify-agent: finds the global wasm-pack cache to seed the sandboxed one", () => {
+  assert.equal(globalWasmPackCache({ platform: "darwin", home: "/Users/a", env: {} }), "/Users/a/Library/Caches/.wasm-pack");
+  assert.equal(globalWasmPackCache({ platform: "linux", home: "/home/a", env: {} }), "/home/a/.cache/.wasm-pack");
+  assert.equal(globalWasmPackCache({ platform: "linux", home: "/home/a", env: { XDG_CACHE_HOME: "/c" } }), "/c/.wasm-pack");
+  assert.equal(globalWasmPackCache({ platform: "darwin", home: "/Users/a", env: { WASM_PACK_CACHE: "/w" } }), "/w");
+});
+
+test("verify-agent: keeps only the report, from the verdict line, without code fences", () => {
+  const stdout = "All checks complete. Summary:\n- notes\n\n```\nVerdict: FAIL\n\nCommands:\n* `x` — ok\n```\n";
+  assert.equal(extractReport(stdout), "Verdict: FAIL\n\nCommands:\n* `x` — ok");
+  assert.equal(extractReport("no verdict here"), "no verdict here");
 });
 
 test("verify-agent: maps the report verdict to the exit code", () => {
