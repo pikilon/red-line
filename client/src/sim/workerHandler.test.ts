@@ -453,7 +453,7 @@ describe("worker handler", () => {
     expect(posted).toHaveLength(1);
   });
 
-  it("AC-08-06: worker and client AI toggle", () => {
+  it("AC-08-08: worker and client AI toggle", () => {
     const set_ai_active = vi.fn<(player: number, active: boolean) => boolean>();
     const skirmishSim: SkirmishSimLike = {
       map_width: () => 2,

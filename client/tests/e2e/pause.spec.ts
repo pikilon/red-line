@@ -164,7 +164,7 @@ test("AC-08-03: game menu in the skirmish", async ({ page }) => {
   await expect.poll(() => paused(page)).toBe(false);
 });
 
-test("AC-08-07: AI toggle in the skirmish", async ({ page }) => {
+test("AC-08-09: AI toggle in the skirmish", async ({ page }) => {
   await boot(page, "?debug=1&seed=1");
   expect(await aiActive(page)).toBe(true);
   const aiButton = page.locator("#game-menu-ai");

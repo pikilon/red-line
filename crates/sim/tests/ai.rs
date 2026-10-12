@@ -516,10 +516,10 @@ fn ac_05_14_defense() {
     );
 }
 
-// AC-08-05: AI pause (spec 08 §3.2).
+// AC-08-07: AI pause (spec 08 §3.3).
 
 #[test]
-fn ac_08_05_ai_pause() {
+fn ac_08_07_ai_pause() {
     // (a) Pausing an AI that launched an attack stops the launched units.
     let mut world = skirmish();
     let barracks_kind = world.rules().type_index("ua-barracks").unwrap();

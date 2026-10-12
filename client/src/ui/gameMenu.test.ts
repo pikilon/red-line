@@ -93,7 +93,7 @@ describe("game menu", () => {
     expect(menu.root.id).toBe("game-menu");
     expect(menu.root.hidden).toBe(true);
 
-    // Four buttons in the §3.1/§3.2 order.
+    // Four buttons in the §3.1/§3.3 order.
     let buttons = buttonsOf(menu.root);
     expect(buttons.map((button) => button.textContent)).toEqual([
       "Resume",

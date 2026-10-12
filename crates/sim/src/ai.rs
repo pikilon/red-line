@@ -34,7 +34,7 @@ pub struct Ai {
     force: Option<u16>,
     /// Units committed to the current attack.
     attackers: Vec<EntityId>,
-    /// Inactive AIs skip `think` (spec 08 §3.2).
+    /// Inactive AIs skip `think` (spec 08 §3.3).
     active: bool,
 }
 
@@ -85,12 +85,12 @@ impl Ai {
         self.player
     }
 
-    /// Whether `step_with_ai` lets this AI think (spec 08 §3.2).
+    /// Whether `step_with_ai` lets this AI think (spec 08 §3.3).
     pub fn is_active(&self) -> bool {
         self.active
     }
 
-    /// Pauses or resumes the AI (spec 08 §3.2). Pausing an active AI returns
+    /// Pauses or resumes the AI (spec 08 §3.3). Pausing an active AI returns
     /// one `Stop` for the units committed to the current attack (none when
     /// there are none); every other call returns nothing.
     pub fn set_active(&mut self, active: bool) -> Vec<Command> {

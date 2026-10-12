@@ -142,7 +142,7 @@ describe("skirmish client", () => {
     expect(worker.sent[2]).toEqual({ type: "setPaused", paused: false });
   });
 
-  it("AC-08-06: worker and client AI toggle", () => {
+  it("AC-08-08: worker and client AI toggle", () => {
     const worker = new FakeWorker();
     const client = createSkirmishClient(worker, {
       seed: 7,

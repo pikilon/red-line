@@ -75,7 +75,7 @@ impl Sim {
 
     /// Pauses or resumes the AI of `player`, enqueuing `Ai::set_active`'s
     /// commands as `player`. Returns false (and does nothing) when `player`
-    /// has no AI (spec 08 §3.2).
+    /// has no AI (spec 08 §3.3).
     pub fn set_ai_active(&mut self, player: u8, active: bool) -> bool {
         let Some(ai) = self.ais.iter_mut().find(|ai| ai.player() == player) else {
             return false;

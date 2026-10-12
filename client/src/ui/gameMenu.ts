@@ -5,7 +5,7 @@ import { appendDiv, setText } from "./dom";
 export interface GameMenuView {
   open: boolean;
   gore: boolean;
-  /** Whether the AI plays; null when no AI is attached (§3.2). */
+  /** Whether the AI plays; null when no AI is attached (§3.3). */
   ai: boolean | null;
 }
 
@@ -15,7 +15,7 @@ export interface GameMenuActions {
   resume(): void;
   /** Same as the `G` key (spec 07 §5). */
   toggleGore(): void;
-  /** Pauses or resumes the skirmish AI (§3.2). */
+  /** Pauses or resumes the skirmish AI (§3.3). */
   toggleAi(): void;
   /** Reloads the page with the same query string. */
   restart(): void;
@@ -30,8 +30,9 @@ export interface GameMenu {
 }
 
 /** The full-screen game menu: a backdrop with a centred panel holding the
- *  title and the Resume, Gore, AI and Restart buttons (§3.2). Buttons are created once,
- *  so they stay clickable with a real mouse (spec 08 §3.1, AC-03-65). */
+ *  title and the Resume, Gore, AI and Restart buttons (§3.3). Buttons are
+ *  created once, so they stay clickable with a real mouse (spec 08 §3.1,
+ *  AC-03-65). */
 export function createGameMenu(
   parent: HTMLElement,
   actions: GameMenuActions,

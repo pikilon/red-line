@@ -63,6 +63,7 @@ import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
 import { createResourceBar } from "../ui/resourceBar";
 import { createSelectionBox } from "../ui/selectionBox";
+import { createCameraMemory, homeView } from "./cameraMemory";
 
 export const DEFAULT_MAP = "first-line";
 export const DEFAULT_SEED = 1;
@@ -196,7 +197,7 @@ export function startSkirmish(params: SkirmishOptions): void {
   /** Wall-clock time spent paused; subtracted from the effects clock (spec 08 §3). */
   let pausedTotalMs = 0;
   let pauseStartMs: number | null = null;
-  /** Whether the skirmish AI plays; null when none is attached (spec 08 §3.2). */
+  /** Whether the skirmish AI plays; null when none is attached (spec 08 §3.3). */
   let aiActive: boolean | null = ai === null ? null : true;
 
   const gameMenu = createGameMenu(document.body, {
@@ -207,7 +208,7 @@ export function startSkirmish(params: SkirmishOptions): void {
   });
   renderMenu();
 
-  /** Renders the game menu from the current state (spec 08 §3.1, §3.2). */
+  /** Renders the game menu from the current state (spec 08 §3.1, §3.3). */
   function renderMenu(): void {
     gameMenu.render({ open: paused, gore: settings.gore, ai: aiActive });
   }
@@ -252,6 +253,11 @@ export function startSkirmish(params: SkirmishOptions): void {
   /** Shadow-casting sun; its shadow camera follows the camera target (spec 10 §3). */
   let sunLight: DirectionalLight | null = null;
   let cameraTarget = { x: 0, y: 0 };
+  /** Per-player camera views for hot-seat player changes (spec 08 §3.2). */
+  const cameraMemory = createCameraMemory();
+  /** True after F2 to a player with no stored view: the next snapshot built
+   *  for that player centres the camera on their base. */
+  let centrePending = false;
   const interact: SkirmishClient = createSkirmishClient(
     new Worker(new URL("../sim/sim.worker.ts", import.meta.url), {
       type: "module",
@@ -333,12 +339,31 @@ export function startSkirmish(params: SkirmishOptions): void {
   function centreOnOwnHq(snapshot: MatchSnapshot): void {
     const hq = ownHeadquarters(snapshot.entities, controlled);
     if (hq === null) return;
+    moveCamera(hq.x, hq.y);
+  }
+
+  function moveCamera(x: number, y: number): void {
     if (controller !== null) {
-      controller.setTarget(hq.x, hq.y);
+      controller.setTarget(x, y);
       return;
     }
-    cameraTarget = { x: hq.x, y: hq.y };
-    setCameraTarget(camera, hq.x, hq.y);
+    cameraTarget = { x, y };
+    setCameraTarget(camera, x, y);
+  }
+
+  /** Centres on the controlled player's base once a snapshot built for them
+   *  arrives (spec 08 §3.2). */
+  function centreOnHomeIfPending(snapshot: MatchSnapshot): void {
+    if (!centrePending) return;
+    if (snapshot.viewer !== controlled && snapshot.viewer !== OBSERVER) return;
+    centrePending = false;
+    const home = homeView(
+      snapshot.entities,
+      controlled,
+      RULES.factions[controlled]?.hq ?? null,
+      (kind) => typeDef(kind).category === "building",
+    );
+    if (home !== null) moveCamera(home.x, home.y);
   }
 
   /** `#hud-player`, 1-based (spec §6.6). */
@@ -432,7 +457,16 @@ export function startSkirmish(params: SkirmishOptions): void {
 
   /** Applies the controlled-player change of the debug-only F2 key (§6.5). */
   function setControlledPlayer(player: number): void {
+    const current = controller?.cameraTarget() ?? cameraTarget;
+    const view = cameraMemory.switchPlayer(controlled, player, current);
     controlled = player;
+    if (view === null) {
+      centrePending = true;
+      if (next !== null) centreOnHomeIfPending(next);
+    } else {
+      centrePending = false;
+      moveCamera(view.x, view.y);
+    }
     // Reveal keeps the observer viewer; otherwise the viewer follows.
     if (viewer !== OBSERVER) {
       viewer = player;
@@ -512,6 +546,7 @@ export function startSkirmish(params: SkirmishOptions): void {
     hud.setTick(snapshot.tick);
     // Only the first snapshot of a controlled player re-centres the camera.
     if (!ready) centreOnOwnHq(snapshot);
+    centreOnHomeIfPending(snapshot);
     start();
     // Effects derive from the tick transition only; a re-post from `setViewer`
     // repeats the same tick and must not duplicate shots.
@@ -546,7 +581,7 @@ export function startSkirmish(params: SkirmishOptions): void {
     renderMenu();
   }
 
-  /** Pauses or resumes the skirmish AI (spec 08 §3.2). */
+  /** Pauses or resumes the skirmish AI (spec 08 §3.3). */
   function toggleAi(): void {
     if (aiActive === null) return;
     aiActive = !aiActive;
@@ -659,14 +694,7 @@ export function startSkirmish(params: SkirmishOptions): void {
         };
       },
       cameraTarget: () => controller?.cameraTarget() ?? { ...cameraTarget },
-      setCameraTarget: (x, y) => {
-        if (controller !== null) {
-          controller.setTarget(x, y);
-          return;
-        }
-        cameraTarget = { x, y };
-        setCameraTarget(camera, x, y);
-      },
+      setCameraTarget: moveCamera,
       command: (command) => interact.command(command),
       stateHash: () => interact.requestHash(),
       effectCounts: () => effects?.counts() ?? NO_EFFECT_COUNTS,

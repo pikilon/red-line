@@ -20,7 +20,7 @@ export interface SkirmishClient {
   command(command: SimCommand): void;
   setViewer(viewer: number): void;
   setPaused(paused: boolean): void;
-  /** Pauses or resumes the skirmish AI (spec 08 §3.2). */
+  /** Pauses or resumes the skirmish AI (spec 08 §3.3). */
   setAiActive(active: boolean): void;
   requestHash(): Promise<string>;
   /** Returns an unsubscribe function. */
