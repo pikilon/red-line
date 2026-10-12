@@ -1,13 +1,13 @@
 import ruleset from "@data/ruleset.json";
 import {
   ACESFilmicToneMapping,
+  BasicShadowMap,
   BoxGeometry,
   Color,
   DirectionalLight,
   HemisphereLight,
   Mesh,
   MeshBasicMaterial,
-  BasicShadowMap,
   Scene,
   Vector3,
   WebGLRenderer,
