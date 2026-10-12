@@ -1,0 +1,124 @@
+# Texture resources the game needs today (what exists: 3 terrain kinds and the
+# three model materials body/team/dark). `texture_tool.py` generates candidates
+# for each id; an agent judges them against `context` and `rules`; the owner
+# approves the final pick. Targets come from the procedural textures in
+# client/src/render/terrainTexture.ts so approved images blend with them.
+style: >-
+  stylised hand-painted texture of a remastered classic real-time strategy game,
+  slightly saturated, soft detail, evenly lit, flat orthographic view, no
+  perspective, no shadows, no text, no logos, no objects
+negative: >-
+  perspective, horizon, sky, vignette, shadow, cast shadow, text, watermark,
+  logo, border, frame, person, animal, vehicle, building, photo collage
+resources:
+  - id: grass
+    kind: terrain
+    target_mean: "#3f6b2a"
+    subject: short healthy green grass seen straight from above, subtle clumps and slightly darker and lighter patches
+    used_by: ground of every passable map tile; repeats every 4 map tiles
+    neighbours: [dirt blends over it in soft irregular patches; rock blocks stand on it; buildings and units sit on top of it]
+    rules:
+      - uniform medium detail, no large features that would repeat visibly (no flowers, stones, paths, bare soil)
+      - mid green, low contrast, no strong light or dark areas
+      - must tile seamlessly
+  - id: dirt
+    kind: terrain
+    target_mean: "#7a5f3e"
+    neighbour_base: grass
+    subject: dry brown bare earth seen straight from above with fine grit, tiny pebbles and subtle cracks
+    used_by: irregular dirt patches blended over the grass; also roads of worn ground
+    neighbours: [grass is under it and shows through at the soft patch edges]
+    rules:
+      - no grass blades or green, no large stones
+      - warm medium brown, low contrast
+      - must tile seamlessly and look natural next to grass
+  - id: rock
+    kind: terrain
+    target_mean: "#7d756b"
+    neighbour_base: grass
+    subject: weathered grey-beige rock surface seen from above with fine cracks and mineral speckles
+    used_by: impassable rock blocks (tops and sides) that stand on grass
+    neighbours: [grass surrounds every rock block; dirt may touch it]
+    rules:
+      - one continuous stone surface, not separate boulders or a cliff photo
+      - grey with a slight warm tone, thin dark cracks allowed, no moss
+      - must tile seamlessly
+  - id: ua-paint
+    kind: material
+    target_mean: "#5b6b3a"
+    subject: extreme close-up of a flat sheet of matte olive-green painted steel with fine scratches, dust and light wear; only the paint surface, no vehicle
+    used_by: "`body` material of Ukrainian vehicles (Bradley, Leopard 2A4, HIMARS, trucks, dozer)"
+    neighbours: [sits next to black tracks and wheels (dark-metal) and a bright team-colour stripe]
+    rules:
+      - flat painted metal, no panel lines, rivets, text or stars
+      - olive green, low contrast, even
+      - must tile seamlessly
+  - id: ru-paint
+    kind: material
+    target_mean: "#4a5a3c"
+    subject: extreme close-up of a flat sheet of matte dark green painted steel with fine scratches, dust and slight fading; only the paint surface, no vehicle
+    used_by: "`body` material of Russian vehicles (T-72B3, BMP-2, BRDM, TOS-1A, trucks, dozer)"
+    neighbours: [sits next to black tracks and wheels (dark-metal) and a bright team-colour stripe]
+    rules:
+      - flat painted metal, no panel lines, rivets, text or stars
+      - slightly darker and greyer green than Ukrainian paint, low contrast
+      - must tile seamlessly
+  - id: ua-concrete
+    kind: material
+    target_mean: "#8a8f90"
+    subject: smooth prefabricated light grey concrete wall with a faint blue tint, fine pores and hairline cracks
+    used_by: "`body` material of Ukrainian buildings (HQ, barracks, power plant, factory, supply center, defense)"
+    neighbours: [roofs use roof-metal; the ground around is grass or dirt]
+    rules:
+      - no windows, doors, bricks or graffiti, only the wall surface
+      - light grey, low contrast
+      - must tile seamlessly
+  - id: ru-concrete
+    kind: material
+    target_mean: "#857f76"
+    subject: weathered warm grey concrete wall with faint rust streaks and stains, fine pores
+    used_by: "`body` material of Russian buildings (HQ, barracks, power plant, factory, supply center, defense)"
+    neighbours: [roofs use roof-metal; the ground around is grass or dirt]
+    rules:
+      - no windows, doors, bricks or graffiti, only the wall surface
+      - warmer and dirtier than Ukrainian concrete, low contrast
+      - must tile seamlessly
+  - id: roof-metal
+    kind: material
+    target_mean: "#6f7670"
+    subject: dull grey-green corrugated metal roof sheets seen from above with fine rust spots
+    used_by: roofs of buildings of both factions
+    neighbours: [sits on top of concrete walls]
+    rules:
+      - regular ridges that run in one direction, no seams visible between sheets
+      - dull grey-green, low contrast
+      - must tile seamlessly
+  - id: dark-metal
+    kind: material
+    target_mean: "#2b2b2d"
+    subject: dark worn steel and rubber, near black with subtle scratches and tiny highlights
+    used_by: "`dark` material of all models: tracks, wheels, gun barrels, hatches"
+    neighbours: [sits next to the faction body paint]
+    rules:
+      - almost black, very low contrast, no treads or bolts, only the surface
+      - must tile seamlessly
+  - id: ua-camo
+    kind: material
+    priority: 3
+    target_mean: "#5f6a45"
+    subject: Ukrainian digital pixel camouflage cloth in olive, tan and dark brown
+    used_by: "`body` material of Ukrainian infantry (tiny models)"
+    neighbours: [skin and gear are the dark and team materials]
+    rules:
+      - small pixel blocks, three or four colours, no logos
+      - must tile seamlessly
+  - id: ru-camo
+    kind: material
+    priority: 3
+    target_mean: "#6a6f55"
+    subject: Russian digital camouflage cloth in pale green, tan and grey-brown
+    used_by: "`body` material of Russian infantry (tiny models)"
+    neighbours: [skin and gear are the dark and team materials]
+    rules:
+      - small digital pattern, three or four colours, no logos
+      - must tile seamlessly
