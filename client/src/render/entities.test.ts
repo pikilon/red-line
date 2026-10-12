@@ -464,4 +464,26 @@ describe("entity renderer", () => {
       false,
     );
   });
+
+  it("AC-10-08: scaffolding casts no shadow", () => {
+    // A building under construction adds exactly one scaffold instance.
+    const renderer = createEntityRenderer(100);
+    renderer.update(
+      [
+        entity(0, 0, "ua-power-plant", 6, 6, 1000, {
+          flags: ENTITY_FLAGS.underConstruction,
+          progress: 500,
+        }),
+      ],
+      new Set(),
+    );
+    expect(renderer.scaffolds.count).toBe(1);
+
+    // Scaffolding receives shadows but does not cast them (spec 10 AC-10-08).
+    expect(renderer.scaffolds.castShadow).toBe(false);
+    expect(renderer.scaffolds.receiveShadow).toBe(true);
+
+    // The building under construction keeps casting its growing shadow.
+    expect(renderer.buildings.castShadow).toBe(true);
+  });
 });

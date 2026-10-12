@@ -251,13 +251,15 @@ export function createEntityRenderer(
     capacity,
   );
   scaffolds.visible = false;
-  // Fallback boxes and scaffolds cast and receive shadows (spec 10 §3); the
-  // ghosts, bars and tracers stay out of the shadow pass.
+  // Fallback boxes cast and receive shadows while scaffolding only receives
+  // them (spec 10 AC-10-08): the building under construction keeps casting its
+  // growing shadow, but its scaffolding frame does not. The ghosts, bars and
+  // tracers stay out of the shadow pass.
   units.castShadow = true;
   units.receiveShadow = true;
   buildings.castShadow = true;
   buildings.receiveShadow = true;
-  scaffolds.castShadow = true;
+  scaffolds.castShadow = false;
   scaffolds.receiveShadow = true;
   const tracerPositions = new Float32BufferAttribute(capacity * 2 * 3, 3);
   const tracerColors = new Float32BufferAttribute(capacity * 2 * 3, 3);
