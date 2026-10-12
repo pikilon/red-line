@@ -30,3 +30,17 @@ Several agents may run at once: ComfyUI queues the images. Use only this tool an
 ## Final report (under 60 words)
 
 Resource id, number of attempts, pick, valid yes/no, the main problem if any. No more.
+
+## Apply step (after `accept`, once spec 12 is in the game)
+
+Each resource goes through generate, validate, apply, check in the game, and only then the next resource.
+
+7. `RED_LINE_APPLY_DIR=<checkout>/client/public/textures texture_tool.py apply ID` (the checkout and its dev server are given in your task).
+8. `RED_LINE_CLIENT_DIR=<checkout>/client node ingame_shot.mjs <devServerUrl> <scratch>/ID-generated.png` and the same with `procedural`
+   as third argument for the comparison. Vite serves `public/` live, no restart needed.
+9. Open both screenshots with the Read tool. Judge in context: does the new texture look right on the ground or on the models,
+   does it clash with its neighbours (grass vs dirt vs rock, paint vs dark metal vs concrete), are there visible seams or repeats, is it
+   far too bright, dark or noisy next to the rest? Terrain textures show on the map floor; `*-paint`, `*-concrete` and `dark-metal` show
+   on models (the HQ is a building, the dozer a vehicle; the projection can look stretched: that alone is not a failure).
+10. If it clashes, go back to step 2 with a corrective `--extra` (at most 2 extra attempts) and apply again; otherwise add
+    `"in_game": "ok|issue: ..."` to `verdict.json` and go on to the next resource.

@@ -6,7 +6,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const require = createRequire(resolve(here, "../../client/package.json"));
+const require = createRequire(resolve(process.env.RED_LINE_CLIENT_DIR ?? resolve(here, "../../client"), "package.json"));
 const { chromium } = require("@playwright/test");
 
 const [baseUrl, out, mode] = process.argv.slice(2);
