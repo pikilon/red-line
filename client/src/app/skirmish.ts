@@ -196,13 +196,21 @@ export function startSkirmish(params: SkirmishOptions): void {
   /** Wall-clock time spent paused; subtracted from the effects clock (spec 08 §3). */
   let pausedTotalMs = 0;
   let pauseStartMs: number | null = null;
+  /** Whether the skirmish AI plays; null when none is attached (spec 08 §3.2). */
+  let aiActive: boolean | null = ai === null ? null : true;
 
   const gameMenu = createGameMenu(document.body, {
     resume: () => setMenuOpen(false),
     toggleGore: () => toggleGore(),
+    toggleAi: () => toggleAi(),
     restart: () => window.location.reload(),
   });
-  gameMenu.render({ open: false, gore: settings.gore });
+  renderMenu();
+
+  /** Renders the game menu from the current state (spec 08 §3.1, §3.2). */
+  function renderMenu(): void {
+    gameMenu.render({ open: paused, gore: settings.gore, ai: aiActive });
+  }
 
   /** Shows `message` in `#toast` for `TOAST_MS` (spec 07 §5). */
   function showToast(message: string): void {
@@ -535,7 +543,15 @@ export function startSkirmish(params: SkirmishOptions): void {
     saveSettings(settings);
     if (!settings.gore) effects?.clear("blood");
     showToast(t(settings.gore ? "settings.goreOn" : "settings.goreOff"));
-    gameMenu.render({ open: paused, gore: settings.gore });
+    renderMenu();
+  }
+
+  /** Pauses or resumes the skirmish AI (spec 08 §3.2). */
+  function toggleAi(): void {
+    if (aiActive === null) return;
+    aiActive = !aiActive;
+    interact.setAiActive(aiActive);
+    renderMenu();
   }
 
   /** Freezes the effects clock while paused and keeps it continuous otherwise. */
@@ -557,7 +573,7 @@ export function startSkirmish(params: SkirmishOptions): void {
       }
       interact.setPaused(paused);
     }
-    gameMenu.render({ open: paused, gore: settings.gore });
+    renderMenu();
   }
 
   window.addEventListener("keydown", (event) => {
@@ -613,6 +629,7 @@ export function startSkirmish(params: SkirmishOptions): void {
       tick: () => next?.tick ?? 0,
       paused: () => paused,
       menuOpen: () => paused,
+      aiActive: () => aiActive,
       controlledPlayer: () => controlled,
       viewer: () => viewer,
       entities: () => next?.entities ?? [],

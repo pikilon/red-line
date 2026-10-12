@@ -66,6 +66,8 @@ export type InitSkirmishMessage = {
 export type CommandMessage = { type: "command"; command: SimCommand };
 export type SetViewerMessage = { type: "setViewer"; viewer: number };
 export type SetPausedMessage = { type: "setPaused"; paused: boolean };
+/** Pauses or resumes the skirmish AI (spec 08 §3.2). */
+export type SetAiActiveMessage = { type: "setAiActive"; active: boolean };
 export type MainToWorker =
   | InitMessage
   | MoveMessage
@@ -73,7 +75,8 @@ export type MainToWorker =
   | InitSkirmishMessage
   | CommandMessage
   | SetViewerMessage
-  | SetPausedMessage;
+  | SetPausedMessage
+  | SetAiActiveMessage;
 
 export type ReadyMessage = {
   type: "ready";

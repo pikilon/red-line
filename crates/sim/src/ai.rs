@@ -34,6 +34,8 @@ pub struct Ai {
     force: Option<u16>,
     /// Units committed to the current attack.
     attackers: Vec<EntityId>,
+    /// Inactive AIs skip `think` (spec 08 §3.2).
+    active: bool,
 }
 
 impl core::fmt::Debug for Ai {
@@ -74,6 +76,7 @@ impl Ai {
             rng: SplitMix64::new(seed ^ u64::from(player)),
             force: None,
             attackers: Vec::new(),
+            active: true,
         })
     }
 
@@ -84,12 +87,22 @@ impl Ai {
 
     /// Whether `step_with_ai` lets this AI think (spec 08 §3.2).
     pub fn is_active(&self) -> bool {
-        true
+        self.active
     }
 
-    /// Pauses or resumes the AI (spec 08 §3.2).
-    pub fn set_active(&mut self, _active: bool) -> Vec<Command> {
-        Vec::new()
+    /// Pauses or resumes the AI (spec 08 §3.2). Pausing an active AI returns
+    /// one `Stop` for the units committed to the current attack (none when
+    /// there are none); every other call returns nothing.
+    pub fn set_active(&mut self, active: bool) -> Vec<Command> {
+        let pausing = self.active && !active;
+        self.active = active;
+        if pausing && !self.attackers.is_empty() {
+            vec![Command::Stop {
+                units: self.attackers.clone(),
+            }]
+        } else {
+            Vec::new()
+        }
     }
 
     /// One decision pass; returns commands in the order of §5.4. Returns no
@@ -321,12 +334,12 @@ impl Ai {
     }
 }
 
-/// When `world.tick() % AI_THINK_INTERVAL == 0`, each AI in slice order thinks
+/// When `world.tick() % AI_THINK_INTERVAL == 0`, each active AI in slice order thinks
 /// and its commands are enqueued with `enqueue_as(ai.player(), ..)`; then
 /// `world.step()` runs once.
 pub fn step_with_ai(world: &mut World, ais: &mut [Ai]) {
     if world.tick().is_multiple_of(AI_THINK_INTERVAL) {
-        for ai in ais.iter_mut() {
+        for ai in ais.iter_mut().filter(|ai| ai.is_active()) {
             let player = ai.player();
             let commands = ai.think(world);
             for command in commands {
