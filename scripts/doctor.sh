@@ -43,6 +43,9 @@ need "OpenCode" opencode optional
 command -v comfyui >/dev/null 2>&1 \
   && ok "ComfyUI installed (command comfyui)" \
   || warn "ComfyUI not installed (optional): node --run assets:comfyui:setup"
+command -v comfy-mcp >/dev/null 2>&1 \
+  && ok "ComfyUI MCP (comfy-mcp)" \
+  || warn "comfy-mcp missing (optional): node --run assets:comfyui:setup"
 curl -fsS -m 2 http://127.0.0.1:1234/v1/models >/dev/null 2>&1 \
   && ok "LM Studio server reachable on :1234" || warn "LM Studio server not running on :1234"
 

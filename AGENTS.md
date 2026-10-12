@@ -76,6 +76,9 @@ code: agents implement, the owner reviews quality hands-on.
 * Agents may start local models (LM Studio on `http://127.0.0.1:1234/v1`,
   through `dsh` or OpenCode) whenever useful, never at game runtime. If a local
   model or harness fails, stop and tell the owner instead of working around it.
+* The ComfyUI MCP (`.mcp.json`, `tools/asset-pipeline/MCP.md`) runs local
+  workflows only: `partner_*`, `auth_login` and model downloads need the
+  owner's confirmation.
 * A paid remote AI API needs the owner's confirmation for that run: agents ask
   in chat, scripts ask interactively and fall back to local models. Code,
   tests, CI and the game never call one.
