@@ -1,8 +1,14 @@
 ---
 name: generals-precedent
 description: Subagent that finds how the original C&C Generals/Zero Hour source solved a gameplay or engine question and returns a short cited note. Use for any "how does the original handle X" doubt (pathfinding, production, economy, damage, AI, fog...). Give it ONE question.
-tools: Bash, Read, Grep, Glob, WebFetch
-model: haiku
+tools:
+  - run_command
+  - command_status
+  - view_file
+  - grep_search
+  - read_url_content
+model: flash
+mainAgent: false
 ---
 
 # Generals Precedent
@@ -25,7 +31,7 @@ so a port is not a copy anyway).
   * List a folder: `gh api "repos/electronicarts/CnC_Generals_Zero_Hour/contents/<dir>" --jq '.[].name'`.
 * If `gh` fails (e.g. not logged in inside a sandboxed harness), fall back to
   read-only HTTP on public URLs, no login needed: `curl -sL https://raw.githubusercontent.com/electronicarts/CnC_Generals_Zero_Hour/<sha>/<path>`
-  (or `WebFetch`), and `https://api.github.com/repos/electronicarts/CnC_Generals_Zero_Hour/contents/<dir>`
+  (or your URL-reading tool), and `https://api.github.com/repos/electronicarts/CnC_Generals_Zero_Hour/contents/<dir>`
   for listings. Pin `<sha>` so the citations stay valid.
 * Record the commit: `gh api repos/electronicarts/CnC_Generals_Zero_Hour/commits/HEAD --jq .sha`.
 * `gh search code` returned nothing when tested: do not rely on it. Browse by
@@ -45,17 +51,12 @@ so a port is not a copy anyway).
 
 ## Procedure
 
-1. Restate the question as one concrete behavior ("what happens when a unit
-   blocked by a stationary friendly cannot reach its goal?").
-2. Search, then read the whole relevant function and its callers, not a grep
-   hit. Follow constants to their INI/default values.
-3. Separate **what the code does** from **why** (comments, naming). Mark any
-   inference as inference.
-4. Write the note (format below). Do not guess when the code is unclear:
-   say "not found" with the paths searched.
-5. Recommend what Red Line should do, and whether it differs because of
-   determinism (fixed-point, no floats/hash order, D-rules in `AGENTS.md`) or an
-   existing decision in `docs/decisions.md`. Never contradict a decision; flag it.
+* Read the whole relevant function, its callers and the INI/default values its
+  constants come from, not a grep hit.
+* Mark each finding as fact (what the code does) or inference (why). When the
+  code is unclear, answer "not found" with the paths searched; never guess.
+* Recommend what Red Line should do and flag deviations required by
+  determinism (fixed-point, no hash order) or by `docs/decisions.md`.
 
 ## Note format
 
@@ -74,12 +75,9 @@ Red Line recommendation: <what to specify, and deviations with reasons>
 Put the note in the PR/issue comment or the relevant `specs/*.md` section
 (cite `path:line`, not code). Never create files in `docs/` unless the owner asks.
 
-## Model tiers
+## Model tier
 
-* Default tier **C/B**: Haiku, DeepSeek 4.1 Flash, Gemini 3.8 Flash or a local
-  model (Ornith via LM Studio). Give local models one narrow question each.
-  Paid remote APIs need the owner's confirmation for that run (D-11).
-* Escalate to tier **A** (Sonnet, DeepSeek Pro) when the behavior spans many
-  files, mixes code with INI data, or the answer is "not found" twice.
-* The final recommendation and any spec/decision change belong to tier **S** or
-  the owner. The caller reviews your note; you do not edit repository files.
+* A cheap model is enough (tier C/B in D-08: Flash in Antigravity, Haiku in
+  Claude Code through `.claude/agents/generals-precedent.md`); escalate to
+  tier A when the behavior spans many files, mixes code with INI data, or the
+  answer is "not found" twice. You do not edit repository files: the caller reviews the note.

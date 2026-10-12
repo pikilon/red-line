@@ -71,6 +71,17 @@ approval, and record the change here with its date.
 
 * Harnesses: Antigravity, Claude Code (>= 2.1.277, reads `AGENTS.md`),
   OpenCode, DeepSeek harness. All share `AGENTS.md` + `.agents/skills/`.
+  Antigravity and DeepSeek Harness discover `.agents/skills/` natively; Claude
+  Code discovers skills through the `.claude/skills` symlink (amended
+  2026-10-12). Antigravity also reads the file-defined subagents in
+  `.agents/agents/` (their frontmatter uses its format: `model: flash`); Claude
+  Code reads thin wrappers in `.claude/agents/` (`model: haiku`); DeepSeek
+  Harness and OpenCode follow them as instructions.
+* Verification runs on a cheap model outside the caller's context
+  (2026-10-12): the `verification-runner` subagent (Flash or Haiku) first runs
+  `node --run verify:agent` on the local model. Without subagents,
+  `verify:agent` falls back to DeepSeek Flash only with the owner's
+  confirmation (D-11).
 * Model tiers:
   * **S** (Opus): specs, failing tests, issue breakdown, PR review, 3D models.
   * **A** (Sonnet, DeepSeek): complex implementation.

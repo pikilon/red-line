@@ -1,0 +1,84 @@
+import { t } from "../i18n";
+import { appendDiv, setText } from "./dom";
+
+/** What one game menu render shows (spec 08 §3.1). */
+export interface GameMenuView {
+  open: boolean;
+  gore: boolean;
+}
+
+/** Callbacks the game menu buttons invoke (spec 08 §3.1). */
+export interface GameMenuActions {
+  /** Closes the menu and resumes. */
+  resume(): void;
+  /** Same as the `G` key (spec 07 §5). */
+  toggleGore(): void;
+  /** Reloads the page with the same query string. */
+  restart(): void;
+}
+
+/** The `#game-menu` overlay (spec 08 §3.1). */
+export interface GameMenu {
+  /** `#game-menu`. */
+  readonly root: HTMLElement;
+  /** Re-renders only when `view` differs from the last rendered view. */
+  render(view: GameMenuView): void;
+}
+
+/** The full-screen game menu: a backdrop with a centred panel holding the
+ *  title and the Resume, Gore and Restart buttons. Buttons are created once,
+ *  so they stay clickable with a real mouse (spec 08 §3.1, AC-03-65). */
+export function createGameMenu(
+  parent: HTMLElement,
+  actions: GameMenuActions,
+): GameMenu {
+  const root = appendDiv(parent, "game-menu");
+  root.hidden = true;
+
+  const panel = appendDiv(root, "game-menu-panel");
+  const title = document.createElement("h2");
+  title.id = "game-menu-title";
+  title.textContent = t("menu.title");
+  panel.appendChild(title);
+
+  const resume = createButton("game-menu-resume", t("menu.resume"), () => {
+    actions.resume();
+  });
+  const gore = createButton("game-menu-gore", t("menu.goreOff"), () => {
+    actions.toggleGore();
+  });
+  const restart = createButton("game-menu-restart", t("menu.restart"), () => {
+    actions.restart();
+  });
+  panel.appendChild(resume);
+  panel.appendChild(gore);
+  panel.appendChild(restart);
+
+  /** Last rendered view; an equal render mutates nothing. */
+  let last: GameMenuView | null = null;
+
+  return {
+    root,
+    render(view) {
+      if (last !== null && last.open === view.open && last.gore === view.gore) {
+        return;
+      }
+      last = { open: view.open, gore: view.gore };
+      if (root.hidden !== !view.open) root.hidden = !view.open;
+      setText(gore, t(view.gore ? "menu.goreOn" : "menu.goreOff"));
+    },
+  };
+}
+
+/** A menu button created once; only its text changes on render. */
+function createButton(
+  id: string,
+  label: string,
+  onClick: () => void,
+): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.id = id;
+  button.textContent = label;
+  button.addEventListener("click", onClick);
+  return button;
+}

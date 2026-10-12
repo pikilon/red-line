@@ -58,6 +58,7 @@ import {
   type PanelInput,
   samePanelInput,
 } from "../ui/commandPanel";
+import { createGameMenu } from "../ui/gameMenu";
 import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
 import { createResourceBar } from "../ui/resourceBar";
@@ -191,11 +192,17 @@ export function startSkirmish(params: SkirmishOptions): void {
   let settings: Settings = loadSettings();
   const toast = document.getElementById("toast");
   let toastTimer: number | null = null;
-  const pauseOverlay = document.getElementById("pause-overlay");
   let paused = false;
   /** Wall-clock time spent paused; subtracted from the effects clock (spec 08 §3). */
   let pausedTotalMs = 0;
   let pauseStartMs: number | null = null;
+
+  const gameMenu = createGameMenu(document.body, {
+    resume: () => setMenuOpen(false),
+    toggleGore: () => toggleGore(),
+    restart: () => window.location.reload(),
+  });
+  gameMenu.render({ open: false, gore: settings.gore });
 
   /** Shows `message` in `#toast` for `TOAST_MS` (spec 07 §5). */
   function showToast(message: string): void {
@@ -528,6 +535,7 @@ export function startSkirmish(params: SkirmishOptions): void {
     saveSettings(settings);
     if (!settings.gore) effects?.clear("blood");
     showToast(t(settings.gore ? "settings.goreOn" : "settings.goreOff"));
+    gameMenu.render({ open: paused, gore: settings.gore });
   }
 
   /** Freezes the effects clock while paused and keeps it continuous otherwise. */
@@ -536,25 +544,20 @@ export function startSkirmish(params: SkirmishOptions): void {
     return wallMs - pausedTotalMs - ongoing;
   }
 
-  /** Renders the pause overlay on change only (spec 08 §3). */
-  function renderPause(): void {
-    if (!(pauseOverlay instanceof HTMLElement)) return;
-    const text = paused ? t("pause.overlay") : "";
-    if (pauseOverlay.textContent !== text) pauseOverlay.textContent = text;
-    if (pauseOverlay.hidden !== !paused) pauseOverlay.hidden = !paused;
-  }
-
-  /** Toggles pause and tells the worker to stop stepping (spec 08 §3). */
-  function togglePause(): void {
-    paused = !paused;
-    if (paused) {
-      pauseStartMs = performance.now();
-    } else if (pauseStartMs !== null) {
-      pausedTotalMs += performance.now() - pauseStartMs;
-      pauseStartMs = null;
+  /** Opens or closes the game menu; there is no pause without the menu
+   *  (spec 08 §3.1). */
+  function setMenuOpen(open: boolean): void {
+    if (paused !== open) {
+      paused = open;
+      if (open) {
+        pauseStartMs = performance.now();
+      } else if (pauseStartMs !== null) {
+        pausedTotalMs += performance.now() - pauseStartMs;
+        pauseStartMs = null;
+      }
+      interact.setPaused(paused);
     }
-    interact.setPaused(paused);
-    renderPause();
+    gameMenu.render({ open: paused, gore: settings.gore });
   }
 
   window.addEventListener("keydown", (event) => {
@@ -563,10 +566,12 @@ export function startSkirmish(params: SkirmishOptions): void {
       toggleGore();
       return;
     }
-    if (event.key === "p" || event.key === "P" || event.key === "Pause") {
-      event.preventDefault();
-      togglePause();
-    }
+    if (event.key !== "Escape") return;
+    // While a placement mode is active the controller cancels it instead; this
+    // listener runs first, so it must leave the event alone (spec 08 §3.1).
+    if (placementKind !== null) return;
+    event.preventDefault();
+    setMenuOpen(!paused);
   });
 
   const frameStats = createFrameStats();
@@ -607,6 +612,7 @@ export function startSkirmish(params: SkirmishOptions): void {
       modelsReady: () => modelsReady,
       tick: () => next?.tick ?? 0,
       paused: () => paused,
+      menuOpen: () => paused,
       controlledPlayer: () => controlled,
       viewer: () => viewer,
       entities: () => next?.entities ?? [],
