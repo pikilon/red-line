@@ -19,6 +19,7 @@ interface SkirmishMenuDebugView {
   paused(): boolean;
   menuOpen(): boolean;
   gore(): boolean;
+  aiActive(): boolean | null;
   typeIndex(id: string): number;
   entities(): EntityView[];
   worldToScreen(x: number, y: number): Point;
@@ -26,8 +27,8 @@ interface SkirmishMenuDebugView {
 
 type DebugWindow = Window & { __redline?: SkirmishMenuDebugView };
 
-async function boot(page: Page): Promise<void> {
-  await page.goto("/?debug=1&seed=1&ai=off");
+async function boot(page: Page, query = "?debug=1&seed=1&ai=off"): Promise<void> {
+  await page.goto(`/${query}`);
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
@@ -54,6 +55,12 @@ function menuOpen(page: Page): Promise<boolean> {
 function gore(page: Page): Promise<boolean> {
   return page.evaluate(
     () => (window as DebugWindow).__redline?.gore() ?? false,
+  );
+}
+
+function aiActive(page: Page): Promise<boolean | null> {
+  return page.evaluate(
+    () => (window as DebugWindow).__redline?.aiActive() ?? null,
   );
 }
 
@@ -152,4 +159,28 @@ test("AC-08-03: game menu in the skirmish", async ({ page }) => {
   await expect(hint).toBeHidden();
   await expect(menu).toBeHidden();
   await expect.poll(() => paused(page)).toBe(false);
+});
+
+test("AC-08-07: AI toggle in the skirmish", async ({ page }) => {
+  await boot(page, "?debug=1&seed=1");
+  expect(await aiActive(page)).toBe(true);
+  const aiButton = page.locator("#game-menu-ai");
+
+  // A real mouse click toggles the AI off and back on.
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#game-menu")).toBeVisible();
+  await expect(aiButton).toHaveText("AI: on");
+  await page.getByRole("button", { name: "AI: on" }).click();
+  await expect(aiButton).toHaveText("AI: off");
+  await expect.poll(() => aiActive(page)).toBe(false);
+  await page.getByRole("button", { name: "AI: off" }).click();
+  await expect(aiButton).toHaveText("AI: on");
+  await expect.poll(() => aiActive(page)).toBe(true);
+
+  // Without an AI the button is hidden.
+  await boot(page, "?debug=1&seed=1&ai=off");
+  expect(await aiActive(page)).toBeNull();
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#game-menu")).toBeVisible();
+  await expect(aiButton).toBeHidden();
 });

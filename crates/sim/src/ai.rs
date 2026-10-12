@@ -82,6 +82,16 @@ impl Ai {
         self.player
     }
 
+    /// Whether `step_with_ai` lets this AI think (spec 08 §3.2).
+    pub fn is_active(&self) -> bool {
+        true
+    }
+
+    /// Pauses or resumes the AI (spec 08 §3.2).
+    pub fn set_active(&mut self, _active: bool) -> Vec<Command> {
+        Vec::new()
+    }
+
     /// One decision pass; returns commands in the order of §5.4. Returns no
     /// commands when the player is defeated or the outcome is not `Ongoing`.
     pub fn think(&mut self, world: &World) -> Vec<Command> {

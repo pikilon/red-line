@@ -73,6 +73,11 @@ impl Sim {
         Ok(())
     }
 
+    /// Pauses or resumes the AI of `player` (spec 08 §3.2).
+    pub fn set_ai_active(&mut self, _player: u8, _active: bool) -> bool {
+        false
+    }
+
     pub fn map_width(&self) -> u32 {
         u32::from(self.world.map().width())
     }

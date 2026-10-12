@@ -515,3 +515,60 @@ fn ac_05_14_defense() {
         "expected no launch while defending, got {commands:?}"
     );
 }
+
+// AC-08-05: AI pause (spec 08 §3.2).
+
+#[test]
+fn ac_08_05_ai_pause() {
+    // (a) Pausing an AI that launched an attack stops the launched units.
+    let mut world = skirmish();
+    let barracks_kind = world.rules().type_index("ua-barracks").unwrap();
+    let rifleman = world.rules().type_index("ua-rifleman").unwrap();
+    let stugna = world.rules().type_index("ua-stugna-team").unwrap();
+    world.set_credits(0, 10_000);
+    world.place_building(0, barracks_kind, cell(18, 64), true);
+    let mut ai = ukraine_ai(&world);
+    assert!(ai.is_active(), "a new AI is active");
+    let _ = ai.think(&world);
+    let near = FxVec2::new(fx_centi(1650), fx_centi(6250));
+    let mut units = Vec::new();
+    for _ in 0..4 {
+        units.push(world.spawn(0, rifleman, near));
+    }
+    for _ in 0..2 {
+        units.push(world.spawn(0, stugna, near));
+    }
+    let commands = ai.think(&world);
+    assert_eq!(commands_referencing(&commands, &units).len(), 1);
+    for command in commands {
+        world.enqueue_as(0, command);
+    }
+    world.step();
+
+    assert_eq!(
+        ai.set_active(false),
+        vec![Command::Stop {
+            units: units.clone()
+        }]
+    );
+    assert!(!ai.is_active());
+    assert!(ai.set_active(false).is_empty(), "pausing twice stops nothing");
+    assert!(ai.set_active(true).is_empty(), "resuming returns nothing");
+    assert!(ai.is_active());
+
+    // (b) A paused AI leaves the match identical to one with no AI.
+    let mut paused = sim::wasm_api::Sim::skirmish(1, "first-line").unwrap();
+    paused.attach_ai(1, "russia-balanced").unwrap();
+    assert!(paused.set_ai_active(1, false));
+    assert!(!paused.set_ai_active(0, false), "player 0 has no AI");
+    let mut without = sim::wasm_api::Sim::skirmish(1, "first-line").unwrap();
+    paused.step_n(900);
+    without.step_n(900);
+    assert_eq!(paused.state_hash_hex(), without.state_hash_hex());
+
+    // Resuming lets it play again.
+    assert!(paused.set_ai_active(1, true));
+    paused.step_n(900);
+    without.step_n(900);
+    assert_ne!(paused.state_hash_hex(), without.state_hash_hex());
+}

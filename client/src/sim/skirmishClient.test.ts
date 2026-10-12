@@ -141,4 +141,20 @@ describe("skirmish client", () => {
     client.setPaused(false);
     expect(worker.sent[2]).toEqual({ type: "setPaused", paused: false });
   });
+
+  it("AC-08-06: worker and client AI toggle", () => {
+    const worker = new FakeWorker();
+    const client = createSkirmishClient(worker, {
+      seed: 7,
+      mapId: "first-line",
+      viewer: 0,
+      speed: 1,
+      debug: false,
+    });
+
+    client.setAiActive(false);
+    expect(worker.sent[1]).toEqual({ type: "setAiActive", active: false });
+    client.setAiActive(true);
+    expect(worker.sent[2]).toEqual({ type: "setAiActive", active: true });
+  });
 });
