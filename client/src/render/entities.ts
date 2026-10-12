@@ -120,17 +120,21 @@ function healthColor(ratio: number): number {
   return ratio > 0.25 ? HEALTH_COLORS.mid : HEALTH_COLORS.low;
 }
 
-/** `geometry` as non-indexed with a constant `color` attribute. */
+/** `geometry` as non-indexed with a constant `color` attribute, multiplied by
+ *  the baked ambient occlusion of its `COLOR_0` when present (spec 10 §5). */
 function withColor(geometry: BufferGeometry, hex: number): BufferGeometry {
   const source =
     geometry.index !== null ? geometry.toNonIndexed() : geometry.clone();
   const position = source.getAttribute("position");
+  const occlusion = source.hasAttribute("color")
+    ? source.getAttribute("color")
+    : null;
   const colors = new Float32Array(position.count * 3);
   const color = new Color(hex);
   for (let i = 0; i < position.count; i++) {
-    colors[i * 3] = color.r;
-    colors[i * 3 + 1] = color.g;
-    colors[i * 3 + 2] = color.b;
+    colors[i * 3] = color.r * (occlusion?.getX(i) ?? 1);
+    colors[i * 3 + 1] = color.g * (occlusion?.getY(i) ?? 1);
+    colors[i * 3 + 2] = color.b * (occlusion?.getZ(i) ?? 1);
   }
   source.setAttribute("color", new Float32BufferAttribute(colors, 3));
   return source;
@@ -153,9 +157,17 @@ function opaqueGeometry(
   return mergeGeometries(sources, false) ?? first;
 }
 
-function modelMaterial(material: MaterialName): MeshLambertMaterial {
+/** `team` is shaded by its `COLOR_0` occlusion when the geometry has one. */
+function modelMaterial(
+  material: MaterialName,
+  geometry: BufferGeometry,
+): MeshLambertMaterial {
   return material === "team"
-    ? new MeshLambertMaterial({ color: 0xffffff, flatShading: true })
+    ? new MeshLambertMaterial({
+        color: 0xffffff,
+        vertexColors: geometry.hasAttribute("color"),
+        flatShading: true,
+      })
     : new MeshLambertMaterial({ vertexColors: true, flatShading: true });
 }
 
@@ -292,7 +304,7 @@ export function createEntityRenderer(
       if (geometry === undefined) continue;
       const mesh = new InstancedMesh(
         geometry,
-        modelMaterial(material),
+        modelMaterial(material, geometry),
         capacity,
       );
       mesh.count = 0;

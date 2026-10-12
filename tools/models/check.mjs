@@ -1,5 +1,6 @@
 // Model check (spec 06 §3, §4): validates every client/public/models/*.glb
-// against the builtin ruleset without dependencies. `--strict` also fails on
+// against the builtin ruleset without dependencies, including the baked
+// ambient occlusion in COLOR_0 (spec 10 §5). `--strict` also fails on
 // ruleset types that have no model yet.
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -15,6 +16,15 @@ const FILL = 0.7;
 const EPS = 0.01;
 const GLB_MAGIC = 0x46546c67;
 const JSON_CHUNK = 0x4e4f534a;
+const BIN_CHUNK = 0x004e4942;
+export const AO_MIN = 0.55;
+const AO_EPS = 0.002;
+const COMPONENTS = {
+  5121: { size: 1, max: 255, read: (view, at) => view.getUint8(at) },
+  5123: { size: 2, max: 65535, read: (view, at) => view.getUint16(at, true) },
+  5126: { size: 4, max: 1, read: (view, at) => view.getFloat32(at, true) },
+};
+const TYPE_WIDTH = { VEC3: 3, VEC4: 4 };
 
 /** The glTF JSON chunk of a GLB buffer. */
 export function parseGlb(buffer) {
@@ -23,6 +33,64 @@ export function parseGlb(buffer) {
   const length = view.getUint32(12, true);
   if (view.getUint32(16, true) !== JSON_CHUNK) throw new Error("first chunk is not JSON");
   return JSON.parse(new TextDecoder().decode(buffer.subarray(20, 20 + length)));
+}
+
+/** The binary chunk of a GLB buffer, or null when it has none. */
+export function parseGlbBinary(buffer) {
+  const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+  const offset = 20 + view.getUint32(12, true);
+  if (buffer.byteLength < offset + 8 || view.getUint32(offset + 4, true) !== BIN_CHUNK) return null;
+  return buffer.subarray(offset + 8, offset + 8 + view.getUint32(offset, true));
+}
+
+/** The values of an accessor as numbers in [0, 1] for normalized integers. */
+function accessorValues(gltf, bin, index) {
+  const accessor = gltf.accessors[index];
+  const component = COMPONENTS[accessor.componentType];
+  const width = TYPE_WIDTH[accessor.type];
+  if (component === undefined || width === undefined || accessor.bufferView === undefined) throw new Error("unsupported accessor");
+  const bufferView = gltf.bufferViews[accessor.bufferView];
+  const view = new DataView(bin.buffer, bin.byteOffset, bin.byteLength);
+  const base = (bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0);
+  const stride = bufferView.byteStride ?? component.size * width;
+  const rows = [];
+  for (let i = 0; i < accessor.count; i++) {
+    const row = [];
+    for (let c = 0; c < width; c++) {
+      const raw = component.read(view, base + i * stride + c * component.size);
+      row.push(accessor.normalized ? raw / component.max : raw);
+    }
+    rows.push(row);
+  }
+  return rows;
+}
+
+/** COLOR_0 rule violations of one model (spec 10 §5): every primitive carries
+ *  baked ambient occlusion with RGB in [AO_MIN, 1]. */
+export function checkColors(file, gltf, bin) {
+  const errors = [];
+  const fail = (detail) => errors.push(`${file}: ao: ${detail}`);
+  (gltf.meshes ?? []).forEach((mesh, m) => {
+    mesh.primitives.forEach((primitive, p) => {
+      const where = `mesh '${mesh.name ?? m}' primitive ${p}`;
+      const index = primitive.attributes.COLOR_0;
+      if (index === undefined) return fail(`${where} has no COLOR_0`);
+      if (bin === null) return fail(`${where}: COLOR_0 has no binary data`);
+      let low = Infinity;
+      let high = -Infinity;
+      try {
+        for (const row of accessorValues(gltf, bin, index))
+          for (const value of row.slice(0, 3)) {
+            low = Math.min(low, value);
+            high = Math.max(high, value);
+          }
+      } catch (error) {
+        return fail(`${where}: ${error.message}`);
+      }
+      if (low < AO_MIN - AO_EPS || high > 1 + AO_EPS) fail(`${where} COLOR_0 [${low.toFixed(3)}, ${high.toFixed(3)}] outside [${AO_MIN}, 1]`);
+    });
+  });
+  return errors;
 }
 
 /** Types that need a model: every unit, building and depot but the placeholder. */
@@ -109,8 +177,9 @@ export function checkModel(file, type, gltf) {
   return errors;
 }
 
-/** Errors and warnings for a models directory against a ruleset. */
-export function checkModels(dir, ruleset, strict) {
+/** Errors and warnings for a models directory against a ruleset; `colors`
+ *  also requires baked ambient occlusion in COLOR_0 (spec 10 §5). */
+export function checkModels(dir, ruleset, strict, { colors = false } = {}) {
   const errors = [];
   const warnings = [];
   const types = new Map(modelTypes(ruleset).map((t) => [t.id, t]));
@@ -122,7 +191,10 @@ export function checkModels(dir, ruleset, strict) {
       continue;
     }
     try {
-      errors.push(...checkModel(file, type, parseGlb(readFileSync(join(dir, file)))));
+      const buffer = readFileSync(join(dir, file));
+      const gltf = parseGlb(buffer);
+      errors.push(...checkModel(file, type, gltf));
+      if (colors) errors.push(...checkColors(file, gltf, parseGlbBinary(buffer)));
     } catch (error) {
       errors.push(`${file}: parse: ${error.message}`);
     }
@@ -136,7 +208,7 @@ export function checkModels(dir, ruleset, strict) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
   const ruleset = JSON.parse(readFileSync(join(root, "data", "generated", "ruleset.json"), "utf8"));
-  const { errors, warnings } = checkModels(join(root, "client", "public", "models"), ruleset, process.argv.includes("--strict"));
+  const { errors, warnings } = checkModels(join(root, "client", "public", "models"), ruleset, process.argv.includes("--strict"), { colors: true });
   for (const warning of warnings) console.warn(`warning: ${warning}`);
   for (const error of errors) console.error(`error: ${error}`);
   process.exit(errors.length > 0 ? 1 : 0);

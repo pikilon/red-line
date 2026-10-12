@@ -13,6 +13,8 @@ import os
 import sys
 
 import bpy
+from mathutils import Vector
+from mathutils.bvhtree import BVHTree
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT_DIR = os.path.join(REPO, "client", "public", "models")
@@ -20,6 +22,17 @@ OUT_DIR = os.path.join(REPO, "client", "public", "models")
 FACTION_BODY = {"ukraine": "#5b6b3a", "russia": "#6b6650", "neutral": "#8b5a2b"}
 TEAM = "#ffffff"
 DARK = "#2a2a2a"
+
+# Model detail (spec 10 §5): default bevel and baked ambient occlusion.
+BEVEL = 0.02
+BEVEL_MIN_SIDE = 0.1
+# Cylinder side edges meet at 360° / vertices (at most 60° for 6+ vertices);
+# cap edges meet at 90°, so this limit bevels the caps only.
+CAP_ANGLE = math.radians(75)
+AO_RAYS = 16
+AO_LENGTH = 0.5
+AO_MIN = 0.55
+AO_OFFSET = 1e-4
 
 
 def reset_scene():
@@ -71,28 +84,47 @@ def _finish(obj, name, mat):
     return obj
 
 
-def box(name, size, location, mat, bevel=0.0):
-    """Axis-aligned box of full extents `size` centred at `location`."""
+def _bevel(obj, width, angle_limit=None):
+    """Applies a one-segment bevel of `width` to edges sharper than the limit."""
+    mod = obj.modifiers.new("bevel", "BEVEL")
+    mod.width = width
+    mod.segments = 1
+    mod.limit_method = "ANGLE"
+    if angle_limit is not None:
+        mod.angle_limit = angle_limit
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+
+
+def box(name, size, location, mat, bevel=None):
+    """Axis-aligned box of full extents `size` centred at `location`.
+
+    `bevel` defaults to BEVEL when the smallest side is at least BEVEL_MIN_SIDE
+    and to a sharp box otherwise; pass a width (or 0) to override it.
+    """
     bpy.ops.mesh.primitive_cube_add(size=1, location=location)
     obj = bpy.context.active_object
     obj.scale = size
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    if bevel is None:
+        bevel = BEVEL if min(size) >= BEVEL_MIN_SIDE else 0.0
     if bevel > 0:
-        mod = obj.modifiers.new("bevel", "BEVEL")
-        mod.width = bevel
-        mod.segments = 1
-        bpy.ops.object.modifier_apply(modifier=mod.name)
+        _bevel(obj, bevel)
     return _finish(obj, name, mat)
 
 
-def cylinder(name, radius, depth, location, mat, vertices=8, axis="Z"):
-    """Cylinder along `axis` (X, Y or Z) centred at `location`."""
+def cylinder(name, radius, depth, location, mat, vertices=8, axis="Z", bevel=None):
+    """Cylinder along `axis` (X, Y or Z) centred at `location`; its caps get the
+    box() default bevel when diameter and depth are at least BEVEL_MIN_SIDE."""
     rotation = {"Z": (0, 0, 0), "X": (0, math.pi / 2, 0), "Y": (math.pi / 2, 0, 0)}[axis]
     bpy.ops.mesh.primitive_cylinder_add(
         vertices=vertices, radius=radius, depth=depth, location=location, rotation=rotation
     )
     obj = bpy.context.active_object
     bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+    if bevel is None:
+        bevel = BEVEL if min(2 * radius, depth) >= BEVEL_MIN_SIDE else 0.0
+    if bevel > 0:
+        _bevel(obj, bevel, CAP_ANGLE)
     return _finish(obj, name, mat)
 
 
@@ -191,9 +223,58 @@ def parent(child, parent_obj):
     return child
 
 
+def _hemisphere(count):
+    """`count` fixed, cosine-weighted directions around +Z (Fibonacci spiral)."""
+    golden = math.pi * (3 - math.sqrt(5))
+    directions = []
+    for i in range(count):
+        r = math.sqrt((i + 0.5) / count)
+        phi = i * golden
+        directions.append(Vector((r * math.cos(phi), r * math.sin(phi), math.sqrt(1 - r * r))))
+    return directions
+
+
+def bake_ambient_occlusion():
+    """Stores per-corner ambient occlusion in an active `AO` colour attribute of
+    every mesh (spec 10 §5): the fraction of AO_RAYS hemisphere directions
+    around the corner normal whose ray of AO_LENGTH tiles does not hit the
+    model, mapped to AO_MIN + (1 - AO_MIN) × AO."""
+    meshes = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
+    points = []
+    polygons = []
+    for obj in meshes:
+        offset = len(points)
+        points.extend(obj.matrix_world @ v.co for v in obj.data.vertices)
+        polygons.extend([offset + i for i in p.vertices] for p in obj.data.polygons)
+    tree = BVHTree.FromPolygons(points, polygons)
+    hemisphere = _hemisphere(AO_RAYS)
+    for obj in meshes:
+        mesh = obj.data
+        to_world = obj.matrix_world
+        normal_to_world = to_world.to_3x3().inverted().transposed()
+        attribute = mesh.color_attributes.new("AO", "FLOAT_COLOR", "CORNER")
+        cache = {}
+        for loop, corner in zip(mesh.loops, mesh.corner_normals):
+            normal = (normal_to_world @ corner.vector).normalized()
+            key = (loop.vertex_index, tuple(round(c, 4) for c in normal))
+            if key not in cache:
+                origin = to_world @ mesh.vertices[loop.vertex_index].co + normal * AO_OFFSET
+                rotation = Vector((0, 0, 1)).rotation_difference(normal)
+                free = sum(
+                    1 for d in hemisphere if tree.ray_cast(origin, rotation @ d, AO_LENGTH)[0] is None
+                )
+                cache[key] = AO_MIN + (1 - AO_MIN) * free / AO_RAYS
+            value = cache[key]
+            attribute.data[loop.index].color = (value, value, value, 1.0)
+        mesh.color_attributes.active_color = attribute
+        mesh.color_attributes.render_color_index = mesh.color_attributes.find("AO")
+
+
 def export(type_id, root):
-    """Names `root` after the type and writes client/public/models/<type_id>.glb."""
+    """Names `root` after the type, bakes ambient occlusion into COLOR_0 and
+    writes client/public/models/<type_id>.glb."""
     root.name = type_id
+    bake_ambient_occlusion()
     os.makedirs(OUT_DIR, exist_ok=True)
     bpy.ops.object.select_all(action="SELECT")
     path = os.path.join(OUT_DIR, f"{type_id}.glb")
@@ -207,6 +288,8 @@ def export(type_id, root):
         export_lights=False,
         export_animations=False,
         export_materials="EXPORT",
+        export_vertex_color="ACTIVE",
+        export_all_vertex_colors=False,
     )
     print(f"exported {path}", file=sys.stderr)
 
