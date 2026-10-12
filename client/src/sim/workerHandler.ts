@@ -6,6 +6,7 @@ import {
   MAX_STEPS_PER_ADVANCE,
   type MainToWorker,
   type MoveMessage,
+  type SetAiActiveMessage,
   type SetPausedMessage,
   type SetViewerMessage,
   type SimCommand,
@@ -38,6 +39,7 @@ export interface SkirmishSimLike {
   state_hash_hex(): string;
   enable_debug_commands(): void;
   attach_ai(player: number, personality: string): void;
+  set_ai_active(player: number, active: boolean): boolean;
   snapshot_for(viewer: number): Int32Array;
   fog_for(viewer: number): Uint8Array;
   command_move(
@@ -302,6 +304,9 @@ export function createWorkerHandler(
     },
     setPaused: (message: SetPausedMessage): void => {
       paused = message.paused;
+    },
+    setAiActive: (message: SetAiActiveMessage): void => {
+      skirmish?.set_ai_active(AI_PLAYER, message.active);
     },
   } as const;
 

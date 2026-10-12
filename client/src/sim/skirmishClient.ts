@@ -6,6 +6,7 @@ import {
   type HashMessage,
   type InitSkirmishMessage,
   type ReadyMessage,
+  type SetAiActiveMessage,
   type SetPausedMessage,
   type SetViewerMessage,
   type SimCommand,
@@ -19,6 +20,8 @@ export interface SkirmishClient {
   command(command: SimCommand): void;
   setViewer(viewer: number): void;
   setPaused(paused: boolean): void;
+  /** Pauses or resumes the skirmish AI (spec 08 §3.3). */
+  setAiActive(active: boolean): void;
   requestHash(): Promise<string>;
   /** Returns an unsubscribe function. */
   onSnapshot(
@@ -118,6 +121,10 @@ export function createSkirmishClient(
     },
     setPaused(paused: boolean) {
       const message: SetPausedMessage = { type: "setPaused", paused };
+      worker.postMessage(message);
+    },
+    setAiActive(active: boolean) {
+      const message: SetAiActiveMessage = { type: "setAiActive", active };
       worker.postMessage(message);
     },
     requestHash() {

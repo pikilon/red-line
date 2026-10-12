@@ -1,7 +1,8 @@
 # 08 — Player controls
 
 Status: §3 (pause) approved by the owner on 2026-10-11 for immediate
-implementation; §5 lists the owner's other requests, to be specified later.
+implementation; §3.3 (AI toggle) requested by the owner on 2026-10-12; §5
+lists the owner's other requests, to be specified later.
 Depends on `03-phase2-core-loop.md` §6.3 (worker loop) and §6.5 (input).
 
 ## 1. Context
@@ -117,6 +118,51 @@ finding one's own base very hard. Each player now keeps their own view.
 * Camera panning between switches is part of the stored view; nothing is
   stored in the simulation, so determinism is unaffected.
 
+## 3.3 AI toggle in the game menu (amends §3.1, owner request 2026-10-12)
+
+The owner wants to switch the computer opponent off mid-match to test things
+without being attacked, and back on later.
+
+* Simulation (`crates/sim/src/ai.rs`), `Ai` gains an active flag (new AIs are
+  active):
+
+  ```rust
+  /// Whether `step_with_ai` lets this AI think.
+  pub fn is_active(&self) -> bool;
+  /// Pauses or resumes the AI. Pausing an active AI returns one
+  /// `Command::Stop` with the units committed to the current attack (ascending
+  /// attack order, none when there are none); every other call returns nothing.
+  pub fn set_active(&mut self, active: bool) -> Vec<Command>;
+  ```
+
+  `step_with_ai` skips `think` for inactive AIs; everything else is unchanged.
+  Already queued production finishes; stopped units keep their normal idle
+  behaviour (they still fire at enemies in range). Resuming keeps the AI's
+  state, so idle attackers retarget on the next pass (§5.4 step 8 of spec 05).
+* WASM API (`wasm_api.rs`, still version 3):
+
+  ```rust
+  /// Pauses or resumes the AI of `player`, enqueuing `set_active`'s commands as
+  /// `player`. Returns false (and does nothing) when `player` has no AI.
+  pub fn set_ai_active(&mut self, player: u8, active: bool) -> bool;
+  ```
+
+  The toggle is a runtime testing aid outside the command stream: a match where
+  it is used is not reproducible from its commands alone.
+* Protocol: new main→worker message `SetAiActiveMessage = { type:
+  "setAiActive"; active: boolean }` in `MainToWorker`; `SkirmishClient` gains
+  `setAiActive(active: boolean): void`. The worker calls
+  `set_ai_active(1, active)` (the skirmish AI player) and ignores the message
+  before a skirmish exists.
+* Game menu: `GameMenuView` gains `ai: boolean | null` (`null` = no AI
+  attached, `?ai=off`) and `GameMenuActions` gains `toggleAi(): void`. A fourth
+  button `#game-menu-ai` sits between Gore and Restart, labelled `menu.aiOn`
+  "AI: on" / `menu.aiOff` "AI: off", and is `hidden` when `ai` is `null`. The
+  equal-view rule of §3.1 covers the new field.
+* The skirmish starts with the AI on whenever one is attached; the setting is
+  not persisted across reloads (Restart brings the AI back).
+* Debug API: new `aiActive(): boolean | null`.
+
 ## 4. Acceptance criteria
 
 **AC-08-01 Worker pause.** Given a skirmish worker handler at speed 1, after
@@ -135,10 +181,11 @@ hides it and the tick advances; `Esc` twice opens and closes it; the gore
 button toggles `__redline.gore()` and its label; `P` does nothing; with a
 placement mode active `Esc` cancels placement and leaves the menu closed.
 
-**AC-08-04 Game menu view.** `createGameMenu` renders three buttons in the §3.1
-order; `render` with an equal view does not touch the DOM (same button
-elements, no text writes); clicking each button calls its action once; the
-gore label follows `view.gore`; `open: false` sets `hidden`.
+**AC-08-04 Game menu view.** `createGameMenu` renders four buttons in the
+§3.1/§3.3 order (Resume, Gore, AI, Restart); `render` with an equal view does
+not touch the DOM (same button elements, no text writes); clicking each button
+calls its action once; the gore label follows `view.gore`; the AI label follows
+`view.ai` and `ai: null` hides the AI button; `open: false` sets `hidden`.
 
 **AC-08-05 Camera memory.** `createCameraMemory().switchPlayer(0, 1, {x: 10,
 y: 20})` returns null; a following `switchPlayer(1, 0, {x: 70, y: 80})`
@@ -152,6 +199,25 @@ moved to `(10, 10)` via `setCameraTarget`, pressing `F2` moves
 `cameraTarget()` within 0.5 cells of the owner-1 `ru-hq` (read after `F3`
 reveal); after `setCameraTarget(100, 20)`, `F2` returns the camera to
 `(10, 10)` and a further `F2` to `(100, 20)`.
+
+**AC-08-07 AI pause in the simulation.** (a) Given an AI that has launched an
+attack, `set_active(false)` returns exactly `[Stop { units: <the launched
+units> }]`, `is_active()` is false, a second `set_active(false)` and
+`set_active(true)` return nothing. (b) Given `Sim::skirmish(1, "first-line")`
+with `russia-balanced` attached to player 1 and `set_ai_active(1, false)`, and
+the same skirmish with no AI, both state hashes are equal after 900 steps;
+`set_ai_active(0, false)` returns false; after `set_ai_active(1, true)` the
+hashes diverge within 900 more steps.
+
+**AC-08-08 Worker and client AI toggle.** `SkirmishClient.setAiActive(false)`
+posts `{ type: "setAiActive", active: false }`; the worker handler calls
+`set_ai_active(1, false)` on its skirmish.
+
+**AC-08-09 AI toggle in the skirmish (Playwright).** In `?debug=1&seed=1`,
+`__redline.aiActive()` is true; after `Esc`, a real mouse click on "AI: on"
+changes the label to "AI: off" and `aiActive()` to false, and a second click
+restores both. With `?debug=1&seed=1&ai=off`, `aiActive()` is null and the AI
+button is hidden in the open menu.
 
 ## 5. Queued requests (to be specified)
 
@@ -175,6 +241,9 @@ reveal); after `setCameraTarget(100, 20)`, `F2` returns the camera to
 | AC-08-04 | `client/src/ui/gameMenu.test.ts` | `AC-08-04: game menu view` |
 | AC-08-05 | `client/src/app/cameraMemory.test.ts` | `AC-08-05: camera memory` |
 | AC-08-06 | `client/tests/e2e/hotSeatCamera.spec.ts` | `AC-08-06: hot-seat camera` |
+| AC-08-07 | `crates/sim/tests/ai.rs` | `ac_08_07_ai_pause` |
+| AC-08-08 | `client/src/sim/skirmishClient.test.ts`, `client/src/sim/workerHandler.test.ts` | `AC-08-08: worker and client AI toggle` |
+| AC-08-09 | `client/tests/e2e/pause.spec.ts` | `AC-08-09: AI toggle in the skirmish` |
 
 ## 7. Issue breakdown
 
@@ -183,3 +252,4 @@ reveal); after `setCameraTarget(100, 20)`, `F2` returns the camera to
 | P5-01 (#183) | pause (§3) | AC-08-01..03 | ready-pro |
 | P5-02 (#200) | game menu on Esc (§3.1) | AC-08-03, 04 | ready-local |
 | P5-03 (#220) | hot-seat camera (§3.2) | AC-08-05, 06 | ready-pro |
+| P5-04 (#219) | AI toggle in the game menu (§3.3) | AC-08-04, 07..09 | ready-pro |

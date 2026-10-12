@@ -190,6 +190,7 @@ describe("worker handler", () => {
       state_hash_hex: () => FAKE_HASH,
       enable_debug_commands,
       attach_ai: vi.fn(),
+      set_ai_active: vi.fn(),
       snapshot_for: (viewer) => new Int32Array([viewer, viewer]),
       fog_for: (viewer) => new Uint8Array([viewer, viewer, viewer, viewer]),
       command_move: vi.fn(),
@@ -341,6 +342,7 @@ describe("worker handler", () => {
       state_hash_hex: () => FAKE_HASH,
       enable_debug_commands: vi.fn<() => void>(),
       attach_ai: vi.fn(),
+      set_ai_active: vi.fn(),
       snapshot_for: () => new Int32Array([0, 0]),
       fog_for: () => new Uint8Array([0, 0, 0, 0]),
       command_move: vi.fn(),
@@ -392,6 +394,7 @@ describe("worker handler", () => {
       state_hash_hex: () => FAKE_HASH,
       enable_debug_commands: vi.fn(),
       attach_ai: vi.fn(),
+      set_ai_active: vi.fn(),
       snapshot_for: () => new Int32Array([0, 0]),
       fog_for: () => new Uint8Array([0, 0, 0, 0]),
       command_move: vi.fn(),
@@ -448,5 +451,58 @@ describe("worker handler", () => {
     handler.advance(2200);
     expect(step).toHaveBeenCalledTimes(3);
     expect(posted).toHaveLength(1);
+  });
+
+  it("AC-08-08: worker and client AI toggle", () => {
+    const set_ai_active = vi.fn<(player: number, active: boolean) => boolean>();
+    const skirmishSim: SkirmishSimLike = {
+      map_width: () => 2,
+      map_height: () => 2,
+      map_tiles: () => new Uint8Array([0, 1, 0, 0]),
+      tick: () => 0,
+      step: vi.fn(),
+      state_hash_hex: () => FAKE_HASH,
+      enable_debug_commands: vi.fn(),
+      attach_ai: vi.fn(),
+      set_ai_active,
+      snapshot_for: () => new Int32Array([0, 0]),
+      fog_for: () => new Uint8Array([0, 0, 0, 0]),
+      command_move: vi.fn(),
+      command_move_as: vi.fn(),
+      command_attack: vi.fn(),
+      command_harvest: vi.fn(),
+      command_construct: vi.fn(),
+      command_resume: vi.fn(),
+      command_produce: vi.fn(),
+      command_cancel: vi.fn(),
+      command_rally: vi.fn(),
+      command_stop: vi.fn(),
+      debug_spawn: vi.fn(),
+      debug_set_hp: vi.fn(),
+    };
+    const handler = createWorkerHandler(
+      vi.fn<SimFactory>(),
+      1,
+      () => {},
+      () => skirmishSim,
+    );
+
+    // Ignored before a skirmish exists.
+    handler.handle({ type: "setAiActive", active: false });
+    expect(set_ai_active).not.toHaveBeenCalled();
+
+    handler.handle({
+      type: "initSkirmish",
+      seed: 3,
+      mapId: "m",
+      viewer: 0,
+      speed: 1,
+      debug: false,
+      ai: "russia-balanced",
+    });
+    handler.handle({ type: "setAiActive", active: false });
+    expect(set_ai_active).toHaveBeenCalledWith(1, false);
+    handler.handle({ type: "setAiActive", active: true });
+    expect(set_ai_active).toHaveBeenLastCalledWith(1, true);
   });
 });

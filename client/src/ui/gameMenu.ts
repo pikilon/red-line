@@ -5,6 +5,8 @@ import { appendDiv, setText } from "./dom";
 export interface GameMenuView {
   open: boolean;
   gore: boolean;
+  /** Whether the AI plays; null when no AI is attached (§3.3). */
+  ai: boolean | null;
 }
 
 /** Callbacks the game menu buttons invoke (spec 08 §3.1). */
@@ -13,6 +15,8 @@ export interface GameMenuActions {
   resume(): void;
   /** Same as the `G` key (spec 07 §5). */
   toggleGore(): void;
+  /** Pauses or resumes the skirmish AI (§3.3). */
+  toggleAi(): void;
   /** Reloads the page with the same query string. */
   restart(): void;
 }
@@ -26,8 +30,9 @@ export interface GameMenu {
 }
 
 /** The full-screen game menu: a backdrop with a centred panel holding the
- *  title and the Resume, Gore and Restart buttons. Buttons are created once,
- *  so they stay clickable with a real mouse (spec 08 §3.1, AC-03-65). */
+ *  title and the Resume, Gore, AI and Restart buttons (§3.3). Buttons are
+ *  created once, so they stay clickable with a real mouse (spec 08 §3.1,
+ *  AC-03-65). */
 export function createGameMenu(
   parent: HTMLElement,
   actions: GameMenuActions,
@@ -47,11 +52,15 @@ export function createGameMenu(
   const gore = createButton("game-menu-gore", t("menu.goreOff"), () => {
     actions.toggleGore();
   });
+  const ai = createButton("game-menu-ai", t("menu.aiOn"), () => {
+    actions.toggleAi();
+  });
   const restart = createButton("game-menu-restart", t("menu.restart"), () => {
     actions.restart();
   });
   panel.appendChild(resume);
   panel.appendChild(gore);
+  panel.appendChild(ai);
   panel.appendChild(restart);
 
   /** Last rendered view; an equal render mutates nothing. */
@@ -60,12 +69,21 @@ export function createGameMenu(
   return {
     root,
     render(view) {
-      if (last !== null && last.open === view.open && last.gore === view.gore) {
+      if (
+        last !== null &&
+        last.open === view.open &&
+        last.gore === view.gore &&
+        last.ai === view.ai
+      ) {
         return;
       }
-      last = { open: view.open, gore: view.gore };
+      last = { open: view.open, gore: view.gore, ai: view.ai };
       if (root.hidden !== !view.open) root.hidden = !view.open;
       setText(gore, t(view.gore ? "menu.goreOn" : "menu.goreOff"));
+      if (ai.hidden !== (view.ai === null)) ai.hidden = view.ai === null;
+      if (view.ai !== null) {
+        setText(ai, t(view.ai ? "menu.aiOn" : "menu.aiOff"));
+      }
     },
   };
 }

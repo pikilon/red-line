@@ -48,6 +48,8 @@ export interface SkirmishDebug {
   paused(): boolean;
   /** True while the Esc game menu is open (spec 08 §3.1). */
   menuOpen(): boolean;
+  /** Whether the skirmish AI plays; null when none is attached (spec 08 §3.3). */
+  aiActive(): boolean | null;
   controlledPlayer(): number;
   /** Controlled player, or `OBSERVER` (255) while revealed. */
   viewer(): number;
