@@ -11,4 +11,4 @@ every tool and model here when it is installed.
 | FLUX `ae.safetensors` (VAE) | Apache-2.0 | From the FLUX.1 schnell release. |
 | `clip_l.safetensors`, `t5xxl_fp16.safetensors` | MIT, Apache-2.0 | Text encoders used by FLUX. |
 
-Weights live outside the repository (`RED_LINE_MODELS_DIR`, an external disk) and are never committed.
+ComfyUI is installed machine-wide (`~/.local/share/comfyui`, command `comfyui`). Weights live outside the repository (`RED_LINE_MODELS_DIR`, an external disk) and are never committed.

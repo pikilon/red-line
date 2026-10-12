@@ -1,32 +1,32 @@
 #!/usr/bin/env bash
-# Installs ComfyUI (local image generation, D-07) into tools/asset-pipeline/vendor.
-# Nothing is committed: vendor/ and .venv/ are gitignored. Idempotent.
+# Installs ComfyUI (local image generation, D-07) machine-wide, outside the
+# repository, so other projects and agents can use it too:
+#   $COMFYUI_HOME  (default ~/.local/share/comfyui)  code + Python venv
+#   ~/.local/bin/comfyui                               launcher (on PATH)
 # Model weights are large: set RED_LINE_MODELS_DIR to a folder on an external
 # disk (subfolders checkpoints/, unet/, vae/, clip/) and ComfyUI reads them there.
-# Usage: [RED_LINE_MODELS_DIR=/path] node --run assets:comfyui:setup
+# Idempotent. Usage: [RED_LINE_MODELS_DIR=/path] node --run assets:comfyui:setup
 set -euo pipefail
 
 COMFYUI_TAG="v0.39.0"
 PYTHON_VERSION="3.13"
-
-here="$(cd "$(dirname "$0")" && pwd)"
-vendor="$here/vendor"
-venv="$here/.venv"
+home="${COMFYUI_HOME:-$HOME/.local/share/comfyui}"
+bin_dir="$HOME/.local/bin"
 
 command -v uv >/dev/null 2>&1 || { echo "uv is required: brew install uv" >&2; exit 1; }
 command -v git >/dev/null 2>&1 || { echo "git is required" >&2; exit 1; }
 
-mkdir -p "$vendor"
-if [ ! -d "$vendor/ComfyUI/.git" ]; then
-  git clone --depth 1 --branch "$COMFYUI_TAG" https://github.com/comfyanonymous/ComfyUI.git "$vendor/ComfyUI"
+mkdir -p "$home" "$bin_dir"
+if [ ! -d "$home/ComfyUI/.git" ]; then
+  git clone --depth 1 --branch "$COMFYUI_TAG" https://github.com/comfyanonymous/ComfyUI.git "$home/ComfyUI"
 else
-  echo "ComfyUI already cloned at $vendor/ComfyUI ($(git -C "$vendor/ComfyUI" describe --tags --always))"
+  echo "ComfyUI already cloned at $home/ComfyUI ($(git -C "$home/ComfyUI" describe --tags --always))"
 fi
 
 if [ -n "${RED_LINE_MODELS_DIR:-}" ]; then
   mkdir -p "$RED_LINE_MODELS_DIR"/{checkpoints,unet,vae,clip}
-  cat > "$vendor/ComfyUI/extra_model_paths.yaml" <<YAML
-red_line_external:
+  cat > "$home/ComfyUI/extra_model_paths.yaml" <<YAML
+external_models:
   base_path: $RED_LINE_MODELS_DIR/
   checkpoints: checkpoints/
   unet: unet/
@@ -37,14 +37,22 @@ red_line_external:
 YAML
 fi
 
-[ -d "$venv" ] || uv venv --python "$PYTHON_VERSION" "$venv"
+[ -d "$home/.venv" ] || uv venv --python "$PYTHON_VERSION" "$home/.venv"
 # The default macOS arm64 PyTorch wheels include the MPS (Metal) backend.
-uv pip install --python "$venv/bin/python" torch torchvision torchaudio
-uv pip install --python "$venv/bin/python" -r "$vendor/ComfyUI/requirements.txt"
+uv pip install --python "$home/.venv/bin/python" torch torchvision torchaudio
+uv pip install --python "$home/.venv/bin/python" -r "$home/ComfyUI/requirements.txt"
 
-"$venv/bin/python" - <<'PY'
+"$home/.venv/bin/python" - <<'PY'
 import torch
 print(f"torch {torch.__version__}, MPS available: {torch.backends.mps.is_available()}")
 raise SystemExit(0 if torch.backends.mps.is_available() else 1)
 PY
-echo "ComfyUI $COMFYUI_TAG ready. Start it with: node --run assets:comfyui"
+
+cat > "$bin_dir/comfyui" <<LAUNCHER
+#!/usr/bin/env bash
+# Starts ComfyUI on http://127.0.0.1:8188 (loopback only). Extra arguments go to ComfyUI.
+cd "$home/ComfyUI"
+exec "$home/.venv/bin/python" main.py --listen 127.0.0.1 --port 8188 "\$@"
+LAUNCHER
+chmod +x "$bin_dir/comfyui"
+echo "ComfyUI $COMFYUI_TAG ready in $home. Start it with: comfyui"
