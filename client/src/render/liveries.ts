@@ -372,8 +372,8 @@ function freeRoof(
   );
 }
 
-/** `ru`: one square glyph on the surface of each side and of the roof that fits
- *  the largest glyph, `GLYPH_SIZE` of its short extent, centred in its free
+/** `ru`: one square glyph on the largest free surface of each side and of the
+ *  roof (hood before cab), `GLYPH_SIZE` of its short extent, centred in its free
  *  part (a roof under a cab or turret keeps the strip around it). */
 function fillGlyph(
   position: PositionAttribute,
@@ -389,7 +389,7 @@ function fillGlyph(
     vAxis: number;
   }
   const best = new Map<string, Placement>();
-  const short = (r: Rect): number => Math.min(r.uMax - r.uMin, r.vMax - r.vMin);
+  const area = (r: Rect): number => (r.uMax - r.uMin) * (r.vMax - r.vMin);
   for (const surface of surfacesOf(position, dark)) {
     const face = faceOf(surface.axis, surface.sign);
     if (face === "end" || face === "bottom") continue;
@@ -406,7 +406,7 @@ function fillGlyph(
       face === "top" ? freeRoof(whole, at(surface.min, 1), footprints) : whole;
     const key = `${surface.axis}${surface.sign}`;
     const current = best.get(key);
-    if (current === undefined || short(rect) > short(current.rect)) {
+    if (current === undefined || area(rect) > area(current.rect)) {
       best.set(key, { surface, rect, uAxis, vAxis });
     }
   }
