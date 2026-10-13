@@ -4,7 +4,7 @@ export const SETTINGS_KEY = "redline.settings.v1";
 
 export interface Settings {
   gore: boolean;
-  /** Absent means false (spec 12 §2). */
+  /** Absent means true: generated textures are the default (spec 12 §2). */
   generatedTextures?: boolean;
 }
 
@@ -37,7 +37,7 @@ export function loadSettings(storage?: Storage): Settings {
     if (typeof gore !== "boolean") return { ...DEFAULT_SETTINGS };
     const generatedTextures = (parsed as { generatedTextures?: unknown })
       .generatedTextures;
-    return generatedTextures === true ? { gore, generatedTextures } : { gore };
+    return generatedTextures === false ? { gore, generatedTextures } : { gore };
   } catch {
     return { ...DEFAULT_SETTINGS };
   }
@@ -51,8 +51,8 @@ export function saveSettings(settings: Settings, storage?: Storage): void {
     target.setItem(
       SETTINGS_KEY,
       JSON.stringify(
-        settings.generatedTextures === true
-          ? { gore: settings.gore, generatedTextures: true }
+        settings.generatedTextures === false
+          ? { gore: settings.gore, generatedTextures: false }
           : { gore: settings.gore },
       ),
     );

@@ -224,7 +224,7 @@ export function startSkirmish(params: SkirmishOptions): void {
       open: paused,
       gore: settings.gore,
       ai: aiActive,
-      generatedTextures: settings.generatedTextures === true,
+      generatedTextures: settings.generatedTextures !== false,
     });
   }
 
@@ -464,8 +464,8 @@ export function startSkirmish(params: SkirmishOptions): void {
     setHudPlayer();
     centreOnOwnHq(next);
     ready = true;
-    // A saved "generated" choice loads the PNGs once the scene exists.
-    if (settings.generatedTextures === true) {
+    // Generated textures are the default: load the PNGs once the scene exists.
+    if (settings.generatedTextures !== false) {
       settings = { ...settings, generatedTextures: false };
       toggleTextures();
     }
@@ -622,7 +622,7 @@ export function startSkirmish(params: SkirmishOptions): void {
   /** Applies the generated textures to the terrain and the models when the
    *  setting is on and they are loaded, the procedural ones otherwise. */
   function applyTextures(): void {
-    const active = settings.generatedTextures === true ? generated : null;
+    const active = settings.generatedTextures !== false ? generated : null;
     if (terrain !== null) setTerrainTextures(terrain, active);
     entities?.setGeneratedTextures(active);
   }
@@ -630,7 +630,7 @@ export function startSkirmish(params: SkirmishOptions): void {
   /** Switches between procedural and generated textures live and persists the
    *  choice (spec 12 §3); the PNGs load on first use. */
   function toggleTextures(): void {
-    const on = settings.generatedTextures !== true;
+    const on = settings.generatedTextures === false;
     settings = { ...settings, generatedTextures: on };
     saveSettings(settings);
     renderMenu();
