@@ -21,6 +21,7 @@
     "assets:check": "node tools/models/check.mjs",
     "assets:comfyui:setup": "tools/asset-pipeline/setup-comfyui.sh",
     "assets:comfyui": "tools/asset-pipeline/run-comfyui.sh",
+    "assets:loop": "node scripts/asset-loop.mjs",
     "check:rust": "cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo nextest run",
     "build:wasm": "wasm-pack build crates/sim --target web",
     "deploy:pages": "node scripts/deploy-pages.mjs",

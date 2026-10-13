@@ -1,0 +1,61 @@
+# Ordered asset-generation manifest. The loop processes `resources` one by one.
+# `kind` references a key in context.yaml; `palette` for the mean-colour check
+# is taken from there. Deterministic check thresholds use code defaults unless
+# a resource overrides them (mean_tolerance, seam_tolerance, min_variance).
+version: 1
+model: sd_xl_base_1.0.safetensors
+width: 1024
+height: 1024
+steps: 24
+cfg: 6
+max_retries: 3
+# Generated (non-procedural) textures get a looser mean-colour tolerance than
+# the procedural ones (code default 24): the palette is a target, not a hard match.
+mean_tolerance: 64
+default_negative: >-
+  photorealistic, 3D perspective, close-up, objects, buildings, units, people,
+  text, watermark, logo, border, vignette, blur, low quality
+
+resources:
+  - id: grass
+    kind: grass
+    seed: 1
+    prompt: >-
+      seamless tileable top-down terrain texture, short green grass,
+      stylized 90s real-time strategy game ground, saturated, warm lighting,
+      medium-frequency detail, flat orthographic view
+  - id: dirt
+    kind: dirt
+    seed: 2
+    prompt: >-
+      seamless tileable top-down terrain texture, dry dirt and soil,
+      stylized 90s real-time strategy game ground, saturated, warm lighting,
+      medium-frequency detail, flat orthographic view
+  - id: rock
+    kind: rock
+    seed: 3
+    prompt: >-
+      seamless tileable top-down terrain texture, grey rock and stone with cracks,
+      stylized 90s real-time strategy game ground, saturated, warm lighting,
+      medium-frequency detail, flat orthographic view
+  - id: water
+    kind: water
+    seed: 4
+    prompt: >-
+      seamless tileable top-down terrain texture, blue river water,
+      stylized 90s real-time strategy game ground, saturated, warm lighting,
+      medium-frequency detail, flat orthographic view
+  - id: forest
+    kind: forest
+    seed: 5
+    prompt: >-
+      seamless tileable top-down terrain texture, dense dark green forest canopy,
+      stylized 90s real-time strategy game ground, saturated, warm lighting,
+      medium-frequency detail, flat orthographic view
+  - id: shore
+    kind: shore
+    seed: 6
+    prompt: >-
+      seamless tileable top-down terrain texture, sandy shoreline where grass
+      meets water, stylized 90s real-time strategy game ground, saturated,
+      warm lighting, medium-frequency detail, flat orthographic view
