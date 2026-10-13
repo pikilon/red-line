@@ -1421,6 +1421,37 @@
           ]
         }
       ]
+    },
+    {
+      "id": "showcase",
+      "width": 100,
+      "height": 40,
+      "blocked": [],
+      "depots": [],
+      "starts": [
+        {
+          "faction": 0,
+          "hq": [
+            4,
+            6
+          ],
+          "dozerCenti": [
+            1550,
+            2050
+          ]
+        },
+        {
+          "faction": 1,
+          "hq": [
+            54,
+            6
+          ],
+          "dozerCenti": [
+            6550,
+            2050
+          ]
+        }
+      ]
     }
   ],
   "ai": [

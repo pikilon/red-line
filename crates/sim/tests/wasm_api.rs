@@ -155,3 +155,27 @@ fn shots_survive_multi_step_snapshots() {
     once.step();
     assert!(fired_ids(&once.snapshot_for(0)).is_empty());
 }
+
+#[test]
+fn ac_14_01_debug_spawn_places_buildings() {
+    let rules = sim::rules::Ruleset::builtin();
+    let power_plant = rules.type_index("ua-power-plant").unwrap();
+    let barracks = rules.type_index("ua-barracks").unwrap();
+    let mut sim = Sim::skirmish(1, "first-line").unwrap();
+    let before = sim.unit_count();
+
+    // Ignored without debug commands.
+    sim.debug_spawn(0, power_plant, 20 * 65536, 40 * 65536);
+    sim.step();
+    assert_eq!(sim.unit_count(), before);
+
+    sim.enable_debug_commands();
+    sim.debug_spawn(0, power_plant, 20 * 65536, 40 * 65536);
+    sim.step();
+    assert_eq!(sim.unit_count(), before + 1);
+
+    // The footprint is occupied now: the same spot is ignored.
+    sim.debug_spawn(0, barracks, 20 * 65536, 40 * 65536);
+    sim.step();
+    assert_eq!(sim.unit_count(), before + 1);
+}
