@@ -113,6 +113,12 @@ export function createFlagRenderer(capacity: number): FlagRenderer;
 * The cloth waves in the vertex shader with `flagWave`: amplitude
   `FLAG_AMPLITUDE` (0.1) times `s`, so it is still at the pole; the phase is the
   instance's x position. Double-sided, flat Lambert shading.
+* Draw calls (AC-03-62): the shaft and its ball finial are one geometry (the
+  shaft reaches below the terrain, so one mesh fits any HQ height), so flags
+  cost at most one call for the poles and one per faction; an empty mesh is
+  hidden and the others are frustum-culled by the bounds of their instances.
+  Poles and cloths cast no shadow: the pole mesh's bound spans every HQ, so a
+  shadow pass would cost a call even with no HQ on screen.
 * `EntityRenderer` owns a `FlagRenderer`, adds its group and updates it at the
   end of `update(entities, selected, nowMs)`. Flags are procedural and do not
   depend on the textures toggle.

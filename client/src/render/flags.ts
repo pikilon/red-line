@@ -1,4 +1,5 @@
 import {
+  type BufferGeometry,
   CylinderGeometry,
   DataTexture,
   DoubleSide,
@@ -12,6 +13,7 @@ import {
   SRGBColorSpace,
   UnsignedByteType,
 } from "three";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { RULES, typeDef } from "../rules";
 import { ENTITY_FLAGS, type EntityState, hasFlag } from "../sim/matchSnapshot";
 import { RU_WHITE, UA_BLUE, UA_YELLOW } from "./liveries";
@@ -132,11 +134,19 @@ transformed.z += ${FLAG_AMPLITUDE.toFixed(3)} * flagS * sin( flagArg );`,
   return material;
 }
 
-/** A unit-high shaft standing on the origin, scaled to the pole height. */
-function poleGeometry(): CylinderGeometry {
-  const shaft = new CylinderGeometry(POLE_RADIUS, POLE_RADIUS, 1, 6);
-  shaft.translate(0, 0.5, 0);
-  return shaft;
+/** Below its top the shaft reaches this deep, so one geometry fits any HQ
+ *  height: the part under the terrain is hidden. */
+const POLE_DEPTH = 4;
+
+/** Shaft and ball finial, one geometry with its top at the origin. */
+function poleGeometry(): BufferGeometry {
+  const shaft = new CylinderGeometry(POLE_RADIUS, POLE_RADIUS, POLE_DEPTH, 6);
+  shaft.translate(0, -POLE_DEPTH / 2, 0);
+  const finial = new SphereGeometry(POLE_RADIUS * 1.8, 8, 6);
+  return (
+    mergeGeometries([shaft.toNonIndexed(), finial.toNonIndexed()], false) ??
+    shaft
+  );
 }
 
 export interface FlagRenderer {
@@ -155,11 +165,6 @@ export function createFlagRenderer(capacity: number): FlagRenderer {
     new MeshLambertMaterial({ color: POLE_COLOR }),
     capacity,
   );
-  const finials = new InstancedMesh(
-    new SphereGeometry(POLE_RADIUS * 1.8, 8, 6),
-    new MeshLambertMaterial({ color: POLE_COLOR }),
-    capacity,
-  );
   const time = { value: 0 };
   const cloth = new PlaneGeometry(FLAG_LENGTH, FLAG_HEIGHT, 16, 1);
   // The hoist edge sits on the pole (x = 0), the cloth hangs below its top.
@@ -171,15 +176,14 @@ export function createFlagRenderer(capacity: number): FlagRenderer {
       clothMaterial(stripes, time),
       capacity,
     );
-    mesh.castShadow = true;
     cloths[id] = mesh;
   }
-  for (const mesh of [poles, finials, ...Object.values(cloths)]) {
+  const meshes = [poles, ...Object.values(cloths)];
+  for (const mesh of meshes) {
     mesh.count = 0;
-    mesh.frustumCulled = false;
+    mesh.visible = false;
     group.add(mesh);
   }
-  poles.castShadow = true;
 
   const matrix = new Matrix4();
   const counts: Record<string, number> = {};
@@ -212,10 +216,8 @@ export function createFlagRenderer(capacity: number): FlagRenderer {
         const top = h + POLE_ABOVE;
         const x = entity.x - w / 2 + POLE_INSET;
         const z = entity.y + d / 2 - POLE_INSET;
-        matrix.makeScale(1, top, 1).setPosition(x, 0, z);
-        poles.setMatrixAt(poleCount, matrix);
         matrix.makeTranslation(x, top, z);
-        finials.setMatrixAt(poleCount, matrix);
+        poles.setMatrixAt(poleCount, matrix);
         poleCount++;
         const index = counts[id] ?? 0;
         matrix.makeTranslation(x, top - POLE_RADIUS * 2, z);
@@ -223,12 +225,16 @@ export function createFlagRenderer(capacity: number): FlagRenderer {
         counts[id] = index + 1;
       }
       poles.count = poleCount;
-      finials.count = poleCount;
-      poles.instanceMatrix.needsUpdate = true;
-      finials.instanceMatrix.needsUpdate = true;
       for (const [id, mesh] of Object.entries(cloths)) {
         mesh.count = counts[id] ?? 0;
+      }
+      // Empty or off-screen meshes cost no draw call (AC-03-62): hidden when
+      // empty, frustum-culled by the bounds of their instances otherwise, and
+      // out of the shadow pass (the poles of distant HQs share one bound).
+      for (const mesh of meshes) {
+        mesh.visible = mesh.count > 0;
         mesh.instanceMatrix.needsUpdate = true;
+        if (mesh.visible) mesh.computeBoundingSphere();
       }
     },
   };
