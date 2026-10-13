@@ -227,44 +227,59 @@ They were keyboard-only (`F2`, `F3`) and needed `?debug=1`.
   shown with `?debug=1`.
 * `F2`, `F3` and `window.__redline` stay debug-only.
 
-## 3.6 Touch controls (owner request 2026-10-13, issue #251)
+## 3.6 Touch controls (owner request 2026-10-13, issues #251 and #253)
 
 On touch screens panning needed the arrow keys / WASD and the menu needed
-`Esc`. Touch devices get a D-pad and a menu button.
+`Esc`. Touch devices get a virtual joystick and a menu button. Issue #253
+replaced the four-button D-pad of #251 with the joystick (AC-08-15 and
+AC-08-16 are superseded by AC-08-18 and AC-08-19).
 
 * Shown only on touch devices: `isTouchDevice()` is true when
   `matchMedia("(pointer: coarse)").matches` or `navigator.maxTouchPoints > 0`.
   Otherwise the controls are not created (no DOM, nothing on desktop).
-* `client/src/ui/touchControls.ts` exports `type PanDirection = "up" | "down" |
-  "left" | "right"`, `TouchControlsActions { pan(direction: PanDirection, held:
-  boolean): void; toggleMenu(): void }`, `TouchControls { root: HTMLElement;
-  render(view: { menuOpen: boolean }): void }` and
+* `client/src/ui/touchControls.ts` exports `TouchControlsActions { pan(x:
+  number, y: number): void; toggleMenu(): void }`, `TouchControls { root:
+  HTMLElement; render(view: { menuOpen: boolean }): void }` and
   `createTouchControls(parent: HTMLElement, actions: TouchControlsActions)`.
-* DOM, created once (AC-03-65): `#touch-controls` holds `#touch-dpad` with four
-  buttons `#touch-up`, `#touch-down`, `#touch-left`, `#touch-right` (bottom
-  left, cross layout) and `#touch-menu` (top right, label "☰"). Every button is
-  at least 48 x 48 CSS px, has an `aria-label` from i18n
-  (`touch.up`, `touch.down`, `touch.left`, `touch.right`, `touch.menu`) and
-  the D-pad has `touch-action: none` and no text selection.
-* Panning: `pointerdown` on a direction button calls `pan(direction, true)`;
-  `pointerup`, `pointercancel` and `pointerleave` call `pan(direction, false)`
-  (once, and only if it was held). The skirmish maps the directions to the
-  arrow-key codes in `PAN_KEYS` (`up` = `ArrowUp`...) inside the controller's
-  pressed set, so speed and the `panDelta` path are those of the keyboard and
-  the keyboard keeps working. A window `blur` releases them too (the controller clears its pressed set).
+  `pan(x, y)` receives the current joystick vector in screen axes, each in
+  [-1, 1], `x` to the right and `y` down, and `(0, 0)` on release.
+* DOM, created once (AC-03-65): `#touch-controls` holds `#touch-joystick`
+  (the base, 120 x 120 CSS px circle, bottom right) with `#touch-joystick-knob`
+  (about 40 px circle at its centre) inside, and `#touch-menu` (top right,
+  label "☰", at least 48 x 48 CSS px). The joystick has an `aria-label` from
+  i18n (`touch.joystick`), `#touch-menu` has `touch.menu`; both have
+  `touch-action: none` and no text selection.
+* Dragging: `pointerdown` on the base or the knob captures the pointer
+  (`setPointerCapture`), adds the class `pressed` to the knob (CSS grows it
+  about 1.25x with a short transition) and starts reporting. The base circle
+  has centre `c` and radius `R` (half its `getBoundingClientRect` width). On
+  `pointerdown` and `pointermove` of the captured pointer the knob offset is
+  `d = pointer - c` clamped to length `R` (the knob follows the finger inside
+  the base), and `pan(d.x / R, d.y / R)` is called when the vector is outside
+  the dead zone (length at least 0.15), otherwise `pan(0, 0)`; a call is made
+  only when the reported vector changes. `pointerup`, `pointercancel` and a
+  window `blur` release: the knob returns to the centre, loses `pressed`, and
+  `pan(0, 0)` is called once if a vector was reported (never without a press).
+  Moves of other pointers are ignored.
+* Direction convention: pushing the knob up is what the Up arrow does (same
+  axes and speed as `panDelta`). The controller exposes
+  `setAnalogPan(x: number, y: number)` (screen vector in [-1, 1]); in `update`
+  its world contribution `((x + y) / sqrt 2, (y - x) / sqrt 2) * speed * dt`
+  is added to the keys' `panDelta`, so a full-radius push pans at the
+  keyboard's speed, a half-radius push at half of it, and the keyboard keeps
+  working unchanged. The skirmish wires `pan(x, y)` to `setAnalogPan`.
 * `#touch-menu` `click` calls `toggleMenu()`; the skirmish does what `Esc`
   does: with a placement mode active it cancels placement and leaves the menu
   closed, otherwise it opens (pause) or closes (resume) the game menu.
 * `pointerdown`, `pointerup` and `click` on the controls stop propagation and
   `contextmenu` is prevented, so a touch never starts a selection box or an
   order on the map; the controls are DOM siblings of the canvas, never inside
-  the HUD, the command panel or the game menu (on touch the command panel sits
-  at the bottom right so the D-pad does not cover it).
-* `render({ menuOpen })` sets `hidden` on `#touch-dpad` while the menu is open
-  (releasing any held direction) and leaves `#touch-menu` visible above the
-  menu so it can close it; an equal view writes nothing.
-* Out of scope: selecting and commanding by touch beyond what pointer events
-  already give, pinch zoom, long press.
+  the HUD, the command panel or the game menu. On touch the command panel
+  stays at the bottom left (the joystick is at the bottom right); neither
+  covers the HUD, the FPS panel or the menu button, on 375 x 812 and 812 x 375.
+* `render({ menuOpen })` sets `hidden` on `#touch-joystick` while the menu is
+  open (releasing a held drag) and leaves `#touch-menu` visible above the menu
+  so it can close it; an equal view writes nothing.
 
 ## 4. Acceptance criteria
 
@@ -358,22 +373,32 @@ Reveal button toggles "Reveal map: off" and "Reveal map: on"; no console
 error. With `?debug=1&seed=1&ai=off` `#perf-panel` starts visible and the
 button reads "FPS panel: on".
 
-**AC-08-15 Touch controls view.** `createTouchControls` creates the five
-buttons once with the §3.6 ids and i18n aria-labels; `pointerdown` on `#touch-right` calls
-`pan("right", true)` once, `pointerup` then `pan("right", false)`; `pointercancel`
-and `pointerleave` also release a held button, and a release without a press
-calls nothing; a click on `#touch-menu` calls `toggleMenu()` once; the
-button events call `stopPropagation`; `render({ menuOpen: true })` hides
-`#touch-dpad` and releases the held direction, keeps `#touch-menu` visible, and
-an equal view writes nothing.
+**AC-08-15, AC-08-16** were the D-pad criteria of #251; they are superseded by
+AC-08-18 and AC-08-19 (issue #253).
 
-**AC-08-16 Touch controls in the skirmish (Playwright).** With touch emulation
-(`hasTouch`, 390 x 844) in `?debug=1&seed=1&ai=off`, the five buttons are
-visible, at least 48 px, and the D-pad does not overlap `#hud`; holding
-`#touch-right` (pointer down) moves `cameraTarget()` by the keyboard
-`ArrowRight` direction (+x, -y), and after release it stays put; a tap on
-`#touch-menu` opens `#game-menu` with `paused()` true, hides `#touch-dpad` and
-a second tap closes it with `paused()` false; no console error.
+**AC-08-18 Touch joystick view.** `createTouchControls` creates `#touch-joystick`
+with `#touch-joystick-knob` and `#touch-menu` once, with the i18n aria-labels
+("Joystick", "Menu"). `pointerdown` on the knob captures the pointer and adds
+the class `pressed` to the knob; `pointermove` clamps the knob to radius `R`
+and reports `pan(x, y)` proportionally (half radius right = `pan(0.5, 0)`,
+beyond the radius = length 1); inside the 0.15 dead zone it reports `(0, 0)`;
+`pointerup` and `pointercancel` reset the knob and the class and report
+`(0, 0)` once, a release without a press calls nothing, moves of another
+pointer are ignored; a click on `#touch-menu` calls `toggleMenu()` once; the
+control events call `stopPropagation`; `render({ menuOpen: true })` hides
+`#touch-joystick` and releases a drag, keeps `#touch-menu` visible, and an equal
+view writes nothing.
+
+**AC-08-19 Touch joystick in the skirmish (Playwright).** With touch emulation
+(`hasTouch`, 390 x 844) in `?debug=1&seed=1&ai=off`, `#touch-joystick` is in
+the bottom right quadrant and `#command-panel` (with a unit selected) in the
+bottom left, neither overlaps `#hud` or `#touch-menu`; pointer events on the
+knob (down, then move up by half and by the full radius) move `cameraTarget()`
+in the ArrowUp direction (-x, -y), the full push about twice as fast as the
+half push, the knob has the class `pressed`; after `pointerup` the camera stays
+put and the knob is back at the centre; a tap on `#touch-menu` opens
+`#game-menu` with `paused()` true, hides `#touch-joystick` and a second tap
+closes it; no console error.
 
 **AC-08-17 No touch controls without touch (Playwright).** In a default desktop
 context `#touch-controls` is not in the DOM and `ArrowRight` still pans.
@@ -407,9 +432,10 @@ context `#touch-controls` is not in the DOM and `ArrowRight` still pans.
 | AC-08-12 | `client/src/ui/gameMenuDebug.test.ts` | `AC-08-12: debug buttons in the menu view` |
 | AC-08-13 | `client/tests/e2e/menuDebug.spec.ts` | `AC-08-13: switch side in the skirmish` |
 | AC-08-14 | `client/tests/e2e/menuDebug.spec.ts` | `AC-08-14: reveal and FPS panel in the skirmish` |
-| AC-08-15 | `client/src/ui/touchControls.test.ts` | `AC-08-15: touch controls view` |
-| AC-08-16 | `client/tests/e2e/touchControls.spec.ts` | `AC-08-16: touch controls in the skirmish` |
+| AC-08-15, 16 | superseded by AC-08-18, 19 (#253) | |
 | AC-08-17 | `client/tests/e2e/touchControls.spec.ts` | `AC-08-17: no touch controls without touch` |
+| AC-08-18 | `client/src/ui/touchControls.test.ts` | `AC-08-18: touch joystick view` |
+| AC-08-19 | `client/tests/e2e/touchControls.spec.ts` | `AC-08-19: touch joystick in the skirmish` |
 
 ## 7. Issue breakdown
 
@@ -422,3 +448,4 @@ context `#touch-controls` is not in the DOM and `ArrowRight` still pans.
 | P5-05 (#226) | mouse-wheel zoom (§3.4) | AC-08-10, 11 | ready-pro |
 | P5-06 (#245) | switch side, reveal, FPS panel in the menu (§3.5) | AC-08-12..14 | ready-pro |
 | P5-07 (#251) | touch controls (§3.6) | AC-08-15..17 | ready-pro |
+| P5-08 (#253) | touch joystick instead of the D-pad (§3.6) | AC-08-17..19 | ready-pro |

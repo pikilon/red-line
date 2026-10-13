@@ -34,6 +34,40 @@ function paused(page: Page): Promise<boolean> {
   );
 }
 
+interface EntityView {
+  owner: number;
+  kind: number;
+  x: number;
+  y: number;
+}
+
+interface TouchWorldView extends TouchDebugView {
+  setCameraTarget(x: number, y: number): void;
+  typeIndex(id: string): number;
+  entities(): EntityView[];
+  worldToScreen(x: number, y: number): Point;
+}
+
+type WorldWindow = Window & { __redline?: TouchWorldView };
+
+async function box(page: Page, selector: string) {
+  const found = await page.locator(selector).boundingBox();
+  if (found === null) throw new Error(`no box for ${selector}`);
+  return found;
+}
+
+function overlaps(
+  a: { x: number; y: number; width: number; height: number },
+  b: { x: number; y: number; width: number; height: number },
+): boolean {
+  return (
+    a.x < b.x + b.width &&
+    b.x < a.x + a.width &&
+    a.y < b.y + b.height &&
+    b.y < a.y + a.height
+  );
+}
+
 test.describe("touch device", () => {
   test.use({
     hasTouch: true,
@@ -41,71 +75,118 @@ test.describe("touch device", () => {
     viewport: { width: 390, height: 844 },
   });
 
-  test("AC-08-16: touch controls in the skirmish", async ({ page }) => {
+  test("AC-08-19: touch joystick in the skirmish", async ({ page }) => {
+    test.setTimeout(60_000);
     const errors: string[] = [];
     page.on("console", (message) => {
       if (message.type() === "error") errors.push(message.text());
     });
     await boot(page);
+    const viewport = page.viewportSize();
+    if (viewport === null) throw new Error("no viewport");
 
-    for (const id of [
-      "touch-up",
-      "touch-down",
-      "touch-left",
-      "touch-right",
-      "touch-menu",
-    ]) {
-      const box = await page.locator(`#${id}`).boundingBox();
-      expect(box, id).not.toBeNull();
-      expect(box?.width ?? 0, id).toBeGreaterThanOrEqual(48);
-      expect(box?.height ?? 0, id).toBeGreaterThanOrEqual(48);
-    }
-    const dpad = await page.locator("#touch-dpad").boundingBox();
-    const hud = await page.locator("#hud").boundingBox();
-    expect(dpad).not.toBeNull();
-    expect(hud).not.toBeNull();
-    if (dpad !== null && hud !== null) {
-      const overlap =
-        dpad.x < hud.x + hud.width &&
-        hud.x < dpad.x + dpad.width &&
-        dpad.y < hud.y + hud.height &&
-        hud.y < dpad.y + dpad.height;
-      expect(overlap).toBe(false);
-    }
+    // Select the dozer so the command panel shows.
+    const dozer = await page.evaluate(() => {
+      const api = (window as WorldWindow).__redline;
+      if (api === undefined) return null;
+      const kind = api.typeIndex("ua-dozer");
+      const own = api
+        .entities()
+        .find((entity) => entity.owner === 0 && entity.kind === kind);
+      return own === undefined ? null : api.worldToScreen(own.x, own.y);
+    });
+    if (dozer === null) throw new Error("missing ua-dozer");
+    await page.mouse.click(dozer.x, dozer.y);
+    await expect(page.locator("#command-panel")).toBeVisible();
 
-    // Hold the right button: the camera pans like ArrowRight (+x, -y).
-    const before = await cameraTarget(page);
-    const right = await page.locator("#touch-right").boundingBox();
-    if (right === null) throw new Error("no #touch-right");
-    const cx = right.x + right.width / 2;
-    const cy = right.y + right.height / 2;
+    // Layout: joystick bottom right, command panel bottom left, no overlap.
+    const joystick = await box(page, "#touch-joystick");
+    const panel = await box(page, "#command-panel");
+    const hud = await box(page, "#hud");
+    const menu = await box(page, "#touch-menu");
+    expect(joystick.x).toBeGreaterThan(viewport.width / 2);
+    expect(joystick.y).toBeGreaterThan(viewport.height / 2);
+    expect(panel.x + panel.width / 2).toBeLessThan(viewport.width / 2);
+    expect(panel.y).toBeGreaterThan(viewport.height / 2);
+    expect(menu.width).toBeGreaterThanOrEqual(48);
+    expect(menu.height).toBeGreaterThanOrEqual(48);
+    for (const other of [panel, hud, menu]) {
+      expect(overlaps(joystick, other)).toBe(false);
+    }
+    expect(overlaps(panel, menu)).toBe(false);
+    expect(overlaps(panel, hud)).toBe(false);
+
+    // Drag the knob with real touch events: proportional panning.
+    await page.evaluate(() =>
+      (window as WorldWindow).__redline?.setCameraTarget(40, 40),
+    );
+    const knob = await box(page, "#touch-joystick-knob");
+    const cx = knob.x + knob.width / 2;
+    const cy = knob.y + knob.height / 2;
+    const radius = joystick.width / 2;
     const client = await page.context().newCDPSession(page);
-    await client.send("Input.dispatchTouchEvent", {
-      type: "touchStart",
-      touchPoints: [{ x: cx, y: cy }],
-    });
-    await page.waitForTimeout(500);
-    await client.send("Input.dispatchTouchEvent", {
-      type: "touchEnd",
-      touchPoints: [],
-    });
-    const after = await cameraTarget(page);
-    expect(after.x - before.x).toBeGreaterThan(1);
-    expect(after.y - before.y).toBeLessThan(-1);
+    const touch = (type: "touchStart" | "touchMove" | "touchEnd", dy: number) =>
+      client.send("Input.dispatchTouchEvent", {
+        type,
+        touchPoints: type === "touchEnd" ? [] : [{ x: cx, y: cy + dy }],
+      });
+    const hasPressed = () =>
+      page
+        .locator("#touch-joystick-knob")
+        .evaluate((element) => element.classList.contains("pressed"));
+
+    // Tiles per second the camera moves over 400 ms, timed inside the page.
+    const speed = (): Promise<{ rate: number; dx: number; dy: number }> =>
+      page.evaluate(async () => {
+        const api = (window as WorldWindow).__redline;
+        if (api === undefined) throw new Error("no debug api");
+        const from = api.cameraTarget();
+        const t0 = performance.now();
+        await new Promise((resolve) => setTimeout(resolve, 400));
+        const to = api.cameraTarget();
+        const seconds = (performance.now() - t0) / 1000;
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        return { rate: Math.hypot(dx, dy) / seconds, dx, dy };
+      });
+
+    await touch("touchStart", 0);
+    await touch("touchMove", -radius / 2);
+    expect(await hasPressed()).toBe(true);
+    const half = await speed();
+    await touch("touchMove", -radius * 2);
+    const full = await speed();
+    await touch("touchEnd", 0);
+    // Up is the ArrowUp direction (-x, -y); a full push is the keyboard speed
+    // (20 tiles/s) and a half push about half of it.
+    expect(half.dx).toBeLessThan(-1);
+    expect(half.dy).toBeLessThan(-1);
+    expect(full.rate).toBeGreaterThan(14);
+    expect(full.rate).toBeLessThan(26);
+    expect(half.rate / full.rate).toBeGreaterThan(0.35);
+    expect(half.rate / full.rate).toBeLessThan(0.65);
+    expect(await hasPressed()).toBe(false);
+
+    // After release the camera stays put and the knob is back at the centre.
     await page.waitForTimeout(300);
     const settled = await cameraTarget(page);
-    expect(settled.x).toBeCloseTo(after.x, 5);
-    expect(settled.y).toBeCloseTo(after.y, 5);
+    await page.waitForTimeout(300);
+    const later = await cameraTarget(page);
+    expect(later.x).toBeCloseTo(settled.x, 5);
+    expect(later.y).toBeCloseTo(settled.y, 5);
+    const rest = await box(page, "#touch-joystick-knob");
+    expect(rest.x).toBeCloseTo(knob.x, 0);
+    expect(rest.y).toBeCloseTo(knob.y, 0);
 
     // The menu button opens and closes the Esc menu.
     await page.locator("#touch-menu").tap();
     await expect(page.locator("#game-menu")).toBeVisible();
     expect(await paused(page)).toBe(true);
-    await expect(page.locator("#touch-dpad")).toBeHidden();
+    await expect(page.locator("#touch-joystick")).toBeHidden();
     await page.locator("#touch-menu").tap();
     await expect(page.locator("#game-menu")).toBeHidden();
     expect(await paused(page)).toBe(false);
-    await expect(page.locator("#touch-dpad")).toBeVisible();
+    await expect(page.locator("#touch-joystick")).toBeVisible();
     expect(errors).toEqual([]);
   });
 });
