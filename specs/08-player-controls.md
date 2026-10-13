@@ -200,6 +200,33 @@ only scales the view.
 * Debug API: new `zoom(): number`.
 * Not in the tech-slice mode.
 
+## 3.5 Switch side, reveal map and FPS panel in the menu (amends §3.1, owner request 2026-10-13, issue #245)
+
+The owner asked to put the debug options and the side switch in the Esc menu.
+They were keyboard-only (`F2`, `F3`) and needed `?debug=1`.
+
+* `GameMenuView` gains the optional `revealed?: boolean` (map revealed) and
+  `fpsPanel?: boolean` (performance panel shown); absent counts as `false`.
+  `GameMenuActions` gains the optional `switchSide?(): void`,
+  `toggleReveal?(): void` and `toggleFpsPanel?(): void`; a button exists only
+  when its action is provided, so the earlier menu tests keep passing. The
+  equal-view rule of §3.1 covers the new fields.
+* Buttons `#game-menu-switch`, `#game-menu-reveal` and `#game-menu-fps` sit
+  after the Textures button and before Restart: Resume, Gore, AI, Textures,
+  Switch side, Reveal map, FPS panel, Restart. Labels: `menu.switchSide`
+  "Switch side", `menu.revealOn` "Reveal map: on" / `menu.revealOff` "Reveal
+  map: off", `menu.fpsOn` "FPS panel: on" / `menu.fpsOff` "FPS panel: off".
+  They are created once (AC-03-65).
+* Switch side does what `F2` does (spec 03 AC-03-60, §3.2): the selection is
+  cleared, the controlled player becomes the other one, the camera goes to that
+  player's last view or base and `#hud-player` reads `Player N: <faction>`.
+  Reveal map does what `F3` does. Both work in every skirmish, without
+  `?debug=1`.
+* FPS panel shows or hides `#perf-panel` (`PerfPanel.setVisible(visible)`,
+  `hidden` attribute). It is created in every skirmish; hidden by default,
+  shown with `?debug=1`.
+* `F2`, `F3` and `window.__redline` stay debug-only.
+
 ## 4. Acceptance criteria
 
 **AC-08-01 Worker pause.** Given a skirmish worker handler at speed 1, after
@@ -269,6 +296,29 @@ points 4 tiles apart by the same factor (±5 %); a real click on the
 own dozer at its new screen position selects it; 30 notches down clamp
 `zoom()` to `ZOOM_MIN`; no console error.
 
+**AC-08-12 Debug buttons in the menu view.** With all three actions provided,
+`createGameMenu` renders the buttons in the §3.5 order (Resume, Gore, AI,
+Textures, Switch side, Reveal map, FPS panel, Restart) with the labels "Switch
+side", "Reveal map: off", "FPS panel: off"; `revealed: true` and `fpsPanel:
+true` give "Reveal map: on" and "FPS panel: on"; an equal view writes nothing;
+each button calls its action once; without the three actions the buttons do
+not exist.
+
+**AC-08-13 Switch side in the skirmish (Playwright).** (a) In `?seed=1&ai=off`
+(no debug, `window.__redline` is undefined), `Esc` and a real click on "Switch
+side" make `#hud-player` read "Player 2: Russia"; a second click returns it to
+"Player 1: Ukraine"; no console error. (b) In `?debug=1&seed=1&ai=off` with
+`Ctrl+A` selecting own units, the same click empties `selectedIds()`, sets
+`controlledPlayer()` to 1, moves `cameraTarget()` by more than 10 cells, and
+after "Resume" the tick advances.
+
+**AC-08-14 Reveal and FPS panel in the skirmish (Playwright).** In
+`?seed=1&ai=off`, `#perf-panel` is hidden; real clicks on "FPS panel: off"
+show it and relabel the button "FPS panel: on", a second click hides it; the
+Reveal button toggles "Reveal map: off" and "Reveal map: on"; no console
+error. With `?debug=1&seed=1&ai=off` `#perf-panel` starts visible and the
+button reads "FPS panel: on".
+
 ## 5. Queued requests (to be specified)
 
 1. Camera bookmarks: save with `Ctrl+F1..F4`, jump with `F1..F4`.
@@ -295,6 +345,9 @@ own dozer at its new screen position selects it; 30 notches down clamp
 | AC-08-09 | `client/tests/e2e/pause.spec.ts` | `AC-08-09: AI toggle in the skirmish` |
 | AC-08-10 | `client/src/camera.test.ts` | `AC-08-10: wheel zoom` |
 | AC-08-11 | `client/tests/e2e/zoom.spec.ts` | `AC-08-11: zoom in the skirmish` |
+| AC-08-12 | `client/src/ui/gameMenuDebug.test.ts` | `AC-08-12: debug buttons in the menu view` |
+| AC-08-13 | `client/tests/e2e/menuDebug.spec.ts` | `AC-08-13: switch side in the skirmish` |
+| AC-08-14 | `client/tests/e2e/menuDebug.spec.ts` | `AC-08-14: reveal and FPS panel in the skirmish` |
 
 ## 7. Issue breakdown
 
@@ -305,3 +358,4 @@ own dozer at its new screen position selects it; 30 notches down clamp
 | P5-03 (#220) | hot-seat camera (§3.2) | AC-08-05, 06 | ready-pro |
 | P5-04 (#219) | AI toggle in the game menu (§3.3) | AC-08-04, 07..09 | ready-pro |
 | P5-05 (#226) | mouse-wheel zoom (§3.4) | AC-08-10, 11 | ready-pro |
+| P5-06 (#245) | switch side, reveal, FPS panel in the menu (§3.5) | AC-08-12..14 | ready-pro |

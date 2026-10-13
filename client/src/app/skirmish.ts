@@ -208,12 +208,19 @@ export function startSkirmish(params: SkirmishOptions): void {
   let pauseStartMs: number | null = null;
   /** Whether the skirmish AI plays; null when none is attached (spec 08 §3.3). */
   let aiActive: boolean | null = ai === null ? null : true;
+  /** Whether the performance panel shows; on with `?debug=1` (spec 08 §3.5). */
+  let fpsPanel = debug;
+  /** Player whose fog the worker snapshots; `OBSERVER` while the map is revealed. */
+  let viewer = 0;
 
   const gameMenu = createGameMenu(document.body, {
     resume: () => setMenuOpen(false),
     toggleGore: () => toggleGore(),
     toggleAi: () => toggleAi(),
     toggleTextures: () => toggleTextures(),
+    switchSide: () => switchSide(),
+    toggleReveal: () => toggleReveal(),
+    toggleFpsPanel: () => toggleFpsPanel(),
     restart: () => window.location.reload(),
   });
   renderMenu();
@@ -225,6 +232,8 @@ export function startSkirmish(params: SkirmishOptions): void {
       gore: settings.gore,
       ai: aiActive,
       generatedTextures: settings.generatedTextures !== false,
+      revealed: viewer === OBSERVER,
+      fpsPanel,
     });
   }
 
@@ -260,7 +269,6 @@ export function startSkirmish(params: SkirmishOptions): void {
   let fog: Uint8Array<ArrayBuffer> = new Uint8Array(0);
   let receivedAt = 0;
   let controlled = 0;
-  let viewer = 0;
   let ready = false;
   /** Type index being placed, or null; the command panel starts placement. */
   let placementKind: number | null = null;
@@ -518,6 +526,20 @@ export function startSkirmish(params: SkirmishOptions): void {
   function toggleReveal(): void {
     viewer = viewer === OBSERVER ? controlled : OBSERVER;
     interact.setViewer(viewer);
+    renderMenu();
+  }
+
+  /** Switches to the other player like F2, from the game menu (spec 08 §3.5). */
+  function switchSide(): void {
+    controller?.clearSelection();
+    setControlledPlayer(controlled === 0 ? 1 : 0);
+  }
+
+  /** Shows or hides the performance panel (spec 08 §3.5). */
+  function toggleFpsPanel(): void {
+    fpsPanel = !fpsPanel;
+    perfPanel.setVisible(fpsPanel);
+    renderMenu();
   }
 
   /** Last command panel input, to skip renders that would change nothing. */
@@ -691,7 +713,8 @@ export function startSkirmish(params: SkirmishOptions): void {
   });
 
   const frameStats = createFrameStats();
-  const perfPanel = debug ? createPerfPanel(document.body) : null;
+  const perfPanel = createPerfPanel(document.body);
+  perfPanel.setVisible(fpsPanel);
   let drawCalls = 0;
   let lastFrameMs: number | null = null;
 
@@ -700,7 +723,7 @@ export function startSkirmish(params: SkirmishOptions): void {
     const dtMs = lastFrameMs === null ? 0 : now - lastFrameMs;
     if (lastFrameMs !== null) {
       frameStats.record(dtMs);
-      perfPanel?.record(dtMs, now);
+      perfPanel.record(dtMs, now);
     }
     lastFrameMs = now;
     controller?.update(dtMs / 1000);
@@ -773,8 +796,8 @@ export function startSkirmish(params: SkirmishOptions): void {
       }),
       resetFrameStats: () => frameStats.reset(),
       frameStats: () => frameStats.read(),
-      injectFrameTimes: (frameTimesMs) => perfPanel?.inject(frameTimesMs),
-      resumeFrameTimes: () => perfPanel?.resume(),
+      injectFrameTimes: (frameTimesMs) => perfPanel.inject(frameTimesMs),
+      resumeFrameTimes: () => perfPanel.resume(),
     };
     installSkirmishDebugApi(window as { __redline?: SkirmishDebug }, api);
   }

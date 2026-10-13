@@ -29,6 +29,8 @@ export interface PerfPanel {
   record(frameMs: number, nowMs: number): void;
   inject(frameTimesMs: readonly number[]): void;
   resume(): void;
+  /** Shows or hides the panel (spec 08 §3.5); it keeps recording hidden. */
+  setVisible(visible: boolean): void;
 }
 
 function appendDiv(root: HTMLElement, id: string): HTMLDivElement {
@@ -71,6 +73,9 @@ export function createPerfPanel(parent: HTMLElement): PerfPanel {
       injected = false;
       window = [];
       render();
+    },
+    setVisible(visible) {
+      panel.hidden = !visible;
     },
   };
 }
