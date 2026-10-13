@@ -6,6 +6,7 @@ import {
   DoubleSide,
   Float32BufferAttribute,
   Group,
+  InstancedBufferAttribute,
   InstancedMesh,
   LineBasicMaterial,
   LineSegments,
@@ -27,7 +28,12 @@ import {
 } from "../sim/matchSnapshot";
 import type { Animator } from "./animation";
 import { applyFacade, enableFacades, facadeTextureIds } from "./facades";
-import { createFlagRenderer } from "./flags";
+import {
+  addBandAttribute,
+  bandsOf,
+  createFlagRenderer,
+  enableBands,
+} from "./flags";
 import {
   applyBodyTextures,
   applyLivery,
@@ -105,6 +111,8 @@ export interface EntityRenderer {
 
 interface MeshSlot extends ModelInstance {
   count: number;
+  /** Per-instance `bandOn` of a `team` slot with flag bands (spec 16 §5). */
+  bandOn?: InstancedBufferAttribute;
 }
 
 interface TypeSlots {
@@ -391,9 +399,23 @@ export function createEntityRenderer(
         kind === "hull" ? turretOccluders(model) : [],
       );
     }
+    const bands = type === undefined ? null : bandsOf(type.id, type.category);
+    const teamSource = parts.get("team")?.geometry;
+    const team =
+      teamSource !== undefined && bands !== null
+        ? addBandAttribute(teamSource.clone())
+        : teamSource;
+    let bandOn: InstancedBufferAttribute | undefined;
+    if (team !== undefined && bands !== null) {
+      bandOn = new InstancedBufferAttribute(
+        new Float32Array(capacity).fill(1),
+        1,
+      );
+      team.setAttribute("bandOn", bandOn);
+    }
     const definitions: readonly [MaterialName, BufferGeometry | undefined][] = [
       ["body", opaque ?? undefined],
-      ["team", parts.get("team")?.geometry],
+      ["team", team],
     ];
     for (const [material, geometry] of definitions) {
       if (geometry === undefined) continue;
@@ -407,6 +429,10 @@ export function createEntityRenderer(
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       const slot: MeshSlot = { typeId, group: kind, material, mesh, count: 0 };
+      if (material === "team" && bands !== null && bandOn !== undefined) {
+        slot.bandOn = bandOn;
+        enableBands(mesh.material as MeshLambertMaterial, bands);
+      }
       const bodyColor = parts.get("body")?.color;
       if (
         material === "body" &&
@@ -447,7 +473,13 @@ export function createEntityRenderer(
     hex: number,
     composeTurret: (() => Matrix4) | null = null,
   ): void {
-    if (slot.material === "team") {
+    if (slot.bandOn !== undefined) {
+      // Flag bands show unless selected (spec 16 §5).
+      const selected = hex === SELECTED_COLOR;
+      slot.mesh.setColorAt(index, color.setHex(selected ? hex : 0xffffff));
+      slot.bandOn.setX(index, selected ? 0 : 1);
+      slot.bandOn.needsUpdate = true;
+    } else if (slot.material === "team") {
       slot.mesh.setColorAt(index, color.setHex(hex));
     } else {
       slot.mesh.setColorAt(index, color.setHex(0xffffff));

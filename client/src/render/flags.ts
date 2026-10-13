@@ -1,8 +1,10 @@
 import {
   type BufferGeometry,
+  Color,
   CylinderGeometry,
   DataTexture,
   DoubleSide,
+  Float32BufferAttribute,
   Group,
   InstancedMesh,
   Matrix4,
@@ -238,4 +240,113 @@ export function createFlagRenderer(capacity: number): FlagRenderer {
       }
     },
   };
+}
+
+/** Stripes of the flag on a type's `team` parts (spec 16 §5), or null for
+ *  units, depots and types without a faction prefix. */
+export function bandsOf(
+  typeId: string,
+  category: string,
+): readonly number[] | null {
+  if (category !== "building") return null;
+  if (typeId.startsWith("ua-")) return FLAGS.ukraine;
+  if (typeId.startsWith("ru-")) return FLAGS.russia;
+  return null;
+}
+
+/** Adds the `band` attribute: 0 at the bottom and 1 at the top of each
+ *  connected piece (triangles sharing vertex positions); flat pieces get 1. */
+export function addBandAttribute(geometry: BufferGeometry): BufferGeometry {
+  const position = geometry.getAttribute("position");
+  const parent = Array.from({ length: position.count }, (_, i) => i);
+  const find = (i: number): number => {
+    let root = i;
+    while (parent[root] !== root) root = parent[root] ?? root;
+    let node = i;
+    while (parent[node] !== root) {
+      const next = parent[node] ?? root;
+      parent[node] = root;
+      node = next;
+    }
+    return root;
+  };
+  const union = (a: number, b: number): void => {
+    parent[find(a)] = find(b);
+  };
+  const byPosition = new Map<string, number>();
+  for (let i = 0; i < position.count; i++) {
+    const key = [position.getX(i), position.getY(i), position.getZ(i)]
+      .map((c) => Math.round(c * 1e4))
+      .join(",");
+    const first = byPosition.get(key);
+    if (first === undefined) byPosition.set(key, i);
+    else union(i, first);
+  }
+  const index = geometry.index;
+  const triangles = index === null ? position.count : index.count;
+  for (let t = 0; t + 2 < triangles; t += 3) {
+    const a = index === null ? t : index.getX(t);
+    union(a, index === null ? t + 1 : index.getX(t + 1));
+    union(a, index === null ? t + 2 : index.getX(t + 2));
+  }
+  const bounds = new Map<number, [number, number]>();
+  for (let i = 0; i < position.count; i++) {
+    const root = find(i);
+    const y = position.getY(i);
+    const range = bounds.get(root) ?? [y, y];
+    bounds.set(root, [Math.min(range[0], y), Math.max(range[1], y)]);
+  }
+  const band = new Float32Array(position.count);
+  for (let i = 0; i < position.count; i++) {
+    const [low, high] = bounds.get(find(i)) ?? [0, 0];
+    band[i] = high - low < 1e-6 ? 1 : (position.getY(i) - low) / (high - low);
+  }
+  geometry.setAttribute("band", new Float32BufferAttribute(band, 1));
+  return geometry;
+}
+
+const MAX_BANDS = 3;
+
+/** Draws `stripes` as horizontal bands by the `band` attribute wherever the
+ *  per-instance `bandOn` is 1, times the vertex colour (spec 16 §5). */
+export function enableBands(
+  material: MeshLambertMaterial,
+  stripes: readonly number[],
+): void {
+  material.userData.bandColors = stripes;
+  const colors = Array.from(
+    { length: MAX_BANDS },
+    (_, i) => new Color(stripes[Math.min(i, stripes.length - 1)] ?? 0xffffff),
+  );
+  const bandColors = { value: colors };
+  const bandCount = { value: Math.min(stripes.length, MAX_BANDS) };
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.bandColors = bandColors;
+    shader.uniforms.bandCount = bandCount;
+    shader.vertexShader = shader.vertexShader
+      .replace(
+        "#include <common>",
+        "#include <common>\nattribute float band;\nattribute float bandOn;\nvarying float vBand;\nvarying float vBandOn;",
+      )
+      .replace(
+        "#include <begin_vertex>",
+        "#include <begin_vertex>\nvBand = band;\nvBandOn = bandOn;",
+      );
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "#include <common>",
+        `#include <common>\nuniform vec3 bandColors[ ${MAX_BANDS} ];\nuniform float bandCount;\nvarying float vBand;\nvarying float vBandOn;`,
+      )
+      .replace(
+        "#include <color_fragment>",
+        `#include <color_fragment>
+  float bandIndex = clamp( floor( ( 1.0 - vBand ) * bandCount ), 0.0, bandCount - 1.0 );
+  vec3 bandColor = bandColors[ 0 ];
+  if ( bandIndex > 0.5 ) bandColor = bandColors[ 1 ];
+  if ( bandIndex > 1.5 ) bandColor = bandColors[ 2 ];
+  diffuseColor.rgb *= mix( vec3( 1.0 ), bandColor, vBandOn );`,
+      );
+  };
+  material.customProgramCacheKey = () => "team-flag-bands";
+  material.needsUpdate = true;
 }
