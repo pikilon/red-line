@@ -143,11 +143,12 @@ function setup() {
       toggles.count++;
     },
   });
+  const base = findById(parent, "touch-joystick");
   const knob = findById(parent, "touch-joystick-knob");
   const blur = () => {
     for (const handler of windowListeners.get("blur") ?? []) handler();
   };
-  return { parent, pans, toggles, controls, knob, blur };
+  return { parent, pans, toggles, controls, base, knob, blur };
 }
 
 /** A pointer position at an offset from the base centre. */
@@ -171,54 +172,54 @@ describe("AC-08-18: touch joystick view", () => {
     expect(tryFind(root, "touch-up")).toBeNull();
   });
 
-  it("pressing the knob captures the pointer and grows the knob", () => {
-    const { knob, pans } = setup();
-    knob.fire("pointerdown", at(0, 0));
+  it("pressing the base captures the pointer and grows the knob", () => {
+    const { base, knob, pans } = setup();
+    base.fire("pointerdown", at(0, 0));
     expect(knob.classes.has("pressed")).toBe(true);
-    expect(knob.captured).toEqual([1]);
+    expect(base.captured).toEqual([1]);
     expect(pans).toEqual([]);
   });
 
   it("moving reports the vector proportionally and moves the knob", () => {
-    const { knob, pans } = setup();
-    knob.fire("pointerdown", at(0, 0));
-    knob.fire("pointermove", at(30, 0));
+    const { base, knob, pans } = setup();
+    base.fire("pointerdown", at(0, 0));
+    base.fire("pointermove", at(30, 0));
     expect(pans).toEqual([[0.5, 0]]);
     expect(knob.style.transform).toBe("translate(30px, 0px)");
-    knob.fire("pointermove", at(0, -30));
+    base.fire("pointermove", at(0, -30));
     expect(pans[pans.length - 1]).toEqual([0, -0.5]);
     expect(knob.style.transform).toBe("translate(0px, -30px)");
   });
 
   it("clamps the knob and the vector to the base radius", () => {
-    const { knob, pans } = setup();
-    knob.fire("pointerdown", at(0, 0));
-    knob.fire("pointermove", at(300, 0));
+    const { base, knob, pans } = setup();
+    base.fire("pointerdown", at(0, 0));
+    base.fire("pointermove", at(300, 0));
     expect(pans[pans.length - 1]).toEqual([1, 0]);
     expect(knob.style.transform).toBe("translate(60px, 0px)");
-    knob.fire("pointermove", at(300, 300));
+    base.fire("pointermove", at(300, 300));
     const [x, y] = pans[pans.length - 1] ?? [0, 0];
     expect(Math.hypot(x, y)).toBeCloseTo(1, 6);
     expect(x).toBeCloseTo(y, 6);
   });
 
-  it("a press outside the knob but moved later keeps working", () => {
-    const { knob, pans } = setup();
-    knob.fire("pointerdown", at(24, -24));
+  it("a press off-centre reports its vector at once", () => {
+    const { base, pans } = setup();
+    base.fire("pointerdown", at(24, -24));
     expect(pans[pans.length - 1]?.[0]).toBeCloseTo(0.4, 6);
     expect(pans[pans.length - 1]?.[1]).toBeCloseTo(-0.4, 6);
   });
 
   it("inside the dead zone it reports (0, 0) and only on change", () => {
-    const { knob, pans } = setup();
-    knob.fire("pointerdown", at(0, 0));
-    knob.fire("pointermove", at(5, 5));
-    knob.fire("pointermove", at(8, 0));
+    const { base, pans } = setup();
+    base.fire("pointerdown", at(0, 0));
+    base.fire("pointermove", at(5, 5));
+    base.fire("pointermove", at(8, 0));
     expect(pans).toEqual([]);
-    knob.fire("pointermove", at(30, 0));
-    knob.fire("pointermove", at(30, 0));
+    base.fire("pointermove", at(30, 0));
+    base.fire("pointermove", at(30, 0));
     expect(pans).toEqual([[0.5, 0]]);
-    knob.fire("pointermove", at(5, 0));
+    base.fire("pointermove", at(5, 0));
     expect(pans).toEqual([
       [0.5, 0],
       [0, 0],
@@ -226,28 +227,28 @@ describe("AC-08-18: touch joystick view", () => {
   });
 
   it("pointerup resets the knob and reports (0, 0) once", () => {
-    const { knob, pans } = setup();
-    knob.fire("pointerdown", at(0, 0));
-    knob.fire("pointermove", at(40, 0));
-    knob.fire("pointerup", at(40, 0));
+    const { base, knob, pans } = setup();
+    base.fire("pointerdown", at(0, 0));
+    base.fire("pointermove", at(40, 0));
+    base.fire("pointerup", at(40, 0));
     expect(pans[pans.length - 1]).toEqual([0, 0]);
     expect(pans).toHaveLength(2);
     expect(knob.classes.has("pressed")).toBe(false);
     expect(knob.style.transform).toBe("translate(0px, 0px)");
-    knob.fire("pointerup", at(40, 0));
-    knob.fire("pointercancel", at(40, 0));
+    base.fire("pointerup", at(40, 0));
+    base.fire("pointercancel", at(40, 0));
     expect(pans).toHaveLength(2);
   });
 
   it("pointercancel and a window blur reset like a release", () => {
-    const { knob, pans, blur } = setup();
-    knob.fire("pointerdown", at(0, 0));
-    knob.fire("pointermove", at(0, 40));
-    knob.fire("pointercancel", at(0, 40));
+    const { base, knob, pans, blur } = setup();
+    base.fire("pointerdown", at(0, 0));
+    base.fire("pointermove", at(0, 40));
+    base.fire("pointercancel", at(0, 40));
     expect(pans[pans.length - 1]).toEqual([0, 0]);
     expect(knob.classes.has("pressed")).toBe(false);
-    knob.fire("pointerdown", at(0, 0));
-    knob.fire("pointermove", at(-40, 0));
+    base.fire("pointerdown", at(0, 0));
+    base.fire("pointermove", at(-40, 0));
     blur();
     expect(pans[pans.length - 1]).toEqual([0, 0]);
     expect(knob.classes.has("pressed")).toBe(false);
@@ -255,13 +256,13 @@ describe("AC-08-18: touch joystick view", () => {
   });
 
   it("a release without a press calls nothing and moves are ignored", () => {
-    const { knob, pans } = setup();
-    knob.fire("pointerup", at(0, 0));
-    knob.fire("pointermove", at(40, 0));
+    const { base, knob, pans } = setup();
+    base.fire("pointerup", at(0, 0));
+    base.fire("pointermove", at(40, 0));
     expect(pans).toEqual([]);
-    knob.fire("pointerdown", at(0, 0, 1));
-    knob.fire("pointermove", at(40, 0, 2));
-    knob.fire("pointerup", at(40, 0, 2));
+    base.fire("pointerdown", at(0, 0, 1));
+    base.fire("pointermove", at(40, 0, 2));
+    base.fire("pointerup", at(40, 0, 2));
     expect(pans).toEqual([]);
     expect(knob.classes.has("pressed")).toBe(true);
   });
@@ -281,9 +282,9 @@ describe("AC-08-18: touch joystick view", () => {
   });
 
   it("an open menu hides the joystick, releases and keeps the menu button", () => {
-    const { parent, pans, knob, controls } = setup();
-    knob.fire("pointerdown", at(0, 0));
-    knob.fire("pointermove", at(60, 0));
+    const { parent, pans, base, knob, controls } = setup();
+    base.fire("pointerdown", at(0, 0));
+    base.fire("pointermove", at(60, 0));
     controls.render({ menuOpen: true });
     expect(findById(parent, "touch-joystick").hidden).toBe(true);
     expect(findById(parent, "touch-menu").hidden).toBe(false);

@@ -72,11 +72,7 @@ import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
 import { createResourceBar } from "../ui/resourceBar";
 import { createSelectionBox } from "../ui/selectionBox";
-import {
-  createTouchControls,
-  isTouchDevice,
-  type PanDirection,
-} from "../ui/touchControls";
+import { createTouchControls, isTouchDevice } from "../ui/touchControls";
 import { createCameraMemory, homeView } from "./cameraMemory";
 
 export const DEFAULT_MAP = "first-line";
@@ -228,17 +224,10 @@ export function startSkirmish(params: SkirmishOptions): void {
     toggleFpsPanel: () => toggleFpsPanel(),
     restart: () => window.location.reload(),
   });
-  const PAN_CODES = {
-    up: "ArrowUp",
-    down: "ArrowDown",
-    left: "ArrowLeft",
-    right: "ArrowRight",
-  } as const satisfies Record<PanDirection, string>;
-  // D-pad and menu button on touch screens only (spec 08 §3.6).
+  // Joystick and menu button on touch screens only (spec 08 §3.6).
   const touchControls = isTouchDevice()
     ? createTouchControls(document.body, {
-        pan: (direction, held) =>
-          controller?.setPan(PAN_CODES[direction], held),
+        pan: (x, y) => controller?.setAnalogPan(x, y),
         toggleMenu: () => toggleMenuLikeEsc(),
       })
     : null;

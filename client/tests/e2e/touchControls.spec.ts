@@ -125,7 +125,7 @@ test.describe("touch device", () => {
     const cy = knob.y + knob.height / 2;
     const radius = joystick.width / 2;
     const client = await page.context().newCDPSession(page);
-    const touch = (type: string, dy: number) =>
+    const touch = (type: "touchStart" | "touchMove" | "touchEnd", dy: number) =>
       client.send("Input.dispatchTouchEvent", {
         type,
         touchPoints: type === "touchEnd" ? [] : [{ x: cx, y: cy + dy }],
@@ -135,30 +135,45 @@ test.describe("touch device", () => {
         .locator("#touch-joystick-knob")
         .evaluate((element) => element.classList.contains("pressed"));
 
-    const start = await cameraTarget(page);
+    // Tiles per second the camera moves over 400 ms, timed inside the page.
+    const speed = (): Promise<{ rate: number; dx: number; dy: number }> =>
+      page.evaluate(async () => {
+        const api = (window as WorldWindow).__redline;
+        if (api === undefined) throw new Error("no debug api");
+        const from = api.cameraTarget();
+        const t0 = performance.now();
+        await new Promise((resolve) => setTimeout(resolve, 400));
+        const to = api.cameraTarget();
+        const seconds = (performance.now() - t0) / 1000;
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        return { rate: Math.hypot(dx, dy) / seconds, dx, dy };
+      });
+
     await touch("touchStart", 0);
     await touch("touchMove", -radius / 2);
     expect(await hasPressed()).toBe(true);
-    await page.waitForTimeout(500);
-    await touch("touchMove", 0);
-    const half = await cameraTarget(page);
+    const half = await speed();
     await touch("touchMove", -radius * 2);
-    await page.waitForTimeout(500);
+    const full = await speed();
     await touch("touchEnd", 0);
-    const full = await cameraTarget(page);
-    // Up is the ArrowUp direction (-x, -y), and the full push is faster.
-    expect(half.x - start.x).toBeLessThan(-1);
-    expect(half.y - start.y).toBeLessThan(-1);
-    const halfDistance = Math.hypot(half.x - start.x, half.y - start.y);
-    const fullDistance = Math.hypot(full.x - half.x, full.y - half.y);
-    expect(fullDistance).toBeGreaterThan(halfDistance * 1.3);
+    // Up is the ArrowUp direction (-x, -y); a full push is the keyboard speed
+    // (20 tiles/s) and a half push about half of it.
+    expect(half.dx).toBeLessThan(-1);
+    expect(half.dy).toBeLessThan(-1);
+    expect(full.rate).toBeGreaterThan(14);
+    expect(full.rate).toBeLessThan(26);
+    expect(half.rate / full.rate).toBeGreaterThan(0.35);
+    expect(half.rate / full.rate).toBeLessThan(0.65);
     expect(await hasPressed()).toBe(false);
 
     // After release the camera stays put and the knob is back at the centre.
     await page.waitForTimeout(300);
     const settled = await cameraTarget(page);
-    expect(settled.x).toBeCloseTo(full.x, 5);
-    expect(settled.y).toBeCloseTo(full.y, 5);
+    await page.waitForTimeout(300);
+    const later = await cameraTarget(page);
+    expect(later.x).toBeCloseTo(settled.x, 5);
+    expect(later.y).toBeCloseTo(settled.y, 5);
     const rest = await box(page, "#touch-joystick-knob");
     expect(rest.x).toBeCloseTo(knob.x, 0);
     expect(rest.y).toBeCloseTo(knob.y, 0);
