@@ -24,6 +24,7 @@
     "assets:loop": "node scripts/asset-loop.mjs",
     "check:rust": "cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo nextest run",
     "build:wasm": "wasm-pack build crates/sim --target web",
+    "status": "node scripts/status.mjs",
     "deploy:pages": "node scripts/deploy-pages.mjs",
     "verify:plan": "node scripts/verify-plan.mjs",
     "verify:agent": "node --env-file-if-exists=.env.local scripts/verify-agent.mjs",
