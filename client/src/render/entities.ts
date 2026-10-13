@@ -26,6 +26,8 @@ import {
   NEUTRAL,
 } from "../sim/matchSnapshot";
 import type { Animator } from "./animation";
+import { applyFacade, enableFacades, facadeTextureIds } from "./facades";
+import { createFlagRenderer } from "./flags";
 import {
   applyBodyTextures,
   applyLivery,
@@ -305,8 +307,9 @@ export function createEntityRenderer(
   );
   tracers.frustumCulled = false;
 
+  const flags = createFlagRenderer(capacity);
   const group = new Group();
-  group.add(units, buildings, ghosts, bars, tracers, scaffolds);
+  group.add(units, buildings, ghosts, bars, tracers, scaffolds, flags.group);
 
   const matrix = new Matrix4();
   const turretMatrix = new Matrix4();
@@ -352,6 +355,14 @@ export function createEntityRenderer(
     const type = RULES.types.find((entry) => entry.id === slot.typeId);
     if (generated === null || type === undefined) {
       applyBodyTextures(material, undefined, undefined);
+      applyFacade(material, null);
+      return;
+    }
+    const facade = facadeTextureIds(type.id, type.category);
+    const wall = facade === null ? undefined : generated[facade.wall];
+    if (facade !== null && wall !== undefined) {
+      applyBodyTextures(material, wall, generated["dark-metal"]);
+      applyFacade(material, generated[facade.roof] ?? wall);
       return;
     }
     applyBodyTextures(
@@ -359,6 +370,7 @@ export function createEntityRenderer(
       generated[bodyTextureId(type.id, type.category)],
       generated["dark-metal"],
     );
+    applyFacade(material, null);
   }
 
   function createSlots(
@@ -395,6 +407,15 @@ export function createEntityRenderer(
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       const slot: MeshSlot = { typeId, group: kind, material, mesh, count: 0 };
+      const bodyColor = parts.get("body")?.color;
+      if (
+        material === "body" &&
+        bodyColor !== undefined &&
+        type !== undefined &&
+        facadeTextureIds(type.id, type.category) !== null
+      ) {
+        enableFacades(mesh.material as MeshLambertMaterial, bodyColor);
+      }
       if (material === "body" && livery !== null) {
         applyLivery(
           mesh.material as MeshLambertMaterial,
@@ -615,6 +636,7 @@ export function createEntityRenderer(
       tracerGeometry.setDrawRange(0, tracerCount * 2);
       tracerPositions.needsUpdate = true;
       tracerColors.needsUpdate = true;
+      flags.update(entities, nowMs);
     },
   };
 }

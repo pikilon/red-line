@@ -38,7 +38,9 @@ maps), derived only from CC0 Poly Haven sources of the licensed library
 | `ru-roof` | `modular_factory_facade_garage_diff_1k.jpg`, rows 442..732 (one corrugation period) | luminance tinted green paint |
 | `ua-roof` | same crop | luminance tinted grey asbestos-cement |
 
-`facades.py` regenerates them; no EA, OpenRA or freeware art is used (D-02).
+`GENERATED_TEXTURE_IDS` (spec 12 §4) gains `ua-wall`, `ru-wall`, `ua-roof` and
+`ru-roof`, so they load with the other generated textures. `facades.py`
+regenerates them; no EA, OpenRA or freeware art is used (D-02).
 
 ## 3. Model (`client/src/render/facades.ts`)
 

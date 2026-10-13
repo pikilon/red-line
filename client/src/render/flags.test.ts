@@ -1,10 +1,7 @@
 import { Matrix4, Vector3 } from "three";
 import { describe, expect, it } from "vitest";
 import { typeDef, typeIndex } from "../rules";
-import {
-  ENTITY_FLAGS,
-  type EntityState,
-} from "../sim/matchSnapshot";
+import { ENTITY_FLAGS, type EntityState } from "../sim/matchSnapshot";
 import {
   createFlagRenderer,
   FLAG_AMPLITUDE,
@@ -49,9 +46,7 @@ describe("HQ flags", () => {
     for (const t of [0, 0.3, 1.7, 12.5]) {
       expect(flagWave(0, t, 3)).toBe(0);
       for (const s of [0.25, 0.5, 1]) {
-        expect(Math.abs(flagWave(s, t, 3))).toBeLessThanOrEqual(
-          FLAG_AMPLITUDE,
-        );
+        expect(Math.abs(flagWave(s, t, 3))).toBeLessThanOrEqual(FLAG_AMPLITUDE);
       }
     }
   });
