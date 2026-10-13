@@ -13,6 +13,7 @@ import {
   MeshLambertMaterial,
   PlaneGeometry,
   Quaternion,
+  type Texture,
   Vector3,
 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
@@ -26,6 +27,7 @@ import {
 import type { Animator } from "./animation";
 import {
   applyBodyTextures,
+  applyLivery,
   bodyTextureId,
   boxProjectUvs,
   createBodyMaterial,
@@ -33,6 +35,12 @@ import {
   type GeneratedTextures,
 } from "./generatedTextures";
 import { createHeadingTracker, turnRatesOf } from "./heading";
+import {
+  addLiveryAttribute,
+  createLiveryTexture,
+  type Livery,
+  liveryOf,
+} from "./liveries";
 import type {
   MaterialName,
   ModelPart,
@@ -312,6 +320,16 @@ export function createEntityRenderer(
   const byType = new Map<string, TypeSlots>();
   let generated: GeneratedTextures | null = null;
 
+  const liveryTextures = new Map<Livery, Texture>();
+  function liveryTexture(livery: Livery): Texture {
+    let texture = liveryTextures.get(livery);
+    if (texture === undefined) {
+      texture = createLiveryTexture(livery);
+      liveryTextures.set(livery, texture);
+    }
+    return texture;
+  }
+
   /** Applies the current generated textures to one `body` slot (spec 12 §6). */
   function texturize(slot: MeshSlot): void {
     if (slot.material !== "body") return;
@@ -336,6 +354,10 @@ export function createEntityRenderer(
     const parts = kind === "turret" ? model.turret : model.parts;
     const created: MeshSlot[] = [];
     const opaque = opaqueGeometry(parts);
+    const type = RULES.types.find((entry) => entry.id === typeId);
+    const livery =
+      type === undefined ? null : liveryOf(type.id, type.category, type.armor);
+    if (opaque !== null && livery !== null) addLiveryAttribute(opaque, livery);
     const definitions: readonly [MaterialName, BufferGeometry | undefined][] = [
       ["body", opaque ?? undefined],
       ["team", parts.get("team")?.geometry],
@@ -352,6 +374,12 @@ export function createEntityRenderer(
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       const slot: MeshSlot = { typeId, group: kind, material, mesh, count: 0 };
+      if (material === "body" && livery !== null) {
+        applyLivery(
+          mesh.material as MeshLambertMaterial,
+          liveryTexture(livery),
+        );
+      }
       texturize(slot);
       created.push(slot);
       slots.push(slot);
