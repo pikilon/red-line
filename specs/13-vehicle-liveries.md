@@ -53,7 +53,13 @@ dominant axis of the normal chooses the face:
 * end (±z): `u` along x, `v` up (`ua` only; mask 0 for `ru`);
 * bottom (−y): mask 0.
 
-`ua`: `v` is the normalised position across the body box (height on sides and
+`ru` places one glyph per face kind, on the largest connected coplanar flat
+surface (normal within 0.95 of the axis, same plane, touching), centred on that
+surface's own box instead of the whole body box, so the Z is never split
+across levels. On a roof, boxes standing on it (the `dark` cab, the turret reach
+from the hull's pivot) are cut out and the glyph goes in the largest free strip
+around them. The glyph goes where it fits largest (short extent of the free
+area), per face kind. `ua`: `v` is the normalised position across the body box (height on sides and
 ends, length on top) and `u` is irrelevant. `ru`: the glyph is square, of size
 `0.8 * min(extentU, extentV)` centred on the face, so `(u, v)` leave 0..1 outside
 the glyph box and the clamped transparent border hides it.
@@ -84,6 +90,13 @@ whose `liveryOf` is not `null`.
 * AC-13-05: Given a renderer with a vehicle model, When the `body` slot is
   created, Then Ukrainian and Russian vehicles carry the `livery` attribute and a
   `liveryMap`, an infantry type and a building do not.
+* AC-13-07: Given a model with a large low surface and a small raised one, When
+  `addLiveryAttribute` runs for `ru`, Then the glyph (mask 1) is whole and centred
+  on the largest flat surface of each side and of the roof, and the other
+  surfaces get mask 0.
+* AC-13-08: Given a roof with a `dark` box (cab) or a turret standing on part of
+  it, When `addLiveryAttribute` runs for `ru`, Then the glyph is centred on the
+  largest free strip around that box, not on the whole roof.
 * AC-13-06: Given a running skirmish, When a Ukrainian and a Russian vehicle are
   on screen, Then the blue/yellow and the white Z are visible (screenshot check
   by the agent; the game keeps running without console errors).
@@ -92,6 +105,6 @@ whose `liveryOf` is not `null`.
 
 | Criterion | Test |
 | --- | --- |
-| AC-13-01..04 | `client/src/render/liveries.test.ts` |
+| AC-13-01..04, 07, 08 | `client/src/render/liveries.test.ts` |
 | AC-13-05 | `client/src/render/liveries.test.ts` "AC-13-05: renderer slots" |
 | AC-13-06 | `client/tests/e2e/liveries.spec.ts` |

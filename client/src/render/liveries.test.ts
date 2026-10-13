@@ -5,6 +5,7 @@ import {
   type MeshLambertMaterial,
   Vector3,
 } from "three";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { describe, expect, it } from "vitest";
 import { typeDef, typeIndex } from "../rules";
 import type { EntityState } from "../sim/matchSnapshot";
@@ -139,6 +140,69 @@ describe("vehicle liveries", () => {
     );
     const attribute = addLiveryAttribute(dark, "ru").getAttribute("livery");
     for (let i = 0; i < attribute.count; i++) expect(attribute.getZ(i)).toBe(0);
+  });
+
+  it("AC-13-07: the Z sits whole on the largest flat surface", () => {
+    // A big low block and a small tall block: the glyph goes on the big top only.
+    const big = new BoxGeometry(4, 1, 4).translate(0, 0.5, 0).toNonIndexed();
+    const small = new BoxGeometry(1, 1, 1).translate(0, 1.5, 0).toNonIndexed();
+    const merged = mergeGeometries([big, small], false);
+    merged.setAttribute(
+      DARK_MASK,
+      new Float32BufferAttribute(
+        new Float32Array(merged.getAttribute("position").count),
+        1,
+      ),
+    );
+    const geometry = addLiveryAttribute(merged, "ru");
+    const position = geometry.getAttribute("position");
+    const normal = geometry.getAttribute("normal");
+    const attribute = geometry.getAttribute("livery");
+    const tops = new Map<number, number[]>();
+    for (let i = 0; i < position.count; i++) {
+      if (normal.getY(i) !== 1) continue;
+      const height = position.getY(i);
+      tops.set(height, [...(tops.get(height) ?? []), attribute.getZ(i)]);
+    }
+    expect(new Set(tops.get(1))).toEqual(new Set([1]));
+    expect(new Set(tops.get(2))).toEqual(new Set([0]));
+    // The glyph is centred on the big top: its corner is at 0.5 +- 0.5 / 0.8.
+    for (let i = 0; i < position.count; i++) {
+      if (normal.getY(i) === 1 && position.getY(i) === 1) {
+        expect(Math.abs(attribute.getX(i) - 0.5)).toBeCloseTo(0.5 / 0.8, 5);
+      }
+    }
+  });
+
+  it("AC-13-08: the Z avoids what stands on the roof", () => {
+    // A cab (dark) covers the back half of the roof: the glyph centres on the front half.
+    const base = new BoxGeometry(4, 1, 4).translate(0, 0.5, 0).toNonIndexed();
+    const cab = new BoxGeometry(4, 1, 2).translate(0, 1.5, -1).toNonIndexed();
+    const mask = (geometry: BufferGeometry, value: number) =>
+      geometry.setAttribute(
+        DARK_MASK,
+        new Float32BufferAttribute(
+          new Float32Array(geometry.getAttribute("position").count).fill(value),
+          1,
+        ),
+      );
+    mask(base, 0);
+    mask(cab, 1);
+    const geometry = addLiveryAttribute(
+      mergeGeometries([base, cab], false),
+      "ru",
+    );
+    const position = geometry.getAttribute("position");
+    const normal = geometry.getAttribute("normal");
+    const attribute = geometry.getAttribute("livery");
+    for (let i = 0; i < position.count; i++) {
+      if (normal.getY(i) !== 1 || position.getY(i) !== 1) continue;
+      // Free strip z in [0, 2]: 2 units deep, glyph 1.6 units, centre at z = 1.
+      expect(attribute.getY(i)).toBeCloseTo(
+        0.5 + (position.getZ(i) - 1) / 1.6,
+        5,
+      );
+    }
   });
 
   it("AC-13-05: renderer slots", () => {

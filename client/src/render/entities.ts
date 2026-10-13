@@ -1,4 +1,5 @@
 import {
+  Box3,
   BoxGeometry,
   BufferGeometry,
   Color,
@@ -38,8 +39,10 @@ import { createHeadingTracker, turnRatesOf } from "./heading";
 import {
   addLiveryAttribute,
   createLiveryTexture,
+  type Footprint,
   type Livery,
   liveryOf,
+  turretFootprint,
 } from "./liveries";
 import type {
   MaterialName,
@@ -320,6 +323,18 @@ export function createEntityRenderer(
   const byType = new Map<string, TypeSlots>();
   let generated: GeneratedTextures | null = null;
 
+  /** The roof area the turret of `model` covers, for the Z (spec 13 §3). */
+  function turretOccluders(model: TypeModel): Footprint[] {
+    const geometries = [...model.turret.values()].map((part) => part.geometry);
+    if (geometries.length === 0) return [];
+    const box = new Box3();
+    for (const geometry of geometries) {
+      geometry.computeBoundingBox();
+      if (geometry.boundingBox !== null) box.union(geometry.boundingBox);
+    }
+    return [turretFootprint(box, model.pivot)];
+  }
+
   const liveryTextures = new Map<Livery, Texture>();
   function liveryTexture(livery: Livery): Texture {
     let texture = liveryTextures.get(livery);
@@ -357,7 +372,13 @@ export function createEntityRenderer(
     const type = RULES.types.find((entry) => entry.id === typeId);
     const livery =
       type === undefined ? null : liveryOf(type.id, type.category, type.armor);
-    if (opaque !== null && livery !== null) addLiveryAttribute(opaque, livery);
+    if (opaque !== null && livery !== null) {
+      addLiveryAttribute(
+        opaque,
+        livery,
+        kind === "hull" ? turretOccluders(model) : [],
+      );
+    }
     const definitions: readonly [MaterialName, BufferGeometry | undefined][] = [
       ["body", opaque ?? undefined],
       ["team", parts.get("team")?.geometry],
