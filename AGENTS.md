@@ -53,6 +53,8 @@ code: agents implement, the owner reviews quality hands-on.
   prints a report starting with `Verdict:`. `UNAVAILABLE` means no cheap model:
   ask the owner. `ERROR`: stop and tell the owner. `node --run verify` is the
   same check sequence CI runs.
+* `node --run status` lists open PRs, issues waiting for the owner, and local
+  branches or worktrees no PR accounts for. Delete merged and orphan ones.
 * Non-interactive shells may lack cargo: prefix commands with
   `PATH="$HOME/.cargo/bin:$PATH"`. When a tool seems missing, run
   `scripts/doctor.sh`.
