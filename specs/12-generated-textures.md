@@ -49,7 +49,7 @@ export type GeneratedTextures = Partial<Record<GeneratedTextureId, Texture>>;
 
 export interface TextureSource { loadAsync(url: string): Promise<Texture>; }
 
-/** Loads `textures/<id>.png` for every id; a file that fails is skipped.
+/** Loads `textures/<id>.webp` for every id; a file that fails is skipped.
  *  Textures are sRGB, repeat-wrapped, mipmapped. */
 export function loadGeneratedTextures(source?: TextureSource): Promise<GeneratedTextures>;
 

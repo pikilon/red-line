@@ -25,7 +25,7 @@ CC BY-SA compatible (D-02) and never reproduce EA assets, names or sounds (D-01,
 
 ## Apply and check in the game
 
-* `texture_tool.py apply ID` copies the accepted PNG into `client/public/textures/` (model materials as detail maps);
+* `texture_tool.py apply ID` writes the accepted texture as WebP into `client/public/textures/` (model materials as detail maps);
   `tools/asset-pipeline/ingame_shot.mjs` takes screenshots with the generated textures on or off.
 * The game loads them by default; the Esc menu button switches back to procedural (spec 12).
   The e2e suite runs with procedural textures except `textures.spec.ts`.

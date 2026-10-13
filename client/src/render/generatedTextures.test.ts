@@ -204,4 +204,18 @@ describe("generated textures", () => {
     }
     expect(found).toBe(true);
   });
+
+  it("AC-12-05: textures are WebP files", async () => {
+    // Owner decision 2026-10-13: WebP is 7x lighter than PNG (3.9 MB to 0.56 MB).
+    const urls: string[] = [];
+    await loadGeneratedTextures({
+      loadAsync: (url: string) => {
+        urls.push(url);
+        return Promise.resolve(new Texture());
+      },
+    });
+    expect([...urls].sort()).toEqual(
+      GENERATED_TEXTURE_IDS.map((id) => `textures/${id}.webp`).sort(),
+    );
+  });
 });

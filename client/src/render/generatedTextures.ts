@@ -11,7 +11,7 @@ import {
   UnsignedByteType,
 } from "three";
 
-/** Spec 12: the PNGs of `client/public/textures/<id>.png`. */
+/** Spec 12: the images of `client/public/textures/<id>.webp`. */
 export const GENERATED_TEXTURE_IDS = [
   "grass",
   "dirt",
@@ -33,7 +33,7 @@ export interface TextureSource {
 /** The texture repeats every this many model-space units (spec 12 §4). */
 export const MODEL_TILE = 1.5;
 
-/** Loads `textures/<id>.png` for every id; a file that fails is skipped. */
+/** Loads `textures/<id>.webp` for every id; a file that fails is skipped. */
 export async function loadGeneratedTextures(
   source: TextureSource = new TextureLoader(),
 ): Promise<GeneratedTextures> {
@@ -41,7 +41,7 @@ export async function loadGeneratedTextures(
   await Promise.all(
     GENERATED_TEXTURE_IDS.map(async (id) => {
       try {
-        const texture = await source.loadAsync(`textures/${id}.png`);
+        const texture = await source.loadAsync(`textures/${id}.webp`);
         texture.colorSpace = SRGBColorSpace;
         texture.wrapS = RepeatWrapping;
         texture.wrapT = RepeatWrapping;
