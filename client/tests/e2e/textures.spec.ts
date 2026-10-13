@@ -8,6 +8,9 @@ interface TexturesDebug {
 
 type DebugWindow = Window & { __redline?: TexturesDebug };
 
+// A fresh browser profile: no saved settings, so the default (generated) applies.
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test("AC-12-04: textures toggle in the game menu", async ({ page }) => {
   test.setTimeout(60_000);
   const errors: string[] = [];

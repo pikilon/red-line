@@ -4,7 +4,26 @@ const PERF_TAG = /@perf/;
 
 export default defineConfig({
   testDir: "tests/e2e",
-  use: { baseURL: "http://127.0.0.1:4173" },
+  use: {
+    baseURL: "http://127.0.0.1:4173",
+    // The e2e suite keeps the procedural textures (spec 12 §2): the generated
+    // ones load 4 MB of PNGs, which makes timing-sensitive tests flaky on the
+    // software WebGL of CI. `textures.spec.ts` overrides this to test the default.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: "http://127.0.0.1:4173",
+          localStorage: [
+            {
+              name: "redline.settings.v1",
+              value: JSON.stringify({ gore: true, generatedTextures: false }),
+            },
+          ],
+        },
+      ],
+    },
+  },
   webServer: {
     command:
       "node --run build && npx vite preview --host 127.0.0.1 --port 4173 --strictPort",
