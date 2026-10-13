@@ -123,6 +123,37 @@ export function createFlagRenderer(capacity: number): FlagRenderer;
   end of `update(entities, selected, nowMs)`. Flags are procedural and do not
   depend on the textures toggle.
 
+## 5. Flag bands on buildings (`client/src/render/flags.ts`)
+
+Owner request (2026-10-13, follow-up): the `team` stripes of buildings, today
+in the owner colour (spec 06 §5), wear the flag of the building's faction
+instead: Ukrainian buildings blue over yellow, Russian ones white, blue and red
+(`FLAGS`, the same faction prefix as `facadeTextureIds`). Units keep the owner
+colour.
+
+```ts
+/** Stripes of the flag on a type's `team` parts, or null (units, depots,
+ *  types without a faction prefix). */
+export function bandsOf(typeId: string, category: string): readonly number[] | null;
+
+/** Adds the `band` attribute: per connected piece of `geometry` (triangles
+ *  sharing vertex positions), v = (y - minY) / (maxY - minY) of that piece,
+ *  0 at its bottom and 1 at its top; a flat piece gets 1. */
+export function addBandAttribute(geometry: BufferGeometry): BufferGeometry;
+
+/** Makes a `team` material draw `stripes` as horizontal bands by `band`,
+ *  times the vertex colour (occlusion and instance colour), wherever the
+ *  per-instance `bandOn` attribute is 1. */
+export function enableBands(material: MeshLambertMaterial, stripes: readonly number[]): void;
+```
+
+* `EntityRenderer`: the `team` slot of a building whose `bandsOf` is not null
+  gets `addBandAttribute`, an `InstancedBufferAttribute` `bandOn` (one float
+  per instance) and `enableBands`. An unselected instance has instance colour
+  white and `bandOn` 1 (the flag shows); a selected one has `SELECTED_COLOR`
+  and `bandOn` 0 (plain selection colour, as before).
+* The band colour at `band = v` is `flagSample(stripes, v)`.
+
 ## Acceptance criteria
 
 * AC-16-01: Given the type ids, When `facadeTextureIds` runs, Then `ru-hq` and
@@ -146,6 +177,17 @@ export function createFlagRenderer(capacity: number): FlagRenderer;
   ghost HQ and a barracks, When the flag renderer updates, Then there is one
   pole and one Ukrainian cloth at the HQ's front-left corner and no Russian
   cloth; when the Russian HQ completes there are two poles and one cloth each.
+* AC-16-08: Given the type ids, When `bandsOf` runs, Then `ua-barracks`
+  gives the Ukrainian stripes, `ru-hq` the Russian ones, and `ua-bradley`,
+  `ru-rifleman` and `supply-depot` give `null`. Given two boxes at different
+  heights merged into one geometry, When `addBandAttribute` runs, Then each
+  box's bottom vertices have band 0 and its top vertices band 1.
+* AC-16-09: Given a renderer with a model that has `team` parts, When an
+  unselected Ukrainian barracks, a selected one and a vehicle are drawn, Then
+  the barracks `team` slot has the `band` attribute and Ukrainian band colours,
+  the unselected instance has colour white and `bandOn` 1, the selected one
+  `SELECTED_COLOR` and `bandOn` 0, and the vehicle's `team` slot has no
+  `band` attribute and its owner colour.
 * AC-16-07: Given the showcase, When the game runs with generated textures,
   Then the facade textures load, the flags are drawn and there are no console
   errors (the agent also checks a screenshot).
@@ -156,4 +198,5 @@ export function createFlagRenderer(capacity: number): FlagRenderer;
 | --- | --- |
 | AC-16-01..03 | `client/src/render/facades.test.ts` |
 | AC-16-04..06 | `client/src/render/flags.test.ts` |
+| AC-16-08, 09 | `client/src/render/bands.test.ts` |
 | AC-16-07 | `client/tests/e2e/facades.spec.ts` |
