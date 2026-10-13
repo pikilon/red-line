@@ -5,6 +5,7 @@ import {
   MeshLambertMaterial,
   RepeatWrapping,
   RGBAFormat,
+  ShaderChunk,
   SRGBColorSpace,
   type Texture,
   TextureLoader,
@@ -21,6 +22,10 @@ export const GENERATED_TEXTURE_IDS = [
   "ua-concrete",
   "ru-concrete",
   "dark-metal",
+  "ua-skin",
+  "ru-skin",
+  "ua-skin-bump",
+  "ru-skin-bump",
   "ua-wall",
   "ua-roof",
 ] as const;
@@ -34,6 +39,9 @@ export interface TextureSource {
 
 /** The texture repeats every this many model-space units (spec 12 §4). */
 export const MODEL_TILE = 1.5;
+
+/** Vehicles are small: their skin repeats every this many model units (spec 15 §3). */
+export const VEHICLE_TILE = 0.6;
 
 /** Loads `textures/<id>.webp` for every id; a file that fails is skipped. */
 export async function loadGeneratedTextures(
@@ -59,7 +67,10 @@ export async function loadGeneratedTextures(
 
 /** Sets the `uv` of `geometry` by box projection (spec 12 §4): the dominant
  *  axis of each vertex normal drops out. Models have no usable UVs. */
-export function boxProjectUvs(geometry: BufferGeometry): BufferGeometry {
+export function boxProjectUvs(
+  geometry: BufferGeometry,
+  tile = MODEL_TILE,
+): BufferGeometry {
   if (!geometry.hasAttribute("normal")) geometry.computeVertexNormals();
   const position = geometry.getAttribute("position");
   const normal = geometry.getAttribute("normal");
@@ -80,22 +91,58 @@ export function boxProjectUvs(geometry: BufferGeometry): BufferGeometry {
       u = position.getX(i);
       v = position.getY(i);
     }
-    uvs[i * 2] = u / MODEL_TILE;
-    uvs[i * 2 + 1] = v / MODEL_TILE;
+    uvs[i * 2] = u / tile;
+    uvs[i * 2 + 1] = v / tile;
   }
   geometry.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
   return geometry;
 }
 
-/** Texture id of a type's `body` material: `<faction>-paint` for vehicles,
- *  `<faction>-concrete` for buildings and depots (spec 12 §6). */
+/** How strongly the bump map perturbs the surface (spec 15 §3). */
+export const BUMP_SCALE = 0.4;
+
+const INFANTRY_ARMOR = 0;
+
+/** Texture id of a type's `body` material: `<faction>-skin` for vehicles,
+ *  `<faction>-paint` for infantry, `<faction>-concrete` for buildings and
+ *  depots (spec 12 §6, spec 15 §3). */
 export function bodyTextureId(
   typeId: string,
   category: string,
+  armor = INFANTRY_ARMOR,
 ): GeneratedTextureId {
   // Type ids start with the faction prefix; neutral types use `ua`.
   const prefix = typeId.startsWith("ru-") ? "ru" : "ua";
-  return `${prefix}-${category === "unit" ? "paint" : "concrete"}` as GeneratedTextureId;
+  if (category !== "unit") return `${prefix}-concrete` as GeneratedTextureId;
+  return `${prefix}-${armor === INFANTRY_ARMOR ? "paint" : "skin"}` as GeneratedTextureId;
+}
+
+/** Texture id of the bump map that goes with a `<faction>-skin`, else null. */
+export function bumpTextureId(
+  id: GeneratedTextureId,
+): GeneratedTextureId | null {
+  return id.endsWith("-skin") ? (`${id}-bump` as GeneratedTextureId) : null;
+}
+
+/** The colour map and bump map of a type's `body` among `textures`: a vehicle
+ *  whose skin is not loaded falls back to `<faction>-paint` with no bump. */
+export function bodyMapsOf(
+  textures: GeneratedTextures,
+  typeId: string,
+  category: string,
+  armor: number,
+): { paint: Texture | undefined; bump: Texture | undefined } {
+  const id = bodyTextureId(typeId, category, armor);
+  const skin = textures[id];
+  const bumpId = bumpTextureId(id);
+  if (skin !== undefined || bumpId === null) {
+    return {
+      paint: skin,
+      bump: bumpId === null ? undefined : textures[bumpId],
+    };
+  }
+  const prefix = typeId.startsWith("ru-") ? "ru" : "ua";
+  return { paint: textures[`${prefix}-paint`], bump: undefined };
 }
 
 /** 1x1 white: keeps the vertex colour where a texture is missing. */
@@ -148,18 +195,34 @@ export function createBodyMaterial(): MeshLambertMaterial {
       )
       .replace(
         "#include <map_fragment>",
-        `#ifdef USE_MAP
+        `float liveryDetail = 1.0;
+float liveryCover = 0.0;
+#ifdef USE_MAP
   vec4 paintColor = texture2D( map, vMapUv );
   vec4 darkColor = texture2D( darkMap, vMapUv );
-  diffuseColor *= mix( paintColor, darkColor, vDark );
+  vec4 surfaceColor = mix( paintColor, darkColor, vDark );
+  diffuseColor *= surfaceColor;
+  liveryDetail = clamp( dot( surfaceColor.rgb, vec3( 0.3333 ) ) / 0.9, 0.75, 1.05 );
 #endif`,
       )
       .replace(
         "#include <color_fragment>",
         `#include <color_fragment>
-  vec4 liveryColor = texture2D( liveryMap, vLivery.xy );
-  float liveryWeight = liveryColor.a * vLivery.z * ( 1.0 - vDark ) * 0.9;
-  diffuseColor.rgb = mix( diffuseColor.rgb, liveryColor.rgb, liveryWeight );`,
+  vec4 liveryColor = texture2D( liveryMap, vec2( ( vLivery.x + step( 1.5, vLivery.z ) * ( 1.0 - step( 2.5, vLivery.z ) ) ) * 0.5, vLivery.y ) );
+  // Outside the patch the texture is not sampled: its coarse mips are not empty.
+  float liveryInside = step( 0.0, vLivery.x ) * step( vLivery.x, 1.0 ) * step( 0.0, vLivery.y ) * step( vLivery.y, 1.0 );
+  float liveryWeight = liveryColor.a * liveryInside * min( vLivery.z, 1.0 ) * ( 1.0 - vDark ) * 0.95;
+  // Flags are flat; the painted Z (mask 3) follows the relief of the skin.
+  liveryCover = liveryWeight * ( 1.0 - step( 2.5, vLivery.z ) );
+  diffuseColor.rgb = mix( diffuseColor.rgb, liveryColor.rgb * liveryDetail, liveryWeight );`,
+      )
+      .replace(
+        "#include <normal_fragment_maps>",
+        // The painted patches are flat: the bump fades out under them (spec 15 §3).
+        ShaderChunk.normal_fragment_maps.replace(
+          "dHdxy_fwd()",
+          "dHdxy_fwd() * ( 1.0 - liveryCover )",
+        ),
       );
   };
   material.customProgramCacheKey = () => "body-dark-livery-mask";
@@ -183,7 +246,14 @@ export function applyBodyTextures(
   material: MeshLambertMaterial,
   paint: Texture | undefined,
   dark: Texture | undefined,
+  bump?: Texture,
 ): void {
+  const bumpMap = bump ?? null;
+  if (material.bumpMap !== bumpMap) {
+    material.bumpMap = bumpMap;
+    material.bumpScale = BUMP_SCALE;
+    material.needsUpdate = true;
+  }
   const darkMap = material.userData.darkMap as { value: Texture } | undefined;
   if (darkMap !== undefined) darkMap.value = dark ?? WHITE;
   const map = paint ?? (dark === undefined ? null : WHITE);

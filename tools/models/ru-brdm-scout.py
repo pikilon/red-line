@@ -28,23 +28,31 @@ lib.reset_scene()
 m = lib.palette("russia")
 
 # Render box: 0.60 wide (x), 0.50 high (z), 0.90 long (y); front is -Y.
-wheel_r, wheel_w, half_track = 0.09, 0.07, 0.24
-wheels = lib.wheels("wheels", 2, wheel_r, wheel_w, 0.5, half_track, wheel_r, m["dark"])
-hull = lib.wedge("hull", (0.52, 0.78, 0.18), (0, 0.0, 0.23), m["body"], slope=0.4)
-taper(hull, front=0.4, back=0.85)
-cab = lib.box("cab", (0.42, 0.3, 0.13), (0, -0.16, 0.34), m["body"])
-windshield = lib.box("windshield", (0.36, 0.03, 0.08), (0, -0.3, 0.36), m["dark"])
-deck = lib.box("deck", (0.34, 0.24, 0.05), (0, 0.22, 0.33), m["body"])
+# Reference: BRDM-2 (boat hull, sloped glacis with trim vane, big 4x4 wheels,
+# wheel arches, small conical turret on the roof with a KPVT on its side).
+wheel_r, wheel_w, half_track = 0.1, 0.08, 0.255
+wheels = lib.wheels("wheels", 2, wheel_r, wheel_w, 0.54, half_track, wheel_r, m["dark"], 10)
+hull = lib.wedge("hull", (0.5, 0.82, 0.17), (0, -0.01, 0.215), m["body"], slope=0.45)
+taper(hull, front=0.55, back=0.9)
+cab = lib.box("cab", (0.42, 0.34, 0.1), (0, -0.1, 0.325), m["body"])
+windshield = lib.box("windshield", (0.38, 0.03, 0.05), (0, -0.28, 0.34), m["dark"])
+deck = lib.box("deck", (0.4, 0.3, 0.06), (0, 0.24, 0.31), m["body"])
+vane = lib.box("trim_vane", (0.34, 0.03, 0.12), (0, -0.4, 0.3), m["body"], bevel=0)
+bumper = lib.box("bumper", (0.46, 0.05, 0.06), (0, -0.42, 0.17), m["dark"])
+arches = lib.join(
+    [lib.box(f"arch_{s}_{y}", (0.05, 0.2, 0.04), (s * 0.28, y, 0.2), m["body"]) for s in (-1, 1) for y in (-0.24, 0.3)],
+    "wheel_arches",
+)
 panels = lib.join(
-    [lib.box(f"panel_{s}", (0.02, 0.26, 0.07), (s * 0.225, 0.1, 0.28), m["team"]) for s in (-1, 1)],
+    [lib.box(f"panel_{s}", (0.02, 0.3, 0.1), (s * 0.235, 0.03, 0.27), m["team"]) for s in (-1, 1)],
     "panels",
 )
-root = lib.join([hull, wheels, cab, windshield, deck, panels], "ru-brdm-scout")
+root = lib.join([hull, wheels, cab, windshield, deck, vane, bumper, arches, panels], "ru-brdm-scout")
 
-pivot = (0, 0.06, 0.36)
-dome = cone(lib.cylinder("dome", 0.11, 0.12, (0, 0.06, 0.39), m["body"], 8), 0.5)
-sight = lib.box("sight", (0.05, 0.05, 0.04), (-0.07, 0.02, 0.47), m["dark"])
-gun = lib.barrel("gun", 0.26, 0.016, (0, 0.05, 0.42), m["dark"])
+pivot = (0, 0.06, 0.38)
+dome = cone(lib.cylinder("dome", 0.12, 0.1, (0, 0.06, 0.41), m["body"], 8), 0.55)
+sight = lib.box("sight", (0.05, 0.05, 0.05), (-0.09, 0.02, 0.465), m["dark"])
+gun = lib.barrel("gun", 0.3, 0.017, (0.07, 0.05, 0.44), m["dark"])
 turret = lib.turret([dome, sight, gun], pivot)
 lib.parent(turret, root)
 

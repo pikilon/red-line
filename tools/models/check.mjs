@@ -6,10 +6,18 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const MATERIALS = ["body", "team", "dark"];
+export const MATERIALS = ["body", "team", "dark", "cage"];
 export const TURRETED = [
-  "ua-bradley", "ua-leopard-2a4", "ua-himars", "ua-kozak-scout", "ua-defense",
-  "ru-bmp-2", "ru-t-72b3", "ru-tos-1a", "ru-brdm-scout", "ru-defense",
+  "ua-bradley",
+  "ua-leopard-2a4",
+  "ua-himars",
+  "ua-kozak-scout",
+  "ua-defense",
+  "ru-bmp-2",
+  "ru-t-72b3",
+  "ru-tos-1a",
+  "ru-brdm-scout",
+  "ru-defense",
 ];
 export const BUDGETS = { unit: 1500, building: 3000, depot: 1000 };
 const FILL = 0.7;
@@ -28,18 +36,32 @@ const TYPE_WIDTH = { VEC3: 3, VEC4: 4 };
 
 /** The glTF JSON chunk of a GLB buffer. */
 export function parseGlb(buffer) {
-  const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-  if (buffer.byteLength < 20 || view.getUint32(0, true) !== GLB_MAGIC) throw new Error("not a GLB file");
+  const view = new DataView(
+    buffer.buffer,
+    buffer.byteOffset,
+    buffer.byteLength,
+  );
+  if (buffer.byteLength < 20 || view.getUint32(0, true) !== GLB_MAGIC)
+    throw new Error("not a GLB file");
   const length = view.getUint32(12, true);
-  if (view.getUint32(16, true) !== JSON_CHUNK) throw new Error("first chunk is not JSON");
+  if (view.getUint32(16, true) !== JSON_CHUNK)
+    throw new Error("first chunk is not JSON");
   return JSON.parse(new TextDecoder().decode(buffer.subarray(20, 20 + length)));
 }
 
 /** The binary chunk of a GLB buffer, or null when it has none. */
 export function parseGlbBinary(buffer) {
-  const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+  const view = new DataView(
+    buffer.buffer,
+    buffer.byteOffset,
+    buffer.byteLength,
+  );
   const offset = 20 + view.getUint32(12, true);
-  if (buffer.byteLength < offset + 8 || view.getUint32(offset + 4, true) !== BIN_CHUNK) return null;
+  if (
+    buffer.byteLength < offset + 8 ||
+    view.getUint32(offset + 4, true) !== BIN_CHUNK
+  )
+    return null;
   return buffer.subarray(offset + 8, offset + 8 + view.getUint32(offset, true));
 }
 
@@ -48,7 +70,12 @@ function accessorValues(gltf, bin, index) {
   const accessor = gltf.accessors[index];
   const component = COMPONENTS[accessor.componentType];
   const width = TYPE_WIDTH[accessor.type];
-  if (component === undefined || width === undefined || accessor.bufferView === undefined) throw new Error("unsupported accessor");
+  if (
+    component === undefined ||
+    width === undefined ||
+    accessor.bufferView === undefined
+  )
+    throw new Error("unsupported accessor");
   const bufferView = gltf.bufferViews[accessor.bufferView];
   const view = new DataView(bin.buffer, bin.byteOffset, bin.byteLength);
   const base = (bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0);
@@ -87,7 +114,10 @@ export function checkColors(file, gltf, bin) {
       } catch (error) {
         return fail(`${where}: ${error.message}`);
       }
-      if (low < AO_MIN - AO_EPS || high > 1 + AO_EPS) fail(`${where} COLOR_0 [${low.toFixed(3)}, ${high.toFixed(3)}] outside [${AO_MIN}, 1]`);
+      if (low < AO_MIN - AO_EPS || high > 1 + AO_EPS)
+        fail(
+          `${where} COLOR_0 [${low.toFixed(3)}, ${high.toFixed(3)}] outside [${AO_MIN}, 1]`,
+        );
     });
   });
   return errors;
@@ -95,12 +125,16 @@ export function checkColors(file, gltf, bin) {
 
 /** Types that need a model: every unit, building and depot but the placeholder. */
 export function modelTypes(ruleset) {
-  return ruleset.types.filter((t) => t.category in BUDGETS && t.id !== "tech-slice-placeholder");
+  return ruleset.types.filter(
+    (t) => t.category in BUDGETS && t.id !== "tech-slice-placeholder",
+  );
 }
 
 function multiply(a, b) {
   const out = new Array(16).fill(0);
-  for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) for (let k = 0; k < 4; k++) out[c * 4 + r] += a[k * 4 + r] * b[c * 4 + k];
+  for (let c = 0; c < 4; c++)
+    for (let r = 0; r < 4; r++)
+      for (let k = 0; k < 4; k++) out[c * 4 + r] += a[k * 4 + r] * b[c * 4 + k];
   return out;
 }
 
@@ -110,15 +144,29 @@ function localMatrix(node) {
   const [x, y, z, w] = node.rotation ?? [0, 0, 0, 1];
   const [sx, sy, sz] = node.scale ?? [1, 1, 1];
   return [
-    (1 - 2 * (y * y + z * z)) * sx, 2 * (x * y + z * w) * sx, 2 * (x * z - y * w) * sx, 0,
-    2 * (x * y - z * w) * sy, (1 - 2 * (x * x + z * z)) * sy, 2 * (y * z + x * w) * sy, 0,
-    2 * (x * z + y * w) * sz, 2 * (y * z - x * w) * sz, (1 - 2 * (x * x + y * y)) * sz, 0,
-    tx, ty, tz, 1,
+    (1 - 2 * (y * y + z * z)) * sx,
+    2 * (x * y + z * w) * sx,
+    2 * (x * z - y * w) * sx,
+    0,
+    2 * (x * y - z * w) * sy,
+    (1 - 2 * (x * x + z * z)) * sy,
+    2 * (y * z + x * w) * sy,
+    0,
+    2 * (x * z + y * w) * sz,
+    2 * (y * z - x * w) * sz,
+    (1 - 2 * (x * x + y * y)) * sz,
+    0,
+    tx,
+    ty,
+    tz,
+    1,
   ];
 }
 
 function apply(m, [x, y, z]) {
-  return [0, 1, 2].map((r) => m[r] * x + m[4 + r] * y + m[8 + r] * z + m[12 + r]);
+  return [0, 1, 2].map(
+    (r) => m[r] * x + m[4 + r] * y + m[8 + r] * z + m[12 + r],
+  );
 }
 
 /** World bounds, triangle count, node and material names of a glTF document. */
@@ -136,7 +184,10 @@ export function summarize(gltf) {
     if (node.mesh !== undefined) {
       for (const primitive of gltf.meshes[node.mesh].primitives) {
         const position = gltf.accessors[primitive.attributes.POSITION];
-        const count = primitive.indices !== undefined ? gltf.accessors[primitive.indices].count : position.count;
+        const count =
+          primitive.indices !== undefined
+            ? gltf.accessors[primitive.indices].count
+            : position.count;
         triangles += Math.floor(count / 3);
         for (const x of [position.min[0], position.max[0]])
           for (const y of [position.min[1], position.max[1]])
@@ -153,7 +204,14 @@ export function summarize(gltf) {
   };
   const identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
   for (const root of scene.nodes) visit(root, identity);
-  return { min, max, triangles, nodeNames, materialNames, roots: scene.nodes.map((i) => gltf.nodes[i].name) };
+  return {
+    min,
+    max,
+    triangles,
+    nodeNames,
+    materialNames,
+    roots: scene.nodes.map((i) => gltf.nodes[i].name),
+  };
 }
 
 /** Rule violations of one model, as messages naming the file and rule. */
@@ -161,19 +219,44 @@ export function checkModel(file, type, gltf) {
   const errors = [];
   const fail = (rule, detail) => errors.push(`${file}: ${rule}: ${detail}`);
   const s = summarize(gltf);
-  if (s.roots.length !== 1 || s.roots[0] !== type.id) fail("root", `expected one root node '${type.id}', got ${JSON.stringify(s.roots)}`);
+  if (s.roots.length !== 1 || s.roots[0] !== type.id)
+    fail(
+      "root",
+      `expected one root node '${type.id}', got ${JSON.stringify(s.roots)}`,
+    );
   const bad = s.materialNames.filter((name) => !MATERIALS.includes(name));
-  if (bad.length > 0) fail("materials", `only ${MATERIALS.join(", ")} allowed, got ${bad.join(", ")}`);
-  if (TURRETED.includes(type.id) && !s.nodeNames.includes("turret")) fail("turret", "missing 'turret' node");
+  if (bad.length > 0)
+    fail(
+      "materials",
+      `only ${MATERIALS.join(", ")} allowed, got ${bad.join(", ")}`,
+    );
+  if (TURRETED.includes(type.id) && !s.nodeNames.includes("turret"))
+    fail("turret", "missing 'turret' node");
   const budget = BUDGETS[type.category];
-  if (s.triangles > budget) fail("budget", `${s.triangles} triangles > ${budget}`);
+  if (s.triangles > budget)
+    fail("budget", `${s.triangles} triangles > ${budget}`);
   const [w, h, d] = type.render.size.map((v) => v / 100);
   const half = [w / 2, null, d / 2];
-  for (const [axis, i] of [["x", 0], ["z", 2]]) {
-    if (s.min[i] < -half[i] - EPS || s.max[i] > half[i] + EPS) fail("bounds", `${axis} [${s.min[i].toFixed(3)}, ${s.max[i].toFixed(3)}] outside ±${half[i]}`);
-    if (s.max[i] - s.min[i] < FILL * 2 * half[i]) fail("fill", `${axis} extent ${(s.max[i] - s.min[i]).toFixed(3)} < ${FILL} × ${2 * half[i]}`);
+  for (const [axis, i] of [
+    ["x", 0],
+    ["z", 2],
+  ]) {
+    if (s.min[i] < -half[i] - EPS || s.max[i] > half[i] + EPS)
+      fail(
+        "bounds",
+        `${axis} [${s.min[i].toFixed(3)}, ${s.max[i].toFixed(3)}] outside ±${half[i]}`,
+      );
+    if (s.max[i] - s.min[i] < FILL * 2 * half[i])
+      fail(
+        "fill",
+        `${axis} extent ${(s.max[i] - s.min[i]).toFixed(3)} < ${FILL} × ${2 * half[i]}`,
+      );
   }
-  if (s.min[1] < -EPS || s.max[1] > h + EPS) fail("bounds", `y [${s.min[1].toFixed(3)}, ${s.max[1].toFixed(3)}] outside [0, ${h}]`);
+  if (s.min[1] < -EPS || s.max[1] > h + EPS)
+    fail(
+      "bounds",
+      `y [${s.min[1].toFixed(3)}, ${s.max[1].toFixed(3)}] outside [0, ${h}]`,
+    );
   return errors;
 }
 
@@ -183,32 +266,47 @@ export function checkModels(dir, ruleset, strict, { colors = false } = {}) {
   const errors = [];
   const warnings = [];
   const types = new Map(modelTypes(ruleset).map((t) => [t.id, t]));
-  const files = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith(".glb")).sort() : [];
+  const files = existsSync(dir)
+    ? readdirSync(dir)
+        .filter((f) => f.endsWith(".glb"))
+        .sort()
+    : [];
   for (const file of files) {
     const type = types.get(file.slice(0, -4));
     if (!type) {
-      errors.push(`${file}: unknown type: not a unit, building or depot of the ruleset`);
+      errors.push(
+        `${file}: unknown type: not a unit, building or depot of the ruleset`,
+      );
       continue;
     }
     try {
       const buffer = readFileSync(join(dir, file));
       const gltf = parseGlb(buffer);
       errors.push(...checkModel(file, type, gltf));
-      if (colors) errors.push(...checkColors(file, gltf, parseGlbBinary(buffer)));
+      if (colors)
+        errors.push(...checkColors(file, gltf, parseGlbBinary(buffer)));
     } catch (error) {
       errors.push(`${file}: parse: ${error.message}`);
     }
   }
   for (const id of types.keys()) {
-    if (!files.includes(`${id}.glb`)) (strict ? errors : warnings).push(`${id}.glb: missing`);
+    if (!files.includes(`${id}.glb`))
+      (strict ? errors : warnings).push(`${id}.glb: missing`);
   }
   return { errors, warnings };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-  const ruleset = JSON.parse(readFileSync(join(root, "data", "generated", "ruleset.json"), "utf8"));
-  const { errors, warnings } = checkModels(join(root, "client", "public", "models"), ruleset, process.argv.includes("--strict"), { colors: true });
+  const ruleset = JSON.parse(
+    readFileSync(join(root, "data", "generated", "ruleset.json"), "utf8"),
+  );
+  const { errors, warnings } = checkModels(
+    join(root, "client", "public", "models"),
+    ruleset,
+    process.argv.includes("--strict"),
+    { colors: true },
+  );
   for (const warning of warnings) console.warn(`warning: ${warning}`);
   for (const error of errors) console.error(`error: ${error}`);
   process.exit(errors.length > 0 ? 1 : 0);

@@ -51,7 +51,8 @@ order (the dozer is unit slot 6: `x0 + 11.5, 20.5`, which is the map start's
 
 `?showcase=1` is `?debug=1&map=showcase&ai=off` with the whole map revealed
 (`OBSERVER` viewer), the camera at zoom 1 centred on the formation of the controlled side (`x0 + 14`, `y = 12`) and, once the match is ready,
-one `debugSpawn` command per `showcasePlan` entry. F2 or the menu switch the
+one `debugSpawn` command per `showcasePlan` entry. `?showcase=units` is the same match with the camera at zoom 2 on the two unit
+rows (`x0 + 9.5`, `y = 18.5`), to inspect vehicles up close. F2 or the menu switch the
 controlled side, which is how the other side's units are selected.
 
 The HUD gains `#hud-selected-type` under `#hud-selected`: empty without

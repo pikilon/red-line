@@ -27,6 +27,7 @@ import {
   NEUTRAL,
 } from "../sim/matchSnapshot";
 import type { Animator } from "./animation";
+import { createCageMaterial, createCageTexture } from "./cage";
 import { applyFacade, enableFacades, facadeTextureIds } from "./facades";
 import {
   addBandAttribute,
@@ -37,20 +38,25 @@ import {
 import {
   applyBodyTextures,
   applyLivery,
-  bodyTextureId,
+  bodyMapsOf,
   boxProjectUvs,
   createBodyMaterial,
   DARK_MASK,
   type GeneratedTextures,
+  VEHICLE_TILE,
 } from "./generatedTextures";
 import { createHeadingTracker, turnRatesOf } from "./heading";
 import {
   addLiveryAttribute,
   createLiveryTexture,
+  FLAG_ON_TURRET,
   type Footprint,
   type Livery,
   liveryOf,
+  SPLIT_ROOF,
   turretFootprint,
+  Z_ON_BOW,
+  Z_ON_TURRET,
 } from "./liveries";
 import type {
   MaterialName,
@@ -182,15 +188,17 @@ function withColor(
 /** `body` and `dark` merged into one vertex-coloured opaque geometry. */
 function opaqueGeometry(
   parts: ReadonlyMap<MaterialName, ModelPart>,
+  teamAsBody = false,
 ): BufferGeometry | null {
   const sources: BufferGeometry[] = [];
-  for (const material of ["body", "dark"] as const) {
+  const bodyColor = parts.get("body")?.color;
+  for (const material of ["body", "team", "dark"] as const) {
+    if (material === "team" && !teamAsBody) continue;
     const part = parts.get(material);
-    if (part !== undefined) {
-      sources.push(
-        withColor(part.geometry, part.color, material === "dark" ? 1 : 0),
-      );
-    }
+    if (part === undefined) continue;
+    // Vehicles paint their `team` parts (skirts, ERA) in the body colour.
+    const color = material === "team" ? (bodyColor ?? part.color) : part.color;
+    sources.push(withColor(part.geometry, color, material === "dark" ? 1 : 0));
   }
   const first = sources[0];
   if (first === undefined) return null;
@@ -336,7 +344,9 @@ export function createEntityRenderer(
 
   /** The roof area the turret of `model` covers, for the Z (spec 13 §3). */
   function turretOccluders(model: TypeModel): Footprint[] {
-    const geometries = [...model.turret.values()].map((part) => part.geometry);
+    // Only the body of the turret hides the roof; the gun barrel does not.
+    const body = model.turret.get("body");
+    const geometries = body === undefined ? [] : [body.geometry];
     if (geometries.length === 0) return [];
     const box = new Box3();
     for (const geometry of geometries) {
@@ -344,6 +354,12 @@ export function createEntityRenderer(
       if (geometry.boundingBox !== null) box.union(geometry.boundingBox);
     }
     return [turretFootprint(box, model.pivot)];
+  }
+
+  let cageMap: Texture | null = null;
+  function cageTexture(): Texture {
+    cageMap ??= createCageTexture();
+    return cageMap;
   }
 
   const liveryTextures = new Map<Livery, Texture>();
@@ -373,11 +389,13 @@ export function createEntityRenderer(
       applyFacade(material, generated[facade.roof] ?? wall);
       return;
     }
-    applyBodyTextures(
-      material,
-      generated[bodyTextureId(type.id, type.category)],
-      generated["dark-metal"],
+    const { paint, bump } = bodyMapsOf(
+      generated,
+      type.id,
+      type.category,
+      type.armor,
     );
+    applyBodyTextures(material, paint, generated["dark-metal"], bump);
     applyFacade(material, null);
   }
 
@@ -388,15 +406,24 @@ export function createEntityRenderer(
   ): MeshSlot[] {
     const parts = kind === "turret" ? model.turret : model.parts;
     const created: MeshSlot[] = [];
-    const opaque = opaqueGeometry(parts);
     const type = RULES.types.find((entry) => entry.id === typeId);
     const livery =
       type === undefined ? null : liveryOf(type.id, type.category, type.armor);
+    const opaque = opaqueGeometry(parts, livery !== null);
     if (opaque !== null && livery !== null) {
+      boxProjectUvs(opaque, VEHICLE_TILE);
       addLiveryAttribute(
         opaque,
         livery,
         kind === "hull" ? turretOccluders(model) : [],
+        {
+          turret: kind === "turret",
+          turretFlag: FLAG_ON_TURRET.has(typeId),
+          hasTurret: model.turret.size > 0,
+          zOnTurret: Z_ON_TURRET.has(typeId),
+          splitRoof: SPLIT_ROOF.has(typeId),
+          zOnBow: Z_ON_BOW.has(typeId),
+        },
       );
     }
     const bands = type === undefined ? null : bandsOf(type.id, type.category);
@@ -415,18 +442,22 @@ export function createEntityRenderer(
     }
     const definitions: readonly [MaterialName, BufferGeometry | undefined][] = [
       ["body", opaque ?? undefined],
-      ["team", team],
+      // Vehicles carry their flag instead of a team stripe (spec 13 §5).
+      ["team", livery === null ? team : undefined],
+      ["cage", parts.get("cage")?.geometry],
     ];
     for (const [material, geometry] of definitions) {
       if (geometry === undefined) continue;
       const mesh = new InstancedMesh(
         geometry,
-        modelMaterial(material, geometry),
+        material === "cage"
+          ? createCageMaterial(cageTexture())
+          : modelMaterial(material, geometry),
         capacity,
       );
       mesh.count = 0;
       mesh.frustumCulled = true;
-      mesh.castShadow = true;
+      mesh.castShadow = material !== "cage";
       mesh.receiveShadow = true;
       const slot: MeshSlot = { typeId, group: kind, material, mesh, count: 0 };
       if (material === "team" && bands !== null && bandOn !== undefined) {

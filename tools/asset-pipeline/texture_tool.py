@@ -229,6 +229,12 @@ def cmd_apply(a):
         # so the model keeps its colour instead of getting darker (colour x colour).
         arr = np.asarray(Image.open(src).convert("RGB"), dtype=np.float32)
         detail = np.clip(arr / np.maximum(arr.reshape(-1, 3).mean(0), 1.0) * 0.9 * 255, 0, 255)
+        if a.id.endswith("-skin"):
+            # Field-worn look (owner reference, a dusty Bradley): dull the green
+            # towards khaki and add a little grime, keeping the mean brightness.
+            tint = np.array([1.06, 1.0, 0.82], dtype=np.float32)
+            gray = detail.mean(axis=2, keepdims=True)
+            detail = np.clip((detail * 0.65 + gray * 0.35) * tint * 0.93, 0, 255)
         image = Image.fromarray(detail.astype(np.uint8))
     else:
         image = Image.open(src).convert("RGB")
@@ -236,6 +242,33 @@ def cmd_apply(a):
     target = os.path.join(dest, f"{a.id}.webp")
     image.save(target, "WEBP", quality=90, method=6)
     print("applied", a.id, "->", target)
+
+
+def cmd_bump(a):
+    """Height map of an accepted texture for bump mapping: its luminance with the
+    low frequencies removed (so panels keep their relief, not their tint)."""
+    from PIL import ImageFilter
+    dest = os.environ.get("RED_LINE_APPLY_DIR")
+    if not dest:
+        sys.exit("set RED_LINE_APPLY_DIR to <checkout>/client/public/textures")
+    src = os.path.join(ROOT, "final", f"{a.id}-512.png")
+    if not os.path.exists(src):
+        sys.exit(f"{a.id} is not accepted yet (no {src})")
+    gray = Image.open(src).convert("L")
+    size = gray.size[0]
+    # Blur a 3x3 tiling so the height map stays seamless at the borders.
+    tiled = Image.new("L", (size * 3, size * 3))
+    for ix in range(3):
+        for iy in range(3):
+            tiled.paste(gray, (ix * size, iy * size))
+    low = tiled.filter(ImageFilter.GaussianBlur(a.radius)).crop((size, size, size * 2, size * 2))
+    detail = np.asarray(gray, dtype=np.float32) - np.asarray(low, dtype=np.float32)
+    spread = max(float(np.percentile(np.abs(detail), 98)), 1.0)
+    height = np.clip(128 + detail / spread * 100, 0, 255).astype(np.uint8)
+    os.makedirs(dest, exist_ok=True)
+    target = os.path.join(dest, f"{a.id}-bump.webp")
+    Image.fromarray(height).save(target, "WEBP", quality=90, method=6)
+    print("bump", a.id, "->", target)
 
 
 def cmd_sheet(_):
@@ -270,6 +303,7 @@ def main():
     g.add_argument("--extra", default=""); g.add_argument("--neg-extra", default="")
     c = sub.add_parser("accept"); c.add_argument("id"); c.add_argument("--attempt", type=int, required=True)
     ap = sub.add_parser("apply"); ap.add_argument("id")
+    bp = sub.add_parser("bump"); bp.add_argument("id"); bp.add_argument("--radius", type=float, default=12)
     sub.add_parser("sheet")
     a = p.parse_args()
     cfg = load()
@@ -284,6 +318,8 @@ def main():
         cmd_accept(a)
     elif a.cmd == "apply":
         cmd_apply(a)
+    elif a.cmd == "bump":
+        cmd_bump(a)
     else:
         cmd_sheet(a)
 

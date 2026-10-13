@@ -9,7 +9,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { describe, expect, it } from "vitest";
 import { typeIndex } from "../rules";
 import type { EntityState } from "../sim/matchSnapshot";
-import { createEntityRenderer, OWNER_COLORS, SELECTED_COLOR } from "./entities";
+import { createEntityRenderer, SELECTED_COLOR } from "./entities";
 import { addBandAttribute, bandsOf, FLAGS } from "./flags";
 import type { MaterialName, ModelPart, TypeModel } from "./models";
 
@@ -108,9 +108,8 @@ describe("flag bands on buildings", () => {
     expect(color.getHex()).toBe(SELECTED_COLOR);
     expect(bandOn.getX(1)).toBe(0);
 
-    const bradley = teamOf("ua-bradley");
-    expect(bradley.geometry.hasAttribute("band")).toBe(false);
-    bradley.getColorAt(0, color);
-    expect(color.getHex()).toBe(OWNER_COLORS[0]);
+    // Owner decision 2026-10-14 (spec 13 §5): vehicles carry their painted flag
+    // instead of a team stripe, so they have no team slot at all.
+    expect(() => teamOf("ua-bradley")).toThrow("no team slot");
   });
 });

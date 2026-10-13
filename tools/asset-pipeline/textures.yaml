@@ -102,6 +102,28 @@ resources:
     rules:
       - almost black, very low contrast, no treads or bolts, only the surface
       - must tile seamlessly
+  - id: ua-skin
+    kind: material
+    target_mean: "#5b6b3a"
+    subject: extreme close-up of matte olive-green armoured vehicle plating seen straight on, with thin welded panel seams, a few small bolt heads, edge wear showing bare steel, light dust and faint mud streaks
+    used_by: "`body` material of Ukrainian vehicles (Bradley, Leopard 2A4, HIMARS, Kozak scout, trucks, dozer); its height map gives the relief (bump mapping)"
+    neighbours: [sits next to black tracks and wheels (dark-metal), a bright team-colour stripe and the blue and yellow flag livery]
+    rules:
+      - one continuous flat plated surface, not a whole vehicle, no hatches, no text, no stars, no flags
+      - olive green, medium-low contrast, fine detail, clear panel seams and bolts that read as relief
+      - no large features that would repeat visibly when tiled
+      - must tile seamlessly
+  - id: ru-skin
+    kind: material
+    target_mean: "#4a5a3c"
+    subject: extreme close-up of matte dark-green armoured vehicle plating seen straight on, with thin welded panel seams, a few small bolt heads, chipped paint showing bare steel and rust, dust and faint mud streaks
+    used_by: "`body` material of Russian vehicles (T-72B3, BMP-2, BRDM-2, TOS-1A, trucks, dozer); its height map gives the relief (bump mapping)"
+    neighbours: [sits next to black tracks and wheels (dark-metal), a bright team-colour stripe and a white Z marking]
+    rules:
+      - one continuous flat plated surface, not a whole vehicle, no hatches, no text, no stars, no letters
+      - dark green slightly greyer than the Ukrainian plating, medium-low contrast, fine detail, panel seams and bolts that read as relief
+      - no large features that would repeat visibly when tiled
+      - must tile seamlessly
   - id: ua-camo
     kind: material
     priority: 3

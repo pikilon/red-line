@@ -84,8 +84,10 @@ export const DEFAULT_AI = "russia-balanced";
 
 /** Spec 14: the showcase map and the formation centre relative to a start HQ. */
 const SHOWCASE_MAP = "showcase";
-const SHOWCASE_ZOOM = 1;
-const SHOWCASE_CENTRE = { dx: 14, y: 12 } as const;
+const SHOWCASE_VIEWS = {
+  all: { zoom: 1, dx: 14, y: 12 },
+  units: { zoom: 2, dx: 9.5, y: 18.5 },
+} as const;
 export const MAX_SPEED_SKIRMISH = MAX_SPEED;
 
 /** Default entity renderer capacity; AC-03-62 and AC-03-63 stay below it. */
@@ -185,7 +187,11 @@ export function startSkirmish(params: SkirmishOptions): void {
 
   const seed = readInt(params, "seed", DEFAULT_SEED);
   // `?showcase=1`: every building and unit of both sides in formation (spec 14).
-  const showcase = params.get("showcase") === "1";
+  // `?showcase=units` zooms on the two unit rows (spec 14 §5).
+  const showcaseParam = params.get("showcase");
+  const showcase = showcaseParam === "1" || showcaseParam === "units";
+  const showcaseView =
+    showcaseParam === "units" ? SHOWCASE_VIEWS.units : SHOWCASE_VIEWS.all;
   const mapId = showcase ? SHOWCASE_MAP : (params.get("map") ?? DEFAULT_MAP);
   const debug = showcase || params.get("debug") === "1";
   // `?ai=off` keeps the Phase 2 hot-seat behaviour (spec 05 §7).
@@ -385,7 +391,7 @@ export function startSkirmish(params: SkirmishOptions): void {
   function centreOnOwnHq(snapshot: MatchSnapshot): void {
     const hq = ownHeadquarters(snapshot.entities, controlled);
     if (hq === null) return;
-    if (showcase) moveCamera(hq.x + SHOWCASE_CENTRE.dx, SHOWCASE_CENTRE.y);
+    if (showcase) moveCamera(hq.x + showcaseView.dx, showcaseView.y);
     else moveCamera(hq.x, hq.y);
   }
 
@@ -411,7 +417,7 @@ export function startSkirmish(params: SkirmishOptions): void {
       (kind) => typeDef(kind).category === "building",
     );
     if (home === null) return;
-    if (showcase) moveCamera(home.x + SHOWCASE_CENTRE.dx, SHOWCASE_CENTRE.y);
+    if (showcase) moveCamera(home.x + showcaseView.dx, showcaseView.y);
     else moveCamera(home.x, home.y);
   }
 
@@ -521,7 +527,7 @@ export function startSkirmish(params: SkirmishOptions): void {
         yRaw: toRaw(spawn.y),
       });
     }
-    camera.zoom = SHOWCASE_ZOOM;
+    camera.zoom = showcaseView.zoom;
     camera.updateProjectionMatrix();
   }
 
