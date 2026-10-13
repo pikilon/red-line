@@ -72,6 +72,11 @@ import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
 import { createResourceBar } from "../ui/resourceBar";
 import { createSelectionBox } from "../ui/selectionBox";
+import {
+  createTouchControls,
+  isTouchDevice,
+  type PanDirection,
+} from "../ui/touchControls";
 import { createCameraMemory, homeView } from "./cameraMemory";
 
 export const DEFAULT_MAP = "first-line";
@@ -223,6 +228,21 @@ export function startSkirmish(params: SkirmishOptions): void {
     toggleFpsPanel: () => toggleFpsPanel(),
     restart: () => window.location.reload(),
   });
+  const PAN_CODES = {
+    up: "ArrowUp",
+    down: "ArrowDown",
+    left: "ArrowLeft",
+    right: "ArrowRight",
+  } as const satisfies Record<PanDirection, string>;
+  // D-pad and menu button on touch screens only (spec 08 §3.6).
+  const touchControls = isTouchDevice()
+    ? createTouchControls(document.body, {
+        pan: (direction, held) =>
+          controller?.setPan(PAN_CODES[direction], held),
+        toggleMenu: () => toggleMenuLikeEsc(),
+      })
+    : null;
+  if (touchControls !== null) document.body.classList.add("touch");
   renderMenu();
 
   /** Renders the game menu from the current state (spec 08 §3.1, §3.3). */
@@ -235,6 +255,7 @@ export function startSkirmish(params: SkirmishOptions): void {
       revealed: viewer === OBSERVER,
       fpsPanel,
     });
+    touchControls?.render({ menuOpen: paused });
   }
 
   /** Shows `message` in `#toast` for `TOAST_MS` (spec 07 §5). */
@@ -696,6 +717,16 @@ export function startSkirmish(params: SkirmishOptions): void {
       interact.setPaused(paused);
     }
     renderMenu();
+  }
+
+  /** What `Esc` does: cancels a placement mode, else toggles the menu. */
+  function toggleMenuLikeEsc(): void {
+    if (placementKind !== null) {
+      placementKind = null;
+      refreshOverlay();
+      return;
+    }
+    setMenuOpen(!paused);
   }
 
   window.addEventListener("keydown", (event) => {

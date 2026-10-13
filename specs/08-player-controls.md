@@ -251,7 +251,7 @@ On touch screens panning needed the arrow keys / WASD and the menu needed
   (once, and only if it was held). The skirmish maps the directions to the
   arrow-key codes in `PAN_KEYS` (`up` = `ArrowUp`...) inside the controller's
   pressed set, so speed and the `panDelta` path are those of the keyboard and
-  the keyboard keeps working. A window `blur` releases them too.
+  the keyboard keeps working. A window `blur` releases them too (the controller clears its pressed set).
 * `#touch-menu` `click` calls `toggleMenu()`; the skirmish does what `Esc`
   does: with a placement mode active it cancels placement and leaves the menu
   closed, otherwise it opens (pause) or closes (resume) the game menu.

@@ -26,6 +26,17 @@
       #game-menu-panel { display: flex; flex-direction: column; gap: 8px; min-width: 220px; padding: 20px 24px; border-radius: 6px; background: rgba(0, 0, 0, 0.85); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6); }
       #game-menu-panel h2 { margin: 0 0 8px; font-size: 22px; text-align: center; }
       #game-menu-panel button { cursor: pointer; padding: 6px 10px; }
+      #touch-dpad { position: fixed; left: 8px; bottom: 8px; display: grid; grid-template-columns: repeat(3, 56px); grid-template-rows: repeat(3, 56px); gap: 4px; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; z-index: 5; }
+      #touch-dpad[hidden] { display: none; }
+      #touch-dpad button, #touch-menu { min-width: 48px; min-height: 48px; border: 0; border-radius: 8px; background: rgba(0, 0, 0, 0.55); color: #fff; font: 22px/1 system-ui, sans-serif; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+      #touch-dpad button:active, #touch-menu:active { background: rgba(250, 204, 21, 0.8); color: #000; }
+      #touch-up { grid-area: 1 / 2; }
+      #touch-left { grid-area: 2 / 1; }
+      #touch-right { grid-area: 2 / 3; }
+      #touch-down { grid-area: 3 / 2; }
+      #touch-menu { position: fixed; top: 8px; right: 8px; width: 56px; height: 56px; z-index: 20; }
+      body.touch #perf-panel { top: 68px; }
+      body.touch #command-panel { left: auto; right: 8px; transform: none; }
     </style>
   </head>
   <body>
