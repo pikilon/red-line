@@ -1,4 +1,5 @@
 import {
+  Box3,
   BoxGeometry,
   BufferGeometry,
   Color,
@@ -13,6 +14,7 @@ import {
   MeshLambertMaterial,
   PlaneGeometry,
   Quaternion,
+  type Texture,
   Vector3,
 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
@@ -26,6 +28,7 @@ import {
 import type { Animator } from "./animation";
 import {
   applyBodyTextures,
+  applyLivery,
   bodyTextureId,
   boxProjectUvs,
   createBodyMaterial,
@@ -33,6 +36,14 @@ import {
   type GeneratedTextures,
 } from "./generatedTextures";
 import { createHeadingTracker, turnRatesOf } from "./heading";
+import {
+  addLiveryAttribute,
+  createLiveryTexture,
+  type Footprint,
+  type Livery,
+  liveryOf,
+  turretFootprint,
+} from "./liveries";
 import type {
   MaterialName,
   ModelPart,
@@ -312,6 +323,28 @@ export function createEntityRenderer(
   const byType = new Map<string, TypeSlots>();
   let generated: GeneratedTextures | null = null;
 
+  /** The roof area the turret of `model` covers, for the Z (spec 13 §3). */
+  function turretOccluders(model: TypeModel): Footprint[] {
+    const geometries = [...model.turret.values()].map((part) => part.geometry);
+    if (geometries.length === 0) return [];
+    const box = new Box3();
+    for (const geometry of geometries) {
+      geometry.computeBoundingBox();
+      if (geometry.boundingBox !== null) box.union(geometry.boundingBox);
+    }
+    return [turretFootprint(box, model.pivot)];
+  }
+
+  const liveryTextures = new Map<Livery, Texture>();
+  function liveryTexture(livery: Livery): Texture {
+    let texture = liveryTextures.get(livery);
+    if (texture === undefined) {
+      texture = createLiveryTexture(livery);
+      liveryTextures.set(livery, texture);
+    }
+    return texture;
+  }
+
   /** Applies the current generated textures to one `body` slot (spec 12 §6). */
   function texturize(slot: MeshSlot): void {
     if (slot.material !== "body") return;
@@ -336,6 +369,16 @@ export function createEntityRenderer(
     const parts = kind === "turret" ? model.turret : model.parts;
     const created: MeshSlot[] = [];
     const opaque = opaqueGeometry(parts);
+    const type = RULES.types.find((entry) => entry.id === typeId);
+    const livery =
+      type === undefined ? null : liveryOf(type.id, type.category, type.armor);
+    if (opaque !== null && livery !== null) {
+      addLiveryAttribute(
+        opaque,
+        livery,
+        kind === "hull" ? turretOccluders(model) : [],
+      );
+    }
     const definitions: readonly [MaterialName, BufferGeometry | undefined][] = [
       ["body", opaque ?? undefined],
       ["team", parts.get("team")?.geometry],
@@ -352,6 +395,12 @@ export function createEntityRenderer(
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       const slot: MeshSlot = { typeId, group: kind, material, mesh, count: 0 };
+      if (material === "body" && livery !== null) {
+        applyLivery(
+          mesh.material as MeshLambertMaterial,
+          liveryTexture(livery),
+        );
+      }
       texturize(slot);
       created.push(slot);
       slots.push(slot);

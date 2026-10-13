@@ -124,22 +124,25 @@ export function createBodyMaterial(): MeshLambertMaterial {
     flatShading: true,
   });
   const darkMap = { value: WHITE as Texture };
+  const liveryMap = { value: null as Texture | null };
   material.userData.darkMap = darkMap;
+  material.userData.liveryMap = liveryMap;
   material.onBeforeCompile = (shader) => {
     shader.uniforms.darkMap = darkMap;
+    shader.uniforms.liveryMap = liveryMap;
     shader.vertexShader = shader.vertexShader
       .replace(
         "#include <common>",
-        `#include <common>\nattribute float ${DARK_MASK};\nvarying float vDark;`,
+        `#include <common>\nattribute float ${DARK_MASK};\nvarying float vDark;\nattribute vec3 livery;\nvarying vec3 vLivery;`,
       )
       .replace(
         "#include <begin_vertex>",
-        `#include <begin_vertex>\nvDark = ${DARK_MASK};`,
+        `#include <begin_vertex>\nvDark = ${DARK_MASK};\nvLivery = livery;`,
       );
     shader.fragmentShader = shader.fragmentShader
       .replace(
         "#include <common>",
-        "#include <common>\nuniform sampler2D darkMap;\nvarying float vDark;",
+        "#include <common>\nuniform sampler2D darkMap;\nuniform sampler2D liveryMap;\nvarying float vDark;\nvarying vec3 vLivery;",
       )
       .replace(
         "#include <map_fragment>",
@@ -148,10 +151,28 @@ export function createBodyMaterial(): MeshLambertMaterial {
   vec4 darkColor = texture2D( darkMap, vMapUv );
   diffuseColor *= mix( paintColor, darkColor, vDark );
 #endif`,
+      )
+      .replace(
+        "#include <color_fragment>",
+        `#include <color_fragment>
+  vec4 liveryColor = texture2D( liveryMap, vLivery.xy );
+  float liveryWeight = liveryColor.a * vLivery.z * ( 1.0 - vDark ) * 0.9;
+  diffuseColor.rgb = mix( diffuseColor.rgb, liveryColor.rgb, liveryWeight );`,
       );
   };
-  material.customProgramCacheKey = () => "body-dark-mask";
+  material.customProgramCacheKey = () => "body-dark-livery-mask";
   return material;
+}
+
+/** Sets the livery texture of a body material; `null` removes the livery. */
+export function applyLivery(
+  material: MeshLambertMaterial,
+  texture: Texture | null,
+): void {
+  const liveryMap = material.userData.liveryMap as
+    | { value: Texture | null }
+    | undefined;
+  if (liveryMap !== undefined) liveryMap.value = texture;
 }
 
 /** Sets the paint/concrete map and the dark-metal map of a body material;
