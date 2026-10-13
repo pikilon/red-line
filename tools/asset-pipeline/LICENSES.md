@@ -26,6 +26,15 @@ commit for 0 A.D.).
 | Poly Haven textures and models | CC0-1.0 | Public domain: no attribution, redistribution and commercial use permitted. Fetched through the public API, which requires a user-agent identifying the tool. |
 | Kenney 3D kits | CC0-1.0 | Low-poly game kits; they ship `.glb`, directly loadable by Three.js. |
 
+### Assets shipped from the library
+
+| Game file | Source (library path) | Licence |
+|---|---|---|
+| `client/public/textures/ua-wall.webp` | `04_CC0_Public_Domain/polyhaven/models/modular_factory_facade/textures/modular_factory_facade_brick_diff_1k.jpg` and `..._brick_arm_1k.jpg` (Poly Haven "Modular Factory Facade") | CC0-1.0 |
+| `client/public/textures/ua-roof.webp` | `04_CC0_Public_Domain/polyhaven/models/modular_factory_facade/textures/modular_factory_facade_garage_diff_1k.jpg` (rows 442..732) | CC0-1.0 |
+
+Recoloured and cropped by `tools/asset-pipeline/facades.py` (spec 16 §2).
+
 ### Do not use EA art
 
 EA's GPL-3.0 releases (`01_EA_GPL_Source_Releases`) contain source code, `.map`
