@@ -542,18 +542,31 @@ impl World {
     /// §5.8: ignored unless `debug_commands`. Spawns a unit of `kind` for
     /// `player` at `pos` when `kind` is a unit type, the cell is nav-passable
     /// and fewer than `MAX_UNITS` entities exist; credits, prerequisites and
-    /// fog are not consulted.
+    /// fog are not consulted. A building type is placed complete with its
+    /// origin at `cell_of(pos)` when the footprint is free (spec 14 §2).
     fn apply_debug_spawn(&mut self, player: PlayerId, kind: TypeId, pos: FxVec2) {
         if !self.debug_commands
             || usize::from(kind) >= self.rules.types.len()
-            || self.rules.ty(kind).category != Category::Unit
-            || !self.nav.is_passable(cell_of(pos))
             || self.entities.len() as u32 >= MAX_UNITS
         {
             return;
         }
-        let hp = self.rules.ty(kind).hp;
-        self.push_entity(player, kind, pos, hp, None);
+        match self.rules.ty(kind).category {
+            Category::Unit => {
+                if !self.nav.is_passable(cell_of(pos)) {
+                    return;
+                }
+                let hp = self.rules.ty(kind).hp;
+                self.push_entity(player, kind, pos, hp, None);
+            }
+            Category::Building => {
+                let origin = cell_of(pos);
+                if self.footprint_free(origin, self.rules.ty(kind).footprint) {
+                    self.place_building(player, kind, origin, true);
+                }
+            }
+            _ => {}
+        }
     }
 
     /// §5.8: ignored unless `debug_commands`. Sets the hp of any entity, of any

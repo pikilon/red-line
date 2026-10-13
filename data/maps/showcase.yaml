@@ -1,0 +1,8 @@
+id: showcase                         # required, equals the file name
+width: 100                           # required, 16..256
+height: 40                           # required, 16..256
+blocked: []                          # open ground: every building and unit of both sides in formation (spec 14)
+depots: []                           # required; none in the showcase
+starts:                              # required, exactly 2 entries; start i is player i
+  - { faction: ukraine, hq: [4, 6], dozerCenti: [1550, 2050] }    # dozer = unit slot 6 of the formation
+  - { faction: russia, hq: [54, 6], dozerCenti: [6550, 2050] }

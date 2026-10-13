@@ -46,8 +46,9 @@ import {
   rockCellsOf,
   setTerrainTextures,
 } from "../render/terrain";
-import { RULES, typeDef, typeIndex } from "../rules";
+import { RULES, typeDef, typeIndex, typeName } from "../rules";
 import { loadSettings, type Settings, saveSettings } from "../settings";
+import { toRaw } from "../sim/fixed";
 import {
   type EntityState,
   interpolateEntities,
@@ -74,11 +75,17 @@ import { createResourceBar } from "../ui/resourceBar";
 import { createSelectionBox } from "../ui/selectionBox";
 import { createTouchControls, isTouchDevice } from "../ui/touchControls";
 import { createCameraMemory, homeView } from "./cameraMemory";
+import { showcasePlan } from "./showcase";
 
 export const DEFAULT_MAP = "first-line";
 export const DEFAULT_SEED = 1;
 /** Opponent personality attached to player 1 by default (spec 05 §7). */
 export const DEFAULT_AI = "russia-balanced";
+
+/** Spec 14: the showcase map and the formation centre relative to a start HQ. */
+const SHOWCASE_MAP = "showcase";
+const SHOWCASE_ZOOM = 1;
+const SHOWCASE_CENTRE = { dx: 14, y: 12 } as const;
 export const MAX_SPEED_SKIRMISH = MAX_SPEED;
 
 /** Default entity renderer capacity; AC-03-62 and AC-03-63 stay below it. */
@@ -177,11 +184,13 @@ export function startSkirmish(params: SkirmishOptions): void {
   const hudRoot = document.getElementById("hud") ?? container;
 
   const seed = readInt(params, "seed", DEFAULT_SEED);
-  const mapId = params.get("map") ?? DEFAULT_MAP;
-  const debug = params.get("debug") === "1";
+  // `?showcase=1`: every building and unit of both sides in formation (spec 14).
+  const showcase = params.get("showcase") === "1";
+  const mapId = showcase ? SHOWCASE_MAP : (params.get("map") ?? DEFAULT_MAP);
+  const debug = showcase || params.get("debug") === "1";
   // `?ai=off` keeps the Phase 2 hot-seat behaviour (spec 05 §7).
   const aiParam = params.get("ai");
-  const ai = aiParam === "off" ? null : (aiParam ?? DEFAULT_AI);
+  const ai = showcase || aiParam === "off" ? null : (aiParam ?? DEFAULT_AI);
   const speed = debug
     ? Math.min(MAX_SPEED_SKIRMISH, Math.max(1, readInt(params, "speed", 1)))
     : 1;
@@ -212,7 +221,7 @@ export function startSkirmish(params: SkirmishOptions): void {
   /** Whether the performance panel shows; on with `?debug=1` (spec 08 §3.5). */
   let fpsPanel = debug;
   /** Player whose fog the worker snapshots; `OBSERVER` while the map is revealed. */
-  let viewer = 0;
+  let viewer = showcase ? OBSERVER : 0;
 
   const gameMenu = createGameMenu(document.body, {
     resume: () => setMenuOpen(false),
@@ -376,7 +385,8 @@ export function startSkirmish(params: SkirmishOptions): void {
   function centreOnOwnHq(snapshot: MatchSnapshot): void {
     const hq = ownHeadquarters(snapshot.entities, controlled);
     if (hq === null) return;
-    moveCamera(hq.x, hq.y);
+    if (showcase) moveCamera(hq.x + SHOWCASE_CENTRE.dx, SHOWCASE_CENTRE.y);
+    else moveCamera(hq.x, hq.y);
   }
 
   function moveCamera(x: number, y: number): void {
@@ -400,7 +410,9 @@ export function startSkirmish(params: SkirmishOptions): void {
       RULES.factions[controlled]?.hq ?? null,
       (kind) => typeDef(kind).category === "building",
     );
-    if (home !== null) moveCamera(home.x, home.y);
+    if (home === null) return;
+    if (showcase) moveCamera(home.x + SHOWCASE_CENTRE.dx, SHOWCASE_CENTRE.y);
+    else moveCamera(home.x, home.y);
   }
 
   /** `#hud-player`, 1-based (spec §6.6). */
@@ -473,6 +485,11 @@ export function startSkirmish(params: SkirmishOptions): void {
       command: (command) => interact.command(command),
       onSelectionChange: (ids) => {
         hud.setSelectedCount(ids.size);
+        hud.setSelectedTypes(
+          (next?.entities ?? [])
+            .filter((entity) => ids.has(entity.id))
+            .map((entity) => typeName(entity.kind)),
+        );
         refreshOverlay();
       },
       debug,
@@ -482,11 +499,30 @@ export function startSkirmish(params: SkirmishOptions): void {
     setHudPlayer();
     centreOnOwnHq(next);
     ready = true;
+    if (showcase) spawnShowcase();
     // Generated textures are the default: load the PNGs once the scene exists.
     if (settings.generatedTextures !== false) {
       settings = { ...settings, generatedTextures: false };
       toggleTextures();
     }
+  }
+
+  /** Spec 14: one `debugSpawn` per building and unit of the formation, and the
+   *  camera zoomed out to see it. */
+  function spawnShowcase(): void {
+    const definition = ruleset.maps.find((entry) => entry.id === mapId);
+    if (definition === undefined) return;
+    for (const spawn of showcasePlan(RULES, definition)) {
+      interact.command({
+        kind: "debugSpawn",
+        player: spawn.player,
+        typeIndex: spawn.typeIndex,
+        xRaw: toRaw(spawn.x),
+        yRaw: toRaw(spawn.y),
+      });
+    }
+    camera.zoom = SHOWCASE_ZOOM;
+    camera.updateProjectionMatrix();
   }
 
   /** Centres the sun's shadow camera on the camera's ground target (spec 10 §3):
