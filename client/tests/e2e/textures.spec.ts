@@ -8,6 +8,9 @@ interface TexturesDebug {
 
 type DebugWindow = Window & { __redline?: TexturesDebug };
 
+// A fresh browser profile: no saved settings, so the default (generated) applies.
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test("AC-12-04: textures toggle in the game menu", async ({ page }) => {
   test.setTimeout(60_000);
   const errors: string[] = [];
@@ -27,9 +30,10 @@ test("AC-12-04: textures toggle in the game menu", async ({ page }) => {
 
   await page.keyboard.press("Escape");
   await expect(menu).toBeVisible();
-  await expect(button).toHaveText("Textures: procedural");
-  await button.click();
+  // Generated textures are the default (owner decision 2026-10-13).
   await expect(button).toHaveText("Textures: generated");
+  await button.click();
+  await expect(button).toHaveText("Textures: procedural");
   await expect
     .poll(() =>
       page.evaluate(
@@ -38,13 +42,13 @@ test("AC-12-04: textures toggle in the game menu", async ({ page }) => {
             JSON.parse(localStorage.getItem("redline.settings.v1") ?? "{}") as {
               generatedTextures?: boolean;
             }
-          ).generatedTextures === true,
+          ).generatedTextures === false,
       ),
     )
     .toBe(true);
 
   await button.click();
-  await expect(button).toHaveText("Textures: procedural");
+  await expect(button).toHaveText("Textures: generated");
 
   await page.getByRole("button", { name: "Resume" }).click();
   await expect(menu).toBeHidden();
