@@ -30,8 +30,8 @@ commit for 0 A.D.).
 
 | Game file | Source (library path) | Licence |
 |---|---|---|
-| `client/public/textures/ru-wall.webp`, `ua-wall.webp` | `04_CC0_Public_Domain/polyhaven/models/modular_factory_facade/textures/modular_factory_facade_brick_diff_1k.jpg` (Poly Haven "Modular Factory Facade") | CC0-1.0 |
-| `client/public/textures/ru-roof.webp`, `ua-roof.webp` | `04_CC0_Public_Domain/polyhaven/models/modular_factory_facade/textures/modular_factory_facade_garage_diff_1k.jpg` (rows 442..732) | CC0-1.0 |
+| `client/public/textures/ua-wall.webp` | `04_CC0_Public_Domain/polyhaven/models/modular_factory_facade/textures/modular_factory_facade_brick_diff_1k.jpg` and `..._brick_arm_1k.jpg` (Poly Haven "Modular Factory Facade") | CC0-1.0 |
+| `client/public/textures/ua-roof.webp` | `04_CC0_Public_Domain/polyhaven/models/modular_factory_facade/textures/modular_factory_facade_garage_diff_1k.jpg` (rows 442..732) | CC0-1.0 |
 
 Recoloured and cropped by `tools/asset-pipeline/facades.py` (spec 16 §2).
 

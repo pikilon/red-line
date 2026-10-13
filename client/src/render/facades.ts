@@ -2,26 +2,18 @@ import { Color, type MeshLambertMaterial, type Texture, Vector3 } from "three";
 import type { GeneratedTextureId } from "./generatedTextures";
 
 /** A vertex whose object-space normal has at least this `y` is roof (spec 16
- *  §3): the 45° gable of the Russian HQ (0.707) counts, walls (0) do not. */
+ *  §3): 45° gables (0.707) count, walls (0) do not. */
 export const ROOF_NORMAL_Y = 0.6;
 
 /** The wall and roof textures of a building (spec 16 §3), or `null` for units,
- *  depots and types without a faction prefix. */
+ *  depots, Russian buildings (they keep `ru-concrete`, owner decision
+ *  2026-10-14) and types without a faction prefix. */
 export function facadeTextureIds(
   typeId: string,
   category: string,
 ): { wall: GeneratedTextureId; roof: GeneratedTextureId } | null {
-  if (category !== "building") return null;
-  const prefix = typeId.startsWith("ru-")
-    ? "ru"
-    : typeId.startsWith("ua-")
-      ? "ua"
-      : null;
-  if (prefix === null) return null;
-  return {
-    wall: `${prefix}-wall` as GeneratedTextureId,
-    roof: `${prefix}-roof` as GeneratedTextureId,
-  };
+  if (category !== "building" || !typeId.startsWith("ua-")) return null;
+  return { wall: "ua-wall", roof: "ua-roof" };
 }
 
 /** Per-channel 1 / colour of the linear body colour: multiplied with the

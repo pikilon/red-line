@@ -9,8 +9,7 @@ stay the default. A file that is missing here is skipped by the loader.
 Ids: `grass`, `dirt`, `rock`, `ua-paint`, `ru-paint`, `ua-concrete`,
 `ru-concrete`, `dark-metal` (512 px, converted from `<id>-512.png` to WebP quality 90).
 
-Building facades (spec 16): `ru-wall`, `ua-wall`, `ru-roof`, `ua-roof`, real
-colour, written by `tools/asset-pipeline/facades.py` from CC0 Poly Haven
+Building facades (spec 16): `ua-wall`, `ua-roof`, real colour, written by `tools/asset-pipeline/facades.py` from CC0 Poly Haven
 sources (see `tools/asset-pipeline/LICENSES.md`).
 
 Licences of the generators (details in `tools/asset-pipeline/LICENSES.md`):

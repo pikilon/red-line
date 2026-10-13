@@ -8,7 +8,7 @@ interface FacadesDebug {
 
 type DebugWindow = Window & { __redline?: FacadesDebug };
 
-const FACADES = ["ru-wall", "ua-wall", "ru-roof", "ua-roof"];
+const FACADES = ["ua-wall", "ua-roof"];
 
 // A fresh browser profile: no saved settings, so the generated textures apply.
 test.use({ storageState: { cookies: [], origins: [] } });

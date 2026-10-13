@@ -16,30 +16,32 @@ same and the building reads as a green block.
 
 Real references:
 
-* Russia: Soviet-era military barracks of red brick ("voenny gorodok") with
-  green-painted corrugated steel roofs.
-* Ukraine: white silicate brick, very common in Ukrainian Soviet-era buildings,
-  with grey corrugated asbestos-cement ("shyfer") roofs.
+* Ukraine: silicate brick, very common in Ukrainian Soviet-era buildings,
+  weathered grey with dark joints, grime and rain streaks, with grey corrugated
+  asbestos-cement ("shyfer") roofs.
 
-In scope: the `body` material of buildings (`category: "building"`) and a flag
-on each faction's HQ. Out of scope: units, depots, `dark`, `team`. Liveries
+Owner review (2026-10-14): a first version gave Russian buildings red brick and
+green corrugated roofs, and Ukrainian ones clean white brick. The owner found
+the Ukrainian look toy-like and preferred the Russian buildings as they were:
+Russian buildings keep `ru-concrete` (spec 12 §6), and the Ukrainian silicate
+is weathered.
+
+In scope: the `body` material of Ukrainian buildings (`category: "building"`)
+and a flag on each faction's HQ. Out of scope: units, depots, `dark`, `team`. Liveries
 (spec 13) are unchanged.
 
 ## 2. Textures (`tools/asset-pipeline/facades.py`)
 
-Four 512 px WebP files in `client/public/textures/`, in real colour (not detail
+Two 512 px WebP files in `client/public/textures/`, in real colour (not detail
 maps), derived only from CC0 Poly Haven sources of the licensed library
 (`04_CC0_Public_Domain`, listed in `tools/asset-pipeline/LICENSES.md`):
 
 | Id | Source | Treatment |
 | --- | --- | --- |
-| `ru-wall` | `modular_factory_facade_brick_diff_1k.jpg` | slightly weathered red brick |
-| `ua-wall` | same brick | luminance tinted pale cream-grey, brick/mortar contrast inverted |
-| `ru-roof` | `modular_factory_facade_garage_diff_1k.jpg`, rows 442..732 (one corrugation period) | luminance tinted green paint |
-| `ua-roof` | same crop | luminance tinted grey asbestos-cement |
+| `ua-wall` | `modular_factory_facade_brick_diff_1k.jpg` and its `_arm_` ambient occlusion | luminance tinted grey silicate, joints darkened by the AO, tileable grime blotches and vertical rain streaks |
+| `ua-roof` | `modular_factory_facade_garage_diff_1k.jpg`, rows 442..732 (one corrugation period), transposed so the corrugation runs down the slope | luminance tinted grey asbestos-cement, grime blotches |
 
-`GENERATED_TEXTURE_IDS` (spec 12 §4) gains `ua-wall`, `ru-wall`, `ua-roof` and
-`ru-roof`, so they load with the other generated textures. `facades.py`
+`GENERATED_TEXTURE_IDS` (spec 12 §4) gains `ua-wall` and `ua-roof`, so they load with the other generated textures. `facades.py`
 regenerates them; no EA, OpenRA or freeware art is used (D-02).
 
 ## 3. Model (`client/src/render/facades.ts`)
@@ -62,16 +64,17 @@ export function enableFacades(material: MeshLambertMaterial, bodyColor: number):
 export function applyFacade(material: MeshLambertMaterial, roof: Texture | null): void;
 ```
 
-* `facadeTextureIds`: faction by type id prefix (`ua-` / `ru-`); `null` for
-  units, depots and types with neither prefix.
+* `facadeTextureIds`: `ua-wall` / `ua-roof` for buildings whose type id starts
+  with `ua-`; `null` for units, depots, Russian buildings and types without a
+  faction prefix.
 * Shading: a vertex whose object-space normal has `y >= ROOF_NORMAL_Y` (0.6, so
-  the 45° gable of the Russian HQ counts) samples the roof map, any other the
+  45° gables count) samples the roof map, any other the
   wall map (`material.map`). With a facade applied, the body colour is divided
   out (`untint`), so walls and roofs show the texture's own colour times the
   baked ambient occlusion; `dark` vertices keep `dark-metal`.
 * `EntityRenderer`: the `body` slot of a building with a facade calls
   `enableFacades` with the colour of its `body` part. With generated textures on
-  and `<faction>-wall` loaded, the map is the wall and `applyFacade` gets the
+  and `ua-wall` loaded, the map is the wall and `applyFacade` gets the
   roof (the wall when the roof is missing). Otherwise the slot behaves as in
   spec 12 (`<faction>-concrete`, `applyFacade(material, null)`).
 
@@ -156,17 +159,17 @@ export function enableBands(material: MeshLambertMaterial, stripes: readonly num
 
 ## Acceptance criteria
 
-* AC-16-01: Given the type ids, When `facadeTextureIds` runs, Then `ru-hq` and
-  `ru-barracks` give `ru-wall` / `ru-roof`, `ua-hq` and `ua-power-plant` give
-  `ua-wall` / `ua-roof`, and `ua-bradley`, `ru-rifleman` and `supply-depot`
-  give `null`.
+* AC-16-01: Given the type ids, When `facadeTextureIds` runs, Then `ua-hq`,
+  `ua-barracks` and `ua-power-plant` give `ua-wall` / `ua-roof`, and `ru-hq`,
+  `ru-barracks`, `ua-bradley`, `ru-rifleman` and `supply-depot` give `null`.
 * AC-16-02: Given a body colour, When `untintOf` runs, Then each channel times
   the linear colour is 1.
 * AC-16-03: Given a renderer with a building model and generated textures with
-  `ru-wall` and `ru-roof`, When the building is drawn, Then its body map is the
-  wall, its roof uniform is the roof and its untint is not 1; without
-  `ru-roof` the roof uniform is the wall; with textures `null` the map is
-  `null` and the untint is 1. A vehicle has no facade uniforms.
+  `ua-wall` and `ua-roof`, When a Ukrainian barracks is drawn, Then its body
+  map is the wall, its roof uniform is the roof and its untint is not 1;
+  without `ua-roof` the roof uniform is the wall; with textures `null` the map
+  is `null` and the untint is 1. A vehicle and a Russian barracks have no
+  facade uniforms, and the Russian barracks' map is `ru-concrete`.
 * AC-16-04: Given the HQ kinds, When `flagOf` runs, Then `ua-hq` gives the
   Ukrainian stripes, `ru-hq` the Russian ones, and a barracks gives `null`;
   `flagSample` of the Ukrainian flag is blue at the top and yellow at the

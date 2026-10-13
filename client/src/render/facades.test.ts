@@ -46,18 +46,15 @@ function entity(id: number, type: string): EntityState {
 
 describe("building facades", () => {
   it("AC-16-01: facade textures by type", () => {
-    for (const id of ["ru-hq", "ru-barracks"]) {
-      expect(facadeTextureIds(id, "building")).toEqual({
-        wall: "ru-wall",
-        roof: "ru-roof",
-      });
-    }
-    for (const id of ["ua-hq", "ua-power-plant"]) {
+    for (const id of ["ua-hq", "ua-barracks", "ua-power-plant"]) {
       expect(facadeTextureIds(id, "building")).toEqual({
         wall: "ua-wall",
         roof: "ua-roof",
       });
     }
+    // Russian buildings keep ru-concrete (owner decision 2026-10-14).
+    expect(facadeTextureIds("ru-hq", "building")).toBeNull();
+    expect(facadeTextureIds("ru-barracks", "building")).toBeNull();
     expect(facadeTextureIds("ua-bradley", "unit")).toBeNull();
     expect(facadeTextureIds("ru-rifleman", "unit")).toBeNull();
     expect(facadeTextureIds("supply-depot", "depot")).toBeNull();
@@ -74,7 +71,11 @@ describe("building facades", () => {
   it("AC-16-03: building body slots wear wall and roof", () => {
     const renderer = createEntityRenderer(8, registry());
     renderer.update(
-      [entity(0, "ru-barracks"), entity(1, "ru-t-72b3")],
+      [
+        entity(0, "ua-barracks"),
+        entity(1, "ru-t-72b3"),
+        entity(2, "ru-barracks"),
+      ],
       new Set(),
     );
     const materialOf = (typeId: string) => {
@@ -86,15 +87,23 @@ describe("building facades", () => {
     };
     const wall = new Texture();
     const roof = new Texture();
-    const barracks = materialOf("ru-barracks");
+    const concrete = new Texture();
+    const barracks = materialOf("ua-barracks");
     const untint = () => barracks.userData.facadeUntint.value as Vector3;
 
-    renderer.setGeneratedTextures({ "ru-wall": wall, "ru-roof": roof });
+    renderer.setGeneratedTextures({
+      "ua-wall": wall,
+      "ua-roof": roof,
+      "ru-concrete": concrete,
+    });
     expect(barracks.map).toBe(wall);
     expect(barracks.userData.roofMap.value).toBe(roof);
     expect(untint().x).not.toBeCloseTo(1, 3);
+    const russian = materialOf("ru-barracks");
+    expect(russian.userData.roofMap).toBeUndefined();
+    expect(russian.map).toBe(concrete);
 
-    renderer.setGeneratedTextures({ "ru-wall": wall });
+    renderer.setGeneratedTextures({ "ua-wall": wall });
     expect(barracks.userData.roofMap.value).toBe(wall);
 
     renderer.setGeneratedTextures(null);

@@ -22,9 +22,7 @@ export const GENERATED_TEXTURE_IDS = [
   "ru-concrete",
   "dark-metal",
   "ua-wall",
-  "ru-wall",
   "ua-roof",
-  "ru-roof",
 ] as const;
 export type GeneratedTextureId = (typeof GENERATED_TEXTURE_IDS)[number];
 export type GeneratedTextures = Partial<Record<GeneratedTextureId, Texture>>;
