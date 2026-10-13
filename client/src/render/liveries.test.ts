@@ -166,10 +166,10 @@ describe("vehicle liveries", () => {
     }
     expect(new Set(tops.get(1))).toEqual(new Set([1]));
     expect(new Set(tops.get(2))).toEqual(new Set([0]));
-    // The glyph is centred on the big top: its corner is at 0.5 +- 0.5 / 0.8.
+    // The glyph is centred on the big top: its corner is at 0.5 +- 0.5 / 0.9.
     for (let i = 0; i < position.count; i++) {
       if (normal.getY(i) === 1 && position.getY(i) === 1) {
-        expect(Math.abs(attribute.getX(i) - 0.5)).toBeCloseTo(0.5 / 0.8, 5);
+        expect(Math.abs(attribute.getX(i) - 0.5)).toBeCloseTo(0.5 / 0.9, 5);
       }
     }
   });
@@ -199,7 +199,7 @@ describe("vehicle liveries", () => {
       if (normal.getY(i) !== 1 || position.getY(i) !== 1) continue;
       // Free strip z in [0, 2]: 2 units deep, glyph 1.6 units, centre at z = 1.
       expect(attribute.getY(i)).toBeCloseTo(
-        0.5 + (position.getZ(i) - 1) / 1.6,
+        0.5 + (position.getZ(i) - 1) / 1.8,
         5,
       );
     }

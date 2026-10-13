@@ -31,7 +31,7 @@ export function liveryOf(typeId: string, category: string, armor: number): Liver
 /** The pattern at (u, v), both in 0..1, v up: colour 0xRRGGBB and alpha 0..1. */
 export function liverySample(livery: Livery, u: number, v: number): { color: number; alpha: number };
 
-/** 128 x 128 clamp-to-edge texture of `liverySample`. */
+/** 256 x 256 clamp-to-edge texture of `liverySample`. */
 export function createLiveryTexture(livery: Livery): DataTexture;
 
 /** Adds the `livery` attribute (u, v, mask) to an opaque model geometry. */
@@ -61,7 +61,7 @@ from the hull's pivot) are cut out and the glyph goes in the largest free strip
 around them. The glyph goes where it fits largest (short extent of the free
 area), per face kind. `ua`: `v` is the normalised position across the body box (height on sides and
 ends, length on top) and `u` is irrelevant. `ru`: the glyph is square, of size
-`0.8 * min(extentU, extentV)` centred on the face, so `(u, v)` leave 0..1 outside
+`0.9 * min(extentU, extentV)` centred on the face, so `(u, v)` leave 0..1 outside
 the glyph box and the clamped transparent border hides it.
 
 ## 4. Shading

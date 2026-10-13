@@ -24,15 +24,17 @@ export const RU_WHITE = 0xffffff;
 export const LIVERY_ATTRIBUTE = "livery";
 
 const INFANTRY_ARMOR = 0;
-const TEXTURE_SIZE = 128;
-const GLYPH_SIZE = 0.8;
-const BAR_MIN = 0.78;
-const BAR_MAX = 0.92;
-const BAR_LOW_MIN = 0.08;
-const BAR_LOW_MAX = 0.22;
+const TEXTURE_SIZE = 256;
+const GLYPH_SIZE = 0.9;
+/** The glyph may be this much wider than tall, to offset the isometric squash. */
+const GLYPH_ASPECT = 1.5;
+const BAR_MIN = 0.74;
+const BAR_MAX = 0.94;
+const BAR_LOW_MIN = 0.06;
+const BAR_LOW_MAX = 0.26;
 const GLYPH_LEFT = 0.1;
 const GLYPH_RIGHT = 0.9;
-const STROKE = 0.07;
+const STROKE = 0.1;
 
 const FACTION_LIVERY: Readonly<Record<string, Livery>> = {
   "ua-": LIVERIES.ua,
@@ -52,9 +54,9 @@ export function liveryOf(
 function distanceToDiagonal(u: number, v: number): number {
   // Segment from the top-right to the bottom-left of the glyph.
   const ax = GLYPH_RIGHT;
-  const ay = BAR_MIN + 0.07;
+  const ay = BAR_MIN + 0.1;
   const bx = GLYPH_LEFT;
-  const by = BAR_LOW_MAX - 0.07;
+  const by = BAR_LOW_MAX - 0.1;
   const dx = bx - ax;
   const dy = by - ay;
   const t = Math.max(
@@ -84,7 +86,7 @@ export function liverySample(
   return { color: RU_WHITE, alpha: !border && isZ(u, v) ? 1 : 0 };
 }
 
-/** 128 x 128 clamp-to-edge texture of `liverySample`. */
+/** 256 x 256 clamp-to-edge texture of `liverySample`. */
 export function createLiveryTexture(livery: Livery): DataTexture {
   const data = new Uint8Array(TEXTURE_SIZE * TEXTURE_SIZE * 4);
   for (let y = 0; y < TEXTURE_SIZE; y++) {
@@ -413,7 +415,8 @@ function fillGlyph(
   for (const { surface, rect, uAxis, vAxis } of best.values()) {
     const extentU = Math.max(rect.uMax - rect.uMin, 1e-6);
     const extentV = Math.max(rect.vMax - rect.vMin, 1e-6);
-    const size = GLYPH_SIZE * Math.min(extentU, extentV);
+    const sizeV = GLYPH_SIZE * Math.min(extentV, extentU);
+    const sizeU = Math.min(GLYPH_SIZE * extentU, GLYPH_ASPECT * sizeV);
     for (const t of surface.triangles) {
       for (let k = 0; k < 3; k++) {
         const i = t * 3 + k;
@@ -421,8 +424,8 @@ function fillGlyph(
         let u = (at(coords, uAxis) - rect.uMin) / extentU;
         const v = (at(coords, vAxis) - rect.vMin) / extentV;
         if (surface.axis === 0 && surface.sign < 0) u = 1 - u;
-        data[i * 3] = 0.5 + ((u - 0.5) * extentU) / size;
-        data[i * 3 + 1] = 0.5 + ((v - 0.5) * extentV) / size;
+        data[i * 3] = 0.5 + ((u - 0.5) * extentU) / sizeU;
+        data[i * 3 + 1] = 0.5 + ((v - 0.5) * extentV) / sizeV;
         data[i * 3 + 2] = 1;
       }
     }
