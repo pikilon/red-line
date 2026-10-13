@@ -9,7 +9,7 @@
                                 write attempt-N.png, a 2x2 tile preview, a context preview
                                 and metrics (JSON on stdout)
   accept ID --attempt N         copy the pick to final/ID.png (+ 256 and 512)
-  apply ID                      copy final/ID-512.png into $RED_LINE_APPLY_DIR (client/public/textures of a checkout)
+  apply ID                      write final/ID-512.png as WebP into $RED_LINE_APPLY_DIR (client/public/textures of a checkout)
   sheet                         build review.html with every attempt and verdict
 
 Output root: $RED_LINE_TEXTURES_DIR (default /Volumes/Externo Mac SSD/red-line-textures).
@@ -229,10 +229,13 @@ def cmd_apply(a):
         # so the model keeps its colour instead of getting darker (colour x colour).
         arr = np.asarray(Image.open(src).convert("RGB"), dtype=np.float32)
         detail = np.clip(arr / np.maximum(arr.reshape(-1, 3).mean(0), 1.0) * 0.9 * 255, 0, 255)
-        Image.fromarray(detail.astype(np.uint8)).save(os.path.join(dest, f"{a.id}.png"))
+        image = Image.fromarray(detail.astype(np.uint8))
     else:
-        shutil.copy(src, os.path.join(dest, f"{a.id}.png"))
-    print("applied", a.id, "->", os.path.join(dest, f"{a.id}.png"))
+        image = Image.open(src).convert("RGB")
+    # WebP is ~7x lighter than PNG for these textures (owner decision 2026-10-13).
+    target = os.path.join(dest, f"{a.id}.webp")
+    image.save(target, "WEBP", quality=90, method=6)
+    print("applied", a.id, "->", target)
 
 
 def cmd_sheet(_):
