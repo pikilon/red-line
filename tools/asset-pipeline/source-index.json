@@ -1,0 +1,176 @@
+{
+  "library": "~/Pictures/c&c assets (outside the repo)",
+  "usable": [
+    "04_CC0_Public_Domain (CC0-1.0)",
+    "05_0AD_CC_BY_SA (CC-BY-SA-3.0, attribution required)"
+  ],
+  "never": [
+    "01_EA_GPL_Source_Releases",
+    "02_OpenRA",
+    "03_Freeware_Original_Game_CDs"
+  ],
+  "terrain_textures": [
+    {
+      "kind": "grass",
+      "path": "04_CC0_Public_Domain/polyhaven/textures/grass_ground/grass_ground_diff_2k.jpg",
+      "exists": true,
+      "license": "CC0-1.0",
+      "attribution": false
+    },
+    {
+      "kind": "grass",
+      "path": "04_CC0_Public_Domain/polyhaven/textures/sparse_grass/sparse_grass_diff_2k.jpg",
+      "exists": true,
+      "license": "CC0-1.0",
+      "attribution": false
+    },
+    {
+      "kind": "grass",
+      "path": "04_CC0_Public_Domain/polyhaven/textures/leafy_grass/leafy_grass_diff_2k.jpg",
+      "exists": true,
+      "license": "CC0-1.0",
+      "attribution": false
+    },
+    {
+      "kind": "grass",
+      "path": "05_0AD_CC_BY_SA/repo/binaries/data/mods/public/art/textures/terrain/types/temperate/grass_01.png",
+      "exists": true,
+      "license": "CC-BY-SA-3.0",
+      "attribution": "Wildfire Games (0 A.D.)"
+    },
+    {
+      "kind": "grass",
+      "path": "05_0AD_CC_BY_SA/repo/binaries/data/mods/public/art/textures/terrain/types/temperate/grass_02.png",
+      "exists": true,
+      "license": "CC-BY-SA-3.0",
+      "attribution": "Wildfire Games (0 A.D.)"
+    },
+    {
+      "kind": "grass",
+      "path": "05_0AD_CC_BY_SA/repo/binaries/data/mods/public/art/textures/terrain/types/temperate/grass_03.png",
+      "exists": true,
+      "license": "CC-BY-SA-3.0",
+      "attribution": "Wildfire Games (0 A.D.)"
+    },
+    {
+      "kind": "dirt",
+      "path": "04_CC0_Public_Domain/polyhaven/textures/dry_ground_01/dry_ground_01_diff_2k.jpg",
+      "exists": true,
+      "license": "CC0-1.0",
+      "attribution": false
+    },
+    {
+      "kind": "dirt",
+      "path": "04_CC0_Public_Domain/polyhaven/textures/dirt_aerial_02/dirt_aerial_02_diff_2k.jpg",
+      "exists": true,
+      "license": "CC0-1.0",
+      "attribution": false
+    },
+    {
+      "kind": "dirt",
+      "path": "04_CC0_Public_Domain/polyhaven/textures/red_dirt_mud_01/red_dirt_mud_01_diff_2k.jpg",
+      "exists": true,
+      "license": "CC0-1.0",
+      "attribution": false
+    },
+    {
+      "kind": "dirt",
+      "path": "04_CC0_Public_Domain/polyhaven/textures/brown_mud_03/brown_mud_03_diff_2k.jpg",
+      "exists": true,
+      "license": "CC0-1.0",
+      "attribution": false
+    },
+    {
+      "kind": "dirt",
+      "path": "05_0AD_CC_BY_SA/repo/binaries/data/mods/public/art/textures/terrain/types/temperate/mud_01.png",
+      "exists": true,
+      "license": "CC-BY-SA-3.0",
+      "attribution": "Wildfire Games (0 A.D.)"
+    },
+    {
+      "kind": "rock",
+      "path": "04_CC0_Public_Domain/polyhaven/textures/gray_rocks/gray_rocks_diff_2k.jpg",
+      "exists": true,
+      "license": "CC0-1.0",
+      "attribution": false
+    },
+    {
+      "kind": "rock",
+      "path": "04_CC0_Public_Domain/polyhaven/textures/rock_ground/rock_ground_diff_2k.jpg",
+      "exists": true,
+      "license": "CC0-1.0",
+      "attribution": false
+    },
+    {
+      "kind": "rock",
+      "path": "04_CC0_Public_Domain/polyhaven/textures/rocks_ground_01/rocks_ground_01_diff_2k.jpg",
+      "exists": true,
+      "license": "CC0-1.0",
+      "attribution": false
+    },
+    {
+      "kind": "rock",
+      "path": "04_CC0_Public_Domain/polyhaven/textures/rock_face/rock_face_diff_2k.jpg",
+      "exists": true,
+      "license": "CC0-1.0",
+      "attribution": false
+    },
+    {
+      "kind": "rock",
+      "path": "05_0AD_CC_BY_SA/repo/binaries/data/mods/public/art/textures/terrain/types/temperate/cliff_01.png",
+      "exists": true,
+      "license": "CC-BY-SA-3.0",
+      "attribution": "Wildfire Games (0 A.D.)"
+    },
+    {
+      "kind": "forest",
+      "path": "04_CC0_Public_Domain/polyhaven/textures/forest_floor/forest_floor_diff_2k.jpg",
+      "exists": true,
+      "license": "CC0-1.0",
+      "attribution": false
+    },
+    {
+      "kind": "forest",
+      "path": "04_CC0_Public_Domain/polyhaven/textures/forest_ground_05/forest_ground_05_diff_2k.jpg",
+      "exists": true,
+      "license": "CC0-1.0",
+      "attribution": false
+    },
+    {
+      "kind": "forest",
+      "path": "04_CC0_Public_Domain/polyhaven/textures/leaves_forest_ground/leaves_forest_ground_diff_2k.jpg",
+      "exists": true,
+      "license": "CC0-1.0",
+      "attribution": false
+    },
+    {
+      "kind": "forest",
+      "path": "05_0AD_CC_BY_SA/repo/binaries/data/mods/public/art/textures/terrain/types/temperate/forestfloor_003.png",
+      "exists": true,
+      "license": "CC-BY-SA-3.0",
+      "attribution": "Wildfire Games (0 A.D.)"
+    },
+    {
+      "kind": "shore",
+      "path": "04_CC0_Public_Domain/polyhaven/textures/coast_sand_01/coast_sand_01_diff_2k.jpg",
+      "exists": true,
+      "license": "CC0-1.0",
+      "attribution": false
+    },
+    {
+      "kind": "shore",
+      "path": "04_CC0_Public_Domain/polyhaven/textures/aerial_beach_02/aerial_beach_02_diff_2k.jpg",
+      "exists": true,
+      "license": "CC0-1.0",
+      "attribution": false
+    }
+  ],
+  "kenney_kits_glb": [
+    "city-kit-commercial",
+    "hexagon-kit",
+    "nature-kit",
+    "retro-urban-kit",
+    "survival-kit",
+    "tower-defense-kit"
+  ]
+}

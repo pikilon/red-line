@@ -1,0 +1,49 @@
+# Terrain kinds and their context/adjacency rules for the asset-generation loop.
+# Read by the loop and the deterministic checks; the client renderer does not
+# consume this yet. Palettes for grass/dirt/rock mirror
+# client/src/render/terrainTexture.ts PALETTES.
+version: 1
+
+kinds:
+  grass:
+    role: base
+    seamless: true
+    palette: { base: "#3f6b2a", dark: "#2c5220", light: "#5c8a3a" }
+    neighbors:
+      - { kind: dirt, blend: alpha }     # dirt overlay fades over grass
+      - { kind: rock, blend: hard }      # raised rock boxes sit on top
+      - { kind: water, blend: shore }    # needs the shore transition
+      - { kind: forest, blend: hard }    # forest replaces grass on blocked cells
+  dirt:
+    role: overlay
+    seamless: true
+    palette: { base: "#7a5f3e", dark: "#5e4630", light: "#96784f" }
+    neighbors:
+      - { kind: grass, blend: alpha }
+  rock:
+    role: blocker
+    seamless: true
+    palette: { base: "#7d756b", dark: "#5a534b", light: "#a39a8e" }
+    neighbors:
+      - { kind: grass, blend: hard }
+      - { kind: dirt, blend: hard }
+  water:
+    role: blocker
+    seamless: true
+    palette: { base: "#2a5a8a", dark: "#1c3a5e", light: "#4a7ab0" }
+    neighbors:
+      - { kind: grass, blend: shore }
+      - { kind: shore, blend: hard }
+  forest:
+    role: blocker
+    seamless: true
+    palette: { base: "#2c4a1e", dark: "#1e3414", light: "#3a5c28" }
+    neighbors:
+      - { kind: grass, blend: hard }
+  shore:
+    role: transition
+    seamless: true
+    palette: { base: "#8a7a5a", dark: "#6a5c42", light: "#a8926c" }
+    neighbors:
+      - { kind: grass, blend: alpha }
+      - { kind: water, blend: hard }

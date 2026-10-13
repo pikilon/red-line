@@ -3,23 +3,28 @@
 Binding decisions taken by the owner. Change them only with the owner's explicit
 approval, and record the change here with its date.
 
-## D-01 Identity and name (2026-10-08)
+## D-01 Identity and name (2026-10-08; amended 2026-10-13)
 
 * Title: **Modern Conquest: Red Line**. Repository: `red-line`.
-* Never use EA trademarks ("Command & Conquer", "Red Alert", "Generals",
-  "Zero Hour") in names, UI or assets. "Inspired by Red Alert 2 and C&C
-  Generals" is allowed in descriptions.
+* Do not use EA trademarks ("Command & Conquer", "Red Alert", "Generals",
+  "Zero Hour") as this game's own name, in UI text or as asset titles.
+  "Inspired by Red Alert 2 and C&C Generals" is allowed in descriptions, and
+  original assets that evoke their look and feel (a style homage) are welcome.
 * Owner: Francisco G. Sarazá (`pikilon`, pikilon@gmail.com).
 
-## D-02 Licensing (2026-10-09)
+## D-02 Licensing (2026-10-09; amended 2026-10-13)
 
 * Code: **AGPL-3.0-or-later** (`LICENSE`). Copyleft that also covers hosted web
   versions: whoever serves a modified version must publish its source.
 * Assets (models, textures, audio, text): **CC BY-SA 4.0** (`LICENSE-ASSETS`).
 * Attribution is mandatory and preserved through `NOTICE.md`.
 * Original EA source (Red Alert 1, Generals/Zero Hour, GPL-3.0) may be studied
-  and, if needed, reused: GPL-3.0 code is compatible with AGPL-3.0. EA assets,
-  names and sounds are never used.
+  and, if needed, reused: GPL-3.0 code is compatible with AGPL-3.0.
+* Visual direction (D-07, spec 10): generating original assets *in the style
+  of* Red Alert 2 / C&C Generals is an explicit goal — a style homage is fine.
+  What stays off-limits is reproducing EA's own assets, names or sounds
+  verbatim: a screenshot or reference is used to study the style, never traced
+  or copied pixel-for-pixel.
 
 ## D-03 Product (2026-10-08)
 
