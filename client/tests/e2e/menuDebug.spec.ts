@@ -87,8 +87,7 @@ test("AC-08-13: switch side in the skirmish", async ({ page }) => {
   await expect
     .poll(async () => {
       const after = await page.evaluate(
-        () =>
-          (window as DebugWindow).__redline?.cameraTarget() ?? before,
+        () => (window as DebugWindow).__redline?.cameraTarget() ?? before,
       );
       return Math.hypot(after.x - before.x, after.y - before.y);
     })

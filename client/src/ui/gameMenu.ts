@@ -9,6 +9,10 @@ export interface GameMenuView {
   ai: boolean | null;
   /** Generated textures on (spec 12 §3); absent counts as off. */
   generatedTextures?: boolean;
+  /** Map revealed (spec 08 §3.5); absent counts as off. */
+  revealed?: boolean;
+  /** Performance panel shown (spec 08 §3.5); absent counts as off. */
+  fpsPanel?: boolean;
 }
 
 /** Callbacks the game menu buttons invoke (spec 08 §3.1). */
@@ -21,6 +25,12 @@ export interface GameMenuActions {
   toggleAi(): void;
   /** Switches procedural/generated textures (spec 12 §3); no button when absent. */
   toggleTextures?(): void;
+  /** Switches the controlled player, like `F2` (spec 08 §3.5); no button when absent. */
+  switchSide?(): void;
+  /** Reveals or hides the map, like `F3` (spec 08 §3.5); no button when absent. */
+  toggleReveal?(): void;
+  /** Shows or hides the performance panel (spec 08 §3.5); no button when absent. */
+  toggleFpsPanel?(): void;
   /** Reloads the page with the same query string. */
   restart(): void;
 }
@@ -73,6 +83,30 @@ export function createGameMenu(
           toggleTextures.call(actions),
         );
   if (textures !== null) panel.appendChild(textures);
+  const switchSide = actions.switchSide;
+  if (switchSide !== undefined) {
+    panel.appendChild(
+      createButton("game-menu-switch", t("menu.switchSide"), () =>
+        switchSide.call(actions),
+      ),
+    );
+  }
+  const toggleReveal = actions.toggleReveal;
+  const reveal =
+    toggleReveal === undefined
+      ? null
+      : createButton("game-menu-reveal", t("menu.revealOff"), () =>
+          toggleReveal.call(actions),
+        );
+  if (reveal !== null) panel.appendChild(reveal);
+  const toggleFpsPanel = actions.toggleFpsPanel;
+  const fps =
+    toggleFpsPanel === undefined
+      ? null
+      : createButton("game-menu-fps", t("menu.fpsOff"), () =>
+          toggleFpsPanel.call(actions),
+        );
+  if (fps !== null) panel.appendChild(fps);
   panel.appendChild(restart);
 
   /** Last rendered view; an equal render mutates nothing. */
@@ -86,7 +120,9 @@ export function createGameMenu(
         last.open === view.open &&
         last.gore === view.gore &&
         last.ai === view.ai &&
-        last.generatedTextures === view.generatedTextures
+        last.generatedTextures === view.generatedTextures &&
+        last.revealed === view.revealed &&
+        last.fpsPanel === view.fpsPanel
       ) {
         return;
       }
@@ -95,6 +131,8 @@ export function createGameMenu(
         gore: view.gore,
         ai: view.ai,
         generatedTextures: view.generatedTextures,
+        revealed: view.revealed,
+        fpsPanel: view.fpsPanel,
       };
       if (root.hidden !== !view.open) root.hidden = !view.open;
       setText(gore, t(view.gore ? "menu.goreOn" : "menu.goreOff"));
@@ -107,6 +145,15 @@ export function createGameMenu(
               : "menu.texturesProcedural",
           ),
         );
+      }
+      if (reveal !== null) {
+        setText(
+          reveal,
+          t(view.revealed === true ? "menu.revealOn" : "menu.revealOff"),
+        );
+      }
+      if (fps !== null) {
+        setText(fps, t(view.fpsPanel === true ? "menu.fpsOn" : "menu.fpsOff"));
       }
       if (ai.hidden !== (view.ai === null)) ai.hidden = view.ai === null;
       if (view.ai !== null) {
