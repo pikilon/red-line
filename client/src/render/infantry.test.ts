@@ -1,16 +1,20 @@
+import { BoxGeometry, type MeshLambertMaterial, Texture, Vector3 } from "three";
 import { describe, expect, it } from "vitest";
-import { BoxGeometry, type MeshLambertMaterial, Texture } from "three";
+import { RULES, typeIndex } from "../rules";
+import type { EntityState } from "../sim/matchSnapshot";
+import { createEntityRenderer } from "./entities";
 import {
   bodyMapsOf,
   bodyTextureId,
   GENERATED_TEXTURE_IDS,
   type GeneratedTextures,
 } from "./generatedTextures";
-import { createEntityRenderer } from "./entities";
-import type { MaterialName, ModelPart, ModelRegistry, TypeModel } from "./models";
-import type { EntityState } from "../sim/matchSnapshot";
-
-import { RULES, typeIndex } from "../rules";
+import type {
+  MaterialName,
+  ModelPart,
+  ModelRegistry,
+  TypeModel,
+} from "./models";
 
 function entity(id: number, owner: number, typeId: string): EntityState {
   return {
@@ -20,7 +24,6 @@ function entity(id: number, owner: number, typeId: string): EntityState {
     x: 2,
     y: 2,
     hp: 100,
-    maxHp: 100,
     flags: 0,
     progress: 0,
     target: null,
@@ -37,7 +40,7 @@ function mockRegistry(): ModelRegistry {
         ["dark", { material: "dark", geometry: geom, color: 0x2a2a2a }],
       ]),
       turret: new Map(),
-      pivot: geom.parameters ? undefined! : undefined!,
+      pivot: new Vector3(),
       fallback: false,
     }),
   };
@@ -89,10 +92,7 @@ describe("17 — Infantry appearance and camouflage textures", () => {
   it("AC-17-04: entity renderer applies camo texture to infantry body mesh", () => {
     const renderer = createEntityRenderer(8, mockRegistry());
     renderer.update(
-      [
-        entity(1, 0, "ua-rifleman"),
-        entity(2, 1, "ru-rifleman"),
-      ],
+      [entity(1, 0, "ua-rifleman"), entity(2, 1, "ru-rifleman")],
       new Set(),
     );
 
@@ -119,5 +119,38 @@ describe("17 — Infantry appearance and camouflage textures", () => {
     renderer.setGeneratedTextures(null);
     expect(bodyMat("ua-rifleman").map).toBeNull();
     expect(bodyMat("ru-rifleman").map).toBeNull();
+  });
+
+  it("AC-17-05: infantry model types are defined with armor 0 and category unit", () => {
+    const infantryIds = [
+      "ua-rifleman",
+      "ua-stugna-team",
+      "ru-rifleman",
+      "ru-rpg-gunner",
+    ];
+    for (const id of infantryIds) {
+      const idx = typeIndex(id);
+      expect(idx).toBeGreaterThanOrEqual(0);
+      const def = RULES.types[idx];
+      expect(def?.category).toBe("unit");
+      expect(def?.armor).toBe(0);
+    }
+  });
+
+  it("AC-17-06: infantry models contain body, team (armbands) and dark materials", () => {
+    const infantryIds = [
+      "ua-rifleman",
+      "ua-stugna-team",
+      "ru-rifleman",
+      "ru-rpg-gunner",
+    ];
+    const reg = mockRegistry();
+    for (const id of infantryIds) {
+      const model = reg.get(id);
+      expect(model).toBeDefined();
+      expect(model?.parts.has("body")).toBe(true);
+      expect(model?.parts.has("team")).toBe(true);
+      expect(model?.parts.has("dark")).toBe(true);
+    }
   });
 });

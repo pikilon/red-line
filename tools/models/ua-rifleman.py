@@ -10,10 +10,10 @@ lib.reset_scene()
 m = lib.palette("ukraine")
 
 # Render box: 0.30 wide (x), 0.60 high (z), 0.30 long (y); front is -Y.
-# A line abreast, the middle man one step back, fills the small box.
+# Two soldiers abreast in front and one covering behind.
 soldiers = []
-for i, (x, y) in enumerate([(-0.07, 0.055), (0.07, 0.055), (0.0, 0.095)]):
-    soldier = lib.soldier(f"rifleman_{i}", "rifle", m, height=0.5)
+for i, (x, y) in enumerate([(-0.05, 0.035), (0.05, 0.035), (0.0, 0.075)]):
+    soldier = lib.soldier(f"rifleman_{i}", "rifle", m, height=0.48)
     soldier.location.x += x
     soldier.location.y += y
     soldiers.append(soldier)

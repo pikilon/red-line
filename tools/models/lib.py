@@ -185,22 +185,110 @@ def turret(parts, pivot, name="turret"):
     return obj
 
 
-def soldier(name, weapon, mats, height=0.5):
-    """Low-poly standing soldier facing -Y; weapon is rifle or launcher."""
+def modern_soldier(
+    name,
+    weapon,
+    mats,
+    height=0.48,
+    pose="standing",
+    has_pack=True,
+    has_rocket_pack=False,
+):
+    """Modern low-poly combat soldier facing -Y (spec 17 §3).
+
+    Features separate articulated legs, combat boots, tactical plate carrier,
+    MOLLE pouches, assault pack, ballistic helmet with NVG mount and goggles,
+    arms holding weapon in ready stance, and identification tape armbands (`team`).
+    """
     s = height / 0.5
     body, team, dark = mats["body"], mats["team"], mats["dark"]
-    parts = [
-        box(f"{name}_legs", (0.12 * s, 0.08 * s, 0.22 * s), (0, 0, 0.11 * s), body),
-        box(f"{name}_torso", (0.16 * s, 0.1 * s, 0.17 * s), (0, 0, 0.305 * s), body),
-        box(f"{name}_vest", (0.17 * s, 0.11 * s, 0.08 * s), (0, 0, 0.33 * s), team),
-        box(f"{name}_head", (0.08 * s, 0.08 * s, 0.08 * s), (0, 0, 0.44 * s), body),
-        box(f"{name}_helmet", (0.1 * s, 0.1 * s, 0.04 * s), (0, 0, 0.48 * s), dark),
-    ]
-    if weapon == "launcher":
-        parts.append(cylinder(f"{name}_tube", 0.03 * s, 0.32 * s, (0.09 * s, -0.02 * s, 0.4 * s), dark, 6, "Y"))
+    parts = []
+
+    if pose == "kneeling":
+        # Kneeling posture (for ATGM operator)
+        parts.append(box(f"{name}_boot_l", (0.04 * s, 0.08 * s, 0.045 * s), (-0.032 * s, -0.05 * s, 0.025 * s), dark))
+        parts.append(box(f"{name}_thigh_l", (0.045 * s, 0.10 * s, 0.045 * s), (-0.032 * s, 0.01 * s, 0.08 * s), body))
+        parts.append(box(f"{name}_boot_r", (0.04 * s, 0.10 * s, 0.045 * s), (0.032 * s, 0.05 * s, 0.025 * s), dark))
+        parts.append(box(f"{name}_thigh_r", (0.045 * s, 0.09 * s, 0.045 * s), (0.032 * s, -0.02 * s, 0.08 * s), body))
+        z_torso = 0.19 * s
     else:
-        parts.append(box(f"{name}_rifle", (0.03 * s, 0.22 * s, 0.03 * s), (0.07 * s, -0.1 * s, 0.3 * s), dark))
+        # Standing combat posture with articulated legs and boots
+        parts.append(box(f"{name}_boot_l", (0.04 * s, 0.065 * s, 0.055 * s), (-0.032 * s, -0.005 * s, 0.028 * s), dark))
+        parts.append(box(f"{name}_leg_l", (0.042 * s, 0.055 * s, 0.15 * s), (-0.032 * s, 0, 0.125 * s), body))
+        parts.append(box(f"{name}_knee_l", (0.038 * s, 0.016 * s, 0.03 * s), (-0.032 * s, -0.028 * s, 0.125 * s), dark))
+
+        parts.append(box(f"{name}_boot_r", (0.04 * s, 0.065 * s, 0.055 * s), (0.032 * s, -0.005 * s, 0.028 * s), dark))
+        parts.append(box(f"{name}_leg_r", (0.042 * s, 0.055 * s, 0.15 * s), (0.032 * s, 0, 0.125 * s), body))
+        parts.append(box(f"{name}_knee_r", (0.038 * s, 0.016 * s, 0.03 * s), (0.032 * s, -0.028 * s, 0.125 * s), dark))
+        z_torso = 0.28 * s
+
+    # Pelvis and tactical belt
+    parts.append(box(f"{name}_belt", (0.11 * s, 0.065 * s, 0.035 * s), (0, 0, z_torso - 0.045 * s), dark))
+    # Torso (combat shirt / uniform in body/camo)
+    parts.append(box(f"{name}_torso", (0.12 * s, 0.075 * s, 0.12 * s), (0, 0, z_torso + 0.02 * s), body))
+    # Tactical plate carrier / vest (body/camo)
+    parts.append(box(f"{name}_vest", (0.13 * s, 0.085 * s, 0.10 * s), (0, -0.003 * s, z_torso + 0.03 * s), body))
+    # Ammo pouches on front of plate carrier
+    parts.append(box(f"{name}_pouches", (0.09 * s, 0.025 * s, 0.048 * s), (0, -0.048 * s, z_torso + 0.01 * s), dark))
+
+    # Backpack
+    if has_rocket_pack:
+        parts.append(box(f"{name}_pack", (0.095 * s, 0.055 * s, 0.11 * s), (0, 0.058 * s, z_torso + 0.03 * s), dark))
+        for rx, ro in enumerate((-0.025 * s, 0.025 * s)):
+            parts.append(cylinder(f"{name}_rpack_{rx}", 0.014 * s, 0.10 * s, (ro, 0.065 * s, z_torso + 0.12 * s), body, 6, "Z"))
+            parts.append(cylinder(f"{name}_rpack_tip_{rx}", 0.018 * s, 0.035 * s, (ro, 0.065 * s, z_torso + 0.17 * s), dark, 6, "Z"))
+    elif has_pack:
+        parts.append(box(f"{name}_pack", (0.085 * s, 0.042 * s, 0.10 * s), (0, 0.052 * s, z_torso + 0.03 * s), dark))
+
+    # Arms and identification armbands (team material!)
+    z_arm = z_torso + 0.05 * s
+    parts.append(box(f"{name}_arm_l", (0.03 * s, 0.04 * s, 0.085 * s), (-0.075 * s, -0.008 * s, z_arm), body))
+    parts.append(box(f"{name}_band_l", (0.034 * s, 0.044 * s, 0.028 * s), (-0.075 * s, -0.008 * s, z_arm + 0.01 * s), team))
+    parts.append(box(f"{name}_arm_r", (0.03 * s, 0.04 * s, 0.085 * s), (0.075 * s, -0.008 * s, z_arm), body))
+    parts.append(box(f"{name}_band_r", (0.034 * s, 0.044 * s, 0.028 * s), (0.075 * s, -0.008 * s, z_arm + 0.01 * s), team))
+
+    # Head & Helmet
+    z_head = z_torso + 0.125 * s
+    parts.append(box(f"{name}_head", (0.065 * s, 0.065 * s, 0.065 * s), (0, -0.005 * s, z_head), body))
+    parts.append(box(f"{name}_helmet", (0.086 * s, 0.086 * s, 0.04 * s), (0, -0.005 * s, z_head + 0.038 * s), body))
+    parts.append(box(f"{name}_goggles", (0.066 * s, 0.016 * s, 0.016 * s), (0, -0.038 * s, z_head + 0.006 * s), dark))
+    parts.append(box(f"{name}_nvg", (0.02 * s, 0.012 * s, 0.02 * s), (0, -0.044 * s, z_head + 0.036 * s), dark))
+
+    # Forearms and Weapon
+    if weapon == "rifle":
+        parts.append(box(f"{name}_forearm_l", (0.028 * s, 0.065 * s, 0.028 * s), (-0.038 * s, -0.045 * s, z_torso - 0.01 * s), body))
+        parts.append(box(f"{name}_forearm_r", (0.028 * s, 0.055 * s, 0.028 * s), (0.038 * s, -0.035 * s, z_torso - 0.01 * s), body))
+        parts.append(box(f"{name}_glove_l", (0.024 * s, 0.026 * s, 0.024 * s), (-0.016 * s, -0.075 * s, z_torso - 0.01 * s), dark))
+        parts.append(box(f"{name}_glove_r", (0.024 * s, 0.026 * s, 0.024 * s), (0.016 * s, -0.06 * s, z_torso - 0.01 * s), dark))
+
+        # Modern assault rifle
+        parts.append(box(f"{name}_rifle_body", (0.02 * s, 0.12 * s, 0.03 * s), (0.006 * s, -0.065 * s, z_torso - 0.005 * s), dark))
+        parts.append(cylinder(f"{name}_barrel", 0.006 * s, 0.07 * s, (0.006 * s, -0.145 * s, z_torso), dark, 6, "Y"))
+        parts.append(box(f"{name}_mag", (0.014 * s, 0.028 * s, 0.045 * s), (0.006 * s, -0.07 * s, z_torso - 0.038 * s), dark))
+        parts.append(box(f"{name}_stock", (0.014 * s, 0.045 * s, 0.026 * s), (0.006 * s, 0.005 * s, z_torso), dark))
+    elif weapon == "launcher":
+        # Shoulder RPG-7 launcher
+        parts.append(box(f"{name}_forearm_l", (0.028 * s, 0.065 * s, 0.028 * s), (-0.018 * s, -0.045 * s, z_torso + 0.03 * s), body))
+        parts.append(box(f"{name}_forearm_r", (0.028 * s, 0.055 * s, 0.028 * s), (0.045 * s, -0.035 * s, z_torso + 0.04 * s), body))
+        parts.append(box(f"{name}_glove_l", (0.024 * s, 0.026 * s, 0.024 * s), (0.035 * s, -0.065 * s, z_torso + 0.05 * s), dark))
+
+        # RPG-7 launcher tube with conical PG-7 warhead
+        parts.append(cylinder(f"{name}_rpg_tube", 0.018 * s, 0.22 * s, (0.055 * s, -0.01 * s, z_torso + 0.085 * s), dark, 8, "Y"))
+        parts.append(cylinder(f"{name}_rpg_grip", 0.022 * s, 0.07 * s, (0.055 * s, -0.01 * s, z_torso + 0.085 * s), body, 8, "Y"))
+        parts.append(box(f"{name}_rpg_sight", (0.015 * s, 0.025 * s, 0.025 * s), (0.035 * s, -0.035 * s, z_torso + 0.105 * s), dark))
+        parts.append(cylinder(f"{name}_rpg_warhead", 0.032 * s, 0.06 * s, (0.055 * s, -0.15 * s, z_torso + 0.085 * s), body, 8, "Y"))
+        parts.append(cylinder(f"{name}_rpg_fuse", 0.008 * s, 0.025 * s, (0.055 * s, -0.19 * s, z_torso + 0.085 * s), dark, 6, "Y"))
+    elif weapon == "remote":
+        # Operator hands resting on console
+        parts.append(box(f"{name}_forearm_l", (0.028 * s, 0.07 * s, 0.028 * s), (-0.035 * s, -0.06 * s, z_torso), body))
+        parts.append(box(f"{name}_forearm_r", (0.028 * s, 0.07 * s, 0.028 * s), (0.035 * s, -0.06 * s, z_torso), body))
+        parts.append(box(f"{name}_glove_l", (0.024 * s, 0.026 * s, 0.024 * s), (-0.025 * s, -0.09 * s, z_torso), dark))
+        parts.append(box(f"{name}_glove_r", (0.024 * s, 0.026 * s, 0.024 * s), (0.025 * s, -0.09 * s, z_torso), dark))
+
     return join(parts, name)
+
+
+soldier = modern_soldier
 
 
 def join(objects, name):

@@ -28,6 +28,8 @@ export const GENERATED_TEXTURE_IDS = [
   "ru-skin-bump",
   "ua-wall",
   "ua-roof",
+  "ua-camo",
+  "ru-camo",
 ] as const;
 export type GeneratedTextureId = (typeof GENERATED_TEXTURE_IDS)[number];
 export type GeneratedTextures = Partial<Record<GeneratedTextureId, Texture>>;
@@ -103,9 +105,9 @@ export const BUMP_SCALE = 0.4;
 
 const INFANTRY_ARMOR = 0;
 
-/** Texture id of a type's `body` material: `<faction>-skin` for vehicles,
- *  `<faction>-paint` for infantry, `<faction>-concrete` for buildings and
- *  depots (spec 12 §6, spec 15 §3). */
+/** Texture id of a type's `body` material: `<faction>-camo` for infantry,
+ *  `<faction>-skin` for vehicles, `<faction>-concrete` for buildings and
+ *  depots (spec 12 §6, spec 15 §3, spec 17 §2). */
 export function bodyTextureId(
   typeId: string,
   category: string,
@@ -114,7 +116,8 @@ export function bodyTextureId(
   // Type ids start with the faction prefix; neutral types use `ua`.
   const prefix = typeId.startsWith("ru-") ? "ru" : "ua";
   if (category !== "unit") return `${prefix}-concrete` as GeneratedTextureId;
-  return `${prefix}-${armor === INFANTRY_ARMOR ? "paint" : "skin"}` as GeneratedTextureId;
+  if (armor === INFANTRY_ARMOR) return `${prefix}-camo` as GeneratedTextureId;
+  return `${prefix}-skin` as GeneratedTextureId;
 }
 
 /** Texture id of the bump map that goes with a `<faction>-skin`, else null. */
@@ -124,8 +127,8 @@ export function bumpTextureId(
   return id.endsWith("-skin") ? (`${id}-bump` as GeneratedTextureId) : null;
 }
 
-/** The colour map and bump map of a type's `body` among `textures`: a vehicle
- *  whose skin is not loaded falls back to `<faction>-paint` with no bump. */
+/** The colour map and bump map of a type's `body` among `textures`: an infantry
+ *  or vehicle whose camo/skin is not loaded falls back to `<faction>-paint`. */
 export function bodyMapsOf(
   textures: GeneratedTextures,
   typeId: string,
@@ -135,7 +138,7 @@ export function bodyMapsOf(
   const id = bodyTextureId(typeId, category, armor);
   const skin = textures[id];
   const bumpId = bumpTextureId(id);
-  if (skin !== undefined || bumpId === null) {
+  if (skin !== undefined) {
     return {
       paint: skin,
       bump: bumpId === null ? undefined : textures[bumpId],
