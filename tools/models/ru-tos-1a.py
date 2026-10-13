@@ -34,8 +34,15 @@ for row, z in enumerate((0.36, 0.44, 0.52)):
         tubes.append(lib.cylinder(f"tube_{row}_{col}", 0.035, 0.08, (x, -0.3, z), m["dark"], 6, "Y"))
 pods = lib.join(tubes, "launcher_tubes")
 cupola = lib.cylinder("cupola", 0.07, 0.06, (-0.2, 0.5, 0.61), m["dark"], 6)
+# Anti-drone cage over the launcher block (field photos).
+cage_parts = []
+for sx in (-1, 1):
+    for sy in (-1, 1):
+        cage_parts.append(lib.box(f"cage_post_{sx}_{sy}", (0.012, 0.012, 0.1), (sx * 0.3, 0.14 + sy * 0.4, 0.64), m["dark"], bevel=0))
+cage_posts = lib.join(cage_parts, "anti_drone_posts")
+cage = lib.box("anti_drone_cage", (0.64, 0.84, 0.01), (0, 0.14, 0.69), m["cage"], bevel=0)
 stripe = lib.box("turret_stripe", (0.63, 0.06, 0.05), (0, -0.24, 0.58), m["team"])
-turret = lib.turret([block, cap, pods, cupola, stripe], pivot)
+turret = lib.turret([block, cap, pods, cupola, cage_posts, cage, stripe], pivot)
 lib.parent(turret, root)
 
 lib.export("ru-tos-1a", root)

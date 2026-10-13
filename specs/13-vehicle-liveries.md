@@ -1,5 +1,7 @@
 # 13 — Vehicle liveries
 
+> Revised 2026-10-13 (owner feedback; later: the Z is painted on the skin and the small tricolour sits on another surface): the liveries are painted patches over the vehicle skin, not full-body paint; the Russian one is the tricolour with the Z over it. §2 and §3 describe the final behaviour; where the earlier text below says full bands or a bare Z, read patch.
+
 Status: accepted (owner request 2026-10-13, issue #256).
 Depends on `12-generated-textures.md` §4 and §6 (box-projected `body` material).
 
@@ -21,9 +23,9 @@ generated-textures toggle.
 export const LIVERIES = { ua: "ua", ru: "ru" } as const;
 export type Livery = (typeof LIVERIES)[keyof typeof LIVERIES];
 
-export const UA_BLUE = 0x0057b7;
-export const UA_YELLOW = 0xffd700;
-export const RU_WHITE = 0xffffff;
+export const UA_BLUE = 0x2f5d8c;
+export const UA_YELLOW = 0xc4a13c;
+export const RU_WHITE = 0xdcd8cb;
 
 /** The livery of a type, or `null` for infantry, buildings and depots. */
 export function liveryOf(typeId: string, category: string, armor: number): Livery | null;
@@ -38,40 +40,62 @@ export function createLiveryTexture(livery: Livery): DataTexture;
 export function addLiveryAttribute(geometry: BufferGeometry, livery: Livery): BufferGeometry;
 ```
 
-* `ua`: alpha 1 everywhere, blue for `v >= 0.5`, yellow below (flag order).
-* `ru`: alpha 1 on the strokes of a Z (top bar, bottom bar and the diagonal from
-  top right to bottom left), 0 elsewhere and on the border pixels.
+* Both liveries are one *patch* (a flag, 3:2 at most) painted by hand: ragged
+  alpha border of about 0.035 (`patchAlpha`), colour bands that wobble, and
+  horizontal brush streaks in the texture. Alpha is 0 outside the patch.
+* `ua`: blue for `v >= 0.5`, yellow below (flag order).
+* `ru`: the Russian tricolour (white, blue, red from the top); a white Z (top
+  bar, bottom bar and diagonal) is painted over it with a dark outline
+  (`Z_OUTLINE`, 0.022 wide) so it reads on the white band.
+* The colours are muted, as on vehicles in the field (owner reference, a dusty
+  Bradley): `UA_BLUE` 0x2f5d8c, `UA_YELLOW` 0xc4a13c, `RU_WHITE` 0xdcd8cb,
+  `RU_BLUE` 0x2b4a7c, `RU_RED` 0x9a3a2e. The texture is weathered: grime darkens
+  the paint and chips wear it to 27 % opacity; `liverySample` itself stays
+  clean (colour and alpha of the design).
 
 ## 3. Mapping
 
-`addLiveryAttribute` works on the vertices with `darkMask = 0` of the geometry
-(its bounding box is the "body box"; `dark` vertices get mask 0). Per vertex the
-dominant axis of the normal chooses the face:
+One patch per face kind (side +x, side -x, roof) on the surface where it fits
+largest, never on the ends or the bottom; `dark` vertices get mask 0. A surface
+is a connected set of coplanar flat triangles (normal within 0.95 of an axis).
+The patch is centred on that surface (side: `u` along z, mirrored on -x so it
+reads from outside, `v` up; roof: `u` along x, `v` along z), is `PATCH_SIZE` of its
+short extent (`ua` 0.6, `ru` 0.85) and at most 1.5 times wider than tall, so it
+never covers a whole side. On a roof the boxes standing on it (the `dark` cab,
+the turret reach from the hull's pivot) are cut out and the patch goes in the
+largest free strip around them. Vertices of other surfaces get mask 0.
 
-* side (±x): `u` along z (mirrored on −x so the glyph reads from outside), `v` up;
-* top (+y): `u` along x, `v` along z (front is +z);
-* end (±z): `u` along x, `v` up (`ua` only; mask 0 for `ru`);
-* bottom (−y): mask 0.
+### Russian placement (owner marks, 2026-10-13)
 
-`ru` places one glyph per face kind, on the largest connected coplanar flat
-surface (normal within 0.95 of the axis, same plane, touching), centred on that
-surface's own box instead of the whole body box, so the Z is never split
-across levels. On a roof, boxes standing on it (the `dark` cab, the turret reach
-from the hull's pivot) are cut out and the glyph goes in the largest free strip
-around them. The glyph goes where it fits largest (short extent of the free
-area), per face kind. `ua`: `v` is the normalised position across the body box (height on sides and
-ends, length on top) and `u` is irrelevant. `ru`: the glyph is square, of size
-`0.9 * min(extentU, extentV)` centred on the face, so `(u, v)` leave 0..1 outside
-the glyph box and the clamped transparent border hides it.
+* A hull with a turret (T-72B3, BMP-2, BRDM-2): the Z on the hood (frontmost
+  roof), the tricolour on the turret top and the sides.
+* TOS-1A (`Z_ON_TURRET`): the Z on the launcher top, the tricolour on the sides.
+* A hull without a turret (dozer, supply truck): the tricolour on the cab roof
+  (frontmost roof) and the Z on the biggest other roof.
+* The tricolour is brighter (`RU_BLUE` 0x2f5fc0, `RU_RED` 0xcc3a2c).
+* `ua` keeps its flag on the hood, the cab roof and, for the HIMARS
+  (`FLAG_ON_TURRET`), the launcher top.
 
 ## 4. Shading
 
 `createBodyMaterial` gains a `liveryMap` uniform (`applyLivery(material, texture |
 null)`). After the vertex colour is applied, the fragment mixes the livery colour
-over the diffuse colour with weight `alpha * mask * (1 - darkMask) * 0.9`.
+over the diffuse colour with weight `alpha * inside * mask * (1 - darkMask) * 0.95`, where `inside` is 1 only for `(u, v)` within 0..1 (the coarse mips of the texture are not empty), and multiplies the colour by the skin detail (0.75..1.05). The painted patch is flat: the bump of the skin (spec 15) fades out under it.
 Buildings and any slot without the attribute are unchanged. `EntityRenderer` adds
 the attribute and sets the texture when it creates the `body` slot of a type
 whose `liveryOf` is not `null`.
+
+## 5. Team stripe and the painted Z
+
+Vehicles do not draw the `team` stripe (the red and blue bands read as noise
+next to a flag): the faction already tells the sides apart. Infantry and
+buildings keep it. The Z is painted like the real markings: thin brushed strokes
+of off-white paint with a firm, wobbling edge, dry-brush streaks, thin patches
+and a few drips below the bottom bar; it has no background. Reference: Russian field photos (a thin chalky Z on the
+hull top, broken by the relief under it). Per-vertex mask of the `livery`
+attribute: 1 flag patch, 2 the small flag (right half of the atlas), 3 the Z;
+the bump fades out under masks 1 and 2 (flat flags) but not under 3, so the Z
+follows the relief of the skin.
 
 ## Acceptance criteria
 
@@ -79,14 +103,16 @@ whose `liveryOf` is not `null`.
   `ua-leopard-2a4`, `ua-himars`, `ua-dozer`, `ua-supply-truck`, `ua-kozak-scout`
   give `ua`; `ru-t-72b3`, `ru-bmp-2`, `ru-brdm-scout`, `ru-tos-1a`, `ru-dozer`,
   `ru-supply-truck` give `ru`; infantry, buildings and depots give `null`.
-* AC-13-02: Given `ua`, When sampled, Then the upper half is blue, the lower half
-  yellow and alpha is 1.
-* AC-13-03: Given `ru`, When sampled, Then the centre of the top bar, of the
-  bottom bar and of the diagonal are white with alpha 1, and the points left of the diagonal (0.2, 0.65), right of it (0.8, 0.35), the sides (0.2, 0.5), (0.8, 0.5)
-  and the border are transparent.
+* AC-13-02: Given `ua`, When sampled inside the patch, Then the upper half is
+  blue, the lower half yellow and alpha is 1; the border is ragged (alpha 0 at
+  the edge and outside).
+* AC-13-03: Given `ru`, When sampled, Then the Z (centre, top bar, bottom bar)
+  is white with alpha 1, its outline right above the top bar is dark, and away
+  from the Z the tricolour shows (white at the top, blue in the middle, red at
+  the bottom); alpha is 0 at the border.
 * AC-13-04: Given a box geometry with `darkMask`, When `addLiveryAttribute` runs
-  for `ru`, Then top and side vertices have mask 1, end and bottom vertices 0,
-  and `dark` vertices 0; for `ua` ends also have mask 1.
+  for either livery, Then top and side vertices have mask 1, end and bottom
+  vertices 0, and `dark` vertices 0.
 * AC-13-05: Given a renderer with a vehicle model, When the `body` slot is
   created, Then Ukrainian and Russian vehicles carry the `livery` attribute and a
   `liveryMap`, an infantry type and a building do not.
@@ -97,6 +123,9 @@ whose `liveryOf` is not `null`.
 * AC-13-08: Given a roof with a `dark` box (cab) or a turret standing on part of
   it, When `addLiveryAttribute` runs for `ru`, Then the glyph is centred on the
   largest free strip around that box, not on the whole roof.
+* AC-13-09: Given vehicle, infantry and building types with a `team` part, Then
+  vehicles get no `team` slot and the others do.
+* AC-13-10: Given Russian hulls, Then the decals follow the placement above.
 * AC-13-06: Given a running skirmish, When a Ukrainian and a Russian vehicle are
   on screen, Then the blue/yellow and the white Z are visible (screenshot check
   by the agent; the game keeps running without console errors).

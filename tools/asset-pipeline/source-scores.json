@@ -1,24 +1,87 @@
 {
-"grass/grass_ground_diff_2k": {"score": 8, "why": "Muted olive, even, minor dark spots; tiles cleanly"},
-"grass/sparse_grass_diff_2k": {"score": 6, "why": "Streaky blade scratches, busy repeating pattern"},
-"grass/leafy_grass_diff_2k": {"score": 4, "why": "Bright yellow-green speckle, oversaturated"},
-"grass/grass_01": {"score": 5, "why": "Photo-like with brown debris and clumps"},
-"grass/grass_02": {"score": 3, "why": "Lime blotches, uneven lighting, oversaturated"},
-"grass/grass_03": {"score": 6, "why": "Muted sage, soft tonal drift, small sticks"},
-"dirt/dry_ground_01_diff_2k": {"score": 8, "why": "Dry cracked soil, uniform, no large features"},
-"dirt/dirt_aerial_02_diff_2k": {"score": 3, "why": "Tire-like streaks, strong lighting variation"},
-"dirt/red_dirt_mud_01_diff_2k": {"score": 7, "why": "Even gravelly dry soil, minor pebble repetition"},
-"dirt/brown_mud_03_diff_2k": {"score": 4, "why": "Wet mud with footprint-like blobs"},
-"dirt/mud_01": {"score": 6, "why": "Dry clumpy soil, uneven tone"},
-"rock/gray_rocks_diff_2k": {"score": 5, "why": "Large cobbles, moss and rust spots repeat"},
-"rock/rock_ground_diff_2k": {"score": 7, "why": "Even grey gravel, some larger stones"},
-"rock/rocks_ground_01_diff_2k": {"score": 8, "why": "Fine grey gravel, even, reads as ground"},
-"rock/rock_face_diff_2k": {"score": 4, "why": "Vertical rock-face streaks, not top-down"},
-"rock/cliff_01": {"score": 6, "why": "Mottled grey stone, veins, uneven tone"},
-"forest/forest_floor_diff_2k": {"score": 6, "why": "Good litter variety, saturated leaf blobs"},
-"forest/forest_ground_05_diff_2k": {"score": 4, "why": "Nearly featureless, reads as moss"},
-"forest/leaves_forest_ground_diff_2k": {"score": 3, "why": "Pebble-like chunks, reads as gravel"},
-"forest/forestfloor_003": {"score": 7, "why": "Convincing dark litter floor"},
-"shore/coast_sand_01_diff_2k": {"score": 5, "why": "Reads as dry dirt with pebbles"},
-"shore/aerial_beach_02_diff_2k": {"score": 6, "why": "Believable sand, soft gradient and ripples"}
+  "grass/grass_ground_diff_2k": {
+    "score": 8,
+    "why": "Muted olive, even, minor dark spots; tiles cleanly"
+  },
+  "grass/sparse_grass_diff_2k": {
+    "score": 6,
+    "why": "Streaky blade scratches, busy repeating pattern"
+  },
+  "grass/leafy_grass_diff_2k": {
+    "score": 4,
+    "why": "Bright yellow-green speckle, oversaturated"
+  },
+  "grass/grass_01": {
+    "score": 5,
+    "why": "Photo-like with brown debris and clumps"
+  },
+  "grass/grass_02": {
+    "score": 3,
+    "why": "Lime blotches, uneven lighting, oversaturated"
+  },
+  "grass/grass_03": {
+    "score": 6,
+    "why": "Muted sage, soft tonal drift, small sticks"
+  },
+  "dirt/dry_ground_01_diff_2k": {
+    "score": 8,
+    "why": "Dry cracked soil, uniform, no large features"
+  },
+  "dirt/dirt_aerial_02_diff_2k": {
+    "score": 3,
+    "why": "Tire-like streaks, strong lighting variation"
+  },
+  "dirt/red_dirt_mud_01_diff_2k": {
+    "score": 7,
+    "why": "Even gravelly dry soil, minor pebble repetition"
+  },
+  "dirt/brown_mud_03_diff_2k": {
+    "score": 4,
+    "why": "Wet mud with footprint-like blobs"
+  },
+  "dirt/mud_01": { "score": 6, "why": "Dry clumpy soil, uneven tone" },
+  "rock/gray_rocks_diff_2k": {
+    "score": 5,
+    "why": "Large cobbles, moss and rust spots repeat"
+  },
+  "rock/rock_ground_diff_2k": {
+    "score": 7,
+    "why": "Even grey gravel, some larger stones"
+  },
+  "rock/rocks_ground_01_diff_2k": {
+    "score": 8,
+    "why": "Fine grey gravel, even, reads as ground"
+  },
+  "rock/rock_face_diff_2k": {
+    "score": 4,
+    "why": "Vertical rock-face streaks, not top-down"
+  },
+  "rock/cliff_01": {
+    "score": 6,
+    "why": "Mottled grey stone, veins, uneven tone"
+  },
+  "forest/forest_floor_diff_2k": {
+    "score": 6,
+    "why": "Good litter variety, saturated leaf blobs"
+  },
+  "forest/forest_ground_05_diff_2k": {
+    "score": 4,
+    "why": "Nearly featureless, reads as moss"
+  },
+  "forest/leaves_forest_ground_diff_2k": {
+    "score": 3,
+    "why": "Pebble-like chunks, reads as gravel"
+  },
+  "forest/forestfloor_003": {
+    "score": 7,
+    "why": "Convincing dark litter floor"
+  },
+  "shore/coast_sand_01_diff_2k": {
+    "score": 5,
+    "why": "Reads as dry dirt with pebbles"
+  },
+  "shore/aerial_beach_02_diff_2k": {
+    "score": 6,
+    "why": "Believable sand, soft gradient and ripples"
+  }
 }

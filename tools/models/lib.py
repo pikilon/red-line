@@ -49,9 +49,9 @@ def _rgba(hex_color):
 
 
 def material(name, hex_color):
-    """A flat, non-metallic material; `name` must be body, team or dark."""
-    if name not in ("body", "team", "dark"):
-        raise ValueError(f"material name must be body, team or dark, got {name}")
+    """A flat, non-metallic material; `name` must be body, team, dark or cage."""
+    if name not in ("body", "team", "dark", "cage"):
+        raise ValueError(f"material name must be body, team, dark or cage, got {name}")
     mat = bpy.data.materials.get(name) or bpy.data.materials.new(name)
     mat.diffuse_color = _rgba(hex_color)
     tree = getattr(mat, "node_tree", None)
@@ -73,6 +73,7 @@ def palette(faction):
         "body": material("body", FACTION_BODY[faction]),
         "team": material("team", TEAM),
         "dark": material("dark", DARK),
+        "cage": material("cage", DARK),
     }
 
 
