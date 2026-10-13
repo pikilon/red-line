@@ -9,7 +9,7 @@ import { setCameraTarget, zoomAfterWheel } from "../camera";
 import { typeDef } from "../rules";
 import type { EntityState } from "../sim/matchSnapshot";
 import type { SimCommand } from "../sim/protocol";
-import { panDelta } from "./cameraPan";
+import { type PAN_KEYS, panDelta } from "./cameraPan";
 import { boxSelect, clickSelect, selectAllOwnUnits } from "./entitySelection";
 import { resolveRightClick } from "./intent";
 import { canPlace, footprintOrigin } from "./placement";
@@ -65,6 +65,9 @@ export interface SkirmishController {
   clearSelection(): void;
   /** Wheel zoom of the camera, 1 by default (spec 08 §3.4). */
   zoom(): number;
+  /** Holds or releases a pan key by its `PAN_KEYS` code, e.g. from the touch
+   *  D-pad (spec 08 §3.6); the same `panDelta` path as the keyboard. */
+  setPan(code: keyof typeof PAN_KEYS, held: boolean): void;
   /** Applies keyboard panning for one frame. */
   update(dtSeconds: number): void;
   /** Sim tiles -> page CSS px. */
@@ -281,6 +284,10 @@ export function createSkirmishController(
     zoom: () => camera.zoom,
     clearSelection() {
       setSelection([]);
+    },
+    setPan(code, held) {
+      if (held) pressed.add(code);
+      else pressed.delete(code);
     },
     update(dtSeconds) {
       const delta = panDelta(pressed, dtSeconds);
