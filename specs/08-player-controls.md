@@ -227,6 +227,45 @@ They were keyboard-only (`F2`, `F3`) and needed `?debug=1`.
   shown with `?debug=1`.
 * `F2`, `F3` and `window.__redline` stay debug-only.
 
+## 3.6 Touch controls (owner request 2026-10-13, issue #251)
+
+On touch screens panning needed the arrow keys / WASD and the menu needed
+`Esc`. Touch devices get a D-pad and a menu button.
+
+* Shown only on touch devices: `isTouchDevice()` is true when
+  `matchMedia("(pointer: coarse)").matches` or `navigator.maxTouchPoints > 0`.
+  Otherwise the controls are not created (no DOM, nothing on desktop).
+* `client/src/ui/touchControls.ts` exports `type PanDirection = "up" | "down" |
+  "left" | "right"`, `TouchControlsActions { pan(direction: PanDirection, held:
+  boolean): void; toggleMenu(): void }`, `TouchControls { root: HTMLElement;
+  render(view: { menuOpen: boolean }): void }` and
+  `createTouchControls(parent: HTMLElement, actions: TouchControlsActions)`.
+* DOM, created once (AC-03-65): `#touch-controls` holds `#touch-dpad` with four
+  buttons `#touch-up`, `#touch-down`, `#touch-left`, `#touch-right` (bottom
+  left, cross layout) and `#touch-menu` (top right, label "☰"). Every button is
+  at least 48 x 48 CSS px, has an `aria-label` from i18n
+  (`touch.up`, `touch.down`, `touch.left`, `touch.right`, `touch.menu`) and
+  the D-pad has `touch-action: none` and no text selection.
+* Panning: `pointerdown` on a direction button calls `pan(direction, true)`;
+  `pointerup`, `pointercancel` and `pointerleave` call `pan(direction, false)`
+  (once, and only if it was held). The skirmish maps the directions to the
+  arrow-key codes in `PAN_KEYS` (`up` = `ArrowUp`...) inside the controller's
+  pressed set, so speed and the `panDelta` path are those of the keyboard and
+  the keyboard keeps working. A window `blur` releases them too.
+* `#touch-menu` `click` calls `toggleMenu()`; the skirmish does what `Esc`
+  does: with a placement mode active it cancels placement and leaves the menu
+  closed, otherwise it opens (pause) or closes (resume) the game menu.
+* `pointerdown`, `pointerup` and `click` on the controls stop propagation and
+  `contextmenu` is prevented, so a touch never starts a selection box or an
+  order on the map; the controls are DOM siblings of the canvas, never inside
+  the HUD, the command panel or the game menu (on touch the command panel sits
+  at the bottom right so the D-pad does not cover it).
+* `render({ menuOpen })` sets `hidden` on `#touch-dpad` while the menu is open
+  (releasing any held direction) and leaves `#touch-menu` visible above the
+  menu so it can close it; an equal view writes nothing.
+* Out of scope: selecting and commanding by touch beyond what pointer events
+  already give, pinch zoom, long press.
+
 ## 4. Acceptance criteria
 
 **AC-08-01 Worker pause.** Given a skirmish worker handler at speed 1, after
@@ -319,6 +358,26 @@ Reveal button toggles "Reveal map: off" and "Reveal map: on"; no console
 error. With `?debug=1&seed=1&ai=off` `#perf-panel` starts visible and the
 button reads "FPS panel: on".
 
+**AC-08-15 Touch controls view.** `createTouchControls` creates the five
+buttons once with the §3.6 ids and i18n aria-labels; `pointerdown` on `#touch-right` calls
+`pan("right", true)` once, `pointerup` then `pan("right", false)`; `pointercancel`
+and `pointerleave` also release a held button, and a release without a press
+calls nothing; a click on `#touch-menu` calls `toggleMenu()` once; the
+button events call `stopPropagation`; `render({ menuOpen: true })` hides
+`#touch-dpad` and releases the held direction, keeps `#touch-menu` visible, and
+an equal view writes nothing.
+
+**AC-08-16 Touch controls in the skirmish (Playwright).** With touch emulation
+(`hasTouch`, 390 x 844) in `?debug=1&seed=1&ai=off`, the five buttons are
+visible, at least 48 px, and the D-pad does not overlap `#hud`; holding
+`#touch-right` (pointer down) moves `cameraTarget()` by the keyboard
+`ArrowRight` direction (+x, -y), and after release it stays put; a tap on
+`#touch-menu` opens `#game-menu` with `paused()` true, hides `#touch-dpad` and
+a second tap closes it with `paused()` false; no console error.
+
+**AC-08-17 No touch controls without touch (Playwright).** In a default desktop
+context `#touch-controls` is not in the DOM and `ArrowRight` still pans.
+
 ## 5. Queued requests (to be specified)
 
 1. Camera bookmarks: save with `Ctrl+F1..F4`, jump with `F1..F4`.
@@ -348,6 +407,9 @@ button reads "FPS panel: on".
 | AC-08-12 | `client/src/ui/gameMenuDebug.test.ts` | `AC-08-12: debug buttons in the menu view` |
 | AC-08-13 | `client/tests/e2e/menuDebug.spec.ts` | `AC-08-13: switch side in the skirmish` |
 | AC-08-14 | `client/tests/e2e/menuDebug.spec.ts` | `AC-08-14: reveal and FPS panel in the skirmish` |
+| AC-08-15 | `client/src/ui/touchControls.test.ts` | `AC-08-15: touch controls view` |
+| AC-08-16 | `client/tests/e2e/touchControls.spec.ts` | `AC-08-16: touch controls in the skirmish` |
+| AC-08-17 | `client/tests/e2e/touchControls.spec.ts` | `AC-08-17: no touch controls without touch` |
 
 ## 7. Issue breakdown
 
@@ -359,3 +421,4 @@ button reads "FPS panel: on".
 | P5-04 (#219) | AI toggle in the game menu (§3.3) | AC-08-04, 07..09 | ready-pro |
 | P5-05 (#226) | mouse-wheel zoom (§3.4) | AC-08-10, 11 | ready-pro |
 | P5-06 (#245) | switch side, reveal, FPS panel in the menu (§3.5) | AC-08-12..14 | ready-pro |
+| P5-07 (#251) | touch controls (§3.6) | AC-08-15..17 | ready-pro |
