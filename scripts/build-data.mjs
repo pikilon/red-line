@@ -49,6 +49,9 @@ export function readSources(rootDir) {
   };
 }
 
+/** §3.1 delivery: the written value, or `ballistic` when the weapon splashes. */
+const resolvedDelivery = (w) => w.delivery ?? ((w.splashCenti ?? 0) > 0 ? "ballistic" : "homing");
+
 /** @returns {{ ruleset: object | null, errors: DataError[] }} */
 export function buildRuleset(sources) {
   /** @type {DataError[]} */
@@ -135,6 +138,11 @@ function checkReferences(sources, globals, factions, fail) {
   for (const owner of owners) {
     owner.weapons.forEach((w, i) => {
       known(new Set(globals.damageTypes), "damage type", [w.damageType], owner.file, () => `/weapons/${i}/damageType`);
+      // Scatter needs the ballistic delivery. The schema catches the written
+      // case; here the defaulted case (`splashCenti == 0` defaults to homing).
+      if ((w.scatterCenti ?? 0) > 0 && resolvedDelivery(w) !== "ballistic") {
+        fail(owner.file, `/weapons/${i}/scatterCenti`, "invalid-value", "scatterCenti requires ballistic delivery");
+      }
     });
     owner.types.forEach((t, i) => {
       const at = `/${owner.list}/${i}`;
@@ -270,6 +278,18 @@ const assemble = (globals, factions, maps, ai) => {
       cooldownTicks: w.cooldownTicks,
       splashCenti: w.splashCenti ?? 0,
       projectileTicks: w.projectileTicks ?? 0,
+      speedCenti: w.speedCenti ?? 0,
+      delivery: resolvedDelivery(w) === "ballistic" ? 1 : 0,
+      scatterCenti: w.scatterCenti ?? 0,
+      salvo: w.salvo ?? 1,
+      salvoIntervalTicks: w.salvoIntervalTicks ?? 0,
+      render: {
+        model: w.render?.model ?? "tracer",
+        flight: w.render?.flight ?? "straight",
+        apexCenti: w.render?.apexCenti ?? 0,
+        launch: w.render?.launch ?? "muzzle",
+        trail: w.render?.trail ?? "none",
+      },
     })),
     types: typeList.map(({ t, faction }) => ({
       id: t.id,

@@ -354,3 +354,87 @@ test("AC-06-09: turn rates from data", () => {
     code: "schema", file: FILES.ukraine,
   });
 });
+
+test("AC-17-01: weapon schema", () => {
+  const file = FILES.ukraine;
+  const { ruleset, errors } = buildRuleset(
+    changed((d) => {
+      // Every §3.1 field written out.
+      d.ukraine.weapons.push({
+        id: "ua-explicit", damageType: "smallArms", damage: 10, rangeCenti: 450, cooldownTicks: 15,
+        speedCenti: 400, delivery: "ballistic", scatterCenti: 25, salvo: 2, salvoIntervalTicks: 8,
+        render: { model: "rpg", flight: "boost", apexCenti: 40, launch: "backblast", trail: "smoke" },
+      });
+      // Only the legacy fields: every §3.1 field takes its default.
+      d.ukraine.weapons.push({
+        id: "ua-defaults", damageType: "smallArms", damage: 10, rangeCenti: 450, cooldownTicks: 15,
+      });
+      // splashCenti > 0 makes the delivered default ballistic.
+      d.ukraine.weapons.push({
+        id: "ua-splash", damageType: "smallArms", damage: 10, rangeCenti: 450, cooldownTicks: 15, splashCenti: 150,
+      });
+      // A partial render block fills the rest with the §3.2 defaults.
+      d.ukraine.weapons.push({
+        id: "ua-partial-render", damageType: "smallArms", damage: 10, rangeCenti: 450, cooldownTicks: 15,
+        render: { trail: "smoke" },
+      });
+    }),
+  );
+  assert.deepEqual(errors, []);
+  const weapon = (id) => {
+    const found = ruleset.weapons.find((w) => w.id === id);
+    assert.ok(found, `missing weapon ${id}`);
+    return found;
+  };
+  const base = {
+    damageType: 0, damage: 10, rangeCenti: 450, minRangeCenti: 0, cooldownTicks: 15,
+    splashCenti: 0, projectileTicks: 0,
+  };
+  const render = (values) => ({ model: "tracer", flight: "straight", apexCenti: 0, launch: "muzzle", trail: "none", ...values });
+
+  assert.deepEqual(weapon("ua-explicit"), {
+    id: "ua-explicit", ...base,
+    speedCenti: 400, delivery: 1, scatterCenti: 25, salvo: 2, salvoIntervalTicks: 8,
+    render: render({ model: "rpg", flight: "boost", apexCenti: 40, launch: "backblast", trail: "smoke" }),
+  });
+  assert.deepEqual(weapon("ua-defaults"), {
+    id: "ua-defaults", ...base,
+    speedCenti: 0, delivery: 0, scatterCenti: 0, salvo: 1, salvoIntervalTicks: 0, render: render(),
+  });
+  assert.deepEqual(weapon("ua-splash"), {
+    id: "ua-splash", ...base, splashCenti: 150,
+    speedCenti: 0, delivery: 1, scatterCenti: 0, salvo: 1, salvoIntervalTicks: 0, render: render(),
+  });
+  assert.deepEqual(weapon("ua-partial-render").render, render({ trail: "smoke" }));
+
+  // speedCenti and projectileTicks are mutually exclusive.
+  expectError(
+    changed((d) => { d.ukraine.weapons[0].speedCenti = 400; d.ukraine.weapons[0].projectileTicks = 10; }),
+    { code: "schema", file, pointer: "/weapons/0/projectileTicks" },
+  );
+  // scatterCenti > 0 needs ballistic delivery, written or implicit.
+  expectError(
+    changed((d) => { d.ukraine.weapons[0].delivery = "homing"; d.ukraine.weapons[0].scatterCenti = 10; }),
+    { code: "schema", file, pointer: "/weapons/0/scatterCenti" },
+  );
+  expectError(
+    changed((d) => { d.ukraine.weapons[0].scatterCenti = 10; }),
+    { code: "invalid-value", file, pointer: "/weapons/0/scatterCenti" },
+  );
+  // render values are a closed set.
+  expectError(
+    changed((d) => { d.ukraine.weapons[0].render = { model: "laser" }; }),
+    { code: "schema", file, pointer: "/weapons/0/render/model" },
+  );
+
+  // The generated builtin ruleset fills every §3.1 field on every weapon.
+  const builtin = JSON.parse(readFileSync(join(repoRoot(), "data/generated/ruleset.json"), "utf8"));
+  for (const w of builtin.weapons) {
+    for (const key of ["speedCenti", "delivery", "scatterCenti", "salvo", "salvoIntervalTicks", "render"]) {
+      assert.ok(key in w, `${w.id} is missing ${key}`);
+    }
+    for (const key of ["model", "flight", "apexCenti", "launch", "trail"]) {
+      assert.ok(key in w.render, `${w.id} render is missing ${key}`);
+    }
+  }
+});
