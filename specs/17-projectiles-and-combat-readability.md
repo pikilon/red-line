@@ -454,11 +454,17 @@ killed by `antiTank`, `highExplosive` or `thermobaric` also spawns an
 
 ## 8. Acceptance criteria
 
-**AC-17-01 Weapon data.** Given the faction files, when `node --run
-build:data` runs, then every builtin weapon in `ruleset.json` has the §3.3
-values with defaults filled in. A weapon with `speedCenti > 0` and
-`projectileTicks > 0`, or with `delivery: homing` and `scatterCenti > 0`, or
-with an unknown `render.model`, fails `node --run check:data`.
+**AC-17-01 Weapon schema.** Given a faction file whose weapons use the §3.1
+fields, when `node --run build:data` runs, then `ruleset.json` holds every
+field with its default filled in, and `Ruleset::builtin()` and the test
+fixture still parse (missing fields take the §4.1 defaults). A weapon with
+`speedCenti > 0` and `projectileTicks > 0`, or with `delivery: homing` and
+`scatterCenti > 0`, or with an unknown `render.model`, fails `node --run
+check:data`.
+
+**AC-17-17 Builtin weapons.** Given the builtin faction files, then every
+weapon in `ruleset.json` has the §3.3 values, and no builtin weapon has
+`projectileTicks > 0`.
 
 **AC-17-02 Flight time from speed.** Given a sandbox with a rifleman of
 `ua-rifle` (speed 400) 3.0 tiles from an enemy, when it fires on tick `t`,
@@ -559,10 +565,11 @@ then right-click the building.
   the spec 03 behaviour (AC-17-03).
 * Spec 07 AC-07-02: the `highExplosive`/`thermobaric` explosion and the
   `antiTank` blast now come from `detonate` events (AC-17-15), because the
-  builtin HIMARS no longer has `projectileTicks`. In the AC-07-02 test, the
-  `ua-himars` case asserting an explosion delayed by `projectileTicks / 15`
-  is replaced by the AC-17-15 assertion. This is the only spec-phase test this
-  spec changes. Its muzzle, impact and absent-target cases stay.
+  builtin HIMARS no longer has `projectileTicks`. P4-27, which changes the
+  builtin data, removes the `ua-himars` case of the AC-07-02 test (the
+  explosion delayed by `projectileTicks / 15`). AC-17-15 in P4-31 covers that
+  behaviour again. This is the only spec-phase test this spec changes. Its
+  muzzle, impact and absent-target cases stay.
 * AI-vs-AI outcomes (`crates/sim/tests/ai_match.rs`, `crates/headless/tests/cli.rs`)
   may change with the new builtin data. Do not edit them. If one fails, report
   it on the issue with `needs-pro` and stop.
@@ -571,7 +578,8 @@ then right-click the building.
 
 | Criterion | File | Test |
 |---|---|---|
-| AC-17-01 | `scripts/build-data.test.mjs` | `AC-17-01: weapon data` |
+| AC-17-01 | `scripts/build-data.test.mjs` | `AC-17-01: weapon schema` |
+| AC-17-17 | `scripts/build-data.test.mjs` | `AC-17-17: builtin weapons` |
 | AC-17-02 | `crates/sim/tests/projectiles.rs` | `ac_17_02_flight_time_from_speed` |
 | AC-17-03 | `crates/sim/tests/projectiles.rs` | `ac_17_03_legacy_behaviour` |
 | AC-17-04 | `crates/sim/tests/projectiles.rs` | `ac_17_04_homing_tracks` |
@@ -596,8 +604,8 @@ edit `test-rules.json`.
 
 | Issue | Scope | Criteria | Tier | Depends on |
 |---|---|---|---|---|
-| P4-26 | Weapon data fields, schema, build script, builtin values | AC-17-01 | ready-local | — |
-| P4-27 | Sim: flight time, delivery, scatter, salvo, hash | AC-17-02..07, 10 | ready-pro | P4-26 |
+| P4-26 | Weapon schema, build script defaults, `WeaponDef` parse | AC-17-01 | ready-local | — |
+| P4-27 | Sim: flight time, delivery, scatter, salvo, hash; builtin values of §3.3; AC-07-02 HIMARS case removal | AC-17-02..07, 10, 17 | ready-pro | P4-26 |
 | P4-28 | Sim: events, `last_hit`, `combat_for`; client decode and worker plumbing | AC-17-08, 09, 11 | ready-pro | P4-27 |
 | P4-29 | Flight profiles and projectile renderer, tracer lines removed | AC-17-12, 13 | ready-pro | P4-28 |
 | P4-30 | Launch effects, dust, trails, effect velocity/growth | AC-17-14 | ready-pro | P4-29 |
