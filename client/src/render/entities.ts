@@ -96,11 +96,13 @@ export interface ModelInstance {
 }
 
 export interface EntityRenderer {
-  readonly group: Group; // children: units, buildings, models, ghosts, bars, tracers
+  readonly group: Group; // children: units, buildings, models, ghosts, bars
   readonly units: InstancedMesh;
   readonly buildings: InstancedMesh;
   readonly ghosts: InstancedMesh;
   readonly bars: InstancedMesh;
+  /** Shot segments of the frame, kept off the scene: projectiles replace the
+   *  one-frame lines (spec 17 §7.6); AC-03-54 still reads the segments. */
   readonly tracers: LineSegments;
   /** Lazily created instanced meshes of the types with a loaded `.glb`. */
   readonly models: readonly ModelInstance[];
@@ -303,8 +305,8 @@ export function createEntityRenderer(
   scaffolds.visible = false;
   // Fallback boxes cast and receive shadows while scaffolding only receives
   // them (spec 10 AC-10-08): the building under construction keeps casting its
-  // growing shadow, but its scaffolding frame does not. The ghosts, bars and
-  // tracers stay out of the shadow pass.
+  // growing shadow, but its scaffolding frame does not. The ghosts and bars
+  // stay out of the shadow pass.
   units.castShadow = true;
   units.receiveShadow = true;
   buildings.castShadow = true;
@@ -322,10 +324,11 @@ export function createEntityRenderer(
     new LineBasicMaterial({ vertexColors: true }),
   );
   tracers.frustumCulled = false;
+  tracers.visible = false;
 
   const flags = createFlagRenderer(capacity);
   const group = new Group();
-  group.add(units, buildings, ghosts, bars, tracers, scaffolds, flags.group);
+  group.add(units, buildings, ghosts, bars, scaffolds, flags.group);
 
   const matrix = new Matrix4();
   const turretMatrix = new Matrix4();
@@ -694,7 +697,6 @@ export function createEntityRenderer(
         finish(slot.mesh, slot.count);
         slot.mesh.computeBoundingSphere();
       }
-      tracers.visible = tracerCount > 0;
       scaffolds.visible = scaffoldCount > 0;
       tracerGeometry.setDrawRange(0, tracerCount * 2);
       tracerPositions.needsUpdate = true;

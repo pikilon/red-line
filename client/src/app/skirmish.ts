@@ -42,12 +42,19 @@ import {
 } from "../render/generatedTextures";
 import { loadModels, type ModelRegistry } from "../render/models";
 import {
+  createProjectiles,
+  PROJECTILE_MODELS,
+  type ProjectileModel,
+  type Projectiles,
+} from "../render/projectiles";
+import {
   createTerrain,
   rockCellsOf,
   setTerrainTextures,
 } from "../render/terrain";
 import { RULES, typeDef, typeIndex, typeName } from "../rules";
 import { loadSettings, type Settings, saveSettings } from "../settings";
+import type { ProjectileState } from "../sim/combatSnapshot";
 import { toRaw } from "../sim/fixed";
 import {
   type EntityState,
@@ -104,6 +111,10 @@ const NO_SELECTION: ReadonlySet<number> = new Set<number>();
 /** How long the `G` toast stays on screen (spec 07 §5). */
 const TOAST_MS = 2000;
 /** Effect counts before the scene exists (spec 07 AC-07-06). */
+const NO_PROJECTILE_COUNTS = Object.fromEntries(
+  PROJECTILE_MODELS.map((model) => [model, 0]),
+) as Record<ProjectileModel, number>;
+
 const NO_EFFECT_COUNTS: Record<EffectKind, number> = {
   muzzle: 0,
   impact: 0,
@@ -345,6 +356,9 @@ export function startSkirmish(params: SkirmishOptions): void {
   let generated: GeneratedTextures | null = null;
   let generatedLoading = false;
   let effects: Effects | null = null;
+  let projectiles: Projectiles | null = null;
+  /** Flying projectiles of the latest combat snapshot (spec 17 §5). */
+  let flying: readonly ProjectileState[] = [];
   let fogOverlay: FogOverlay | null = null;
   const placementGhost = createPlacementGhost();
   const placementHint = createPlacementHint(document.body);
@@ -469,6 +483,8 @@ export function startSkirmish(params: SkirmishOptions): void {
     scene.add(entities.group);
     effects = createEffects();
     scene.add(effects.group);
+    projectiles = createProjectiles();
+    scene.add(projectiles.group);
     fogOverlay = createFogOverlay(mapInfo.mapWidth, mapInfo.mapHeight);
     scene.add(fogOverlay.mesh);
     scene.add(placementGhost.mesh);
@@ -648,8 +664,9 @@ export function startSkirmish(params: SkirmishOptions): void {
     );
   }
 
-  interact.onSnapshot((snapshot, receivedFog, at) => {
+  interact.onSnapshot((snapshot, receivedFog, at, combat) => {
     const previous = next;
+    flying = combat.projectiles;
     prev = previous ?? snapshot;
     next = snapshot;
     // The worker transfers a fresh ArrayBuffer per snapshot (spec §6.3).
@@ -791,10 +808,18 @@ export function startSkirmish(params: SkirmishOptions): void {
     controller?.update(dtMs / 1000);
     updateSun();
     if (next !== null && prev !== null && entities !== null) {
+      const alpha = (now - receivedAt) / TICK_MS;
       entities.update(
-        interpolateEntities(prev, next, (now - receivedAt) / TICK_MS),
+        interpolateEntities(prev, next, alpha),
         controller?.selected ?? NO_SELECTION,
         effectTime(now),
+      );
+      // Entities are drawn between the previous and the latest tick, so the
+      // projectiles fly at the same fractional tick.
+      projectiles?.sync(
+        flying,
+        next.tick - 1 + Math.min(1, Math.max(0, alpha)),
+        next,
       );
     }
     updatePlacementGhost();
@@ -849,6 +874,8 @@ export function startSkirmish(params: SkirmishOptions): void {
       command: (command) => interact.command(command),
       stateHash: () => interact.requestHash(),
       effectCounts: () => effects?.counts() ?? NO_EFFECT_COUNTS,
+      projectileCounts: () => projectiles?.counts() ?? NO_PROJECTILE_COUNTS,
+      projectileSamples: () => projectiles?.samples() ?? [],
       gore: () => settings.gore,
       drawCalls: () => drawCalls,
       renderInfo: () => ({
