@@ -10,9 +10,9 @@ In modern warfare (Armed Forces of Ukraine vs. Russian Armed Forces), infantry s
 - **Ukraine:** MM-14 pixelated camouflage (*Maskuvalny Malyunok 2014*), high-cut FAST ballistic helmets with NVG mounts, modular plate carriers, and prominent yellow/blue identification armbands (`team` material).
 - **Russia:** EMR Digital Flora camouflage (*Tsifra / Ratnik*), 6B47 ballistic helmets, 6B45 modular plate carriers, and prominent white/red identification armbands (`team` material).
 - **Special infantry units:**
-  - `ua-stugna-team`: Ukrainian Stugna-P (*Skif*) ATGM on tripod with optical guidance module (PN-I / PN-S), and the iconic remote control suitcase console (PDU-215) with display screen operated by a kneeling/crouching operator, accompanied by security.
-  - `ru-rpg-gunner`: Russian anti-tank team featuring an RPG-7 launcher with its distinctive conical PG-7 warhead protruding forward from the muzzle, rocket backpacks carrying spare rockets, and assistant gunner with AK-74M.
-  - `ua-rifleman` / `ru-rifleman`: 3-soldier rifle fireteams with separate articulated legs, arms holding assault rifles in combat-ready posture, ballistic helmets with goggles/NVG mounts, and plate carriers.
+  - `ua-stugna-team`: Ukrainian Stugna-P (*Skif*) ATGM on tripod with optical guidance module (PN-I / PN-S), and the iconic remote control suitcase console (PDU-215) with display screen operated by a kneeling operator who stays apart from the tripod, linked to it by the guidance cable.
+  - `ru-rpg-gunner`: Russian anti-tank team featuring an RPG-7 launcher with its distinctive conical PG-7 warhead protruding forward from the muzzle, rocket backpacks carrying spare rockets, and an assistant gunner with an AK-74M kneeling beside the gunner.
+  - `ua-rifleman` / `ru-rifleman`: one soldier per unit, as in C&C Generals, with separate articulated legs, arms holding assault rifles in combat-ready posture, ballistic helmets with goggles/NVG mounts, and plate carriers.
 
 Previously, infantry models were placeholder blocky boxes without arms or separate legs, and their `body` material used generic flat vehicle paint (`ua-paint` / `ru-paint`).
 
@@ -44,27 +44,22 @@ export const GENERATED_TEXTURE_IDS = [
 ### Material mapping:
 - For units with `armor === INFANTRY_ARMOR` (`0`), `bodyTextureId(typeId, category, armor)` returns `${prefix}-camo` (e.g. `ua-camo` or `ru-camo`).
 - If `<faction>-camo` is missing in `textures`, `bodyMapsOf` falls back to `<faction>-paint` with no bump.
-- Like buildings, infantry have flat shading and no bump map (`bump: undefined`).
+- Infantry has no bump map (`bump: undefined`) and, unlike vehicles and buildings, smooth shading (`flatShading: false` on its `body` and `team` materials), so lofted limbs do not read as polygons.
+- Infantry camouflage is box projected with `INFANTRY_TILE` (0.5 model units) instead of `MODEL_TILE`, so its pixels are a few centimetres on a soldier.
+- Each `team` part also covers the tape band around the helmet.
 - The `team` material on the soldiers is mapped to identification armbands (IFF tape) on both arms, which light up in the owner's team colour (or white/yellow/blue in match).
 
 ## 3. Models (`tools/models/`)
 
 Procedural Blender Python generators for modern infantry:
-- `tools/models/lib.py`:
-  - `modern_soldier(name, faction, weapon, mats, height=0.5, pose="standing")`:
-    - Two separate legs with combat boots (`dark`) and trousers (`body`).
-    - Torso with combat jacket (`body`), tactical plate carrier / vest (`body`), and backpack / assault pack (`dark`).
-    - Two arms holding the weapon forward in ready stance (`body`), with tactical gloves (`dark`).
-    - Both upper arms wear identification armbands (`team`), capturing real-world combat IFF tape.
-    - Head (`body`) with ballistic helmet (`body`/`dark`), NVG shroud/mount on forehead (`dark`), and goggles/visor (`dark`).
-    - Weapon:
-      - `rifle`: assault rifle (AK-74M / AK-12 / M4) with receiver, barrel, curved magazine (`dark`), and stock.
-      - `launcher`: RPG-7 with tapered tube, heatshield, optical sight, and conical PG-7 rocket warhead protruding from the front (`dark` & `body`).
-      - `remote`: crouching/kneeling operator with hands on the Stugna-P suitcase console (`team` screen, `dark` chassis).
-- `tools/models/ua-rifleman.py`: 3 modern Ukrainian soldiers in fireteam formation with FAST helmets, plate carriers, yellow armbands, and rifles.
-- `tools/models/ru-rifleman.py`: 3 modern Russian motor riflemen with 6B47 helmets, 6B45 vests, white armbands, and AK-74M/AK-12 rifles.
-- `tools/models/ua-stugna-team.py`: Stugna-P tripod launcher with cylindrical tube and optical guidance box, connected to a PDU-215 remote control suitcase console operated by a crouching crew member, plus guard rifleman.
-- `tools/models/ru-rpg-gunner.py`: RPG-7 gunner with rocket backpack and conical PG-7 rocket, plus assistant gunner with rocket backpack and rifle.
+- `tools/models/infantry.py`: soldiers built in figure units (1.0 = helmet top) from lofted tubes that run through hip-knee-ankle and shoulder-elbow-wrist, so limbs bend without gaps; tubes are smooth shaded with sharp caps, gear stays boxy and flat shaded (C&C Generals style).
+  - Uniform `body` base colours are light (`#9aa070` Ukraine, `#8a8a5c` Russia) because the camouflage texture multiplies them.
+  - Each soldier has trouser legs with knee pads and combat boots (`dark`), torso with plate carrier, magazine pouches and belt, assault pack, camouflage balaclava head with ballistic glasses, ballistic helmet with camouflage cover, NVG mount and headset, and two arms whose upper arms carry the `team` armband.
+  - `rifleman()` stands at low ready (or kneels with `kneel=True`); `rpg_gunner()` aims an RPG-7 from the right shoulder; `kneeling_operator()` holds the PDU-215 console, whose screen is `team`.
+  - Two-man units pass `segments=6` to fit the triangle budget.
+- `tools/models/ua-rifleman.py` / `ru-rifleman.py`: one rifleman, 0.54 tiles tall.
+- `tools/models/ua-stugna-team.py`: Stugna-P on its tripod (launch container, PN-S guidance unit, `team` tape on the container) and the kneeling operator apart from it, the cable running along the ground between them.
+- `tools/models/ru-rpg-gunner.py`: standing RPG-7 gunner and assistant kneeling beside him with a two-round rocket carrier and rifle, with a clear gap between the two men; its render box grows to `[40, 55, 40]` (spec 03 table) to fit them.
 
 All models satisfy spec 06 conventions:
 - Single root named after type id.

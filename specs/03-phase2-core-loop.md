@@ -314,7 +314,7 @@ Russia units (file order):
 | id | armor | hp | sight | cost | build | speed | weapon | other | render size |
 |---|---|---|---|---|---|---|---|---|---|
 | `ru-rifleman` | infantry | 90 | 550 | 80 | 60 | 8 | `ru-ak74` | | `[30, 60, 30]` |
-| `ru-rpg-gunner` | infantry | 90 | 550 | 200 | 90 | 8 | `ru-rpg7` | | `[35, 55, 35]` |
+| `ru-rpg-gunner` | infantry | 90 | 550 | 200 | 90 | 8 | `ru-rpg7` | | `[40, 55, 40]` |
 | `ru-brdm-scout` | light | 220 | 1000 | 300 | 120 | 30 | `ru-kpvt` | | `[60, 50, 90]` |
 | `ru-bmp-2` | light | 450 | 650 | 600 | 200 | 22 | `ru-2a42` | | `[70, 55, 110]` |
 | `ru-t-72b3` | armored | 850 | 650 | 900 | 270 | 17 | `ru-2a46m` | | `[80, 55, 125]` |

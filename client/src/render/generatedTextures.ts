@@ -45,6 +45,10 @@ export const MODEL_TILE = 1.5;
 /** Vehicles are small: their skin repeats every this many model units (spec 15 §3). */
 export const VEHICLE_TILE = 0.6;
 
+/** Infantry camouflage repeats every this many model units, so its pixels
+ *  are a few centimetres on a soldier (spec 17 §2). */
+export const INFANTRY_TILE = 0.5;
+
 /** Loads `textures/<id>.webp` for every id; a file that fails is skipped. */
 export async function loadGeneratedTextures(
   source: TextureSource = new TextureLoader(),
@@ -105,6 +109,11 @@ export const BUMP_SCALE = 0.4;
 
 const INFANTRY_ARMOR = 0;
 
+/** True for infantry: units with the first armour class (spec 17 §2). */
+export function isInfantry(category: string, armor: number): boolean {
+  return category === "unit" && armor === INFANTRY_ARMOR;
+}
+
 /** Texture id of a type's `body` material: `<faction>-camo` for infantry,
  *  `<faction>-skin` for vehicles, `<faction>-concrete` for buildings and
  *  depots (spec 12 §6, spec 15 §3, spec 17 §2). */
@@ -116,7 +125,8 @@ export function bodyTextureId(
   // Type ids start with the faction prefix; neutral types use `ua`.
   const prefix = typeId.startsWith("ru-") ? "ru" : "ua";
   if (category !== "unit") return `${prefix}-concrete` as GeneratedTextureId;
-  if (armor === INFANTRY_ARMOR) return `${prefix}-camo` as GeneratedTextureId;
+  if (isInfantry(category, armor))
+    return `${prefix}-camo` as GeneratedTextureId;
   return `${prefix}-skin` as GeneratedTextureId;
 }
 
@@ -169,11 +179,12 @@ export const DARK_MASK = "darkMask";
 
 /** The vertex-coloured `body` material. Its map is the paint or concrete
  *  texture, and vertices with `darkMask` = 1 sample the `dark-metal` texture
- *  instead, so the merged `body`+`dark` mesh stays one draw call. */
-export function createBodyMaterial(): MeshLambertMaterial {
+ *  instead, so the merged `body`+`dark` mesh stays one draw call. Infantry
+ *  passes `flatShading` false to keep its smooth limbs (spec 17 §3). */
+export function createBodyMaterial(flatShading = true): MeshLambertMaterial {
   const material = new MeshLambertMaterial({
     vertexColors: true,
-    flatShading: true,
+    flatShading,
   });
   const darkMap = { value: WHITE as Texture };
   const liveryMap = { value: null as Texture | null };
