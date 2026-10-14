@@ -45,7 +45,7 @@ export const GENERATED_TEXTURE_IDS = [
 - For units with `armor === INFANTRY_ARMOR` (`0`), `bodyTextureId(typeId, category, armor)` returns `${prefix}-camo` (e.g. `ua-camo` or `ru-camo`).
 - If `<faction>-camo` is missing in `textures`, `bodyMapsOf` falls back to `<faction>-paint` with no bump.
 - Infantry has no bump map (`bump: undefined`) and, unlike vehicles and buildings, smooth shading (`flatShading: false` on its `body` and `team` materials), so lofted limbs do not read as polygons.
-- Infantry camouflage is box projected with `INFANTRY_TILE` (0.5 model units) instead of `MODEL_TILE`, so its pixels are a few centimetres on a soldier.
+- Infantry camouflage repeats every `INFANTRY_TILE` (0.5 model units) instead of `MODEL_TILE`, so its pixels are a few centimetres on a soldier: the UVs keep `MODEL_TILE` (vehicles still tile finer, AC-15-05) and the loader sets `repeat` = `MODEL_TILE / INFANTRY_TILE` on the `<faction>-camo` textures.
 - Each `team` part also covers the tape band around the helmet.
 - `mark` is a painted marking in a fixed colour, never tinted by the owner: `tools/models/check.mjs` and `client/src/render/models.ts` accept it, and the renderer merges it into the opaque `body` mesh with `darkMask` = `MARK_MASK` (2), which skips the paint, camouflage and dark-metal textures.
   - Ukraine: the lower half of each armband, the lower half of the helmet tape and half of the tape on the Stugna-P container are flag yellow (`#e3b72e`), under the team blue.
@@ -79,6 +79,9 @@ All models satisfy spec 06 conventions:
 * AC-17-04: Given `createEntityRenderer`, When generated textures are set, Then Ukrainian infantry gets `ua-camo` on its `body` mesh and Russian infantry gets `ru-camo`, with no bump map; `setGeneratedTextures(null)` resets map to null.
 * AC-17-05: Given the regenerated `.glb` models for `ua-rifleman`, `ru-rifleman`, `ua-stugna-team`, and `ru-rpg-gunner`, Then `node tools/models/check.mjs --strict` passes with 0 errors (valid materials, triangle budget <= 1500, bounding box and fill >= 70%, valid baked AO).
 * AC-17-06: Given infantry models, Then they contain separate legs, arms holding weapons, ballistic helmets, and `team` material armbands for IFF identification.
+* AC-17-07: Given the entity renderer, Then infantry `body` and `team` materials have `flatShading` false and vehicle ones true.
+* AC-17-08: Given `MATERIAL_NAMES`, Then it contains `mark`; Given an infantry model with a `mark` part, Then its vertices join the `body` mesh with `darkMask` = `MARK_MASK`.
+* AC-17-09: Given `loadGeneratedTextures`, Then `ua-camo` and `ru-camo` repeat `MODEL_TILE / INFANTRY_TILE` times and other textures once.
 
 ## Traceability
 
@@ -86,3 +89,4 @@ All models satisfy spec 06 conventions:
 | --- | --- |
 | AC-17-01..04 | `client/src/render/infantry.test.ts` |
 | AC-17-05..06 | `tools/models/check.mjs` and `client/src/render/infantry.test.ts` |
+| AC-17-07..09 | `client/src/render/infantryLook.test.ts` |

@@ -43,7 +43,6 @@ import {
   createBodyMaterial,
   DARK_MASK,
   type GeneratedTextures,
-  INFANTRY_TILE,
   isInfantry,
   MARK_MASK,
   VEHICLE_TILE,
@@ -420,7 +419,6 @@ export function createEntityRenderer(
     const opaque = opaqueGeometry(parts, livery !== null);
     const infantry =
       type !== undefined && isInfantry(type.category, type.armor);
-    if (opaque !== null && infantry) boxProjectUvs(opaque, INFANTRY_TILE);
     if (opaque !== null && livery !== null) {
       boxProjectUvs(opaque, VEHICLE_TILE);
       addLiveryAttribute(

@@ -46,7 +46,8 @@ export const MODEL_TILE = 1.5;
 export const VEHICLE_TILE = 0.6;
 
 /** Infantry camouflage repeats every this many model units, so its pixels
- *  are a few centimetres on a soldier (spec 17 §2). */
+ *  are a few centimetres on a soldier (spec 17 §2). The model UVs keep
+ *  MODEL_TILE; the camouflage texture repeats MODEL_TILE / INFANTRY_TILE times. */
 export const INFANTRY_TILE = 0.5;
 
 /** Loads `textures/<id>.webp` for every id; a file that fails is skipped. */
@@ -62,6 +63,10 @@ export async function loadGeneratedTextures(
         texture.wrapS = RepeatWrapping;
         texture.wrapT = RepeatWrapping;
         texture.anisotropy = 4;
+        if (id.endsWith("-camo")) {
+          const repeat = MODEL_TILE / INFANTRY_TILE;
+          texture.repeat.set(repeat, repeat);
+        }
         loaded[id] = texture;
       } catch {
         // A missing candidate keeps the procedural look for that slot.
