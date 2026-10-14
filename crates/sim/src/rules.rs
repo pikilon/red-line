@@ -38,9 +38,30 @@ pub enum Category {
     Depot,
 }
 
+/// How a weapon's projectiles deliver their damage (spec 17 §4.1). The generated
+/// ruleset encodes it as `0` homing / `1` ballistic.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(try_from = "u8")]
+pub enum Delivery {
+    Homing = 0,
+    Ballistic = 1,
+}
+
+impl TryFrom<u8> for Delivery {
+    type Error = String;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(Delivery::Homing),
+            1 => Ok(Delivery::Ballistic),
+            other => Err(format!("unknown delivery {other}")),
+        }
+    }
+}
+
 /// A weapon a `TypeDef` may fire through its `weapon` index.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(from = "WeaponDefWire")]
 pub struct WeaponDef {
     pub id: String,
     pub damage_type: u8,
@@ -50,6 +71,64 @@ pub struct WeaponDef {
     pub cooldown_ticks: u32,
     pub splash_centi: u32,
     pub projectile_ticks: u32,
+    pub speed_centi: u32,
+    pub delivery: Delivery,
+    pub scatter_centi: u32,
+    pub salvo: u32,
+    pub salvo_interval_ticks: u32,
+}
+
+/// Wire form of `WeaponDef`; it resolves the splash-dependent `delivery` default
+/// that serde's per-field `default` cannot see (spec 17 §3.1, §4.1).
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct WeaponDefWire {
+    id: String,
+    damage_type: u8,
+    damage: u32,
+    range_centi: u32,
+    min_range_centi: u32,
+    cooldown_ticks: u32,
+    splash_centi: u32,
+    projectile_ticks: u32,
+    #[serde(default)]
+    speed_centi: u32,
+    delivery: Option<Delivery>,
+    #[serde(default)]
+    scatter_centi: u32,
+    #[serde(default = "default_salvo")]
+    salvo: u32,
+    #[serde(default)]
+    salvo_interval_ticks: u32,
+}
+
+fn default_salvo() -> u32 {
+    1
+}
+
+impl From<WeaponDefWire> for WeaponDef {
+    fn from(w: WeaponDefWire) -> Self {
+        let delivery = w.delivery.unwrap_or(if w.splash_centi == 0 {
+            Delivery::Homing
+        } else {
+            Delivery::Ballistic
+        });
+        WeaponDef {
+            id: w.id,
+            damage_type: w.damage_type,
+            damage: w.damage,
+            range_centi: w.range_centi,
+            min_range_centi: w.min_range_centi,
+            cooldown_ticks: w.cooldown_ticks,
+            splash_centi: w.splash_centi,
+            projectile_ticks: w.projectile_ticks,
+            speed_centi: w.speed_centi,
+            delivery,
+            scatter_centi: w.scatter_centi,
+            salvo: w.salvo,
+            salvo_interval_ticks: w.salvo_interval_ticks,
+        }
+    }
 }
 
 /// A buildable/controllable thing, indexed in `Ruleset::types` by `TypeId`.
