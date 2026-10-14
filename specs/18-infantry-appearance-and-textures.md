@@ -1,4 +1,4 @@
-# 17 — Infantry appearance and camouflage textures
+# 18 — Infantry appearance and camouflage textures
 
 Status: accepted (owner request 2026-10-14, issue #264).
 Depends on `06-phase4a-procedural-models.md`, `12-generated-textures.md`, `13-vehicle-liveries.md`, and `15-vehicle-skins.md`.
@@ -73,20 +73,20 @@ All models satisfy spec 06 conventions:
 
 ## Acceptance criteria
 
-* AC-17-01: Given `GENERATED_TEXTURE_IDS`, Then `ua-camo` and `ru-camo` are present and loaded from `textures/<id>.webp`.
-* AC-17-02: Given `bodyTextureId`, When category is `unit` and armor is `INFANTRY_ARMOR` (0), Then it returns `<faction>-camo`.
-* AC-17-03: Given `bodyMapsOf`, When infantry camo is present in `textures`, Then `paint` is `<faction>-camo` and `bump` is undefined; when camo is missing, it falls back to `<faction>-paint`.
-* AC-17-04: Given `createEntityRenderer`, When generated textures are set, Then Ukrainian infantry gets `ua-camo` on its `body` mesh and Russian infantry gets `ru-camo`, with no bump map; `setGeneratedTextures(null)` resets map to null.
-* AC-17-05: Given the regenerated `.glb` models for `ua-rifleman`, `ru-rifleman`, `ua-stugna-team`, and `ru-rpg-gunner`, Then `node tools/models/check.mjs --strict` passes with 0 errors (valid materials, triangle budget <= 1500, bounding box and fill >= 70%, valid baked AO).
-* AC-17-06: Given infantry models, Then they contain separate legs, arms holding weapons, ballistic helmets, and `team` material armbands for IFF identification.
-* AC-17-07: Given the entity renderer, Then infantry `body` and `team` materials have `flatShading` false and vehicle ones true.
-* AC-17-08: Given `MATERIAL_NAMES`, Then it contains `mark`; Given an infantry model with a `mark` part, Then its vertices join the `body` mesh with `darkMask` = `MARK_MASK`.
-* AC-17-09: Given `loadGeneratedTextures`, Then `ua-camo` and `ru-camo` repeat `MODEL_TILE / INFANTRY_TILE` times and other textures once.
+* AC-18-01: Given `GENERATED_TEXTURE_IDS`, Then `ua-camo` and `ru-camo` are present and loaded from `textures/<id>.webp`.
+* AC-18-02: Given `bodyTextureId`, When category is `unit` and armor is `INFANTRY_ARMOR` (0), Then it returns `<faction>-camo`.
+* AC-18-03: Given `bodyMapsOf`, When infantry camo is present in `textures`, Then `paint` is `<faction>-camo` and `bump` is undefined; when camo is missing, it falls back to `<faction>-paint`.
+* AC-18-04: Given `createEntityRenderer`, When generated textures are set, Then Ukrainian infantry gets `ua-camo` on its `body` mesh and Russian infantry gets `ru-camo`, with no bump map; `setGeneratedTextures(null)` resets map to null.
+* AC-18-05: Given the regenerated `.glb` models for `ua-rifleman`, `ru-rifleman`, `ua-stugna-team`, and `ru-rpg-gunner`, Then `node tools/models/check.mjs --strict` passes with 0 errors (valid materials, triangle budget <= 1500, bounding box and fill >= 70%, valid baked AO).
+* AC-18-06: Given infantry models, Then they contain separate legs, arms holding weapons, ballistic helmets, and `team` material armbands for IFF identification.
+* AC-18-07: Given the entity renderer, Then infantry `body` and `team` materials have `flatShading` false and vehicle ones true.
+* AC-18-08: Given `MATERIAL_NAMES`, Then it contains `mark`; Given an infantry model with a `mark` part, Then its vertices join the `body` mesh with `darkMask` = `MARK_MASK`.
+* AC-18-09: Given `loadGeneratedTextures`, Then `ua-camo` and `ru-camo` repeat `MODEL_TILE / INFANTRY_TILE` times and other textures once.
 
 ## Traceability
 
 | Criterion | Test |
 | --- | --- |
-| AC-17-01..04 | `client/src/render/infantry.test.ts` |
-| AC-17-05..06 | `tools/models/check.mjs` and `client/src/render/infantry.test.ts` |
-| AC-17-07..09 | `client/src/render/infantryLook.test.ts` |
+| AC-18-01..04 | `client/src/render/infantry.test.ts` |
+| AC-18-05..06 | `tools/models/check.mjs` and `client/src/render/infantry.test.ts` |
+| AC-18-07..09 | `client/src/render/infantryLook.test.ts` |

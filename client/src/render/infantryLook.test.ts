@@ -76,7 +76,7 @@ function rendered() {
 }
 
 describe("17 — Infantry look (smooth soldiers, flag marks, fine camouflage)", () => {
-  it("AC-17-07: infantry is smooth shaded, vehicles stay faceted", () => {
+  it("AC-18-07: infantry is smooth shaded, vehicles stay faceted", () => {
     const { material } = rendered();
     const flat = (typeId: string, name: MaterialName): boolean =>
       (material(typeId, name).material as MeshLambertMaterial).flatShading;
@@ -86,7 +86,7 @@ describe("17 — Infantry look (smooth soldiers, flag marks, fine camouflage)", 
     expect(flat("ua-bradley", "body")).toBe(true);
   });
 
-  it("AC-17-08: `mark` parts join the body mesh untextured with MARK_MASK", () => {
+  it("AC-18-08: `mark` parts join the body mesh untextured with MARK_MASK", () => {
     expect(MATERIAL_NAMES).toContain("mark");
     const { material } = rendered();
     const mask = material("ua-rifleman", "body").geometry.getAttribute(
@@ -96,7 +96,7 @@ describe("17 — Infantry look (smooth soldiers, flag marks, fine camouflage)", 
     expect(values).toEqual(new Set([0, 1, MARK_MASK]));
   });
 
-  it("AC-17-09: infantry camouflage repeats every INFANTRY_TILE model units", async () => {
+  it("AC-18-09: infantry camouflage repeats every INFANTRY_TILE model units", async () => {
     const loaded = await loadGeneratedTextures({
       loadAsync: () => Promise.resolve(new Texture()),
     });

@@ -1,4 +1,4 @@
-"""ru-rpg-gunner: RPG-7 gunner and his assistant carrying spare rounds (spec 17)."""
+"""ru-rpg-gunner: RPG-7 gunner and his assistant carrying spare rounds (spec 18)."""
 
 import math
 import os

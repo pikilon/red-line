@@ -1,4 +1,4 @@
-"""ua-stugna-team: Stugna-P ATGM on its tripod and the remote operator (spec 17)."""
+"""ua-stugna-team: Stugna-P ATGM on its tripod and the remote operator (spec 18)."""
 
 import math
 import os

@@ -46,7 +46,7 @@ export const MODEL_TILE = 1.5;
 export const VEHICLE_TILE = 0.6;
 
 /** Infantry camouflage repeats every this many model units, so its pixels
- *  are a few centimetres on a soldier (spec 17 §2). The model UVs keep
+ *  are a few centimetres on a soldier (spec 18 §2). The model UVs keep
  *  MODEL_TILE; the camouflage texture repeats MODEL_TILE / INFANTRY_TILE times. */
 export const INFANTRY_TILE = 0.5;
 
@@ -114,14 +114,14 @@ export const BUMP_SCALE = 0.4;
 
 const INFANTRY_ARMOR = 0;
 
-/** True for infantry: units with the first armour class (spec 17 §2). */
+/** True for infantry: units with the first armour class (spec 18 §2). */
 export function isInfantry(category: string, armor: number): boolean {
   return category === "unit" && armor === INFANTRY_ARMOR;
 }
 
 /** Texture id of a type's `body` material: `<faction>-camo` for infantry,
  *  `<faction>-skin` for vehicles, `<faction>-concrete` for buildings and
- *  depots (spec 12 §6, spec 15 §3, spec 17 §2). */
+ *  depots (spec 12 §6, spec 15 §3, spec 18 §2). */
 export function bodyTextureId(
   typeId: string,
   category: string,
@@ -183,14 +183,14 @@ const WHITE = whiteTexture();
 export const DARK_MASK = "darkMask";
 
 /** `darkMask` of `mark` vertices: painted markings keep their own flat colour,
- *  without the paint or camouflage texture (spec 17 §3). */
+ *  without the paint or camouflage texture (spec 18 §3). */
 export const MARK_MASK = 2;
 
 /** The vertex-coloured `body` material. Its map is the paint or concrete
  *  texture, vertices with `darkMask` = 1 sample the `dark-metal` texture
  *  instead and those with MARK_MASK no texture, so the merged
  *  `body`+`dark`+`mark` mesh stays one draw call. Infantry
- *  passes `flatShading` false to keep its smooth limbs (spec 17 §3). */
+ *  passes `flatShading` false to keep its smooth limbs (spec 18 §3). */
 export function createBodyMaterial(flatShading = true): MeshLambertMaterial {
   const material = new MeshLambertMaterial({
     vertexColors: true,

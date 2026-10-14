@@ -1,4 +1,4 @@
-"""ua-rifleman: Ukrainian rifleman at low ready (spec 17)."""
+"""ua-rifleman: Ukrainian rifleman at low ready (spec 18)."""
 
 import os
 import sys
