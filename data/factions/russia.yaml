@@ -2,13 +2,13 @@ id: russia                           # required, must equal the file name
 hq: ru-hq                            # required, a building type of this file
 dozer: ru-dozer                      # required, a unit type of this file
 weapons:                             # required
-  - { id: ru-ak74, damageType: smallArms, damage: 9, rangeCenti: 420, cooldownTicks: 15 }
-  - { id: ru-rpg7, damageType: antiTank, damage: 90, rangeCenti: 450, cooldownTicks: 45 }
-  - { id: ru-kpvt, damageType: smallArms, damage: 14, rangeCenti: 500, cooldownTicks: 10 }
-  - { id: ru-2a42, damageType: autocannon, damage: 16, rangeCenti: 600, cooldownTicks: 8 }
-  - { id: ru-2a46m, damageType: antiTank, damage: 85, rangeCenti: 650, cooldownTicks: 33 }
-  - { id: ru-tos-thermobaric, damageType: thermobaric, damage: 120, rangeCenti: 1000, minRangeCenti: 300, cooldownTicks: 180, splashCenti: 250, projectileTicks: 20 }
-  - { id: ru-kornet-emplacement, damageType: antiTank, damage: 120, rangeCenti: 1100, cooldownTicks: 75 }
+  - { id: ru-ak74, damageType: smallArms, damage: 9, rangeCenti: 420, cooldownTicks: 15, speedCenti: 400, delivery: homing }
+  - { id: ru-rpg7, damageType: antiTank, damage: 90, rangeCenti: 450, cooldownTicks: 45, speedCenti: 60, delivery: ballistic, scatterCenti: 25, render: { model: rpg, flight: boost, apexCenti: 0, launch: backblast, trail: smoke } }
+  - { id: ru-kpvt, damageType: smallArms, damage: 14, rangeCenti: 500, cooldownTicks: 10, speedCenti: 450, delivery: homing }
+  - { id: ru-2a42, damageType: autocannon, damage: 16, rangeCenti: 600, cooldownTicks: 8, speedCenti: 500, delivery: homing, render: { model: tracerHeavy, flight: straight, apexCenti: 0, launch: muzzle, trail: none } }
+  - { id: ru-2a46m, damageType: antiTank, damage: 85, rangeCenti: 650, cooldownTicks: 33, speedCenti: 900, delivery: ballistic, render: { model: shell, flight: straight, apexCenti: 0, launch: cannon, trail: none } }
+  - { id: ru-tos-thermobaric, damageType: thermobaric, damage: 30, rangeCenti: 1000, minRangeCenti: 300, cooldownTicks: 180, splashCenti: 250, speedCenti: 30, delivery: ballistic, scatterCenti: 150, salvo: 4, salvoIntervalTicks: 3, render: { model: rocket, flight: ballistic, apexCenti: 0, launch: rocketLaunch, trail: smoke } }
+  - { id: ru-kornet-emplacement, damageType: antiTank, damage: 120, rangeCenti: 1100, cooldownTicks: 75, speedCenti: 45, delivery: homing, render: { model: atgm, flight: loft, apexCenti: 40, launch: softLaunch, trail: smoke } }
 types:                               # required
   - id: ru-rifleman
     category: unit

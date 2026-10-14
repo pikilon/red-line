@@ -150,18 +150,6 @@ describe("effects", () => {
     expect(counts(effects).blast).toBe(1);
     expect(counts(effects).impact).toBe(0);
 
-    // highExplosive: an explosion delayed by projectileTicks / 15 s.
-    effects.clear();
-    const himars = entity(5, 0, "ua-himars", 10, 10, 200, {
-      flags: ENTITY_FLAGS.fired,
-      target: 2,
-    });
-    spawnShotEffects(snapshot(1, [himars, target]), effects, 0);
-    effects.update(0);
-    expect(counts(effects).explosion).toBe(0);
-    effects.update(2000);
-    expect(counts(effects).explosion).toBe(1);
-
     // thermobaric: also an explosion.
     effects.clear();
     const tos = entity(6, 0, "ru-tos-1a", 10, 10, 350, {

@@ -37,11 +37,16 @@ pub fn state_hash(world: &World) -> u64 {
     }
     put_u32(&mut out, world.projectiles.len() as u32);
     for projectile in &world.projectiles {
+        put_u32(&mut out, projectile.id);
         out.push(projectile.owner);
+        put_u32(&mut out, projectile.shooter);
         put_u16(&mut out, projectile.weapon);
         put_u32(&mut out, projectile.target);
+        put_i32(&mut out, projectile.origin.x.raw());
+        put_i32(&mut out, projectile.origin.y.raw());
         put_i32(&mut out, projectile.impact.x.raw());
         put_i32(&mut out, projectile.impact.y.raw());
+        put_u32(&mut out, projectile.launch_tick);
         put_u32(&mut out, projectile.impact_tick);
     }
     fnv1a64(&out)
