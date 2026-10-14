@@ -1,4 +1,4 @@
-"""Infantry figures for the procedural model scripts (spec 17 §3).
+"""Infantry figures for the procedural model scripts (spec 18 §3).
 
 A soldier is built in figure units (1.0 = helmet top of a standing man), from
 lofted tubes that run through the joints, so limbs bend at the knee and elbow

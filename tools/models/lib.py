@@ -50,7 +50,7 @@ def _rgba(hex_color):
 
 def material(name, hex_color):
     """A flat, non-metallic material; `name` must be body, team, dark, cage or
-    mark (a painted marking in a fixed colour, spec 17 §3)."""
+    mark (a painted marking in a fixed colour, spec 18 §3)."""
     if name not in ("body", "team", "dark", "cage", "mark"):
         raise ValueError(f"material name must be body, team, dark, cage or mark, got {name}")
     mat = bpy.data.materials.get(name) or bpy.data.materials.new(name)

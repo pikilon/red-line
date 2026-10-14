@@ -1,4 +1,4 @@
-"""ru-rifleman: Russian rifleman at low ready (spec 17)."""
+"""ru-rifleman: Russian rifleman at low ready (spec 18)."""
 
 import os
 import sys

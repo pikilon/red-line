@@ -215,7 +215,7 @@ function opaqueGeometry(
 }
 
 /** `team` is shaded by its `COLOR_0` occlusion when the geometry has one;
- *  `flatShading` is false for the smooth limbs of infantry (spec 17 §3). */
+ *  `flatShading` is false for the smooth limbs of infantry (spec 18 §3). */
 function modelMaterial(
   material: MaterialName,
   geometry: BufferGeometry,

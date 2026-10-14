@@ -47,19 +47,19 @@ function mockRegistry(): ModelRegistry {
 }
 
 describe("17 — Infantry appearance and camouflage textures", () => {
-  it("AC-17-01: GENERATED_TEXTURE_IDS includes ua-camo and ru-camo", () => {
+  it("AC-18-01: GENERATED_TEXTURE_IDS includes ua-camo and ru-camo", () => {
     expect(GENERATED_TEXTURE_IDS).toContain("ua-camo");
     expect(GENERATED_TEXTURE_IDS).toContain("ru-camo");
   });
 
-  it("AC-17-02: bodyTextureId returns <faction>-camo for infantry (armor 0)", () => {
+  it("AC-18-02: bodyTextureId returns <faction>-camo for infantry (armor 0)", () => {
     expect(bodyTextureId("ua-rifleman", "unit", 0)).toBe("ua-camo");
     expect(bodyTextureId("ua-stugna-team", "unit", 0)).toBe("ua-camo");
     expect(bodyTextureId("ru-rifleman", "unit", 0)).toBe("ru-camo");
     expect(bodyTextureId("ru-rpg-gunner", "unit", 0)).toBe("ru-camo");
   });
 
-  it("AC-17-03: bodyMapsOf returns camo when loaded, falls back to paint when missing", () => {
+  it("AC-18-03: bodyMapsOf returns camo when loaded, falls back to paint when missing", () => {
     const uaCamo = new Texture();
     const uaPaint = new Texture();
     const ruCamo = new Texture();
@@ -89,7 +89,7 @@ describe("17 — Infantry appearance and camouflage textures", () => {
     expect(uaFallback.bump).toBeUndefined();
   });
 
-  it("AC-17-04: entity renderer applies camo texture to infantry body mesh", () => {
+  it("AC-18-04: entity renderer applies camo texture to infantry body mesh", () => {
     const renderer = createEntityRenderer(8, mockRegistry());
     renderer.update(
       [entity(1, 0, "ua-rifleman"), entity(2, 1, "ru-rifleman")],
@@ -121,7 +121,7 @@ describe("17 — Infantry appearance and camouflage textures", () => {
     expect(bodyMat("ru-rifleman").map).toBeNull();
   });
 
-  it("AC-17-05: infantry model types are defined with armor 0 and category unit", () => {
+  it("AC-18-05: infantry model types are defined with armor 0 and category unit", () => {
     const infantryIds = [
       "ua-rifleman",
       "ua-stugna-team",
@@ -137,7 +137,7 @@ describe("17 — Infantry appearance and camouflage textures", () => {
     }
   });
 
-  it("AC-17-06: infantry models contain body, team (armbands) and dark materials", () => {
+  it("AC-18-06: infantry models contain body, team (armbands) and dark materials", () => {
     const infantryIds = [
       "ua-rifleman",
       "ua-stugna-team",
