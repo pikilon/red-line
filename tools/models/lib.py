@@ -185,107 +185,240 @@ def turret(parts, pivot, name="turret"):
     return obj
 
 
+def bone(name, p1, p2, r1, r2, mat, segments=8):
+    """Tapered cone/cylinder from p1 to p2 oriented along the bone vector."""
+    v1, v2 = Vector(p1), Vector(p2)
+    delta = v2 - v1
+    length = delta.length
+    if length < 1e-5:
+        return None
+    mid = (v1 + v2) / 2.0
+    bpy.ops.mesh.primitive_cone_add(
+        vertices=segments, radius1=r1, radius2=r2, depth=length, location=mid
+    )
+    obj = bpy.context.active_object
+    obj.name = name
+    rot = Vector((0, 0, 1)).rotation_difference(delta)
+    obj.rotation_mode = "QUATERNION"
+    obj.rotation_quaternion = rot
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+    obj.data.materials.append(mat)
+    return obj
+
+
+def dome(name, radius, location, mat, segments=10, rings=6, z_scale=0.8):
+    """Hemispherical / rounded dome for ballistic helmets."""
+    bpy.ops.mesh.primitive_uv_sphere_add(
+        segments=segments, ring_count=rings, radius=radius, location=location
+    )
+    obj = bpy.context.active_object
+    obj.scale.z = z_scale
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    return _finish(obj, name, mat)
+
+
+def boot(name, location, size, mat):
+    """Anatomical combat boot with sloped toe and heel."""
+    bpy.ops.mesh.primitive_cube_add(size=1, location=location)
+    obj = bpy.context.active_object
+    obj.scale = size
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    sx, sy, sz = size
+    for v in obj.data.vertices:
+        if v.co.y < location[1] - sy * 0.2 and v.co.z > location[2]:
+            v.co.z -= sz * 0.30
+        if v.co.y > location[1] + sy * 0.2 and v.co.z > location[2]:
+            v.co.z -= sz * 0.25
+    return _finish(obj, name, mat)
+
+
 def modern_soldier(
     name,
     weapon,
     mats,
-    height=0.48,
+    height=0.54,
     pose="standing",
+    faction="ua",
     has_pack=True,
     has_rocket_pack=False,
+    has_spare_crate=False,
 ):
-    """Modern low-poly combat soldier facing -Y (spec 17 §3).
+    """Modern humanoid low-poly soldier facing -Y (C&C Generals style, spec 17).
 
-    Features separate articulated legs, combat boots, tactical plate carrier,
-    MOLLE pouches, assault pack, ballistic helmet with NVG mount and goggles,
-    arms holding weapon in ready stance, and identification tape armbands (`team`).
+    Features anatomical humanoid limbs, combat boots, knee pads, plate carrier
+    vest, front mag pouches, assault pack, ballistic helmet dome with dark balaclava,
+    articulated arms holding weapon, and seamless identification armbands.
     """
-    s = height / 0.5
+    s = height / 0.54
     body, team, dark = mats["body"], mats["team"], mats["dark"]
     parts = []
 
     if pose == "kneeling":
         # Kneeling posture (for ATGM operator)
-        parts.append(box(f"{name}_boot_l", (0.04 * s, 0.08 * s, 0.045 * s), (-0.032 * s, -0.05 * s, 0.025 * s), dark))
-        parts.append(box(f"{name}_thigh_l", (0.045 * s, 0.10 * s, 0.045 * s), (-0.032 * s, 0.01 * s, 0.08 * s), body))
-        parts.append(box(f"{name}_boot_r", (0.04 * s, 0.10 * s, 0.045 * s), (0.032 * s, 0.05 * s, 0.025 * s), dark))
-        parts.append(box(f"{name}_thigh_r", (0.045 * s, 0.09 * s, 0.045 * s), (0.032 * s, -0.02 * s, 0.08 * s), body))
-        z_torso = 0.19 * s
+        parts.append(boot(f"{name}_boot_r", (0.035 * s, 0.050 * s, 0.020 * s), (0.040 * s, 0.070 * s, 0.040 * s), dark))
+        parts.append(bone(f"{name}_thigh_r", (0.030 * s, -0.01 * s, 0.18 * s), (0.030 * s, 0.04 * s, 0.04 * s), 0.028 * s, 0.024 * s, body, 6))
+        parts.append(cylinder(f"{name}_kneepad_r", 0.022 * s, 0.018 * s, (0.030 * s, -0.015 * s, 0.03 * s), dark, 6, "Y"))
+
+        parts.append(boot(f"{name}_boot_l", (-0.035 * s, -0.045 * s, 0.020 * s), (0.040 * s, 0.070 * s, 0.040 * s), dark))
+        parts.append(bone(f"{name}_calf_l", (-0.035 * s, -0.04 * s, 0.04 * s), (-0.035 * s, -0.02 * s, 0.16 * s), 0.022 * s, 0.024 * s, body, 6))
+        parts.append(bone(f"{name}_thigh_l", (-0.025 * s, 0.03 * s, 0.18 * s), (-0.035 * s, -0.02 * s, 0.16 * s), 0.028 * s, 0.024 * s, body, 6))
+        parts.append(cylinder(f"{name}_kneepad_l", 0.022 * s, 0.018 * s, (-0.035 * s, -0.03 * s, 0.16 * s), dark, 6, "Y"))
+
+        # Pelvis & Belt
+        parts.append(bone(f"{name}_pelvis", (0, 0.02 * s, 0.16 * s), (0, 0.01 * s, 0.22 * s), 0.048 * s, 0.054 * s, body, 6))
+        parts.append(box(f"{name}_belt", (0.11 * s, 0.07 * s, 0.022 * s), (0, 0.01 * s, 0.22 * s), dark, bevel=0.003))
+
+        # Torso & Plate carrier
+        parts.append(bone(f"{name}_torso", (0, 0.01 * s, 0.22 * s), (0, -0.01 * s, 0.33 * s), 0.052 * s, 0.065 * s, body, 6))
+        parts.append(box(f"{name}_vest", (0.115 * s, 0.070 * s, 0.090 * s), (0, -0.005 * s, 0.285 * s), body, bevel=0.01))
+        parts.append(box(f"{name}_pouches", (0.080 * s, 0.020 * s, 0.040 * s), (0, -0.045 * s, 0.265 * s), dark, bevel=0.003))
+        if has_pack:
+            parts.append(box(f"{name}_pack", (0.090 * s, 0.048 * s, 0.095 * s), (0, 0.045 * s, 0.290 * s), body, bevel=0.008))
+
+        # Collar & Head
+        parts.append(cylinder(f"{name}_collar", 0.036 * s, 0.018 * s, (0, -0.015 * s, 0.335 * s), body, 6, "Z"))
+        parts.append(bone(f"{name}_balaclava", (0, -0.018 * s, 0.335 * s), (0, -0.022 * s, 0.390 * s), 0.028 * s, 0.026 * s, dark, 6))
+        parts.append(dome(f"{name}_helmet", 0.042 * s, (0, -0.020 * s, 0.390 * s), body, segments=10, rings=6))
+        parts.append(box(f"{name}_goggles", (0.048 * s, 0.014 * s, 0.012 * s), (0, -0.052 * s, 0.378 * s), dark, bevel=0.002))
+        parts.append(box(f"{name}_nvg", (0.014 * s, 0.008 * s, 0.014 * s), (0, -0.058 * s, 0.392 * s), dark))
+
+        # Operator arms reaching forward
+        r_sh = (0.065 * s, 0, 0.325 * s)
+        r_el = (0.075 * s, -0.03 * s, 0.235 * s)
+        r_wr = (0.025 * s, -0.09 * s, 0.14 * s)
+
+        l_sh = (-0.065 * s, 0, 0.325 * s)
+        l_el = (-0.060 * s, -0.04 * s, 0.235 * s)
+        l_wr = (-0.025 * s, -0.09 * s, 0.14 * s)
+
+        parts.append(bone(f"{name}_arm_up_r", r_sh, r_el, 0.024 * s, 0.019 * s, body, 6))
+        parts.append(bone(f"{name}_arm_up_l", l_sh, l_el, 0.024 * s, 0.019 * s, body, 6))
+
+        p_b1_r = Vector(r_sh) * 0.65 + Vector(r_el) * 0.35
+        p_b2_r = Vector(r_sh) * 0.35 + Vector(r_el) * 0.65
+        parts.append(bone(f"{name}_band_r", p_b1_r, p_b2_r, 0.0255 * s, 0.024 * s, team, 6))
+
+        p_b1_l = Vector(l_sh) * 0.65 + Vector(l_el) * 0.35
+        p_b2_l = Vector(l_sh) * 0.35 + Vector(l_el) * 0.65
+        parts.append(bone(f"{name}_band_l", p_b1_l, p_b2_l, 0.0255 * s, 0.024 * s, team, 6))
+
+        parts.append(bone(f"{name}_fore_r", r_el, r_wr, 0.019 * s, 0.015 * s, body, 6))
+        parts.append(bone(f"{name}_fore_l", l_el, l_wr, 0.019 * s, 0.015 * s, body, 6))
+        parts.append(box(f"{name}_glove_r", (0.018 * s, 0.022 * s, 0.018 * s), r_wr, dark, bevel=0.003))
+        parts.append(box(f"{name}_glove_l", (0.018 * s, 0.022 * s, 0.018 * s), l_wr, dark, bevel=0.003))
+
     else:
-        # Standing combat posture with articulated legs and boots
-        parts.append(box(f"{name}_boot_l", (0.04 * s, 0.065 * s, 0.055 * s), (-0.032 * s, -0.005 * s, 0.028 * s), dark))
-        parts.append(box(f"{name}_leg_l", (0.042 * s, 0.055 * s, 0.15 * s), (-0.032 * s, 0, 0.125 * s), body))
-        parts.append(box(f"{name}_knee_l", (0.038 * s, 0.016 * s, 0.03 * s), (-0.032 * s, -0.028 * s, 0.125 * s), dark))
+        # Standing dynamic combat stance
+        l_hip = (-0.042 * s, 0.005 * s, 0.28 * s)
+        l_knee = (-0.048 * s, -0.020 * s, 0.16 * s)
+        l_ankle = (-0.048 * s, -0.015 * s, 0.042 * s)
 
-        parts.append(box(f"{name}_boot_r", (0.04 * s, 0.065 * s, 0.055 * s), (0.032 * s, -0.005 * s, 0.028 * s), dark))
-        parts.append(box(f"{name}_leg_r", (0.042 * s, 0.055 * s, 0.15 * s), (0.032 * s, 0, 0.125 * s), body))
-        parts.append(box(f"{name}_knee_r", (0.038 * s, 0.016 * s, 0.03 * s), (0.032 * s, -0.028 * s, 0.125 * s), dark))
-        z_torso = 0.28 * s
+        r_hip = (0.042 * s, 0.005 * s, 0.28 * s)
+        r_knee = (0.048 * s, 0.018 * s, 0.16 * s)
+        r_ankle = (0.048 * s, 0.020 * s, 0.042 * s)
 
-    # Pelvis and tactical belt
-    parts.append(box(f"{name}_belt", (0.11 * s, 0.065 * s, 0.035 * s), (0, 0, z_torso - 0.045 * s), dark))
-    # Torso (combat shirt / uniform in body/camo)
-    parts.append(box(f"{name}_torso", (0.12 * s, 0.075 * s, 0.12 * s), (0, 0, z_torso + 0.02 * s), body))
-    # Tactical plate carrier / vest (body/camo)
-    parts.append(box(f"{name}_vest", (0.13 * s, 0.085 * s, 0.10 * s), (0, -0.003 * s, z_torso + 0.03 * s), body))
-    # Ammo pouches on front of plate carrier
-    parts.append(box(f"{name}_pouches", (0.09 * s, 0.025 * s, 0.048 * s), (0, -0.048 * s, z_torso + 0.01 * s), dark))
+        # Boots
+        parts.append(boot(f"{name}_boot_l", (l_ankle[0], l_ankle[1] - 0.015 * s, 0.020 * s), (0.040 * s, 0.080 * s, 0.040 * s), dark))
+        parts.append(boot(f"{name}_boot_r", (r_ankle[0], r_ankle[1] - 0.015 * s, 0.020 * s), (0.040 * s, 0.080 * s, 0.040 * s), dark))
 
-    # Backpack
-    if has_rocket_pack:
-        parts.append(box(f"{name}_pack", (0.095 * s, 0.055 * s, 0.11 * s), (0, 0.058 * s, z_torso + 0.03 * s), dark))
-        for rx, ro in enumerate((-0.025 * s, 0.025 * s)):
-            parts.append(cylinder(f"{name}_rpack_{rx}", 0.014 * s, 0.10 * s, (ro, 0.065 * s, z_torso + 0.12 * s), body, 6, "Z"))
-            parts.append(cylinder(f"{name}_rpack_tip_{rx}", 0.018 * s, 0.035 * s, (ro, 0.065 * s, z_torso + 0.17 * s), dark, 6, "Z"))
-    elif has_pack:
-        parts.append(box(f"{name}_pack", (0.085 * s, 0.042 * s, 0.10 * s), (0, 0.052 * s, z_torso + 0.03 * s), dark))
+        # Thighs & Calves
+        parts.append(bone(f"{name}_thigh_l", l_hip, l_knee, 0.034 * s, 0.026 * s, body, 8))
+        parts.append(bone(f"{name}_thigh_r", r_hip, r_knee, 0.034 * s, 0.026 * s, body, 8))
+        parts.append(cylinder(f"{name}_kneepad_l", 0.022 * s, 0.016 * s, (l_knee[0], l_knee[1] - 0.014 * s, l_knee[2]), dark, 8, "Y"))
+        parts.append(cylinder(f"{name}_kneepad_r", 0.022 * s, 0.016 * s, (r_knee[0], r_knee[1] - 0.014 * s, r_knee[2]), dark, 8, "Y"))
+        parts.append(bone(f"{name}_calf_l", l_knee, l_ankle, 0.026 * s, 0.022 * s, body, 8))
+        parts.append(bone(f"{name}_calf_r", r_knee, r_ankle, 0.026 * s, 0.022 * s, body, 8))
 
-    # Arms and identification armbands (team material!)
-    z_arm = z_torso + 0.05 * s
-    parts.append(box(f"{name}_arm_l", (0.03 * s, 0.04 * s, 0.085 * s), (-0.075 * s, -0.008 * s, z_arm), body))
-    parts.append(box(f"{name}_band_l", (0.034 * s, 0.044 * s, 0.028 * s), (-0.075 * s, -0.008 * s, z_arm + 0.01 * s), team))
-    parts.append(box(f"{name}_arm_r", (0.03 * s, 0.04 * s, 0.085 * s), (0.075 * s, -0.008 * s, z_arm), body))
-    parts.append(box(f"{name}_band_r", (0.034 * s, 0.044 * s, 0.028 * s), (0.075 * s, -0.008 * s, z_arm + 0.01 * s), team))
+        # Pelvis & War belt
+        parts.append(bone(f"{name}_pelvis", (0, 0.005 * s, 0.27 * s), (0, 0.005 * s, 0.32 * s), 0.052 * s, 0.058 * s, body, 8))
+        parts.append(box(f"{name}_belt", (0.120 * s, 0.076 * s, 0.025 * s), (0, 0.005 * s, 0.32 * s), dark, bevel=0.004))
 
-    # Head & Helmet
-    z_head = z_torso + 0.125 * s
-    parts.append(box(f"{name}_head", (0.065 * s, 0.065 * s, 0.065 * s), (0, -0.005 * s, z_head), body))
-    parts.append(box(f"{name}_helmet", (0.086 * s, 0.086 * s, 0.04 * s), (0, -0.005 * s, z_head + 0.038 * s), body))
-    parts.append(box(f"{name}_goggles", (0.066 * s, 0.016 * s, 0.016 * s), (0, -0.038 * s, z_head + 0.006 * s), dark))
-    parts.append(box(f"{name}_nvg", (0.02 * s, 0.012 * s, 0.02 * s), (0, -0.044 * s, z_head + 0.036 * s), dark))
+        # Torso & Plate carrier
+        parts.append(bone(f"{name}_torso", (0, 0.005 * s, 0.32 * s), (0, 0, 0.44 * s), 0.058 * s, 0.074 * s, body, 8))
+        parts.append(box(f"{name}_vest", (0.128 * s, 0.078 * s, 0.120 * s), (0, 0.002 * s, 0.385 * s), body, bevel=0.014))
+        parts.append(box(f"{name}_pouches", (0.090 * s, 0.022 * s, 0.045 * s), (0, -0.046 * s, 0.355 * s), dark, bevel=0.003))
 
-    # Forearms and Weapon
-    if weapon == "rifle":
-        parts.append(box(f"{name}_forearm_l", (0.028 * s, 0.065 * s, 0.028 * s), (-0.038 * s, -0.045 * s, z_torso - 0.01 * s), body))
-        parts.append(box(f"{name}_forearm_r", (0.028 * s, 0.055 * s, 0.028 * s), (0.038 * s, -0.035 * s, z_torso - 0.01 * s), body))
-        parts.append(box(f"{name}_glove_l", (0.024 * s, 0.026 * s, 0.024 * s), (-0.016 * s, -0.075 * s, z_torso - 0.01 * s), dark))
-        parts.append(box(f"{name}_glove_r", (0.024 * s, 0.026 * s, 0.024 * s), (0.016 * s, -0.06 * s, z_torso - 0.01 * s), dark))
+        # Backpack
+        if has_rocket_pack:
+            parts.append(box(f"{name}_backpack", (0.095 * s, 0.055 * s, 0.11 * s), (0, 0.062 * s, 0.385 * s), dark, bevel=0.01))
+            for rx_i, ro in enumerate((-0.028 * s, 0.028 * s)):
+                parts.append(cylinder(f"{name}_rkt_tube_{rx_i}", 0.012 * s, 0.10 * s, (ro, 0.070 * s, 0.465 * s), body, 6, "Z"))
+                parts.append(cylinder(f"{name}_rkt_cone_{rx_i}", 0.018 * s, 0.028 * s, (ro, 0.070 * s, 0.515 * s), dark, 6, "Z"))
+        elif has_pack:
+            parts.append(box(f"{name}_backpack", (0.096 * s, 0.046 * s, 0.110 * s), (0, 0.056 * s, 0.390 * s), body, bevel=0.010))
 
-        # Modern assault rifle
-        parts.append(box(f"{name}_rifle_body", (0.02 * s, 0.12 * s, 0.03 * s), (0.006 * s, -0.065 * s, z_torso - 0.005 * s), dark))
-        parts.append(cylinder(f"{name}_barrel", 0.006 * s, 0.07 * s, (0.006 * s, -0.145 * s, z_torso), dark, 6, "Y"))
-        parts.append(box(f"{name}_mag", (0.014 * s, 0.028 * s, 0.045 * s), (0.006 * s, -0.07 * s, z_torso - 0.038 * s), dark))
-        parts.append(box(f"{name}_stock", (0.014 * s, 0.045 * s, 0.026 * s), (0.006 * s, 0.005 * s, z_torso), dark))
-    elif weapon == "launcher":
-        # Shoulder RPG-7 launcher
-        parts.append(box(f"{name}_forearm_l", (0.028 * s, 0.065 * s, 0.028 * s), (-0.018 * s, -0.045 * s, z_torso + 0.03 * s), body))
-        parts.append(box(f"{name}_forearm_r", (0.028 * s, 0.055 * s, 0.028 * s), (0.045 * s, -0.035 * s, z_torso + 0.04 * s), body))
-        parts.append(box(f"{name}_glove_l", (0.024 * s, 0.026 * s, 0.024 * s), (0.035 * s, -0.065 * s, z_torso + 0.05 * s), dark))
+        # Ground crate for RPG gunner (to meet 35cm render box fill)
+        if has_spare_crate:
+            parts.append(box(f"{name}_crate", (0.042 * s, 0.090 * s, 0.040 * s), (-0.125 * s, -0.02 * s, 0.020 * s), dark, bevel=0.005))
+            parts.append(cylinder(f"{name}_crate_rkt", 0.012 * s, 0.10 * s, (-0.125 * s, -0.02 * s, 0.045 * s), body, 6, "Y"))
+            parts.append(cylinder(f"{name}_crate_tip", 0.022 * s, 0.03 * s, (-0.125 * s, -0.075 * s, 0.045 * s), dark, 6, "Y"))
 
-        # RPG-7 launcher tube with conical PG-7 warhead
-        parts.append(cylinder(f"{name}_rpg_tube", 0.018 * s, 0.22 * s, (0.055 * s, -0.01 * s, z_torso + 0.085 * s), dark, 8, "Y"))
-        parts.append(cylinder(f"{name}_rpg_grip", 0.022 * s, 0.07 * s, (0.055 * s, -0.01 * s, z_torso + 0.085 * s), body, 8, "Y"))
-        parts.append(box(f"{name}_rpg_sight", (0.015 * s, 0.025 * s, 0.025 * s), (0.035 * s, -0.035 * s, z_torso + 0.105 * s), dark))
-        parts.append(cylinder(f"{name}_rpg_warhead", 0.032 * s, 0.06 * s, (0.055 * s, -0.15 * s, z_torso + 0.085 * s), body, 8, "Y"))
-        parts.append(cylinder(f"{name}_rpg_fuse", 0.008 * s, 0.025 * s, (0.055 * s, -0.19 * s, z_torso + 0.085 * s), dark, 6, "Y"))
-    elif weapon == "remote":
-        # Operator hands resting on console
-        parts.append(box(f"{name}_forearm_l", (0.028 * s, 0.07 * s, 0.028 * s), (-0.035 * s, -0.06 * s, z_torso), body))
-        parts.append(box(f"{name}_forearm_r", (0.028 * s, 0.07 * s, 0.028 * s), (0.035 * s, -0.06 * s, z_torso), body))
-        parts.append(box(f"{name}_glove_l", (0.024 * s, 0.026 * s, 0.024 * s), (-0.025 * s, -0.09 * s, z_torso), dark))
-        parts.append(box(f"{name}_glove_r", (0.024 * s, 0.026 * s, 0.024 * s), (0.025 * s, -0.09 * s, z_torso), dark))
+        # Collar & Head
+        parts.append(cylinder(f"{name}_collar", 0.040 * s, 0.020 * s, (0, -0.002 * s, 0.442 * s), body, 8, "Z"))
+        parts.append(bone(f"{name}_balaclava", (0, -0.008 * s, 0.440 * s), (0, -0.008 * s, 0.495 * s), 0.030 * s, 0.028 * s, dark, 8))
+        parts.append(dome(f"{name}_helmet", 0.044 * s, (0, -0.006 * s, 0.495 * s), body, segments=10, rings=6))
+        parts.append(box(f"{name}_helmet_rails", (0.090 * s, 0.034 * s, 0.014 * s), (0, -0.006 * s, 0.485 * s), dark, bevel=0.003))
+        parts.append(box(f"{name}_goggles", (0.050 * s, 0.014 * s, 0.014 * s), (0, -0.040 * s, 0.475 * s), dark, bevel=0.003))
+        parts.append(box(f"{name}_nvg", (0.016 * s, 0.010 * s, 0.016 * s), (0, -0.046 * s, 0.495 * s), dark))
 
-    return join(parts, name)
+        # Arms
+        if weapon == "rpg":
+            r_sh = (0.078 * s, 0.005 * s, 0.425 * s)
+            r_el = (0.105 * s, 0.015 * s, 0.355 * s)
+            r_wr = (0.075 * s, -0.040 * s, 0.395 * s)
+
+            l_sh = (-0.078 * s, 0.005 * s, 0.425 * s)
+            l_el = (-0.095 * s, -0.040 * s, 0.345 * s)
+            l_wr = (0.035 * s, -0.095 * s, 0.405 * s)
+        else:
+            r_sh = (0.078 * s, 0.005 * s, 0.425 * s)
+            r_el = (0.096 * s, 0.018 * s, 0.330 * s)
+            r_wr = (0.032 * s, -0.065 * s, 0.345 * s)
+
+            l_sh = (-0.078 * s, 0.005 * s, 0.425 * s)
+            l_el = (-0.094 * s, -0.025 * s, 0.330 * s)
+            l_wr = (-0.015 * s, -0.095 * s, 0.345 * s)
+
+        parts.append(bone(f"{name}_arm_up_r", r_sh, r_el, 0.026 * s, 0.020 * s, body, 8))
+        parts.append(bone(f"{name}_arm_up_l", l_sh, l_el, 0.026 * s, 0.020 * s, body, 8))
+
+        p_b1_r = Vector(r_sh) * 0.65 + Vector(r_el) * 0.35
+        p_b2_r = Vector(r_sh) * 0.35 + Vector(r_el) * 0.65
+        parts.append(bone(f"{name}_band_r", p_b1_r, p_b2_r, 0.0275 * s, 0.0255 * s, team, 8))
+
+        p_b1_l = Vector(l_sh) * 0.65 + Vector(l_el) * 0.35
+        p_b2_l = Vector(l_sh) * 0.35 + Vector(l_el) * 0.65
+        parts.append(bone(f"{name}_band_l", p_b1_l, p_b2_l, 0.0275 * s, 0.0255 * s, team, 8))
+
+        parts.append(bone(f"{name}_fore_r", r_el, r_wr, 0.020 * s, 0.016 * s, body, 8))
+        parts.append(bone(f"{name}_fore_l", l_el, l_wr, 0.020 * s, 0.016 * s, body, 8))
+        parts.append(box(f"{name}_glove_r", (0.020 * s, 0.024 * s, 0.020 * s), (r_wr[0], r_wr[1] - 0.004 * s, r_wr[2]), dark, bevel=0.003))
+        parts.append(box(f"{name}_glove_l", (0.020 * s, 0.024 * s, 0.020 * s), (l_wr[0], l_wr[1] - 0.004 * s, l_wr[2]), dark, bevel=0.003))
+
+        # Weapons
+        if weapon == "rifle":
+            gx, gz = 0.008 * s, 0.350 * s
+            parts.append(box(f"{name}_rifle_stock", (0.016 * s, 0.045 * s, 0.025 * s), (gx + 0.024 * s, -0.005 * s, gz + 0.006 * s), dark, bevel=0.003))
+            parts.append(box(f"{name}_rifle_body", (0.018 * s, 0.082 * s, 0.032 * s), (gx, -0.055 * s, gz), dark, bevel=0.003))
+            parts.append(box(f"{name}_rifle_guard", (0.016 * s, 0.042 * s, 0.024 * s), (gx, -0.098 * s, gz + 0.002 * s), dark, bevel=0.003))
+            parts.append(cylinder(f"{name}_rifle_barrel", 0.005 * s, 0.042 * s, (gx, -0.122 * s, gz + 0.004 * s), dark, 6, "Y"))
+            parts.append(box(f"{name}_rifle_sight", (0.004 * s, 0.006 * s, 0.010 * s), (gx, -0.136 * s, gz + 0.014 * s), dark))
+            if faction == "ru":
+                parts.append(box(f"{name}_rifle_mag", (0.014 * s, 0.028 * s, 0.048 * s), (gx, -0.068 * s, gz - 0.032 * s), dark, bevel=0.002))
+            else:
+                parts.append(box(f"{name}_rifle_mag", (0.014 * s, 0.026 * s, 0.044 * s), (gx, -0.064 * s, gz - 0.030 * s), dark, bevel=0.002))
+        elif weapon == "rpg":
+            rx, rz = 0.065 * s, 0.445 * s
+            parts.append(bone(f"{name}_rpg_exhaust", (rx, 0.120 * s, rz), (rx, 0.080 * s, rz), 0.022 * s, 0.015 * s, dark, 6))
+            parts.append(cylinder(f"{name}_rpg_shield", 0.020 * s, 0.095 * s, (rx, 0.030 * s, rz), body, 8, "Y"))
+            parts.append(cylinder(f"{name}_rpg_tube", 0.015 * s, 0.110 * s, (rx, -0.055 * s, rz), dark, 6, "Y"))
+            parts.append(box(f"{name}_rpg_optic", (0.016 * s, 0.040 * s, 0.022 * s), (rx - 0.022 * s, -0.025 * s, rz + 0.020 * s), dark, bevel=0.002))
+            parts.append(box(f"{name}_rpg_grip1", (0.012 * s, 0.016 * s, 0.032 * s), (rx, -0.025 * s, rz - 0.025 * s), dark))
+            parts.append(box(f"{name}_rpg_grip2", (0.012 * s, 0.016 * s, 0.032 * s), (rx, -0.075 * s, rz - 0.025 * s), dark))
+            parts.append(cylinder(f"{name}_pg7_stem", 0.013 * s, 0.030 * s, (rx, -0.110 * s, rz), dark, 6, "Y"))
+            parts.append(bone(f"{name}_pg7_cone", (rx, -0.115 * s, rz), (rx, -0.140 * s, rz), 0.028 * s, 0.008 * s, dark, 6))
+
+    return join([p for p in parts if p is not None], name)
 
 
 soldier = modern_soldier
