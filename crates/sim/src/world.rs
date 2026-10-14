@@ -10,7 +10,7 @@ use crate::map::{Cell, CellIndex, MapGrid, SPAWN_MAX, SPAWN_MIN, cell_center, ce
 use crate::nav::{approach_cell, footprint_cells, footprint_center};
 use crate::player::Player;
 use crate::rng::SplitMix64;
-use crate::rules::{Category, FactionId, Ruleset, TypeId, fx_centi};
+use crate::rules::{Category, FactionId, Ruleset, TypeId, WeaponId, fx_centi};
 
 pub type UnitId = EntityId;
 
@@ -26,6 +26,8 @@ pub const ARRIVAL_CONTACT: Fx = Fx::from_raw(39321);
 pub const MAX_CENTROID_OFFSET: Fx = Fx::from_raw(393216);
 /// Spec 04 §5.1: largest ring searched for an unclaimed goal cell.
 const MAX_GOAL_SEARCH_RING: i32 = 20;
+/// Spec 17 §4.1: direct-hit radius of a ballistic `splash == 0` projectile.
+pub const DIRECT_HIT_CENTI: u32 = 45;
 
 /// Commands issued by a player, applied at the start of the next step (§5.8).
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -89,6 +91,29 @@ pub enum Outcome {
     Draw,
 }
 
+/// A combat event of the last `step`, in emission order (spec 17 §4.1).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CombatEvent {
+    /// A projectile resolved at `pos`; `hit` is the entity it damaged, if any.
+    Detonate {
+        projectile: u32,
+        owner: PlayerId,
+        weapon: WeaponId,
+        pos: FxVec2,
+        hit: Option<EntityId>,
+    },
+    /// A unit or building was removed; `killer` and `weapon` come from the
+    /// victim's `last_hit`, or are `None` (spec 17 §4.5).
+    Death {
+        victim: EntityId,
+        owner: PlayerId,
+        kind: TypeId,
+        pos: FxVec2,
+        killer: Option<EntityId>,
+        weapon: Option<WeaponId>,
+    },
+}
+
 pub struct World {
     pub(crate) tick: u32,
     pub(crate) rules: Ruleset,
@@ -104,6 +129,11 @@ pub struct World {
     pub(crate) next_order_id: u32,
     /// Creation order.
     pub(crate) projectiles: Vec<Projectile>,
+    /// Starts at 0, never reused; not hashed (spec 17 §4.2).
+    pub(crate) next_projectile_id: u32,
+    /// Combat events of the last `step`, in emission order; cleared when a step
+    /// starts (spec 17 §4.1).
+    pub(crate) events: Vec<CombatEvent>,
     pub(crate) pending: Vec<(PlayerId, Command)>,
     /// Keyed by goal cell index.
     pub(crate) fields: BTreeMap<CellIndex, FlowField>,
@@ -127,6 +157,8 @@ impl World {
             next_entity_id: 0,
             next_order_id: 1,
             projectiles: Vec::new(),
+            next_projectile_id: 0,
+            events: Vec::new(),
             pending: Vec::new(),
             fields: BTreeMap::new(),
             outcome: Outcome::Ongoing,
@@ -367,6 +399,7 @@ impl World {
             cooldown: 0,
             cargo: 0,
             last_target: None,
+            last_hit: None,
             site,
         });
         id
@@ -446,6 +479,7 @@ impl World {
     }
 
     pub fn step(&mut self) {
+        self.events.clear();
         self.apply_commands();
         self.update_economy();
         self.move_units();
@@ -462,12 +496,26 @@ impl World {
 
     /// Deaths phase: units and buildings at `hp == 0` are removed, empty depots
     /// stay, and a removed building releases its footprint cells (§5.7 step 8).
+    /// Each removed unit or building emits a `Death` event first, in ascending
+    /// id order (spec 17 §4.5).
     fn remove_dead(&mut self) {
         let mut removed_building = false;
         let mut kept = Vec::with_capacity(self.entities.len());
         for entity in std::mem::take(&mut self.entities) {
             let depot = self.rules.ty(entity.kind).category == Category::Depot;
             if entity.hp == 0 && !depot {
+                let (killer, weapon) = match entity.last_hit {
+                    Some((killer, weapon)) => (Some(killer), Some(weapon)),
+                    None => (None, None),
+                };
+                self.events.push(CombatEvent::Death {
+                    victim: entity.id,
+                    owner: entity.owner,
+                    kind: entity.kind,
+                    pos: entity.pos,
+                    killer,
+                    weapon,
+                });
                 removed_building |= entity.site.is_some();
             } else {
                 kept.push(entity);
@@ -1049,6 +1097,11 @@ impl World {
 
     pub fn projectiles(&self) -> &[Projectile] {
         &self.projectiles
+    }
+
+    /// Combat events of the last `step`, in emission order (spec 17 §4.1).
+    pub fn events(&self) -> &[CombatEvent] {
+        &self.events
     }
 
     pub fn outcome(&self) -> Outcome {

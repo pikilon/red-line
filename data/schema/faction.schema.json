@@ -45,7 +45,42 @@
         "cooldownTicks": { "$ref": "#/$defs/positive" },
         "minRangeCenti": { "$ref": "#/$defs/count" },
         "splashCenti": { "$ref": "#/$defs/count" },
-        "projectileTicks": { "$ref": "#/$defs/count" }
+        "projectileTicks": { "$ref": "#/$defs/count" },
+        "speedCenti": { "$ref": "#/$defs/count" },
+        "delivery": { "enum": ["homing", "ballistic"] },
+        "scatterCenti": { "$ref": "#/$defs/count" },
+        "salvo": { "$ref": "#/$defs/positive" },
+        "salvoIntervalTicks": { "$ref": "#/$defs/count" },
+        "render": { "$ref": "#/$defs/weaponRender" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "type": "object",
+            "required": ["speedCenti"],
+            "properties": { "speedCenti": { "type": "integer", "minimum": 1 } }
+          },
+          "then": { "type": "object", "properties": { "projectileTicks": { "type": "integer", "maximum": 0 } } }
+        },
+        {
+          "if": {
+            "type": "object",
+            "required": ["delivery"],
+            "properties": { "delivery": { "const": "homing" } }
+          },
+          "then": { "type": "object", "properties": { "scatterCenti": { "type": "integer", "maximum": 0 } } }
+        }
+      ]
+    },
+    "weaponRender": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "model": { "enum": ["tracer", "tracerHeavy", "shell", "rpg", "atgm", "rocket"] },
+        "flight": { "enum": ["straight", "boost", "loft", "ballistic", "topAttack"] },
+        "apexCenti": { "$ref": "#/$defs/count" },
+        "launch": { "enum": ["muzzle", "cannon", "backblast", "softLaunch", "rocketLaunch"] },
+        "trail": { "enum": ["none", "smoke"] }
       }
     },
     "type": {

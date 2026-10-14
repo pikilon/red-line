@@ -1,3 +1,4 @@
+import { type CombatSnapshot, decodeCombat } from "./combatSnapshot";
 import { decodeMatchSnapshot, type MatchSnapshot } from "./matchSnapshot";
 import {
   type CommandMessage,
@@ -29,6 +30,7 @@ export interface SkirmishClient {
       snapshot: MatchSnapshot,
       fog: Uint8Array,
       receivedAtMs: number,
+      combat: CombatSnapshot,
     ) => void,
   ): () => void;
 }
@@ -37,7 +39,10 @@ type SnapshotListener = (
   snapshot: MatchSnapshot,
   fog: Uint8Array,
   receivedAtMs: number,
+  combat: CombatSnapshot,
 ) => void;
+
+const EMPTY_COMBAT: CombatSnapshot = { projectiles: [], events: [] };
 
 export function createSkirmishClient(
   worker: WorkerLike,
@@ -84,10 +89,14 @@ export function createSkirmishClient(
     },
     snapshot: (message: SnapshotMessage): void => {
       const snapshot = decodeMatchSnapshot(message.data);
+      const combat =
+        message.combat === undefined
+          ? EMPTY_COMBAT
+          : decodeCombat(message.combat);
       const fog = message.fog ?? new Uint8Array(0);
       const receivedAtMs = now();
       for (const listener of [...listeners]) {
-        listener(snapshot, fog, receivedAtMs);
+        listener(snapshot, fog, receivedAtMs, combat);
       }
     },
   } as const;

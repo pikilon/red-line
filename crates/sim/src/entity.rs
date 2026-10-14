@@ -78,6 +78,9 @@ pub struct Entity {
     pub cargo: u32,
     /// Entity fired at during this tick's combat phase.
     pub last_target: Option<EntityId>,
+    /// Last `(shooter, weapon)` that damaged this entity; presentation only,
+    /// never read by game rules and not hashed (spec 17 §4.1, §4.3).
+    pub last_hit: Option<(EntityId, WeaponId)>,
     /// `Some` for buildings and depots.
     pub site: Option<Site>,
 }
@@ -94,9 +97,16 @@ pub struct Ghost {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Projectile {
+    pub id: u32,
     pub owner: PlayerId,
+    /// Firing entity, even after it dies (spec 17 §4.3).
+    pub shooter: EntityId,
     pub weapon: WeaponId,
     pub target: EntityId,
+    /// Shooter position at fire time.
+    pub origin: FxVec2,
+    /// Aim point plus scatter, updated each tick for homing (spec 17 §4.2–§4.3).
     pub impact: FxVec2,
+    pub launch_tick: u32,
     pub impact_tick: u32,
 }

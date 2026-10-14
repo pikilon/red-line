@@ -59,7 +59,19 @@
       "minRangeCenti": 0,
       "cooldownTicks": 15,
       "splashCenti": 0,
-      "projectileTicks": 0
+      "projectileTicks": 0,
+      "speedCenti": 400,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
     },
     {
       "id": "ua-stugna-p",
@@ -69,7 +81,19 @@
       "minRangeCenti": 200,
       "cooldownTicks": 75,
       "splashCenti": 0,
-      "projectileTicks": 0
+      "projectileTicks": 0,
+      "speedCenti": 45,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "atgm",
+        "flight": "loft",
+        "apexCenti": 40,
+        "launch": "softLaunch",
+        "trail": "smoke"
+      }
     },
     {
       "id": "ua-kozak-hmg",
@@ -79,7 +103,19 @@
       "minRangeCenti": 0,
       "cooldownTicks": 10,
       "splashCenti": 0,
-      "projectileTicks": 0
+      "projectileTicks": 0,
+      "speedCenti": 450,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
     },
     {
       "id": "ua-bushmaster",
@@ -89,7 +125,19 @@
       "minRangeCenti": 0,
       "cooldownTicks": 8,
       "splashCenti": 0,
-      "projectileTicks": 0
+      "projectileTicks": 0,
+      "speedCenti": 500,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "tracerHeavy",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
     },
     {
       "id": "ua-rh120",
@@ -99,17 +147,41 @@
       "minRangeCenti": 0,
       "cooldownTicks": 30,
       "splashCenti": 0,
-      "projectileTicks": 0
+      "projectileTicks": 0,
+      "speedCenti": 900,
+      "delivery": 1,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "shell",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "cannon",
+        "trail": "none"
+      }
     },
     {
       "id": "ua-gmlrs",
       "damageType": 3,
-      "damage": 250,
+      "damage": 125,
       "rangeCenti": 2400,
       "minRangeCenti": 600,
       "cooldownTicks": 150,
       "splashCenti": 0,
-      "projectileTicks": 30
+      "projectileTicks": 0,
+      "speedCenti": 40,
+      "delivery": 1,
+      "scatterCenti": 0,
+      "salvo": 2,
+      "salvoIntervalTicks": 8,
+      "render": {
+        "model": "rocket",
+        "flight": "topAttack",
+        "apexCenti": 600,
+        "launch": "rocketLaunch",
+        "trail": "smoke"
+      }
     },
     {
       "id": "ua-stugna-emplacement",
@@ -119,7 +191,19 @@
       "minRangeCenti": 0,
       "cooldownTicks": 60,
       "splashCenti": 0,
-      "projectileTicks": 0
+      "projectileTicks": 0,
+      "speedCenti": 45,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "atgm",
+        "flight": "loft",
+        "apexCenti": 40,
+        "launch": "softLaunch",
+        "trail": "smoke"
+      }
     },
     {
       "id": "ru-ak74",
@@ -129,7 +213,19 @@
       "minRangeCenti": 0,
       "cooldownTicks": 15,
       "splashCenti": 0,
-      "projectileTicks": 0
+      "projectileTicks": 0,
+      "speedCenti": 400,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
     },
     {
       "id": "ru-rpg7",
@@ -139,7 +235,19 @@
       "minRangeCenti": 0,
       "cooldownTicks": 45,
       "splashCenti": 0,
-      "projectileTicks": 0
+      "projectileTicks": 0,
+      "speedCenti": 60,
+      "delivery": 1,
+      "scatterCenti": 25,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "rpg",
+        "flight": "boost",
+        "apexCenti": 0,
+        "launch": "backblast",
+        "trail": "smoke"
+      }
     },
     {
       "id": "ru-kpvt",
@@ -149,7 +257,19 @@
       "minRangeCenti": 0,
       "cooldownTicks": 10,
       "splashCenti": 0,
-      "projectileTicks": 0
+      "projectileTicks": 0,
+      "speedCenti": 450,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
     },
     {
       "id": "ru-2a42",
@@ -159,7 +279,19 @@
       "minRangeCenti": 0,
       "cooldownTicks": 8,
       "splashCenti": 0,
-      "projectileTicks": 0
+      "projectileTicks": 0,
+      "speedCenti": 500,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "tracerHeavy",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
     },
     {
       "id": "ru-2a46m",
@@ -169,17 +301,41 @@
       "minRangeCenti": 0,
       "cooldownTicks": 33,
       "splashCenti": 0,
-      "projectileTicks": 0
+      "projectileTicks": 0,
+      "speedCenti": 900,
+      "delivery": 1,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "shell",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "cannon",
+        "trail": "none"
+      }
     },
     {
       "id": "ru-tos-thermobaric",
       "damageType": 4,
-      "damage": 120,
+      "damage": 30,
       "rangeCenti": 1000,
       "minRangeCenti": 300,
       "cooldownTicks": 180,
       "splashCenti": 250,
-      "projectileTicks": 20
+      "projectileTicks": 0,
+      "speedCenti": 30,
+      "delivery": 1,
+      "scatterCenti": 150,
+      "salvo": 4,
+      "salvoIntervalTicks": 3,
+      "render": {
+        "model": "rocket",
+        "flight": "ballistic",
+        "apexCenti": 0,
+        "launch": "rocketLaunch",
+        "trail": "smoke"
+      }
     },
     {
       "id": "ru-kornet-emplacement",
@@ -189,7 +345,19 @@
       "minRangeCenti": 0,
       "cooldownTicks": 75,
       "splashCenti": 0,
-      "projectileTicks": 0
+      "projectileTicks": 0,
+      "speedCenti": 45,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "atgm",
+        "flight": "loft",
+        "apexCenti": 40,
+        "launch": "softLaunch",
+        "trail": "smoke"
+      }
     }
   ],
   "types": [

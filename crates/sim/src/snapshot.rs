@@ -2,11 +2,12 @@
 
 use std::collections::BTreeMap;
 
-use crate::entity::{Entity, EntityId, Ghost, Order, PlayerId};
-use crate::map::Cell;
+use crate::entity::{Entity, EntityId, Ghost, Order, PlayerId, Projectile};
+use crate::fixed::FxVec2;
+use crate::map::{Cell, cell_of};
 use crate::nav::footprint_center;
 use crate::rules::QUEUE_SLOTS;
-use crate::world::{Outcome, World};
+use crate::world::{CombatEvent, Outcome, World};
 
 pub const SNAPSHOT_HEADER_LEN: usize = 2;
 pub const UNIT_STRIDE: usize = 4;
@@ -27,6 +28,106 @@ pub fn encode_snapshot(world: &World) -> Vec<i32> {
         out.extend_from_slice(&[unit.id as i32, unit.pos.x.raw(), unit.pos.y.raw(), flags]);
     }
     out
+}
+
+/// One projectile record of the combat snapshot (spec 17 §4.7).
+pub const PROJECTILE_STRIDE: usize = 11;
+/// One combat event record of the combat snapshot (spec 17 §4.7).
+pub const EVENT_STRIDE: usize = 7;
+pub const EVENT_DETONATE: i32 = 0;
+pub const EVENT_DEATH: i32 = 1;
+
+/// Combat snapshot (spec 17 §4.7): `projectile_count`, one 11-field record per
+/// projectile the viewer owns or can see, then `event_count` and one 7-field
+/// record per event the viewer owns or can see.
+pub fn encode_combat(world: &World, viewer: PlayerId, events: &[CombatEvent]) -> Vec<i32> {
+    let mut out = Vec::new();
+    let projectiles: Vec<&Projectile> = world
+        .projectiles()
+        .iter()
+        .filter(|projectile| {
+            projectile.owner == viewer
+                || seen(world, viewer, projectile.origin)
+                || seen(world, viewer, projectile.impact)
+        })
+        .collect();
+    out.push(projectiles.len() as i32);
+    for projectile in projectiles {
+        out.extend_from_slice(&[
+            projectile.id as i32,
+            i32::from(projectile.owner),
+            i32::from(projectile.weapon),
+            projectile.shooter as i32,
+            projectile.target as i32,
+            projectile.origin.x.raw(),
+            projectile.origin.y.raw(),
+            projectile.impact.x.raw(),
+            projectile.impact.y.raw(),
+            projectile.launch_tick as i32,
+            projectile.impact_tick as i32,
+        ]);
+    }
+
+    let events: Vec<&CombatEvent> = events
+        .iter()
+        .filter(|event| event_visible(world, viewer, event))
+        .collect();
+    out.push(events.len() as i32);
+    for event in events {
+        match event {
+            CombatEvent::Detonate {
+                projectile,
+                owner,
+                weapon,
+                pos,
+                hit,
+            } => {
+                out.extend_from_slice(&[
+                    EVENT_DETONATE,
+                    *projectile as i32,
+                    i32::from(*owner),
+                    i32::from(*weapon),
+                    (*hit).map_or(-1, |id| id as i32),
+                    pos.x.raw(),
+                    pos.y.raw(),
+                ]);
+            }
+            CombatEvent::Death {
+                victim,
+                kind,
+                pos,
+                killer,
+                weapon,
+                ..
+            } => {
+                out.extend_from_slice(&[
+                    EVENT_DEATH,
+                    *victim as i32,
+                    i32::from(*kind),
+                    (*killer).map_or(-1, |id| id as i32),
+                    (*weapon).map_or(-1, i32::from),
+                    pos.x.raw(),
+                    pos.y.raw(),
+                ]);
+            }
+        }
+    }
+    out
+}
+
+/// `true` when `viewer`'s fog marks `pos` visible; the observer (or any id
+/// without a player) sees every point (spec 17 §4.7).
+fn seen(world: &World, viewer: PlayerId, pos: FxVec2) -> bool {
+    world.fog(viewer, cell_of(pos)) == 2
+}
+
+/// An event is listed when the viewer owns it (`owner`) or sees its `pos`.
+fn event_visible(world: &World, viewer: PlayerId, event: &CombatEvent) -> bool {
+    let (owner, pos) = match event {
+        CombatEvent::Detonate { owner, pos, .. } => (*owner, *pos),
+        CombatEvent::Death { owner, pos, .. } => (*owner, *pos),
+    };
+    owner == viewer || seen(world, viewer, pos)
 }
 
 /// Header of the Phase 2 match snapshot (§5.15): `tick, viewer, credits,
