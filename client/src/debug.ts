@@ -1,4 +1,5 @@
 import type { EffectKind } from "./render/effects";
+import type { ProjectileModel } from "./render/projectiles";
 import type { EntityState, Outcome } from "./sim/matchSnapshot";
 import type { SimCommand } from "./sim/protocol";
 
@@ -76,6 +77,10 @@ export interface SkirmishDebug {
   stateHash(): Promise<string>;
   /** Visible effect mesh counts of the last frame (spec 07 AC-07-06). */
   effectCounts(): Record<EffectKind, number>;
+  /** Drawn projectiles per model of the last frame (spec 17 §7.7). */
+  projectileCounts(): Record<ProjectileModel, number>;
+  /** One entry per drawn projectile of the last frame (spec 17 §7.7). */
+  projectileSamples(): { model: ProjectileModel; z: number; t: number }[];
   /** Gore filter setting (spec 07 §5). */
   gore(): boolean;
   /** Command panel render calls so far (spec §6.7, #140). */
