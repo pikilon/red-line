@@ -26,6 +26,8 @@ pub const ARRIVAL_CONTACT: Fx = Fx::from_raw(39321);
 pub const MAX_CENTROID_OFFSET: Fx = Fx::from_raw(393216);
 /// Spec 04 §5.1: largest ring searched for an unclaimed goal cell.
 const MAX_GOAL_SEARCH_RING: i32 = 20;
+/// Spec 17 §4.1: direct-hit radius of a ballistic `splash == 0` projectile.
+pub const DIRECT_HIT_CENTI: u32 = 45;
 
 /// Commands issued by a player, applied at the start of the next step (§5.8).
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -104,6 +106,8 @@ pub struct World {
     pub(crate) next_order_id: u32,
     /// Creation order.
     pub(crate) projectiles: Vec<Projectile>,
+    /// Starts at 0, never reused; not hashed (spec 17 §4.2).
+    pub(crate) next_projectile_id: u32,
     pub(crate) pending: Vec<(PlayerId, Command)>,
     /// Keyed by goal cell index.
     pub(crate) fields: BTreeMap<CellIndex, FlowField>,
@@ -127,6 +131,7 @@ impl World {
             next_entity_id: 0,
             next_order_id: 1,
             projectiles: Vec::new(),
+            next_projectile_id: 0,
             pending: Vec::new(),
             fields: BTreeMap::new(),
             outcome: Outcome::Ongoing,

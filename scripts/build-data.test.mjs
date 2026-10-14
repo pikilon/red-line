@@ -438,3 +438,44 @@ test("AC-17-01: weapon schema", () => {
     }
   }
 });
+
+test("AC-17-17: builtin weapons", () => {
+  const builtin = JSON.parse(readFileSync(join(repoRoot(), "data/generated/ruleset.json"), "utf8"));
+  // §3.3, in the order speedCenti, delivery, scatterCenti, salvo,
+  // salvoIntervalTicks, damage, then the render block.
+  const expected = {
+    "ua-rifle": [400, 0, 0, 1, 0, 10, "tracer", "straight", 0, "muzzle", "none"],
+    "ua-stugna-p": [45, 0, 0, 1, 0, 120, "atgm", "loft", 40, "softLaunch", "smoke"],
+    "ua-kozak-hmg": [450, 0, 0, 1, 0, 12, "tracer", "straight", 0, "muzzle", "none"],
+    "ua-bushmaster": [500, 0, 0, 1, 0, 18, "tracerHeavy", "straight", 0, "muzzle", "none"],
+    "ua-rh120": [900, 1, 0, 1, 0, 100, "shell", "straight", 0, "cannon", "none"],
+    "ua-gmlrs": [40, 1, 0, 2, 8, 125, "rocket", "topAttack", 600, "rocketLaunch", "smoke"],
+    "ua-stugna-emplacement": [45, 0, 0, 1, 0, 110, "atgm", "loft", 40, "softLaunch", "smoke"],
+    "ru-ak74": [400, 0, 0, 1, 0, 9, "tracer", "straight", 0, "muzzle", "none"],
+    "ru-rpg7": [60, 1, 25, 1, 0, 90, "rpg", "boost", 0, "backblast", "smoke"],
+    "ru-kpvt": [450, 0, 0, 1, 0, 14, "tracer", "straight", 0, "muzzle", "none"],
+    "ru-2a42": [500, 0, 0, 1, 0, 16, "tracerHeavy", "straight", 0, "muzzle", "none"],
+    "ru-2a46m": [900, 1, 0, 1, 0, 85, "shell", "straight", 0, "cannon", "none"],
+    "ru-tos-thermobaric": [30, 1, 150, 4, 3, 30, "rocket", "ballistic", 0, "rocketLaunch", "smoke"],
+    "ru-kornet-emplacement": [45, 0, 0, 1, 0, 120, "atgm", "loft", 40, "softLaunch", "smoke"],
+  };
+  assert.deepEqual(
+    builtin.weapons.map((w) => w.id).sort(),
+    Object.keys(expected).sort(),
+    "the builtin weapon roster",
+  );
+  for (const w of builtin.weapons) {
+    assert.equal(w.projectileTicks, 0, `${w.id} still has projectileTicks`);
+    const values = expected[w.id];
+    assert.deepEqual(
+      [w.speedCenti, w.delivery, w.scatterCenti, w.salvo, w.salvoIntervalTicks, w.damage],
+      values.slice(0, 6),
+      `${w.id} §3.3 weapon values`,
+    );
+    assert.deepEqual(
+      [w.render.model, w.render.flight, w.render.apexCenti, w.render.launch, w.render.trail],
+      values.slice(6),
+      `${w.id} §3.3 render values`,
+    );
+  }
+});

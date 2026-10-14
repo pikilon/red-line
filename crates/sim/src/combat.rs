@@ -3,17 +3,20 @@
 //! The combat phase resets every `last_target`, then each entity with a weapon
 //! (ascending id, skipping the dead, incomplete buildings and unpowered
 //! defenses) decrements its cooldown, picks a target — the ordered one when it
-//! is valid and in range, the nearest valid one otherwise — and fires: an
-//! instant hit when `projectile_ticks == 0`, a projectile otherwise. Due
-//! projectiles then hit in creation order and are removed: a plain projectile
-//! damages only its target wherever it moved, a splash one damages every enemy
-//! of the shooter inside its radius around the impact point frozen at fire time
-//! (no friendly fire).
+//! is valid and in range, the nearest valid one otherwise — and fires. A weapon
+//! with flight time (`speed_centi > 0` or `projectile_ticks`) launches a salvo
+//! of projectiles; otherwise the spec 03 instant hit applies. Due projectiles
+//! then resolve in creation order and are removed: a homing one hits its target
+//! wherever it moved, a ballistic one hits the nearest valid enemy within
+//! `DIRECT_HIT_CENTI` of its scattered impact, and a splash one damages every
+//! enemy of the shooter inside its radius (no friendly fire).
 
-use crate::entity::{NEUTRAL, Order, PlayerId, Projectile};
+use crate::angle::Angle;
+use crate::entity::{EntityId, NEUTRAL, Order, PlayerId, Projectile};
 use crate::fixed::{Fx, FxVec2};
-use crate::rules::{TypeId, WeaponDef, WeaponId, fx_centi};
-use crate::world::World;
+use crate::rng::SplitMix64;
+use crate::rules::{Delivery, TypeId, WeaponDef, WeaponId, fx_centi};
+use crate::world::{DIRECT_HIT_CENTI, World};
 
 /// `0` when `modifier_percent == 0`; otherwise `max(1, base * modifier_percent
 /// / 100)` with a `u64` intermediate (saturating at `u32::MAX`).
@@ -60,7 +63,9 @@ impl World {
             return;
         };
         let target = self.entities[target_index].id;
-        if weapon.projectile_ticks == 0 {
+        let distance = self.entity_distance(self.entities[index].pos, &self.entities[target_index]);
+        let flight = self.flight_ticks(&weapon, distance);
+        if flight == 0 {
             // Instant branch of §5.11 step 4, with the target's position as the
             // impact point for splash.
             if weapon.splash_centi == 0 {
@@ -71,17 +76,54 @@ impl World {
                 self.apply_splash(owner, &weapon, impact);
             }
         } else {
-            let projectile = Projectile {
-                owner: self.entities[index].owner,
-                weapon: weapon_id,
-                target,
-                impact: self.entities[target_index].pos,
-                impact_tick: self.tick + weapon.projectile_ticks,
-            };
-            self.projectiles.push(projectile);
+            let owner = self.entities[index].owner;
+            let shooter = self.entities[index].id;
+            let origin = self.entities[index].pos;
+            let aim = self.entities[target_index].pos;
+            let tick = self.tick;
+            for k in 0..weapon.salvo {
+                let projectile = Projectile {
+                    id: self.next_projectile_id,
+                    owner,
+                    shooter,
+                    weapon: weapon_id,
+                    target,
+                    origin,
+                    impact: aim + self.scatter(&weapon, shooter, tick, k),
+                    launch_tick: tick + k * weapon.salvo_interval_ticks,
+                    impact_tick: tick + k * weapon.salvo_interval_ticks + flight,
+                };
+                self.next_projectile_id += 1;
+                self.projectiles.push(projectile);
+            }
         }
         self.entities[index].cooldown = weapon.cooldown_ticks;
         self.entities[index].last_target = Some(target);
+    }
+
+    /// Spec 17 §4.2: `max(1, ceil(d / speed))` at `speedCenti`, otherwise the
+    /// legacy `projectileTicks` (0 means the instant hit of spec 03).
+    fn flight_ticks(&self, weapon: &WeaponDef, distance: Fx) -> u32 {
+        if weapon.speed_centi == 0 {
+            return weapon.projectile_ticks;
+        }
+        let speed = i64::from(fx_centi(weapon.speed_centi).raw());
+        let ticks = (i64::from(distance.raw()) + speed - 1) / speed;
+        u32::try_from(ticks.max(1)).unwrap_or(u32::MAX)
+    }
+
+    /// Spec 17 §4.4: `(0, 0)` unless a ballistic weapon scatters, then a
+    /// stateless uniform draw over the disc `[0, scatterCenti]`.
+    fn scatter(&self, weapon: &WeaponDef, shooter: EntityId, tick: u32, k: u32) -> FxVec2 {
+        if weapon.delivery != Delivery::Ballistic || weapon.scatter_centi == 0 {
+            return FxVec2::ZERO;
+        }
+        let mut rng =
+            SplitMix64::new((u64::from(tick) << 32) ^ (u64::from(shooter) << 8) ^ u64::from(k));
+        let u = Fx::from_raw((rng.next_u32() % 65537) as i32);
+        let r = fx_centi(weapon.scatter_centi).mul(u.sqrt());
+        let angle = Angle((rng.next_u32() >> 16) as u16);
+        angle.dir().scale(r)
     }
 
     /// Incomplete buildings never fire, and a `requires_power` building does not
@@ -112,10 +154,46 @@ impl World {
         self.rules.weapons.get(usize::from(weapon)).cloned()
     }
 
-    /// §5.11 step 3: every projectile whose `impact_tick` is the current tick
-    /// hits, in creation order, and is removed; the rest stay airborne.
+    /// Spec 17 §4.3: cancel unlaunched projectiles of a dead shooter, track a
+    /// living target for homing, then resolve every due projectile in creation
+    /// order and remove it.
     fn impact_projectiles(&mut self) {
         let tick = self.tick;
+
+        // Step 3.1: a not-yet-launched projectile whose shooter is gone or dead
+        // is removed with no event; the rest of the salvo is not fired.
+        let mut kept = Vec::with_capacity(self.projectiles.len());
+        for projectile in std::mem::take(&mut self.projectiles) {
+            let cancelled = projectile.launch_tick > tick
+                && self
+                    .entity(projectile.shooter)
+                    .is_none_or(|shooter| shooter.hp == 0);
+            if !cancelled {
+                kept.push(projectile);
+            }
+        }
+        self.projectiles = kept;
+
+        // Step 3.2: a launched homing projectile tracks a living target.
+        for index in 0..self.projectiles.len() {
+            let projectile = self.projectiles[index];
+            if projectile.launch_tick > tick {
+                continue;
+            }
+            let Some(weapon) = self.weapon_def(projectile.weapon) else {
+                continue;
+            };
+            if weapon.delivery != Delivery::Homing {
+                continue;
+            }
+            if let Some(target) = self.entity(projectile.target)
+                && target.hp > 0
+            {
+                self.projectiles[index].impact = target.pos;
+            }
+        }
+
+        // Step 3.3: due projectiles hit, in creation order, and are removed.
         let mut flying = Vec::with_capacity(self.projectiles.len());
         for projectile in std::mem::take(&mut self.projectiles) {
             if projectile.impact_tick == tick {
@@ -127,20 +205,59 @@ impl World {
         self.projectiles = flying;
     }
 
-    /// §5.11 step 4: a plain projectile hits only its target, when it still
-    /// exists with `hp > 0`; a splash projectile hits every enemy of the
-    /// shooter inside the radius around its frozen impact point.
+    /// Spec 17 §4.3: splash around `impact` for either delivery; otherwise a
+    /// homing projectile hits its target and a ballistic one hits the nearest
+    /// valid entity within `DIRECT_HIT_CENTI` of `impact`.
     fn resolve_projectile(&mut self, projectile: &Projectile) {
         let Some(weapon) = self.weapon_def(projectile.weapon) else {
             return;
         };
-        if weapon.splash_centi == 0 {
-            if let Some(index) = self.index_of(projectile.target) {
-                self.apply_hit(index, &weapon);
-            }
-        } else {
+        if weapon.splash_centi > 0 {
             self.apply_splash(projectile.owner, &weapon, projectile.impact);
+            return;
         }
+        match weapon.delivery {
+            Delivery::Homing => {
+                if let Some(index) = self.index_of(projectile.target) {
+                    self.apply_hit(index, &weapon);
+                }
+            }
+            Delivery::Ballistic => {
+                if let Some(index) = self.direct_hit(projectile.owner, &weapon, projectile.impact) {
+                    self.apply_hit(index, &weapon);
+                }
+            }
+        }
+    }
+
+    /// Spec 17 §4.3 direct hit: the entity with `hp > 0`, an owner neither the
+    /// shooter's nor `NEUTRAL`, a non-zero modifier and the smallest entity
+    /// distance from `impact`, within `DIRECT_HIT_CENTI`. Ties go to the lowest
+    /// id (the ascending index).
+    fn direct_hit(&self, owner: PlayerId, weapon: &WeaponDef, impact: FxVec2) -> Option<usize> {
+        let radius = fx_centi(DIRECT_HIT_CENTI);
+        let mut best: Option<(Fx, usize)> = None;
+        for index in 0..self.entities.len() {
+            let entity = &self.entities[index];
+            if entity.hp == 0
+                || entity.owner == owner
+                || entity.owner == NEUTRAL
+                || self
+                    .rules
+                    .modifier(weapon.damage_type, self.rules.ty(entity.kind).armor)
+                    == 0
+            {
+                continue;
+            }
+            let distance = self.entity_distance(impact, entity);
+            if distance > radius {
+                continue;
+            }
+            if best.is_none_or(|(best_distance, _)| distance < best_distance) {
+                best = Some((distance, index));
+            }
+        }
+        best.map(|(_, index)| index)
     }
 
     /// The ordered target when it exists, is valid and in range; otherwise the
