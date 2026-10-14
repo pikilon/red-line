@@ -43,6 +43,8 @@ import {
   createBodyMaterial,
   DARK_MASK,
   type GeneratedTextures,
+  isInfantry,
+  MARK_MASK,
   VEHICLE_TILE,
 } from "./generatedTextures";
 import { createHeadingTracker, turnRatesOf } from "./heading";
@@ -187,20 +189,23 @@ function withColor(
   return source;
 }
 
-/** `body` and `dark` merged into one vertex-coloured opaque geometry. */
+/** `darkMask` of each opaque part: paint texture, dark metal or flat mark. */
+const SURFACE_MASK = { body: 0, team: 0, dark: 1, mark: MARK_MASK } as const;
+
+/** `body`, `dark` and `mark` merged into one vertex-coloured opaque geometry. */
 function opaqueGeometry(
   parts: ReadonlyMap<MaterialName, ModelPart>,
   teamAsBody = false,
 ): BufferGeometry | null {
   const sources: BufferGeometry[] = [];
   const bodyColor = parts.get("body")?.color;
-  for (const material of ["body", "team", "dark"] as const) {
+  for (const material of ["body", "team", "dark", "mark"] as const) {
     if (material === "team" && !teamAsBody) continue;
     const part = parts.get(material);
     if (part === undefined) continue;
     // Vehicles paint their `team` parts (skirts, ERA) in the body colour.
     const color = material === "team" ? (bodyColor ?? part.color) : part.color;
-    sources.push(withColor(part.geometry, color, material === "dark" ? 1 : 0));
+    sources.push(withColor(part.geometry, color, SURFACE_MASK[material]));
   }
   const first = sources[0];
   if (first === undefined) return null;
@@ -209,18 +214,20 @@ function opaqueGeometry(
   return boxProjectUvs(merged);
 }
 
-/** `team` is shaded by its `COLOR_0` occlusion when the geometry has one. */
+/** `team` is shaded by its `COLOR_0` occlusion when the geometry has one;
+ *  `flatShading` is false for the smooth limbs of infantry (spec 17 §3). */
 function modelMaterial(
   material: MaterialName,
   geometry: BufferGeometry,
+  flatShading: boolean,
 ): MeshLambertMaterial {
   return material === "team"
     ? new MeshLambertMaterial({
         color: 0xffffff,
         vertexColors: geometry.hasAttribute("color"),
-        flatShading: true,
+        flatShading,
       })
-    : createBodyMaterial();
+    : createBodyMaterial(flatShading);
 }
 
 /** Unit box scaffolding frame (spec 09 §5): the 12 edges of a unit box plus 4
@@ -413,6 +420,8 @@ export function createEntityRenderer(
     const livery =
       type === undefined ? null : liveryOf(type.id, type.category, type.armor);
     const opaque = opaqueGeometry(parts, livery !== null);
+    const infantry =
+      type !== undefined && isInfantry(type.category, type.armor);
     if (opaque !== null && livery !== null) {
       boxProjectUvs(opaque, VEHICLE_TILE);
       addLiveryAttribute(
@@ -455,7 +464,7 @@ export function createEntityRenderer(
         geometry,
         material === "cage"
           ? createCageMaterial(cageTexture())
-          : modelMaterial(material, geometry),
+          : modelMaterial(material, geometry, !infantry),
         capacity,
       );
       mesh.count = 0;

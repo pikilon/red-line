@@ -49,9 +49,10 @@ def _rgba(hex_color):
 
 
 def material(name, hex_color):
-    """A flat, non-metallic material; `name` must be body, team, dark or cage."""
-    if name not in ("body", "team", "dark", "cage"):
-        raise ValueError(f"material name must be body, team, dark or cage, got {name}")
+    """A flat, non-metallic material; `name` must be body, team, dark, cage or
+    mark (a painted marking in a fixed colour, spec 17 §3)."""
+    if name not in ("body", "team", "dark", "cage", "mark"):
+        raise ValueError(f"material name must be body, team, dark, cage or mark, got {name}")
     mat = bpy.data.materials.get(name) or bpy.data.materials.new(name)
     mat.diffuse_color = _rgba(hex_color)
     tree = getattr(mat, "node_tree", None)
@@ -183,24 +184,6 @@ def turret(parts, pivot, name="turret"):
     bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
     cursor.location = (0, 0, 0)
     return obj
-
-
-def soldier(name, weapon, mats, height=0.5):
-    """Low-poly standing soldier facing -Y; weapon is rifle or launcher."""
-    s = height / 0.5
-    body, team, dark = mats["body"], mats["team"], mats["dark"]
-    parts = [
-        box(f"{name}_legs", (0.12 * s, 0.08 * s, 0.22 * s), (0, 0, 0.11 * s), body),
-        box(f"{name}_torso", (0.16 * s, 0.1 * s, 0.17 * s), (0, 0, 0.305 * s), body),
-        box(f"{name}_vest", (0.17 * s, 0.11 * s, 0.08 * s), (0, 0, 0.33 * s), team),
-        box(f"{name}_head", (0.08 * s, 0.08 * s, 0.08 * s), (0, 0, 0.44 * s), body),
-        box(f"{name}_helmet", (0.1 * s, 0.1 * s, 0.04 * s), (0, 0, 0.48 * s), dark),
-    ]
-    if weapon == "launcher":
-        parts.append(cylinder(f"{name}_tube", 0.03 * s, 0.32 * s, (0.09 * s, -0.02 * s, 0.4 * s), dark, 6, "Y"))
-    else:
-        parts.append(box(f"{name}_rifle", (0.03 * s, 0.22 * s, 0.03 * s), (0.07 * s, -0.1 * s, 0.3 * s), dark))
-    return join(parts, name)
 
 
 def join(objects, name):

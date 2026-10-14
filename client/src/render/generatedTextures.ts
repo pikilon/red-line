@@ -28,6 +28,8 @@ export const GENERATED_TEXTURE_IDS = [
   "ru-skin-bump",
   "ua-wall",
   "ua-roof",
+  "ua-camo",
+  "ru-camo",
 ] as const;
 export type GeneratedTextureId = (typeof GENERATED_TEXTURE_IDS)[number];
 export type GeneratedTextures = Partial<Record<GeneratedTextureId, Texture>>;
@@ -43,6 +45,11 @@ export const MODEL_TILE = 1.5;
 /** Vehicles are small: their skin repeats every this many model units (spec 15 §3). */
 export const VEHICLE_TILE = 0.6;
 
+/** Infantry camouflage repeats every this many model units, so its pixels
+ *  are a few centimetres on a soldier (spec 17 §2). The model UVs keep
+ *  MODEL_TILE; the camouflage texture repeats MODEL_TILE / INFANTRY_TILE times. */
+export const INFANTRY_TILE = 0.5;
+
 /** Loads `textures/<id>.webp` for every id; a file that fails is skipped. */
 export async function loadGeneratedTextures(
   source: TextureSource = new TextureLoader(),
@@ -56,6 +63,10 @@ export async function loadGeneratedTextures(
         texture.wrapS = RepeatWrapping;
         texture.wrapT = RepeatWrapping;
         texture.anisotropy = 4;
+        if (id.endsWith("-camo")) {
+          const repeat = MODEL_TILE / INFANTRY_TILE;
+          texture.repeat.set(repeat, repeat);
+        }
         loaded[id] = texture;
       } catch {
         // A missing candidate keeps the procedural look for that slot.
@@ -103,9 +114,14 @@ export const BUMP_SCALE = 0.4;
 
 const INFANTRY_ARMOR = 0;
 
-/** Texture id of a type's `body` material: `<faction>-skin` for vehicles,
- *  `<faction>-paint` for infantry, `<faction>-concrete` for buildings and
- *  depots (spec 12 §6, spec 15 §3). */
+/** True for infantry: units with the first armour class (spec 17 §2). */
+export function isInfantry(category: string, armor: number): boolean {
+  return category === "unit" && armor === INFANTRY_ARMOR;
+}
+
+/** Texture id of a type's `body` material: `<faction>-camo` for infantry,
+ *  `<faction>-skin` for vehicles, `<faction>-concrete` for buildings and
+ *  depots (spec 12 §6, spec 15 §3, spec 17 §2). */
 export function bodyTextureId(
   typeId: string,
   category: string,
@@ -114,7 +130,9 @@ export function bodyTextureId(
   // Type ids start with the faction prefix; neutral types use `ua`.
   const prefix = typeId.startsWith("ru-") ? "ru" : "ua";
   if (category !== "unit") return `${prefix}-concrete` as GeneratedTextureId;
-  return `${prefix}-${armor === INFANTRY_ARMOR ? "paint" : "skin"}` as GeneratedTextureId;
+  if (isInfantry(category, armor))
+    return `${prefix}-camo` as GeneratedTextureId;
+  return `${prefix}-skin` as GeneratedTextureId;
 }
 
 /** Texture id of the bump map that goes with a `<faction>-skin`, else null. */
@@ -124,8 +142,8 @@ export function bumpTextureId(
   return id.endsWith("-skin") ? (`${id}-bump` as GeneratedTextureId) : null;
 }
 
-/** The colour map and bump map of a type's `body` among `textures`: a vehicle
- *  whose skin is not loaded falls back to `<faction>-paint` with no bump. */
+/** The colour map and bump map of a type's `body` among `textures`: an infantry
+ *  or vehicle whose camo/skin is not loaded falls back to `<faction>-paint`. */
 export function bodyMapsOf(
   textures: GeneratedTextures,
   typeId: string,
@@ -135,7 +153,7 @@ export function bodyMapsOf(
   const id = bodyTextureId(typeId, category, armor);
   const skin = textures[id];
   const bumpId = bumpTextureId(id);
-  if (skin !== undefined || bumpId === null) {
+  if (skin !== undefined) {
     return {
       paint: skin,
       bump: bumpId === null ? undefined : textures[bumpId],
@@ -164,13 +182,19 @@ const WHITE = whiteTexture();
 /** Per-vertex 0 (body) / 1 (dark) attribute name of the merged geometry. */
 export const DARK_MASK = "darkMask";
 
+/** `darkMask` of `mark` vertices: painted markings keep their own flat colour,
+ *  without the paint or camouflage texture (spec 17 §3). */
+export const MARK_MASK = 2;
+
 /** The vertex-coloured `body` material. Its map is the paint or concrete
- *  texture, and vertices with `darkMask` = 1 sample the `dark-metal` texture
- *  instead, so the merged `body`+`dark` mesh stays one draw call. */
-export function createBodyMaterial(): MeshLambertMaterial {
+ *  texture, vertices with `darkMask` = 1 sample the `dark-metal` texture
+ *  instead and those with MARK_MASK no texture, so the merged
+ *  `body`+`dark`+`mark` mesh stays one draw call. Infantry
+ *  passes `flatShading` false to keep its smooth limbs (spec 17 §3). */
+export function createBodyMaterial(flatShading = true): MeshLambertMaterial {
   const material = new MeshLambertMaterial({
     vertexColors: true,
-    flatShading: true,
+    flatShading,
   });
   const darkMap = { value: WHITE as Texture };
   const liveryMap = { value: null as Texture | null };
@@ -200,7 +224,7 @@ float liveryCover = 0.0;
 #ifdef USE_MAP
   vec4 paintColor = texture2D( map, vMapUv );
   vec4 darkColor = texture2D( darkMap, vMapUv );
-  vec4 surfaceColor = mix( paintColor, darkColor, vDark );
+  vec4 surfaceColor = mix( mix( paintColor, darkColor, min( vDark, 1.0 ) ), vec4( 1.0 ), step( 1.5, vDark ) );
   diffuseColor *= surfaceColor;
   liveryDetail = clamp( dot( surfaceColor.rgb, vec3( 0.3333 ) ) / 0.9, 0.75, 1.05 );
 #endif`,
@@ -211,7 +235,7 @@ float liveryCover = 0.0;
   vec4 liveryColor = texture2D( liveryMap, vec2( ( vLivery.x + step( 1.5, vLivery.z ) * ( 1.0 - step( 2.5, vLivery.z ) ) ) * 0.5, vLivery.y ) );
   // Outside the patch the texture is not sampled: its coarse mips are not empty.
   float liveryInside = step( 0.0, vLivery.x ) * step( vLivery.x, 1.0 ) * step( 0.0, vLivery.y ) * step( vLivery.y, 1.0 );
-  float liveryWeight = liveryColor.a * liveryInside * min( vLivery.z, 1.0 ) * ( 1.0 - vDark ) * 0.95;
+  float liveryWeight = liveryColor.a * liveryInside * min( vLivery.z, 1.0 ) * ( 1.0 - min( vDark, 1.0 ) ) * 0.95;
   // Flags are flat; the painted Z (mask 3) follows the relief of the skin.
   liveryCover = liveryWeight * ( 1.0 - step( 2.5, vLivery.z ) );
   diffuseColor.rgb = mix( diffuseColor.rgb, liveryColor.rgb * liveryDetail, liveryWeight );`,
