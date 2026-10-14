@@ -16,7 +16,7 @@ use crate::entity::{EntityId, NEUTRAL, Order, PlayerId, Projectile};
 use crate::fixed::{Fx, FxVec2};
 use crate::rng::SplitMix64;
 use crate::rules::{Delivery, TypeId, WeaponDef, WeaponId, fx_centi};
-use crate::world::{DIRECT_HIT_CENTI, World};
+use crate::world::{CombatEvent, DIRECT_HIT_CENTI, World};
 
 /// `0` when `modifier_percent == 0`; otherwise `max(1, base * modifier_percent
 /// / 100)` with a `u64` intermediate (saturating at `u32::MAX`).
@@ -65,19 +65,18 @@ impl World {
         let target = self.entities[target_index].id;
         let distance = self.entity_distance(self.entities[index].pos, &self.entities[target_index]);
         let flight = self.flight_ticks(&weapon, distance);
+        let owner = self.entities[index].owner;
+        let shooter = self.entities[index].id;
         if flight == 0 {
             // Instant branch of §5.11 step 4, with the target's position as the
             // impact point for splash.
             if weapon.splash_centi == 0 {
-                self.apply_hit(target_index, &weapon);
+                self.apply_hit(shooter, target_index, weapon_id, &weapon);
             } else {
                 let impact = self.entities[target_index].pos;
-                let owner = self.entities[index].owner;
-                self.apply_splash(owner, &weapon, impact);
+                self.apply_splash(owner, shooter, weapon_id, &weapon, impact);
             }
         } else {
-            let owner = self.entities[index].owner;
-            let shooter = self.entities[index].id;
             let origin = self.entities[index].pos;
             let aim = self.entities[target_index].pos;
             let tick = self.tick;
@@ -207,27 +206,50 @@ impl World {
 
     /// Spec 17 §4.3: splash around `impact` for either delivery; otherwise a
     /// homing projectile hits its target and a ballistic one hits the nearest
-    /// valid entity within `DIRECT_HIT_CENTI` of `impact`.
+    /// valid entity within `DIRECT_HIT_CENTI` of `impact`. Every resolution
+    /// emits a `Detonate` event carrying the damaged entity, if any.
     fn resolve_projectile(&mut self, projectile: &Projectile) {
         let Some(weapon) = self.weapon_def(projectile.weapon) else {
             return;
         };
-        if weapon.splash_centi > 0 {
-            self.apply_splash(projectile.owner, &weapon, projectile.impact);
-            return;
-        }
-        match weapon.delivery {
-            Delivery::Homing => {
-                if let Some(index) = self.index_of(projectile.target) {
-                    self.apply_hit(index, &weapon);
+        let hit = if weapon.splash_centi > 0 {
+            self.apply_splash(
+                projectile.owner,
+                projectile.shooter,
+                projectile.weapon,
+                &weapon,
+                projectile.impact,
+            );
+            None
+        } else {
+            match weapon.delivery {
+                Delivery::Homing => {
+                    let hit = self
+                        .entity(projectile.target)
+                        .filter(|entity| entity.hp > 0)
+                        .map(|entity| entity.id);
+                    if let Some(index) = hit.and_then(|id| self.index_of(id)) {
+                        self.apply_hit(projectile.shooter, index, projectile.weapon, &weapon);
+                    }
+                    hit
+                }
+                Delivery::Ballistic => {
+                    let index = self.direct_hit(projectile.owner, &weapon, projectile.impact);
+                    index.map(|index| {
+                        let id = self.entities[index].id;
+                        self.apply_hit(projectile.shooter, index, projectile.weapon, &weapon);
+                        id
+                    })
                 }
             }
-            Delivery::Ballistic => {
-                if let Some(index) = self.direct_hit(projectile.owner, &weapon, projectile.impact) {
-                    self.apply_hit(index, &weapon);
-                }
-            }
-        }
+        };
+        self.events.push(CombatEvent::Detonate {
+            projectile: projectile.id,
+            owner: projectile.owner,
+            weapon: projectile.weapon,
+            pos: projectile.impact,
+            hit,
+        });
     }
 
     /// Spec 17 §4.3 direct hit: the entity with `hp > 0`, an owner neither the
@@ -305,8 +327,15 @@ impl World {
         distance >= fx_centi(weapon.min_range_centi) && distance <= fx_centi(weapon.range_centi)
     }
 
-    /// Instant hit: the target loses the modified damage (saturating).
-    fn apply_hit(&mut self, target_index: usize, weapon: &WeaponDef) {
+    /// Instant or projectile hit: the target loses the modified damage
+    /// (saturating) and records `(shooter, weapon)` as its last hit.
+    fn apply_hit(
+        &mut self,
+        shooter: EntityId,
+        target_index: usize,
+        weapon_id: WeaponId,
+        weapon: &WeaponDef,
+    ) {
         let target = &self.entities[target_index];
         if target.hp == 0 {
             return;
@@ -315,13 +344,25 @@ impl World {
             .rules
             .modifier(weapon.damage_type, self.rules.ty(target.kind).armor);
         let damage = damage_dealt(weapon.damage, modifier);
+        if damage == 0 {
+            return;
+        }
         self.entities[target_index].hp = self.entities[target_index].hp.saturating_sub(damage);
+        self.entities[target_index].last_hit = Some((shooter, weapon_id));
     }
 
     /// §5.11 step 4 splash: every entity with `hp > 0` that belongs to neither
     /// the shooter nor `NEUTRAL` and lies within `splash_centi` of the impact
-    /// point loses the modified damage (no friendly fire).
-    fn apply_splash(&mut self, owner: PlayerId, weapon: &WeaponDef, impact: FxVec2) {
+    /// point loses the modified damage (no friendly fire). Each damaged entity
+    /// records `(shooter, weapon)` as its last hit.
+    fn apply_splash(
+        &mut self,
+        owner: PlayerId,
+        shooter: EntityId,
+        weapon_id: WeaponId,
+        weapon: &WeaponDef,
+        impact: FxVec2,
+    ) {
         let radius = fx_centi(weapon.splash_centi);
         for index in 0..self.entities.len() {
             let entity = &self.entities[index];
@@ -336,7 +377,11 @@ impl World {
                 .rules
                 .modifier(weapon.damage_type, self.rules.ty(entity.kind).armor);
             let damage = damage_dealt(weapon.damage, modifier);
+            if damage == 0 {
+                continue;
+            }
             self.entities[index].hp = self.entities[index].hp.saturating_sub(damage);
+            self.entities[index].last_hit = Some((shooter, weapon_id));
         }
     }
 }

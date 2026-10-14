@@ -42,6 +42,8 @@ export interface SkirmishSimLike {
   set_ai_active(player: number, active: boolean): boolean;
   snapshot_for(viewer: number): Int32Array;
   fog_for(viewer: number): Uint8Array;
+  /** Optional combat snapshot (spec 17 §5); newer sims expose `combat_for`. */
+  combat_for?(viewer: number): Int32Array;
   command_move(
     unitIds: Uint32Array,
     targetXRaw: number,
@@ -194,10 +196,19 @@ export function createWorkerHandler(
 
   const postSkirmishSnapshot = (target: SkirmishSimLike): void => {
     const data = target.snapshot_for(viewer);
+    const combat = target.combat_for?.(viewer);
     const fog = target.fog_for(viewer);
-    post({ type: "snapshot", data, fog }, [
+    if (combat === undefined) {
+      post({ type: "snapshot", data, fog }, [
+        data.buffer as ArrayBuffer,
+        fog.buffer as ArrayBuffer,
+      ]);
+      return;
+    }
+    post({ type: "snapshot", data, fog, combat }, [
       data.buffer as ArrayBuffer,
       fog.buffer as ArrayBuffer,
+      combat.buffer as ArrayBuffer,
     ]);
   };
 
