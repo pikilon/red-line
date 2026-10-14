@@ -78,6 +78,9 @@ pub struct Entity {
     pub cargo: u32,
     /// Entity fired at during this tick's combat phase.
     pub last_target: Option<EntityId>,
+    /// Last `(shooter, weapon)` that damaged this entity; presentation only,
+    /// never read by game rules and not hashed (spec 17 §4.1, §4.3).
+    pub last_hit: Option<(EntityId, WeaponId)>,
     /// `Some` for buildings and depots.
     pub site: Option<Site>,
 }

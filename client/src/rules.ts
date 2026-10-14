@@ -46,6 +46,47 @@ export const RULES: Ruleset = {
   factions: ruleset.factions as FactionDef[],
 };
 
+/** Visual block of a weapon (spec 17 §3.2); the simulation ignores it. */
+export interface WeaponRender {
+  model: string;
+  flight: string;
+  apexCenti: number;
+  launch: string;
+  trail: string;
+}
+
+export interface WeaponDef {
+  id: string;
+  damageType: number;
+  damage: number;
+  rangeCenti: number;
+  minRangeCenti: number;
+  cooldownTicks: number;
+  splashCenti: number;
+  projectileTicks: number;
+  speedCenti: number;
+  delivery: number;
+  scatterCenti: number;
+  salvo: number;
+  salvoIntervalTicks: number;
+  render: WeaponRender;
+}
+
+/** Spec 17 §3.2 defaults for a weapon with no `render` block. */
+const DEFAULT_WEAPON_RENDER: WeaponRender = {
+  model: "tracer",
+  flight: "straight",
+  apexCenti: 0,
+  launch: "muzzle",
+  trail: "none",
+};
+
+// WEAPONS: every generated weapon with its `render` block resolved to §3.2.
+export const WEAPONS: WeaponDef[] = ruleset.weapons.map((weapon) => ({
+  ...weapon,
+  render: { ...DEFAULT_WEAPON_RENDER, ...weapon.render },
+})) as WeaponDef[];
+
 // typeIndex(id): the index of a type by id, -1 if absent.
 export function typeIndex(id: string): number {
   const index = RULES.types.findIndex((type) => type.id === id);

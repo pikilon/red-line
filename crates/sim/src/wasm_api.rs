@@ -10,8 +10,10 @@ use crate::rules::{Ruleset, TypeId};
 use std::collections::BTreeMap;
 
 use crate::entity::EntityId;
-use crate::snapshot::{encode_fog, encode_match_snapshot_with_shots, encode_snapshot};
-use crate::world::{Command, SimError, World};
+use crate::snapshot::{
+    encode_combat, encode_fog, encode_match_snapshot_with_shots, encode_snapshot,
+};
+use crate::world::{CombatEvent, Command, SimError, World};
 
 /// Client-facing text for a setup error; the client matches on these strings.
 fn error_text(error: SimError) -> String {
@@ -33,6 +35,9 @@ pub struct Sim {
     /// Shots fired since the last match snapshot (shooter -> target), so a
     /// snapshot taken after several steps still reports them.
     shots: BTreeMap<EntityId, EntityId>,
+    /// Combat events since the last `combat_for`, so several `step` calls
+    /// before one snapshot still report them (spec 17 §4.7).
+    pending_events: Vec<CombatEvent>,
 }
 
 #[wasm_bindgen]
@@ -46,6 +51,7 @@ impl Sim {
             seed: u64::from(seed),
             ais: Vec::new(),
             shots: BTreeMap::new(),
+            pending_events: Vec::new(),
         })
     }
 
@@ -59,6 +65,7 @@ impl Sim {
             seed: u64::from(seed),
             ais: Vec::new(),
             shots: BTreeMap::new(),
+            pending_events: Vec::new(),
         })
     }
 
@@ -238,12 +245,14 @@ impl Sim {
     pub fn step(&mut self) {
         step_with_ai(&mut self.world, &mut self.ais);
         self.record_shots();
+        self.record_events();
     }
 
     pub fn step_n(&mut self, n: u32) {
         for _ in 0..n {
             step_with_ai(&mut self.world, &mut self.ais);
             self.record_shots();
+            self.record_events();
         }
     }
 
@@ -265,17 +274,43 @@ impl Sim {
         encode_fog(&self.world, viewer)
     }
 
+    /// Combat snapshot as seen by `viewer`; any other value is the observer.
+    /// The events of every step since the previous call are reported once,
+    /// then cleared (spec 17 §4.7).
+    pub fn combat_for(&mut self, viewer: u8) -> Vec<i32> {
+        let out = encode_combat(&self.world, viewer, &self.pending_events);
+        self.pending_events.clear();
+        out
+    }
+
     pub fn state_hash_hex(&self) -> String {
         format!("{:016x}", state_hash(&self.world))
     }
 }
 
 impl Sim {
+    /// Wraps an existing world in a `Sim` for the native tests; not part of the
+    /// WASM API.
+    #[doc(hidden)]
+    pub fn from_world(world: World) -> Sim {
+        Sim {
+            world,
+            seed: 0,
+            ais: Vec::new(),
+            shots: BTreeMap::new(),
+            pending_events: Vec::new(),
+        }
+    }
+
     fn record_shots(&mut self) {
         for entity in self.world.entities() {
             if let Some(target) = entity.last_target {
                 self.shots.insert(entity.id, target);
             }
         }
+    }
+
+    fn record_events(&mut self) {
+        self.pending_events.extend_from_slice(self.world.events());
     }
 }

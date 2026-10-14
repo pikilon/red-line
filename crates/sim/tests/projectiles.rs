@@ -1,5 +1,5 @@
-//! AC-17-02..07, AC-17-10: projectile flight, delivery, scatter, salvos and the
-//! state hash (spec 17 §4.2–§4.6, traceability §10).
+//! AC-17-02..10: projectile flight, delivery, scatter, salvos, combat events
+//! and the combat snapshot (spec 17 §4.2–§4.7, traceability §10).
 
 use serde_json::{Value, json};
 use sim::fixed::FxVec2;
@@ -442,4 +442,265 @@ fn ac_17_10_hash() {
     let b = origin_world(1050);
     assert_eq!(a.projectiles()[0].impact, b.projectiles()[0].impact);
     assert_ne!(state_hash(&a), state_hash(&b));
+}
+
+#[test]
+fn ac_17_08_events_and_killer() {
+    use sim::rules::WeaponId;
+    use sim::world::CombatEvent;
+
+    // An instant kill: the step that removes the victim names the killer and
+    // its weapon.
+    let mut rules = TestRules::new();
+    let gun = rules.weapon(weapon("killer-gun", 0, 0, 0, 1, 0));
+    rules.unit("killer", "soldier", gun, 10);
+    let rules = rules.build();
+    let killer_kind = rules.type_index("killer").unwrap();
+    let victim_kind = rules.type_index("tech-slice-placeholder").unwrap();
+    let weapon_id = rules.ty(killer_kind).weapon as WeaponId;
+
+    let mut world = World::sandbox(rules, MapGrid::open(40, 24), &[0, 0]);
+    let killer = world.spawn(0, killer_kind, at(1000, 1000));
+    let victim = world.spawn(1, victim_kind, at(1300, 1000));
+    let victim_pos = world.entity(victim).unwrap().pos;
+    world.step();
+    assert_eq!(
+        world.events(),
+        &[CombatEvent::Death {
+            victim,
+            owner: 1,
+            kind: victim_kind,
+            pos: victim_pos,
+            killer: Some(killer),
+            weapon: Some(weapon_id),
+        }],
+        "the instant kill names the killer"
+    );
+    assert!(world.entity(victim).is_none());
+
+    // A projectile whose shooter dies in flight still credits that shooter.
+    let mut rules = TestRules::new();
+    let shell = rules.weapon(weapon("flight-gun", 45, 0, 0, 1, 0));
+    rules.unit("flyer", "soldier", shell, 10);
+    let rules = rules.build();
+    let flyer_kind = rules.type_index("flyer").unwrap();
+    let victim_kind = rules.type_index("tech-slice-placeholder").unwrap();
+    let weapon_id = rules.ty(flyer_kind).weapon as WeaponId;
+
+    let mut world = World::sandbox(rules, MapGrid::open(40, 24), &[0, 0]);
+    let shooter = world.spawn(0, flyer_kind, at(500, 500));
+    let victim = world.spawn(1, victim_kind, at(800, 500));
+    world.step();
+    assert_eq!(world.projectiles().len(), 1);
+    world.set_hp(shooter, 0);
+    world.step();
+    assert!(world.entity(shooter).is_none(), "the shooter is removed");
+    let mut death = None;
+    for _ in 0..20 {
+        world.step();
+        for event in world.events() {
+            if let CombatEvent::Death {
+                victim: dead,
+                killer,
+                weapon,
+                ..
+            } = event
+                && *dead == victim
+            {
+                death = Some((*killer, *weapon));
+            }
+        }
+        if death.is_some() {
+            break;
+        }
+    }
+    assert_eq!(death, Some((Some(shooter), Some(weapon_id))));
+    assert!(world.entity(victim).is_none());
+
+    // A unit set to `hp 0` with no prior hit has no killer.
+    let rules = TestRules::new().build();
+    let victim_kind = rules.type_index("tech-slice-placeholder").unwrap();
+    let mut world = World::sandbox(rules, MapGrid::open(40, 24), &[0, 0]);
+    let victim = world.spawn(1, victim_kind, at(500, 500));
+    world.set_hp(victim, 0);
+    world.step();
+    assert_eq!(
+        world.events(),
+        &[CombatEvent::Death {
+            victim,
+            owner: 1,
+            kind: victim_kind,
+            pos: at(500, 500),
+            killer: None,
+            weapon: None,
+        }]
+    );
+
+    // A step with no combat emits no events.
+    let mut world = World::new(MapGrid::open(4, 4));
+    world.step();
+    assert!(world.events().is_empty());
+}
+
+#[test]
+fn ac_17_09_combat_snapshot() {
+    use sim::rules::WeaponId;
+    use sim::snapshot::{
+        EVENT_DEATH, EVENT_DETONATE, EVENT_STRIDE, PROJECTILE_STRIDE, encode_combat,
+    };
+    use sim::wasm_api::Sim;
+
+    // The AC-17-07 scenario: one salvo of four projectiles whose impacts are
+    // three ticks apart. The player owns them; the observer sees everything.
+    let mut rules = TestRules::new();
+    let salvo = rules.weapon(weapon("salvo-gun", 45, 0, 0, 4, 3));
+    rules.unit("salvoer", "soldier", salvo, 1);
+    let rules = rules.build();
+    let salvoer = rules.type_index("salvoer").unwrap();
+    let target_kind = rules.type_index("dozer").unwrap();
+    let weapon_id = rules.ty(salvoer).weapon as WeaponId;
+
+    let mut world = World::sandbox(rules, MapGrid::open(60, 40), &[0, 0, 0]);
+    let shooter = world.spawn(0, salvoer, at(500, 500));
+    let target = world.spawn(1, target_kind, at(1500, 500));
+    world.step();
+
+    let origin = at(500, 500);
+    let aim = at(1500, 500);
+    let projectile_row = |id: i32, launch_tick: i32, impact_tick: i32| {
+        [
+            id,
+            0,
+            weapon_id as i32,
+            shooter as i32,
+            target as i32,
+            origin.x.raw(),
+            origin.y.raw(),
+            aim.x.raw(),
+            aim.y.raw(),
+            launch_tick,
+            impact_tick,
+        ]
+    };
+    let encoded = encode_combat(&world, 0, &[]);
+    assert_eq!(encoded.len(), 1 + 4 * PROJECTILE_STRIDE + 1);
+    assert_eq!(encoded[0], 4, "four projectiles");
+    assert_eq!(encoded[1 + 4 * PROJECTILE_STRIDE], 0, "no events yet");
+    for (k, row) in [
+        projectile_row(0, 0, 23),
+        projectile_row(1, 3, 26),
+        projectile_row(2, 6, 29),
+        projectile_row(3, 9, 32),
+    ]
+    .iter()
+    .enumerate()
+    {
+        let base = 1 + k * PROJECTILE_STRIDE;
+        assert_eq!(&encoded[base..base + PROJECTILE_STRIDE], row);
+    }
+
+    // A blind player (no entities) sees neither origin nor impact, so the
+    // projectiles are omitted; the observer sees everything.
+    assert_eq!(encode_combat(&world, 2, &[]), vec![0, 0]);
+    assert_eq!(encode_combat(&world, 255, &[]), encoded);
+
+    // `combat_for` is `encode_combat` over the pending events: with none, the
+    // AC-17-07 layout comes back unchanged on every call.
+    let mut sim = Sim::from_world(world);
+    assert_eq!(sim.combat_for(0), encoded);
+    assert_eq!(sim.combat_for(0), encoded);
+
+    // `combat_for` accumulates the events of every step, then clears them: a
+    // salvo with a one-tick interval detonates on two consecutive steps.
+    let mut rules = TestRules::new();
+    let rapid = rules.weapon(weapon("rapid-salvo", 45, 0, 0, 4, 1));
+    rules.unit("rapid-salvoer", "soldier", rapid, 1);
+    let rules = rules.build();
+    let salvoer = rules.type_index("rapid-salvoer").unwrap();
+    let target_kind = rules.type_index("dozer").unwrap();
+    let weapon_id = rules.ty(salvoer).weapon as WeaponId;
+
+    let mut world = World::sandbox(rules, MapGrid::open(60, 40), &[0, 0]);
+    let _shooter = world.spawn(0, salvoer, at(500, 500));
+    let target = world.spawn(1, target_kind, at(1500, 500));
+    let mut sim = Sim::from_world(world);
+    sim.step();
+    let _ = sim.combat_for(0);
+    sim.step_n(22);
+    assert_eq!(sim.tick(), 23);
+    sim.step();
+    sim.step();
+
+    let data = sim.combat_for(0);
+    let projectiles = data[0] as usize;
+    let event_base = 1 + projectiles * PROJECTILE_STRIDE;
+    assert_eq!(data[event_base], 2, "both steps' events are reported");
+    let impact = at(1500, 500);
+    for (k, projectile) in [0, 1].iter().enumerate() {
+        let base = event_base + 1 + k * EVENT_STRIDE;
+        assert_eq!(
+            &data[base..base + EVENT_STRIDE],
+            &[
+                EVENT_DETONATE,
+                *projectile,
+                0,
+                weapon_id as i32,
+                target as i32,
+                impact.x.raw(),
+                impact.y.raw(),
+            ]
+        );
+    }
+    let second = sim.combat_for(0);
+    let projectiles = second[0] as usize;
+    assert_eq!(
+        second[1 + projectiles * PROJECTILE_STRIDE],
+        0,
+        "a second combat_for reports no events"
+    );
+
+    // The death layout: victim, kind, killer, weapon and position, `-1` when
+    // absent.
+    let mut rules = TestRules::new();
+    let gun = rules.weapon(weapon("snapshot-killer", 0, 0, 0, 1, 0));
+    rules.unit("snapshot-killer", "soldier", gun, 10);
+    let rules = rules.build();
+    let killer_kind = rules.type_index("snapshot-killer").unwrap();
+    let victim_kind = rules.type_index("tech-slice-placeholder").unwrap();
+    let weapon_id = rules.ty(killer_kind).weapon as WeaponId;
+
+    let mut world = World::sandbox(rules, MapGrid::open(40, 24), &[0, 0]);
+    let killer = world.spawn(0, killer_kind, at(1000, 1000));
+    let victim = world.spawn(1, victim_kind, at(1300, 1000));
+    world.step();
+    let killed = encode_combat(&world, 0, world.events());
+    assert_eq!(killed[0], 0, "the instant kill creates no projectile");
+    assert_eq!(killed[1], 1, "one death event");
+    let victim_pos = at(1300, 1000);
+    assert_eq!(
+        &killed[2..2 + EVENT_STRIDE],
+        &[
+            EVENT_DEATH,
+            victim as i32,
+            victim_kind as i32,
+            killer as i32,
+            weapon_id as i32,
+            victim_pos.x.raw(),
+            victim_pos.y.raw(),
+        ]
+    );
+
+    // No prior hit: killer and weapon encode as `-1`.
+    let rules = TestRules::new().build();
+    let victim_kind = rules.type_index("tech-slice-placeholder").unwrap();
+    let mut world = World::sandbox(rules, MapGrid::open(40, 24), &[0, 0]);
+    let victim = world.spawn(1, victim_kind, at(500, 500));
+    world.set_hp(victim, 0);
+    world.step();
+    // Player 0 owns no entity that could see the victim: the event is omitted.
+    assert_eq!(encode_combat(&world, 0, world.events()), vec![0, 0]);
+    let killed = encode_combat(&world, 255, world.events());
+    assert_eq!(killed[1], 1);
+    assert_eq!(&killed[2..3], &[EVENT_DEATH]);
+    assert_eq!(&killed[5..7], &[-1, -1], "no killer and no weapon");
 }
