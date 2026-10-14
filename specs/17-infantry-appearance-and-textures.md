@@ -47,6 +47,9 @@ export const GENERATED_TEXTURE_IDS = [
 - Infantry has no bump map (`bump: undefined`) and, unlike vehicles and buildings, smooth shading (`flatShading: false` on its `body` and `team` materials), so lofted limbs do not read as polygons.
 - Infantry camouflage is box projected with `INFANTRY_TILE` (0.5 model units) instead of `MODEL_TILE`, so its pixels are a few centimetres on a soldier.
 - Each `team` part also covers the tape band around the helmet.
+- `mark` is a painted marking in a fixed colour, never tinted by the owner: `tools/models/check.mjs` and `client/src/render/models.ts` accept it, and the renderer merges it into the opaque `body` mesh with `darkMask` = `MARK_MASK` (2), which skips the paint, camouflage and dark-metal textures.
+  - Ukraine: the lower half of each armband, the lower half of the helmet tape and half of the tape on the Stugna-P container are flag yellow (`#e3b72e`), under the team blue.
+  - Russia: a white Z (`#e8e4d8`) on the front and both sides of every helmet, which has no team tape.
 - The `team` material on the soldiers is mapped to identification armbands (IFF tape) on both arms, which light up in the owner's team colour (or white/yellow/blue in match).
 
 ## 3. Models (`tools/models/`)
@@ -63,7 +66,7 @@ Procedural Blender Python generators for modern infantry:
 
 All models satisfy spec 06 conventions:
 - Single root named after type id.
-- Materials restricted to `body`, `team`, `dark`.
+- Materials restricted to `body`, `team`, `dark` and `mark`.
 - Triangle budget <= 1500.
 - Fits within render box with >= 70% fill along x and z.
 - Baked ambient occlusion in `COLOR_0` with values in `[0.55, 1.0]`.

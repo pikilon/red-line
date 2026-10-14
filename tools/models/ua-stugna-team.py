@@ -30,7 +30,9 @@ parts += [
     infantry.rod("tube", 0.034, (tx, ty + 0.13, top + 0.115), (tx, ty - 0.13, top + 0.115), body, 10),
     infantry.rod("tube_front", 0.038, (tx, ty - 0.115, top + 0.115), (tx, ty - 0.145, top + 0.115), dark, 10),
     infantry.rod("tube_rear", 0.038, (tx, ty + 0.115, top + 0.115), (tx, ty + 0.145, top + 0.115), dark, 10),
-    infantry.box("tube_tape", (0.074, 0.03, 0.074), (tx, ty - 0.07, top + 0.115), team),
+    # Flag tape round the container: team blue and the yellow mark.
+    infantry.box("tube_tape", (0.074, 0.022, 0.074), (tx, ty - 0.081, top + 0.115), team),
+    infantry.box("tube_tape_yellow", (0.074, 0.022, 0.074), (tx, ty - 0.059, top + 0.115), m["mark"]),
 ]
 launcher = lib.join(parts, "launcher")
 

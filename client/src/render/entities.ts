@@ -45,6 +45,7 @@ import {
   type GeneratedTextures,
   INFANTRY_TILE,
   isInfantry,
+  MARK_MASK,
   VEHICLE_TILE,
 } from "./generatedTextures";
 import { createHeadingTracker, turnRatesOf } from "./heading";
@@ -187,20 +188,23 @@ function withColor(
   return source;
 }
 
-/** `body` and `dark` merged into one vertex-coloured opaque geometry. */
+/** `darkMask` of each opaque part: paint texture, dark metal or flat mark. */
+const SURFACE_MASK = { body: 0, team: 0, dark: 1, mark: MARK_MASK } as const;
+
+/** `body`, `dark` and `mark` merged into one vertex-coloured opaque geometry. */
 function opaqueGeometry(
   parts: ReadonlyMap<MaterialName, ModelPart>,
   teamAsBody = false,
 ): BufferGeometry | null {
   const sources: BufferGeometry[] = [];
   const bodyColor = parts.get("body")?.color;
-  for (const material of ["body", "team", "dark"] as const) {
+  for (const material of ["body", "team", "dark", "mark"] as const) {
     if (material === "team" && !teamAsBody) continue;
     const part = parts.get(material);
     if (part === undefined) continue;
     // Vehicles paint their `team` parts (skirts, ERA) in the body colour.
     const color = material === "team" ? (bodyColor ?? part.color) : part.color;
-    sources.push(withColor(part.geometry, color, material === "dark" ? 1 : 0));
+    sources.push(withColor(part.geometry, color, SURFACE_MASK[material]));
   }
   const first = sources[0];
   if (first === undefined) return null;

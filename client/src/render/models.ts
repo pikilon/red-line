@@ -10,7 +10,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { TypeDef } from "../rules";
 
-export const MATERIAL_NAMES = ["body", "team", "dark", "cage"] as const;
+export const MATERIAL_NAMES = ["body", "team", "dark", "cage", "mark"] as const;
 export type MaterialName = (typeof MATERIAL_NAMES)[number];
 
 /** One geometry of a model, split per material (spec 06 §5). */

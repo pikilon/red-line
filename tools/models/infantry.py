@@ -27,12 +27,18 @@ ARM = 0.165
 # texture: MM-14 (Ukraine) and EMR "Tsifra" (Russia) are light, so infantry
 # reads against the terrain instead of as a dark silhouette.
 UNIFORM = {"ukraine": "#9aa070", "russia": "#8a8a5c"}
+# Fixed-colour `mark`: the yellow of the Ukrainian flag under the team blue of
+# armbands and helmet tape, and the white Z sprayed on Russian helmets.
+MARK = {"ukraine": "#e3b72e", "russia": "#e8e4d8"}
 
 
 def palette(faction):
-    """lib.palette() with the light uniform base for `body`."""
+    """lib.palette() with the light uniform base for `body`, the faction `mark`
+    colour, and `faction` to pick the insignia."""
     mats = lib.palette(faction)
     mats["body"] = lib.material("body", UNIFORM[faction])
+    mats["mark"] = lib.material("mark", MARK[faction])
+    mats["faction"] = faction
     return mats
 
 
@@ -129,6 +135,22 @@ def rod(name, radius, p1, p2, mat, segments=6):
     return loft(name, [(p1, radius, radius), (p2, radius, radius)], mat, segments, smooth=False)
 
 
+def z_mark(name, centre, right, up, mat, width=0.056, height=0.05, stroke=0.014):
+    """Flat, one-sided letter Z facing `right` x `up`, centred on `centre`."""
+    centre, right, up = Vector(centre), Vector(right).normalized(), Vector(up).normalized()
+    w, h, t = width, height, stroke
+    d = t * 1.5  # the diagonal stroke is as thick as the bars
+    outline = [(0, h), (w, h), (w, h - t), (d, t), (w, t), (w, 0), (0, 0), (0, t), (w - d, h - t), (0, h - t)]
+    bm = bmesh.new()
+    verts = [bm.verts.new(centre + right * (u - w / 2) + up * (v - h / 2)) for u, v in outline]
+    face = bm.faces.new(verts)
+    bm.normal_update()
+    if face.normal.dot(right.cross(up)) < 0:
+        face.normal_flip()
+    bmesh.ops.triangulate(bm, faces=[face])
+    return _mesh_object(name, bm, mat, False)
+
+
 def _elbow(shoulder, wrist, hint, length=ARM):
     """Elbow (or knee) of a two-bone limb bent towards `hint`."""
     shoulder, wrist = Vector(shoulder), Vector(wrist)
@@ -217,15 +239,28 @@ def arm(name, shoulder, wrist, hint, mats, segments, band=True):
         sphere(f"{name}_glove", 0.033, wrist + (wrist - elbow).normalized() * 0.018, dark, segments - 1, 4 if segments >= 8 else 3),
     ]
     if band:
+        # Ukrainian armbands are the flag: team blue above, yellow below.
+        flag = mats["faction"] == "ukraine"
+        split = 0.45 if flag else 0.62
         parts.append(
             loft(
                 f"{name}_band",
-                [(_lerp(shoulder, elbow, 0.28), 0.051, 0.049), (_lerp(shoulder, elbow, 0.62), 0.047, 0.045)],
+                [(_lerp(shoulder, elbow, 0.28), 0.051, 0.049), (_lerp(shoulder, elbow, split), 0.049, 0.047)],
                 team,
                 segments,
                 caps=False,
             )
         )
+        if flag:
+            parts.append(
+                loft(
+                    f"{name}_band_yellow",
+                    [(_lerp(shoulder, elbow, split), 0.049, 0.047), (_lerp(shoulder, elbow, 0.62), 0.047, 0.045)],
+                    mats["mark"],
+                    segments,
+                    caps=False,
+                )
+            )
     return parts
 
 
@@ -300,15 +335,40 @@ def upper_body(name, mats, pelvis, lean, segments, pack="assault", head_dy=0.0, 
             body,
             segments + 2,
         ),
-        loft(
-            f"{name}_tape",
-            [(head + Vector((0, 0.002, 0.03)), 0.0875, 0.0935), (head + Vector((0, 0.001, 0.056)), 0.0845, 0.0905)],
-            team,
-            segments + 2,
-            caps=False,
-        ),
-        box(f"{name}_nvg", (0.04, 0.03, 0.035), head + Vector((0, -0.088, 0.055)), dark),
     ]
+    if mats["faction"] == "ukraine":
+        # Helmet tape in the flag colours: team blue above, yellow below.
+        parts += [
+            loft(
+                f"{name}_tape",
+                [(head + Vector((0, 0.0015, 0.043)), 0.0862, 0.0922), (head + Vector((0, 0.001, 0.056)), 0.0845, 0.0905)],
+                team,
+                segments + 2,
+                caps=False,
+            ),
+            loft(
+                f"{name}_tape_yellow",
+                [(head + Vector((0, 0.002, 0.03)), 0.0875, 0.0935), (head + Vector((0, 0.0015, 0.043)), 0.0862, 0.0922)],
+                mats["mark"],
+                segments + 2,
+                caps=False,
+            ),
+            box(f"{name}_nvg", (0.04, 0.03, 0.035), head + Vector((0, -0.088, 0.055)), dark),
+        ]
+    else:
+        # White Z sprayed on the front and both sides of the helmet cover.
+        # Each Z leans back with the dome of the helmet.
+        parts.append(z_mark(f"{name}_z_front", head + Vector((0, -0.0895, 0.06)), (1, 0, 0), (0, 0.35, 1), mats["mark"]))
+        for side in (-1, 1):
+            parts.append(
+                z_mark(
+                    f"{name}_z_{side}",
+                    head + Vector((side * 0.0835, 0.0, 0.058)),
+                    (0, side, 0),
+                    (-side * 0.35, 0, 1),
+                    mats["mark"],
+                )
+            )
     if earcups:
         for side in (-1, 1):
             parts.append(rod(f"{name}_ear_{side}", 0.028, head + Vector((side * 0.06, 0.0, -0.005)), head + Vector((side * 0.085, 0.0, -0.005)), dark, 8))

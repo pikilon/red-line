@@ -6,7 +6,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const MATERIALS = ["body", "team", "dark", "cage"];
+export const MATERIALS = ["body", "team", "dark", "cage", "mark"];
 export const TURRETED = [
   "ua-bradley",
   "ua-leopard-2a4",
