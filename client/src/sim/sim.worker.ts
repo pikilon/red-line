@@ -21,6 +21,8 @@ const handler = createWorkerHandler(
   api_version(),
   (message, transfer) => scope.postMessage(message, transfer ?? []),
   (seed, mapId) => Sim.skirmish(seed, mapId),
+  (form, json) =>
+    form === "world" ? Sim.load_state(json) : Sim.from_setup(json),
 );
 
 scope.onmessage = (event) => handler.handle(event.data);

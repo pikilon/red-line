@@ -22,7 +22,7 @@ pub mod wasm_api;
 pub mod world;
 
 /// Version of the simulation API exposed to the client through WASM.
-pub const API_VERSION: u32 = 3;
+pub const API_VERSION: u32 = 4;
 
 /// Returns the simulation API version.
 #[wasm_bindgen]
@@ -36,6 +36,6 @@ mod tests {
 
     #[test]
     fn api_version_is_zero_in_the_skeleton() {
-        assert_eq!(api_version(), 3);
+        assert_eq!(api_version(), 4);
     }
 }

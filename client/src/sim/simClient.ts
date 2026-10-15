@@ -71,6 +71,8 @@ export function createSimClient(
         listener(snapshot, receivedAtMs);
       }
     },
+    // The tech slice never saves (spec 19 §3.7).
+    saveState: (): void => {},
   } as const;
 
   worker.onmessage = (event) => {

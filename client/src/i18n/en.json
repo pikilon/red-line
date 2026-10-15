@@ -66,5 +66,6 @@
   "saves.showcase.name": "Showcase",
   "saves.showcase.description": "Every building and unit of both sides, in formation.",
   "saves.showcase-units.name": "Showcase: units",
-  "saves.showcase-units.description": "The same formation, zoomed in on the units."
+  "saves.showcase-units.description": "The same formation, zoomed in on the units.",
+  "saves.loadError": "Could not load the save: {detail}"
 }

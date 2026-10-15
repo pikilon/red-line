@@ -1,11 +1,13 @@
 import {
   type CommandMessage,
   type HashRequestMessage,
+  type InitFromSaveMessage,
   type InitMessage,
   type InitSkirmishMessage,
   MAX_STEPS_PER_ADVANCE,
   type MainToWorker,
   type MoveMessage,
+  type SaveRequestMessage,
   type SetAiActiveMessage,
   type SetPausedMessage,
   type SetViewerMessage,
@@ -44,6 +46,8 @@ export interface SkirmishSimLike {
   fog_for(viewer: number): Uint8Array;
   /** Optional combat snapshot (spec 17 §5); newer sims expose `combat_for`. */
   combat_for?(viewer: number): Int32Array;
+  /** World state JSON (spec 19 §3.7); throws the sim's error text. */
+  save_state?(): string;
   command_move(
     unitIds: Uint32Array,
     targetXRaw: number,
@@ -80,6 +84,11 @@ export interface SkirmishSimLike {
 
 export type SimFactory = (seed: number, unitCount: number) => SimLike;
 export type SkirmishFactory = (seed: number, mapId: string) => SkirmishSimLike;
+/** `Sim.load_state` / `Sim.from_setup` (spec 19 §5.4). */
+export type SaveFactory = (
+  form: "world" | "setup",
+  json: string,
+) => SkirmishSimLike;
 export type Post = (message: WorkerToMain, transfer?: Transferable[]) => void;
 export interface WorkerHandler {
   handle(message: MainToWorker): void;
@@ -180,6 +189,7 @@ export function createWorkerHandler(
   apiVersion: number,
   post: Post,
   skirmishFactory?: SkirmishFactory,
+  saveFactory?: SaveFactory,
 ): WorkerHandler {
   let sim: SimLike | null = null;
   let skirmish: SkirmishSimLike | null = null;
@@ -299,6 +309,39 @@ export function createWorkerHandler(
         }
       }
       attachSkirmish(created);
+    },
+    initFromSave: (message: InitFromSaveMessage): void => {
+      if (saveFactory === undefined) {
+        post({ type: "error", detail: "this worker has no save factory" });
+        return;
+      }
+      let created: SkirmishSimLike;
+      try {
+        created = saveFactory(message.form, message.json);
+      } catch (error) {
+        post({ type: "error", detail: String(error) });
+        return;
+      }
+      viewer = message.viewer;
+      speed = Math.min(MAX_SPEED, Math.max(1, message.speed));
+      attachSkirmish(created);
+    },
+    saveRequest: (message: SaveRequestMessage): void => {
+      const { requestId } = message;
+      if (skirmish?.save_state === undefined) {
+        post({ type: "saveState", requestId, world: null, error: "no save" });
+        return;
+      }
+      try {
+        post({ type: "saveState", requestId, world: skirmish.save_state() });
+      } catch (error) {
+        post({
+          type: "saveState",
+          requestId,
+          world: null,
+          error: String(error),
+        });
+      }
     },
     command: (message: CommandMessage): void => {
       if (skirmish === null) {

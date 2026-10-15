@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { api_version, initSync, Sim } from "@sim/sim.js";
 import { describe, expect, it, vi } from "vitest";
 import type { SimCommand, WorkerToMain } from "./protocol";
 import {
@@ -504,5 +507,150 @@ describe("worker handler", () => {
     expect(set_ai_active).toHaveBeenCalledWith(1, false);
     handler.handle({ type: "setAiActive", active: true });
     expect(set_ai_active).toHaveBeenLastCalledWith(1, true);
+  });
+});
+
+const wasmPath = fileURLToPath(
+  new URL("../../../crates/sim/pkg/sim_bg.wasm", import.meta.url),
+);
+
+/** A skirmish fake whose `save_state` returns `world` (or throws `error`). */
+function saveSim(world: string, error?: string): SkirmishSimLike {
+  return {
+    map_width: () => 2,
+    map_height: () => 2,
+    map_tiles: () => new Uint8Array([0, 1, 0, 0]),
+    tick: () => 0,
+    step: vi.fn(),
+    state_hash_hex: () => FAKE_HASH,
+    enable_debug_commands: vi.fn(),
+    attach_ai: vi.fn(),
+    set_ai_active: vi.fn(),
+    snapshot_for: () => new Int32Array([0, 0]),
+    fog_for: () => new Uint8Array([0, 0, 0, 0]),
+    save_state: () => {
+      if (error !== undefined) throw error;
+      return world;
+    },
+    command_move: vi.fn(),
+    command_move_as: vi.fn(),
+    command_attack: vi.fn(),
+    command_harvest: vi.fn(),
+    command_construct: vi.fn(),
+    command_resume: vi.fn(),
+    command_produce: vi.fn(),
+    command_cancel: vi.fn(),
+    command_rally: vi.fn(),
+    command_stop: vi.fn(),
+    debug_spawn: vi.fn(),
+    debug_set_hp: vi.fn(),
+  };
+}
+
+describe("save API", () => {
+  it("AC-19-07: WASM save API", () => {
+    initSync({ module: readFileSync(wasmPath) });
+    expect(api_version()).toBe(4);
+
+    const sim = Sim.skirmish(1, "first-line");
+    sim.attach_ai(1, "russia-balanced");
+    sim.step_n(200);
+    const json = sim.save_state();
+    const loaded = Sim.load_state(json);
+    expect(loaded.tick()).toBe(200);
+    expect(loaded.save_state()).toBe(json);
+    expect(loaded.state_hash_hex()).toBe(sim.state_hash_hex());
+
+    const setup = Sim.from_setup(
+      JSON.stringify({
+        map: "showcase",
+        seed: "1",
+        victory: false,
+        debug: true,
+        starts: true,
+        entities: [{ player: 0, type: "ua-bradley", atCenti: [2050, 2050] }],
+      }),
+    );
+    expect(setup.unit_count()).toBe(5);
+    expect(() => Sim.load_state("{}")).toThrow();
+    expect(() =>
+      Sim.from_setup(
+        '{"map":"nope","seed":"1","victory":false,"debug":false,"starts":true}',
+      ),
+    ).toThrow("unknown map: nope");
+
+    // The worker builds a sim from either form and answers save requests.
+    const posted: WorkerToMain[] = [];
+    const fromSave = vi.fn((_form: "world" | "setup", _json: string) =>
+      saveSim('{"tick":7}'),
+    );
+    const handler = createWorkerHandler(
+      vi.fn<SimFactory>(),
+      4,
+      (message) => posted.push(message),
+      undefined,
+      fromSave,
+    );
+    handler.handle({
+      type: "initFromSave",
+      form: "world",
+      json: '{"tick":7}',
+      viewer: 255,
+      speed: 2,
+    });
+    expect(fromSave).toHaveBeenCalledWith("world", '{"tick":7}');
+    expect(posted.map((message) => message.type)).toEqual([
+      "ready",
+      "snapshot",
+    ]);
+    handler.handle({ type: "saveRequest", requestId: 9 });
+    expect(posted.at(-1)).toEqual({
+      type: "saveState",
+      requestId: 9,
+      world: '{"tick":7}',
+    });
+
+    const failing = createWorkerHandler(
+      vi.fn<SimFactory>(),
+      4,
+      (message) => posted.push(message),
+      undefined,
+      () => saveSim("", "save unsupported: world has no map id"),
+    );
+    failing.handle({
+      type: "initFromSave",
+      form: "setup",
+      json: "{}",
+      viewer: 0,
+      speed: 1,
+    });
+    failing.handle({ type: "saveRequest", requestId: 10 });
+    expect(posted.at(-1)).toEqual({
+      type: "saveState",
+      requestId: 10,
+      world: null,
+      error: "save unsupported: world has no map id",
+    });
+
+    const broken = createWorkerHandler(
+      vi.fn<SimFactory>(),
+      4,
+      (message) => posted.push(message),
+      undefined,
+      () => {
+        throw "invalid save: unknown map: x";
+      },
+    );
+    broken.handle({
+      type: "initFromSave",
+      form: "world",
+      json: "{}",
+      viewer: 0,
+      speed: 1,
+    });
+    expect(posted.at(-1)).toEqual({
+      type: "error",
+      detail: "invalid save: unknown map: x",
+    });
   });
 });

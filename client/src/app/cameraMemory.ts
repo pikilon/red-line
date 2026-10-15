@@ -10,11 +10,26 @@ export interface CameraMemory {
   /** Stores `current` as `from`'s last view and returns `to`'s last view,
    *  or null when `to` has none yet. */
   switchPlayer(from: number, to: number, current: ViewPoint): ViewPoint | null;
+  /** Stored views by player id, for saves (spec 19 §5.1). */
+  views(): Record<string, ViewPoint>;
 }
 
-export function createCameraMemory(): CameraMemory {
-  const views = new Map<number, ViewPoint>();
+/** `initial`: views restored from a save (spec 19 §5.3). */
+export function createCameraMemory(
+  initial: Readonly<Record<string, ViewPoint>> = {},
+): CameraMemory {
+  const views = new Map<number, ViewPoint>(
+    Object.entries(initial).map(([player, view]) => [
+      Number(player),
+      { x: view.x, y: view.y },
+    ]),
+  );
   return {
+    views() {
+      return Object.fromEntries(
+        [...views].map(([player, view]) => [String(player), { ...view }]),
+      );
+    },
     switchPlayer(from, to, current) {
       views.set(from, { x: current.x, y: current.y });
       const view = views.get(to);

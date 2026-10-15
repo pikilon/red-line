@@ -1,0 +1,61 @@
+{
+  "_comment": "Spec 19 AC-19-10: shared by client/src/saves/saveFile.test.ts and scripts/save-file.test.mjs.",
+  "valid": ["world.json", "setup.json"],
+  "invalid": [
+    { "name": "bad JSON", "text": "{ not json", "error": "json" },
+    {
+      "name": "wrong format",
+      "base": "world.json",
+      "set": { "format": "other" },
+      "error": "format"
+    },
+    {
+      "name": "wrong version",
+      "base": "world.json",
+      "set": { "version": 2 },
+      "error": "version"
+    },
+    {
+      "name": "missing match",
+      "base": "world.json",
+      "delete": ["match"],
+      "error": "shape"
+    },
+    {
+      "name": "missing camera",
+      "base": "world.json",
+      "delete": ["client.camera"],
+      "error": "shape"
+    },
+    {
+      "name": "empty name",
+      "base": "world.json",
+      "set": { "name": "   " },
+      "error": "shape"
+    },
+    {
+      "name": "long name",
+      "base": "world.json",
+      "set": { "name": "12345678901234567890123456789012345678901" },
+      "error": "shape"
+    },
+    {
+      "name": "string tick",
+      "base": "world.json",
+      "set": { "tick": "1" },
+      "error": "shape"
+    },
+    {
+      "name": "both forms",
+      "base": "world.json",
+      "set": { "setup": {} },
+      "error": "shape"
+    },
+    {
+      "name": "no form",
+      "base": "world.json",
+      "delete": ["world"],
+      "error": "shape"
+    }
+  ]
+}

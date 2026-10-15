@@ -1,4 +1,5 @@
 import ruleset from "@data/ruleset.json";
+import savesIndex from "@data/saves.json";
 import {
   ACESFilmicToneMapping,
   BasicShadowMap,
@@ -53,9 +54,10 @@ import {
   setTerrainTextures,
 } from "../render/terrain";
 import { RULES, typeDef, typeIndex, typeName } from "../rules";
+import { loadSource, NO_SLOTS, readSave } from "../saves/boot";
+import type { ClientState, SaveFile } from "../saves/saveFile";
 import { loadSettings, type Settings, saveSettings } from "../settings";
 import type { ProjectileState } from "../sim/combatSnapshot";
-import { toRaw } from "../sim/fixed";
 import {
   type EntityState,
   interpolateEntities,
@@ -67,6 +69,7 @@ import { type ReadyMessage, TICK_MS } from "../sim/protocol";
 import {
   createSkirmishClient,
   type SkirmishClient,
+  type SkirmishStart,
 } from "../sim/skirmishClient";
 import { MAX_SPEED } from "../sim/workerHandler";
 import {
@@ -82,19 +85,14 @@ import { createResourceBar } from "../ui/resourceBar";
 import { createSelectionBox } from "../ui/selectionBox";
 import { createTouchControls, isTouchDevice } from "../ui/touchControls";
 import { createCameraMemory, homeView } from "./cameraMemory";
-import { showcasePlan } from "./showcase";
 
 export const DEFAULT_MAP = "first-line";
 export const DEFAULT_SEED = 1;
 /** Opponent personality attached to player 1 by default (spec 05 §7). */
 export const DEFAULT_AI = "russia-balanced";
 
-/** Spec 14: the showcase map and the formation centre relative to a start HQ. */
-const SHOWCASE_MAP = "showcase";
-const SHOWCASE_VIEWS = {
-  all: { zoom: 1, dx: 14, y: 12 },
-  units: { zoom: 2, dx: 9.5, y: 18.5 },
-} as const;
+/** Ids of the example saves, in menu order (spec 19 §4.3). */
+const EXAMPLE_IDS: readonly string[] = savesIndex.saves.map((save) => save.id);
 export const MAX_SPEED_SKIRMISH = MAX_SPEED;
 
 /** Default entity renderer capacity; AC-03-62 and AC-03-63 stay below it. */
@@ -188,29 +186,121 @@ function createPlacementGhost(): {
   return { mesh, material };
 }
 
-/** Skirmish app (default mode): boots the worker, renders the match and wires
- *  the HUD, the resource bar, the command panel and the outcome overlay
- *  (spec §6.7). */
-export function startSkirmish(params: SkirmishOptions): void {
-  const container = document.getElementById("app");
-  if (!container) throw new Error("Missing #app container");
-  const hudRoot = document.getElementById("hud") ?? container;
+/** How a skirmish starts: from the URL parameters or from a save (spec 19). */
+interface SkirmishBoot {
+  seed: number;
+  mapId: string;
+  debug: boolean;
+  speed: number;
+  /** Whether the skirmish AI of player 1 plays; null when none is attached. */
+  aiActive: boolean | null;
+  start: SkirmishStart;
+  /** State restored from the save, or null for a fresh match. */
+  client: ClientState | null;
+  /** World-form saves restore gore and textures; examples keep the player's. */
+  applySettings: boolean;
+  /** The `?load` id once applied. */
+  loadedId: string | null;
+}
 
+/** A fresh skirmish from the URL parameters (spec §6.7). */
+function paramsBoot(params: URLSearchParams): SkirmishBoot {
   const seed = readInt(params, "seed", DEFAULT_SEED);
-  // `?showcase=1`: every building and unit of both sides in formation (spec 14).
-  // `?showcase=units` zooms on the two unit rows (spec 14 §5).
-  const showcaseParam = params.get("showcase");
-  const showcase = showcaseParam === "1" || showcaseParam === "units";
-  const showcaseView =
-    showcaseParam === "units" ? SHOWCASE_VIEWS.units : SHOWCASE_VIEWS.all;
-  const mapId = showcase ? SHOWCASE_MAP : (params.get("map") ?? DEFAULT_MAP);
-  const debug = showcase || params.get("debug") === "1";
+  const mapId = params.get("map") ?? DEFAULT_MAP;
+  const debug = params.get("debug") === "1";
   // `?ai=off` keeps the Phase 2 hot-seat behaviour (spec 05 §7).
   const aiParam = params.get("ai");
-  const ai = showcase || aiParam === "off" ? null : (aiParam ?? DEFAULT_AI);
+  const ai = aiParam === "off" ? null : (aiParam ?? DEFAULT_AI);
   const speed = debug
     ? Math.min(MAX_SPEED_SKIRMISH, Math.max(1, readInt(params, "speed", 1)))
     : 1;
+  return {
+    seed,
+    mapId,
+    debug,
+    speed,
+    aiActive: ai === null ? null : true,
+    start: { seed, mapId, viewer: 0, speed, debug, ai },
+    client: null,
+    applySettings: false,
+    loadedId: null,
+  };
+}
+
+/** The AI of player 1 in a save's state, if any (spec 19 §5.3). */
+function savedAiActive(save: SaveFile): boolean | null {
+  const state = (save.world ?? save.setup) as {
+    ais?: { player: number; active: boolean }[];
+    ai?: { player: number; active: boolean }[];
+  };
+  const entry = (state.ais ?? state.ai ?? []).find((ai) => ai.player === 1);
+  return entry === undefined ? null : entry.active;
+}
+
+/** A skirmish restored from `save`, loaded as `?load=<id>` (spec 19 §5.3). */
+function saveBoot(save: SaveFile, id: string): SkirmishBoot {
+  const { match, client } = save;
+  const speed = match.debug
+    ? Math.min(MAX_SPEED_SKIRMISH, Math.max(1, match.speed))
+    : 1;
+  const form = save.world === undefined ? "setup" : "world";
+  return {
+    seed: Number.parseInt(match.seed, 10) || DEFAULT_SEED,
+    mapId: match.mapId,
+    debug: match.debug,
+    speed,
+    aiActive: savedAiActive(save),
+    start: {
+      save: { form, json: JSON.stringify(save.world ?? save.setup) },
+      viewer: client.revealed ? OBSERVER : client.controlled,
+      speed,
+    },
+    client,
+    applySettings: form === "world",
+    loadedId: id,
+  };
+}
+
+/** Shows `#load-error` with `detail` (spec 19 §5.3). */
+function showLoadError(detail: string): void {
+  const element = document.createElement("div");
+  element.id = "load-error";
+  element.textContent = t("saves.loadError", { detail });
+  document.body.appendChild(element);
+}
+
+/** Skirmish app (default mode). `?load=<id>` restores a save; when it cannot
+ *  be read the default skirmish starts and `#load-error` says why (spec 19
+ *  §5.3). Every other parameter is ignored while loading. */
+export function startSkirmish(params: SkirmishOptions): void {
+  const load = params.get("load");
+  if (load === null) {
+    runSkirmish(paramsBoot(params));
+    return;
+  }
+  const source = loadSource(load, EXAMPLE_IDS);
+  const read =
+    source === null
+      ? Promise.resolve({ ok: false as const, error: `unknown save ${load}` })
+      : readSave(source, NO_SLOTS);
+  void read.then((result) => {
+    if (result.ok) {
+      runSkirmish(saveBoot(result.save, load));
+      return;
+    }
+    showLoadError(result.error);
+    runSkirmish(paramsBoot(new URLSearchParams()));
+  });
+}
+
+/** Boots the worker, renders the match and wires the HUD, the resource bar,
+ *  the command panel and the outcome overlay (spec §6.7). */
+function runSkirmish(boot: SkirmishBoot): void {
+  const container = document.getElementById("app");
+  if (!container) throw new Error("Missing #app container");
+  const hudRoot = document.getElementById("hud") ?? container;
+  const { seed, mapId, debug } = boot;
+  const restored = boot.client;
 
   const renderer = new WebGLRenderer({ antialias: true });
   // Remastered look (spec 10 §3): hard PCF shadows and ACES tone mapping.
@@ -227,6 +317,14 @@ export function startSkirmish(params: SkirmishOptions): void {
   hud.setSelectedCount(0);
 
   let settings: Settings = loadSettings();
+  if (restored !== null && boot.applySettings) {
+    settings = {
+      ...settings,
+      gore: restored.gore,
+      generatedTextures: restored.generatedTextures,
+    };
+    saveSettings(settings);
+  }
   const toast = document.getElementById("toast");
   let toastTimer: number | null = null;
   let paused = false;
@@ -234,11 +332,11 @@ export function startSkirmish(params: SkirmishOptions): void {
   let pausedTotalMs = 0;
   let pauseStartMs: number | null = null;
   /** Whether the skirmish AI plays; null when none is attached (spec 08 §3.3). */
-  let aiActive: boolean | null = ai === null ? null : true;
+  let aiActive: boolean | null = boot.aiActive;
   /** Whether the performance panel shows; on with `?debug=1` (spec 08 §3.5). */
-  let fpsPanel = debug;
+  let fpsPanel = restored?.fpsPanel ?? debug;
   /** Player whose fog the worker snapshots; `OBSERVER` while the map is revealed. */
-  let viewer = showcase ? OBSERVER : 0;
+  let viewer = boot.start.viewer;
 
   const gameMenu = createGameMenu(document.body, {
     resume: () => setMenuOpen(false),
@@ -304,7 +402,7 @@ export function startSkirmish(params: SkirmishOptions): void {
   let next: MatchSnapshot | null = null;
   let fog: Uint8Array<ArrayBuffer> = new Uint8Array(0);
   let receivedAt = 0;
-  let controlled = 0;
+  let controlled = restored?.controlled ?? 0;
   let ready = false;
   /** Type index being placed, or null; the command panel starts placement. */
   let placementKind: number | null = null;
@@ -313,7 +411,7 @@ export function startSkirmish(params: SkirmishOptions): void {
   let sunLight: DirectionalLight | null = null;
   let cameraTarget = { x: 0, y: 0 };
   /** Per-player camera views for hot-seat player changes (spec 08 §3.2). */
-  const cameraMemory = createCameraMemory();
+  const cameraMemory = createCameraMemory(restored?.cameraMemory);
   /** True after F2 to a player with no stored view: the next snapshot built
    *  for that player centres the camera on their base. */
   let centrePending = false;
@@ -321,7 +419,7 @@ export function startSkirmish(params: SkirmishOptions): void {
     new Worker(new URL("../sim/sim.worker.ts", import.meta.url), {
       type: "module",
     }),
-    { seed, mapId, viewer, speed, debug, ai },
+    boot.start,
   );
   let uiRenders = 0;
   const commandPanel = createCommandPanel(document.body, {
@@ -402,11 +500,15 @@ export function startSkirmish(params: SkirmishOptions): void {
     );
   }
 
+  /** A restored save's camera, else the controlled player's HQ (spec 19 §5.3). */
   function centreOnOwnHq(snapshot: MatchSnapshot): void {
+    if (restored !== null) {
+      moveCamera(restored.camera.x, restored.camera.y);
+      return;
+    }
     const hq = ownHeadquarters(snapshot.entities, controlled);
     if (hq === null) return;
-    if (showcase) moveCamera(hq.x + showcaseView.dx, showcaseView.y);
-    else moveCamera(hq.x, hq.y);
+    moveCamera(hq.x, hq.y);
   }
 
   function moveCamera(x: number, y: number): void {
@@ -431,8 +533,7 @@ export function startSkirmish(params: SkirmishOptions): void {
       (kind) => typeDef(kind).category === "building",
     );
     if (home === null) return;
-    if (showcase) moveCamera(home.x + showcaseView.dx, showcaseView.y);
-    else moveCamera(home.x, home.y);
+    moveCamera(home.x, home.y);
   }
 
   /** `#hud-player`, 1-based (spec §6.6). */
@@ -520,8 +621,8 @@ export function startSkirmish(params: SkirmishOptions): void {
     });
     setHudPlayer();
     centreOnOwnHq(next);
+    if (restored !== null) restoreView(next);
     ready = true;
-    if (showcase) spawnShowcase();
     // Generated textures are the default: load the PNGs once the scene exists.
     if (settings.generatedTextures !== false) {
       settings = { ...settings, generatedTextures: false };
@@ -529,22 +630,18 @@ export function startSkirmish(params: SkirmishOptions): void {
     }
   }
 
-  /** Spec 14: one `debugSpawn` per building and unit of the formation, and the
-   *  camera zoomed out to see it. */
-  function spawnShowcase(): void {
-    const definition = ruleset.maps.find((entry) => entry.id === mapId);
-    if (definition === undefined) return;
-    for (const spawn of showcasePlan(RULES, definition)) {
-      interact.command({
-        kind: "debugSpawn",
-        player: spawn.player,
-        typeIndex: spawn.typeIndex,
-        xRaw: toRaw(spawn.x),
-        yRaw: toRaw(spawn.y),
-      });
-    }
-    camera.zoom = showcaseView.zoom;
+  /** Restores a save's zoom and selection once the scene exists (spec 19
+   *  §5.3): only ids that exist and belong to the controlled player. */
+  function restoreView(snapshot: MatchSnapshot): void {
+    if (restored === null) return;
+    camera.zoom = restored.camera.zoom;
     camera.updateProjectionMatrix();
+    const own = new Set(
+      snapshot.entities
+        .filter((entity) => entity.owner === controlled)
+        .map((entity) => entity.id),
+    );
+    controller?.setSelection(restored.selected.filter((id) => own.has(id)));
   }
 
   /** Centres the sun's shadow camera on the camera's ground target (spec 10 §3):
@@ -870,6 +967,8 @@ export function startSkirmish(params: SkirmishOptions): void {
       },
       cameraTarget: () => controller?.cameraTarget() ?? { ...cameraTarget },
       zoom: () => camera.zoom,
+      loadedSave: () => boot.loadedId,
+      saveState: () => interact.saveState(),
       setCameraTarget: moveCamera,
       command: (command) => interact.command(command),
       stateHash: () => interact.requestHash(),
