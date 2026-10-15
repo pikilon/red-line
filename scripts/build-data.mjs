@@ -363,3 +363,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   mkdirSync(join(root, "data", "generated"), { recursive: true });
   writeFileSync(join(root, "data", "generated", "ruleset.json"), serializeRuleset(ruleset));
 }
+
+/** Spec 19 §4.3: validates the example saves and builds their `SaveFile`s. */
+export function buildSaves(_sources, _ruleset) {
+  return { saves: [], index: { formatVersion: 1, saves: [] }, errors: [] };
+}

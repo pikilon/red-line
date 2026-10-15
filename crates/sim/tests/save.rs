@@ -11,7 +11,7 @@ use sim::ai::{Ai, step_with_ai};
 use sim::entity::OBSERVER;
 use sim::hash::state_hash;
 use sim::rules::Ruleset;
-use sim::save::{SAVE_FORMAT_VERSION, SimState, load_state, save_state};
+use sim::save::{SAVE_FORMAT_VERSION, Setup, SimState, from_setup, load_state, save_state};
 use sim::snapshot::{encode_combat, encode_fog, encode_match_snapshot_with_shots};
 use sim::world::{Command, World};
 
@@ -206,4 +206,193 @@ fn ac_19_06_load_errors() {
         save_state(&tech, SEED, &[]).unwrap_err(),
         "save unsupported: world has no map id"
     );
+}
+
+// AC-19-03: setup-form worlds (spec 19 §3.5).
+
+fn setup_value() -> Value {
+    serde_json::json!({
+        "map": "first-line",
+        "seed": "7",
+        "victory": true,
+        "debug": true,
+        "starts": true,
+        "credits": [1234, 5678],
+        "ai": [{ "player": 1, "personality": "russia-balanced", "active": false }],
+        "entities": [
+            { "player": 0, "type": "ua-leopard-2a4", "atCenti": [3050, 6050], "label": "leo", "hpPercent": 50 },
+            { "player": 0, "type": "ua-barracks", "origin": [20, 66], "buildPercent": 40 },
+            { "player": 1, "type": "ru-t-72b3", "atCenti": [3550, 6050], "order": { "attack": "leo" } },
+            { "player": 0, "type": "ua-supply-truck", "atCenti": [1650, 5850], "order": { "harvest": "depot-0" } },
+            { "player": 0, "type": "ua-bradley", "atCenti": [3050, 6250], "order": { "moveCenti": [4050, 6250] } }
+        ]
+    })
+}
+
+fn build(value: &Value) -> Result<(World, u64, Vec<Ai>), String> {
+    let setup: Setup = serde_json::from_value(value.clone()).map_err(|e| e.to_string())?;
+    from_setup(&setup)
+}
+
+#[test]
+fn ac_19_03_from_setup() {
+    let (mut world, seed, ais) = build(&setup_value()).expect("the setup is valid");
+    assert_eq!(seed, 7);
+    let rules = world.rules().clone();
+    let ty = |id: &str| rules.type_index(id).unwrap();
+
+    // 6 depots, then each start's HQ and dozer, then the entities in order.
+    let kinds: Vec<_> = world.entities().iter().map(|e| (e.id, e.kind)).collect();
+    let depot = rules.depot_type();
+    let expected = [
+        depot,
+        depot,
+        depot,
+        depot,
+        depot,
+        depot,
+        ty("ua-hq"),
+        ty("ua-dozer"),
+        ty("ru-hq"),
+        ty("ru-dozer"),
+        ty("ua-leopard-2a4"),
+        ty("ua-barracks"),
+        ty("ru-t-72b3"),
+        ty("ua-supply-truck"),
+        ty("ua-bradley"),
+    ];
+    assert_eq!(
+        kinds,
+        expected
+            .iter()
+            .enumerate()
+            .map(|(i, &k)| (i as u32, k))
+            .collect::<Vec<_>>()
+    );
+
+    let leo = world.entity(10).unwrap();
+    assert_eq!(leo.hp, rules.ty(ty("ua-leopard-2a4")).hp * 50 / 100);
+    let barracks = world.entity(11).unwrap();
+    let site = barracks.site.as_ref().unwrap();
+    assert!(!site.complete);
+    assert_eq!(site.progress, rules.ty(ty("ua-barracks")).build_ticks * 40);
+    assert_eq!(barracks.hp, rules.ty(ty("ua-barracks")).hp);
+
+    let state = save_state(&world, seed, &ais).unwrap();
+    assert_eq!(state.map_id, "first-line");
+    assert!(state.victory_enabled);
+    assert!(state.debug_commands);
+    assert_eq!(state.players[0].credits, 1234);
+    assert_eq!(state.players[1].credits, 5678);
+    assert_eq!(state.ais.len(), 1);
+    assert_eq!(state.ais[0].player, 1);
+    assert_eq!(state.ais[0].personality, "russia-balanced");
+    assert!(!state.ais[0].active);
+    assert_eq!(state.pending.len(), 3, "one command per order");
+
+    world.step();
+    assert!(matches!(
+        world.entity(12).unwrap().order,
+        sim::entity::Order::Attack { target: 10, .. }
+    ));
+    assert!(matches!(
+        world.entity(13).unwrap().order,
+        sim::entity::Order::Harvest { depot: 0, .. }
+    ));
+    assert!(matches!(
+        world.entity(14).unwrap().order,
+        sim::entity::Order::Move { .. }
+    ));
+}
+
+#[test]
+fn ac_19_03_setup_errors() {
+    let entity = |value: Value| {
+        let mut setup = setup_value();
+        setup["entities"] = serde_json::json!([value]);
+        setup
+    };
+    let cases = [
+        (
+            entity(serde_json::json!({ "player": 0, "type": "x", "atCenti": [3050, 6050] })),
+            "invalid setup: entities[0]: unknown type x",
+        ),
+        (
+            entity(serde_json::json!({ "player": 0, "type": "supply-depot", "origin": [30, 30] })),
+            "invalid setup: entities[0]: type supply-depot is a depot",
+        ),
+        (
+            entity(serde_json::json!({ "player": 0, "type": "ua-barracks", "origin": [12, 60] })),
+            "invalid setup: entities[0]: footprint blocked",
+        ),
+        (
+            entity(serde_json::json!({ "player": 0, "type": "ua-barracks", "origin": [127, 127] })),
+            "invalid setup: entities[0]: outside the map",
+        ),
+        (
+            entity(
+                serde_json::json!({ "player": 0, "type": "ua-bradley", "atCenti": [6350, 1050] }),
+            ),
+            "invalid setup: entities[0]: cell blocked",
+        ),
+        (
+            entity(
+                serde_json::json!({ "player": 0, "type": "ua-bradley", "atCenti": [13000, 100] }),
+            ),
+            "invalid setup: entities[0]: outside the map",
+        ),
+        (
+            entity(
+                serde_json::json!({ "player": 0, "type": "ua-bradley", "atCenti": [3050, 6050], "order": { "attack": "nope" } }),
+            ),
+            "invalid setup: entities[0]: unknown label nope",
+        ),
+        (
+            entity(
+                serde_json::json!({ "player": 0, "type": "ua-bradley", "atCenti": [3050, 6050], "label": "hq-0" }),
+            ),
+            "invalid setup: entities[0]: duplicate label hq-0",
+        ),
+        (
+            entity(
+                serde_json::json!({ "player": 0, "type": "ua-barracks", "atCenti": [3050, 6050] }),
+            ),
+            "invalid setup: entities[0]: building needs origin",
+        ),
+        (
+            entity(serde_json::json!({ "player": 0, "type": "ua-bradley", "origin": [30, 60] })),
+            "invalid setup: entities[0]: unit needs atCenti",
+        ),
+        (
+            entity(
+                serde_json::json!({ "player": 0, "type": "ua-bradley", "atCenti": [3050, 6050], "hpPercent": 0 }),
+            ),
+            "invalid setup: entities[0]: hpPercent 0 out of 1..=100",
+        ),
+        (
+            entity(
+                serde_json::json!({ "player": 4, "type": "ua-bradley", "atCenti": [3050, 6050] }),
+            ),
+            "invalid setup: entities[0]: player 4 has no start",
+        ),
+    ];
+    for (value, expected) in cases {
+        assert_eq!(build(&value).err().as_deref(), Some(expected));
+    }
+
+    let mut ai = setup_value();
+    ai["ai"][0]["personality"] = "x".into();
+    assert_eq!(
+        build(&ai).err().as_deref(),
+        Some("invalid setup: ai[0]: unknown ai x")
+    );
+    let mut credits = setup_value();
+    credits["credits"] = serde_json::json!([1, 2, 3]);
+    assert_eq!(
+        build(&credits).err().as_deref(),
+        Some("invalid setup: credits: 3 entries for 2 starts")
+    );
+    let mut map = setup_value();
+    map["map"] = "x".into();
+    assert_eq!(build(&map).err().as_deref(), Some("unknown map: x"));
 }

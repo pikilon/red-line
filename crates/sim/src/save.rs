@@ -846,3 +846,72 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
         },
     })
 }
+
+/// Setup-form match (spec 19 §3.5): an authored tick-0 world.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Setup {
+    pub map: String,
+    /// u64, decimal.
+    pub seed: String,
+    pub victory: bool,
+    pub debug: bool,
+    /// The map's starts place each player's HQ and dozer.
+    pub starts: bool,
+    /// One per map start; absent = `startingCredits` for every player.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub credits: Option<Vec<u32>>,
+    #[serde(default)]
+    pub ai: Vec<SetupAi>,
+    #[serde(default)]
+    pub entities: Vec<SetupEntity>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SetupAi {
+    pub player: u8,
+    pub personality: String,
+    pub active: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SetupEntity {
+    pub player: u8,
+    #[serde(rename = "type")]
+    pub kind: String,
+    /// Units: centre in centi-tiles.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub at_centi: Option<[i32; 2]>,
+    /// Buildings: footprint origin cell.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub origin: Option<[i32; 2]>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub label: Option<String>,
+    /// 1..=100, default 100.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hp_percent: Option<u32>,
+    /// Buildings only, 0..=100, default 100.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub build_percent: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub order: Option<SetupOrder>,
+}
+
+/// Externally tagged: `{ "attack": "leo1" }`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub enum SetupOrder {
+    /// Label of the target.
+    Attack(String),
+    MoveCenti([i32; 2]),
+    /// Label of a depot.
+    Harvest(String),
+}
+
+/// World, seed and AIs of a setup (spec 19 §3.5). Errors are the `SimError`
+/// texts: "invalid setup: <detail>" or "unknown map: <id>".
+pub fn from_setup(_setup: &Setup) -> Result<(World, u64, Vec<Ai>), String> {
+    Err("not implemented".to_owned())
+}
