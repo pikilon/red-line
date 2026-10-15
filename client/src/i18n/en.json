@@ -62,5 +62,9 @@
   "type.ua-vehicle-factory": "Vehicle factory",
   "type.ru-vehicle-factory": "Vehicle factory",
   "type.ua-defense": "Stugna-P emplacement",
-  "type.ru-defense": "Kornet emplacement"
+  "type.ru-defense": "Kornet emplacement",
+  "saves.showcase.name": "Showcase",
+  "saves.showcase.description": "Every building and unit of both sides, in formation.",
+  "saves.showcase-units.name": "Showcase: units",
+  "saves.showcase-units.description": "The same formation, zoomed in on the units."
 }

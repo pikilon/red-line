@@ -11,6 +11,7 @@
     "factions": { "$ref": "#/$defs/idList" },
     "maps": { "$ref": "#/$defs/idList" },
     "ai": { "$ref": "#/$defs/idList" },
+    "saves": { "$ref": "#/$defs/idList" },
     "damageTypes": { "$ref": "#/$defs/keyList" },
     "armorClasses": { "$ref": "#/$defs/keyList" },
     "damageModifiers": {

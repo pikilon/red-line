@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { parse, stringify } from "yaml";
-import { buildRuleset, readSources, serializeRuleset } from "./build-data.mjs";
+import { buildRuleset, buildSaves, readSources, serializeRuleset } from "./build-data.mjs";
 import { TURRETED } from "../tools/models/check.mjs";
 
 // Repository root (this file lives in scripts/), used by the two criteria that
@@ -478,4 +478,197 @@ test("AC-17-17: builtin weapons", () => {
       `${w.id} §3.3 render values`,
     );
   }
+});
+
+// Spec 19 §4: example saves.
+
+const SAVE_FILE = (id, ext = "yaml") => `data/saves/${id}.${ext}`;
+
+const exampleSave = () => ({
+  id: "duel",
+  map: "first-line",
+  victory: false,
+  debug: true,
+  starts: false,
+  credits: [100, 200],
+  ai: [{ player: 1, personality: "ukraine-balanced", active: true }],
+  client: { controlled: 1, revealed: true, camera: { x: 30, y: 60, zoom: 1.5 } },
+  entities: [
+    { player: 0, type: "ua-rifleman", atCenti: [3050, 6050], label: "a" },
+    { player: 1, type: "ru-rifleman", atCenti: [3550, 6050], order: { attack: "a" } },
+    { player: 0, type: "ua-barracks", origin: [20, 66], buildPercent: 40, hpPercent: 50 },
+  ],
+});
+
+/** Builds the baseline ruleset, then the given saves (objects or raw text). */
+const saves = (...entries) => {
+  const { ruleset } = buildRuleset(toSources(baseline()));
+  const sources = entries.map((entry) =>
+    typeof entry.text === "string" ? entry : { file: SAVE_FILE(entry.id), text: stringify(entry) },
+  );
+  return buildSaves(sources, ruleset);
+};
+
+const expectSaveError = (entry, expected) => {
+  const { errors } = saves(entry);
+  assert.ok(
+    errors.some((e) => Object.entries(expected).every(([key, value]) => e[key] === value)),
+    `expected ${JSON.stringify(expected)} in ${JSON.stringify(errors)}`,
+  );
+};
+
+test("AC-19-01: example saves build", () => {
+  const ok = saves(exampleSave(), { ...exampleSave(), id: "second", entities: [] });
+  assert.deepEqual(ok.errors, []);
+  assert.deepEqual(ok.index, {
+    formatVersion: 1,
+    saves: [
+      { id: "duel", map: "first-line", form: "setup", entities: 3 },
+      { id: "second", map: "first-line", form: "setup", entities: 0 },
+    ],
+  });
+  const duel = ok.saves[0];
+  assert.equal(duel.id, "duel");
+  assert.deepEqual(duel.file, {
+    format: "redline-save",
+    version: 1,
+    name: "duel",
+    savedAt: "1970-01-01T00:00:00.000Z",
+    tick: 0,
+    match: { mapId: "first-line", seed: "1", debug: true, speed: 1 },
+    client: {
+      controlled: 1,
+      revealed: true,
+      gore: true,
+      generatedTextures: true,
+      fpsPanel: true,
+      camera: { x: 30, y: 60, zoom: 1.5 },
+      cameraMemory: {},
+      selected: [],
+    },
+    setup: {
+      map: "first-line",
+      seed: "1",
+      victory: false,
+      debug: true,
+      starts: false,
+      credits: [100, 200],
+      ai: [{ player: 1, personality: "ukraine-balanced", active: true }],
+      entities: exampleSave().entities,
+    },
+  });
+
+  // Defaults: starts on, camera on the controlled player's HQ centre at zoom 1.
+  const minimal = saves({ id: "minimal", map: "first-line", victory: true });
+  assert.deepEqual(minimal.errors, []);
+  assert.deepEqual(minimal.saves[0].file.client, {
+    controlled: 0,
+    revealed: false,
+    gore: true,
+    generatedTextures: true,
+    fpsPanel: false,
+    camera: { x: 14, y: 62, zoom: 1 },
+    cameraMemory: {},
+    selected: [],
+  });
+  assert.deepEqual(minimal.saves[0].file.setup, {
+    map: "first-line", seed: "1", victory: true, debug: false, starts: true, ai: [], entities: [],
+  });
+
+  // World-form examples are copied as they are.
+  const world = {
+    format: "redline-save", version: 1, name: "Pasted", savedAt: "2026-10-15T10:00:00.000Z", tick: 42,
+    match: { mapId: "first-line", seed: "1", debug: false, speed: 1 },
+    client: minimal.saves[0].file.client,
+    world: { formatVersion: 1, mapId: "first-line" },
+  };
+  const copied = saves({ file: SAVE_FILE("pasted", "json"), text: JSON.stringify(world) });
+  assert.deepEqual(copied.errors, []);
+  assert.deepEqual(copied.saves[0].file, world);
+  assert.deepEqual(copied.index.saves[0], { id: "pasted", map: "first-line", form: "world", entities: 0 });
+
+  const file = SAVE_FILE("duel");
+  const edit = (change) => {
+    const save = exampleSave();
+    change(save);
+    return save;
+  };
+  expectSaveError(edit((s) => { delete s.victory; }), { code: "schema", file, pointer: "/" });
+  expectSaveError(edit((s) => { s.entities[0].hpPercent = 0; }), { code: "schema", file, pointer: "/entities/0/hpPercent" });
+  expectSaveError(edit((s) => { s.map = "nope"; }), { code: "unknown-reference", file, pointer: "/map" });
+  expectSaveError(edit((s) => { s.entities[0].type = "ua-nope"; }), { code: "unknown-reference", file, pointer: "/entities/0/type" });
+  expectSaveError(edit((s) => { s.entities[0].type = "ru-rifleman"; }), { code: "unknown-reference", file, pointer: "/entities/0/type" });
+  expectSaveError(edit((s) => { s.entities[1].order = { attack: "nope" }; }), { code: "unknown-reference", file, pointer: "/entities/1/order" });
+  expectSaveError(edit((s) => { s.ai[0].personality = "nope"; }), { code: "unknown-reference", file, pointer: "/ai/0/personality" });
+  expectSaveError(edit((s) => { s.entities[2].origin = [127, 127]; }), { code: "invalid-value", file, pointer: "/entities/2/origin" });
+  expectSaveError(edit((s) => { s.entities[2].origin = [62, 10]; }), { code: "invalid-value", file, pointer: "/entities/2/origin" });
+  expectSaveError(
+    edit((s) => { s.entities.push({ player: 0, type: "ua-power-plant", origin: [21, 67] }); }),
+    { code: "invalid-value", file, pointer: "/entities/3/origin" },
+  );
+  expectSaveError(edit((s) => { s.entities[0].atCenti = [6350, 1050]; }), { code: "invalid-value", file, pointer: "/entities/0/atCenti" });
+  expectSaveError(edit((s) => { s.entities[0].atCenti = [13000, 100]; }), { code: "invalid-value", file, pointer: "/entities/0/atCenti" });
+  expectSaveError(edit((s) => { s.entities[0].buildPercent = 50; }), { code: "invalid-value", file, pointer: "/entities/0/buildPercent" });
+  expectSaveError(edit((s) => { s.entities[0].origin = [30, 60]; }), { code: "invalid-value", file, pointer: "/entities/0/origin" });
+  expectSaveError(edit((s) => { s.entities[2].atCenti = [3050, 6050]; }), { code: "invalid-value", file, pointer: "/entities/2/atCenti" });
+  expectSaveError(edit((s) => { s.entities[0].label = "dup"; s.entities[1].label = "dup"; }), {
+    code: "duplicate-id", file, pointer: "/entities/1/label",
+  });
+  // The file name is the id, so these two cases name their file explicitly.
+  const slot = SAVE_FILE("slot-1");
+  expectSaveError({ file: slot, text: stringify(edit((s) => { s.id = "slot-1"; })) }, {
+    code: "invalid-value", file: slot, pointer: "/id",
+  });
+  expectSaveError({ file, text: stringify(edit((s) => { s.id = "other"; })) }, { code: "invalid-value", file, pointer: "/id" });
+  expectSaveError({ file, text: "id: [unclosed" }, { code: "parse", file });
+});
+
+test("AC-19-01: builtin example saves are current and named", () => {
+  const root = repoRoot();
+  const sources = readSources(root);
+  const { ruleset } = buildRuleset(sources);
+  const built = buildSaves(sources.saves, ruleset);
+  assert.deepEqual(built.errors, []);
+  const generated = (path) => JSON.parse(readFileSync(join(root, "data/generated", path), "utf8"));
+  assert.deepEqual(generated("saves.json"), built.index);
+  const en = JSON.parse(readFileSync(join(root, "client/src/i18n/en.json"), "utf8"));
+  for (const save of built.saves) {
+    assert.deepEqual(generated(`saves/${save.id}.json`), save.file, `${save.id} is current`);
+    assert.equal(typeof en[`saves.${save.id}.name`], "string", `saves.${save.id}.name`);
+    assert.equal(typeof en[`saves.${save.id}.description`], "string", `saves.${save.id}.description`);
+  }
+});
+
+test("AC-19-02: showcase example", () => {
+  const root = repoRoot();
+  const sources = readSources(root);
+  const { ruleset } = buildRuleset(sources);
+  const built = buildSaves(sources.saves, ruleset);
+  const byId = (id) => built.saves.find((s) => s.id === id)?.file;
+  const showcase = byId("showcase");
+  assert.ok(showcase, "the showcase example exists");
+  const setup = showcase.setup;
+  assert.equal(setup.map, "showcase");
+  assert.equal(setup.starts, true);
+  const map = ruleset.maps.find((m) => m.id === "showcase");
+
+  map.starts.forEach((start, player) => {
+    const faction = ruleset.factions[start.faction];
+    const own = ruleset.types.filter((t) => t.faction === start.faction && t.category !== "depot");
+    const expected = own
+      .map((t) => t.id)
+      .filter((id) => id !== ruleset.types[faction.hq].id && id !== ruleset.types[faction.dozer].id)
+      .sort();
+    const placed = setup.entities.filter((e) => e.player === player).map((e) => e.type).sort();
+    assert.deepEqual(placed, expected, `player ${player} has every type exactly once`);
+    assert.equal(placed.length + 2, 14, "14 entities per faction with the start HQ and dozer");
+  });
+  // The camera follows spec 14 §5: zoom 1 at (x0 + 14, 12) of player 0.
+  assert.deepEqual(showcase.client.camera, { x: map.starts[0].hq[0] + 14, y: 12, zoom: 1 });
+
+  const units = byId("showcase-units");
+  assert.ok(units, "the showcase-units example exists");
+  assert.deepEqual(units.setup, setup);
+  assert.deepEqual({ ...units.client, camera: null }, { ...showcase.client, camera: null });
+  assert.deepEqual(units.client.camera, { x: map.starts[0].hq[0] + 9.5, y: 18.5, zoom: 2 });
 });
