@@ -19,6 +19,8 @@ export interface GameMenuView {
 export interface GameMenuActions {
   /** Closes the menu and resumes. */
   resume(): void;
+  /** Opens the save manager (spec 19 §5.5); no button when absent. */
+  openSaves?(): void;
   /** Same as the `G` key (spec 07 §5). */
   toggleGore(): void;
   /** Pauses or resumes the skirmish AI (§3.3). */
@@ -73,6 +75,14 @@ export function createGameMenu(
     actions.restart();
   });
   panel.appendChild(resume);
+  const openSaves = actions.openSaves;
+  if (openSaves !== undefined) {
+    panel.appendChild(
+      createButton("game-menu-saves", t("menu.saves"), () =>
+        openSaves.call(actions),
+      ),
+    );
+  }
   panel.appendChild(gore);
   panel.appendChild(ai);
   const toggleTextures = actions.toggleTextures;

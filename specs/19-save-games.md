@@ -585,30 +585,37 @@ events, never per frame (client `AGENTS.md`):
   `t("saves.storageUnavailable")` and only Examples work.
 
 ```ts
+export type SlotView = SaveSummary | { id: SlotId; empty: true };
 export interface SaveManagerView {
   open: boolean;
-  slots: readonly (SaveSummary | { id: SlotId; empty: true })[];
-  examples: readonly { id: string }[];
+  /** `SLOT_COUNT` entries, ascending slot number. */
+  slots: readonly SlotView[];
+  /** Example ids in menu order. */
+  examples: readonly string[];
   storageAvailable: boolean;
-  dialog:
-    | null
-    | { kind: "name"; slot: SlotId; text: string | null; name: string }
-    | { kind: "confirm"; text: string; action: SaveManagerAction };
+  /** Pre-filled name of a save into an empty slot (`defaultSaveName`). */
+  defaultName: string;
 }
-export type SaveManagerAction =
-  | { kind: "load"; id: string }
-  | { kind: "delete"; slot: SlotId };
+/** Dialogs live inside the manager; these run after their confirmation. */
 export interface SaveManagerActions {
   close(): void;
   save(slot: SlotId, name: string): void;
   rename(slot: SlotId, name: string): void;
-  load(id: string): void;          // after confirm: navigates to ?load=id
+  load(id: string): void;          // navigates to ?load=id
   copy(id: string): void;
-  remove(slot: SlotId): void;      // after confirm
+  remove(slot: SlotId): void;
 }
-export function createSaveManager(parent: HTMLElement, actions: SaveManagerActions):
-  { root: HTMLElement; render(view: SaveManagerView): void };
+export interface SaveManager {
+  readonly root: HTMLElement;
+  render(view: SaveManagerView): void;
+  /** Esc: closes an open dialog, else the panel; false while closed. */
+  handleEscape(): boolean;
+}
+export function createSaveManager(parent: HTMLElement, actions: SaveManagerActions): SaveManager;
 ```
+
+The name input stops the propagation of every key, so typing a name never
+pans the camera (WASD), selects units (Ctrl+A) or toggles gore (G).
 
 New i18n keys in `en.json`: `menu.saves`, `saves.title`, `saves.close`,
 `saves.slots`, `saves.examples`, `saves.empty`, `saves.save`, `saves.load`,
@@ -804,10 +811,10 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
 * AC-19-12: Given `loadSource`, Then `slot-1` and `slot-10` are slots,
   `slot-0`, `slot-11` and `slot-x` are null, a listed example id is an
   example, and an unknown id or null is null.
-* AC-19-13: Given a `SaveManagerView` with 2 occupied slots, 8 empty ones,
-  the examples and each dialog kind, When rendered (Vitest, DOM), Then the
-  rows, the buttons per row of §5.5, the dialog texts and the disabled OK on
-  an empty name match §5.5. Rendering the same view twice keeps the same
+* AC-19-13: Given a `SaveManagerView` with 2 occupied slots, 8 empty ones
+  and the examples, When rendered (Vitest, fake DOM) and each button is
+  clicked, Then the rows, the buttons per row of §5.5, the dialog texts, the
+  disabled OK on an empty name and the Esc order match §5.5. Rendering the same view twice keeps the same
   button elements.
 * AC-19-14: Given every example, When loaded natively and stepped as its row
   of §7 says, Then its contract holds.
