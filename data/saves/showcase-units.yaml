@@ -1,0 +1,35 @@
+# Spec 19 §7: every building and unit of both sides in formation (spec 14 §4 layout).
+id: showcase-units
+map: showcase
+victory: false
+debug: true
+starts: true                  # the HQ and dozer of each start
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 13.5, y: 18.5, zoom: 2 }   # close-up of the two unit rows
+entities:
+  - { player: 0, type: ua-rifleman, atCenti: [750, 1650] }
+  - { player: 0, type: ua-stugna-team, atCenti: [1150, 1650] }
+  - { player: 0, type: ua-kozak-scout, atCenti: [1550, 1650] }
+  - { player: 0, type: ua-bradley, atCenti: [1950, 1650] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [750, 2050] }
+  - { player: 0, type: ua-himars, atCenti: [1150, 2050] }
+  - { player: 0, type: ua-supply-truck, atCenti: [1950, 2050] }
+  - { player: 0, type: ua-power-plant, origin: [9, 6] }
+  - { player: 0, type: ua-supply-center, origin: [14, 6] }
+  - { player: 0, type: ua-barracks, origin: [19, 6] }
+  - { player: 0, type: ua-vehicle-factory, origin: [24, 6] }
+  - { player: 0, type: ua-defense, origin: [29, 6] }
+  - { player: 1, type: ru-rifleman, atCenti: [5750, 1650] }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [6150, 1650] }
+  - { player: 1, type: ru-brdm-scout, atCenti: [6550, 1650] }
+  - { player: 1, type: ru-bmp-2, atCenti: [6950, 1650] }
+  - { player: 1, type: ru-t-72b3, atCenti: [5750, 2050] }
+  - { player: 1, type: ru-tos-1a, atCenti: [6150, 2050] }
+  - { player: 1, type: ru-supply-truck, atCenti: [6950, 2050] }
+  - { player: 1, type: ru-power-plant, origin: [59, 6] }
+  - { player: 1, type: ru-supply-center, origin: [64, 6] }
+  - { player: 1, type: ru-barracks, origin: [69, 6] }
+  - { player: 1, type: ru-vehicle-factory, origin: [74, 6] }
+  - { player: 1, type: ru-defense, origin: [79, 6] }

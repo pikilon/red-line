@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "saves": [
+    {
+      "id": "showcase",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 24
+    },
+    {
+      "id": "showcase-units",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 24
+    }
+  ]
+}

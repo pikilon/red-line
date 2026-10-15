@@ -80,8 +80,30 @@ pub enum Command {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SimError {
-    TooManyUnits { requested: u32, max: u32 },
-    UnknownMap { id: String },
+    TooManyUnits {
+        requested: u32,
+        max: u32,
+    },
+    UnknownMap {
+        id: String,
+    },
+    /// A setup-form world that cannot be built (spec 19 §3.5).
+    InvalidSetup {
+        detail: String,
+    },
+}
+
+/// Client-facing text; the client matches on these strings.
+impl core::fmt::Display for SimError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            SimError::TooManyUnits { requested, max } => {
+                write!(f, "too many units: requested {requested}, max {max}")
+            }
+            SimError::UnknownMap { id } => write!(f, "unknown map: {id}"),
+            SimError::InvalidSetup { detail } => write!(f, "invalid setup: {detail}"),
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -206,6 +228,16 @@ impl World {
     /// visibility. `seed` is reserved for later phases and does not affect the
     /// Phase 2 state.
     pub fn skirmish(rules: Ruleset, map_id: &str, _seed: u64) -> Result<World, SimError> {
+        World::skirmish_with(rules, map_id, true)
+    }
+
+    /// `World::skirmish`, placing the starts' HQs and dozers only when
+    /// `starts` (spec 19 §3.5).
+    pub(crate) fn skirmish_with(
+        rules: Ruleset,
+        map_id: &str,
+        starts: bool,
+    ) -> Result<World, SimError> {
         let map = rules
             .map(map_id)
             .cloned()
@@ -228,6 +260,9 @@ impl World {
         }
 
         for (index, start) in map.starts.iter().enumerate() {
+            if !starts {
+                break;
+            }
             let player = index as PlayerId;
             let faction = &world.rules.factions[usize::from(start.faction)];
             let (hq, dozer) = (faction.hq, faction.dozer);
@@ -363,7 +398,7 @@ impl World {
         self.debug_commands = true;
     }
 
-    fn place_site(
+    pub(crate) fn place_site(
         &mut self,
         owner: PlayerId,
         kind: TypeId,

@@ -1,12 +1,12 @@
 // Builds data/generated/ruleset.json from the YAML sources in data/ (specs/03 §4).
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import { parse } from "yaml";
 
 /** @typedef {{ file: string, text: string }} SourceFile */
-/** @typedef {{ globals: SourceFile, factions: SourceFile[], maps: SourceFile[], ai: SourceFile[] }} Sources */
+/** @typedef {{ globals: SourceFile, factions: SourceFile[], maps: SourceFile[], ai: SourceFile[], saves?: SourceFile[] }} Sources */
 /** @typedef {"parse"|"schema"|"duplicate-id"|"unknown-reference"|"invalid-value"} DataErrorCode */
 /** @typedef {{ file: string, pointer: string, code: DataErrorCode, message: string }} DataError */
 
@@ -37,15 +37,21 @@ const listedIds = (text, key) => {
   }
 };
 
-/** Reads globals, then the factions, maps and AI personalities it lists, as repository-relative files. */
+/** Reads globals, then the factions, maps, AI personalities and example saves it lists, as repository-relative files. */
 export function readSources(rootDir) {
   const read = (file) => ({ file, text: readFileSync(join(rootDir, file), "utf8") });
   const globals = read(GLOBALS_FILE);
+  // Spec 19 §4: a save is `<id>.yaml` (setup form) or `<id>.json` (world form).
+  const saveFile = (id) => {
+    const yaml = `data/saves/${id}.yaml`;
+    return existsSync(join(rootDir, yaml)) ? yaml : `data/saves/${id}.json`;
+  };
   return {
     globals,
     factions: listedIds(globals.text, "factions").map((id) => read(`data/factions/${id}.yaml`)),
     maps: listedIds(globals.text, "maps").map((id) => read(`data/maps/${id}.yaml`)),
     ai: listedIds(globals.text, "ai").map((id) => read(`data/ai/${id}.yaml`)),
+    saves: listedIds(globals.text, "saves").map((id) => read(saveFile(id))),
   };
 }
 
@@ -353,6 +359,242 @@ export const serializeRuleset = (ruleset) => `${JSON.stringify(ruleset, null, 2)
 
 export const formatError = (e) => `${e.file} ${e.pointer} ${e.code} ${e.message}`;
 
+
+/** Format of `data/generated/saves.json` (spec 19 §4.3). */
+const SAVES_FORMAT_VERSION = 1;
+const SAVE_FILE_FORMAT = "redline-save";
+const SAVE_FILE_VERSION = 1;
+const EPOCH = "1970-01-01T00:00:00.000Z";
+
+/**
+ * Spec 19 §4.3: validates the example saves and builds their `SaveFile`s.
+ * @returns {{ saves: { id: string, file: object }[], index: object, errors: DataError[] }}
+ */
+export function buildSaves(sources, ruleset) {
+  /** @type {DataError[]} */
+  const errors = [];
+  const fail = (file, pointer, code, message) => errors.push({ file, pointer, code, message });
+  // Self-contained schema: compiling it alone keeps Ajv's faction warnings single.
+  const validate = new Ajv2020({ allErrors: true }).compile(readSchema("save"));
+  const saves = [];
+  for (const source of sources ?? []) {
+    const id = basename(source.file).replace(/\.(yaml|json)$/, "");
+    const before = errors.length;
+    const file = source.file.endsWith(".json")
+      ? worldSave(source, id, ruleset, fail)
+      : setupSave(source, id, ruleset, validate, fail);
+    if (errors.length === before && file !== null) saves.push({ id, file });
+  }
+  if (errors.length > 0) return { saves: [], index: null, errors };
+  const index = {
+    formatVersion: SAVES_FORMAT_VERSION,
+    saves: saves.map(({ id, file }) => ({
+      id,
+      map: file.match.mapId,
+      form: file.setup ? "setup" : "world",
+      entities: (file.setup ?? file.world).entities?.length ?? 0,
+    })),
+  };
+  return { saves, index, errors };
+}
+
+/** A world-form save copied from the game (spec 19 §4.2), checked shallowly. */
+function worldSave(source, id, ruleset, fail) {
+  let data;
+  try {
+    data = JSON.parse(source.text);
+  } catch (error) {
+    fail(source.file, "/", "parse", error.message.split("\n")[0]);
+    return null;
+  }
+  if (id.startsWith("slot-")) fail(source.file, "/", "invalid-value", `id ${id} is reserved for player slots`);
+  if (data?.format !== SAVE_FILE_FORMAT || data?.version !== SAVE_FILE_VERSION) {
+    fail(source.file, "/format", "invalid-value", `not a ${SAVE_FILE_FORMAT} v${SAVE_FILE_VERSION} file`);
+    return null;
+  }
+  if (typeof data.world !== "object" || data.world === null || data.setup !== undefined) {
+    fail(source.file, "/world", "invalid-value", "a world-form save needs world and no setup");
+    return null;
+  }
+  if (!ruleset.maps.some((m) => m.id === data.match?.mapId)) {
+    fail(source.file, "/match/mapId", "unknown-reference", `unknown map ${data.match?.mapId}`);
+  }
+  return data;
+}
+
+/** A setup-form save (spec 19 §4.1) and its generated `SaveFile`. */
+function setupSave(source, id, ruleset, validate, fail) {
+  const file = source.file;
+  let data;
+  try {
+    data = parse(source.text);
+  } catch (error) {
+    fail(file, "/", "parse", error.message.split("\n")[0]);
+    return null;
+  }
+  if (!validate(data)) {
+    for (const e of validate.errors) fail(file, e.instancePath || "/", "schema", e.message);
+    return null;
+  }
+  if (data.id !== id) fail(file, "/id", "invalid-value", `id ${data.id} differs from file name ${id}`);
+  if (data.id.startsWith("slot-")) fail(file, "/id", "invalid-value", `id ${data.id} is reserved for player slots`);
+  const map = ruleset.maps.find((m) => m.id === data.map);
+  if (!map) {
+    fail(file, "/map", "unknown-reference", `unknown map ${data.map}`);
+    return null;
+  }
+  const starts = data.starts ?? true;
+  const debug = data.debug ?? false;
+  (data.ai ?? []).forEach((ai, i) => {
+    if (!ruleset.ai.some((a) => a.id === ai.personality)) {
+      fail(file, `/ai/${i}/personality`, "unknown-reference", `unknown personality ${ai.personality}`);
+    }
+  });
+  checkSetupEntities(file, data, map, starts, ruleset, fail);
+
+  const client = data.client ?? {};
+  const controlled = client.controlled ?? 0;
+  const setup = {
+    map: data.map,
+    seed: String(data.seed ?? 1),
+    victory: data.victory,
+    debug,
+    starts,
+    ...(data.credits === undefined ? {} : { credits: data.credits }),
+    ai: data.ai ?? [],
+    entities: data.entities ?? [],
+  };
+  return {
+    format: SAVE_FILE_FORMAT,
+    version: SAVE_FILE_VERSION,
+    name: id,
+    savedAt: EPOCH,
+    tick: 0,
+    match: { mapId: data.map, seed: setup.seed, debug, speed: data.speed ?? 1 },
+    client: {
+      controlled,
+      revealed: client.revealed ?? false,
+      gore: client.gore ?? true,
+      generatedTextures: client.generatedTextures ?? true,
+      fpsPanel: client.fpsPanel ?? debug,
+      camera: client.camera ?? defaultCamera(data, map, starts, controlled, ruleset),
+      cameraMemory: {},
+      selected: [],
+    },
+    setup,
+  };
+}
+
+/** The controlled player's HQ centre at zoom 1, else the map centre (spec 19 §5.1). */
+function defaultCamera(data, map, starts, controlled, ruleset) {
+  const start = map.starts[controlled];
+  const hq = start === undefined ? null : ruleset.types[ruleset.factions[start.faction].hq];
+  const centre = (origin, footprint) => ({ x: origin[0] + footprint[0] / 2, y: origin[1] + footprint[1] / 2, zoom: 1 });
+  if (hq && starts) return centre(start.hq, hq.footprint);
+  const placed = (data.entities ?? []).find((e) => e.player === controlled && e.type === hq?.id && e.origin);
+  if (placed) return centre(placed.origin, hq.footprint);
+  return { x: map.width / 2, y: map.height / 2, zoom: 1 };
+}
+
+/** References, placement and labels of a setup's entities (spec 19 §4.3). */
+function checkSetupEntities(file, data, map, starts, ruleset, fail) {
+  const typeById = new Map(ruleset.types.map((t) => [t.id, t]));
+  const inBounds = (x, y) => x >= 0 && y >= 0 && x < map.width && y < map.height;
+  const blocked = new Set();
+  for (const [x0, y0, x1, y1] of map.blocked) {
+    for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) blocked.add(`${x},${y}`);
+  }
+  const occupied = new Set();
+  const footprintCells = ([ox, oy], [w, h]) => {
+    const cells = [];
+    for (let x = ox; x < ox + w; x++) for (let y = oy; y < oy + h; y++) cells.push(`${x},${y}`);
+    return cells;
+  };
+  const labels = new Set();
+  const depot = ruleset.types.find((t) => t.category === "depot");
+  map.depots.forEach((d, i) => {
+    footprintCells(d.origin, depot.footprint).forEach((cell) => occupied.add(cell));
+    labels.add(`depot-${i}`);
+  });
+  if (starts) {
+    map.starts.forEach((start, player) => {
+      const faction = ruleset.factions[start.faction];
+      footprintCells(start.hq, ruleset.types[faction.hq].footprint).forEach((cell) => occupied.add(cell));
+      labels.add(`hq-${player}`);
+      labels.add(`dozer-${player}`);
+    });
+  }
+
+  const entities = data.entities ?? [];
+  entities.forEach((e, i) => {
+    const at = `/entities/${i}`;
+    const start = map.starts[e.player];
+    if (start === undefined) fail(file, `${at}/player`, "invalid-value", `player ${e.player} has no start on ${map.id}`);
+    const type = typeById.get(e.type);
+    if (!type) {
+      fail(file, `${at}/type`, "unknown-reference", `unknown type ${e.type}`);
+      return;
+    }
+    if (type.category === "depot") {
+      fail(file, `${at}/type`, "invalid-value", `${e.type} is a depot`);
+      return;
+    }
+    if (start !== undefined && type.faction !== -1 && type.faction !== start.faction) {
+      fail(file, `${at}/type`, "unknown-reference", `${e.type} is not of player ${e.player}'s faction`);
+    }
+    if (type.category === "building") {
+      if (e.atCenti !== undefined) fail(file, `${at}/atCenti`, "invalid-value", "a building takes origin, not atCenti");
+      if (e.origin === undefined) {
+        fail(file, `${at}/origin`, "invalid-value", "a building needs origin");
+        return;
+      }
+      const cells = footprintCells(e.origin, type.footprint);
+      const [w, h] = type.footprint;
+      if (!inBounds(e.origin[0], e.origin[1]) || !inBounds(e.origin[0] + w - 1, e.origin[1] + h - 1)) {
+        fail(file, `${at}/origin`, "invalid-value", "footprint out of the map");
+      } else if (cells.some((cell) => blocked.has(cell) || occupied.has(cell))) {
+        fail(file, `${at}/origin`, "invalid-value", "footprint overlaps a blocked cell or another entity");
+      }
+      cells.forEach((cell) => occupied.add(cell));
+    } else {
+      if (e.origin !== undefined) fail(file, `${at}/origin`, "invalid-value", "a unit takes atCenti, not origin");
+      if (e.buildPercent !== undefined) fail(file, `${at}/buildPercent`, "invalid-value", "buildPercent is for buildings");
+      if (e.atCenti === undefined) {
+        fail(file, `${at}/atCenti`, "invalid-value", "a unit needs atCenti");
+        return;
+      }
+      const x = Math.floor(e.atCenti[0] / 100);
+      const y = Math.floor(e.atCenti[1] / 100);
+      if (!inBounds(x, y)) fail(file, `${at}/atCenti`, "invalid-value", "unit out of the map");
+      else if (blocked.has(`${x},${y}`) || occupied.has(`${x},${y}`)) {
+        fail(file, `${at}/atCenti`, "invalid-value", "unit on a blocked cell or a footprint");
+      }
+    }
+    if (e.label !== undefined) {
+      if (labels.has(e.label)) fail(file, `${at}/label`, "duplicate-id", `duplicate label ${e.label}`);
+      labels.add(e.label);
+    }
+  });
+  entities.forEach((e, i) => {
+    const target = e.order?.attack ?? e.order?.harvest;
+    if (target !== undefined && !labels.has(target)) {
+      fail(file, `/entities/${i}/order`, "unknown-reference", `unknown label ${target}`);
+    }
+  });
+}
+
+export const serializeJson = (value) => `${JSON.stringify(value, null, 2)}\n`;
+
+/** Writes `data/generated/saves/<id>.json` and `saves.json`, removing stale files. */
+export function writeSaves(root, built) {
+  const dir = join(root, "data", "generated", "saves");
+  mkdirSync(dir, { recursive: true });
+  const keep = new Set(built.saves.map(({ id }) => `${id}.json`));
+  for (const name of readdirSync(dir)) if (!keep.has(name)) rmSync(join(dir, name));
+  for (const { id, file } of built.saves) writeFileSync(join(dir, `${id}.json`), serializeJson(file));
+  writeFileSync(join(root, "data", "generated", "saves.json"), serializeJson(built.index));
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const root = join(dirname(fileURLToPath(import.meta.url)), "..");
   const { ruleset, errors } = buildRuleset(readSources(root));
@@ -362,9 +604,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
   mkdirSync(join(root, "data", "generated"), { recursive: true });
   writeFileSync(join(root, "data", "generated", "ruleset.json"), serializeRuleset(ruleset));
-}
-
-/** Spec 19 §4.3: validates the example saves and builds their `SaveFile`s. */
-export function buildSaves(_sources, _ruleset) {
-  return { saves: [], index: { formatVersion: 1, saves: [] }, errors: [] };
+  const built = buildSaves(readSources(root).saves, ruleset);
+  if (built.errors.length > 0) {
+    built.errors.forEach((e) => console.error(formatError(e)));
+    process.exit(1);
+  }
+  writeSaves(root, built);
 }

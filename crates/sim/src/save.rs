@@ -8,13 +8,17 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde::{Deserialize, Serialize};
 
 use crate::ai::Ai;
+use crate::entity::EntityId;
 use crate::entity::{Entity, Ghost, HarvestPhase, Order, Projectile, QueueItem, Site};
 use crate::fixed::{Fx, FxVec2};
 use crate::flow::FlowField;
 use crate::map::Cell;
+use crate::map::cell_of;
+use crate::nav::footprint_cells;
 use crate::player::Player;
+use crate::rules::{Category, fx_centi};
 use crate::rules::{Ruleset, TypeId, WeaponId};
-use crate::world::{Command, Outcome, World, map_terrain};
+use crate::world::{Command, MAX_UNITS, Outcome, SimError, World, map_terrain};
 
 /// Version of the `SimState` format (spec 19 §3.6).
 pub const SAVE_FORMAT_VERSION: u32 = 1;
@@ -402,6 +406,11 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
         .map(|ai| Ai::load(ai, &world.rules))
         .collect::<Result<Vec<_>, _>>()?;
     Ok((world, seed, ais))
+}
+
+/// `fx_centi` for a possibly negative value (move targets are clamped later).
+fn signed_centi(c: i32) -> Fx {
+    Fx::from_raw((i64::from(c) * 65536 / 100) as i32)
 }
 
 fn parse_u64(name: &str, text: &str) -> Result<u64, String> {
@@ -912,6 +921,175 @@ pub enum SetupOrder {
 
 /// World, seed and AIs of a setup (spec 19 §3.5). Errors are the `SimError`
 /// texts: "invalid setup: <detail>" or "unknown map: <id>".
-pub fn from_setup(_setup: &Setup) -> Result<(World, u64, Vec<Ai>), String> {
-    Err("not implemented".to_owned())
+pub fn from_setup(setup: &Setup) -> Result<(World, u64, Vec<Ai>), String> {
+    let seed = setup
+        .seed
+        .parse::<u64>()
+        .map_err(|_| format!("invalid setup: seed {}", setup.seed))?;
+    let world = World::from_setup(Ruleset::builtin(), setup).map_err(|e| e.to_string())?;
+    let mut ais: Vec<Ai> = Vec::with_capacity(setup.ai.len());
+    for (index, entry) in setup.ai.iter().enumerate() {
+        let mut ai = Ai::new(&world, entry.player, &entry.personality, seed).map_err(|e| {
+            let detail = if world.rules.ai_index(&entry.personality).is_none() {
+                format!("unknown ai {}", entry.personality)
+            } else {
+                e
+            };
+            format!("invalid setup: ai[{index}]: {detail}")
+        })?;
+        // A fresh AI has no attackers, so pausing it issues no command.
+        let _ = ai.set_active(entry.active);
+        ais.retain(|existing| existing.player() != entry.player);
+        ais.push(ai);
+    }
+    ais.sort_by_key(Ai::player);
+    Ok((world, seed, ais))
+}
+
+impl World {
+    /// A tick-0 world from a setup (spec 19 §3.5): the map's terrain, players
+    /// and depots (labels `depot-<i>`), the starts' HQ and dozer when
+    /// `starts` (labels `hq-<p>`, `dozer-<p>`), then the entities in list
+    /// order; their orders are enqueued for the first step.
+    pub fn from_setup(rules: Ruleset, setup: &Setup) -> Result<World, SimError> {
+        let invalid = |detail: String| SimError::InvalidSetup { detail };
+        let mut world = World::skirmish_with(rules, &setup.map, setup.starts)?;
+        let starts = world.players.len();
+        if let Some(credits) = &setup.credits {
+            if credits.len() != starts {
+                return Err(invalid(format!(
+                    "credits: {} entries for {starts} starts",
+                    credits.len()
+                )));
+            }
+            for (player, &amount) in credits.iter().enumerate() {
+                world.players[player].credits = amount;
+            }
+        }
+
+        let mut labels: BTreeMap<String, EntityId> = BTreeMap::new();
+        let mut depots = 0;
+        for entity in &world.entities {
+            let category = world.rules.ty(entity.kind).category;
+            let faction = world
+                .players
+                .get(usize::from(entity.owner))
+                .map(|p| &world.rules.factions[usize::from(p.faction)]);
+            let label = match (category, faction) {
+                (Category::Depot, _) => {
+                    depots += 1;
+                    format!("depot-{}", depots - 1)
+                }
+                (_, Some(f)) if entity.kind == f.hq => format!("hq-{}", entity.owner),
+                (_, Some(f)) if entity.kind == f.dozer => format!("dozer-{}", entity.owner),
+                _ => continue,
+            };
+            labels.insert(label, entity.id);
+        }
+
+        let mut placed = Vec::with_capacity(setup.entities.len());
+        for (index, entry) in setup.entities.iter().enumerate() {
+            let at = |detail: String| invalid(format!("entities[{index}]: {detail}"));
+            if usize::from(entry.player) >= starts {
+                return Err(at(format!("player {} has no start", entry.player)));
+            }
+            let kind = world
+                .rules
+                .type_index(&entry.kind)
+                .ok_or_else(|| at(format!("unknown type {}", entry.kind)))?;
+            let ty = world.rules.ty(kind).clone();
+            let hp_percent = entry.hp_percent.unwrap_or(100);
+            if !(1..=100).contains(&hp_percent) {
+                return Err(at(format!("hpPercent {hp_percent} out of 1..=100")));
+            }
+            let hp = (u64::from(ty.hp) * u64::from(hp_percent) / 100).max(1) as u32;
+            let id = match ty.category {
+                Category::Depot => return Err(at(format!("type {} is a depot", entry.kind))),
+                Category::Building => {
+                    let origin = entry
+                        .origin
+                        .ok_or_else(|| at("building needs origin".to_owned()))?;
+                    let build_percent = entry.build_percent.unwrap_or(100);
+                    if build_percent > 100 {
+                        return Err(at(format!("buildPercent {build_percent} out of 0..=100")));
+                    }
+                    let origin = to_cell(origin);
+                    let inside = footprint_cells(origin, ty.footprint)
+                        .iter()
+                        .all(|&cell| world.terrain.in_bounds(cell));
+                    if !inside {
+                        return Err(at("outside the map".to_owned()));
+                    }
+                    if !world.footprint_free(origin, ty.footprint) {
+                        return Err(at("footprint blocked".to_owned()));
+                    }
+                    let complete = build_percent == 100;
+                    let progress = ty.build_ticks * build_percent;
+                    world.place_site(entry.player, kind, origin, hp, progress, complete)
+                }
+                Category::Unit => {
+                    let [x, y] = entry
+                        .at_centi
+                        .ok_or_else(|| at("unit needs atCenti".to_owned()))?;
+                    if x < 0 || y < 0 {
+                        return Err(at("outside the map".to_owned()));
+                    }
+                    let pos = FxVec2::new(fx_centi(x as u32), fx_centi(y as u32));
+                    let cell = cell_of(pos);
+                    if !world.terrain.in_bounds(cell) {
+                        return Err(at("outside the map".to_owned()));
+                    }
+                    if !world.nav.is_passable(cell) {
+                        return Err(at("cell blocked".to_owned()));
+                    }
+                    if world.entities.len() as u32 >= MAX_UNITS {
+                        return Err(at("too many entities".to_owned()));
+                    }
+                    let id = world.spawn(entry.player, kind, pos);
+                    world.set_hp(id, hp);
+                    id
+                }
+            };
+            if let Some(label) = &entry.label
+                && labels.insert(label.clone(), id).is_some()
+            {
+                return Err(at(format!("duplicate label {label}")));
+            }
+            placed.push(id);
+        }
+
+        for (index, entry) in setup.entities.iter().enumerate() {
+            let Some(order) = &entry.order else {
+                continue;
+            };
+            let at = |detail: String| invalid(format!("entities[{index}]: {detail}"));
+            let label = |name: &String| {
+                labels
+                    .get(name)
+                    .copied()
+                    .ok_or_else(|| at(format!("unknown label {name}")))
+            };
+            let units = vec![placed[index]];
+            let command = match order {
+                SetupOrder::Attack(target) => Command::Attack {
+                    units,
+                    target: label(target)?,
+                },
+                SetupOrder::MoveCenti([x, y]) => Command::Move {
+                    units,
+                    target: FxVec2::new(signed_centi(*x), signed_centi(*y)),
+                },
+                SetupOrder::Harvest(depot) => Command::Harvest {
+                    units,
+                    depot: label(depot)?,
+                },
+            };
+            world.enqueue_as(entry.player, command);
+        }
+
+        world.victory_enabled = setup.victory;
+        world.debug_commands = setup.debug;
+        world.refresh_visibility();
+        Ok(world)
+    }
 }

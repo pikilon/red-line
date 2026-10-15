@@ -17,12 +17,7 @@ use crate::world::{CombatEvent, Command, SimError, World};
 
 /// Client-facing text for a setup error; the client matches on these strings.
 fn error_text(error: SimError) -> String {
-    match error {
-        SimError::TooManyUnits { requested, max } => {
-            format!("too many units: requested {requested}, max {max}")
-        }
-        SimError::UnknownMap { id } => format!("unknown map: {id}"),
-    }
+    error.to_string()
 }
 
 #[wasm_bindgen]

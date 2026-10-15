@@ -614,8 +614,12 @@ test("AC-19-01: example saves build", () => {
   expectSaveError(edit((s) => { s.entities[0].label = "dup"; s.entities[1].label = "dup"; }), {
     code: "duplicate-id", file, pointer: "/entities/1/label",
   });
-  expectSaveError(edit((s) => { s.id = "slot-1"; }), { code: "invalid-value", file, pointer: "/id" });
-  expectSaveError(edit((s) => { s.id = "other"; }), { code: "invalid-value", file, pointer: "/id" });
+  // The file name is the id, so these two cases name their file explicitly.
+  const slot = SAVE_FILE("slot-1");
+  expectSaveError({ file: slot, text: stringify(edit((s) => { s.id = "slot-1"; })) }, {
+    code: "invalid-value", file: slot, pointer: "/id",
+  });
+  expectSaveError({ file, text: stringify(edit((s) => { s.id = "other"; })) }, { code: "invalid-value", file, pointer: "/id" });
   expectSaveError({ file, text: "id: [unclosed" }, { code: "parse", file });
 });
 
