@@ -85,9 +85,13 @@ const button = (row: FakeElement, name: string): FakeElement => {
 
 const SLOTS = Array.from({ length: 10 }, (_, i) => `slot-${i + 1}` as SlotId);
 
-function view(open = true): SaveManagerView {
+function view(
+  open = true,
+  mode: SaveManagerView["mode"] = "load",
+): SaveManagerView {
   return {
     open,
+    mode,
     storageAvailable: true,
     defaultName: "first-line 1:15",
     examples: ["showcase", "showcase-units"],
@@ -157,19 +161,28 @@ describe("save manager", () => {
     const empty = slotRow(root, "slot-1");
     expect(byClass(empty, "save-slot-name")[0]?.textContent).toBe("Empty slot");
 
-    // Empty rows only offer Save; occupied rows offer every action.
+    // Load mode: occupied rows load, copy, rename and delete; empty rows
+    // offer nothing; the examples are shown.
     const visible = (row: FakeElement) =>
       ["save", "load", "rename", "copy", "delete"].filter(
         (name) => !button(row, `save-slot-${name}`).hidden,
       );
+    const title = () =>
+      all(root).find((node) => node.tagName === "h2")?.textContent;
+    const examplesSection = byId(root, "save-manager-examples-section");
+    expect(title()).toBe("Load game");
+    expect(visible(empty)).toEqual([]);
+    expect(visible(second)).toEqual(["load", "rename", "copy", "delete"]);
+    expect(examplesSection.hidden).toBe(false);
+
+    // Save mode: every slot saves, occupied ones also rename and delete; no
+    // examples.
+    manager.render(view(true, "save"));
+    expect(title()).toBe("Save game");
     expect(visible(empty)).toEqual(["save"]);
-    expect(visible(second)).toEqual([
-      "save",
-      "load",
-      "rename",
-      "copy",
-      "delete",
-    ]);
+    expect(visible(second)).toEqual(["save", "rename", "delete"]);
+    expect(examplesSection.hidden).toBe(true);
+    manager.render(view());
 
     // Examples in order, with their i18n name.
     const examples = byClass(root, "save-example");
@@ -198,6 +211,7 @@ describe("save manager", () => {
     expect(dialog.hidden).toBe(true);
 
     // Save on an empty slot: name dialog with the default name.
+    manager.render(view(true, "save"));
     button(empty, "save-slot-save").click();
     expect(dialog.hidden).toBe(false);
     expect(name.hidden).toBe(false);
@@ -221,6 +235,7 @@ describe("save manager", () => {
     expect(actions.save).toHaveBeenLastCalledWith("slot-2", "Second");
 
     // Load asks to confirm the lost progress; Cancel does nothing.
+    manager.render(view());
     button(second, "save-slot-load").click();
     expect(text.textContent).toBe(
       "Unsaved progress in the current match will be lost.",

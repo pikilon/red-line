@@ -545,13 +545,23 @@ not from the message. `SkirmishClient` gains
 
 ### 5.5 Save manager (`client/src/ui/saveManager.ts`, new)
 
-The game menu (spec 08 §3.1) gains a button `#game-menu-saves`
-(`t("menu.saves")`, "Saved games") under Resume. It opens `#save-manager`, a
-panel over the menu, built once. Buttons are created once and updated on
-events, never per frame (client `AGENTS.md`):
+The game menu (spec 08 §3.1) gains two buttons under Resume, as in Red Alert 2
+(owner decision 2026-10-15, #294): `#game-menu-save` (`t("menu.saveGame")`,
+"Save game") and `#game-menu-load` (`t("menu.loadGame")`, "Load game"). Both
+open `#save-manager`, a panel over the menu built once, in **save** or
+**load** mode. Buttons are created once and updated on events, never per frame
+(client `AGENTS.md`):
 
-* A title `t("saves.title")` and a close button `#save-manager-close`
+* A title, `t("saves.titleSave")` ("Save game") or `t("saves.titleLoad")`
+  ("Load game"), and a close button `#save-manager-close`
   (`t("saves.close")`). Esc closes the panel first, then the menu.
+* Buttons shown per mode (occupied slot / empty slot):
+
+  | Mode | Occupied slot | Empty slot | Examples section |
+  |---|---|---|---|
+  | save | Save, Rename, Delete | Save | hidden |
+  | load | Load, Copy, Rename, Delete | none | shown |
+
 * **Slots** section: `SLOT_COUNT` rows `.save-slot[data-slot="slot-N"]`. An
   occupied row shows the name, map name, local date and time of `savedAt`
   (`Intl.DateTimeFormat`, `dateStyle: "short", timeStyle: "short"`) and game
@@ -588,6 +598,8 @@ events, never per frame (client `AGENTS.md`):
 export type SlotView = SaveSummary | { id: SlotId; empty: true };
 export interface SaveManagerView {
   open: boolean;
+  /** Which menu button opened the panel. */
+  mode: "save" | "load";
   /** `SLOT_COUNT` entries, ascending slot number. */
   slots: readonly SlotView[];
   /** Example ids in menu order. */
@@ -617,7 +629,7 @@ export function createSaveManager(parent: HTMLElement, actions: SaveManagerActio
 The name input stops the propagation of every key, so typing a name never
 pans the camera (WASD), selects units (Ctrl+A) or toggles gore (G).
 
-New i18n keys in `en.json`: `menu.saves`, `saves.title`, `saves.close`,
+New i18n keys in `en.json`: `menu.saveGame`, `menu.loadGame`, `saves.titleSave`, `saves.titleLoad`, `saves.close`,
 `saves.slots`, `saves.examples`, `saves.empty`, `saves.save`, `saves.load`,
 `saves.rename`, `saves.copy`, `saves.delete`, `saves.ok`, `saves.cancel`,
 `saves.namePrompt`, `saves.confirmOverwrite`, `saves.confirmLoad`,
@@ -817,8 +829,9 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
   `slot-0`, `slot-11` and `slot-x` are null, a listed example id is an
   example, and an unknown id or null is null.
 * AC-19-13: Given a `SaveManagerView` with 2 occupied slots, 8 empty ones
-  and the examples, When rendered (Vitest, fake DOM) and each button is
-  clicked, Then the rows, the buttons per row of §5.5, the dialog texts, the
+  and the examples, When rendered in each mode (Vitest, fake DOM) and each
+  button is clicked, Then the title, the rows, the buttons per row and mode
+  of §5.5, the examples shown only in load mode, the dialog texts, the
   disabled OK on an empty name and the Esc order match §5.5. Rendering the same view twice keeps the same
   button elements.
 * AC-19-14: Given every example, When loaded natively and stepped as its row
@@ -828,18 +841,18 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
 
 * AC-19-15: Given a fresh skirmish (`?ai=off&debug=1`), When the user pans
   and zooms the camera, switches gore off, selects two units, presses Esc,
-  clicks "Saved games", clicks Save on slot 1, types a name and clicks OK,
-  then clicks Load on slot 1, Then the confirm dialog shows the lost-progress
-  text. When the user clicks OK, Then the URL has `?load=slot-1` and, once
+  clicks "Save game", clicks Save on slot 1, types a name and clicks OK,
+  then closes the panel, clicks "Load game" and clicks Load on slot 1, Then
+  the confirm dialog shows the lost-progress text. When the user clicks OK, Then the URL has `?load=slot-1` and, once
   ready, the tick equals the saved tick (the match was paused while saving), every
   entity id and position equals the saved ones, and the camera target and
   zoom, gore off, controlled player and the two selected ids are restored.
   `saveState()` right after load equals the saved `world` JSON.
-* AC-19-16: Given slot 1 occupied, When the user clicks Save on it, Then the
-  dialog shows the overwrite text with the old name. After OK the slot holds
+* AC-19-16: Given slot 1 occupied, When the user clicks Save on it in "Save
+  game", Then the dialog shows the overwrite text with the old name. After OK the slot holds
   the new tick. Rename changes the shown name. Delete, after confirm, empties
-  the row. Copy (clipboard permission granted) puts text that
-  `parseSaveFile` accepts with the slot's `world`.
+  the row. Copy, in "Load game" (clipboard permission granted), puts text
+  that `parseSaveFile` accepts with the slot's `world`.
 * AC-19-17: Given `/?load=showcase`, When ready, Then 28 entities exist, the
   viewer is the observer, and clicking a unit with the real mouse shows its
   name in `#hud-selected-type` (ports AC-14-04). Given
@@ -866,7 +879,10 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
   banner test move to 4, and the
   client fixtures of AC-01-05 and AC-03-47 use `EXPECTED_API_VERSION`
   instead of a literal, so the next bump does not touch them again.
-* Spec 08 §3.1: the game menu gains the "Saved games" button.
+* Spec 08 §3.1: the game menu gains the "Save game" and "Load game" buttons.
+  They replaced the single "Saved games" button of P5-12 (#294, owner
+  feedback: it did not say it saves). AC-19-13, 15 and 16 were updated to the
+  two modes in that PR.
 
 ## 10. Traceability
 
