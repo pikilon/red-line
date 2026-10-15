@@ -198,7 +198,13 @@ describe("attack intents", () => {
     }),
   ];
   const clickAt = (x: number, y: number, ids: readonly number[]) =>
-    resolveRightClick({ player: 0, selected: ids, entities: withBuildings, x, y });
+    resolveRightClick({
+      player: 0,
+      selected: ids,
+      entities: withBuildings,
+      x,
+      y,
+    });
 
   it("AC-08-20: attacks enemy units and buildings with the armed units only", () => {
     expect(clickAt(40, 40, [7, 20, 21])).toEqual([
