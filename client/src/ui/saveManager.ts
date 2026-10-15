@@ -11,6 +11,8 @@ export type SlotView = SaveSummary | { id: SlotId; empty: true };
 /** What one save manager render shows (spec 19 §5.5). */
 export interface SaveManagerView {
   open: boolean;
+  /** "Save game" or "Load game" (spec 19 §5.5). */
+  mode: "save" | "load";
   /** `SLOT_COUNT` entries, ascending slot number. */
   slots: readonly SlotView[];
   /** Example ids in menu order. */
@@ -102,7 +104,7 @@ export function createSaveManager(
   const root = child(parent, "div", { id: "save-manager" });
   root.hidden = true;
   const panel = child(root, "div", { id: "save-manager-panel" });
-  child(panel, "h2", { text: t("saves.title") });
+  const title = child(panel, "h2", { text: t("saves.titleLoad") });
   const close = child(panel, "button", {
     id: "save-manager-close",
     text: t("saves.close"),
@@ -116,8 +118,13 @@ export function createSaveManager(
   });
   storage.hidden = true;
   const slotList = child(panel, "div", { id: "save-manager-slots" });
-  child(panel, "h3", { text: t("saves.examples") });
-  const exampleList = child(panel, "div", { id: "save-manager-examples" });
+  const examplesSection = child(panel, "div", {
+    id: "save-manager-examples-section",
+  });
+  child(examplesSection, "h3", { text: t("saves.examples") });
+  const exampleList = child(examplesSection, "div", {
+    id: "save-manager-examples",
+  });
 
   const dialogRoot = child(root, "div", { id: "save-dialog" });
   dialogRoot.hidden = true;
@@ -241,7 +248,17 @@ export function createSaveManager(
     return { row, name, info, buttons };
   }
 
-  function renderSlot(slot: SlotView, available: boolean): void {
+  /** Buttons of a row per mode and occupancy (spec 19 §5.5). */
+  const SHOWN = {
+    save: { occupied: ["save", "rename", "delete"], empty: ["save"] },
+    load: { occupied: ["load", "copy", "rename", "delete"], empty: [] },
+  } as const;
+
+  function renderSlot(
+    slot: SlotView,
+    available: boolean,
+    mode: SaveManagerView["mode"],
+  ): void {
     let row = rows.get(slot.id);
     if (row === undefined) {
       row = createSlotRow(slot.id);
@@ -256,8 +273,10 @@ export function createSaveManager(
         ? ""
         : `${summary.mapId} · ${localTime(summary.savedAt)} · ${gameTime(summary.tick)}`,
     );
-    for (const key of ["load", "rename", "copy", "delete"] as const) {
-      const hidden = summary === null;
+    const shown: readonly string[] =
+      SHOWN[mode][summary === null ? "empty" : "occupied"];
+    for (const key of ["save", "load", "rename", "copy", "delete"] as const) {
+      const hidden = !shown.includes(key);
       if (row.buttons[key].hidden !== hidden) row.buttons[key].hidden = hidden;
     }
   }
@@ -287,9 +306,19 @@ export function createSaveManager(
       view = next;
       if (root.hidden !== !next.open) root.hidden = !next.open;
       if (!next.open && dialog !== null) closeDialog();
+      setText(
+        title,
+        t(next.mode === "save" ? "saves.titleSave" : "saves.titleLoad"),
+      );
+      const noExamples = next.mode === "save";
+      if (examplesSection.hidden !== noExamples) {
+        examplesSection.hidden = noExamples;
+      }
       if (storage.hidden !== next.storageAvailable)
         storage.hidden = next.storageAvailable;
-      for (const slot of next.slots) renderSlot(slot, next.storageAvailable);
+      for (const slot of next.slots) {
+        renderSlot(slot, next.storageAvailable, next.mode);
+      }
       renderExamples(next.examples);
     },
     handleEscape() {

@@ -68,8 +68,6 @@
   "saves.showcase-units.name": "Showcase: units",
   "saves.showcase-units.description": "The same formation, zoomed in on the units.",
   "saves.loadError": "Could not load the save: {detail}",
-  "menu.saves": "Saved games",
-  "saves.title": "Saved games",
   "saves.close": "Close",
   "saves.slots": "Slots",
   "saves.examples": "Examples",
@@ -120,5 +118,9 @@
   "saves.victory-near.name": "Victory",
   "saves.victory-near.description": "The last Russian building at 5 % HP under attack.",
   "saves.ai-attack.name": "AI attack",
-  "saves.ai-attack.description": "A small Ukrainian base against the russia-rush AI with 40000 credits."
+  "saves.ai-attack.description": "A small Ukrainian base against the russia-rush AI with 40000 credits.",
+  "menu.saveGame": "Save game",
+  "menu.loadGame": "Load game",
+  "saves.titleSave": "Save game",
+  "saves.titleLoad": "Load game"
 }

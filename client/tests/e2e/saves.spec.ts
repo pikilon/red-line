@@ -164,11 +164,22 @@ async function readSlot(page: Page, id: string): Promise<StoredSave | null> {
 const slot = (page: Page, id: string) =>
   page.locator(`.save-slot[data-slot="${id}"]`);
 
-/** Opens the save manager from the game menu with real clicks. */
-async function openSaves(page: Page): Promise<void> {
+/** Opens "Save game" or "Load game" from the game menu with real clicks. */
+async function openPanel(page: Page, mode: "save" | "load"): Promise<void> {
   await page.keyboard.press("Escape");
   await expect(page.locator("#game-menu")).toBeVisible();
-  await page.locator("#game-menu-saves").click();
+  await page.locator(`#game-menu-${mode}`).click();
+  await expect(page.locator("#save-manager")).toBeVisible();
+  await expect(page.locator("#save-manager h2")).toHaveText(
+    mode === "save" ? "Save game" : "Load game",
+  );
+}
+
+/** Closes the panel with its Close button; the paused menu stays open. */
+async function switchPanel(page: Page, mode: "save" | "load"): Promise<void> {
+  await page.locator("#save-manager-close").click();
+  await expect(page.locator("#save-manager")).toBeHidden();
+  await page.locator(`#game-menu-${mode}`).click();
   await expect(page.locator("#save-manager")).toBeVisible();
 }
 
@@ -234,7 +245,7 @@ test("AC-19-15: save and load a slot", async ({ page }) => {
     .poll(() => page.evaluate(() => (window as DebugWindow).__redline?.gore()))
     .toBe(false);
 
-  await openSaves(page);
+  await openPanel(page, "save");
   await saveTo(page, "slot-1", "Before the river");
   const saved = await readSlot(page, "slot-1");
   expect(saved).not.toBeNull();
@@ -252,6 +263,7 @@ test("AC-19-15: save and load a slot", async ({ page }) => {
   expect(saved?.tick).toBe(saved?.world.tick);
 
   // Load warns about the lost progress, then reloads with ?load=slot-1.
+  await switchPanel(page, "load");
   await slot(page, "slot-1").locator(".save-slot-load").click();
   await expect(page.locator("#save-dialog-text")).toHaveText(
     "Unsaved progress in the current match will be lost.",
@@ -303,7 +315,7 @@ test("AC-19-16: overwrite, rename, delete, copy", async ({ page, context }) => {
   const errors = collectErrors(page);
   await page.goto("/?ai=off&debug=1");
   await waitReady(page);
-  await openSaves(page);
+  await openPanel(page, "save");
   await saveTo(page, "slot-1", "First");
   const first = await readSlot(page, "slot-1");
 
@@ -316,7 +328,7 @@ test("AC-19-16: overwrite, rename, delete, copy", async ({ page, context }) => {
       page.evaluate(() => (window as DebugWindow).__redline?.tick() ?? 0),
     )
     .toBeGreaterThan((first?.tick ?? 0) + 15);
-  await openSaves(page);
+  await openPanel(page, "save");
   await slot(page, "slot-1").locator(".save-slot-save").click();
   await expect(page.locator("#save-dialog-text")).toHaveText(
     "Overwrite this save?",
@@ -335,7 +347,8 @@ test("AC-19-16: overwrite, rename, delete, copy", async ({ page, context }) => {
     "Renamed",
   );
 
-  // Copy puts the save file on the clipboard.
+  // Copy, in "Load game", puts the save file on the clipboard.
+  await switchPanel(page, "load");
   await slot(page, "slot-1").locator(".save-slot-copy").click();
   await expect(page.locator("#toast")).toHaveText(
     "Save copied to the clipboard",
