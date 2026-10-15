@@ -95,6 +95,10 @@ pub struct SimState {
     pub entities: Vec<EntityState>,   // ascending id
     pub projectiles: Vec<ProjectileState>, // creation order
     pub pending: Vec<PendingCommand>, // queue order
+    /// Goal cells of the cached flow fields, ascending cell index. Saved
+    /// because a `Move` order never rebuilds a missing field (the unit goes
+    /// idle); the fields themselves are recomputed from `nav` on load.
+    pub flow_goals: Vec<[i32; 2]>,
     pub ais: Vec<AiState>,            // ascending player
 }
 
@@ -192,8 +196,10 @@ pub struct AiState {
 These are **not** saved and are rebuilt by `load`: `World::rules` (always
 `Ruleset::builtin()`), `terrain` (from the map's `blocked` rectangles, as in
 `World::skirmish`), `nav` (terrain plus the footprints of every site; no `Move` remapping is
-needed because a saved goal is never blocked), flow `fields` (empty; they are a
-pure function of `nav` and the goal, built lazily), `events` (empty) and the
+needed because a saved goal is never blocked), flow `fields` (one
+`FlowField::compute(nav, goal)` per saved `flow_goals` entry: a field is a pure
+function of `nav` and its goal, and `rebuild_nav` clears them all), `events`
+(empty) and the
 `Sim` presentation buffers `shots` and `pending_events` (empty). `visible` and
 power are saved (§3.2), because they are computed mid-step and recomputing them
 on load would change the fog and the snapshots.
