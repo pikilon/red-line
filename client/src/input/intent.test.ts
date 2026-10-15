@@ -48,15 +48,9 @@ const click = (x: number, y: number, ids: readonly number[] = selected) =>
 
 describe("right-click intents", () => {
   it("AC-03-49: resolves right-click intents", () => {
+    // The `move` of the unarmed units 7 and 21 is superseded by AC-08-20.
     expect(click(40, 40)).toEqual([
       { kind: "attack", player: 0, units: [20], target: 30 },
-      {
-        kind: "move",
-        player: 0,
-        units: [7, 21],
-        xRaw: 40 * FX_ONE,
-        yRaw: 40 * FX_ONE,
-      },
     ]);
 
     expect(click(13, 55)).toEqual([
@@ -185,5 +179,41 @@ describe("right-click intents", () => {
         yRaw: 66.5 * FX_ONE,
       },
     ]);
+  });
+});
+
+// AC-08-20: an enemy `ru-barracks` 50 centred at (25.5, 25.5), an incomplete
+// enemy `ru-power-plant` 51 centred at (31, 31), plus the AC-03-49 entities.
+describe("attack intents", () => {
+  const withBuildings = [
+    ...entities,
+    entity({ id: 50, owner: 1, kind: "ru-barracks", x: 25.5, y: 25.5 }),
+    entity({
+      id: 51,
+      owner: 1,
+      kind: "ru-power-plant",
+      x: 31,
+      y: 31,
+      flags: ENTITY_FLAGS.underConstruction,
+    }),
+  ];
+  const clickAt = (x: number, y: number, ids: readonly number[]) =>
+    resolveRightClick({ player: 0, selected: ids, entities: withBuildings, x, y });
+
+  it("AC-08-20: attacks enemy units and buildings with the armed units only", () => {
+    expect(clickAt(40, 40, [7, 20, 21])).toEqual([
+      { kind: "attack", player: 0, units: [20], target: 30 },
+    ]);
+    expect(clickAt(25.5, 25.5, [7, 20, 21])).toEqual([
+      { kind: "attack", player: 0, units: [20], target: 50 },
+    ]);
+    expect(clickAt(31, 31, [20])).toEqual([
+      { kind: "attack", player: 0, units: [20], target: 51 },
+    ]);
+  });
+
+  it("AC-08-20: unarmed units ignore a right click on an enemy", () => {
+    expect(clickAt(40, 40, [7, 21])).toEqual([]);
+    expect(clickAt(25.5, 25.5, [7, 21])).toEqual([]);
   });
 });
