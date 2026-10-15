@@ -67,6 +67,7 @@ code: agents implement, the owner reviews quality hands-on.
   `needs-owner-test` and comments on it the manual steps the owner must try,
   numbered, each with the expected result and a localhost URL from a dev server
   on `main`.
+* Manual test steps start from example saves: see the `test-saves` skill.
 * The owner confirms in the morning. A failure becomes a new bug issue linked
   to the original, fixed the same way. Remove `needs-owner-test` once confirmed.
 * Work issues one at a time, in order: merge a PR and delete its branch and
