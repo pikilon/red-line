@@ -1,0 +1,26 @@
+# Spec 19 §7: a line of riflemen and Stugna teams; three T-72s drive through it.
+id: infantry-vs-armor
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 50, y: 20, zoom: 1.25 }
+entities:
+  - { player: 0, type: ua-rifleman, atCenti: [4450, 950] }
+  - { player: 0, type: ua-rifleman, atCenti: [4450, 1200] }
+  - { player: 0, type: ua-rifleman, atCenti: [4450, 1450] }
+  - { player: 0, type: ua-rifleman, atCenti: [4450, 1700] }
+  - { player: 0, type: ua-rifleman, atCenti: [4450, 1950] }
+  - { player: 0, type: ua-rifleman, atCenti: [4450, 2200] }
+  - { player: 0, type: ua-rifleman, atCenti: [4450, 2450] }
+  - { player: 0, type: ua-rifleman, atCenti: [4450, 2700] }
+  - { player: 0, type: ua-stugna-team, atCenti: [4250, 1250] }
+  - { player: 0, type: ua-stugna-team, atCenti: [4250, 1750] }
+  - { player: 0, type: ua-stugna-team, atCenti: [4250, 2250] }
+  - { player: 0, type: ua-stugna-team, atCenti: [4250, 2750] }
+  - { player: 1, type: ru-t-72b3, atCenti: [6250, 1450], order: { moveCenti: [3050, 1450] } }
+  - { player: 1, type: ru-t-72b3, atCenti: [6250, 1950], order: { moveCenti: [3050, 1950] } }
+  - { player: 1, type: ru-t-72b3, atCenti: [6250, 2450], order: { moveCenti: [3050, 2450] } }

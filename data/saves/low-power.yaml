@@ -1,0 +1,16 @@
+# Spec 19 §7: a Ukrainian base that consumes more power than its one power plant produces.
+id: low-power
+map: showcase
+victory: false
+debug: true
+starts: true
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 18, y: 10, zoom: 1.25 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [9, 6] }
+  - { player: 0, type: ua-supply-center, origin: [14, 6] }
+  - { player: 0, type: ua-barracks, origin: [19, 6] }
+  - { player: 0, type: ua-vehicle-factory, origin: [24, 6] }
+  - { player: 0, type: ua-defense, origin: [29, 6] }

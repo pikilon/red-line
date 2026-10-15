@@ -1,0 +1,111 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "ai-attack",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "first-line",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": false,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 14,
+      "y": 62,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "first-line",
+    "seed": "1",
+    "victory": true,
+    "debug": true,
+    "starts": true,
+    "credits": [
+      5000,
+      40000
+    ],
+    "ai": [
+      {
+        "player": 1,
+        "personality": "russia-rush",
+        "active": true
+      }
+    ],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          6,
+          60
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2050,
+          6050
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2150,
+          6150
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          118,
+          60
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          118,
+          56
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-supply-center",
+        "origin": [
+          106,
+          58
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-barracks",
+        "origin": [
+          106,
+          64
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-vehicle-factory",
+        "origin": [
+          108,
+          68
+        ]
+      }
+    ]
+  }
+}

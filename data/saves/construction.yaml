@@ -1,0 +1,27 @@
+# Spec 19 §7: barracks and vehicle factories of both factions at 0, 30, 60 and 100 % built.
+id: construction
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 25, y: 14, zoom: 1 }
+entities:
+  - { player: 0, type: ua-barracks, origin: [4, 8], buildPercent: 0 }
+  - { player: 0, type: ua-vehicle-factory, origin: [4, 16], buildPercent: 0 }
+  - { player: 1, type: ru-barracks, origin: [54, 8], buildPercent: 0 }
+  - { player: 1, type: ru-vehicle-factory, origin: [54, 16], buildPercent: 0 }
+  - { player: 0, type: ua-barracks, origin: [10, 8], buildPercent: 30 }
+  - { player: 0, type: ua-vehicle-factory, origin: [10, 16], buildPercent: 30 }
+  - { player: 1, type: ru-barracks, origin: [60, 8], buildPercent: 30 }
+  - { player: 1, type: ru-vehicle-factory, origin: [60, 16], buildPercent: 30 }
+  - { player: 0, type: ua-barracks, origin: [16, 8], buildPercent: 60 }
+  - { player: 0, type: ua-vehicle-factory, origin: [16, 16], buildPercent: 60 }
+  - { player: 1, type: ru-barracks, origin: [66, 8], buildPercent: 60 }
+  - { player: 1, type: ru-vehicle-factory, origin: [66, 16], buildPercent: 60 }
+  - { player: 0, type: ua-barracks, origin: [22, 8], buildPercent: 100 }
+  - { player: 0, type: ua-vehicle-factory, origin: [22, 16], buildPercent: 100 }
+  - { player: 1, type: ru-barracks, origin: [72, 8], buildPercent: 100 }
+  - { player: 1, type: ru-vehicle-factory, origin: [72, 16], buildPercent: 100 }

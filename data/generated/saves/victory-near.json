@@ -1,0 +1,99 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "victory-near",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 58,
+      "y": 20,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": true,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-hq",
+        "origin": [
+          4,
+          30
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-hq",
+        "origin": [
+          60,
+          18
+        ],
+        "hpPercent": 5,
+        "label": "target"
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          5550,
+          1650
+        ],
+        "order": {
+          "attack": "target"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          5550,
+          1850
+        ],
+        "order": {
+          "attack": "target"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          5550,
+          2050
+        ],
+        "order": {
+          "attack": "target"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          5550,
+          2250
+        ],
+        "order": {
+          "attack": "target"
+        }
+      }
+    ]
+  }
+}

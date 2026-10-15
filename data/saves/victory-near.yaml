@@ -1,0 +1,17 @@
+# Spec 19 §7: the last Russian building at 5 % HP under attack by four Leopards; victory is on.
+id: victory-near
+map: showcase
+victory: true
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 58, y: 20, zoom: 1 }
+entities:
+  - { player: 0, type: ua-hq, origin: [4, 30] }
+  - { player: 1, type: ru-hq, origin: [60, 18], hpPercent: 5, label: target }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [5550, 1650], order: { attack: target } }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [5550, 1850], order: { attack: target } }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [5550, 2050], order: { attack: target } }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [5550, 2250], order: { attack: target } }

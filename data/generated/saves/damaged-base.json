@@ -1,0 +1,577 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "damaged-base",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 14,
+      "y": 18,
+      "zoom": 0.9
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-hq",
+        "origin": [
+          2,
+          1
+        ],
+        "hpPercent": 100
+      },
+      {
+        "player": 0,
+        "type": "ua-hq",
+        "origin": [
+          7,
+          1
+        ],
+        "hpPercent": 75
+      },
+      {
+        "player": 0,
+        "type": "ua-hq",
+        "origin": [
+          12,
+          1
+        ],
+        "hpPercent": 50
+      },
+      {
+        "player": 0,
+        "type": "ua-hq",
+        "origin": [
+          17,
+          1
+        ],
+        "hpPercent": 25
+      },
+      {
+        "player": 0,
+        "type": "ua-hq",
+        "origin": [
+          22,
+          1
+        ],
+        "hpPercent": 10
+      },
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          2,
+          7
+        ],
+        "hpPercent": 100
+      },
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          7,
+          7
+        ],
+        "hpPercent": 75
+      },
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          12,
+          7
+        ],
+        "hpPercent": 50
+      },
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          17,
+          7
+        ],
+        "hpPercent": 25
+      },
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          22,
+          7
+        ],
+        "hpPercent": 10
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-center",
+        "origin": [
+          2,
+          13
+        ],
+        "hpPercent": 100
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-center",
+        "origin": [
+          7,
+          13
+        ],
+        "hpPercent": 75
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-center",
+        "origin": [
+          12,
+          13
+        ],
+        "hpPercent": 50
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-center",
+        "origin": [
+          17,
+          13
+        ],
+        "hpPercent": 25
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-center",
+        "origin": [
+          22,
+          13
+        ],
+        "hpPercent": 10
+      },
+      {
+        "player": 0,
+        "type": "ua-barracks",
+        "origin": [
+          2,
+          19
+        ],
+        "hpPercent": 100
+      },
+      {
+        "player": 0,
+        "type": "ua-barracks",
+        "origin": [
+          7,
+          19
+        ],
+        "hpPercent": 75
+      },
+      {
+        "player": 0,
+        "type": "ua-barracks",
+        "origin": [
+          12,
+          19
+        ],
+        "hpPercent": 50
+      },
+      {
+        "player": 0,
+        "type": "ua-barracks",
+        "origin": [
+          17,
+          19
+        ],
+        "hpPercent": 25
+      },
+      {
+        "player": 0,
+        "type": "ua-barracks",
+        "origin": [
+          22,
+          19
+        ],
+        "hpPercent": 10
+      },
+      {
+        "player": 0,
+        "type": "ua-vehicle-factory",
+        "origin": [
+          2,
+          25
+        ],
+        "hpPercent": 100
+      },
+      {
+        "player": 0,
+        "type": "ua-vehicle-factory",
+        "origin": [
+          7,
+          25
+        ],
+        "hpPercent": 75
+      },
+      {
+        "player": 0,
+        "type": "ua-vehicle-factory",
+        "origin": [
+          12,
+          25
+        ],
+        "hpPercent": 50
+      },
+      {
+        "player": 0,
+        "type": "ua-vehicle-factory",
+        "origin": [
+          17,
+          25
+        ],
+        "hpPercent": 25
+      },
+      {
+        "player": 0,
+        "type": "ua-vehicle-factory",
+        "origin": [
+          22,
+          25
+        ],
+        "hpPercent": 10
+      },
+      {
+        "player": 0,
+        "type": "ua-defense",
+        "origin": [
+          2,
+          31
+        ],
+        "hpPercent": 100
+      },
+      {
+        "player": 0,
+        "type": "ua-defense",
+        "origin": [
+          7,
+          31
+        ],
+        "hpPercent": 75
+      },
+      {
+        "player": 0,
+        "type": "ua-defense",
+        "origin": [
+          12,
+          31
+        ],
+        "hpPercent": 50
+      },
+      {
+        "player": 0,
+        "type": "ua-defense",
+        "origin": [
+          17,
+          31
+        ],
+        "hpPercent": 25
+      },
+      {
+        "player": 0,
+        "type": "ua-defense",
+        "origin": [
+          22,
+          31
+        ],
+        "hpPercent": 10
+      },
+      {
+        "player": 1,
+        "type": "ru-hq",
+        "origin": [
+          52,
+          1
+        ],
+        "hpPercent": 100
+      },
+      {
+        "player": 1,
+        "type": "ru-hq",
+        "origin": [
+          57,
+          1
+        ],
+        "hpPercent": 75
+      },
+      {
+        "player": 1,
+        "type": "ru-hq",
+        "origin": [
+          62,
+          1
+        ],
+        "hpPercent": 50
+      },
+      {
+        "player": 1,
+        "type": "ru-hq",
+        "origin": [
+          67,
+          1
+        ],
+        "hpPercent": 25
+      },
+      {
+        "player": 1,
+        "type": "ru-hq",
+        "origin": [
+          72,
+          1
+        ],
+        "hpPercent": 10
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          52,
+          7
+        ],
+        "hpPercent": 100
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          57,
+          7
+        ],
+        "hpPercent": 75
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          62,
+          7
+        ],
+        "hpPercent": 50
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          67,
+          7
+        ],
+        "hpPercent": 25
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          72,
+          7
+        ],
+        "hpPercent": 10
+      },
+      {
+        "player": 1,
+        "type": "ru-supply-center",
+        "origin": [
+          52,
+          13
+        ],
+        "hpPercent": 100
+      },
+      {
+        "player": 1,
+        "type": "ru-supply-center",
+        "origin": [
+          57,
+          13
+        ],
+        "hpPercent": 75
+      },
+      {
+        "player": 1,
+        "type": "ru-supply-center",
+        "origin": [
+          62,
+          13
+        ],
+        "hpPercent": 50
+      },
+      {
+        "player": 1,
+        "type": "ru-supply-center",
+        "origin": [
+          67,
+          13
+        ],
+        "hpPercent": 25
+      },
+      {
+        "player": 1,
+        "type": "ru-supply-center",
+        "origin": [
+          72,
+          13
+        ],
+        "hpPercent": 10
+      },
+      {
+        "player": 1,
+        "type": "ru-barracks",
+        "origin": [
+          52,
+          19
+        ],
+        "hpPercent": 100
+      },
+      {
+        "player": 1,
+        "type": "ru-barracks",
+        "origin": [
+          57,
+          19
+        ],
+        "hpPercent": 75
+      },
+      {
+        "player": 1,
+        "type": "ru-barracks",
+        "origin": [
+          62,
+          19
+        ],
+        "hpPercent": 50
+      },
+      {
+        "player": 1,
+        "type": "ru-barracks",
+        "origin": [
+          67,
+          19
+        ],
+        "hpPercent": 25
+      },
+      {
+        "player": 1,
+        "type": "ru-barracks",
+        "origin": [
+          72,
+          19
+        ],
+        "hpPercent": 10
+      },
+      {
+        "player": 1,
+        "type": "ru-vehicle-factory",
+        "origin": [
+          52,
+          25
+        ],
+        "hpPercent": 100
+      },
+      {
+        "player": 1,
+        "type": "ru-vehicle-factory",
+        "origin": [
+          57,
+          25
+        ],
+        "hpPercent": 75
+      },
+      {
+        "player": 1,
+        "type": "ru-vehicle-factory",
+        "origin": [
+          62,
+          25
+        ],
+        "hpPercent": 50
+      },
+      {
+        "player": 1,
+        "type": "ru-vehicle-factory",
+        "origin": [
+          67,
+          25
+        ],
+        "hpPercent": 25
+      },
+      {
+        "player": 1,
+        "type": "ru-vehicle-factory",
+        "origin": [
+          72,
+          25
+        ],
+        "hpPercent": 10
+      },
+      {
+        "player": 1,
+        "type": "ru-defense",
+        "origin": [
+          52,
+          31
+        ],
+        "hpPercent": 100
+      },
+      {
+        "player": 1,
+        "type": "ru-defense",
+        "origin": [
+          57,
+          31
+        ],
+        "hpPercent": 75
+      },
+      {
+        "player": 1,
+        "type": "ru-defense",
+        "origin": [
+          62,
+          31
+        ],
+        "hpPercent": 50
+      },
+      {
+        "player": 1,
+        "type": "ru-defense",
+        "origin": [
+          67,
+          31
+        ],
+        "hpPercent": 25
+      },
+      {
+        "player": 1,
+        "type": "ru-defense",
+        "origin": [
+          72,
+          31
+        ],
+        "hpPercent": 10
+      }
+    ]
+  }
+}

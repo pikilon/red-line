@@ -1,0 +1,18 @@
+# Spec 19 §7: every Ukrainian building complete and 50000 credits, to test the build menu and queues.
+id: production
+map: first-line
+victory: false
+debug: true
+starts: true
+credits: [50000, 50000]
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 13, y: 62, zoom: 1.25 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [6, 60] }
+  - { player: 0, type: ua-power-plant, origin: [6, 56] }
+  - { player: 0, type: ua-supply-center, origin: [17, 55] }
+  - { player: 0, type: ua-barracks, origin: [6, 65] }
+  - { player: 0, type: ua-vehicle-factory, origin: [12, 66] }
+  - { player: 0, type: ua-defense, origin: [20, 64] }

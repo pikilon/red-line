@@ -1,0 +1,89 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "production",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "first-line",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": false,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 13,
+      "y": 62,
+      "zoom": 1.25
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "first-line",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": true,
+    "credits": [
+      50000,
+      50000
+    ],
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          6,
+          60
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          6,
+          56
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-center",
+        "origin": [
+          17,
+          55
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-barracks",
+        "origin": [
+          6,
+          65
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-vehicle-factory",
+        "origin": [
+          12,
+          66
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-defense",
+        "origin": [
+          20,
+          64
+        ]
+      }
+    ]
+  }
+}
