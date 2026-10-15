@@ -1,6 +1,7 @@
 # 14 — Showcase
 
-Status: accepted (owner request 2026-10-13, issue #259).
+Status: superseded by `19-save-games.md` (2026-10-15), except §2 and the
+`#hud-selected-type` label of §5. Originally accepted 2026-10-13, issue #259.
 Depends on `03-phase2-core-loop.md` §5.8 (`DebugSpawn`) and `08-player-controls.md`.
 
 ## 1. Context
