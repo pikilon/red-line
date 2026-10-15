@@ -1865,7 +1865,8 @@ and rejects with `api version mismatch: expected 2, got 3` otherwise;
 at `(6, 5)` and `ua-supply-truck` 21 at `(7, 5)` selected by player 0, an enemy
 `ru-rifleman` 30 at `(40, 40)`, a depot 0 centred at `(13, 55)`, and an own
 incomplete `ua-barracks` 16 centred at `(13.5, 66.5)`: right click on 30 →
-`[attack { units [20], target 30 }, move { units [7, 21] }]`; on the depot →
+`[attack { units [20], target 30 }]` (amended by spec 08 AC-08-20, #296; it was
+`[attack, move { units [7, 21] }]`); on the depot →
 `[harvest { units [21], depot 0 }, move { units [7, 20] }]`; on 16 →
 `[resume { units [7], building 16 }, move { units [20, 21] }]`; on empty ground
 `(30, 30)` → `[move { units [7, 20, 21], xRaw: 1966080, yRaw: 1966080 }]`; with

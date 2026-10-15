@@ -329,3 +329,74 @@ fn ac_03_33_powered_defenses() {
     assert_eq!(world.player(0).unwrap().power(), (10, 14));
     assert_eq!(world.entity(soldier).unwrap().hp, 50);
 }
+
+/// Ticks until `attacker` is within `range` of the point `target`, at most
+/// `limit`; returns the ticks taken.
+fn steps_until_within(
+    world: &mut World,
+    attacker: u32,
+    target: FxVec2,
+    range: Fx,
+    limit: u32,
+) -> u32 {
+    for tick in 0..limit {
+        if (world.entity(attacker).unwrap().pos - target).length() <= range {
+            return tick;
+        }
+        world.step();
+    }
+    panic!("attacker never came within range");
+}
+
+#[test]
+fn ac_08_21_attackers_hold_position_within_weapon_range() {
+    // In range of a building: the mortar (range 10) fires from where it stands.
+    let mut world = sandbox();
+    let mortar = world.spawn(0, 11, at(550, 1050));
+    let plant = world.place_building(1, 3, Cell { x: 14, y: 9 }, true);
+    world.enqueue_as(
+        0,
+        Command::Attack {
+            units: vec![mortar],
+            target: plant,
+        },
+    );
+    steps(&mut world, 30);
+    assert_eq!(world.entity(mortar).unwrap().pos, at(550, 1050));
+    assert!(world.entity(plant).unwrap().hp < 400);
+
+    // In range of a unit: same.
+    let mut world = sandbox();
+    let mortar = world.spawn(0, 11, at(550, 1050));
+    let truck = world.spawn(1, 8, at(1350, 1050));
+    world.enqueue_as(
+        0,
+        Command::Attack {
+            units: vec![mortar],
+            target: truck,
+        },
+    );
+    steps(&mut world, 30);
+    assert_eq!(world.entity(mortar).unwrap().pos, at(550, 1050));
+
+    // Out of range: it approaches only until the target is within range, then
+    // stops there instead of walking to the target's cell. A dozer spots the
+    // truck so the order is valid.
+    let mut world = sandbox();
+    let mortar = world.spawn(0, 11, at(250, 1050));
+    world.spawn(0, 7, at(2950, 650));
+    let truck = world.spawn(1, 8, at(3050, 1050));
+    world.step();
+    world.enqueue_as(
+        0,
+        Command::Attack {
+            units: vec![mortar],
+            target: truck,
+        },
+    );
+    steps_until_within(&mut world, mortar, at(3050, 1050), fx_centi(1000), 400);
+    let stop = world.entity(mortar).unwrap().pos;
+    assert!((stop - at(3050, 1050)).length() > fx_centi(980));
+    steps(&mut world, 30);
+    assert_eq!(world.entity(mortar).unwrap().pos, stop);
+}

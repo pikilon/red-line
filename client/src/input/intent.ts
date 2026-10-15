@@ -60,8 +60,10 @@ function isUnderConstruction(entity: EntityState): boolean {
  * Commands for a right click at ground (x, y) tiles; xRaw/yRaw = toRaw.
  * Rules, in order (selected ids not owned by `player` or missing are dropped
  * first): empty selection -> []; a single building -> [rally] when its type
- * produces, else []; units (ascending) -> the special command for the entity
- * under the cursor (attack, harvest or resume) followed by a move of the rest.
+ * produces, else []; an enemy unit or building under the cursor -> attack by
+ * the armed units only (unarmed ones keep their order, spec 08 §3.7); units
+ * (ascending) -> the special command for the entity under the cursor (harvest
+ * or resume) followed by a move of the rest.
  */
 export function resolveRightClick(args: {
   player: number;
@@ -100,24 +102,13 @@ export function resolveRightClick(args: {
   if (cursor !== null) {
     const type = typeDef(cursor.kind);
     if (
-      type.category === "unit" &&
+      (type.category === "unit" || type.category === "building") &&
       cursor.owner !== player &&
       cursor.owner !== NEUTRAL
     ) {
-      const armed = own.filter(isArmed);
-      const rest = own.filter((entity) => !isArmed(entity));
-      const first: SimCommand[] =
-        armed.length === 0
-          ? []
-          : [
-              {
-                kind: "attack",
-                player,
-                units: unitIds(armed),
-                target: cursor.id,
-              },
-            ];
-      return [...first, ...moveCommand(player, unitIds(rest), x, y)];
+      const armed = unitIds(own.filter(isArmed));
+      if (armed.length === 0) return [];
+      return [{ kind: "attack", player, units: armed, target: cursor.id }];
     }
     if (type.category === "depot") {
       const carriers = own.filter(hasCargoCapacity);

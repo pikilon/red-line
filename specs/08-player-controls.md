@@ -281,6 +281,31 @@ AC-08-16 are superseded by AC-08-18 and AC-08-19).
   open (releasing a held drag) and leaves `#touch-menu` visible above the menu
   so it can close it; an equal view writes nothing.
 
+## 3.7 Attack orders (owner request 2026-10-15, issue #296)
+
+A HIMARS right-clicked onto an enemy building drove up to it although it was
+already in range: `resolveRightClick` only attacked enemy units and sent a
+plain `move` for anything else. Unarmed units in the selection also walked
+onto the clicked enemy. Generals precedent (issue #296, EA source
+`CnC_Generals_Zero_Hour@0a05454d`): a right-click on an enemy unit or
+structure issues the same attack (`CommandXlat.cpp:1986`,
+`ActionManager.cpp:723`). An attacker already in range fires in place
+(`AIStates.cpp:315`). Out of range it stops at the first in-range cell of its
+route (`AIPathfind.cpp:10606-10740`). Units without a weapon issue no order
+(`CommandXlat.cpp:2262-2331`).
+
+* `resolveRightClick`: when the entity under the cursor (not a ghost) is a
+  `unit` or `building` owned by neither `player` nor `NEUTRAL`, under
+  construction or not, the result is `[attack { units: armed, target }]` where
+  `armed` are the selected own units with a weapon (ascending), or `[]` when
+  there are none. Unarmed units receive no command and keep their current
+  order. This deviates on purpose from the original, which clears their task.
+  It supersedes the `move { units [7, 21] }` of AC-03-49's first case.
+* Simulation (unchanged, now covered by AC-08-21): a unit with an `Attack`
+  order does not move while the target is within its weapon range
+  (`entity_distance`, the footprint edge for buildings). Out of range it steps
+  toward the attack goal only until the target is in range.
+
 ## 4. Acceptance criteria
 
 **AC-08-01 Worker pause.** Given a skirmish worker handler at speed 1, after
@@ -403,6 +428,20 @@ closes it; no console error.
 **AC-08-17 No touch controls without touch (Playwright).** In a default desktop
 context `#touch-controls` is not in the DOM and `ArrowRight` still pans.
 
+**AC-08-20 Attack intents.** With the AC-03-49 entities plus an enemy
+`ru-barracks` 50 centred at `(25.5, 25.5)` and an incomplete enemy
+`ru-power-plant` 51 centred at `(31, 31)`, all for player 0: right click on 30
+with `[7, 20, 21]` selected → `[attack { units [20], target 30 }]`; on 50 →
+`[attack { units [20], target 50 }]`; on 51 with `[20]` →
+`[attack { units [20], target 51 }]`; on 30 or 50 with only `[7, 21]` → `[]`.
+
+**AC-08-21 Attackers hold position in range.** In the combat sandbox, a
+mortar unit (range 10) ordered to attack an enemy power plant 8.5 tiles away
+or an enemy truck 8 tiles away has the same position after 30 ticks, and the
+plant has lost hit points. A mortar ordered to attack a spotted truck 28 tiles
+away stops more than 9.8 tiles from it once within 10 tiles, and stays there
+30 more ticks.
+
 ## 5. Queued requests (to be specified)
 
 1. Camera bookmarks: save with `Ctrl+F1..F4`, jump with `F1..F4`.
@@ -436,6 +475,8 @@ context `#touch-controls` is not in the DOM and `ArrowRight` still pans.
 | AC-08-17 | `client/tests/e2e/touchControls.spec.ts` | `AC-08-17: no touch controls without touch` |
 | AC-08-18 | `client/src/ui/touchControls.test.ts` | `AC-08-18: touch joystick view` |
 | AC-08-19 | `client/tests/e2e/touchControls.spec.ts` | `AC-08-19: touch joystick in the skirmish` |
+| AC-08-20 | `client/src/input/intent.test.ts` | `AC-08-20: attacks enemy units and buildings with the armed units only`, `AC-08-20: unarmed units ignore a right click on an enemy` |
+| AC-08-21 | `crates/sim/tests/combat.rs` | `ac_08_21_attackers_hold_position_within_weapon_range` |
 
 ## 7. Issue breakdown
 
@@ -449,3 +490,4 @@ context `#touch-controls` is not in the DOM and `ArrowRight` still pans.
 | P5-06 (#245) | switch side, reveal, FPS panel in the menu (§3.5) | AC-08-12..14 | ready-pro |
 | P5-07 (#251) | touch controls (§3.6) | AC-08-15..17 | ready-pro |
 | P5-08 (#253) | touch joystick instead of the D-pad (§3.6) | AC-08-17..19 | ready-pro |
+| P5-16 (#296) | attack orders (§3.7) | AC-08-20, 21 | ready-pro |
