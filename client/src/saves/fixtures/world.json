@@ -1,0 +1,19 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "Before the river",
+  "savedAt": "2026-10-15T10:00:00.000Z",
+  "tick": 1125,
+  "match": { "mapId": "first-line", "seed": "1", "debug": false, "speed": 1 },
+  "client": {
+    "controlled": 0,
+    "revealed": false,
+    "gore": false,
+    "generatedTextures": true,
+    "fpsPanel": false,
+    "camera": { "x": 20.5, "y": 61, "zoom": 1.25 },
+    "cameraMemory": { "1": { "x": 110, "y": 66 } },
+    "selected": [7, 12]
+  },
+  "world": { "formatVersion": 1, "mapId": "first-line", "tick": 1125 }
+}
