@@ -1,4 +1,4 @@
-export const EXPECTED_API_VERSION = 3;
+export const EXPECTED_API_VERSION = 4;
 export const TICK_RATE_HZ = 15;
 export const TICK_MS = 1000 / TICK_RATE_HZ;
 export const MAX_STEPS_PER_ADVANCE = 4;
@@ -63,6 +63,17 @@ export type InitSkirmishMessage = {
   /** Personality attached to player 1, `null` for none (§7). */
   ai?: string | null;
 };
+/** Builds the skirmish from a save (spec 19 §5.4); AIs come from the state. */
+export type InitFromSaveMessage = {
+  type: "initFromSave";
+  /** JSON of the save's `world` or `setup` member. */
+  form: "world" | "setup";
+  json: string;
+  viewer: number;
+  speed: number;
+};
+/** Asks for `Sim::save_state` (spec 19 §5.4). */
+export type SaveRequestMessage = { type: "saveRequest"; requestId: number };
 export type CommandMessage = { type: "command"; command: SimCommand };
 export type SetViewerMessage = { type: "setViewer"; viewer: number };
 export type SetPausedMessage = { type: "setPaused"; paused: boolean };
@@ -73,6 +84,8 @@ export type MainToWorker =
   | MoveMessage
   | HashRequestMessage
   | InitSkirmishMessage
+  | InitFromSaveMessage
+  | SaveRequestMessage
   | CommandMessage
   | SetViewerMessage
   | SetPausedMessage
@@ -94,8 +107,16 @@ export type SnapshotMessage = {
 };
 export type HashMessage = { type: "hash"; requestId: number; hash: string };
 export type ErrorMessage = { type: "error"; detail: string };
+/** `Sim::save_state` JSON, or null with `error` when it failed (spec 19 §5.4). */
+export type SaveStateMessage = {
+  type: "saveState";
+  requestId: number;
+  world: string | null;
+  error?: string;
+};
 export type WorkerToMain =
   | ReadyMessage
   | SnapshotMessage
   | HashMessage
-  | ErrorMessage;
+  | ErrorMessage
+  | SaveStateMessage;

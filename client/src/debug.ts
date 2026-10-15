@@ -71,6 +71,10 @@ export interface SkirmishDebug {
   cameraTarget(): { x: number; y: number };
   /** Wheel zoom of the camera, 1 by default (spec 08 §3.4). */
   zoom(): number;
+  /** The `?load` id once applied, or null (spec 19 §5.6). */
+  loadedSave(): string | null;
+  /** `Sim::save_state` JSON of the running match (spec 19 §5.6). */
+  saveState(): Promise<string>;
   /** Target in tiles. */
   setCameraTarget(x: number, y: number): void;
   command(command: SimCommand): void;

@@ -2,7 +2,7 @@ use sim::wasm_api::Sim;
 
 #[test]
 fn ac_01_05_api_version_is_one() {
-    assert_eq!(sim::api_version(), 3);
+    assert_eq!(sim::api_version(), 4);
 }
 
 #[test]
@@ -68,7 +68,7 @@ fn ac_03_39_wasm_api_v2_natively() {
 
 #[test]
 fn ac_05_20_wasm_api_v3() {
-    assert_eq!(sim::api_version(), 3);
+    assert_eq!(sim::api_version(), 4);
 
     let mut sim = Sim::skirmish(1, "first-line").unwrap();
     assert!(sim.attach_ai(1, "russia-balanced").is_ok());

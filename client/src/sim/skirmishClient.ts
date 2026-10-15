@@ -5,8 +5,10 @@ import {
   type ErrorMessage,
   EXPECTED_API_VERSION,
   type HashMessage,
+  type InitFromSaveMessage,
   type InitSkirmishMessage,
   type ReadyMessage,
+  type SaveStateMessage,
   type SetAiActiveMessage,
   type SetPausedMessage,
   type SetViewerMessage,
@@ -24,6 +26,8 @@ export interface SkirmishClient {
   /** Pauses or resumes the skirmish AI (spec 08 §3.3). */
   setAiActive(active: boolean): void;
   requestHash(): Promise<string>;
+  /** `Sim::save_state` JSON; rejects with the sim's error (spec 19 §5.4). */
+  saveState(): Promise<string>;
   /** Returns an unsubscribe function. */
   onSnapshot(
     listener: (
@@ -44,17 +48,26 @@ type SnapshotListener = (
 
 const EMPTY_COMBAT: CombatSnapshot = { projectiles: [], events: [] };
 
+/** A new skirmish, or one built from a save's `world` or `setup` (spec 19). */
+export type SkirmishStart =
+  | {
+      seed: number;
+      mapId: string;
+      viewer: number;
+      speed: number;
+      debug: boolean;
+      /** Personality attached to player 1, `null` for none (§7). */
+      ai?: string | null;
+    }
+  | {
+      save: { form: "world" | "setup"; json: string };
+      viewer: number;
+      speed: number;
+    };
+
 export function createSkirmishClient(
   worker: WorkerLike,
-  options: {
-    seed: number;
-    mapId: string;
-    viewer: number;
-    speed: number;
-    debug: boolean;
-    /** Personality attached to player 1, `null` for none (§7). */
-    ai?: string | null;
-  },
+  options: SkirmishStart,
   now: () => number = () => performance.now(),
 ): SkirmishClient {
   let resolveReady: (message: ReadyMessage) => void = () => {};
@@ -64,6 +77,10 @@ export function createSkirmishClient(
     rejectReady = reject;
   });
   const pendingHashes = new Map<number, (hash: string) => void>();
+  const pendingSaves = new Map<
+    number,
+    { resolve: (world: string) => void; reject: (error: Error) => void }
+  >();
   const listeners = new Set<SnapshotListener>();
   let nextRequestId = 1;
 
@@ -87,6 +104,15 @@ export function createSkirmishClient(
       pendingHashes.delete(message.requestId);
       resolve?.(message.hash);
     },
+    saveState: (message: SaveStateMessage): void => {
+      const pending = pendingSaves.get(message.requestId);
+      pendingSaves.delete(message.requestId);
+      if (message.world === null) {
+        pending?.reject(new Error(message.error ?? "save failed"));
+        return;
+      }
+      pending?.resolve(message.world);
+    },
     snapshot: (message: SnapshotMessage): void => {
       const snapshot = decodeMatchSnapshot(message.data);
       const combat =
@@ -105,18 +131,29 @@ export function createSkirmishClient(
     const message = event.data;
     (handlers[message.type] as (m: WorkerToMain) => void)(message);
   };
-  const init: InitSkirmishMessage = {
-    type: "initSkirmish",
-    seed: options.seed,
-    mapId: options.mapId,
-    viewer: options.viewer,
-    speed: options.speed,
-    debug: options.debug,
-  };
-  if (options.ai !== undefined) {
-    init.ai = options.ai;
+  if ("save" in options) {
+    const init: InitFromSaveMessage = {
+      type: "initFromSave",
+      form: options.save.form,
+      json: options.save.json,
+      viewer: options.viewer,
+      speed: options.speed,
+    };
+    worker.postMessage(init);
+  } else {
+    const init: InitSkirmishMessage = {
+      type: "initSkirmish",
+      seed: options.seed,
+      mapId: options.mapId,
+      viewer: options.viewer,
+      speed: options.speed,
+      debug: options.debug,
+    };
+    if (options.ai !== undefined) {
+      init.ai = options.ai;
+    }
+    worker.postMessage(init);
   }
-  worker.postMessage(init);
 
   return {
     ready,
@@ -141,6 +178,13 @@ export function createSkirmishClient(
       return new Promise<string>((resolve) => {
         pendingHashes.set(requestId, resolve);
         worker.postMessage({ type: "hashRequest", requestId });
+      });
+    },
+    saveState() {
+      const requestId = nextRequestId++;
+      return new Promise<string>((resolve, reject) => {
+        pendingSaves.set(requestId, { resolve, reject });
+        worker.postMessage({ type: "saveRequest", requestId });
       });
     },
     onSnapshot(listener) {

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { MatchSnapshot } from "./matchSnapshot";
-import type { MainToWorker, SimCommand, WorkerToMain } from "./protocol";
+import {
+  EXPECTED_API_VERSION,
+  type MainToWorker,
+  type SimCommand,
+  type WorkerToMain,
+} from "./protocol";
 import { createSkirmishClient, type SkirmishClient } from "./skirmishClient";
 
 class FakeWorker {
@@ -18,7 +23,7 @@ class FakeWorker {
 
 const READY: WorkerToMain = {
   type: "ready",
-  apiVersion: 3,
+  apiVersion: EXPECTED_API_VERSION,
   mapWidth: 2,
   mapHeight: 2,
   tiles: new Uint8Array([0, 1, 0, 0]),
@@ -70,9 +75,9 @@ describe("skirmish client", () => {
 
     const failingWorker = new FakeWorker();
     const failing = createSkirmishClient(failingWorker, options);
-    failingWorker.emit({ ...READY, apiVersion: 4 });
+    failingWorker.emit({ ...READY, apiVersion: EXPECTED_API_VERSION + 1 });
     await expect(failing.ready).rejects.toThrow(
-      "api version mismatch: expected 3, got 4",
+      `api version mismatch: expected ${EXPECTED_API_VERSION}, got ${EXPECTED_API_VERSION + 1}`,
     );
 
     const errorWorker = new FakeWorker();

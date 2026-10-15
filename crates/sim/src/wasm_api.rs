@@ -1,4 +1,4 @@
-//! `wasm_bindgen` facade over the simulation (API version 3).
+//! `wasm_bindgen` facade over the simulation (API version 4).
 
 use wasm_bindgen::prelude::wasm_bindgen;
 
@@ -7,6 +7,7 @@ use crate::fixed::{Fx, FxVec2};
 use crate::hash::state_hash;
 use crate::map::Cell;
 use crate::rules::{Ruleset, TypeId};
+use crate::save::{Setup, SimState, from_setup, load_state, save_state};
 use std::collections::BTreeMap;
 
 use crate::entity::EntityId;
@@ -62,6 +63,28 @@ impl Sim {
             shots: BTreeMap::new(),
             pending_events: Vec::new(),
         })
+    }
+
+    /// Setup-form world (spec 19 §3.5) from the JSON of a `Setup`.
+    pub fn from_setup(json: &str) -> Result<Sim, String> {
+        let setup: Setup =
+            serde_json::from_str(json).map_err(|e| format!("invalid setup: {e}"))?;
+        let (world, seed, ais) = from_setup(&setup)?;
+        Ok(Sim::wrap(world, seed, ais))
+    }
+
+    /// World-form state (spec 19 §3.2) from the JSON of a `SimState`.
+    pub fn load_state(json: &str) -> Result<Sim, String> {
+        let state: SimState =
+            serde_json::from_str(json).map_err(|e| format!("invalid save: {e}"))?;
+        let (world, seed, ais) = load_state(&state)?;
+        Ok(Sim::wrap(world, seed, ais))
+    }
+
+    /// JSON of the world state and its AIs (spec 19 §3.7).
+    pub fn save_state(&self) -> Result<String, String> {
+        let state = save_state(&self.world, self.seed, &self.ais)?;
+        serde_json::to_string(&state).map_err(|e| e.to_string())
     }
 
     /// Attaches an AI with the given personality to `player` (seed = the Sim
@@ -292,6 +315,16 @@ impl Sim {
             world,
             seed: 0,
             ais: Vec::new(),
+            shots: BTreeMap::new(),
+            pending_events: Vec::new(),
+        }
+    }
+
+    fn wrap(world: World, seed: u64, ais: Vec<Ai>) -> Sim {
+        Sim {
+            world,
+            seed,
+            ais,
             shots: BTreeMap::new(),
             pending_events: Vec::new(),
         }

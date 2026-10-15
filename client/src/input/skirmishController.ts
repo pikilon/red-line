@@ -63,6 +63,8 @@ export interface SkirmishController {
   setTarget(x: number, y: number): void;
   /** Drops the selection, e.g. when the controlled player changes. */
   clearSelection(): void;
+  /** Replaces the selection, e.g. when a save is restored (spec 19 §5.3). */
+  setSelection(ids: Iterable<number>): void;
   /** Wheel zoom of the camera, 1 by default (spec 08 §3.4). */
   zoom(): number;
   /** Analog panning from the touch joystick (spec 08 §3.6): a screen vector in
@@ -283,6 +285,7 @@ export function createSkirmishController(
     cameraTarget: () => ({ ...target }),
     setTarget,
     zoom: () => camera.zoom,
+    setSelection,
     clearSelection() {
       setSelection([]);
     },

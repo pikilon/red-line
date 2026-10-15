@@ -103,10 +103,15 @@ test("AC-19-17: example saves and load errors", async ({ page }) => {
   await page.goto("/?showcase=1&debug=1&ai=off");
   await waitReady(page);
   await page.waitForTimeout(1000);
-  const plain = await page.evaluate(
-    () => (window as DebugWindow).__redline?.entities().length ?? 0,
+  // Fog hides most of the map, so count player 0's own entities: the start
+  // HQ and dozer only, no formation.
+  const own = await page.evaluate(
+    () =>
+      (window as DebugWindow).__redline
+        ?.entities()
+        .filter((entity) => entity.owner === 0).length ?? 0,
   );
-  expect(plain).toBe(10);
+  expect(own).toBe(2);
 
   expect(errors).toEqual([]);
 });

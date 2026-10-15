@@ -498,12 +498,15 @@ export function readSave(source: LoadSource, store: SaveStore):
 
 1. `loadSource`. Every other URL parameter is ignored. The save's `match`
    gives map, seed, debug and speed.
-2. On error (unknown id, empty slot, `parseSaveFile` or worker load error) it
-   shows `#load-error` with `t("saves.loadError", { detail })` and starts the
-   default skirmish instead.
-3. The worker gets `initFromSave` (§5.4). The settings `gore` and
-   `generatedTextures` are applied and persisted (`saveSettings`). The
-   controlled player, the viewer (`OBSERVER` when `revealed`), `fpsPanel`, the
+2. On error (unknown id, empty slot, `parseSaveFile`) it shows `#load-error`
+   with `t("saves.loadError", { detail })` and starts the default skirmish
+   instead. A worker load error (the sim rejects the state) shows the HUD
+   error, like any other worker error.
+3. The worker gets `initFromSave` (§5.4). For a world-form save (a player's
+   slot or an imported example) the settings `gore` and `generatedTextures`
+   are applied and persisted (`saveSettings`). Setup-form examples keep the
+   player's settings: there they are only defaults, not the author's intent.
+   The controlled player, the viewer (`OBSERVER` when `revealed`), `fpsPanel`, the
    camera target and zoom, `cameraMemory` and AI active state come from the
    save. Selection is restored on the first snapshot, keeping only ids that
    exist and belong to the controlled player.
@@ -617,10 +620,10 @@ New i18n keys in `en.json`: `menu.saves`, `saves.title`, `saves.close`,
 
 ### 5.6 Debug API (`window.__redline`)
 
-Gains `saveState(): Promise<string>` (the sim JSON), `loadedSave(): string |
-null` (the `?load` id once applied), `cameraZoom(): number`, `controlled():
-number`, `viewer(): number` and `entities()` (already used by spec 14 tests:
-`{ id, owner, kind, x, y }[]`).
+Gains `saveState(): Promise<string>` (the sim JSON) and `loadedSave(): string
+| null` (the `?load` id once applied). The existing `zoom()`,
+`controlledPlayer()`, `viewer()`, `cameraTarget()` and `entities()` give the
+rest.
 
 ### 5.7 Showcase removal
 
@@ -827,11 +830,12 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
   `parseSaveFile` accepts with the slot's `world`.
 * AC-19-17: Given `/?load=showcase`, When ready, Then 28 entities exist, the
   viewer is the observer, and clicking a unit with the real mouse shows its
-  name in `#hud-selected-type` (ports AC-14-04). Given `/?load=armor-duel`,
-  Then the camera zoom and target match its `client.camera`. Given
-  `/?load=slot-9` with slot 9 empty, Then `#load-error` is visible and the
-  default skirmish runs. Given `/?showcase=1`, Then the default skirmish runs
-  (no formation).
+  name in `#hud-selected-type` (ports AC-14-04). Given
+  `/?load=showcase-units`, Then the camera zoom and target match its
+  `client.camera`. Given `/?load=slot-9` with slot 9 empty, Then
+  `#load-error` is visible and the default skirmish runs. Given
+  `/?showcase=1`, Then the default skirmish runs (player 0 owns only the
+  start HQ and dozer).
 
 ## 9. Amendments
 
@@ -842,7 +846,10 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
   cover the same behaviour through the `showcase` example. AC-14-01 and
   AC-14-03 stay. These are the only spec-phase tests this spec removes.
 * Spec 03 §5.16: WASM API v4 adds the members of §3.7. Existing members are
-  unchanged.
+  unchanged. The version assertions of `crates/sim/src/lib.rs`,
+  `crates/sim/tests/wasm_api.rs` (AC-01-05, AC-05-20) move to 4, and the
+  client fixtures of AC-01-05 and AC-03-47 use `EXPECTED_API_VERSION`
+  instead of a literal, so the next bump does not touch them again.
 * Spec 08 §3.1: the game menu gains the "Saved games" button.
 
 ## 10. Traceability
