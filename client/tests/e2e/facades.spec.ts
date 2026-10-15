@@ -28,7 +28,7 @@ test("AC-16-07: facades and HQ flags render without errors", async ({
     if (match?.[1] !== undefined && response.ok()) loaded.add(match[1]);
   });
 
-  await page.goto("/?showcase=1");
+  await page.goto("/?load=showcase");
   await page.waitForFunction(
     () => {
       const debug = (window as DebugWindow).__redline;

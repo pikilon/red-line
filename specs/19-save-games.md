@@ -845,6 +845,9 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
   `client/tests/e2e/showcase.spec.ts` (AC-14-04) are deleted in P5-11. AC-19-02 and AC-19-17
   cover the same behaviour through the `showcase` example. AC-14-01 and
   AC-14-03 stay. These are the only spec-phase tests this spec removes.
+* Spec 16 AC-16-07 (`client/tests/e2e/facades.spec.ts`) opened `/?showcase=1`;
+  it now opens `/?load=showcase`, the same formation. Nothing else in the
+  test changes.
 * Spec 03 §5.16: WASM API v4 adds the members of §3.7. Existing members are
   unchanged. The version assertions of `crates/sim/src/lib.rs`,
   `crates/sim/tests/wasm_api.rs` (AC-01-05, AC-05-20) and the headless
