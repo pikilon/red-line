@@ -41,4 +41,4 @@ CC BY-SA compatible (D-02) and never reproduce EA assets, names or sounds (D-01,
 ## Hand back
 
 Open a PR with the verification report; self-test in the browser, merge, label the issue `needs-owner-test`
-and comment the manual steps (AGENTS.md "Done Means Self-Tested, Then Owner-Confirmed").
+and comment the manual steps (AGENTS.md "Done Means Tested, Then Owner-Confirmed").

@@ -360,10 +360,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
 
   const gameMenu = createGameMenu(document.body, {
     resume: () => setMenuOpen(false),
-    openSaves: () => {
-      savesOpen = true;
-      void renderSaves();
-    },
+    openSaveGame: () => openSaves("save"),
+    openLoadGame: () => openSaves("load"),
     toggleGore: () => toggleGore(),
     toggleAi: () => toggleAi(),
     toggleTextures: () => toggleTextures(),
@@ -382,6 +380,14 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   if (touchControls !== null) document.body.classList.add("touch");
   /** Whether the save manager is open over the game menu (spec 19 §5.5). */
   let savesOpen = false;
+  /** Which menu button opened it. */
+  let savesMode: "save" | "load" = "load";
+
+  function openSaves(mode: "save" | "load"): void {
+    savesMode = mode;
+    savesOpen = true;
+    void renderSaves();
+  }
   let storageAvailable = true;
   const saveManager = createSaveManager(document.body, {
     close: () => {
@@ -416,6 +422,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     }
     saveManager.render({
       open: savesOpen,
+      mode: savesMode,
       slots,
       examples: EXAMPLE_IDS,
       storageAvailable,
