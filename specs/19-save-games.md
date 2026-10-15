@@ -847,7 +847,8 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
   AC-14-03 stay. These are the only spec-phase tests this spec removes.
 * Spec 03 §5.16: WASM API v4 adds the members of §3.7. Existing members are
   unchanged. The version assertions of `crates/sim/src/lib.rs`,
-  `crates/sim/tests/wasm_api.rs` (AC-01-05, AC-05-20) move to 4, and the
+  `crates/sim/tests/wasm_api.rs` (AC-01-05, AC-05-20) and the headless
+  banner test move to 4, and the
   client fixtures of AC-01-05 and AC-03-47 use `EXPECTED_API_VERSION`
   instead of a literal, so the next bump does not touch them again.
 * Spec 08 §3.1: the game menu gains the "Saved games" button.
