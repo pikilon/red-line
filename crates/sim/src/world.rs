@@ -10,7 +10,7 @@ use crate::map::{Cell, CellIndex, MapGrid, SPAWN_MAX, SPAWN_MIN, cell_center, ce
 use crate::nav::{approach_cell, footprint_cells, footprint_center};
 use crate::player::Player;
 use crate::rng::SplitMix64;
-use crate::rules::{Category, FactionId, Ruleset, TypeId, WeaponId, fx_centi};
+use crate::rules::{Category, FactionId, MapDef, Ruleset, TypeId, WeaponId, fx_centi};
 
 pub type UnitId = EntityId;
 
@@ -140,6 +140,22 @@ pub struct World {
     pub(crate) outcome: Outcome,
     pub(crate) victory_enabled: bool,
     pub(crate) debug_commands: bool,
+    /// Map the world was built from; `None` outside skirmish worlds. Not
+    /// hashed (spec 19 §3.1).
+    pub(crate) map_id: Option<String>,
+}
+
+/// Open terrain of `map` with its blocked rectangles (spec 03 §5.6).
+pub(crate) fn map_terrain(map: &MapDef) -> MapGrid {
+    let mut terrain = MapGrid::open(map.width, map.height);
+    for rect in &map.blocked {
+        for y in rect[1]..=rect[3] {
+            for x in rect[0]..=rect[2] {
+                terrain.set_blocked(Cell { x, y }, true);
+            }
+        }
+    }
+    terrain
 }
 
 impl World {
@@ -164,6 +180,7 @@ impl World {
             outcome: Outcome::Ongoing,
             victory_enabled: false,
             debug_commands: false,
+            map_id: None,
         }
     }
 
@@ -196,15 +213,7 @@ impl World {
                 id: map_id.to_string(),
             })?;
 
-        let mut terrain = MapGrid::open(map.width, map.height);
-        for rect in &map.blocked {
-            for y in rect[1]..=rect[3] {
-                for x in rect[0]..=rect[2] {
-                    terrain.set_blocked(Cell { x, y }, true);
-                }
-            }
-        }
-
+        let terrain = map_terrain(&map);
         let factions: Vec<FactionId> = map.starts.iter().map(|start| start.faction).collect();
         let mut world = World::sandbox(rules, terrain, &factions);
 
@@ -242,6 +251,7 @@ impl World {
         }
 
         world.victory_enabled = true;
+        world.map_id = Some(map.id.clone());
         world.refresh_visibility();
         Ok(world)
     }

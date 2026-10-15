@@ -57,9 +57,16 @@ fn ac_19_04_round_trip() {
     }
 }
 
+/// State hash, match snapshots (players 0, 1, observer), fog (players 0, 1)
+/// and the observer's combat snapshot.
+type Observation = (String, Vec<Vec<i32>>, Vec<Vec<u8>>, Vec<i32>);
+
+/// A mutation of a saved state and the load error it must produce.
+type ErrorCase = (Box<dyn Fn(&mut Value)>, String);
+
 /// Everything a client can observe after a step, for both players and the
 /// observer (spec 19 AC-19-05).
-fn observe(world: &World) -> (String, Vec<Vec<i32>>, Vec<Vec<u8>>, Vec<i32>) {
+fn observe(world: &World) -> Observation {
     let shots = BTreeMap::new();
     let snapshots = [0, 1, OBSERVER]
         .iter()
@@ -145,7 +152,7 @@ fn ac_19_06_load_errors() {
     let cells = 128 * 128;
     assert_eq!(base["formatVersion"], SAVE_FORMAT_VERSION);
 
-    let cases: Vec<(Box<dyn Fn(&mut Value)>, String)> = vec![
+    let cases: Vec<ErrorCase> = vec![
         (
             Box::new(|v| v["formatVersion"] = 7.into()),
             "invalid save: unsupported format version 7".into(),
