@@ -54,8 +54,16 @@ import {
   setTerrainTextures,
 } from "../render/terrain";
 import { RULES, typeDef, typeIndex, typeName } from "../rules";
-import { loadSource, NO_SLOTS, readSave } from "../saves/boot";
-import type { ClientState, SaveFile } from "../saves/saveFile";
+import { loadSource, readExample, readSave } from "../saves/boot";
+import {
+  buildSaveFile,
+  type ClientState,
+  defaultSaveName,
+  type SaveFile,
+  SLOT_COUNT,
+  type SlotId,
+} from "../saves/saveFile";
+import { createIndexedDbSaveStore, type SaveStore } from "../saves/store";
 import { loadSettings, type Settings, saveSettings } from "../settings";
 import type { ProjectileState } from "../sim/combatSnapshot";
 import {
@@ -82,6 +90,7 @@ import { createGameMenu } from "../ui/gameMenu";
 import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
 import { createResourceBar } from "../ui/resourceBar";
+import { createSaveManager, type SlotView } from "../ui/saveManager";
 import { createSelectionBox } from "../ui/selectionBox";
 import { createTouchControls, isTouchDevice } from "../ui/touchControls";
 import { createCameraMemory, homeView } from "./cameraMemory";
@@ -189,6 +198,8 @@ function createPlacementGhost(): {
 /** How a skirmish starts: from the URL parameters or from a save (spec 19). */
 interface SkirmishBoot {
   seed: number;
+  /** The seed as saved: a u64 in decimal (spec 19 §5.1). */
+  seedText: string;
   mapId: string;
   debug: boolean;
   speed: number;
@@ -216,6 +227,7 @@ function paramsBoot(params: URLSearchParams): SkirmishBoot {
     : 1;
   return {
     seed,
+    seedText: String(seed),
     mapId,
     debug,
     speed,
@@ -246,6 +258,7 @@ function saveBoot(save: SaveFile, id: string): SkirmishBoot {
   const form = save.world === undefined ? "setup" : "world";
   return {
     seed: Number.parseInt(match.seed, 10) || DEFAULT_SEED,
+    seedText: match.seed,
     mapId: match.mapId,
     debug: match.debug,
     speed,
@@ -273,29 +286,36 @@ function showLoadError(detail: string): void {
  *  be read the default skirmish starts and `#load-error` says why (spec 19
  *  §5.3). Every other parameter is ignored while loading. */
 export function startSkirmish(params: SkirmishOptions): void {
+  const store = createIndexedDbSaveStore();
   const load = params.get("load");
   if (load === null) {
-    runSkirmish(paramsBoot(params));
+    runSkirmish(paramsBoot(params), store);
     return;
   }
   const source = loadSource(load, EXAMPLE_IDS);
   const read =
     source === null
       ? Promise.resolve({ ok: false as const, error: `unknown save ${load}` })
-      : readSave(source, NO_SLOTS);
+      : readSave(source, store);
   void read.then((result) => {
     if (result.ok) {
-      runSkirmish(saveBoot(result.save, load));
+      runSkirmish(saveBoot(result.save, load), store);
       return;
     }
     showLoadError(result.error);
-    runSkirmish(paramsBoot(new URLSearchParams()));
+    runSkirmish(paramsBoot(new URLSearchParams()), store);
   });
 }
 
+/** Player slot ids `slot-1` .. `slot-SLOT_COUNT`. */
+const SLOT_IDS: readonly SlotId[] = Array.from(
+  { length: SLOT_COUNT },
+  (_, i) => `slot-${i + 1}` as SlotId,
+);
+
 /** Boots the worker, renders the match and wires the HUD, the resource bar,
  *  the command panel and the outcome overlay (spec §6.7). */
-function runSkirmish(boot: SkirmishBoot): void {
+function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   const container = document.getElementById("app");
   if (!container) throw new Error("Missing #app container");
   const hudRoot = document.getElementById("hud") ?? container;
@@ -340,6 +360,10 @@ function runSkirmish(boot: SkirmishBoot): void {
 
   const gameMenu = createGameMenu(document.body, {
     resume: () => setMenuOpen(false),
+    openSaves: () => {
+      savesOpen = true;
+      void renderSaves();
+    },
     toggleGore: () => toggleGore(),
     toggleAi: () => toggleAi(),
     toggleTextures: () => toggleTextures(),
@@ -356,7 +380,105 @@ function runSkirmish(boot: SkirmishBoot): void {
       })
     : null;
   if (touchControls !== null) document.body.classList.add("touch");
+  /** Whether the save manager is open over the game menu (spec 19 §5.5). */
+  let savesOpen = false;
+  let storageAvailable = true;
+  const saveManager = createSaveManager(document.body, {
+    close: () => {
+      savesOpen = false;
+      void renderSaves();
+    },
+    save: (slot, name) => void saveToSlot(slot, name),
+    rename: (slot, name) =>
+      void store.rename(slot, name).then(() => renderSaves()),
+    load: (id) => {
+      window.location.assign(`?load=${encodeURIComponent(id)}`);
+    },
+    copy: (id) => void copySave(id),
+    remove: (slot) => void store.remove(slot).then(() => renderSaves()),
+  });
   renderMenu();
+
+  /** Re-reads the slots and renders the save manager (spec 19 §5.5). */
+  async function renderSaves(): Promise<void> {
+    let slots: SlotView[] = SLOT_IDS.map((id) => ({ id, empty: true }));
+    if (savesOpen) {
+      try {
+        const saved = await store.list();
+        slots = SLOT_IDS.map(
+          (id) =>
+            saved.find((summary) => summary.id === id) ?? { id, empty: true },
+        );
+        storageAvailable = true;
+      } catch {
+        storageAvailable = false;
+      }
+    }
+    saveManager.render({
+      open: savesOpen,
+      slots,
+      examples: EXAMPLE_IDS,
+      storageAvailable,
+      defaultName: defaultSaveName(mapId, next?.tick ?? 0),
+    });
+  }
+
+  /** The client half of a save (spec 19 §5.1). */
+  function clientState(): ClientState {
+    const target = controller?.cameraTarget() ?? cameraTarget;
+    return {
+      controlled,
+      revealed: viewer === OBSERVER,
+      gore: settings.gore,
+      generatedTextures: settings.generatedTextures !== false,
+      fpsPanel,
+      camera: { x: target.x, y: target.y, zoom: camera.zoom },
+      cameraMemory: cameraMemory.views(),
+      selected: [...(controller?.selected ?? [])].sort((a, b) => a - b),
+    };
+  }
+
+  /** Saves the paused match into `slot` (spec 19 §5.5). */
+  async function saveToSlot(slot: SlotId, name: string): Promise<void> {
+    try {
+      const world = await interact.saveState();
+      const tick = (JSON.parse(world) as { tick: number }).tick;
+      await store.put(
+        slot,
+        buildSaveFile({
+          name,
+          savedAt: new Date(),
+          tick,
+          match: {
+            mapId,
+            seed: boot.seedText,
+            debug,
+            speed: boot.speed,
+          },
+          client: clientState(),
+          worldJson: world,
+        }),
+      );
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      showToast(t("saves.saveFailed", { detail }));
+    }
+    await renderSaves();
+  }
+
+  /** Puts a slot's or an example's save file on the clipboard. */
+  async function copySave(id: string): Promise<void> {
+    try {
+      const slotId = SLOT_IDS.find((slot) => slot === id);
+      const save =
+        slotId === undefined ? await readExample(id) : await store.get(slotId);
+      if (save === null) throw new Error(`${id} is empty`);
+      await navigator.clipboard.writeText(JSON.stringify(save, null, 2));
+      showToast(t("saves.copied"));
+    } catch {
+      showToast(t("saves.copyFailed"));
+    }
+  }
 
   /** Renders the game menu from the current state (spec 08 §3.1, §3.3). */
   function renderMenu(): void {
@@ -399,6 +521,8 @@ function runSkirmish(boot: SkirmishBoot): void {
 
   let map: ReadyMessage | null = null;
   let prev: MatchSnapshot | null = null;
+  /** The first snapshot, for the save tests (spec 19 §5.6). */
+  let initial: MatchSnapshot | null = null;
   let next: MatchSnapshot | null = null;
   let fog: Uint8Array<ArrayBuffer> = new Uint8Array(0);
   let receivedAt = 0;
@@ -762,6 +886,7 @@ function runSkirmish(boot: SkirmishBoot): void {
   }
 
   interact.onSnapshot((snapshot, receivedFog, at, combat) => {
+    initial ??= snapshot;
     const previous = next;
     flying = combat.projectiles;
     prev = previous ?? snapshot;
@@ -861,11 +986,16 @@ function runSkirmish(boot: SkirmishBoot): void {
       }
       interact.setPaused(paused);
     }
+    if (!open && savesOpen) {
+      savesOpen = false;
+      void renderSaves();
+    }
     renderMenu();
   }
 
   /** What `Esc` does: cancels a placement mode, else toggles the menu. */
   function toggleMenuLikeEsc(): void {
+    if (saveManager.handleEscape()) return;
     if (placementKind !== null) {
       placementKind = null;
       refreshOverlay();
@@ -885,6 +1015,8 @@ function runSkirmish(boot: SkirmishBoot): void {
     // listener runs first, so it must leave the event alone (spec 08 §3.1).
     if (placementKind !== null) return;
     event.preventDefault();
+    // The save manager closes its dialog, then itself, before the menu.
+    if (saveManager.handleEscape()) return;
     setMenuOpen(!paused);
   });
 
@@ -968,6 +1100,13 @@ function runSkirmish(boot: SkirmishBoot): void {
       cameraTarget: () => controller?.cameraTarget() ?? { ...cameraTarget },
       zoom: () => camera.zoom,
       loadedSave: () => boot.loadedId,
+      initialSnapshot: () =>
+        initial === null
+          ? null
+          : {
+              tick: initial.tick,
+              entities: initial.entities.map(({ id, x, y }) => ({ id, x, y })),
+            },
       saveState: () => interact.saveState(),
       setCameraTarget: moveCamera,
       command: (command) => interact.command(command),

@@ -71,7 +71,9 @@ const byId = (root: FakeElement, id: string): FakeElement => {
 const byClass = (root: FakeElement, name: string): FakeElement[] =>
   all(root).filter((node) => node.className.split(" ").includes(name));
 const slotRow = (root: FakeElement, slot: string): FakeElement => {
-  const row = byClass(root, "save-slot").find((node) => node.dataset.slot === slot);
+  const row = byClass(root, "save-slot").find(
+    (node) => node.dataset.slot === slot,
+  );
   if (row === undefined) throw new Error(`missing ${slot}`);
   return row;
 };
@@ -91,9 +93,21 @@ function view(open = true): SaveManagerView {
     examples: ["showcase", "showcase-units"],
     slots: SLOTS.map((id) =>
       id === "slot-2"
-        ? { id, name: "Second", mapId: "first-line", savedAt: "2026-10-15T10:00:00.000Z", tick: 15 * 75 }
+        ? {
+            id,
+            name: "Second",
+            mapId: "first-line",
+            savedAt: "2026-10-15T10:00:00.000Z",
+            tick: 15 * 75,
+          }
         : id === "slot-5"
-          ? { id, name: "Fifth", mapId: "showcase", savedAt: "2026-10-15T11:00:00.000Z", tick: 15 * 3661 }
+          ? {
+              id,
+              name: "Fifth",
+              mapId: "showcase",
+              savedAt: "2026-10-15T11:00:00.000Z",
+              tick: 15 * 3661,
+            }
           : { id, empty: true as const },
     ),
   };
@@ -128,12 +142,18 @@ describe("save manager", () => {
     expect(root.hidden).toBe(false);
 
     // Ten slot rows; occupied rows show name, map and game time.
-    expect(byClass(root, "save-slot").map((row) => row.dataset.slot)).toEqual(SLOTS);
+    expect(byClass(root, "save-slot").map((row) => row.dataset.slot)).toEqual(
+      SLOTS,
+    );
     const second = slotRow(root, "slot-2");
     expect(byClass(second, "save-slot-name")[0]?.textContent).toBe("Second");
-    expect(byClass(second, "save-slot-info")[0]?.textContent).toContain("first-line");
+    expect(byClass(second, "save-slot-info")[0]?.textContent).toContain(
+      "first-line",
+    );
     expect(byClass(second, "save-slot-info")[0]?.textContent).toContain("1:15");
-    expect(byClass(slotRow(root, "slot-5"), "save-slot-info")[0]?.textContent).toContain("1:01:01");
+    expect(
+      byClass(slotRow(root, "slot-5"), "save-slot-info")[0]?.textContent,
+    ).toContain("1:01:01");
     const empty = slotRow(root, "slot-1");
     expect(byClass(empty, "save-slot-name")[0]?.textContent).toBe("Empty slot");
 
@@ -143,12 +163,23 @@ describe("save manager", () => {
         (name) => !button(row, `save-slot-${name}`).hidden,
       );
     expect(visible(empty)).toEqual(["save"]);
-    expect(visible(second)).toEqual(["save", "load", "rename", "copy", "delete"]);
+    expect(visible(second)).toEqual([
+      "save",
+      "load",
+      "rename",
+      "copy",
+      "delete",
+    ]);
 
     // Examples in order, with their i18n name.
     const examples = byClass(root, "save-example");
-    expect(examples.map((row) => row.dataset.example)).toEqual(["showcase", "showcase-units"]);
-    expect(byClass(examples[0] as FakeElement, "save-example-name")[0]?.textContent).toBe("Showcase");
+    expect(examples.map((row) => row.dataset.example)).toEqual([
+      "showcase",
+      "showcase-units",
+    ]);
+    expect(
+      byClass(examples[0] as FakeElement, "save-example-name")[0]?.textContent,
+    ).toBe("Showcase");
 
     // Rendering the same view keeps the same elements.
     const before = all(root);
@@ -191,7 +222,9 @@ describe("save manager", () => {
 
     // Load asks to confirm the lost progress; Cancel does nothing.
     button(second, "save-slot-load").click();
-    expect(text.textContent).toBe("Unsaved progress in the current match will be lost.");
+    expect(text.textContent).toBe(
+      "Unsaved progress in the current match will be lost.",
+    );
     expect(name.hidden).toBe(true);
     cancel.click();
     expect(actions.load).not.toHaveBeenCalled();

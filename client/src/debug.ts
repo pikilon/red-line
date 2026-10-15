@@ -75,6 +75,11 @@ export interface SkirmishDebug {
   loadedSave(): string | null;
   /** `Sim::save_state` JSON of the running match (spec 19 §5.6). */
   saveState(): Promise<string>;
+  /** Tick and entity positions of the first snapshot (spec 19 §5.6). */
+  initialSnapshot(): {
+    tick: number;
+    entities: { id: number; x: number; y: number }[];
+  } | null;
   /** Target in tiles. */
   setCameraTarget(x: number, y: number): void;
   command(command: SimCommand): void;
