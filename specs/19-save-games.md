@@ -654,10 +654,13 @@ headless save check <file>
   `{"tick":900,"outcome":"ongoing"|"winner:0"|"draw","hash":"<16 hex>",
   "players":[{"id":0,"credits":1234,"units":8,"buildings":3,"power":[60,40]}]}`.
   `units` and `buildings` count live entities by category.
-* `check` loads, saves and loads again, then exits 0 when the two
-  `save_state` JSON strings are identical. Otherwise it prints
+* `check` compares, for a world-form save, the file's `world` (parsed and
+  re-serialized as a `SimState`) with `save_state(load_state(world))`; for a
+  setup-form save, the first save with a save of its reload. It prints `ok`
+  and exits 0 when they are identical; otherwise it prints
   `round trip differs at <json pointer>` and exits 1.
-* Errors print the sim text and exit 1.
+* Errors print the sim text on stderr and exit 2, like every other headless
+  subcommand.
 
 ### 6.2 Scripts (`scripts/saves.mjs`, `package.json`)
 
@@ -668,8 +671,10 @@ node --run saves:import -- <file> <id> [--force]
 ```
 
 * `saves:list` prints `<id>  <map>  <form>  <entities>  http://localhost:5173/?load=<id>`
-  per example, from `data/generated/saves.json`. It runs `build:data` first
-  when the generated index is older than any `data/saves/*` file.
+  per example, from `data/generated/saves.json`. It rebuilds the generated
+  saves first when the index is older than `globals.yaml` or any
+  `data/saves/*` file. Ajv's strict-mode notes are silenced so the output
+  stays one line per save.
 * `saves:run` resolves `<id>` to `data/generated/saves/<id>.json`, runs
   `cargo run -q --release -p headless -- save run <file> <ticks>` and prints
   its line.

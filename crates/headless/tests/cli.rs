@@ -136,3 +136,106 @@ fn ac_05_19_tournament_subcommand() {
     let draws = summary[0]["draws"].as_u64().expect("draws");
     assert_eq!(wins0 + wins1 + draws, 1);
 }
+
+// AC-19-08: `headless save run` and `headless save check` (spec 19 §6.1).
+
+fn temp_dir(name: &str) -> PathBuf {
+    let dir = std::env::temp_dir().join(format!("redline-{name}-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).expect("temp dir");
+    dir
+}
+
+/// A world-form save of a first-line skirmish with an AI, 120 ticks in.
+fn world_save() -> (serde_json::Value, sim::world::World, Vec<sim::ai::Ai>) {
+    let mut world =
+        sim::world::World::skirmish(sim::rules::Ruleset::builtin(), "first-line", 1).unwrap();
+    let mut ais = vec![sim::ai::Ai::new(&world, 1, "russia-balanced", 1).unwrap()];
+    for _ in 0..120 {
+        sim::ai::step_with_ai(&mut world, &mut ais);
+    }
+    let state = sim::save::save_state(&world, 1, &ais).unwrap();
+    let file = serde_json::json!({
+        "format": "redline-save", "version": 1, "name": "cli", "savedAt": "2026-10-15T10:00:00.000Z",
+        "tick": world.tick(),
+        "match": { "mapId": "first-line", "seed": "1", "debug": false, "speed": 1 },
+        "client": { "controlled": 0, "revealed": false, "gore": true, "generatedTextures": true,
+                    "fpsPanel": false, "camera": { "x": 14, "y": 62, "zoom": 1 },
+                    "cameraMemory": {}, "selected": [] },
+        "world": state,
+    });
+    (file, world, ais)
+}
+
+#[test]
+fn ac_19_08_save_commands() {
+    let dir = temp_dir("ac-19-08");
+    let (file, mut world, mut ais) = world_save();
+    let world_path = dir.join("world.json");
+    std::fs::write(&world_path, file.to_string()).unwrap();
+    let setup_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../data/generated/saves/armor-duel.json");
+
+    // `save run` prints one JSON line; its hash equals the native run.
+    let output = run(&["save", "run", world_path.to_str().unwrap(), "900"]);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let text = String::from_utf8(output.stdout).unwrap();
+    assert_eq!(text.lines().count(), 1, "one line: {text}");
+    let report: serde_json::Value = serde_json::from_str(text.trim()).unwrap();
+    for _ in 0..900 {
+        sim::ai::step_with_ai(&mut world, &mut ais);
+    }
+    assert_eq!(report["tick"], serde_json::json!(world.tick()));
+    assert_eq!(report["outcome"], serde_json::json!("ongoing"));
+    assert_eq!(
+        report["hash"],
+        serde_json::json!(format!("{:016x}", sim::hash::state_hash(&world)))
+    );
+    let players = report["players"].as_array().expect("players");
+    assert_eq!(players.len(), 2);
+    for (id, player) in players.iter().enumerate() {
+        assert_eq!(player["id"], serde_json::json!(id));
+        assert_eq!(
+            player["credits"],
+            serde_json::json!(world.players()[id].credits)
+        );
+        assert!(player["units"].is_u64() && player["buildings"].is_u64());
+        assert_eq!(player["power"].as_array().map(Vec::len), Some(2));
+    }
+
+    let setup = run(&["save", "run", setup_path.to_str().unwrap(), "300"]);
+    assert_eq!(setup.status.code(), Some(0));
+    let setup_report: serde_json::Value =
+        serde_json::from_str(String::from_utf8(setup.stdout).unwrap().trim()).unwrap();
+    assert_eq!(setup_report["tick"], serde_json::json!(300));
+    assert!(is_hash(setup_report["hash"].as_str().unwrap()));
+
+    // `save check` accepts both forms.
+    for path in [&world_path, &setup_path] {
+        let check = run(&["save", "check", path.to_str().unwrap()]);
+        assert_eq!(check.status.code(), Some(0), "{}", path.display());
+        assert_eq!(String::from_utf8(check.stdout).unwrap(), "ok\n");
+    }
+
+    // A world whose explored runs are not canonical does not survive a load.
+    let mut odd = file.clone();
+    odd["world"]["players"][0]["explored"] = serde_json::json!([128 * 128, 0]);
+    let odd_path = dir.join("odd.json");
+    std::fs::write(&odd_path, odd.to_string()).unwrap();
+    let check = run(&["save", "check", odd_path.to_str().unwrap()]);
+    assert_eq!(check.status.code(), Some(1));
+    assert_eq!(
+        String::from_utf8(check.stdout).unwrap(),
+        "round trip differs at /players/0/explored\n"
+    );
+
+    // Errors go to stderr with exit code 2, like the other subcommands.
+    let missing = run(&["save", "run", "does-not-exist.json", "10"]);
+    assert_eq!(missing.status.code(), Some(2));
+    assert!(!missing.stderr.is_empty());
+    std::fs::remove_dir_all(dir).ok();
+}

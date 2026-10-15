@@ -1,5 +1,6 @@
 //! Native headless runner: executes the simulation without a client.
 
+mod save;
 mod script;
 mod tournament;
 
@@ -46,6 +47,12 @@ fn dispatch(args: &[String]) -> Result<String, String> {
             let report = tournament::run_match(map, seed, max_ticks, ai0, ai1)?;
             json_line(&report)
         }
+        ["save", "run", path, ticks] => {
+            let ticks = ticks
+                .parse::<u32>()
+                .map_err(|_| format!("invalid ticks: {ticks}"))?;
+            json_line(&save::run(path, ticks)?)
+        }
         ["tournament", path] => {
             let text =
                 std::fs::read_to_string(path).map_err(|e| format!("cannot read {path}: {e}"))?;
@@ -55,13 +62,39 @@ fn dispatch(args: &[String]) -> Result<String, String> {
             json_line(&report)
         }
         _ => Err("usage: headless [hash <script.json>] \
-             [match <map> <seed> <max_ticks> <ai0> <ai1>] [tournament <config.json>]"
+             [match <map> <seed> <max_ticks> <ai0> <ai1>] [tournament <config.json>] \
+             [save run <file> <ticks>] [save check <file>]"
             .to_owned()),
+    }
+}
+
+/// `save check` prints its verdict on stdout: "ok" (exit 0) or the first
+/// differing pointer (exit 1); errors exit 2 like every subcommand.
+fn check_save(path: &str) -> ExitCode {
+    match save::check(path) {
+        Ok(save::Check::Same) => {
+            println!("ok");
+            ExitCode::SUCCESS
+        }
+        Ok(save::Check::Differs(pointer)) => {
+            println!("round trip differs at {pointer}");
+            ExitCode::from(1)
+        }
+        Err(message) => {
+            eprintln!("{message}");
+            ExitCode::from(2)
+        }
     }
 }
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    if let [save, check, path] = args.as_slice()
+        && save == "save"
+        && check == "check"
+    {
+        return check_save(path);
+    }
     match dispatch(&args) {
         Ok(out) => {
             print!("{out}");
