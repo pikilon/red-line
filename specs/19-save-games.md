@@ -859,9 +859,9 @@ Work in order; each issue depends on the previous one.
 
 | Issue | Content | Criteria | Label |
 |---|---|---|---|
-| P5-09 | Sim: `map_id`, `save.rs` types, `save_state` / `load_state`, rng state | AC-19-04 (case a), 05 (first-line case), 06 | ready-pro |
-| P5-10 | Sim: `Setup`, `World::from_setup`; data: save schema, `globals.yaml` `saves`, `buildSaves`, `showcase` and `showcase-units` examples | AC-19-01, 02, 03 | ready-pro |
-| P5-11 | WASM API v4, worker protocol, `saveFile.ts`, `boot.ts`, `?load=`, debug API; showcase mode removal | AC-19-07, 10, 12, 17 | ready-pro |
-| P5-12 | Save manager UI, IndexedDB store, clipboard copy, i18n | AC-19-11, 13, 15, 16 | ready-pro |
-| P5-13 | Example catalogue of §7 and contract tests; AC-19-04 (b) and AC-19-05 example cases | AC-19-04, 05, 14 | ready-pro |
-| P5-14 | Headless `save` commands, `saves:*` scripts, `test-saves` skill, `AGENTS.md` line | AC-19-08, 09 | ready-pro |
+| P5-09 (#280) | Sim: `map_id`, `save.rs` types, `save_state` / `load_state`, rng state | AC-19-04 (case a), 05 (first-line case), 06 | ready-pro |
+| P5-10 (#281) | Sim: `Setup`, `World::from_setup`; data: save schema, `globals.yaml` `saves`, `buildSaves`, `showcase` and `showcase-units` examples | AC-19-01, 02, 03 | ready-pro |
+| P5-11 (#282) | WASM API v4, worker protocol, `saveFile.ts`, `boot.ts`, `?load=`, debug API; showcase mode removal | AC-19-07, 10, 12, 17 | ready-pro |
+| P5-12 (#283) | Save manager UI, IndexedDB store, clipboard copy, i18n | AC-19-11, 13, 15, 16 | ready-pro |
+| P5-13 (#284) | Example catalogue of §7 and contract tests; AC-19-04 (b) and AC-19-05 example cases | AC-19-04, 05, 14 | ready-pro |
+| P5-14 (#285) | Headless `save` commands, `saves:*` scripts, `test-saves` skill, `AGENTS.md` line | AC-19-08, 09 | ready-pro |
