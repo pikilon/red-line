@@ -67,8 +67,7 @@ impl Sim {
 
     /// Setup-form world (spec 19 §3.5) from the JSON of a `Setup`.
     pub fn from_setup(json: &str) -> Result<Sim, String> {
-        let setup: Setup =
-            serde_json::from_str(json).map_err(|e| format!("invalid setup: {e}"))?;
+        let setup: Setup = serde_json::from_str(json).map_err(|e| format!("invalid setup: {e}"))?;
         let (world, seed, ais) = from_setup(&setup)?;
         Ok(Sim::wrap(world, seed, ais))
     }
