@@ -1,0 +1,175 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "infantry-vs-armor",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 50,
+      "y": 20,
+      "zoom": 1.25
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4450,
+          950
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4450,
+          1200
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4450,
+          1450
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4450,
+          1700
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4450,
+          1950
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4450,
+          2200
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4450,
+          2450
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4450,
+          2700
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-stugna-team",
+        "atCenti": [
+          4250,
+          1250
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-stugna-team",
+        "atCenti": [
+          4250,
+          1750
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-stugna-team",
+        "atCenti": [
+          4250,
+          2250
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-stugna-team",
+        "atCenti": [
+          4250,
+          2750
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          6250,
+          1450
+        ],
+        "order": {
+          "moveCenti": [
+            3050,
+            1450
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          6250,
+          1950
+        ],
+        "order": {
+          "moveCenti": [
+            3050,
+            1950
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          6250,
+          2450
+        ],
+        "order": {
+          "moveCenti": [
+            3050,
+            2450
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "defenses",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 50,
+      "y": 19,
+      "zoom": 0.9
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-defense",
+        "origin": [
+          40,
+          18
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-defense",
+        "origin": [
+          60,
+          18
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          2250,
+          1550
+        ],
+        "order": {
+          "moveCenti": [
+            3850,
+            1550
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          2250,
+          1850
+        ],
+        "order": {
+          "moveCenti": [
+            3850,
+            1850
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          2250,
+          2150
+        ],
+        "order": {
+          "moveCenti": [
+            3850,
+            2150
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          2250,
+          2450
+        ],
+        "order": {
+          "moveCenti": [
+            3850,
+            2450
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          7850,
+          1550
+        ],
+        "order": {
+          "moveCenti": [
+            6350,
+            1550
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          7850,
+          1850
+        ],
+        "order": {
+          "moveCenti": [
+            6350,
+            1850
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          7850,
+          2150
+        ],
+        "order": {
+          "moveCenti": [
+            6350,
+            2150
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          7850,
+          2450
+        ],
+        "order": {
+          "moveCenti": [
+            6350,
+            2450
+          ]
+        }
+      }
+    ]
+  }
+}

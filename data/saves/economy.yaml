@@ -1,0 +1,17 @@
+# Spec 19 §7: each side has a supply center and two trucks harvesting the nearest depot.
+id: economy
+map: first-line
+victory: false
+debug: true
+starts: true
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 15, y: 57, zoom: 1.25 }
+entities:
+  - { player: 0, type: ua-supply-center, origin: [16, 51] }
+  - { player: 0, type: ua-supply-truck, atCenti: [1750, 5650], order: { harvest: depot-0 } }
+  - { player: 0, type: ua-supply-truck, atCenti: [1950, 5650], order: { harvest: depot-0 } }
+  - { player: 1, type: ru-supply-center, origin: [108, 70] }
+  - { player: 1, type: ru-supply-truck, atCenti: [10750, 7450], order: { harvest: depot-1 } }
+  - { player: 1, type: ru-supply-truck, atCenti: [10950, 7450], order: { harvest: depot-1 } }

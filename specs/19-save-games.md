@@ -721,21 +721,21 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
 |---|---|---|---|
 | `showcase` | showcase | `starts: true`; every non-HQ building and non-dozer unit of each faction once, laid out as spec 14 §4 (buildings at `(x0 + 5i, hqY)`, units in two rows of four at y 16.5 / 20.5); camera zoom 1 at `(x0 + 14, 12)` of player 0 | 28 entities; each faction's types exactly once |
 | `showcase-units` | showcase | Same entities as `showcase`; camera zoom 2 at `(x0 + 9.5, 18.5)` | Same as `showcase` |
-| `armor-duel` | showcase | 4 `ua-leopard-2a4` + 2 `ua-bradley` facing 4 `ru-t-72b3` + 2 `ru-bmp-2`, 12 tiles apart, each attacking an enemy | A death within 900 ticks |
+| `armor-duel` | showcase | 4 `ua-leopard-2a4` + 2 `ua-bradley` facing 4 `ru-t-72b3` + 2 `ru-bmp-2`, 6 tiles apart (inside sight: an attack order on an unseen target is dropped), each attacking an enemy | A death within 900 ticks |
 | `infantry-vs-armor` | showcase | 8 `ua-rifleman` + 4 `ua-stugna-team` in a line; 3 `ru-t-72b3` with move orders through them | A death within 900 ticks |
 | `rpg-ambush` | showcase | 6 `ru-rpg-gunner` + 4 `ru-rifleman` beside the path of 4 `ua-bradley` moving across the map | A death within 900 ticks |
-| `artillery-range` | showcase | 2 `ua-himars` and 2 `ru-tos-1a` at long range, each attacking an enemy building cluster (power plant, barracks) | A projectile in flight within 300 ticks; building HP lower at 900 |
+| `artillery-range` | showcase | 2 `ua-himars` and 2 `ru-tos-1a`, each attacking an enemy building (power plant, barracks); one scout per side spots the targets; both HQs present | A projectile in flight within 300 ticks; a targeted building's HP lower at 900 |
 | `defenses` | showcase | `ua-defense` and `ru-defense`, each with 4 enemy units moving into range | A death within 900 ticks |
-| `base-assault` | first-line | `starts: true`, `victory: true`; full complete Ukrainian base; 12 mixed Russian units attacking the HQ; controlled 0 | A Ukrainian building damaged within 900 ticks |
+| `base-assault` | first-line | `starts: true`, `victory: true`; complete Ukrainian base; 12 mixed Russian units driving into it (move orders; units fire on the move); controlled 0 | A Ukrainian building damaged within 900 ticks |
 | `economy` | first-line | `starts: true`, AI off, `revealed: false`; each side has a supply center and 2 supply trucks harvesting the nearest depot | Both players' credits rise within 900 ticks |
-| `low-power` | showcase | `starts: true`; Ukrainian barracks, factory and defense with one power plant, consumption above production | `power` consumed > produced after 1 tick |
-| `production` | first-line | `starts: true`, credits `[50000, 50000]`; every Ukrainian building complete, a rally point on the factory; camera on the base | Every Ukrainian building type present and complete |
-| `construction` | showcase | Buildings of both factions at `buildPercent` 0, 30, 60 and 100, each with a dozer resuming it | A site's progress grows within 300 ticks |
+| `low-power` | showcase | `starts: true`; Ukrainian power plant, supply center, barracks, factory and defense: consumption 11 over production 10 | `power` consumed > produced after 1 tick |
+| `production` | first-line | `starts: true`, credits `[50000, 50000]`; every Ukrainian building complete (two power plants); camera on the base. Setups have no rally points | Every Ukrainian building type present and complete; 50000 credits |
+| `construction` | showcase | Barracks and vehicle factories of both factions at `buildPercent` 0, 30, 60 and 100 (no builders: setups have no build orders) | Site progress at tick 0 matches the percentages |
 | `damaged-base` | showcase | Each building type of both factions at 100, 75, 50, 25 and 10 % HP | HP matches the percentages at tick 0 |
 | `pathfinding-river` | first-line | 10 Ukrainian units on the west bank with a move order to a point on the east bank away from the fords | ≥ 8 units within 3 tiles of the target within 1800 ticks |
-| `crowd` | showcase | 60 units per side in two blocks, every unit attacking the nearest enemy | No panic at 900 ticks; a death within 900 |
-| `gore` | showcase | 20 `ua-rifleman` vs 20 `ru-rifleman` close, attacking; `client.gore: true` | 5 deaths within 900 ticks |
-| `victory-near` | showcase | `starts: false`, `victory: true`; one `ru-hq` at 5 % HP attacked by 4 `ua-leopard-2a4` | `Winner(0)` within 900 ticks |
+| `crowd` | showcase | 60 units per side in two blocks 3 tiles apart, both advancing through each other | 60 units per side; a death within 900 |
+| `gore` | showcase | 20 `ua-rifleman` vs 20 `ru-rifleman` close, attacking. Gore follows the player's setting (setup examples never change it, §5.3); toggle it with G | 5 deaths within 900 ticks |
+| `victory-near` | showcase | `victory: true`; a `ua-hq` far away and one `ru-hq` at 5 % HP attacked by 4 `ua-leopard-2a4` in sight | `Winner(0)` within 900 ticks |
 | `ai-attack` | first-line | `starts: true`, `victory: true`; Ukrainian base with few defenders, controlled 0; Russia with a full base, credits 40000 and AI `russia-rush` active; `revealed: false` | A Russian unit inside 20 tiles of the Ukrainian HQ within 6000 ticks |
 
 ## 8. Acceptance criteria
@@ -870,8 +870,8 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
 | AC-19-01 | `scripts/build-data.test.mjs` | `AC-19-01: example saves build` |
 | AC-19-02 | `scripts/build-data.test.mjs` | `AC-19-02: showcase example` |
 | AC-19-03 | `crates/sim/tests/save.rs` | `ac_19_03_from_setup` |
-| AC-19-04 | `crates/sim/tests/save.rs` | `ac_19_04_round_trip` |
-| AC-19-05 | `crates/sim/tests/save.rs` | `ac_19_05_continuity` |
+| AC-19-04 | `crates/sim/tests/save.rs`, `crates/sim/tests/example_saves.rs` | `ac_19_04_round_trip`, `ac_19_04_examples_round_trip` |
+| AC-19-05 | `crates/sim/tests/save.rs`, `crates/sim/tests/example_saves.rs` | `ac_19_05_continuity`, `ac_19_05_examples_continuity` |
 | AC-19-06 | `crates/sim/tests/save.rs` | `ac_19_06_load_errors` |
 | AC-19-07 | `client/src/sim/workerHandler.test.ts` | `AC-19-07: WASM save API` |
 | AC-19-08 | `crates/headless/tests/cli.rs` | `ac_19_08_save_commands` |

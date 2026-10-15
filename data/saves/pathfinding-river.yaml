@@ -1,0 +1,21 @@
+# Spec 19 §7: ten units on the west bank ordered to a point on the east bank, away from the fords.
+id: pathfinding-river
+map: first-line
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 62, y: 50, zoom: 0.8 }
+entities:
+  - { player: 0, type: ua-bradley, atCenti: [5050, 4850], order: { moveCenti: [8050, 6050] } }
+  - { player: 0, type: ua-bradley, atCenti: [5250, 4850], order: { moveCenti: [8050, 6050] } }
+  - { player: 0, type: ua-bradley, atCenti: [5450, 4850], order: { moveCenti: [8050, 6050] } }
+  - { player: 0, type: ua-bradley, atCenti: [5650, 4850], order: { moveCenti: [8050, 6050] } }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [5850, 4850], order: { moveCenti: [8050, 6050] } }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [5050, 5050], order: { moveCenti: [8050, 6050] } }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [5250, 5050], order: { moveCenti: [8050, 6050] } }
+  - { player: 0, type: ua-kozak-scout, atCenti: [5450, 5050], order: { moveCenti: [8050, 6050] } }
+  - { player: 0, type: ua-kozak-scout, atCenti: [5650, 5050], order: { moveCenti: [8050, 6050] } }
+  - { player: 0, type: ua-kozak-scout, atCenti: [5850, 5050], order: { moveCenti: [8050, 6050] } }

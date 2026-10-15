@@ -12,6 +12,102 @@
       "map": "showcase",
       "form": "setup",
       "entities": 24
+    },
+    {
+      "id": "armor-duel",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 12
+    },
+    {
+      "id": "infantry-vs-armor",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 15
+    },
+    {
+      "id": "rpg-ambush",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 14
+    },
+    {
+      "id": "artillery-range",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 12
+    },
+    {
+      "id": "defenses",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 10
+    },
+    {
+      "id": "base-assault",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 17
+    },
+    {
+      "id": "economy",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 6
+    },
+    {
+      "id": "low-power",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "production",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 6
+    },
+    {
+      "id": "construction",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 16
+    },
+    {
+      "id": "damaged-base",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 60
+    },
+    {
+      "id": "pathfinding-river",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 10
+    },
+    {
+      "id": "crowd",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 120
+    },
+    {
+      "id": "gore",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 40
+    },
+    {
+      "id": "victory-near",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 6
+    },
+    {
+      "id": "ai-attack",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 8
     }
   ]
 }

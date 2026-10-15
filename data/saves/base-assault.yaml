@@ -1,0 +1,28 @@
+# Spec 19 §7: a complete Ukrainian base; twelve Russian units drive into it, firing at what they see.
+id: base-assault
+map: first-line
+victory: true
+debug: true
+starts: true
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 24, y: 62, zoom: 1 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [6, 60] }
+  - { player: 0, type: ua-supply-center, origin: [17, 55] }
+  - { player: 0, type: ua-barracks, origin: [6, 65] }
+  - { player: 0, type: ua-vehicle-factory, origin: [12, 66] }
+  - { player: 0, type: ua-defense, origin: [20, 64] }
+  - { player: 1, type: ru-t-72b3, atCenti: [3850, 5650], order: { moveCenti: [2350, 5750] } }
+  - { player: 1, type: ru-t-72b3, atCenti: [4050, 5650], order: { moveCenti: [2350, 5750] } }
+  - { player: 1, type: ru-t-72b3, atCenti: [4250, 5650], order: { moveCenti: [2350, 5750] } }
+  - { player: 1, type: ru-t-72b3, atCenti: [4450, 5650], order: { moveCenti: [2350, 5750] } }
+  - { player: 1, type: ru-bmp-2, atCenti: [3850, 5950], order: { moveCenti: [2350, 6050] } }
+  - { player: 1, type: ru-bmp-2, atCenti: [4050, 5950], order: { moveCenti: [2350, 6050] } }
+  - { player: 1, type: ru-bmp-2, atCenti: [4250, 5950], order: { moveCenti: [2350, 6050] } }
+  - { player: 1, type: ru-bmp-2, atCenti: [4450, 5950], order: { moveCenti: [2350, 6050] } }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [3850, 6250], order: { moveCenti: [2350, 6350] } }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [4050, 6250], order: { moveCenti: [2350, 6350] } }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [4250, 6250], order: { moveCenti: [2350, 6350] } }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [4450, 6250], order: { moveCenti: [2350, 6350] } }
