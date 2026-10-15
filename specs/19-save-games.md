@@ -168,8 +168,9 @@ pub struct ProjectileState {
 pub struct PendingCommand { pub player: u8, pub command: CommandState }
 
 /// `Command` with string ids; one variant per `Command` variant, same fields,
-/// `FxVec2` as `[i32; 2]`, `Cell` as `[i32; 2]`, `TypeId` as `String`.
-#[serde(tag = "kind", rename_all = "camelCase")]
+/// `FxVec2` as `[i32; 2]`, `Cell` as `[i32; 2]`, `TypeId` as `String`. The tag
+/// is `type` because `Construct`, `Produce` and `DebugSpawn` have a `kind`.
+#[serde(tag = "type", rename_all = "camelCase")]
 pub enum CommandState { /* Move, Attack, Harvest, Construct, Resume, Produce,
                           Cancel, Rally, Stop, DebugSpawn, DebugSetHp */ }
 
@@ -750,9 +751,9 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
   and 3000 and (b) every example after 300 ticks, When saved with
   `save_state`, loaded with `load_state` and saved again, Then the two JSON
   strings are byte-identical.
-* AC-19-05: Given a `first-line` skirmish with two AIs stepped to tick 2000,
-  with at least one projectile in flight and one pending command (enqueued
-  after the last step), When it is saved and loaded into a second `Sim`, and
+* AC-19-05: Given a `first-line` skirmish with two AIs stepped from tick 2000
+  to the first tick with a projectile in flight, plus one pending command
+  (enqueued after the last step), When it is saved and loaded into a second `Sim`, and
   both are stepped 900 more ticks, Then every 100 ticks `state_hash_hex`,
   `snapshot_for(0)`, `snapshot_for(1)`, `snapshot_for(OBSERVER)`,
   `fog_for(0)`, `fog_for(1)` and `combat_for(OBSERVER)` are equal. The same
