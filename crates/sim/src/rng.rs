@@ -8,6 +8,14 @@ impl SplitMix64 {
     pub const fn new(seed: u64) -> SplitMix64 {
         SplitMix64 { state: seed }
     }
+    /// Internal state, for saves (spec 19 §3.2).
+    pub(crate) const fn state(&self) -> u64 {
+        self.state
+    }
+    /// Resumes from a saved `state` (spec 19 §3.2).
+    pub(crate) const fn from_state(state: u64) -> SplitMix64 {
+        SplitMix64 { state }
+    }
     pub fn next_u64(&mut self) -> u64 {
         self.state = self.state.wrapping_add(0x9E37_79B9_7F4A_7C15);
         let mut z = self.state;

@@ -13,6 +13,7 @@ use crate::map::{Cell, cell_of};
 use crate::nav::footprint_center;
 use crate::rng::SplitMix64;
 use crate::rules::{AiDef, Category, FactionId, Ruleset, TypeId, fx_centi};
+use crate::save::AiState;
 use crate::world::{Command, Outcome, World};
 
 /// Ticks between two decision passes (1 s at 15 Hz).
@@ -77,6 +78,46 @@ impl Ai {
             force: None,
             attackers: Vec::new(),
             active: true,
+        })
+    }
+
+    /// Saved state (spec 19 §3.2). Destructures exhaustively so a new field
+    /// must be saved or declared derived.
+    pub(crate) fn save(&self, rules: &Ruleset) -> AiState {
+        let Ai {
+            player,
+            personality,
+            rng,
+            force,
+            attackers,
+            active,
+        } = self;
+        AiState {
+            player: *player,
+            personality: rules.ai[*personality].id.clone(),
+            rng: rng.state().to_string(),
+            force: *force,
+            attackers: attackers.clone(),
+            active: *active,
+        }
+    }
+
+    /// Rebuilds a saved AI; errors name the problem (spec 19 §3.4).
+    pub(crate) fn load(state: &AiState, rules: &Ruleset) -> Result<Ai, String> {
+        let personality = rules
+            .ai_index(&state.personality)
+            .ok_or_else(|| format!("unknown ai: {}", state.personality))?;
+        let rng = state
+            .rng
+            .parse::<u64>()
+            .map_err(|_| format!("invalid ai rng: {}", state.rng))?;
+        Ok(Ai {
+            player: state.player,
+            personality,
+            rng: SplitMix64::from_state(rng),
+            force: state.force,
+            attackers: state.attackers.clone(),
+            active: state.active,
         })
     }
 
