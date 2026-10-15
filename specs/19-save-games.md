@@ -109,6 +109,12 @@ pub struct PlayerState {
     /// Run lengths of `explored`, row-major, alternating false/true and
     /// starting with false (the first run may be 0). Sum = map cells.
     pub explored: Vec<u32>,
+    /// Same encoding for `visible`. Saved, not derived: the vision phase runs
+    /// before the deaths phase, so recomputing it on load would differ.
+    pub visible: Vec<u32>,
+    /// `[power_produced, power_consumed]`. Saved, not derived: the economy
+    /// phase computes it before construction completes in the same step.
+    pub power: [u32; 2],
     pub ghosts: Vec<GhostState>,      // ascending entity
 }
 
@@ -184,11 +190,12 @@ pub struct AiState {
 
 These are **not** saved and are rebuilt by `load`: `World::rules` (always
 `Ruleset::builtin()`), `terrain` (from the map's `blocked` rectangles, as in
-`World::skirmish`), `nav` (terrain plus the footprints of every site),
-`Player::visible`, `power_produced`, `power_consumed` (recomputed by running the
-vision and power passes the step uses, without advancing the tick), flow
-`fields` (empty; built lazily), `events` (empty) and the `Sim` presentation
-buffers `shots` and `pending_events` (empty).
+`World::skirmish`), `nav` (terrain plus the footprints of every site; no `Move` remapping is
+needed because a saved goal is never blocked), flow `fields` (empty; they are a
+pure function of `nav` and the goal, built lazily), `events` (empty) and the
+`Sim` presentation buffers `shots` and `pending_events` (empty). `visible` and
+power are saved (§3.2), because they are computed mid-step and recomputing them
+on load would change the fog and the snapshots.
 
 The save functions destructure `World`, `Player`, `Entity`, `Site`,
 `Projectile` and `Ai` exhaustively (`let World { tick, rules: _, .. }` with
@@ -204,7 +211,7 @@ pub fn save_state(world: &World, seed: u64, ais: &[Ai]) -> Result<SimState, Stri
 /// Rebuilds a world and its AIs. Errors start with "invalid save: " and name
 /// the problem: "unsupported format version 7", "unknown map: x",
 /// "unknown type: x", "unknown weapon: x", "unknown faction: x",
-/// "unknown ai: x", "explored length 12 != 4096 cells",
+/// "unknown ai: x", "explored length 12 != 4096 cells", "visible length 12 != 4096 cells",
 /// "duplicate entity id 3".
 pub fn load_state(state: &SimState) -> Result<(World, u64, Vec<Ai>), String>;
 ```
