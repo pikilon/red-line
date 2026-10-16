@@ -902,22 +902,24 @@ impl World {
     }
 
     /// `Move` (spec 11 §5.2): the goal cell's centre-ward delta, or the flow
-    /// direction outside it, is handed to the locomotor of the type.
+    /// direction outside it, is handed to the locomotor of the type with the
+    /// straight-line distance to the target.
     fn step_move(&mut self, index: usize, order_id: u32, target: FxVec2, goal: Cell) {
         let pos = self.entities[index].pos;
         let kind = self.entities[index].kind;
         let motion = self.rules.ty(kind).motion;
         let cell = cell_of(pos);
-        let (desired, remaining) = if cell == goal {
-            let delta = target - pos;
-            (delta.normalize(), delta.length())
+        let in_goal = cell == goal;
+        let delta = target - pos;
+        let desired = if in_goal {
+            delta.normalize()
         } else {
             let direction = self
                 .fields
                 .get(&self.nav.index(goal))
                 .and_then(|field| field.direction(cell));
             match direction {
-                Some(dir) => (dir.unit_vector(), locomotor::UNBOUNDED),
+                Some(dir) => dir.unit_vector(),
                 None => {
                     self.entities[index].order = Order::Idle {
                         last_order_id: order_id,
@@ -931,7 +933,8 @@ impl World {
             &motion,
             &self.nav,
             desired,
-            remaining,
+            delta.length(),
+            in_goal,
             target,
         );
         if arrived {
@@ -985,11 +988,12 @@ impl World {
         let motion = self.rules.ty(kind).motion;
         let cell = cell_of(pos);
         let target = cell_center(goal);
-        let (desired, remaining) = if cell == goal {
-            let delta = target - pos;
-            (delta.normalize(), delta.length())
+        let in_goal = cell == goal;
+        let delta = target - pos;
+        let desired = if in_goal {
+            delta.normalize()
         } else if let Some(dir) = field.direction(cell) {
-            (dir.unit_vector(), locomotor::UNBOUNDED)
+            dir.unit_vector()
         } else {
             return;
         };
@@ -998,7 +1002,8 @@ impl World {
             &motion,
             &self.nav,
             desired,
-            remaining,
+            delta.length(),
+            in_goal,
             target,
         );
     }

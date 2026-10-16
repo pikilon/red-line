@@ -252,6 +252,7 @@ fn ac_11_06_braking_and_arrival() {
         let mut peak = Fx::ZERO;
         let mut previous = Fx::ZERO;
         let mut entered = false;
+        let mut before = (target - world.unit(id).unwrap().pos).length();
         loop {
             world.step();
             ticks += 1;
@@ -261,10 +262,10 @@ fn ac_11_06_braking_and_arrival() {
                 cell_of(unit.pos) == cell_of(target) && !matches!(unit.order, Order::Idle { .. });
             if in_goal && !entered {
                 // Braking uses the straight-line distance in every cell, so the unit
-                // enters the goal cell at most `braking` above the bound.
+                // enters the goal cell at most `braking` above the bound, which the
+                // tick computes from the distance before it moves.
                 entered = true;
-                let remaining = (target - unit.pos).length();
-                let twice = motion.braking.mul(remaining) + motion.braking.mul(remaining);
+                let twice = motion.braking.mul(before) + motion.braking.mul(before);
                 let bound = motion.accel.max(twice.sqrt());
                 assert!(
                     unit.speed.raw() <= bound.raw() + motion.braking.raw(),
@@ -281,6 +282,7 @@ fn ac_11_06_braking_and_arrival() {
                 );
             }
             previous = unit.speed;
+            before = (target - unit.pos).length();
             if matches!(unit.order, Order::Idle { .. }) {
                 assert_eq!(unit.pos, target, "{id_name}: ends exactly on the goal");
                 assert_eq!(unit.speed, Fx::ZERO, "{id_name}: stopped on arrival");

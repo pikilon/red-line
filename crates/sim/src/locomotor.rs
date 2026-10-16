@@ -7,9 +7,6 @@ use crate::fixed::{Fx, FxVec2};
 use crate::map::{MapGrid, cell_of};
 use crate::rules::{LocoKind, Motion};
 
-/// "Not in the goal cell": the remaining distance is unbounded.
-pub(crate) const UNBOUNDED: Fx = Fx::from_raw(i32::MAX);
-
 /// Half a turn in angle units: a reversing vehicle steers with the rear towards the goal.
 const HALF_TURN: i32 = 32768;
 
@@ -26,15 +23,17 @@ pub(crate) fn wants_reverse(motion: &Motion, pos: FxVec2, heading: Angle, target
 }
 
 /// One tick of motion towards `target`, along the unit vector `desired` for a
-/// unit whose remaining distance to `target` is `remaining` (`UNBOUNDED` outside
-/// the goal cell). Returns true when the unit arrived; it is then on `target`
-/// with `speed = 0` and the caller ends its order.
+/// unit whose straight-line distance to `target` is `remaining`; `in_goal` is
+/// true inside the goal cell, the only place it snaps. Returns true when the
+/// unit arrived; it is then on `target` with `speed = 0` and the caller ends
+/// its order.
 pub(crate) fn drive(
     unit: &mut Entity,
     motion: &Motion,
     nav: &MapGrid,
     desired: FxVec2,
     remaining: Fx,
+    in_goal: bool,
     target: FxVec2,
 ) -> bool {
     let reversing = unit.reversing && matches!(motion.kind, LocoKind::Tracks | LocoKind::Wheels);
@@ -43,7 +42,7 @@ pub(crate) fn drive(
             unit.heading = unit
                 .heading
                 .turn_towards(atan2(desired.x, desired.y), motion.turn_step);
-            if remaining <= motion.max_speed {
+            if in_goal && remaining <= motion.max_speed {
                 unit.pos = target;
                 unit.speed = Fx::ZERO;
                 return true;
@@ -83,16 +82,15 @@ pub(crate) fn drive(
             } else {
                 top
             };
-            if remaining < UNBOUNDED {
-                let twice = motion.braking.mul(remaining) + motion.braking.mul(remaining);
-                goal_speed = goal_speed.min(motion.accel.max(twice.sqrt()));
-            }
+            // Braking starts before the goal cell (spec 11 §5.2 step 3).
+            let twice = motion.braking.mul(remaining) + motion.braking.mul(remaining);
+            goal_speed = goal_speed.min(motion.accel.max(twice.sqrt()));
             unit.speed = if unit.speed < goal_speed {
                 (unit.speed + motion.accel).min(goal_speed)
             } else {
                 (unit.speed - motion.braking).max(goal_speed)
             };
-            if remaining <= unit.speed {
+            if in_goal && remaining <= unit.speed {
                 unit.pos = target;
                 unit.speed = Fx::ZERO;
                 unit.reversing = false;
