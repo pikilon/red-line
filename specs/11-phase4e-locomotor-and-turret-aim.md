@@ -230,28 +230,35 @@ have `heading` 0. All six fields are part of the state hash
 
 `step_move` and `step_toward_goal` (`world.rs`) compute the same desired
 displacement as today (flow direction, or the vector to the goal-cell centre
-inside the goal cell) and pass it to:
+inside the goal cell) and pass it, with the straight-line distance to the final
+point in every cell, to:
 
 ```rust
 /// One tick of motion towards `desired` (a non-zero direction) for a unit
-/// whose remaining distance to its final point is `remaining` (Fx::MAX when
-/// not in the goal cell). Returns true when the unit arrived (snapped).
-pub(crate) fn locomote(world: &mut World, index: usize, desired: FxVec2, remaining: Fx) -> bool;
+/// whose straight-line distance to its final point is `remaining`; `in_goal`
+/// is true inside the goal cell. Returns true when the unit arrived (snapped).
+pub(crate) fn locomote(world: &mut World, index: usize, desired: FxVec2, remaining: Fx, in_goal: bool) -> bool;
 ```
 
 Per kind, with `d = atan2(desired)`:
 
 * **Instant / Foot**: `heading = heading.turn_towards(d, turn_step)`;
   position moves by `desired.normalize() × max_speed` (today's rule, including
-  the snap when `remaining ≤ max_speed`); `speed = max_speed` while moving.
+  the snap when `in_goal` and `remaining ≤ max_speed`); `speed = max_speed`
+  while moving.
 * **Tracks**:
   1. `heading = heading.turn_towards(d, turn_step)`; `e = |heading.delta(d)|`.
   2. `target = 0` if `e ≥ pivot`, else `max_speed × (pivot − e) / pivot`
      (Generals `Locomotor.cpp:1195-1204`).
-  3. When `remaining < Fx::MAX`: `target = min(target, max(accel,
-     sqrt(2 × braking × remaining)))`.
+  3. `target = min(target, max(accel, sqrt(2 × braking × remaining)))`, in
+     every cell, so braking starts before the goal cell. The straight-line
+     distance is never longer than the path, so a detour only brakes early.
+     Generals brakes on the distance along the path (`onPathDistToGoal`,
+     `Locomotor.cpp:1188-1201`).
   4. `speed` moves towards `target` by at most `accel` up, `braking` down.
-  5. When `remaining ≤ speed`: snap to the final point, `speed = 0`, arrived.
+  5. When `in_goal` and `remaining ≤ speed`: snap to the final point,
+     `speed = 0`, arrived (only inside the goal cell, so a snap never crosses
+     a wall corner).
      Otherwise `next = pos + heading.dir() × speed`; when `cell_of(next)` is
      impassable, the unit does not move and `speed = 0`.
 * **Wheels**: as tracks, except step 1 uses `step = max(turn_step / 4,
@@ -367,9 +374,10 @@ per tick, so a few ticks above it are allowed), and its path to the goal
 is an arc (the unit is never displaced sideways relative to its heading).
 
 **AC-11-06 Braking and arrival.** Given a `tracked` or `wheeled` unit moving
-at `max_speed` towards a goal, when it enters the goal cell, then its speed falls towards
-`max(accel, sqrt(2 × braking × remaining))` at most `braking` per tick (it may
-enter faster than the bound, since braking starts in the goal cell). It ends exactly on
+at `max_speed` towards a goal, when it approaches the goal, then its speed falls towards
+`max(accel, sqrt(2 × braking × remaining))` (`remaining` is the straight-line
+distance to the goal) at most `braking` per tick, so it enters the goal cell at
+most `braking` above that bound. It ends exactly on
 the goal-cell centre with `speed = 0` and `Order::Idle`, within
 `ceil(path / min(max_speed, …)) + 30` ticks.
 

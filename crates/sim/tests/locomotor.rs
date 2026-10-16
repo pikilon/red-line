@@ -251,6 +251,7 @@ fn ac_11_06_braking_and_arrival() {
         let mut ticks = 0;
         let mut peak = Fx::ZERO;
         let mut previous = Fx::ZERO;
+        let mut entered = false;
         loop {
             world.step();
             ticks += 1;
@@ -258,6 +259,20 @@ fn ac_11_06_braking_and_arrival() {
             peak = peak.max(unit.speed);
             let in_goal =
                 cell_of(unit.pos) == cell_of(target) && !matches!(unit.order, Order::Idle { .. });
+            if in_goal && !entered {
+                // Braking uses the straight-line distance in every cell, so the unit
+                // enters the goal cell at most `braking` above the bound.
+                entered = true;
+                let remaining = (target - unit.pos).length();
+                let twice = motion.braking.mul(remaining) + motion.braking.mul(remaining);
+                let bound = motion.accel.max(twice.sqrt());
+                assert!(
+                    unit.speed.raw() <= bound.raw() + motion.braking.raw(),
+                    "{id_name}: enters the goal cell at speed {}, above the braking bound {}",
+                    unit.speed.raw(),
+                    bound.raw()
+                );
+            }
             if in_goal && previous != Fx::ZERO {
                 // Afterwards the speed only falls towards the bound, at most braking per tick.
                 assert!(
