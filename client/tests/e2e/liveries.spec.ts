@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { ms } from "./timeouts";
 
 interface LiveriesDebug {
   isReady(): boolean;
@@ -10,7 +11,7 @@ interface LiveriesDebug {
 type DebugWindow = Window & { __redline?: LiveriesDebug };
 
 test("AC-13-06: vehicle liveries render without errors", async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(ms(60_000));
   const errors: string[] = [];
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
@@ -24,7 +25,7 @@ test("AC-13-06: vehicle liveries render without errors", async ({ page }) => {
       return debug?.isReady() === true && debug.modelsReady();
     },
     undefined,
-    { timeout: 10_000 },
+    { timeout: ms(10_000) },
   );
   // Both dozers (Ukrainian and Russian) wear a livery: the game keeps ticking
   // with the livery shader compiled.

@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { ms } from "./timeouts";
 
 interface Point {
   x: number;
@@ -34,14 +35,14 @@ async function boot(page: Page): Promise<void> {
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
-    { timeout: 15_000 },
+    { timeout: ms(15_000) },
   );
   // Let a few frames render so `drawCalls()` reflects the composed scene.
   await page.waitForTimeout(500);
 }
 
 test("AC-10-03: shadows and lighting", async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(ms(60_000));
   const errors: string[] = [];
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());

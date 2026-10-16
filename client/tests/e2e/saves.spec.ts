@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { ms } from "./timeouts";
 
 interface SavesDebug {
   isReady(): boolean;
@@ -46,12 +47,12 @@ async function waitReady(page: Page): Promise<void> {
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
-    { timeout: 15_000 },
+    { timeout: ms(15_000) },
   );
 }
 
 test("AC-19-17: example saves and load errors", async ({ page }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(ms(90_000));
   const errors = collectErrors(page);
 
   // The showcase example: every building and unit of both sides, revealed.
@@ -105,7 +106,7 @@ test("AC-19-17: example saves and load errors", async ({ page }) => {
   await page.goto("/?load=slot-9&debug=1");
   await expect(page.locator("#load-error")).toBeVisible();
   await expect(page.locator("#hud-tick")).not.toHaveText("Tick 0", {
-    timeout: 15_000,
+    timeout: ms(15_000),
   });
 
   // The showcase mode is gone: `?showcase=1` is a plain skirmish.
@@ -193,7 +194,7 @@ async function saveTo(page: Page, id: string, name: string): Promise<void> {
 }
 
 test("AC-19-15: save and load a slot", async ({ page }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(ms(90_000));
   const errors = collectErrors(page);
   await page.goto("/?ai=off&debug=1");
   await waitReady(page);
@@ -310,7 +311,7 @@ test("AC-19-15: save and load a slot", async ({ page }) => {
 });
 
 test("AC-19-16: overwrite, rename, delete, copy", async ({ page, context }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(ms(90_000));
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   const errors = collectErrors(page);
   await page.goto("/?ai=off&debug=1");

@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { ms } from "./timeouts";
 
 interface EntityView {
   id: number;
@@ -21,7 +22,7 @@ async function boot(page: Page, query: string): Promise<void> {
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
-    { timeout: 10_000 },
+    { timeout: ms(10_000) },
   );
 }
 
@@ -53,7 +54,7 @@ const ADVANCE_TICKS = 1800;
 /** Advances to `ticks`, reveals the map and counts player 1's buildings. */
 async function player1Buildings(page: Page, ticks: number): Promise<number> {
   await expect
-    .poll(() => debugCall(page, (api) => api.tick()), { timeout: 120_000 })
+    .poll(() => debugCall(page, (api) => api.tick()), { timeout: ms(120_000) })
     .toBeGreaterThanOrEqual(ticks);
   // Reveal makes the observer snapshot list player 1's entities (AC-05-21).
   await page.keyboard.press("F3");
@@ -72,7 +73,7 @@ async function player1Buildings(page: Page, ticks: number): Promise<number> {
 }
 
 test("AC-05-21: skirmish against the AI", async ({ page }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(ms(180_000));
 
   await boot(page, "debug=1&seed=1&speed=8");
   expect(await player1Buildings(page, ADVANCE_TICKS)).toBeGreaterThanOrEqual(2);

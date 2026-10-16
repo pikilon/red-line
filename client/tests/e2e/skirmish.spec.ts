@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
+import { ms } from "./timeouts";
 
 interface Point {
   x: number;
@@ -53,7 +54,7 @@ async function bootDebug(page: Page, query: string): Promise<void> {
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
-    { timeout: 10_000 },
+    { timeout: ms(10_000) },
   );
 }
 
@@ -146,7 +147,7 @@ test("AC-03-60: ignores F2 without debug", async ({ page }) => {
   // debug API; F2 must stay inert, which the debug API's absence proves.
   await page.goto("/?mode=skirmish");
   await expect(page.locator("#res-credits")).toHaveText("Credits 5000", {
-    timeout: 10_000,
+    timeout: ms(10_000),
   });
   await page.keyboard.press("F2");
   await page.waitForTimeout(200);
@@ -160,7 +161,7 @@ test("AC-03-61: shows victory and defeat", async ({ page }) => {
     api.command({ kind: "debugSetHp", entity: 8, hp: 0 }),
   );
   await expect(page.locator("#outcome")).toHaveText("Victory", {
-    timeout: 5000,
+    timeout: ms(5000),
   });
 
   await page.keyboard.press("F2");
@@ -331,17 +332,17 @@ test("AC-03-56: builds a power plant through the UI", async ({ page }) => {
 
   await expect
     .poll(() => entityCount(page, 0, plantKind, FLAG_UNDER_CONSTRUCTION), {
-      timeout: 2000,
+      timeout: ms(2000),
     })
     .toBeGreaterThan(0);
   await expect(page.locator("#res-credits")).toHaveText("Credits 4400");
   await expect
     .poll(() => entityCount(page, 0, plantKind, 0, FLAG_UNDER_CONSTRUCTION), {
-      timeout: 30_000,
+      timeout: ms(30_000),
     })
     .toBeGreaterThan(0);
   await expect(page.locator("#res-power")).toHaveText("Power 10/0", {
-    timeout: 30_000,
+    timeout: ms(30_000),
   });
 
   // A right click while placing cancels it, so the next ground click, which is
@@ -471,7 +472,7 @@ test("AC-03-66: renders the overlay on change only", async ({ page }) => {
 
 test("AC-03-57: produces and cancels through the UI", async ({ page }) => {
   // At speed 1 the two buildings take 10 s of sim time each (spec §6.7).
-  test.setTimeout(120_000);
+  test.setTimeout(ms(120_000));
   // Speed 1 instead of the 4 of the spec's Given: a ua-rifleman is 75 ticks,
   // which is 1.25 s at speed 4 and 5 s at speed 1. Production advances on the
   // worker clock while Playwright drives the page, so at speed 4 a loaded
@@ -491,14 +492,14 @@ test("AC-03-57: produces and cancels through the UI", async ({ page }) => {
   await constructAt(page, dozer.id, plantKind, 18, 64);
   await expect
     .poll(() => entityCount(page, 0, plantKind, 0, FLAG_UNDER_CONSTRUCTION), {
-      timeout: 60_000,
+      timeout: ms(60_000),
     })
     .toBeGreaterThan(0);
   await constructAt(page, dozer.id, barracksKind, 12, 65);
   await expect
     .poll(
       () => entityCount(page, 0, barracksKind, 0, FLAG_UNDER_CONSTRUCTION),
-      { timeout: 60_000 },
+      { timeout: ms(60_000) },
     )
     .toBeGreaterThan(0);
 
@@ -536,7 +537,7 @@ test("AC-03-57: produces and cancels through the UI", async ({ page }) => {
   await expect(page.locator("#queue .queue-item")).toHaveCount(1);
   await expect(page.locator("#res-credits")).toHaveText("Credits 3800");
   await expect
-    .poll(() => entityCount(page, 0, riflemanKind), { timeout: 20_000 })
+    .poll(() => entityCount(page, 0, riflemanKind), { timeout: ms(20_000) })
     .toBeGreaterThan(0);
 });
 
@@ -550,7 +551,7 @@ test("AC-03-58: harvests supplies", async ({ page }) => {
   if (dozer === null) throw new Error("missing ua-dozer");
   await constructAt(page, dozer.id, centerKind, 15, 55);
   await expect
-    .poll(() => entityCount(page, 0, truckKind), { timeout: 30_000 })
+    .poll(() => entityCount(page, 0, truckKind), { timeout: ms(30_000) })
     .toBeGreaterThan(0);
 
   const before = await debugCall(page, (api) => api.credits());
@@ -558,7 +559,7 @@ test("AC-03-58: harvests supplies", async ({ page }) => {
     .poll(
       async () => (await debugCall(page, (api) => api.credits())) > before,
       {
-        timeout: 30_000,
+        timeout: ms(30_000),
       },
     )
     .toBe(true);
@@ -574,10 +575,10 @@ test("AC-03-59: attacks with a right click", async ({ page }) => {
   await spawnAt(page, 0, leopardKind, 30.5, 64.5);
   await spawnAt(page, 1, tankKind, 40.5, 62.5);
   await expect
-    .poll(() => entityCount(page, 0, leopardKind), { timeout: 5000 })
+    .poll(() => entityCount(page, 0, leopardKind), { timeout: ms(5000) })
     .toBeGreaterThan(0);
   await expect
-    .poll(() => entityCount(page, 1, tankKind), { timeout: 5000 })
+    .poll(() => entityCount(page, 1, tankKind), { timeout: ms(5000) })
     .toBeGreaterThan(0);
 
   // The app boots centred on the own HQ; pan to the engagement so both units
@@ -603,11 +604,11 @@ test("AC-03-59: attacks with a right click", async ({ page }) => {
   await clickTiles(page, tank.x, tank.y, "right");
   await expect
     .poll(() => entityCount(page, 0, leopardKind, FLAG_MOVING), {
-      timeout: 2000,
+      timeout: ms(2000),
     })
     .toBeGreaterThan(0);
   await expect
-    .poll(() => entityCount(page, 1, tankKind), { timeout: 30_000 })
+    .poll(() => entityCount(page, 1, tankKind), { timeout: ms(30_000) })
     .toBe(0);
   expect(await entityCount(page, 0, leopardKind)).toBeGreaterThan(0);
 });
@@ -684,7 +685,7 @@ function spawnRequests(block: SpawnBlock, kind: number): SpawnRequest[] {
 test("AC-03-62: renders a skirmish in at most 8 draw calls", async ({
   page,
 }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(ms(60_000));
   await bootDebug(page, "debug=1");
 
   for (const block of DRAW_CALL_BLOCKS) {
@@ -693,7 +694,9 @@ test("AC-03-62: renders a skirmish in at most 8 draw calls", async ({
     // Owner 0's block lies in explored terrain, so it is visible at once.
     if (block.owner === 0) {
       await expect
-        .poll(() => entityCount(page, block.owner, kind), { timeout: 10_000 })
+        .poll(() => entityCount(page, block.owner, kind), {
+          timeout: ms(10_000),
+        })
         .toBe(blockSize(block));
     }
   }
@@ -705,12 +708,16 @@ test("AC-03-62: renders a skirmish in at most 8 draw calls", async ({
   if (enemy === undefined) throw new Error("missing enemy block");
   const enemyKind = await kindOf(page, enemy.typeId);
   await expect
-    .poll(() => entityCount(page, enemy.owner, enemyKind), { timeout: 10_000 })
+    .poll(() => entityCount(page, enemy.owner, enemyKind), {
+      timeout: ms(10_000),
+    })
     .toBe(blockSize(enemy));
 
   // `drawCalls()` is `renderer.info.render.calls` of the last frame (spec §6.7).
   await expect
-    .poll(() => debugCall(page, (api) => api.drawCalls()), { timeout: 10_000 })
+    .poll(() => debugCall(page, (api) => api.drawCalls()), {
+      timeout: ms(10_000),
+    })
     .toBeGreaterThan(0);
   // Spec 10 §3 bound: four calls per visible type, plus ten.
   const { drawCalls, types } = await page.evaluate(() => {

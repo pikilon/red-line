@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { ms } from "./timeouts";
 
 interface Point {
   x: number;
@@ -35,7 +36,7 @@ async function boot(
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
-    { timeout: 10_000 },
+    { timeout: ms(10_000) },
   );
 }
 
@@ -96,7 +97,7 @@ async function clickTiles(page: Page, x: number, y: number): Promise<void> {
 
 test("AC-08-03: game menu in the skirmish", async ({ page }) => {
   // Many real-mouse steps; CI's software WebGL needs more than the default 30 s.
-  test.setTimeout(60_000);
+  test.setTimeout(ms(60_000));
   await boot(page);
   const menu = page.locator("#game-menu");
   const goreButton = page.locator("#game-menu button", { hasText: "Gore" });
@@ -120,7 +121,7 @@ test("AC-08-03: game menu in the skirmish", async ({ page }) => {
   await expect.poll(() => paused(page)).toBe(false);
   await expect.poll(() => menuOpen(page)).toBe(false);
   await expect
-    .poll(() => tick(page), { timeout: 5000 })
+    .poll(() => tick(page), { timeout: ms(5000) })
     .toBeGreaterThan(frozen);
 
   // Esc twice opens and closes it.

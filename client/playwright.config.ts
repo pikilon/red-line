@@ -1,9 +1,13 @@
 import { defineConfig } from "@playwright/test";
+import { ms } from "./tests/e2e/timeouts";
 
 const PERF_TAG = /@perf/;
 
 export default defineConfig({
   testDir: "tests/e2e",
+  // Defaults scaled for slow CI runners (#291); explicit waits use `ms()` too.
+  timeout: ms(30_000),
+  expect: { timeout: ms(5_000) },
   use: {
     baseURL: "http://127.0.0.1:4173",
     // The e2e suite keeps the procedural textures (spec 12 §2): the generated
