@@ -47,10 +47,11 @@ fn ac_11_03_tracked_pivot() {
     let motion = world.rules().ty(bradley).motion;
     assert_eq!(motion.kind, LocoKind::Tracks);
     let id = world.spawn(0, bradley, centre(20, 20));
-    // Straight behind a unit facing Angle(0): heading error 180°.
+    // Straight behind a unit facing Angle(0): heading error 180°. Five tiles is beyond
+    // reverse_max (3 tiles, spec 11 §4.1), so the unit pivots instead of reversing.
     world.enqueue(Command::Move {
         units: vec![id],
-        target: centre(20, 17),
+        target: centre(20, 15),
     });
 
     let mut pivot_ticks = 0;

@@ -7,6 +7,7 @@ use crate::entity::{Entity, LocomotionState, NEUTRAL, PlayerId, Projectile, Site
 pub use crate::entity::{EntityId, Order, Unit};
 use crate::fixed::{Fx, FxVec2};
 use crate::flow::FlowField;
+use crate::locomotor;
 use crate::map::{Cell, CellIndex, MapGrid, SPAWN_MAX, SPAWN_MIN, cell_center, cell_of};
 use crate::nav::{approach_cell, footprint_cells, footprint_center};
 use crate::player::Player;
@@ -717,6 +718,9 @@ impl World {
                 let entity = &mut self.entities[index];
                 if entity.owner == player && entity.site.is_none() {
                     entity.order = order;
+                    let motion = self.rules.ty(entity.kind).motion;
+                    entity.reversing =
+                        locomotor::wants_reverse(&motion, entity.pos, entity.heading, target);
                 }
             }
         }
@@ -828,6 +832,7 @@ impl World {
     /// Phase 2: moves every unit one tick along its field toward its goal.
     fn move_units(&mut self) {
         for index in 0..self.entities.len() {
+            let before = self.entities[index].pos;
             match self.entities[index].order {
                 Order::Move {
                     order_id,
@@ -838,6 +843,16 @@ impl World {
                 Order::Harvest { .. } => self.step_harvest(index),
                 Order::Attack { order_id, target } => self.step_attack(index, order_id, target),
                 _ => {}
+            }
+            // Spec 11 §5.2: a reverse move lasts for its Move order only, and a unit
+            // that stood still this tick while moving brakes and coasts.
+            let unit = &mut self.entities[index];
+            if !matches!(unit.order, Order::Move { .. }) {
+                unit.reversing = false;
+            }
+            if unit.pos == before {
+                let motion = self.rules.ty(unit.kind).motion;
+                locomotor::coast(unit, &motion, &self.nav);
             }
         }
     }
@@ -886,34 +901,43 @@ impl World {
         }
     }
 
-    /// Phase 1 `Move` rule at the type's speed.
+    /// `Move` (spec 11 §5.2): the goal cell's centre-ward delta, or the flow
+    /// direction outside it, is handed to the locomotor of the type.
     fn step_move(&mut self, index: usize, order_id: u32, target: FxVec2, goal: Cell) {
-        let unit = &mut self.entities[index];
-        let speed = fx_centi(self.rules.ty(unit.kind).speed_centi);
-        let cell = cell_of(unit.pos);
-        if cell == goal {
-            let delta = target - unit.pos;
-            if delta.length() <= speed {
-                unit.pos = target;
-                unit.order = Order::Idle {
-                    last_order_id: order_id,
-                };
-            } else {
-                unit.pos = unit.pos + delta.normalize().scale(speed);
-            }
-            return;
-        }
-        let direction = self
-            .fields
-            .get(&self.nav.index(goal))
-            .and_then(|field| field.direction(cell));
-        match direction {
-            Some(dir) => unit.pos = unit.pos + dir.unit_vector().scale(speed),
-            None => {
-                unit.order = Order::Idle {
-                    last_order_id: order_id,
+        let pos = self.entities[index].pos;
+        let kind = self.entities[index].kind;
+        let motion = self.rules.ty(kind).motion;
+        let cell = cell_of(pos);
+        let (desired, remaining) = if cell == goal {
+            let delta = target - pos;
+            (delta.normalize(), delta.length())
+        } else {
+            let direction = self
+                .fields
+                .get(&self.nav.index(goal))
+                .and_then(|field| field.direction(cell));
+            match direction {
+                Some(dir) => (dir.unit_vector(), locomotor::UNBOUNDED),
+                None => {
+                    self.entities[index].order = Order::Idle {
+                        last_order_id: order_id,
+                    };
+                    return;
                 }
             }
+        };
+        let arrived = locomotor::drive(
+            &mut self.entities[index],
+            &motion,
+            &self.nav,
+            desired,
+            remaining,
+            target,
+        );
+        if arrived {
+            self.entities[index].order = Order::Idle {
+                last_order_id: order_id,
+            };
         }
     }
 
@@ -956,19 +980,27 @@ impl World {
             .fields
             .entry(map.index(goal))
             .or_insert_with(|| FlowField::compute(map, goal));
-        let unit = &mut self.entities[index];
-        let speed = fx_centi(self.rules.ty(unit.kind).speed_centi);
-        let cell = cell_of(unit.pos);
-        if cell == goal {
-            let delta = cell_center(goal) - unit.pos;
-            if delta.length() <= speed {
-                unit.pos = cell_center(goal);
-            } else {
-                unit.pos = unit.pos + delta.normalize().scale(speed);
-            }
+        let pos = self.entities[index].pos;
+        let kind = self.entities[index].kind;
+        let motion = self.rules.ty(kind).motion;
+        let cell = cell_of(pos);
+        let target = cell_center(goal);
+        let (desired, remaining) = if cell == goal {
+            let delta = target - pos;
+            (delta.normalize(), delta.length())
         } else if let Some(dir) = field.direction(cell) {
-            unit.pos = unit.pos + dir.unit_vector().scale(speed);
-        }
+            (dir.unit_vector(), locomotor::UNBOUNDED)
+        } else {
+            return;
+        };
+        locomotor::drive(
+            &mut self.entities[index],
+            &motion,
+            &self.nav,
+            desired,
+            remaining,
+            target,
+        );
     }
 
     /// Phase 3: pushes apart units closer than `SEPARATION_DISTANCE`, per

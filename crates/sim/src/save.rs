@@ -102,6 +102,22 @@ pub struct EntityState {
     pub last_target: Option<u32>,
     pub last_hit: Option<LastHitState>,
     pub site: Option<SiteState>,
+    /// Locomotion state (spec 11 §5.1). Omitted while every field is at its
+    /// default, so saves without it load as before.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub locomotion: Option<LocomotionSaveState>,
+}
+
+/// Saved locomotion and turret state of an entity (spec 11 §5.1).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LocomotionSaveState {
+    pub heading: u16,
+    pub turret: u16,
+    pub speed: i32,
+    pub reversing: bool,
+    pub aim: Option<u32>,
+    pub idle_aim_ticks: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -619,6 +635,27 @@ fn load_order(order: OrderState) -> Order {
     }
 }
 
+/// The locomotion block of a saved entity, or `None` while it is all default.
+fn locomotion_save(entity: &Entity) -> Option<LocomotionSaveState> {
+    let state = LocomotionSaveState {
+        heading: entity.heading.0,
+        turret: entity.turret.0,
+        speed: entity.speed.raw(),
+        reversing: entity.reversing,
+        aim: entity.aim,
+        idle_aim_ticks: entity.idle_aim_ticks,
+    };
+    let initial = LocomotionSaveState {
+        heading: 0,
+        turret: 0,
+        speed: 0,
+        reversing: false,
+        aim: None,
+        idle_aim_ticks: 0,
+    };
+    (state != initial).then_some(state)
+}
+
 fn save_entity(entity: &Entity, rules: &Ruleset) -> EntityState {
     let Entity {
         id,
@@ -649,6 +686,7 @@ fn save_entity(entity: &Entity, rules: &Ruleset) -> EntityState {
             weapon: weapon_id(rules, weapon),
         }),
         site: site.as_ref().map(|site| save_site(site, rules)),
+        locomotion: locomotion_save(entity),
     }
 }
 
@@ -711,13 +749,12 @@ fn load_entity(state: &EntityState, rules: &Ruleset) -> Result<Entity, String> {
         last_target: state.last_target,
         last_hit,
         site,
-        // Locomotion state is not saved yet (spec 11 §5.1): loaded units face 0 and stand still.
-        heading: crate::angle::Angle(0),
-        turret: crate::angle::Angle(0),
-        speed: crate::fixed::Fx::ZERO,
-        reversing: false,
-        aim: None,
-        idle_aim_ticks: 0,
+        heading: crate::angle::Angle(state.locomotion.map_or(0, |l| l.heading)),
+        turret: crate::angle::Angle(state.locomotion.map_or(0, |l| l.turret)),
+        speed: crate::fixed::Fx::from_raw(state.locomotion.map_or(0, |l| l.speed)),
+        reversing: state.locomotion.is_some_and(|l| l.reversing),
+        aim: state.locomotion.and_then(|l| l.aim),
+        idle_aim_ticks: state.locomotion.map_or(0, |l| l.idle_aim_ticks),
     })
 }
 
