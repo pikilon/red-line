@@ -14,10 +14,13 @@ code: agents implement, the owner reviews quality hands-on.
   model-tier decisions. Never contradict it; flag conflicts instead.
 * Work comes from GitHub issues. State lives in the repository and GitHub,
   never only in a chat.
-* Unsure how the original game behaves (pathfinding, production, economy,
-  damage, AI...)? Do not guess: follow
-  `.agents/agents/generals-precedent/agent.md`, in a subagent or separate
-  session when your harness has one, and cite its note in the spec or issue.
+* Do not reinvent solved problems. Before designing or changing a gameplay or
+  engine mechanism (pathfinding, locomotion, production, economy, damage,
+  AI...), find how C&C Generals/Zero Hour (or the C&C Remastered source) solved
+  it: follow `.agents/agents/generals-precedent/agent.md`, in a subagent or
+  separate session when your harness has one. Reuse that solution and cite the
+  note in the spec or issue; never guess. A deviation needs the owner's
+  approval and is recorded as one in the spec.
 
 ## Language
 
