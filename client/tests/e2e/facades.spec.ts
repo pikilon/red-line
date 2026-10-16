@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { ms } from "./timeouts";
 
 interface FacadesDebug {
   isReady(): boolean;
@@ -16,7 +17,7 @@ test.use({ storageState: { cookies: [], origins: [] } });
 test("AC-16-07: facades and HQ flags render without errors", async ({
   page,
 }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(ms(60_000));
   const errors: string[] = [];
   const loaded = new Set<string>();
   page.on("console", (message) => {
@@ -35,7 +36,7 @@ test("AC-16-07: facades and HQ flags render without errors", async ({
       return debug?.isReady() === true && debug.modelsReady();
     },
     undefined,
-    { timeout: 15_000 },
+    { timeout: ms(15_000) },
   );
   await expect
     .poll(() => FACADES.filter((id) => loaded.has(id)))

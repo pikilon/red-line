@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { expect, type Page, test } from "@playwright/test";
+import { ms } from "./timeouts";
 
 /** Screenshot of the Phase 2 box rendering, captured before the models landed. */
 const BOX_BASELINE = readFileSync(
@@ -97,7 +98,7 @@ function pixelDiff(
 }
 
 test("AC-06-06: models in the skirmish", async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(ms(60_000));
   const errors: string[] = [];
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
@@ -108,12 +109,12 @@ test("AC-06-06: models in the skirmish", async ({ page }) => {
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
-    { timeout: 15_000 },
+    { timeout: ms(15_000) },
   );
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.modelsReady() === true,
     undefined,
-    { timeout: 15_000 },
+    { timeout: ms(15_000) },
   );
   await page.waitForTimeout(500);
 

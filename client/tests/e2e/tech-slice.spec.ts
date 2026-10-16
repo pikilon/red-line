@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { ms } from "./timeouts";
 
 interface Point {
   x: number;
@@ -26,7 +27,7 @@ async function bootDebug(page: Page, query: string): Promise<void> {
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
-    { timeout: 10_000 },
+    { timeout: ms(10_000) },
   );
 }
 
@@ -130,10 +131,14 @@ test("AC-02-41: moves selected units with right click", async ({ page }) => {
   const target = await screenOf(page, 10.5, 10.5);
   await page.mouse.click(target.x, target.y, { button: "right" });
   await expect
-    .poll(() => debugCall(page, (api) => api.isMoving(0)), { timeout: 10_000 })
+    .poll(() => debugCall(page, (api) => api.isMoving(0)), {
+      timeout: ms(10_000),
+    })
     .toBe(true);
   await expect
-    .poll(() => debugCall(page, (api) => api.isMoving(0)), { timeout: 10_000 })
+    .poll(() => debugCall(page, (api) => api.isMoving(0)), {
+      timeout: ms(10_000),
+    })
     .toBe(false);
   const final = await debugCall(page, (api) => api.unitPosition(0));
   expect(final).not.toBeNull();
@@ -207,7 +212,7 @@ test("AC-02-46: shows a performance panel only in debug mode", async ({
     expect(apart).toBe(true);
   }
   await expect(page.locator("#perf-fps")).not.toHaveText("FPS 0", {
-    timeout: 2000,
+    timeout: ms(2000),
   });
   await page.evaluate(() =>
     (window as unknown as { __redline: PerfDebug }).__redline.injectFrameTimes(
@@ -227,6 +232,8 @@ test("AC-02-46: shows a performance panel only in debug mode", async ({
   await expect(page.locator("#perf-p95")).toHaveText("p95 10.0 ms");
 
   await page.goto("/?mode=tech-slice");
-  await expect(page.locator("#hud-tick")).toHaveText(/\S/, { timeout: 10_000 });
+  await expect(page.locator("#hud-tick")).toHaveText(/\S/, {
+    timeout: ms(10_000),
+  });
   await expect(page.locator("#perf-panel")).toHaveCount(0);
 });

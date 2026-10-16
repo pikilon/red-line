@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { ms } from "./timeouts";
 
 interface TexturesDebug {
   isReady(): boolean;
@@ -12,7 +13,7 @@ type DebugWindow = Window & { __redline?: TexturesDebug };
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test("AC-12-04: textures toggle in the game menu", async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(ms(60_000));
   const errors: string[] = [];
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
@@ -23,7 +24,7 @@ test("AC-12-04: textures toggle in the game menu", async ({ page }) => {
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
-    { timeout: 10_000 },
+    { timeout: ms(10_000) },
   );
   const menu = page.locator("#game-menu");
   const button = page.locator("#game-menu-textures");
@@ -58,7 +59,7 @@ test("AC-12-04: textures toggle in the game menu", async ({ page }) => {
   await expect
     .poll(
       () => page.evaluate(() => (window as DebugWindow).__redline?.tick() ?? 0),
-      { timeout: 5000 },
+      { timeout: ms(5000) },
     )
     .toBeGreaterThan(before);
   expect(errors).toEqual([]);

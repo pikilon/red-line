@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { ms } from "./timeouts";
 
 const FX_ONE = 65536;
 
@@ -29,7 +30,7 @@ async function boot(page: Page): Promise<void> {
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
-    { timeout: 10_000 },
+    { timeout: ms(10_000) },
   );
 }
 
@@ -71,7 +72,7 @@ async function muzzleCount(page: Page): Promise<number> {
 }
 
 test("AC-07-06: effects in the skirmish", async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(ms(60_000));
   await boot(page);
 
   const uaRifleman = await page.evaluate(
@@ -87,13 +88,13 @@ test("AC-07-06: effects in the skirmish", async ({ page }) => {
 
   // The 80 ms muzzle lives between shots; poll fast enough to catch one.
   await expect
-    .poll(() => muzzleCount(page), { timeout: 10_000, intervals: [50] })
+    .poll(() => muzzleCount(page), { timeout: ms(10_000), intervals: [50] })
     .toBeGreaterThan(0);
 
   // The acceptance criterion samples after three seconds.
   await page.waitForTimeout(3000);
   await expect
-    .poll(() => muzzleCount(page), { timeout: 10_000, intervals: [50] })
+    .poll(() => muzzleCount(page), { timeout: ms(10_000), intervals: [50] })
     .toBeGreaterThan(0);
 
   // `G` toggles the gore filter and shows a toast (spec 07 §5).

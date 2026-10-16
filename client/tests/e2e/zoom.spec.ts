@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { ms } from "./timeouts";
 
 interface Point {
   x: number;
@@ -79,7 +80,7 @@ test("AC-08-11: zoom in the skirmish", async ({ page }) => {
       (window as DebugWindow).__redline?.isReady() === true &&
       (window as DebugWindow).__redline?.modelsReady() === true,
     undefined,
-    { timeout: 10_000 },
+    { timeout: ms(10_000) },
   );
   expect(await zoom(page)).toBe(1);
 

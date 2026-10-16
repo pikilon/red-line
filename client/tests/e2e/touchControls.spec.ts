@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { ms } from "./timeouts";
 
 interface Point {
   x: number;
@@ -18,7 +19,7 @@ async function boot(page: Page): Promise<void> {
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
-    { timeout: 10_000 },
+    { timeout: ms(10_000) },
   );
 }
 
@@ -76,7 +77,7 @@ test.describe("touch device", () => {
   });
 
   test("AC-08-19: touch joystick in the skirmish", async ({ page }) => {
-    test.setTimeout(60_000);
+    test.setTimeout(ms(60_000));
     const errors: string[] = [];
     page.on("console", (message) => {
       if (message.type() === "error") errors.push(message.text());

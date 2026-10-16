@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { ms } from "./timeouts";
 
 interface Point {
   x: number;
@@ -31,11 +32,11 @@ async function boot(page: Page, query: string, debug: boolean): Promise<void> {
     await page.waitForFunction(
       () => (window as DebugWindow).__redline?.isReady() === true,
       undefined,
-      { timeout: 10_000 },
+      { timeout: ms(10_000) },
     );
   } else {
     await expect(page.locator("#hud-player")).toHaveText(/^Player 1/, {
-      timeout: 10_000,
+      timeout: ms(10_000),
     });
     // Let the first snapshot and the scene settle.
     await page.waitForTimeout(500);
@@ -43,7 +44,7 @@ async function boot(page: Page, query: string, debug: boolean): Promise<void> {
 }
 
 test("AC-08-13: switch side in the skirmish", async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(ms(60_000));
   const errors = collectErrors(page);
 
   // (a) Without debug: the HUD follows the switch, there is no debug API.
@@ -99,14 +100,14 @@ test("AC-08-13: switch side in the skirmish", async ({ page }) => {
   await expect
     .poll(
       () => page.evaluate(() => (window as DebugWindow).__redline?.tick() ?? 0),
-      { timeout: 5000 },
+      { timeout: ms(5000) },
     )
     .toBeGreaterThan(tick);
   expect(errors).toEqual([]);
 });
 
 test("AC-08-14: reveal and FPS panel in the skirmish", async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(ms(60_000));
   const errors = collectErrors(page);
   await boot(page, "?seed=1&ai=off", false);
   const panel = page.locator("#perf-panel");

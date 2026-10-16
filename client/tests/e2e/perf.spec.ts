@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { ms } from "./timeouts";
 
 interface RedlinePerfView {
   isReady(): boolean;
@@ -13,12 +14,12 @@ type DebugWindow = Window & { __redline?: RedlinePerfView };
 const MEASURED_FRAMES = 300;
 
 test("AC-02-44: keeps 60 fps with 500 moving units @perf", async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(ms(60_000));
   await page.goto("/?mode=tech-slice&debug=1");
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
-    { timeout: 10_000 },
+    { timeout: ms(10_000) },
   );
   await page.evaluate(() => {
     const api = (window as DebugWindow).__redline as RedlinePerfView;
@@ -31,7 +32,7 @@ test("AC-02-44: keeps 60 fps with 500 moving units @perf", async ({ page }) => {
       ((window as DebugWindow).__redline as RedlinePerfView).frameStats()
         .frames >= frames,
     MEASURED_FRAMES,
-    { timeout: 30_000 },
+    { timeout: ms(30_000) },
   );
   const stats = await page.evaluate(() =>
     ((window as DebugWindow).__redline as RedlinePerfView).frameStats(),
@@ -126,12 +127,12 @@ function spawnPerfBlock(page: Page, block: PerfBlock): Promise<void> {
 test("AC-03-63: keeps 60 fps in a 400-unit skirmish @perf", async ({
   page,
 }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(ms(120_000));
   await page.goto("/?debug=1");
   await page.waitForFunction(
     () => (window as SkirmishDebugWindow).__redline?.isReady() === true,
     undefined,
-    { timeout: 15_000 },
+    { timeout: ms(15_000) },
   );
 
   for (const block of PERF_BLOCKS) {
@@ -157,7 +158,7 @@ test("AC-03-63: keeps 60 fps in a 400-unit skirmish @perf", async ({
       });
     },
     PERF_BLOCKS,
-    { timeout: 30_000 },
+    { timeout: ms(30_000) },
   );
 
   await page.evaluate(
@@ -188,7 +189,7 @@ test("AC-03-63: keeps 60 fps in a 400-unit skirmish @perf", async ({
         (window as SkirmishDebugWindow).__redline as SkirmishPerfView
       ).frameStats().frames >= frames,
     MEASURED_FRAMES,
-    { timeout: 90_000 },
+    { timeout: ms(90_000) },
   );
   const stats = await page.evaluate(() =>
     (
