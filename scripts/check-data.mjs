@@ -2,7 +2,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildRuleset, buildSaves, formatError, readSources, serializeJson, serializeRuleset } from "./build-data.mjs";
+import { buildRuleset, buildSaves, checkLocomotorCoverage, formatError, readSources, serializeJson, serializeRuleset } from "./build-data.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const generated = join(root, "data", "generated", "ruleset.json");
@@ -14,6 +14,7 @@ if (!existsSync(join(root, "data", "rules", "globals.yaml"))) {
 
 const sources = readSources(root);
 const { ruleset, errors } = buildRuleset(sources);
+errors.push(...checkLocomotorCoverage(sources));
 if (errors.length > 0) {
   errors.forEach((e) => console.error(formatError(e)));
   process.exit(1);

@@ -21,7 +21,7 @@
           },
           {
             "if": { "type": "object", "required": ["category"], "properties": { "category": { "enum": ["building", "depot"] } } },
-            "then": { "type": "object", "properties": { "turnRateDeg": false } }
+            "then": { "type": "object", "properties": { "turnRateDeg": false, "locomotor": false } }
           }
         ]
       }
@@ -33,6 +33,7 @@
     "ids": { "type": "array", "items": { "$ref": "#/$defs/id" } },
     "count": { "type": "integer", "minimum": 0 },
     "positive": { "type": "integer", "minimum": 1 },
+    "aimDeg": { "type": "integer", "minimum": 1, "maximum": 45 },
     "weapon": {
       "type": "object",
       "additionalProperties": false,
@@ -49,6 +50,7 @@
         "speedCenti": { "$ref": "#/$defs/count" },
         "delivery": { "enum": ["homing", "ballistic"] },
         "scatterCenti": { "$ref": "#/$defs/count" },
+        "aimToleranceDeg": { "$ref": "#/$defs/aimDeg" },
         "salvo": { "$ref": "#/$defs/positive" },
         "salvoIntervalTicks": { "$ref": "#/$defs/count" },
         "render": { "$ref": "#/$defs/weaponRender" }
@@ -96,6 +98,7 @@
         "speedCenti": { "$ref": "#/$defs/positive" },
         "turnRateDeg": { "$ref": "#/$defs/positive" },
         "turretTurnRateDeg": { "$ref": "#/$defs/positive" },
+        "locomotor": { "$ref": "#/$defs/id" },
         "cost": { "$ref": "#/$defs/count" },
         "buildTicks": { "$ref": "#/$defs/count" },
         "weapon": { "$ref": "#/$defs/id" },

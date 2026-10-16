@@ -6,7 +6,7 @@
 
 use sim::fixed::{Fx, FxVec2};
 use sim::map::MapGrid;
-use sim::rules::{Ruleset, fx_centi};
+use sim::rules::{LocoKind, Ruleset, fx_centi};
 use sim::world::{UNIT_SPEED, World};
 
 /// The spec-fixed fixture (generated format, two-space JSON), §4.6.
@@ -88,4 +88,81 @@ fn ac_03_06_phase1_compatibility() {
     let unit = world.unit(id).expect("the spawned unit exists");
     assert_eq!(unit.kind, t);
     assert_eq!(unit.owner, 0);
+}
+
+/// AC-11-02: the locomotor table and aim tolerances come from the data (spec 11 §4).
+/// Motion-level checks are added once the precomputed profile exists.
+#[test]
+fn ac_11_02_motion_profile_from_data() {
+    let text = include_str!("../../../data/generated/ruleset.json");
+    let json: serde_json::Value = serde_json::from_str(text).expect("generated ruleset is JSON");
+
+    let locomotors: Vec<&str> = json["locomotors"]
+        .as_array()
+        .expect("the ruleset carries a locomotors table")
+        .iter()
+        .map(|l| l["id"].as_str().expect("locomotor id"))
+        .collect();
+    assert_eq!(locomotors, ["foot", "tracked", "wheeled"]);
+
+    let locomotor_of = |id: &str| -> &str {
+        let index = json["types"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|t| t["id"] == id)
+            .unwrap_or_else(|| panic!("type {id} exists"))["locomotor"]
+            .as_i64()
+            .expect("locomotor index");
+        locomotors[index as usize]
+    };
+    assert_eq!(locomotor_of("ua-bradley"), "tracked");
+    assert_eq!(locomotor_of("ua-supply-truck"), "wheeled");
+    assert_eq!(locomotor_of("ua-rifleman"), "foot");
+
+    let aim = |id: &str| -> i64 {
+        json["weapons"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|w| w["id"] == id)
+            .unwrap_or_else(|| panic!("weapon {id} exists"))["aimToleranceDeg"]
+            .as_i64()
+            .expect("aim tolerance in degrees")
+    };
+    assert_eq!(aim("ua-rifle"), 15);
+    assert_eq!(aim("ua-rh120"), 2);
+
+    // The precomputed motion profile (spec 11 §4.3).
+    let rules = Ruleset::builtin();
+    let motion = |id: &str| rules.ty(rules.type_index(id).expect("type exists")).motion;
+    let bradley = motion("ua-bradley");
+    assert_eq!(bradley.kind, LocoKind::Tracks);
+    assert_eq!(bradley.turn_step, 2669);
+    assert_eq!(bradley.turret_step, 2184);
+    assert_eq!(bradley.pivot, 8192);
+    let truck = motion("ua-supply-truck");
+    assert_eq!(truck.kind, LocoKind::Wheels);
+    assert_eq!(
+        truck.min_turn_speed.raw(),
+        (i64::from(truck.max_speed.raw()) * 40 / 100) as i32
+    );
+    assert_eq!(motion("ua-rifleman").kind, LocoKind::Foot);
+    let aim_units = |id: &str| {
+        rules
+            .weapons
+            .iter()
+            .find(|w| w.id == id)
+            .expect("weapon exists")
+            .aim_tolerance
+    };
+    assert_eq!(aim_units("ua-rifle"), 2730);
+    assert_eq!(aim_units("ua-rh120"), 364);
+    let fixture_rules = Ruleset::from_json(&fixture()).expect("fixture parses");
+    assert!(
+        fixture_rules
+            .types
+            .iter()
+            .all(|t| t.motion.kind == LocoKind::Immediate)
+    );
 }
