@@ -228,10 +228,18 @@ have `heading` 0. All six fields are part of the state hash
 
 ### 5.2 Locomotion (`crates/sim/src/locomotor.rs`, new)
 
-`step_move` and `step_toward_goal` (`world.rs`) compute the same desired
-displacement as today (flow direction, or the vector to the goal-cell centre
-inside the goal cell) and pass it, with the straight-line distance to the final
-point in every cell, to:
+`step_move` and `step_toward_goal` (`world.rs`) compute the desired
+displacement: the vector to the final point inside the goal cell or when
+`MapGrid::line_passable(pos, final point)` holds, otherwise the flow direction.
+They pass it, with the straight-line distance to the final point in every cell,
+to the locomotor. `line_passable` walks every cell the segment crosses (integer
+grid walk; where the segment crosses a cell corner exactly, both side cells must
+be passable) and is true when all are passable. Generals steers at the next
+node of a path optimised by line of sight (`Path::optimizeGroundPath`,
+`AIPathfind.cpp:602`; `Path::computePointOnPath`, `AIPathfind.cpp:934-937`), so
+on a clear last stretch it drives straight at the goal; aiming at the final
+point when it is in line matches that stretch. Following the flow field until
+then is a deviation, since the flow field has no path nodes:
 
 ```rust
 /// One tick of motion towards `desired` (a non-zero direction) for a unit
@@ -371,7 +379,11 @@ it turns by `max(turn_step / 4, …)` and moves forward, its speed never exceeds
 `min_turn_speed` while the error exceeds `slow_turn` (when the error grows
 after a faster start, the speed falls towards `min_turn_speed` at most `braking`
 per tick, so a few ticks above it are allowed), and its path to the goal
-is an arc (the unit is never displaced sideways relative to its heading).
+is an arc (the unit is never displaced sideways relative to its heading). With
+the goal in a straight line it steers at the goal, not along the flow field, and
+ends exactly on it. `line_passable` is true across open cells and false when the
+segment crosses a blocked cell, or crosses a corner exactly between two cells
+where one is blocked.
 
 **AC-11-06 Braking and arrival.** Given a `tracked` or `wheeled` unit moving
 at `max_speed` towards a goal, when it approaches the goal, then its speed falls towards
@@ -451,6 +463,7 @@ console error.
 | AC-11-03 | `crates/sim/tests/locomotor.rs` | `ac_11_03_tracked_pivot` |
 | AC-11-04 | `crates/sim/tests/locomotor.rs` | `ac_11_04_tracked_slowdown_and_acceleration` |
 | AC-11-05 | `crates/sim/tests/locomotor.rs` | `ac_11_05_wheeled_turning_arc` |
+| AC-11-05 | `crates/sim/tests/locomotor.rs` | `ac_11_05_straight_line_check` |
 | AC-11-06 | `crates/sim/tests/locomotor.rs` | `ac_11_06_braking_and_arrival` |
 | AC-11-07 | `crates/sim/tests/locomotor.rs` | `ac_11_07_moves_where_it_faces_near_walls` |
 | AC-11-08 | `crates/sim/tests/turret.rs` | `ac_11_08_turret_must_align_before_firing` |
