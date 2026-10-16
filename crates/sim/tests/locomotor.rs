@@ -241,14 +241,29 @@ fn ac_11_05_straight_line_check() {
     assert!(map.line_passable(centre(2, 2), centre(15, 9)), "open cells");
     assert!(map.line_passable(centre(4, 4), centre(4, 4)), "same cell");
     map.set_blocked(Cell { x: 8, y: 5 }, true);
-    assert!(!map.line_passable(centre(2, 5), centre(15, 5)), "crosses a blocked cell");
-    assert!(!map.line_passable(centre(15, 5), centre(2, 5)), "both directions");
-    assert!(map.line_passable(centre(2, 6), centre(15, 6)), "next row is clear");
+    assert!(
+        !map.line_passable(centre(2, 5), centre(15, 5)),
+        "crosses a blocked cell"
+    );
+    assert!(
+        !map.line_passable(centre(15, 5), centre(2, 5)),
+        "both directions"
+    );
+    assert!(
+        map.line_passable(centre(2, 6), centre(15, 6)),
+        "next row is clear"
+    );
     // From (2, 2) to (6, 6) the segment crosses the corner between (3, 3) and
     // (4, 4) exactly, touching (4, 3) and (3, 4) only at that corner.
-    assert!(map.line_passable(centre(2, 2), centre(6, 6)), "diagonal across open corners");
+    assert!(
+        map.line_passable(centre(2, 2), centre(6, 6)),
+        "diagonal across open corners"
+    );
     map.set_blocked(Cell { x: 4, y: 3 }, true);
-    assert!(!map.line_passable(centre(2, 2), centre(6, 6)), "corner next to a blocked cell");
+    assert!(
+        !map.line_passable(centre(2, 2), centre(6, 6)),
+        "corner next to a blocked cell"
+    );
 }
 
 #[test]

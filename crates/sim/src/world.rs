@@ -901,9 +901,9 @@ impl World {
         }
     }
 
-    /// `Move` (spec 11 §5.2): the goal cell's centre-ward delta, or the flow
-    /// direction outside it, is handed to the locomotor of the type with the
-    /// straight-line distance to the target.
+    /// `Move` (spec 11 §5.2): the delta to the target inside the goal cell or
+    /// when the straight line is passable, otherwise the flow direction, is
+    /// handed to the locomotor of the type with the straight-line distance.
     fn step_move(&mut self, index: usize, order_id: u32, target: FxVec2, goal: Cell) {
         let pos = self.entities[index].pos;
         let kind = self.entities[index].kind;
@@ -911,7 +911,7 @@ impl World {
         let cell = cell_of(pos);
         let in_goal = cell == goal;
         let delta = target - pos;
-        let desired = if in_goal {
+        let desired = if in_goal || self.nav.line_passable(pos, target) {
             delta.normalize()
         } else {
             let direction = self
@@ -974,9 +974,9 @@ impl World {
         approach_cell(&self.nav, site.origin, self.rules.ty(entity.kind).footprint)
     }
 
-    /// Spec 5.10 "step toward the goal": inside the goal cell move to its
-    /// centre, otherwise follow the (on demand) flow field; no direction means
-    /// the unit stays this tick.
+    /// Spec 5.10 "step toward the goal": inside the goal cell or with the
+    /// centre in a straight passable line move to it, otherwise follow the (on
+    /// demand) flow field; no direction means the unit stays this tick.
     pub(crate) fn step_toward_goal(&mut self, index: usize, goal: Cell) {
         let map = &self.nav;
         let field = self
@@ -990,7 +990,7 @@ impl World {
         let target = cell_center(goal);
         let in_goal = cell == goal;
         let delta = target - pos;
-        let desired = if in_goal {
+        let desired = if in_goal || map.line_passable(pos, target) {
             delta.normalize()
         } else if let Some(dir) = field.direction(cell) {
             dir.unit_vector()
