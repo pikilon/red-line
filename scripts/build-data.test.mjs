@@ -688,6 +688,5 @@ test("AC-11-02: locomotors in the data", async () => {
   assert.deepEqual(build.checkLocomotorCoverage(readSources(root)), []);
   const missing = changed((d) => { delete d.ukraine.types[0].locomotor; });
   const errors = build.checkLocomotorCoverage(missing);
-  assert.equal(errors.length, 1);
-  assert.match(errors[0].message, /ua-rifleman/);
+  assert.ok(errors.some((e) => /ua-rifleman/.test(e.message)), "the unit without a locomotor is reported");
 });

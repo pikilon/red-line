@@ -15,6 +15,12 @@ lowPowerMinSpeedPercent: 25          # required, 1..100
 lowPowerMaxSpeedPercent: 75          # required, 1..100
 maxQueue: 9                          # required, 1..9 (semantic check: <= QUEUE_SLOTS)
 dockRangeCenti: 100                  # required, >= 1
+aimToleranceDeg: 2                   # required, 1..45: default weapon aim tolerance (spec 11 §4.1)
+turretRecenterTicks: 30              # required, >= 0: idle ticks before a stationary turret recenters (spec 11 §4.1)
+locomotors:                          # required, ids referenced by unit types (spec 11 §4.1)
+  foot: { kind: foot }
+  tracked: { kind: tracks, pivotAngleDeg: 45, accelCenti: 2, brakingCenti: 4, reverseAngleDeg: 120, reverseMaxCenti: 300, reverseSpeedPercent: 50 }
+  wheeled: { kind: wheels, minTurnSpeedPercent: 40, slowTurnAngleDeg: 9, accelCenti: 2, brakingCenti: 3, reverseAngleDeg: 120, reverseMaxCenti: 300, reverseSpeedPercent: 40 }
 commonTypes:                       # required; type objects with no faction (placeholder, depot)
   - id: tech-slice-placeholder
     category: unit

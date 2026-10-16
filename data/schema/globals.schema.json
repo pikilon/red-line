@@ -26,11 +26,31 @@
     "lowPowerMaxSpeedPercent": { "$ref": "#/$defs/percent" },
     "maxQueue": { "type": "integer", "minimum": 1, "maximum": 9 },
     "dockRangeCenti": { "type": "integer", "minimum": 1 },
+    "aimToleranceDeg": { "$ref": "#/$defs/aimDeg" },
+    "turretRecenterTicks": { "type": "integer", "minimum": 0 },
+    "locomotors": { "type": "object", "additionalProperties": { "$ref": "#/$defs/locomotor" } },
     "commonTypes": { "type": "array", "items": { "$ref": "faction.schema.json#/$defs/type" } }
   },
   "$defs": {
     "idList": { "type": "array", "minItems": 1, "items": { "$ref": "faction.schema.json#/$defs/id" } },
     "keyList": { "type": "array", "minItems": 1, "items": { "$ref": "faction.schema.json#/$defs/key" } },
-    "percent": { "type": "integer", "minimum": 1, "maximum": 100 }
+    "percent": { "type": "integer", "minimum": 1, "maximum": 100 },
+    "aimDeg": { "type": "integer", "minimum": 1, "maximum": 45 },
+    "locomotor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["foot", "tracks", "wheels"] },
+        "pivotAngleDeg": { "type": "integer", "minimum": 1, "maximum": 180 },
+        "minTurnSpeedPercent": { "type": "integer", "minimum": 25, "maximum": 100 },
+        "slowTurnAngleDeg": { "type": "integer", "minimum": 1, "maximum": 90 },
+        "accelCenti": { "type": "integer", "minimum": 1 },
+        "brakingCenti": { "type": "integer", "minimum": 1 },
+        "reverseAngleDeg": { "type": "integer", "minimum": 90, "maximum": 180 },
+        "reverseMaxCenti": { "type": "integer", "minimum": 0 },
+        "reverseSpeedPercent": { "type": "integer", "minimum": 10, "maximum": 100 }
+      }
+    }
   }
 }

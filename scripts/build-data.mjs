@@ -96,6 +96,32 @@ export function buildRuleset(sources) {
   return { ruleset: assemble(globals, factions, maps, ai), errors };
 }
 
+/**
+ * Every faction unit names a locomotor that exists in globals.locomotors, and every armed
+ * building turns its turret (spec 11 §4.2).
+ * Run by check-data on the repository data; buildRuleset itself stays lenient for fixtures.
+ */
+export function checkLocomotorCoverage(sources) {
+  const errors = [];
+  const globals = parse(sources.globals.text);
+  const known = Object.keys(globals.locomotors ?? {});
+  for (const source of sources.factions) {
+    const faction = parse(source.text);
+    (faction.types ?? []).forEach((t, i) => {
+      if (t.category === "building" && t.weapon !== undefined && !(t.turretTurnRateDeg > 0)) {
+        errors.push({ file: source.file, pointer: `/types/${i}/turretTurnRateDeg`, code: "invalid-value", message: `armed building ${t.id} has no turretTurnRateDeg` });
+      }
+      if (t.category !== "unit") return;
+      if (t.locomotor === undefined) {
+        errors.push({ file: source.file, pointer: `/types/${i}/locomotor`, code: "missing-value", message: `unit ${t.id} has no locomotor` });
+      } else if (!known.includes(t.locomotor)) {
+        errors.push({ file: source.file, pointer: `/types/${i}/locomotor`, code: "unknown-reference", message: `unit ${t.id} names unknown locomotor ${t.locomotor}` });
+      }
+    });
+  }
+  return errors;
+}
+
 function checkGlobals(file, globals, fail) {
   if (globals.maxQueue > QUEUE_SLOTS) fail(file, "/maxQueue", "invalid-value", `maxQueue exceeds ${QUEUE_SLOTS}`);
   if (globals.lowPowerMinSpeedPercent > globals.lowPowerMaxSpeedPercent) {
@@ -261,6 +287,8 @@ const assemble = (globals, factions, maps, ai) => {
   const weaponIndex = new Map(weaponList.map((w, i) => [w.id, i]));
   const typeIndex = new Map(typeList.map(({ t }, i) => [t.id, i]));
   const armorIndex = (id) => globals.armorClasses.indexOf(id);
+  const locomotorNames = Object.keys(globals.locomotors ?? {});
+  const locomotorIndex = (id) => (id === undefined ? -1 : locomotorNames.indexOf(id));
   const types = (ids = []) => ids.map((id) => typeIndex.get(id));
   const renderSize = (t) =>
     t.category === "unit" ? t.render.size : [t.footprint[0] * 100, t.render.height, t.footprint[1] * 100];
@@ -275,6 +303,20 @@ const assemble = (globals, factions, maps, ai) => {
     lowPowerMaxSpeedPercent: globals.lowPowerMaxSpeedPercent,
     maxQueue: globals.maxQueue,
     dockRangeCenti: globals.dockRangeCenti,
+    aimToleranceDeg: globals.aimToleranceDeg ?? 0,
+    turretRecenterTicks: globals.turretRecenterTicks ?? 0,
+    locomotors: Object.entries(globals.locomotors ?? {}).map(([id, l]) => ({
+      id,
+      kind: { foot: "foot", tracks: "tracks", wheels: "wheels" }[l.kind],
+      pivotAngleDeg: l.pivotAngleDeg ?? 0,
+      minTurnSpeedPercent: l.minTurnSpeedPercent ?? 0,
+      slowTurnAngleDeg: l.slowTurnAngleDeg ?? 0,
+      accelCenti: l.accelCenti ?? 0,
+      brakingCenti: l.brakingCenti ?? 0,
+      reverseAngleDeg: l.reverseAngleDeg ?? 0,
+      reverseMaxCenti: l.reverseMaxCenti ?? 0,
+      reverseSpeedPercent: l.reverseSpeedPercent ?? 0,
+    })),
     weapons: weaponList.map((w) => ({
       id: w.id,
       damageType: globals.damageTypes.indexOf(w.damageType),
@@ -285,6 +327,8 @@ const assemble = (globals, factions, maps, ai) => {
       splashCenti: w.splashCenti ?? 0,
       projectileTicks: w.projectileTicks ?? 0,
       speedCenti: w.speedCenti ?? 0,
+      // Omitted when neither the weapon nor the globals set it, so older fixtures keep their shape.
+      ...((w.aimToleranceDeg ?? globals.aimToleranceDeg) === undefined ? {} : { aimToleranceDeg: w.aimToleranceDeg ?? globals.aimToleranceDeg }),
       delivery: resolvedDelivery(w) === "ballistic" ? 1 : 0,
       scatterCenti: w.scatterCenti ?? 0,
       salvo: w.salvo ?? 1,
@@ -309,6 +353,7 @@ const assemble = (globals, factions, maps, ai) => {
       speedCenti: t.speedCenti ?? 0,
       turnRateDeg: t.turnRateDeg ?? 0,
       turretTurnRateDeg: t.turretTurnRateDeg ?? 0,
+      locomotor: locomotorIndex(t.locomotor),
       weapon: t.weapon === undefined ? -1 : weaponIndex.get(t.weapon),
       requires: types(t.requires),
       produces: types(t.produces),

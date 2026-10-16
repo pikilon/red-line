@@ -25,7 +25,14 @@ export interface TypeDef {
   loadTicks: number;
   unloadTicks: number;
   freeUnit: number;
+  /** Index into `Ruleset.locomotors`, -1 for types without one (spec 11 §4.1). */
+  locomotor: number;
   render: { size: [number, number, number] };
+}
+
+export interface LocomotorDef {
+  id: string;
+  kind: "foot" | "tracks" | "wheels";
 }
 
 export interface FactionDef {
@@ -36,12 +43,14 @@ export interface FactionDef {
 
 export interface Ruleset {
   maxQueue: number;
+  locomotors: LocomotorDef[];
   types: TypeDef[];
   factions: FactionDef[];
 } // other keys unused
 
 export const RULES: Ruleset = {
   maxQueue: ruleset.maxQueue,
+  locomotors: ruleset.locomotors as LocomotorDef[],
   types: ruleset.types as unknown as TypeDef[],
   factions: ruleset.factions as FactionDef[],
 };

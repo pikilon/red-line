@@ -7,6 +7,7 @@
 
 use serde::Deserialize;
 
+use crate::angle::{deg_per_second_to_step, deg_to_units};
 use crate::fixed::Fx;
 
 /// Index into `Ruleset::types` (`kind` used everywhere).
@@ -27,6 +28,85 @@ pub const QUEUE_SLOTS: usize = 9;
 /// `fx_centi(500) == 327680`, `fx_centi(150) == 98304`, `fx_centi(8) == 5242`.
 pub fn fx_centi(c: u32) -> Fx {
     Fx::from_raw((c as i64 * 65536 / 100) as i32)
+}
+
+/// Locomotor family of a unit (spec 11 §4.3). `Immediate` (named in the spec as the
+/// Instant kind; renamed because the sim lint bans that identifier) is the Phase 1–3 behaviour:
+/// no turn delay and no speed model. Fixtures and every building use it.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum LocoKind {
+    #[default]
+    Immediate,
+    Foot,
+    Tracks,
+    Wheels,
+}
+
+/// Motion values precomputed once from the data at ruleset load (spec 11 §4.3).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Motion {
+    pub kind: LocoKind,
+    pub max_speed: Fx,
+    pub turn_step: i32,
+    pub turret_step: i32,
+    pub pivot: i32,
+    pub slow_turn: i32,
+    pub min_turn_speed: Fx,
+    pub accel: Fx,
+    pub braking: Fx,
+    pub reverse_angle: i32,
+    pub reverse_max: Fx,
+    pub reverse_speed: Fx,
+}
+
+/// A locomotor from `globals.locomotors` (spec 11 §4.1). `id` is its key.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct LocomotorDef {
+    pub id: String,
+    pub kind: LocoKind,
+    pub pivot_angle_deg: u32,
+    pub min_turn_speed_percent: u32,
+    pub slow_turn_angle_deg: u32,
+    pub accel_centi: u32,
+    pub braking_centi: u32,
+    pub reverse_angle_deg: u32,
+    pub reverse_max_centi: u32,
+    pub reverse_speed_percent: u32,
+}
+
+fn no_locomotor() -> i32 {
+    -1
+}
+
+/// `value × percent / 100` in fixed point.
+fn percent_of(value: Fx, percent: u32) -> Fx {
+    Fx::from_raw((i64::from(value.raw()) * i64::from(percent) / 100) as i32)
+}
+
+/// The motion profile of one type (spec 11 §4.3). Without a locomotor a type keeps
+/// the Phase 1–3 behaviour; only `turret_step` comes from `turretTurnRateDeg`.
+fn motion_of(ty: &TypeDef, locomotor: Option<&LocomotorDef>) -> Motion {
+    let max_speed = fx_centi(ty.speed_centi);
+    let mut motion = Motion {
+        max_speed,
+        turret_step: deg_per_second_to_step(ty.turret_turn_rate_deg),
+        ..Motion::default()
+    };
+    if let Some(l) = locomotor {
+        motion.kind = l.kind;
+        motion.turn_step = deg_per_second_to_step(ty.turn_rate_deg);
+        motion.pivot = deg_to_units(l.pivot_angle_deg);
+        motion.slow_turn = deg_to_units(l.slow_turn_angle_deg);
+        motion.min_turn_speed = percent_of(max_speed, l.min_turn_speed_percent);
+        motion.accel = fx_centi(l.accel_centi);
+        motion.braking = fx_centi(l.braking_centi);
+        motion.reverse_angle = deg_to_units(l.reverse_angle_deg);
+        motion.reverse_max = fx_centi(l.reverse_max_centi);
+        motion.reverse_speed = percent_of(max_speed, l.reverse_speed_percent);
+    }
+    motion
 }
 
 /// Building/unit classification. Serialized lowercase (`"unit"`, `"building"`, `"depot"`).
@@ -76,6 +156,8 @@ pub struct WeaponDef {
     pub scatter_centi: u32,
     pub salvo: u32,
     pub salvo_interval_ticks: u32,
+    /// Aim tolerance in angle units (spec 11 §4.2, `deg_to_units`).
+    pub aim_tolerance: i32,
 }
 
 /// Wire form of `WeaponDef`; it resolves the splash-dependent `delivery` default
@@ -100,6 +182,8 @@ struct WeaponDefWire {
     salvo: u32,
     #[serde(default)]
     salvo_interval_ticks: u32,
+    #[serde(default)]
+    aim_tolerance_deg: u32,
 }
 
 fn default_salvo() -> u32 {
@@ -127,6 +211,7 @@ impl From<WeaponDefWire> for WeaponDef {
             scatter_centi: w.scatter_centi,
             salvo: w.salvo,
             salvo_interval_ticks: w.salvo_interval_ticks,
+            aim_tolerance: deg_to_units(w.aim_tolerance_deg),
         }
     }
 }
@@ -157,6 +242,16 @@ pub struct TypeDef {
     pub load_ticks: u32,
     pub unload_ticks: u32,
     pub free_unit: i32,
+    /// Index into `Ruleset::locomotors`; `-1` for Immediate types.
+    #[serde(default = "no_locomotor")]
+    pub locomotor: i32,
+    #[serde(default)]
+    pub turn_rate_deg: u32,
+    #[serde(default)]
+    pub turret_turn_rate_deg: u32,
+    /// Precomputed at load (`Ruleset::from_json`), never read from the wire.
+    #[serde(skip)]
+    pub motion: Motion,
 }
 
 /// A faction's HQ and starting dozer type.
@@ -243,6 +338,10 @@ pub struct Ruleset {
     pub maps: Vec<MapDef>,
     #[serde(default)]
     pub ai: Vec<AiDef>,
+    #[serde(default)]
+    pub locomotors: Vec<LocomotorDef>,
+    #[serde(default)]
+    pub turret_recenter_ticks: u32,
 }
 
 impl Ruleset {
@@ -251,7 +350,8 @@ impl Ruleset {
     /// On failure returns `Err(message)` naming the offending camelCase field,
     /// e.g. `"types[3].weapon out of range"`.
     pub fn from_json(text: &str) -> Result<Ruleset, String> {
-        let ruleset: Ruleset = serde_json::from_str(text).map_err(|e| e.to_string())?;
+        let mut ruleset: Ruleset = serde_json::from_str(text).map_err(|e| e.to_string())?;
+        ruleset.compute_motion();
         ruleset.validate()?;
         Ok(ruleset)
     }
@@ -311,6 +411,16 @@ impl Ruleset {
             .position(|t| t.category == Category::Depot)
             .expect("ruleset must define a Depot type");
         idx as TypeId
+    }
+
+    /// Precompute every type's `Motion` from its locomotor (spec 11 §4.3).
+    fn compute_motion(&mut self) {
+        for i in 0..self.types.len() {
+            let locomotor = usize::try_from(self.types[i].locomotor)
+                .ok()
+                .and_then(|l| self.locomotors.get(l));
+            self.types[i].motion = motion_of(&self.types[i], locomotor);
+        }
     }
 
     /// Validate references after parsing (see §5.2). Names the offending field.
