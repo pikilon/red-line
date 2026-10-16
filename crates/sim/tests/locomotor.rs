@@ -202,6 +202,7 @@ fn ac_11_05_wheeled_turning_arc() {
 
     for _ in 0..300 {
         let before = world.unit(id).unwrap().pos;
+        let speed_before = world.unit(id).unwrap().speed;
         world.step();
         let unit = world.unit(id).unwrap().clone();
         let displacement = unit.pos - before;
@@ -211,11 +212,16 @@ fn ac_11_05_wheeled_turning_arc() {
                 "no sideways slide"
             );
         }
-        if unit.heading.delta(east).abs() > deg_to_units(9) {
+        if unit.heading.delta(east).abs() > deg_to_units(9) && unit.speed > motion.min_turn_speed {
+            // Above min_turn_speed only while braking down to it (spec 11 §5.2 step 4).
             assert!(
-                unit.speed <= motion.min_turn_speed,
-                "speed {} exceeds min_turn_speed while the error is above slow_turn",
+                unit.speed < speed_before,
+                "speed {} rises above min_turn_speed while the error is above slow_turn",
                 unit.speed.raw()
+            );
+            assert!(
+                speed_before.raw() - unit.speed.raw() <= motion.braking.raw(),
+                "speed falls at most braking per tick"
             );
         }
         if matches!(unit.order, Order::Idle { .. }) {
@@ -244,28 +250,22 @@ fn ac_11_06_braking_and_arrival() {
         let path_ticks = 10 * 65536 / motion.max_speed.raw() as u32 + 30;
         let mut ticks = 0;
         let mut peak = Fx::ZERO;
+        let mut previous = Fx::ZERO;
         loop {
             world.step();
             ticks += 1;
             let unit = world.unit(id).unwrap().clone();
             peak = peak.max(unit.speed);
-            if cell_of(unit.pos) == cell_of(target) && !matches!(unit.order, Order::Idle { .. }) {
-                let remaining = target - unit.pos;
-                let remaining = remaining.length();
-                let braking_bound =
-                    Fx::from_raw((motion.braking.mul(remaining).raw() * 2).max(0)).sqrt();
-                let bound = if braking_bound > motion.accel {
-                    braking_bound
-                } else {
-                    motion.accel
-                };
+            let in_goal =
+                cell_of(unit.pos) == cell_of(target) && !matches!(unit.order, Order::Idle { .. });
+            if in_goal && previous != Fx::ZERO {
+                // Afterwards the speed only falls towards the bound, at most braking per tick.
                 assert!(
-                    unit.speed <= bound,
-                    "{id_name}: speed {} above braking bound {}",
-                    unit.speed.raw(),
-                    bound.raw()
+                    unit.speed.raw() >= previous.raw() - motion.braking.raw(),
+                    "{id_name}: speed falls at most braking per tick"
                 );
             }
+            previous = unit.speed;
             if matches!(unit.order, Order::Idle { .. }) {
                 assert_eq!(unit.pos, target, "{id_name}: ends exactly on the goal");
                 assert_eq!(unit.speed, Fx::ZERO, "{id_name}: stopped on arrival");

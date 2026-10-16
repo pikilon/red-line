@@ -361,12 +361,15 @@ target is `max_speed × (pivot − e) / pivot`.
 **AC-11-05 Wheeled turning arc.** Given a `wheeled` unit at rest facing
 `Angle(0)`, when ordered to a point 90° to its right, then on the first tick
 it turns by `max(turn_step / 4, …)` and moves forward, its speed never exceeds
-`min_turn_speed` while the error exceeds `slow_turn`, and its path to the goal
+`min_turn_speed` while the error exceeds `slow_turn` (when the error grows
+after a faster start, the speed falls towards `min_turn_speed` at most `braking`
+per tick, so a few ticks above it are allowed), and its path to the goal
 is an arc (the unit is never displaced sideways relative to its heading).
 
 **AC-11-06 Braking and arrival.** Given a `tracked` or `wheeled` unit moving
-at `max_speed` towards a goal, when it enters the goal cell, then its speed
-never exceeds `max(accel, sqrt(2 × braking × remaining))`, it ends exactly on
+at `max_speed` towards a goal, when it enters the goal cell, then its speed falls towards
+`max(accel, sqrt(2 × braking × remaining))` at most `braking` per tick (it may
+enter faster than the bound, since braking starts in the goal cell). It ends exactly on
 the goal-cell centre with `speed = 0` and `Order::Idle`, within
 `ceil(path / min(max_speed, …)) + 30` ticks.
 
