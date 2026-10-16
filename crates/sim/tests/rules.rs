@@ -89,3 +89,47 @@ fn ac_03_06_phase1_compatibility() {
     assert_eq!(unit.kind, t);
     assert_eq!(unit.owner, 0);
 }
+
+/// AC-11-02: the locomotor table and aim tolerances come from the data (spec 11 §4).
+/// Motion-level checks are added once the precomputed profile exists.
+#[test]
+fn ac_11_02_motion_profile_from_data() {
+    let text = include_str!("../../../data/generated/ruleset.json");
+    let json: serde_json::Value = serde_json::from_str(text).expect("generated ruleset is JSON");
+
+    let locomotors: Vec<&str> = json["locomotors"]
+        .as_array()
+        .expect("the ruleset carries a locomotors table")
+        .iter()
+        .map(|l| l["id"].as_str().expect("locomotor id"))
+        .collect();
+    assert_eq!(locomotors, ["foot", "tracked", "wheeled"]);
+
+    let locomotor_of = |id: &str| -> &str {
+        let index = json["types"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|t| t["id"] == id)
+            .unwrap_or_else(|| panic!("type {id} exists"))["locomotor"]
+            .as_i64()
+            .expect("locomotor index");
+        locomotors[index as usize]
+    };
+    assert_eq!(locomotor_of("ua-bradley"), "tracked");
+    assert_eq!(locomotor_of("ua-supply-truck"), "wheeled");
+    assert_eq!(locomotor_of("ua-rifleman"), "foot");
+
+    let aim = |id: &str| -> i64 {
+        json["weapons"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|w| w["id"] == id)
+            .unwrap_or_else(|| panic!("weapon {id} exists"))["aimToleranceDeg"]
+            .as_i64()
+            .expect("aim tolerance in degrees")
+    };
+    assert_eq!(aim("ua-rifle"), 15);
+    assert_eq!(aim("ua-rh120"), 2);
+}

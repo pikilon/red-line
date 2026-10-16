@@ -672,3 +672,22 @@ test("AC-19-02: showcase example", () => {
   assert.deepEqual({ ...units.client, camera: null }, { ...showcase.client, camera: null });
   assert.deepEqual(units.client.camera, { x: map.starts[0].hq[0] + 9.5, y: 18.5, zoom: 2 });
 });
+
+test("AC-11-02: locomotors in the data", async () => {
+  const build = await import("./build-data.mjs");
+  const root = repoRoot();
+  const ruleset = JSON.parse(readFileSync(join(root, "data/generated/ruleset.json"), "utf8"));
+  const typeOf = (id) => ruleset.types.find((t) => t.id === id);
+  assert.deepEqual(ruleset.locomotors.map((l) => l.id), ["foot", "tracked", "wheeled"]);
+  assert.equal(ruleset.locomotors[typeOf("ua-bradley").locomotor].kind, "tracks");
+  assert.equal(ruleset.locomotors[typeOf("ua-supply-truck").locomotor].kind, "wheels");
+  assert.equal(ruleset.locomotors[typeOf("ua-rifleman").locomotor].kind, "foot");
+  assert.equal(ruleset.weapons.find((w) => w.id === "ua-rifle").aimToleranceDeg, 15);
+
+  // Every faction unit names a locomotor (check:data runs this on the real data).
+  assert.deepEqual(build.checkLocomotorCoverage(readSources(root)), []);
+  const missing = changed((d) => { delete d.ukraine.types[0].locomotor; });
+  const errors = build.checkLocomotorCoverage(missing);
+  assert.equal(errors.length, 1);
+  assert.match(errors[0].message, /ua-rifleman/);
+});
