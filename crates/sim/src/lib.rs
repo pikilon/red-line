@@ -10,6 +10,7 @@ pub mod entity;
 pub mod fixed;
 pub mod flow;
 pub mod hash;
+pub mod locomotor;
 pub mod map;
 pub mod nav;
 pub mod player;

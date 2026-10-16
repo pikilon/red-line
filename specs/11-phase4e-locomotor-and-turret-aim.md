@@ -228,30 +228,45 @@ have `heading` 0. All six fields are part of the state hash
 
 ### 5.2 Locomotion (`crates/sim/src/locomotor.rs`, new)
 
-`step_move` and `step_toward_goal` (`world.rs`) compute the same desired
-displacement as today (flow direction, or the vector to the goal-cell centre
-inside the goal cell) and pass it to:
+`step_move` and `step_toward_goal` (`world.rs`) compute the desired
+displacement: the vector to the final point inside the goal cell or when
+`MapGrid::line_passable(pos, final point)` holds, otherwise the flow direction.
+They pass it, with the straight-line distance to the final point in every cell,
+to the locomotor. `line_passable` walks every cell the segment crosses (integer
+grid walk; where the segment crosses a cell corner exactly, both side cells must
+be passable) and is true when all are passable. Generals steers at the next
+node of a path optimised by line of sight (`Path::optimizeGroundPath`,
+`AIPathfind.cpp:602`; `Path::computePointOnPath`, `AIPathfind.cpp:934-937`), so
+on a clear last stretch it drives straight at the goal; aiming at the final
+point when it is in line matches that stretch. Following the flow field until
+then is a deviation, since the flow field has no path nodes:
 
 ```rust
 /// One tick of motion towards `desired` (a non-zero direction) for a unit
-/// whose remaining distance to its final point is `remaining` (Fx::MAX when
-/// not in the goal cell). Returns true when the unit arrived (snapped).
-pub(crate) fn locomote(world: &mut World, index: usize, desired: FxVec2, remaining: Fx) -> bool;
+/// whose straight-line distance to its final point is `remaining`; `in_goal`
+/// is true inside the goal cell. Returns true when the unit arrived (snapped).
+pub(crate) fn locomote(world: &mut World, index: usize, desired: FxVec2, remaining: Fx, in_goal: bool) -> bool;
 ```
 
 Per kind, with `d = atan2(desired)`:
 
 * **Instant / Foot**: `heading = heading.turn_towards(d, turn_step)`;
   position moves by `desired.normalize() × max_speed` (today's rule, including
-  the snap when `remaining ≤ max_speed`); `speed = max_speed` while moving.
+  the snap when `in_goal` and `remaining ≤ max_speed`); `speed = max_speed`
+  while moving.
 * **Tracks**:
   1. `heading = heading.turn_towards(d, turn_step)`; `e = |heading.delta(d)|`.
   2. `target = 0` if `e ≥ pivot`, else `max_speed × (pivot − e) / pivot`
      (Generals `Locomotor.cpp:1195-1204`).
-  3. When `remaining < Fx::MAX`: `target = min(target, max(accel,
-     sqrt(2 × braking × remaining)))`.
+  3. `target = min(target, max(accel, sqrt(2 × braking × remaining)))`, in
+     every cell, so braking starts before the goal cell. The straight-line
+     distance is never longer than the path, so a detour only brakes early.
+     Generals brakes on the distance along the path (`onPathDistToGoal`,
+     `Locomotor.cpp:1188-1201`).
   4. `speed` moves towards `target` by at most `accel` up, `braking` down.
-  5. When `remaining ≤ speed`: snap to the final point, `speed = 0`, arrived.
+  5. When `in_goal` and `remaining ≤ speed`: snap to the final point,
+     `speed = 0`, arrived (only inside the goal cell, so a snap never crosses
+     a wall corner).
      Otherwise `next = pos + heading.dir() × speed`; when `cell_of(next)` is
      impassable, the unit does not move and `speed = 0`.
 * **Wheels**: as tracks, except step 1 uses `step = max(turn_step / 4,
@@ -361,12 +376,20 @@ target is `max_speed × (pivot − e) / pivot`.
 **AC-11-05 Wheeled turning arc.** Given a `wheeled` unit at rest facing
 `Angle(0)`, when ordered to a point 90° to its right, then on the first tick
 it turns by `max(turn_step / 4, …)` and moves forward, its speed never exceeds
-`min_turn_speed` while the error exceeds `slow_turn`, and its path to the goal
-is an arc (the unit is never displaced sideways relative to its heading).
+`min_turn_speed` while the error exceeds `slow_turn` (when the error grows
+after a faster start, the speed falls towards `min_turn_speed` at most `braking`
+per tick, so a few ticks above it are allowed), and its path to the goal
+is an arc (the unit is never displaced sideways relative to its heading). With
+the goal in a straight line it steers at the goal, not along the flow field, and
+ends exactly on it. `line_passable` is true across open cells and false when the
+segment crosses a blocked cell, or crosses a corner exactly between two cells
+where one is blocked.
 
 **AC-11-06 Braking and arrival.** Given a `tracked` or `wheeled` unit moving
-at `max_speed` towards a goal, when it enters the goal cell, then its speed
-never exceeds `max(accel, sqrt(2 × braking × remaining))`, it ends exactly on
+at `max_speed` towards a goal, when it approaches the goal, then its speed falls towards
+`max(accel, sqrt(2 × braking × remaining))` (`remaining` is the straight-line
+distance to the goal) at most `braking` per tick, so it enters the goal cell at
+most `braking` above that bound. It ends exactly on
 the goal-cell centre with `speed = 0` and `Order::Idle`, within
 `ceil(path / min(max_speed, …)) + 30` ticks.
 
@@ -440,6 +463,7 @@ console error.
 | AC-11-03 | `crates/sim/tests/locomotor.rs` | `ac_11_03_tracked_pivot` |
 | AC-11-04 | `crates/sim/tests/locomotor.rs` | `ac_11_04_tracked_slowdown_and_acceleration` |
 | AC-11-05 | `crates/sim/tests/locomotor.rs` | `ac_11_05_wheeled_turning_arc` |
+| AC-11-05 | `crates/sim/tests/locomotor.rs` | `ac_11_05_straight_line_check` |
 | AC-11-06 | `crates/sim/tests/locomotor.rs` | `ac_11_06_braking_and_arrival` |
 | AC-11-07 | `crates/sim/tests/locomotor.rs` | `ac_11_07_moves_where_it_faces_near_walls` |
 | AC-11-08 | `crates/sim/tests/turret.rs` | `ac_11_08_turret_must_align_before_firing` |

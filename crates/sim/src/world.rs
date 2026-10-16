@@ -2,10 +2,12 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::entity::{Entity, NEUTRAL, PlayerId, Projectile, Site};
+use crate::angle::Angle;
+use crate::entity::{Entity, LocomotionState, NEUTRAL, PlayerId, Projectile, Site};
 pub use crate::entity::{EntityId, Order, Unit};
 use crate::fixed::{Fx, FxVec2};
 use crate::flow::FlowField;
+use crate::locomotor;
 use crate::map::{Cell, CellIndex, MapGrid, SPAWN_MAX, SPAWN_MIN, cell_center, cell_of};
 use crate::nav::{approach_cell, footprint_cells, footprint_center};
 use crate::player::Player;
@@ -390,6 +392,19 @@ impl World {
         }
     }
 
+    /// Test seam (like `set_hp`): overwrites the locomotion state of `id`.
+    pub fn set_locomotion_state(&mut self, id: EntityId, state: LocomotionState) {
+        if let Some(index) = self.index_of(id) {
+            let entity = &mut self.entities[index];
+            entity.heading = state.heading;
+            entity.turret = state.turret;
+            entity.speed = state.speed;
+            entity.reversing = state.reversing;
+            entity.aim = state.aim;
+            entity.idle_aim_ticks = state.idle_aim_ticks;
+        }
+    }
+
     pub fn enable_victory(&mut self) {
         self.victory_enabled = true;
     }
@@ -446,6 +461,12 @@ impl World {
             last_target: None,
             last_hit: None,
             site,
+            heading: Angle(0),
+            turret: Angle(0),
+            speed: Fx::ZERO,
+            reversing: false,
+            aim: None,
+            idle_aim_ticks: 0,
         });
         id
     }
@@ -697,6 +718,9 @@ impl World {
                 let entity = &mut self.entities[index];
                 if entity.owner == player && entity.site.is_none() {
                     entity.order = order;
+                    let motion = self.rules.ty(entity.kind).motion;
+                    entity.reversing =
+                        locomotor::wants_reverse(&motion, entity.pos, entity.heading, target);
                 }
             }
         }
@@ -808,6 +832,7 @@ impl World {
     /// Phase 2: moves every unit one tick along its field toward its goal.
     fn move_units(&mut self) {
         for index in 0..self.entities.len() {
+            let before = self.entities[index].pos;
             match self.entities[index].order {
                 Order::Move {
                     order_id,
@@ -818,6 +843,16 @@ impl World {
                 Order::Harvest { .. } => self.step_harvest(index),
                 Order::Attack { order_id, target } => self.step_attack(index, order_id, target),
                 _ => {}
+            }
+            // Spec 11 §5.2: a reverse move lasts for its Move order only, and a unit
+            // that stood still this tick while moving brakes and coasts.
+            let unit = &mut self.entities[index];
+            if !matches!(unit.order, Order::Move { .. }) {
+                unit.reversing = false;
+            }
+            if unit.pos == before {
+                let motion = self.rules.ty(unit.kind).motion;
+                locomotor::coast(unit, &motion, &self.nav);
             }
         }
     }
@@ -866,34 +901,46 @@ impl World {
         }
     }
 
-    /// Phase 1 `Move` rule at the type's speed.
+    /// `Move` (spec 11 §5.2): the delta to the target inside the goal cell or
+    /// when the straight line is passable, otherwise the flow direction, is
+    /// handed to the locomotor of the type with the straight-line distance.
     fn step_move(&mut self, index: usize, order_id: u32, target: FxVec2, goal: Cell) {
-        let unit = &mut self.entities[index];
-        let speed = fx_centi(self.rules.ty(unit.kind).speed_centi);
-        let cell = cell_of(unit.pos);
-        if cell == goal {
-            let delta = target - unit.pos;
-            if delta.length() <= speed {
-                unit.pos = target;
-                unit.order = Order::Idle {
-                    last_order_id: order_id,
-                };
-            } else {
-                unit.pos = unit.pos + delta.normalize().scale(speed);
-            }
-            return;
-        }
-        let direction = self
-            .fields
-            .get(&self.nav.index(goal))
-            .and_then(|field| field.direction(cell));
-        match direction {
-            Some(dir) => unit.pos = unit.pos + dir.unit_vector().scale(speed),
-            None => {
-                unit.order = Order::Idle {
-                    last_order_id: order_id,
+        let pos = self.entities[index].pos;
+        let kind = self.entities[index].kind;
+        let motion = self.rules.ty(kind).motion;
+        let cell = cell_of(pos);
+        let in_goal = cell == goal;
+        let delta = target - pos;
+        let desired = if in_goal || self.nav.line_passable(pos, target) {
+            delta.normalize()
+        } else {
+            let direction = self
+                .fields
+                .get(&self.nav.index(goal))
+                .and_then(|field| field.direction(cell));
+            match direction {
+                Some(dir) => dir.unit_vector(),
+                None => {
+                    self.entities[index].order = Order::Idle {
+                        last_order_id: order_id,
+                    };
+                    return;
                 }
             }
+        };
+        let arrived = locomotor::drive(
+            &mut self.entities[index],
+            &motion,
+            &self.nav,
+            desired,
+            delta.length(),
+            in_goal,
+            target,
+        );
+        if arrived {
+            self.entities[index].order = Order::Idle {
+                last_order_id: order_id,
+            };
         }
     }
 
@@ -927,28 +974,38 @@ impl World {
         approach_cell(&self.nav, site.origin, self.rules.ty(entity.kind).footprint)
     }
 
-    /// Spec 5.10 "step toward the goal": inside the goal cell move to its
-    /// centre, otherwise follow the (on demand) flow field; no direction means
-    /// the unit stays this tick.
+    /// Spec 5.10 "step toward the goal": inside the goal cell or with the
+    /// centre in a straight passable line move to it, otherwise follow the (on
+    /// demand) flow field; no direction means the unit stays this tick.
     pub(crate) fn step_toward_goal(&mut self, index: usize, goal: Cell) {
         let map = &self.nav;
         let field = self
             .fields
             .entry(map.index(goal))
             .or_insert_with(|| FlowField::compute(map, goal));
-        let unit = &mut self.entities[index];
-        let speed = fx_centi(self.rules.ty(unit.kind).speed_centi);
-        let cell = cell_of(unit.pos);
-        if cell == goal {
-            let delta = cell_center(goal) - unit.pos;
-            if delta.length() <= speed {
-                unit.pos = cell_center(goal);
-            } else {
-                unit.pos = unit.pos + delta.normalize().scale(speed);
-            }
+        let pos = self.entities[index].pos;
+        let kind = self.entities[index].kind;
+        let motion = self.rules.ty(kind).motion;
+        let cell = cell_of(pos);
+        let target = cell_center(goal);
+        let in_goal = cell == goal;
+        let delta = target - pos;
+        let desired = if in_goal || map.line_passable(pos, target) {
+            delta.normalize()
         } else if let Some(dir) = field.direction(cell) {
-            unit.pos = unit.pos + dir.unit_vector().scale(speed);
-        }
+            dir.unit_vector()
+        } else {
+            return;
+        };
+        locomotor::drive(
+            &mut self.entities[index],
+            &motion,
+            &self.nav,
+            desired,
+            delta.length(),
+            in_goal,
+            target,
+        );
     }
 
     /// Phase 3: pushes apart units closer than `SEPARATION_DISTANCE`, per

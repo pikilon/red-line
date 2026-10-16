@@ -1,6 +1,7 @@
 //! Entities (units, buildings, depots) and their orders, ghosts and projectiles.
 
-use crate::fixed::FxVec2;
+use crate::angle::Angle;
+use crate::fixed::{Fx, FxVec2};
 use crate::map::Cell;
 use crate::rules::{TypeId, WeaponId};
 
@@ -83,6 +84,44 @@ pub struct Entity {
     pub last_hit: Option<(EntityId, WeaponId)>,
     /// `Some` for buildings and depots.
     pub site: Option<Site>,
+    /// Hull heading (spec 11 §5.1); buildings keep `Angle(0)`.
+    pub heading: Angle,
+    /// Turret angle relative to the hull (spec 11 §5.1).
+    pub turret: Angle,
+    /// Current speed in fixed-point tiles per tick (spec 11 §5.1).
+    pub speed: Fx,
+    /// True while a vehicle drives its short reverse move (spec 11 §5.2.1).
+    pub reversing: bool,
+    /// Sticky turret target (spec 11 §5.3).
+    pub aim: Option<EntityId>,
+    /// Ticks since the turret last had a target (spec 11 §5.3).
+    pub idle_aim_ticks: u32,
+}
+
+/// The locomotion and turret state of an entity (spec 11 §5.1). Read and written
+/// as one value so tests can set any field.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct LocomotionState {
+    pub heading: Angle,
+    pub turret: Angle,
+    pub speed: Fx,
+    pub reversing: bool,
+    pub aim: Option<EntityId>,
+    pub idle_aim_ticks: u32,
+}
+
+impl Entity {
+    /// The locomotion and turret state of this entity.
+    pub fn locomotion(&self) -> LocomotionState {
+        LocomotionState {
+            heading: self.heading,
+            turret: self.turret,
+            speed: self.speed,
+            reversing: self.reversing,
+            aim: self.aim,
+            idle_aim_ticks: self.idle_aim_ticks,
+        }
+    }
 }
 
 /// Phase 1 name, kept for the Phase 1 tests.

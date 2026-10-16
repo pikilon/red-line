@@ -96,6 +96,12 @@ fn put_entity(out: &mut Vec<u8>, entity: &Entity) {
     put_u32(out, entity.last_target.unwrap_or(u32::MAX));
     put_order(out, &entity.order);
     put_site(out, entity.site.as_ref());
+    put_u16(out, entity.heading.0);
+    put_u16(out, entity.turret.0);
+    put_i32(out, entity.speed.raw());
+    out.push(u8::from(entity.reversing));
+    put_u32(out, entity.aim.unwrap_or(u32::MAX));
+    put_u32(out, entity.idle_aim_ticks);
 }
 
 fn put_order(out: &mut Vec<u8>, order: &Order) {

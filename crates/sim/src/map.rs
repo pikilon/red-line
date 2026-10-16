@@ -76,6 +76,66 @@ impl MapGrid {
         self.in_bounds(cell) && !self.blocked[self.index(cell) as usize]
     }
 
+    /// Whether every cell the segment `from`–`to` crosses is passable (spec 11
+    /// §5.2): an integer grid walk; where it crosses a cell corner exactly,
+    /// both side cells must be passable too.
+    pub fn line_passable(&self, from: FxVec2, to: FxVec2) -> bool {
+        let mut cell = cell_of(from);
+        let end = cell_of(to);
+        if !self.is_passable(cell) {
+            return false;
+        }
+        let dx = i64::from(to.x.raw()) - i64::from(from.x.raw());
+        let dy = i64::from(to.y.raw()) - i64::from(from.y.raw());
+        let (step_x, step_y) = (dx.signum() as i32, dy.signum() as i32);
+        while cell != end {
+            // Distance along each axis from `from` to the next boundary; the
+            // boundary reached first is the smaller distance over |d|.
+            let next_x = i64::from(cell.x + i32::from(step_x > 0)) << 16;
+            let next_y = i64::from(cell.y + i32::from(step_y > 0)) << 16;
+            let to_x = (next_x - i64::from(from.x.raw())).abs() * dy.abs();
+            let to_y = (next_y - i64::from(from.y.raw())).abs() * dx.abs();
+            let ordering = if step_x == 0 {
+                core::cmp::Ordering::Greater
+            } else if step_y == 0 {
+                core::cmp::Ordering::Less
+            } else {
+                to_x.cmp(&to_y)
+            };
+            cell = match ordering {
+                core::cmp::Ordering::Less => Cell {
+                    x: cell.x + step_x,
+                    y: cell.y,
+                },
+                core::cmp::Ordering::Greater => Cell {
+                    x: cell.x,
+                    y: cell.y + step_y,
+                },
+                core::cmp::Ordering::Equal => {
+                    let side_x = Cell {
+                        x: cell.x + step_x,
+                        y: cell.y,
+                    };
+                    let side_y = Cell {
+                        x: cell.x,
+                        y: cell.y + step_y,
+                    };
+                    if !self.is_passable(side_x) || !self.is_passable(side_y) {
+                        return false;
+                    }
+                    Cell {
+                        x: cell.x + step_x,
+                        y: cell.y + step_y,
+                    }
+                }
+            };
+            if !self.is_passable(cell) {
+                return false;
+            }
+        }
+        true
+    }
+
     pub fn index(&self, cell: Cell) -> CellIndex {
         (cell.y as u32) * u32::from(self.width) + (cell.x as u32)
     }
