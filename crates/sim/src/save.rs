@@ -632,6 +632,7 @@ fn save_entity(entity: &Entity, rules: &Ruleset) -> EntityState {
         last_target,
         last_hit,
         site,
+        ..
     } = entity;
     EntityState {
         id: *id,
@@ -710,6 +711,13 @@ fn load_entity(state: &EntityState, rules: &Ruleset) -> Result<Entity, String> {
         last_target: state.last_target,
         last_hit,
         site,
+        // Locomotion state is not saved yet (spec 11 §5.1): loaded units face 0 and stand still.
+        heading: crate::angle::Angle(0),
+        turret: crate::angle::Angle(0),
+        speed: crate::fixed::Fx::ZERO,
+        reversing: false,
+        aim: None,
+        idle_aim_ticks: 0,
     })
 }
 

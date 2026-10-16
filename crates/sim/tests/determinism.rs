@@ -206,3 +206,71 @@ fn ac_04_04_settling_determinism_parity() {
     let c = run_settling(43);
     assert_ne!(state_hash(&a), state_hash(&c));
 }
+
+/// AC-11-13: the locomotion state is part of the state hash.
+#[test]
+fn ac_11_13_locomotor_state_is_hashed() {
+    use sim::angle::Angle;
+    use sim::entity::LocomotionState;
+    use sim::map::MapGrid;
+    use sim::rules::Ruleset;
+    use sim::world::{Command, World};
+
+    let build = || {
+        let mut world = World::sandbox(Ruleset::builtin(), MapGrid::open(40, 40), &[0]);
+        let bradley = world.rules().type_index("ua-bradley").unwrap();
+        let id = world.spawn(0, bradley, raw(20 * 65536 + 32768, 20 * 65536 + 32768));
+        world.enqueue(Command::Move {
+            units: vec![id],
+            target: raw(20 * 65536 + 32768, 30 * 65536 + 32768),
+        });
+        for _ in 0..30 {
+            world.step();
+        }
+        (world, id)
+    };
+    let (a, id) = build();
+    let (b, _) = build();
+    assert_eq!(
+        state_hash(&a),
+        state_hash(&b),
+        "the same run hashes the same"
+    );
+
+    let base = a.unit(id).unwrap().locomotion();
+    let variants = [
+        LocomotionState {
+            heading: Angle(base.heading.0.wrapping_add(1)),
+            ..base
+        },
+        LocomotionState {
+            turret: Angle(base.turret.0.wrapping_add(1)),
+            ..base
+        },
+        LocomotionState {
+            speed: sim::fixed::Fx::from_raw(base.speed.raw() + 1),
+            ..base
+        },
+        LocomotionState {
+            reversing: !base.reversing,
+            ..base
+        },
+        LocomotionState {
+            aim: Some(7),
+            ..base
+        },
+        LocomotionState {
+            idle_aim_ticks: base.idle_aim_ticks + 1,
+            ..base
+        },
+    ];
+    for variant in variants {
+        let (mut changed, id) = build();
+        changed.set_locomotion_state(id, variant);
+        assert_ne!(
+            state_hash(&changed),
+            state_hash(&a),
+            "changing {variant:?} changes the hash"
+        );
+    }
+}

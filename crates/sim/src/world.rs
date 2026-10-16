@@ -2,7 +2,8 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::entity::{Entity, NEUTRAL, PlayerId, Projectile, Site};
+use crate::angle::Angle;
+use crate::entity::{Entity, LocomotionState, NEUTRAL, PlayerId, Projectile, Site};
 pub use crate::entity::{EntityId, Order, Unit};
 use crate::fixed::{Fx, FxVec2};
 use crate::flow::FlowField;
@@ -390,6 +391,19 @@ impl World {
         }
     }
 
+    /// Test seam (like `set_hp`): overwrites the locomotion state of `id`.
+    pub fn set_locomotion_state(&mut self, id: EntityId, state: LocomotionState) {
+        if let Some(index) = self.index_of(id) {
+            let entity = &mut self.entities[index];
+            entity.heading = state.heading;
+            entity.turret = state.turret;
+            entity.speed = state.speed;
+            entity.reversing = state.reversing;
+            entity.aim = state.aim;
+            entity.idle_aim_ticks = state.idle_aim_ticks;
+        }
+    }
+
     pub fn enable_victory(&mut self) {
         self.victory_enabled = true;
     }
@@ -446,6 +460,12 @@ impl World {
             last_target: None,
             last_hit: None,
             site,
+            heading: Angle(0),
+            turret: Angle(0),
+            speed: Fx::ZERO,
+            reversing: false,
+            aim: None,
+            idle_aim_ticks: 0,
         });
         id
     }
