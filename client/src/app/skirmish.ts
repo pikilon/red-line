@@ -1115,6 +1115,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
               entities: initial.entities.map(({ id, x, y }) => ({ id, x, y })),
             },
       saveState: () => interact.saveState(),
+      setSimPaused: (simPaused) => interact.setPaused(simPaused),
       setCameraTarget: moveCamera,
       command: (command) => interact.command(command),
       stateHash: () => interact.requestHash(),
