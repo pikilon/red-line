@@ -334,7 +334,7 @@ describe("blood of a wound (spec 22 §6)", () => {
     const hard = createEffects();
     spawnHitBlood([hit(0.5)], hard, true, 0);
     hard.update(250);
-    expect(light.meshes.droplet.count).toBe(5);
+    expect(light.meshes.droplet.count).toBe(3);
     expect(hard.meshes.droplet.count).toBeGreaterThan(
       light.meshes.droplet.count,
     );
@@ -344,7 +344,7 @@ describe("blood of a wound (spec 22 §6)", () => {
     hard.update(700);
     hard.update(3000);
     expect(hard.meshes.droplet.count).toBe(0);
-    expect(hard.meshes.blood.count).toBe(8);
+    expect(hard.meshes.blood.count).toBe(5);
   });
 
   it("flies the drops out along the push, up and down again", () => {
@@ -376,8 +376,8 @@ describe("blood of a wound (spec 22 §6)", () => {
     for (let i = 0; i < effects.meshes.blood.count; i++) {
       effects.meshes.blood.getMatrixAt(i, matrix);
       matrix.decompose(position, q, scale);
-      expect(scale.x).toBeLessThan(0.2);
-      expect(scale.z).toBeLessThan(0.12);
+      expect(scale.x).toBeLessThan(0.3);
+      expect(scale.z).toBeLessThan(0.06);
     }
   });
 
@@ -393,7 +393,7 @@ describe("blood of a wound (spec 22 §6)", () => {
     const effects = createEffects();
     spawnHitBlood([hit(0.5)], effects, true, 0);
     effects.update(3000);
-    expect(effects.meshes.blood.count).toBe(8);
+    expect(effects.meshes.blood.count).toBe(5);
     effects.update(14_000);
     expect(effects.meshes.blood.count).toBe(0);
   });

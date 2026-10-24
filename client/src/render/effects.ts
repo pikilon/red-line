@@ -65,6 +65,7 @@ const BLOOD_SPREAD_START = 0.35;
 const BLOOD_SPREAD_MS = 700;
 
 const Y_AXIS = new Vector3(0, 1, 0);
+const X_AXIS = new Vector3(1, 0, 0);
 
 /** Wreck fire flicker period and tint (spec 07 §3). */
 const WRECK_FLICKER_MS = 180;
@@ -135,7 +136,7 @@ const EFFECT_STYLES: Readonly<Record<EffectKind, EffectStyle>> = {
   droplet: {
     durationMs: 700,
     fadeMs: 0,
-    size: [0.022, 0.022, 0.022],
+    size: [0.12, 0.012, 0.012],
     color: 0x3a0606,
     additive: false,
   },
@@ -250,6 +251,7 @@ export function createEffects(): Effects {
   const matrix = new Matrix4();
   const position = new Vector3();
   const scale = new Vector3();
+  const streak = new Vector3();
   const rotation = new Quaternion();
   const color = new Color();
 
@@ -351,7 +353,21 @@ export function createEffects(): Effects {
         } else {
           position.set(instance.x, instance.z, instance.y);
         }
-        rotation.setFromAxisAngle(Y_AXIS, instance.rotationY);
+        if (kind === "droplet") {
+          // A thin streak lying along the way it flies (its velocity now).
+          const flight = elapsed / 1000;
+          streak.set(
+            instance.vx,
+            instance.vz - DROPLET_GRAVITY * flight,
+            instance.vy,
+          );
+          rotation.setFromUnitVectors(
+            X_AXIS,
+            streak.lengthSq() > 0 ? streak.normalize() : X_AXIS,
+          );
+        } else {
+          rotation.setFromAxisAngle(Y_AXIS, instance.rotationY);
+        }
         scale.set(
           instance.sizeX * grow,
           instance.sizeY * grow,

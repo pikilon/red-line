@@ -245,14 +245,14 @@ export function detectHits(
  *  above it a hit only jolts him and stains his clothes (spec 22 §6). */
 export const WOUND_BELOW = 0.6;
 /** Droplets thrown by a light and by a hard hit (jolt >= `HARD_HIT`). */
-const WOUND_DROPS = { light: 5, hard: 8 } as const;
+const WOUND_DROPS = { light: 3, hard: 5 } as const;
 const HARD_HIT = 0.3;
 /** Where on the body the blood leaves, tiles above the ground. */
 const WOUND_HEIGHT = 0.3;
 /** Spread of the spray around the push direction, radians. */
-const SPRAY_CONE = 0.55;
+const SPRAY_CONE = 0.18;
 /** Size of the splat a droplet leaves, tiles. */
-const DROP_SPLAT = 0.06;
+const DROP_SPLAT = 0.05;
 const DROP_SPLAT_SPREAD_MS = 120;
 /** A wound's drops dry up sooner than a pool, ms. */
 const WOUND_BLOOD_MS = 10_000;
@@ -280,15 +280,15 @@ export function spawnHitBlood(
         return h - Math.floor(h);
       };
       const angle = hit.push + (roll(1) - 0.5) * 2 * SPRAY_CONE;
-      const speed = 0.7 + roll(2) * 0.9 + hit.amplitude * 0.8;
-      const rise = 0.5 + roll(3) * 1.1;
+      const speed = 1.4 + roll(2) * 0.9 + hit.amplitude * 0.6;
+      const rise = 0.25 + roll(3) * 0.5;
       const vx = Math.cos(angle) * speed;
       const vy = Math.sin(angle) * speed;
       // Time to come down from the wound to the ground.
       const flight =
         (rise + Math.sqrt(rise * rise + 2 * DROPLET_GRAVITY * WOUND_HEIGHT)) /
         DROPLET_GRAVITY;
-      const delay = i * 25 + Math.floor(i / 3) * 60;
+      const delay = i * 35;
       effects.spawn("droplet", {
         x: hit.x,
         y: hit.y,
@@ -301,7 +301,7 @@ export function spawnHitBlood(
       effects.spawn("blood", {
         x: hit.x + vx * flight,
         y: hit.y + vy * flight,
-        sizeXYZ: [size * 1.7, 0.02, size],
+        sizeXYZ: [size * 3.2, 0.02, size * 0.75],
         rotationY: -angle,
         startMs: nowMs + delay + flight * 1000,
         spreadMs: DROP_SPLAT_SPREAD_MS,
