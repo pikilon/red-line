@@ -12,6 +12,7 @@ import {
   detectDeaths,
   detectHits,
   spawnDeathEffects,
+  spawnHitBlood,
 } from "./deaths";
 import { createEffects } from "./effects";
 
@@ -301,5 +302,42 @@ describe("hit detection (spec 22 §6)", () => {
     ]);
     expect(detectHits(prev, next, causes, 0)).toEqual([]);
     expect(detectHits(next, prev, causes, 0)).toEqual([]);
+  });
+});
+
+describe("blood of a wound (spec 22 §6)", () => {
+  const hit = (amplitude: number) => ({
+    id: 4,
+    x: 10,
+    y: 10,
+    push: 0,
+    amplitude,
+  });
+
+  it("throws a few spurts, more for a hard hit", () => {
+    const light = createEffects();
+    spawnHitBlood([hit(0.12)], light, true, 0);
+    light.update(1000);
+    const hard = createEffects();
+    spawnHitBlood([hit(0.5)], hard, true, 0);
+    hard.update(1000);
+    expect(light.meshes.blood.count).toBe(2);
+    expect(hard.meshes.blood.count).toBe(4);
+  });
+
+  it("shows no blood without gore", () => {
+    const effects = createEffects();
+    spawnHitBlood([hit(0.5)], effects, false, 0);
+    effects.update(1000);
+    expect(effects.meshes.blood.count).toBe(0);
+  });
+
+  it("dries up sooner than a pool", () => {
+    const effects = createEffects();
+    spawnHitBlood([hit(0.5)], effects, true, 0);
+    effects.update(1000);
+    expect(effects.meshes.blood.count).toBe(4);
+    effects.update(13_000);
+    expect(effects.meshes.blood.count).toBe(0);
   });
 });

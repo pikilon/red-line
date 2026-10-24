@@ -112,6 +112,13 @@ When a soldier of a rigged type loses hp between two snapshots and lives
 arms jerk and the knees give for a moment; two hits add up under a cap of 0.75
 rad. Nothing changes in the game simulation.
 
+A hit also throws **blood** (`spawnHitBlood`, gore on only): two small spurts
+from the wound along the push for a light hit, four for a hard one (jolt ≥ 0.3
+rad), stretched along the push, a little bigger the harder it is, and drying up
+after 12 s (a pool lasts 30 s). The wound shows on his clothes through the same
+rule as everything else (§5): the blood level follows the hp he has lost, so
+every hit stains the uniform a little more and the stains stay while he lives.
+
 ## 7. Assumptions
 
 * The death kind comes from the weapons seen firing in the last 5 s; a soldier
@@ -145,3 +152,5 @@ rad. Nothing changes in the game simulation.
 * AC-22-09: the animator jolts a hit soldier (zero at the hit, the peak 70 ms
   later, recovered after 0.7 s), adds two hits under the 0.75 cap and ignores
   hits on ids it never saw.
+* AC-22-10: `spawnHitBlood` throws two spurts for a light hit and four for a hard
+  one, none without gore, and they dry up after 12 s.

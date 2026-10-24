@@ -34,6 +34,7 @@ import {
   detectDeaths,
   detectHits,
   spawnDeathEffects,
+  spawnHitBlood,
 } from "../render/deaths";
 import {
   createEffects,
@@ -930,10 +931,14 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       animator.recordShots(snapshot.entities, at);
       deathCauses.record(snapshot.entities, effectTime(at));
       if (previous !== null) {
-        animator.recordHits?.(
-          detectHits(previous, snapshot, deathCauses, effectTime(at)),
-          at,
+        const hits = detectHits(
+          previous,
+          snapshot,
+          deathCauses,
+          effectTime(at),
         );
+        animator.recordHits?.(hits, at);
+        spawnHitBlood(hits, effects, settings.gore, effectTime(at));
       }
       const deaths =
         previous === null ? [] : detectDeaths(previous, snapshot, viewer);

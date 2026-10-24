@@ -196,6 +196,12 @@ const JOLT_BLAST = 0.28;
 const JOLT_PER_LOSS = { shot: 1, explosion: 1.2 } as const;
 const JOLT_MAX = 0.7;
 
+/** A hit that did not kill, with where it landed. */
+export interface Impact extends Jolt {
+  readonly x: number;
+  readonly y: number;
+}
+
 /** Soldiers that lost hp between two snapshots and lived: who, the way the hit
  *  pushes them and how hard (spec 22 §6). */
 export function detectHits(
@@ -203,11 +209,11 @@ export function detectHits(
   next: MatchSnapshot,
   causes: DeathCauses,
   nowMs: number,
-): Jolt[] {
+): Impact[] {
   if (next.tick <= prev.tick) return [];
   const before = new Map<number, EntityState>();
   for (const entity of prev.entities) before.set(entity.id, entity);
-  const hits: Jolt[] = [];
+  const hits: Impact[] = [];
   for (const entity of next.entities) {
     const earlier = before.get(entity.id);
     if (earlier === undefined || entity.hp >= earlier.hp || entity.hp <= 0) {
@@ -220,6 +226,8 @@ export function detectHits(
     const floor = cause.kind === "explosion" ? JOLT_BLAST : JOLT_SHOT;
     hits.push({
       id: entity.id,
+      x: entity.x,
+      y: entity.y,
       push: cause.push,
       amplitude: Math.min(
         JOLT_MAX,
@@ -229,6 +237,48 @@ export function detectHits(
   }
   return hits;
 }
+
+/** Spurts of a wound: how many for a light and for a hard hit, and the size
+ *  of the drops, tiles (spec 22 §6). */
+const WOUND_SPURTS = { light: 2, hard: 4 } as const;
+const HARD_HIT = 0.3;
+
+/** Blood thrown by hits that did not kill: a few small spurts from the wound
+ *  along the push, more and bigger for a hard hit. The clothes show the wound
+ *  through his hp (spec 22 §5). Nothing without gore. */
+export function spawnHitBlood(
+  hits: readonly Impact[],
+  effects: Effects,
+  gore: boolean,
+  nowMs = 0,
+): void {
+  if (!gore) return;
+  for (const hit of hits) {
+    const count =
+      hit.amplitude >= HARD_HIT ? WOUND_SPURTS.hard : WOUND_SPURTS.light;
+    for (let i = 0; i < count; i++) {
+      const seed = hit.id * 5 + i * 3;
+      const side = ((seed % 5) - 2) * 0.07;
+      const reach = 0.12 + i * 0.1;
+      effects.spawn("blood", {
+        x: hit.x + Math.cos(hit.push) * reach - Math.sin(hit.push) * side,
+        y: hit.y + Math.sin(hit.push) * reach + Math.cos(hit.push) * side,
+        sizeXYZ: [
+          (0.11 + hit.amplitude * 0.18) * 1.5,
+          0.02,
+          0.11 + hit.amplitude * 0.18,
+        ],
+        rotationY: -hit.push + side * 5,
+        startMs: nowMs + i * 55,
+        spreadMs: SPURT_SPREAD_MS,
+        durationMs: WOUND_BLOOD_MS,
+      });
+    }
+  }
+}
+
+/** A wound's drops dry up sooner than a pool, ms. */
+const WOUND_BLOOD_MS = 12_000;
 
 /** Tiles of wreck height relative to the model's render size (spec 07 §3). */
 const WRECK_HEIGHT = 0.6;
