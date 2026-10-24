@@ -250,7 +250,11 @@ const HARD_HIT = 0.3;
 /** Where on the body the blood leaves, tiles above the ground. */
 const WOUND_HEIGHT = 0.3;
 /** Spread of the spray around the push direction, radians. */
-const SPRAY_CONE = 0.18;
+const SPRAY_CONE = 0.14;
+/** How far the whole jet leans to one side of the push, radians. */
+const JET_LEAN = 0.12;
+/** The first drop leaves this long after the hit, ms: the jolt has started. */
+const JET_ONSET_MS = 55;
 /** Size of the splat a droplet leaves, tiles. */
 const DROP_SPLAT = 0.05;
 const DROP_SPLAT_SPREAD_MS = 120;
@@ -270,38 +274,47 @@ export function spawnHitBlood(
   if (!gore) return;
   for (const hit of hits) {
     if (hit.health >= WOUND_BELOW) continue;
-    const count =
+    // Every hit is different: the jet changes with a running number, not
+    // only with who is hit.
+    hitSerial += 1;
+    const seed = hit.id * 12.9898 + hitSerial * 4.1414;
+    const roll = (i: number, k: number) => {
+      const h = Math.sin((seed + i * 78.233 + k * 37.719) * 43758.5453);
+      return h - Math.floor(h);
+    };
+    const base =
       hit.amplitude >= HARD_HIT ? WOUND_DROPS.hard : WOUND_DROPS.light;
+    const count = Math.max(2, base + Math.floor(roll(0, 9) * 3) - 1);
+    // The whole jet leans a little to one side and is a little faster or slower.
+    const lean = (roll(0, 7) - 0.5) * 2 * JET_LEAN;
+    const force = 0.8 + roll(0, 8) * 0.4;
+    const height = WOUND_HEIGHT + (roll(0, 6) - 0.5) * 0.14;
     for (let i = 0; i < count; i++) {
-      const roll = (k: number) => {
-        const h = Math.sin(
-          (hit.id * 12.9898 + i * 78.233 + k * 37.719) * 43758.5453,
-        );
-        return h - Math.floor(h);
-      };
-      const angle = hit.push + (roll(1) - 0.5) * 2 * SPRAY_CONE;
-      const speed = 1.4 + roll(2) * 0.9 + hit.amplitude * 0.6;
-      const rise = 0.25 + roll(3) * 0.5;
+      const angle = hit.push + lean + (roll(i, 1) - 0.5) * 2 * SPRAY_CONE;
+      const speed = (1.4 + roll(i, 2) * 0.9 + hit.amplitude * 0.6) * force;
+      const rise = 0.2 + roll(i, 3) * 0.6;
       const vx = Math.cos(angle) * speed;
       const vy = Math.sin(angle) * speed;
       // Time to come down from the wound to the ground.
       const flight =
-        (rise + Math.sqrt(rise * rise + 2 * DROPLET_GRAVITY * WOUND_HEIGHT)) /
+        (rise + Math.sqrt(rise * rise + 2 * DROPLET_GRAVITY * height)) /
         DROPLET_GRAVITY;
-      const delay = i * 35;
+      // Nothing before the jolt has started: the first drop leaves a moment
+      // after the hit, the rest follow it in quick succession.
+      const delay = JET_ONSET_MS + i * 30 + roll(i, 5) * 25;
       effects.spawn("droplet", {
         x: hit.x,
         y: hit.y,
-        height: WOUND_HEIGHT,
+        height,
         velocity: [vx, vy, rise],
         durationMs: flight * 1000,
         startMs: nowMs + delay,
       });
-      const size = DROP_SPLAT * (0.7 + roll(4) * 0.8);
+      const size = DROP_SPLAT * (0.7 + roll(i, 4) * 0.8);
       effects.spawn("blood", {
         x: hit.x + vx * flight,
         y: hit.y + vy * flight,
-        sizeXYZ: [size * 3.2, 0.02, size * 0.75],
+        sizeXYZ: [size * (2.6 + roll(i, 10) * 1.2), 0.02, size * 0.75],
         rotationY: -angle,
         startMs: nowMs + delay + flight * 1000,
         spreadMs: DROP_SPLAT_SPREAD_MS,
@@ -310,6 +323,9 @@ export function spawnHitBlood(
     }
   }
 }
+
+/** Number of wound jets thrown so far: the seed of the next one. */
+let hitSerial = 0;
 
 /** Tiles of wreck height relative to the model's render size (spec 07 §3). */
 const WRECK_HEIGHT = 0.6;

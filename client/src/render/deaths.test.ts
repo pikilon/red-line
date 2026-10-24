@@ -323,7 +323,7 @@ describe("blood of a wound (spec 22 §6)", () => {
     effects.update(6000);
     expect(effects.meshes.blood.count).toBe(0);
     spawnHitBlood([hit(0.2, 0.59)], effects, true, 7000);
-    effects.update(7060);
+    effects.update(7250);
     expect(effects.meshes.droplet.count).toBeGreaterThan(0);
   });
 
@@ -334,7 +334,8 @@ describe("blood of a wound (spec 22 §6)", () => {
     const hard = createEffects();
     spawnHitBlood([hit(0.5)], hard, true, 0);
     hard.update(250);
-    expect(light.meshes.droplet.count).toBe(3);
+    expect(light.meshes.droplet.count).toBeGreaterThanOrEqual(2);
+    expect(light.meshes.droplet.count).toBeLessThanOrEqual(4);
     expect(hard.meshes.droplet.count).toBeGreaterThan(
       light.meshes.droplet.count,
     );
@@ -344,7 +345,7 @@ describe("blood of a wound (spec 22 §6)", () => {
     hard.update(700);
     hard.update(3000);
     expect(hard.meshes.droplet.count).toBe(0);
-    expect(hard.meshes.blood.count).toBe(5);
+    expect(hard.meshes.blood.count).toBeGreaterThanOrEqual(4);
   });
 
   it("flies the drops out along the push, up and down again", () => {
@@ -362,7 +363,7 @@ describe("blood of a wound (spec 22 §6)", () => {
       highest = Math.max(highest, at.y);
     }
     expect(farthest).toBeGreaterThan(0);
-    expect(highest).toBeGreaterThan(0.3);
+    expect(highest).toBeGreaterThan(0.2);
   });
 
   it("the splats of the drops are small", () => {
@@ -381,6 +382,34 @@ describe("blood of a wound (spec 22 §6)", () => {
     }
   });
 
+  it("shows almost nothing before the jolt has started", () => {
+    const effects = createEffects();
+    spawnHitBlood([hit(0.5)], effects, true, 0);
+    effects.update(20);
+    expect(effects.meshes.droplet.count).toBe(0);
+    effects.update(90);
+    expect(effects.meshes.droplet.count).toBeGreaterThan(0);
+  });
+
+  it("is never the same jet twice, even on the same soldier", () => {
+    const jets: string[] = [];
+    for (let n = 0; n < 4; n++) {
+      const effects = createEffects();
+      spawnHitBlood([hit(0.5)], effects, true, 0);
+      effects.update(3000);
+      const matrix = new Matrix4();
+      const at = new Vector3();
+      const landed: string[] = [];
+      for (let i = 0; i < effects.meshes.blood.count; i++) {
+        effects.meshes.blood.getMatrixAt(i, matrix);
+        at.setFromMatrixPosition(matrix);
+        landed.push(`${at.x.toFixed(2)},${at.z.toFixed(2)}`);
+      }
+      jets.push(landed.join(" "));
+    }
+    expect(new Set(jets).size).toBe(4);
+  });
+
   it("shows no blood without gore", () => {
     const effects = createEffects();
     spawnHitBlood([hit(0.5)], effects, false, 0);
@@ -393,7 +422,7 @@ describe("blood of a wound (spec 22 §6)", () => {
     const effects = createEffects();
     spawnHitBlood([hit(0.5)], effects, true, 0);
     effects.update(3000);
-    expect(effects.meshes.blood.count).toBe(5);
+    expect(effects.meshes.blood.count).toBeGreaterThanOrEqual(4);
     effects.update(14_000);
     expect(effects.meshes.blood.count).toBe(0);
   });

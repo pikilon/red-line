@@ -117,8 +117,13 @@ leaves the soldier with **less than 60 % of his hp** (`WOUND_BELOW`): above it a
 hit only jolts him and stains his clothes (§5). Below it, the shot that lands
 throws blood out of the wound in a **thin jet**: 3 droplets (5 for a hard hit,
 jolt ≥ 0.3 rad) leave the chest (0.3 tiles up) along the push in a narrow cone
-(±0.18 rad) at 1.4–2.9 tiles/s with a low rise (0.25–0.75 tiles/s), 35 ms
-apart. Each is a thin streak (0.12 × 0.012 tiles, `droplet` effect) that **lies
+(±0.14 rad) at 1.1–3.5 tiles/s with a low rise (0.2–0.8 tiles/s). **It is
+synchronised with the jolt**: the first drop leaves 55 ms after the hit, when
+the body has started to tip, and the rest follow 30 ms apart, so there is
+almost nothing before the jolt. **No two jets are alike**: each hit takes a
+running number as seed, which varies the count (±1), the lean of the whole jet
+(±0.12 rad), its force (0.8–1.2), the height it leaves at and the length of
+each splat, even on the same soldier. Each is a thin streak (0.12 × 0.012 tiles, `droplet` effect) that **lies
 along its velocity** while it flies on a ballistic arc (gravity 4 tiles/s²),
 and where it comes down it leaves a small, thin splat stretched along the jet
 (about 0.16 × 0.04 tiles) that dries up after 10 s. The wound shows on
@@ -159,6 +164,7 @@ so every hit stains the uniform a little more, from the first one.
   later, recovered after 0.7 s), adds two hits under the 0.75 cap and ignores
   hits on ids it never saw.
 * AC-22-10: `spawnHitBlood` throws droplets only when the hit leaves him under 60 %
-  of his hp (3 for a light hit, 5 for a hard one), they fly along the push and
+  of his hp (2–4 for a light hit, 4–6 for a hard one), the first leaves after the jolt
+  has started (none at 20 ms) and no two jets are the same, they fly along the push and
   come down, each leaves a small thin splat (under 0.3 × 0.06 tiles), none without
   gore, and the splats dry up after 10 s.
