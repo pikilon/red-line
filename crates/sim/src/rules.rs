@@ -249,6 +249,9 @@ pub struct TypeDef {
     pub turn_rate_deg: u32,
     #[serde(default)]
     pub turret_turn_rate_deg: u32,
+    /// Launcher types fire only while standing still (they stow when moving).
+    #[serde(default)]
+    pub stationary_fire: bool,
     /// Precomputed at load (`Ruleset::from_json`), never read from the wire.
     #[serde(skip)]
     pub motion: Motion,

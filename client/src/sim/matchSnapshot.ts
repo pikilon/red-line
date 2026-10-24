@@ -1,7 +1,8 @@
+import { lerpAngle } from "../render/heading";
 import { fromRaw } from "./fixed";
 
 export const MATCH_HEADER_LEN = 8;
-export const ENTITY_STRIDE = 9;
+export const ENTITY_STRIDE = 11;
 export const QUEUE_SLOTS = 9;
 export const QUEUE_STRIDE = 12; // building_id, headPermille, queue_len, kind_0..kind_8
 export const NEUTRAL = 255;
@@ -27,6 +28,10 @@ export interface EntityState {
   flags: number;
   progress: number;
   target: number | null;
+  /** Hull heading in angle units, 65536 per turn (spec 11 §6). */
+  heading: number;
+  /** World turret angle (hull heading + turret) in angle units. */
+  turretAngle: number;
 } // target -1 -> null
 
 export interface QueueState {
@@ -47,7 +52,7 @@ export interface MatchSnapshot {
   queues: QueueState[];
 }
 
-// decodeMatchSnapshot(data): per spec §5.15 — header (8), entity_count entities (9 each),
+// decodeMatchSnapshot(data): per spec §5.15 — header (8), entity_count entities (11 each),
 // then queue_count, then per-building queues (8 each). Observer sees 0 credits/power and no queues.
 export function decodeMatchSnapshot(data: Int32Array): MatchSnapshot {
   const viewer = data[1] ?? 0;
@@ -70,6 +75,8 @@ export function decodeMatchSnapshot(data: Int32Array): MatchSnapshot {
       flags: data[base + 6] ?? 0,
       progress: data[base + 7] ?? 0,
       target: targetRaw < 0 ? null : targetRaw,
+      heading: data[base + 9] ?? 0,
+      turretAngle: data[base + 10] ?? 0,
     });
   }
 
@@ -128,6 +135,8 @@ export function interpolateEntities(
       ...entity,
       x: before.x + (entity.x - before.x) * t,
       y: before.y + (entity.y - before.y) * t,
+      heading: lerpAngle(before.heading, entity.heading, t),
+      turretAngle: lerpAngle(before.turretAngle, entity.turretAngle, t),
     };
   });
 }

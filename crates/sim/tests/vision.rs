@@ -179,6 +179,6 @@ fn ac_03_38_fog_encoding_and_filtering() {
     assert_eq!(ids(&snapshot), vec![0, 1]);
     assert_eq!(
         &snapshot[MATCH_HEADER_LEN..MATCH_HEADER_LEN + ENTITY_STRIDE],
-        &[0, 1, 3, 1376256, 720896, -1, FLAG_GHOST, 0, -1]
+        &[0, 1, 3, 1376256, 720896, -1, FLAG_GHOST, 0, -1, 0, 0]
     );
 }

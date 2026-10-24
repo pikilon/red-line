@@ -97,6 +97,7 @@ types:                               # required
     speedCenti: 15
     turnRateDeg: 150
     builds: [ru-power-plant, ru-supply-center, ru-barracks, ru-vehicle-factory, ru-defense]
+    articulation: blade
     render: { size: [80, 60, 100] }
   - id: ru-supply-truck
     category: unit

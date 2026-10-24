@@ -4,6 +4,7 @@ import {
   BufferGeometry,
   Color,
   DoubleSide,
+  Euler,
   Float32BufferAttribute,
   Group,
   InstancedBufferAttribute,
@@ -19,7 +20,7 @@ import {
   Vector3,
 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { RULES, typeDef } from "../rules";
+import { RULES, type TypeDef, typeDef } from "../rules";
 import {
   ENTITY_FLAGS,
   type EntityState,
@@ -47,7 +48,7 @@ import {
   MARK_MASK,
   VEHICLE_TILE,
 } from "./generatedTextures";
-import { createHeadingTracker, turnRatesOf } from "./heading";
+import { angleToYaw } from "./heading";
 import {
   addLiveryAttribute,
   createLiveryTexture,
@@ -66,6 +67,7 @@ import type {
   ModelRegistry,
   TypeModel,
 } from "./models";
+import { createSuspension, LEVEL_POSE } from "./suspension";
 
 export const OWNER_COLORS = [0x1d5fe0, 0xe01b1b] as const;
 export const NEUTRAL_COLOR = 0x8b5a2b;
@@ -85,6 +87,32 @@ const TRACER_Y = 0.5;
 const PROGRESS_FULL = 1000;
 const SCAFFOLD_BEAM = 0.03;
 const UP = new Vector3(0, 1, 0);
+
+/** Folded launcher pod, radians about the hinge (negative lowers the front). */
+const LAUNCHER_STOWED = -1.05;
+/** Dozer blade raised from its modelled ground pose (negative lifts the front). */
+const BLADE_RAISED = -0.5;
+/** Blade raise-and-lower cycle while the dozer builds, in Hz. */
+const BLADE_WORK_HZ = 0.8;
+
+/** Pitch of the articulated model part: a launcher folds flat while its
+ *  vehicle drives; a dozer blade rests raised, drops to the ground when
+ *  driving and cycles up and down while the dozer works in place. */
+function articulationOf(
+  articulation: TypeDef["articulation"],
+  moving: number,
+  working: boolean,
+  nowMs: number,
+): number {
+  if (articulation === "launcher") return LAUNCHER_STOWED * moving;
+  if (articulation !== "blade") return 0;
+  if (working) {
+    const cycle =
+      0.5 + 0.5 * Math.sin((nowMs / 1000) * BLADE_WORK_HZ * 2 * Math.PI);
+    return BLADE_RAISED * (1 - cycle);
+  }
+  return BLADE_RAISED * (1 - moving);
+}
 
 export type ModelGroup = "hull" | "turret";
 
@@ -347,7 +375,8 @@ export function createEntityRenderer(
   const scale = new Vector3();
   const color = new Color();
   const byId = new Map<number, EntityState>();
-  const headings = createHeadingTracker();
+  const suspension = createSuspension();
+  const tilt = new Euler();
   const slots: MeshSlot[] = [];
   const byType = new Map<string, TypeSlots>();
   let generated: GeneratedTextures | null = null;
@@ -559,6 +588,7 @@ export function createEntityRenderer(
       const counts = { units: 0, buildings: 0, ghosts: 0, bars: 0 };
       byId.clear();
       for (const entity of entities) byId.set(entity.id, entity);
+      suspension.prune(new Set(byId.keys()));
       for (const slot of slots) slot.count = 0;
       let tracerCount = 0;
       let scaffoldCount = 0;
@@ -590,18 +620,32 @@ export function createEntityRenderer(
 
         const target =
           entity.target === null ? null : (byId.get(entity.target) ?? null);
-        const heading = headings.update(
-          entity.id,
-          entity.x,
-          entity.y,
-          target === null ? null : { x: target.x, y: target.y },
-          nowMs,
-          turnRatesOf(type),
-        );
+        const heading = {
+          yaw: angleToYaw(entity.heading),
+          turretYaw: angleToYaw(entity.turretAngle),
+        };
 
         const pose = animator.pose(entity, nowMs);
         const recoil = pose.recoil;
-        const lift = pose.lift;
+        const body =
+          type.category === "unit" && type.armor !== 0
+            ? suspension.update(
+                entity.id,
+                entity.x,
+                entity.y,
+                heading.yaw,
+                nowMs,
+              )
+            : LEVEL_POSE;
+        const lift = pose.lift + body.shake;
+        const working =
+          hasFlag(entity, ENTITY_FLAGS.moving) && body.moving < 0.05;
+        const articulationPitch = articulationOf(
+          type.articulation,
+          body.moving,
+          working,
+          nowMs,
+        );
 
         if (isFallback || model === null) {
           if (type.category === "unit") {
@@ -630,7 +674,9 @@ export function createEntityRenderer(
           for (const slot of typeSlots.hull) {
             if (slot.count >= capacity) continue;
             position.set(entity.x, lift, entity.y);
-            rotation.setFromAxisAngle(UP, hullYaw);
+            rotation.setFromEuler(
+              tilt.set(body.pitch, hullYaw, body.roll, "YXZ"),
+            );
             scale.set(1, f, 1);
             matrix.compose(position, rotation, scale);
             place(slot, slot.count, hex);
@@ -639,7 +685,9 @@ export function createEntityRenderer(
             if (slot.count >= capacity) continue;
             const composeTurret = (): Matrix4 => {
               position.set(entity.x, lift, entity.y);
-              rotation.setFromAxisAngle(UP, hullYaw);
+              rotation.setFromEuler(
+                tilt.set(body.pitch, hullYaw, body.roll, "YXZ"),
+              );
               scale.set(1, f, 1);
               turretMatrix.compose(position, rotation, scale);
               pivotMatrix.makeTranslation(
@@ -649,6 +697,8 @@ export function createEntityRenderer(
               );
               turretMatrix.multiply(pivotMatrix);
               rotationMatrix.makeRotationY(turretYaw - hullYaw);
+              turretMatrix.multiply(rotationMatrix);
+              rotationMatrix.makeRotationX(articulationPitch);
               turretMatrix.multiply(rotationMatrix);
               recoilTranslation.makeTranslation(0, 0, -recoil);
               turretMatrix.multiply(recoilTranslation);

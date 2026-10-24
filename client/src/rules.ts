@@ -13,6 +13,8 @@ export interface TypeDef {
   speedCenti: number;
   turnRateDeg: number;
   turretTurnRateDeg: number;
+  /** Moving part of the model: `launcher` stows while driving, `blade` is a dozer blade. */
+  articulation: "none" | "launcher" | "blade";
   weapon: number;
   requires: number[];
   produces: number[];

@@ -25,6 +25,8 @@ const entity = (args: {
   flags: args.flags ?? 0,
   progress: 0,
   target: null,
+  heading: 0,
+  turretAngle: 0,
 });
 
 // AC-03-48: own `ua-rifleman` 2 at (1, 1), enemy `ru-rifleman` 3 at (1.3, 1),

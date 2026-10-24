@@ -353,6 +353,8 @@ const assemble = (globals, factions, maps, ai) => {
       speedCenti: t.speedCenti ?? 0,
       turnRateDeg: t.turnRateDeg ?? 0,
       turretTurnRateDeg: t.turretTurnRateDeg ?? 0,
+      articulation: t.articulation ?? "none",
+      stationaryFire: t.articulation === "launcher",
       locomotor: locomotorIndex(t.locomotor),
       weapon: t.weapon === undefined ? -1 : weaponIndex.get(t.weapon),
       requires: types(t.requires),

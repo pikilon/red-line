@@ -18,11 +18,11 @@ describe("matchSnapshot", () => {
       // header (MATCH_HEADER_LEN): tick, viewer, credits, powerProduced, powerConsumed, outcome index, winner (-1), entityCount
       100,
       0, 5000, 12, 4, 0, -1, 2,
-      // entity id=1 (ENTITY_STRIDE = 9): id, owner, kind, x raw, y raw, hp, flags, progress, target (-1 -> null)
+      // entity id=1 (ENTITY_STRIDE = 11): id, owner, kind, x raw, y raw, hp, flags, progress, target (-1 -> null), heading, turretAngle
       1,
-      0, 2, 98304, 65536, 100, 1, 0, -1,
+      0, 2, 98304, 65536, 100, 1, 0, -1, 0, 0,
       // entity id=10: ...
-      10, 0, 10, 0, 0, 3000, 0, 1000, -1,
+      10, 0, 10, 0, 0, 3000, 0, 1000, -1, 0, 0,
       // queue_count = 1
       1,
       // queue (QUEUE_STRIDE = 12): building_id, headPermille, queue_len, kind_0..kind_8 (-1 slots dropped)
@@ -49,6 +49,8 @@ describe("matchSnapshot", () => {
           flags: 1,
           progress: 0,
           target: null,
+          heading: 0,
+          turretAngle: 0,
         },
         {
           id: 10,
@@ -60,6 +62,8 @@ describe("matchSnapshot", () => {
           flags: 0,
           progress: 1000,
           target: null,
+          heading: 0,
+          turretAngle: 0,
         },
       ],
       queues: [{ building: 12, headPermille: 500, items: [3, 4] }],
@@ -84,6 +88,8 @@ describe("matchSnapshot", () => {
       0,
       0,
       -1,
+      0,
+      0,
       0, // queue_count = 0
     ]);
 
@@ -106,6 +112,8 @@ describe("matchSnapshot", () => {
           flags: 0,
           progress: 0,
           target: null,
+          heading: 0,
+          turretAngle: 0,
         },
       ],
       queues: [],
@@ -113,7 +121,7 @@ describe("matchSnapshot", () => {
 
     // Layout constants.
     expect(MATCH_HEADER_LEN).toBe(8);
-    expect(ENTITY_STRIDE).toBe(9);
+    expect(ENTITY_STRIDE).toBe(11);
     expect(QUEUE_SLOTS).toBe(9);
     expect(QUEUE_STRIDE).toBe(12);
     expect(OUTCOMES).toEqual(["ongoing", "winner", "draw"]);
@@ -139,6 +147,8 @@ describe("matchSnapshot", () => {
           flags: 0,
           progress: 0,
           target: null,
+          heading: 0,
+          turretAngle: 0,
         },
         {
           id: 2,
@@ -150,6 +160,8 @@ describe("matchSnapshot", () => {
           flags: 0,
           progress: 0,
           target: null,
+          heading: 0,
+          turretAngle: 0,
         },
       ],
       queues: [],
@@ -173,6 +185,8 @@ describe("matchSnapshot", () => {
           flags: 1,
           progress: 250,
           target: 10,
+          heading: 0,
+          turretAngle: 0,
         },
         {
           id: 99,
@@ -184,6 +198,8 @@ describe("matchSnapshot", () => {
           flags: 0,
           progress: 0,
           target: null,
+          heading: 0,
+          turretAngle: 0,
         },
       ],
       queues: [],
@@ -201,6 +217,8 @@ describe("matchSnapshot", () => {
       flags: 1,
       progress: 250,
       target: 10,
+      heading: 0,
+      turretAngle: 0,
     });
     // id absent from prev -> next's own values.
     expect(mid[1]).toEqual({
@@ -213,6 +231,8 @@ describe("matchSnapshot", () => {
       flags: 0,
       progress: 0,
       target: null,
+      heading: 0,
+      turretAngle: 0,
     });
     // alpha clamped to [0, 1].
     expect(interpolateEntities(prev, next, -1)[0]).toMatchObject({

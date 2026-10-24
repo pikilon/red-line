@@ -11,11 +11,11 @@
 //! `DIRECT_HIT_CENTI` of its scattered impact, and a splash one damages every
 //! enemy of the shooter inside its radius (no friendly fire).
 
-use crate::angle::Angle;
+use crate::angle::{Angle, atan2};
 use crate::entity::{EntityId, NEUTRAL, Order, PlayerId, Projectile};
 use crate::fixed::{Fx, FxVec2};
 use crate::rng::SplitMix64;
-use crate::rules::{Delivery, TypeId, WeaponDef, WeaponId, fx_centi};
+use crate::rules::{Delivery, LocoKind, TypeId, WeaponDef, WeaponId, fx_centi};
 use crate::world::{CombatEvent, DIRECT_HIT_CENTI, World};
 
 /// `0` when `modifier_percent == 0`; otherwise `max(1, base * modifier_percent
@@ -52,6 +52,19 @@ impl World {
         let Some((weapon_id, weapon)) = self.weapon_data(kind) else {
             return;
         };
+        let legacy = self.rules.ty(kind).motion.kind == LocoKind::Immediate;
+        let target_index = if legacy {
+            None
+        } else {
+            self.sticky_target(index, &weapon)
+        };
+        let aligned = if legacy {
+            true
+        } else {
+            let entity = &self.entities[index];
+            let stowed = self.rules.ty(kind).stationary_fire && entity.speed > Fx::ZERO;
+            self.aim_turret(index, &weapon, target_index) && !stowed
+        };
         let cooldown = self.entities[index].cooldown;
         if cooldown > 0 {
             self.entities[index].cooldown = cooldown - 1;
@@ -59,9 +72,17 @@ impl World {
                 return;
             }
         }
-        let Some(target_index) = self.select_target(index, &weapon) else {
+        let target_index = if legacy {
+            self.select_target(index, &weapon)
+        } else {
+            target_index
+        };
+        let Some(target_index) = target_index else {
             return;
         };
+        if !aligned {
+            return;
+        }
         let target = self.entities[target_index].id;
         let distance = self.entity_distance(self.entities[index].pos, &self.entities[target_index]);
         let flight = self.flight_ticks(&weapon, distance);
@@ -98,6 +119,64 @@ impl World {
         }
         self.entities[index].cooldown = weapon.cooldown_ticks;
         self.entities[index].last_target = Some(target);
+    }
+
+    /// Spec 11 §5.3 step 1: the locked target while it stays valid, otherwise a
+    /// fresh pick; the result is stored in `aim` (Generals `TurretAI` keeps its
+    /// victim).
+    fn sticky_target(&mut self, index: usize, weapon: &WeaponDef) -> Option<usize> {
+        let locked = self.entities[index]
+            .aim
+            .and_then(|id| self.index_of(id))
+            .filter(|&target_index| self.is_valid_target(index, target_index, weapon));
+        let target = locked.or_else(|| self.select_target(index, weapon));
+        self.entities[index].aim = target.map(|target_index| self.entities[target_index].id);
+        target
+    }
+
+    /// Spec 11 §5.3 steps 2, 3 and 6: turns the turret (or the hull of a
+    /// turretless weapon) towards the target, or recentres it when there is
+    /// none. Returns whether the weapon is aligned with the target.
+    fn aim_turret(&mut self, index: usize, weapon: &WeaponDef, target: Option<usize>) -> bool {
+        let motion = self.rules.ty(self.entities[index].kind).motion;
+        let Some(target_index) = target else {
+            let recenter = self.rules.turret_recenter_ticks;
+            let entity = &mut self.entities[index];
+            entity.idle_aim_ticks = entity.idle_aim_ticks.saturating_add(1);
+            if motion.turret_step > 0 {
+                if entity.speed > Fx::ZERO {
+                    // The turret looks where the hull is heading and swings
+                    // ahead of it in a turn, at twice its aim rate.
+                    let want = match entity.order {
+                        Order::Move { target, .. } if !entity.reversing => {
+                            let offset = target - entity.pos;
+                            Angle(atan2(offset.x, offset.y).0.wrapping_sub(entity.heading.0))
+                        }
+                        _ => Angle(0),
+                    };
+                    entity.turret = entity
+                        .turret
+                        .turn_towards(want, motion.turret_step.saturating_mul(2));
+                } else if entity.idle_aim_ticks > recenter {
+                    let half = (motion.turret_step / 2).max(1);
+                    entity.turret = entity.turret.turn_towards(Angle(0), half);
+                }
+            }
+            return false;
+        };
+        let offset = self.entities[target_index].pos - self.entities[index].pos;
+        let bearing = atan2(offset.x, offset.y);
+        let entity = &mut self.entities[index];
+        entity.idle_aim_ticks = 0;
+        if motion.turret_step > 0 {
+            let want = Angle(bearing.0.wrapping_sub(entity.heading.0));
+            entity.turret = entity.turret.turn_towards(want, motion.turret_step);
+            return entity.turret.delta(want).abs() <= weapon.aim_tolerance;
+        }
+        if matches!(entity.order, Order::Idle { .. } | Order::Attack { .. }) {
+            entity.heading = entity.heading.turn_towards(bearing, motion.turn_step);
+        }
+        entity.heading.delta(bearing).abs() <= weapon.aim_tolerance
     }
 
     /// Spec 17 §4.2: `max(1, ceil(d / speed))` at `speedCenti`, otherwise the

@@ -85,7 +85,7 @@ fn ac_05_20_wasm_api_v3() {
         .map(|(index, _)| index as i32)
         .collect();
     const MATCH_HEADER_LEN: usize = 8;
-    const ENTITY_STRIDE: usize = 9;
+    const ENTITY_STRIDE: usize = 11;
     let data = sim.snapshot_for(255);
     let count = data[7] as usize;
     let owned = (0..count)

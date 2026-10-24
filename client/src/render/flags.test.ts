@@ -26,6 +26,8 @@ function hq(id: number, type: string, flags = 0): EntityState {
     flags,
     progress: 500,
     target: null,
+    heading: 0,
+    turretAngle: 0,
   };
 }
 

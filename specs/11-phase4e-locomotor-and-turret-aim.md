@@ -1,6 +1,8 @@
 # 11 — Phase 4e locomotor and turret aim
 
-Status: proposed, parked by the owner on 2026-10-12 (no issues opened yet).
+Status: hull locomotion (P4-21), turret aim (P4-22), snapshot angles (P4-23) and
+client rendering (P4-24) implemented; owner playtest 2026-10-24 asked for
+body motion while driving (§6.1).
 Depends on `03-phase2-core-loop.md` (movement §5.10, combat §5.11, snapshot
 §5.15), `06-phase4a-procedural-models.md` §5.1 (turn rates in the data) and
 `09-phase4c-animation-and-finish.md`. Roadmap: Phase 4. Decisions: D-02
@@ -341,6 +343,23 @@ weapon), using the weapon's `aimToleranceDeg` (15°); at 540–720 °/s
   turret yaw from `angleToYaw(entity.turretAngle)` (units and buildings). The
   `HeadingTracker` and `turnRatesOf` of spec 06 §5.1 are no longer used for
   entities from a match snapshot; they stay for the tech-slice renderer.
+
+### 6.1 Body motion while driving (owner request 2026-10-24)
+
+Presentation only (`client/src/render/suspension.ts`), derived from the
+rendered position and hull yaw, nothing in the sim: armoured units dip nose
+down when braking and squat when accelerating (pitch ≤ 0.06 rad), lean outward
+in turns (roll ≤ 0.07 rad, proportional to turn rate × speed) and shake
+slightly with the engine while moving. Both hull and turret take the tilt.
+Moving parts (`articulation` in the faction data, owner request 2026-10-24):
+`launcher` (HIMARS) folds its pod flat while driving and its weapon fires only
+when `speed == 0` (`stationaryFire`); `blade` (dozers) keeps the blade raised at
+rest, lowers it while driving and raises and lowers it in a cycle while the
+dozer works in place. A turreted vehicle with no target swings its turret ahead
+of the hull towards its `Move` goal at twice its aim rate; with a target it keeps
+aiming at it. Infantry animation stays deferred.
+Assumption: Generals' tread and wheel texture animation
+(`TreadDriveSpeedFraction`, W3DTankDraw) is not reproduced yet.
 
 ## 7. Acceptance criteria
 

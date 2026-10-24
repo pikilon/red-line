@@ -135,8 +135,8 @@ fn event_visible(world: &World, viewer: PlayerId, event: &CombatEvent) -> bool {
 /// entity_count`.
 pub const MATCH_HEADER_LEN: usize = 8;
 /// One entity record: `id, owner, kind, pos.x, pos.y, hp, flags, progress,
-/// target`.
-pub const ENTITY_STRIDE: usize = 9;
+/// target, heading, turret angle` (angles in `0..65536`, spec 11 §6).
+pub const ENTITY_STRIDE: usize = 11;
 /// One production queue record: `building_id, head permille, queue_len` plus
 /// `QUEUE_SLOTS` kinds.
 pub const QUEUE_STRIDE: usize = 12;
@@ -277,6 +277,8 @@ fn entity_row(
         entity_flags(world, entity) | fired,
         entity_progress(world, entity),
         target.map_or(-1, |target| target as i32),
+        i32::from(entity.heading.0),
+        i32::from(entity.heading.0.wrapping_add(entity.turret.0)),
     ]
 }
 
@@ -295,6 +297,8 @@ fn ghost_row(world: &World, id: EntityId, ghost: &Ghost) -> [i32; ENTITY_STRIDE]
         FLAG_GHOST,
         0,
         -1,
+        0,
+        0,
     ]
 }
 

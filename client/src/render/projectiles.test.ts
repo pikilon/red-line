@@ -27,6 +27,8 @@ function entity(
     flags: 0,
     progress: 0,
     target: null,
+    heading: 0,
+    turretAngle: 0,
   };
 }
 
