@@ -234,8 +234,8 @@ fall back through a chain so every weapon sounds like something:
    Miles; Zero Hour used 25), 8 UI, 2 streams (music + one speech).
    `minSampleVolume`: sounds computed under 2% gain are skipped.
 2. **Voice rule.** One voice per object at a time. Orders given to a group
-   speak with **one** unit of the group (the first selected, as Zero Hour does:
-   the group leader acknowledges) so ten units do not talk at once.
+   speak with **one** unit of the group (the first selected; our choice, not
+   verified in Zero Hour: the group leader acknowledges) so ten units do not talk at once.
 3. **Select/move/attack** are UI voices for the owner only: played from the
    client input layer when the command is issued; a new order interrupts the
    previous line (`interrupt`).
