@@ -78,7 +78,17 @@ fn ac_19_14_armor_duel() {
 
 #[test]
 fn ac_19_14_infantry_vs_armor() {
-    assert!(deaths("infantry-vs-armor", 900) > 0);
+    // Changed by the owner (issue #232): with tracked tanks the tanks stop beyond the
+    // line after their orders, so the contract is checked as hits, not deaths.
+    let (mut world, _, mut ais) = load_example("infantry-vs-armor");
+    run(&mut world, &mut ais, 900);
+    let rules = world.rules();
+    assert!(
+        world.entities().iter().any(|e| {
+            rules.ty(e.kind).category == sim::rules::Category::Unit && e.hp < rules.ty(e.kind).hp
+        }),
+        "a unit takes damage within 900 ticks"
+    );
 }
 
 #[test]

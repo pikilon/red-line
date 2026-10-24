@@ -715,7 +715,7 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
 | `showcase` | showcase | `starts: true`; every non-HQ building and non-dozer unit of each faction once, laid out as spec 14 §4 (buildings at `(x0 + 5i, hqY)`, units in two rows of four at y 16.5 / 20.5); camera zoom 1 at `(x0 + 14, 12)` of player 0 | 28 entities; each faction's types exactly once |
 | `showcase-units` | showcase | Same entities as `showcase`; camera zoom 2 at `(x0 + 9.5, 18.5)` | Same as `showcase` |
 | `armor-duel` | showcase | 4 `ua-leopard-2a4` + 2 `ua-bradley` facing 4 `ru-t-72b3` + 2 `ru-bmp-2`, 6 tiles apart (inside sight: an attack order on an unseen target is dropped), each attacking an enemy | A death within 900 ticks |
-| `infantry-vs-armor` | showcase | 8 `ua-rifleman` + 4 `ua-stugna-team` in a line; 3 `ru-t-72b3` with move orders through them | A death within 900 ticks |
+| `infantry-vs-armor` | showcase | 8 `ua-rifleman` + 4 `ua-stugna-team` in a line; 3 `ru-t-72b3` with move orders through them | A unit takes damage within 900 ticks |
 | `rpg-ambush` | showcase | 6 `ru-rpg-gunner` + 4 `ru-rifleman` beside the path of 4 `ua-bradley` moving across the map | A death within 900 ticks |
 | `artillery-range` | showcase | 2 `ua-himars` and 2 `ru-tos-1a`, each attacking an enemy building (power plant, barracks); one scout per side spots the targets; both HQs present | A projectile in flight within 300 ticks; a targeted building's HP lower at 900 |
 | `defenses` | showcase | `ua-defense` and `ru-defense`, each with 4 enemy units moving into range | A death within 900 ticks |
