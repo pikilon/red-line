@@ -429,6 +429,7 @@ export function spawnShotEffects(
   snapshot: MatchSnapshot,
   effects: Effects,
   nowMs = 0,
+  onExplosion?: (x: number, y: number, size: number, startMs: number) => void,
 ): void {
   const byId = new Map<number, EntityState>();
   for (const entity of snapshot.entities) byId.set(entity.id, entity);
@@ -474,6 +475,7 @@ export function spawnShotEffects(
         size,
         startMs: nowMs + delayMs,
       });
+      onExplosion?.(target.x, target.y, size, nowMs + delayMs);
     }
   }
 }
