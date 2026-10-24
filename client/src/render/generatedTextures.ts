@@ -206,16 +206,17 @@ export function createBodyMaterial(flatShading = true): MeshLambertMaterial {
     shader.vertexShader = shader.vertexShader
       .replace(
         "#include <common>",
-        `#include <common>\nattribute float ${DARK_MASK};\nvarying float vDark;\nattribute vec3 livery;\nvarying vec3 vLivery;`,
+        `#include <common>\nattribute float ${DARK_MASK};\nvarying float vDark;\nattribute vec3 livery;\nvarying vec3 vLivery;\nvarying vec3 vTint;`,
       )
       .replace(
         "#include <begin_vertex>",
-        `#include <begin_vertex>\nvDark = ${DARK_MASK};\nvLivery = livery;`,
+        // The instance colour also darkens the livery: a burnt hulk (spec 27 §4).
+        `#include <begin_vertex>\nvDark = ${DARK_MASK};\nvLivery = livery;\n#ifdef USE_INSTANCING_COLOR\nvTint = instanceColor;\n#else\nvTint = vec3( 1.0 );\n#endif`,
       );
     shader.fragmentShader = shader.fragmentShader
       .replace(
         "#include <common>",
-        "#include <common>\nuniform sampler2D darkMap;\nuniform sampler2D liveryMap;\nvarying float vDark;\nvarying vec3 vLivery;",
+        "#include <common>\nuniform sampler2D darkMap;\nuniform sampler2D liveryMap;\nvarying float vDark;\nvarying vec3 vLivery;\nvarying vec3 vTint;",
       )
       .replace(
         "#include <map_fragment>",
@@ -238,7 +239,7 @@ float liveryCover = 0.0;
   float liveryWeight = liveryColor.a * liveryInside * min( vLivery.z, 1.0 ) * ( 1.0 - min( vDark, 1.0 ) ) * 0.95;
   // Flags are flat; the painted Z (mask 3) follows the relief of the skin.
   liveryCover = liveryWeight * ( 1.0 - step( 2.5, vLivery.z ) );
-  diffuseColor.rgb = mix( diffuseColor.rgb, liveryColor.rgb * liveryDetail, liveryWeight );`,
+  diffuseColor.rgb = mix( diffuseColor.rgb, liveryColor.rgb * liveryDetail * vTint, liveryWeight );`,
       )
       .replace(
         "#include <normal_fragment_maps>",

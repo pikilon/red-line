@@ -77,6 +77,12 @@ import {
   pressSourcesOf,
 } from "../render/terrainRelief";
 import {
+  detectRicochets,
+  detectVehicleHits,
+  isVehicle,
+} from "../render/vehicleDeaths";
+import { createVehicleFx } from "../render/vehicleFx";
+import {
   climateFor,
   coverThresholds,
   createWeather,
@@ -617,6 +623,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let animator: Animator;
   const corpses = createCorpses();
   const deathCauses = createDeathCauses();
+  /** Vehicle sparks, rocking, damage smoke and hulks (spec 27). */
+  const vehicleFx = createVehicleFx();
   let entities: EntityRenderer | null = null;
   let terrain: Group | null = null;
   /** Generated PNGs, loaded the first time they are switched on (spec 12). */
@@ -787,8 +795,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       registry,
       animator,
       corpses,
+      vehicleFx,
     );
     scene.add(entities.group);
+    scene.add(vehicleFx.group);
     effects = createEffects();
     scene.add(effects.group);
     attackMarker = createAttackMarker();
@@ -1062,6 +1072,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       decals?.recordShots(snapshot, effectTime(at));
       animator.recordShots(snapshot.entities, at);
       deathCauses.record(snapshot.entities, effectTime(at));
+      vehicleFx.ricochet(detectRicochets(snapshot));
       if (previous !== null) {
         const hits = detectHits(
           previous,
@@ -1070,10 +1081,18 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
           effectTime(at),
         );
         animator.recordHits?.(hits, at);
+        vehicleFx.hit(
+          detectVehicleHits(previous, snapshot, deathCauses, effectTime(at)),
+          effectTime(at),
+        );
         spawnHitBlood(hits, effects, settings.gore, effectTime(at));
       }
-      const deaths =
+      const dead =
         previous === null ? [] : detectDeaths(previous, snapshot, viewer);
+      // Vehicles leave burning hulks of their own (spec 27 §4).
+      const vehicles = dead.filter((entity) => isVehicle(typeDef(entity.kind)));
+      vehicleFx.kill(vehicles, deathCauses, effectTime(at));
+      const deaths = dead.filter((entity) => !isVehicle(typeDef(entity.kind)));
       spawnDeathEffects(
         deaths,
         effects,
@@ -1233,6 +1252,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         controller?.selected ?? NO_SELECTION,
         effectTime(now),
       );
+      vehicleFx.update(drawn, effectTime(now), camera.quaternion);
       // Entities are drawn between the previous and the latest tick, so the
       // projectiles fly at the same fractional tick.
       projectiles?.sync(

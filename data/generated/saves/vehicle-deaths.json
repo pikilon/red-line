@@ -1,0 +1,202 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "vehicle-deaths",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 48,
+      "y": 20,
+      "zoom": 1.5
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          4500,
+          1500
+        ],
+        "label": "ua0",
+        "order": {
+          "attack": "ru0"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          4500,
+          1800
+        ],
+        "label": "ua1",
+        "order": {
+          "attack": "ru1"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          4500,
+          2100
+        ],
+        "label": "ua2",
+        "order": {
+          "attack": "ru2"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          4500,
+          2400
+        ],
+        "label": "ua3",
+        "order": {
+          "attack": "ru3"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-kozak-scout",
+        "atCenti": [
+          4600,
+          1300
+        ],
+        "label": "ua4",
+        "order": {
+          "attack": "ru4"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-kozak-scout",
+        "atCenti": [
+          4600,
+          2600
+        ],
+        "label": "ua5",
+        "order": {
+          "attack": "ru5"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4750,
+          1650
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4750,
+          1950
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4750,
+          2250
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          5100,
+          1500
+        ],
+        "label": "ru0",
+        "order": {
+          "attack": "ua0"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          5100,
+          1800
+        ],
+        "label": "ru1",
+        "order": {
+          "attack": "ua1"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          5100,
+          2100
+        ],
+        "label": "ru2",
+        "order": {
+          "attack": "ua2"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          5100,
+          2400
+        ],
+        "label": "ru3",
+        "order": {
+          "attack": "ua3"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-brdm-scout",
+        "atCenti": [
+          5000,
+          1300
+        ],
+        "label": "ru4",
+        "order": {
+          "attack": "ua4"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-supply-truck",
+        "atCenti": [
+          5000,
+          2600
+        ],
+        "label": "ru5"
+      }
+    ]
+  }
+}
