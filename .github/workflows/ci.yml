@@ -5,27 +5,73 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
+# CI prefers the owner's Mac (self-hosted runner `red-line-mac`) when it is
+# online and idle, and falls back to GitHub's ubuntu-latest otherwise. Fork
+# PRs never run on the Mac. If the Mac goes off mid-job the job fails: re-run it
+# and it goes to GitHub.
 jobs:
-  verify:
+  pick-runner:
     runs-on: ubuntu-latest
+    outputs:
+      runner: ${{ steps.pick.outputs.runner }}
+    steps:
+      - id: pick
+        env:
+          GH_TOKEN: ${{ secrets.RUNNER_STATUS_TOKEN }}
+          TRUSTED: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
+        run: |
+          runner='"ubuntu-latest"'
+          if [ "$TRUSTED" != "true" ]; then
+            echo "Untrusted event (fork PR): using GitHub runner."
+          elif [ -z "$GH_TOKEN" ]; then
+            echo "::warning::RUNNER_STATUS_TOKEN is not set; using GitHub runner."
+          elif ready=$(gh api "repos/${{ github.repository }}/actions/runners" \
+              --jq '[.runners[] | select(.status == "online" and .busy == false and ([.labels[].name] | index("red-line-mac")))] | length'); then
+            if [ "$ready" -gt 0 ]; then
+              runner='["self-hosted","macOS","red-line-mac"]'
+            else
+              echo "Mac runner offline or busy: using GitHub runner."
+            fi
+          else
+            echo "::warning::Runner status API call failed; using GitHub runner."
+          fi
+          echo "runner=$runner" >> "$GITHUB_OUTPUT"
+          echo "Selected runner: $runner"
+
+  verify:
+    needs: pick-runner
+    runs-on: ${{ fromJSON(needs.pick-runner.outputs.runner) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # The Mac already has Node, Rust, wasm-pack and nextest.
+      - if: runner.os != 'macOS'
+        uses: actions/setup-node@v4
         with:
           node-version: 26.9.0
           cache: npm
           cache-dependency-path: |
             package-lock.json
             client/package-lock.json
-      - uses: dtolnay/rust-toolchain@stable
+      - if: runner.os != 'macOS'
+        uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
           components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
-      - uses: taiki-e/install-action@v2
+      - if: runner.os != 'macOS'
+        uses: Swatinem/rust-cache@v2
+      - if: runner.os != 'macOS'
+        uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest,wasm-pack
+      - if: runner.os == 'macOS'
+        run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
       - run: node --run install:root
       - run: node --run install:client
-      - run: cd client && npx playwright install --with-deps chromium
+      - if: runner.os != 'macOS'
+        run: cd client && npx playwright install --with-deps chromium
+      - if: runner.os == 'macOS'
+        run: cd client && npx playwright install chromium
       - run: node --run verify
