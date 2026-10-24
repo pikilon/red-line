@@ -27,8 +27,15 @@ import {
   hasFlag,
   NEUTRAL,
 } from "../sim/matchSnapshot";
-import type { Animator } from "./animation";
+import type { Animator, Pose } from "./animation";
 import { createCageMaterial, createCageTexture } from "./cage";
+import {
+  type Corpses,
+  corpseFade,
+  corpseLimb,
+  type ManBody,
+  manBody,
+} from "./corpses";
 import { applyFacade, enableFacades, facadeTextureIds } from "./facades";
 import {
   addBandAttribute,
@@ -50,6 +57,13 @@ import {
 } from "./generatedTextures";
 import { angleToYaw } from "./heading";
 import {
+  BLOOD_ATTRIBUTE,
+  enableLimbFx,
+  FADE_ATTRIBUTE,
+  type LimbFx,
+  limbDepthMaterial,
+} from "./limbFx";
+import {
   addLiveryAttribute,
   createLiveryTexture,
   FLAG_ON_TURRET,
@@ -62,11 +76,13 @@ import {
   Z_ON_TURRET,
 } from "./liveries";
 import type {
+  LimbModel,
   MaterialName,
   ModelPart,
   ModelRegistry,
   TypeModel,
 } from "./models";
+import { type LimbPose, limbPose, resetPose } from "./rig";
 import { createSuspension, LEVEL_POSE } from "./suspension";
 
 export const OWNER_COLORS = [0x1d5fe0, 0xe01b1b] as const;
@@ -114,12 +130,14 @@ function articulationOf(
   return BLADE_RAISED * (1 - moving);
 }
 
-export type ModelGroup = "hull" | "turret";
+export type ModelGroup = "hull" | "turret" | "limb";
 
 /** One lazily created `InstancedMesh` of a loaded model (spec 06 §5). */
 export interface ModelInstance {
   readonly typeId: string;
   readonly group: ModelGroup;
+  /** Name of the limb of a `limb` group (spec 20). */
+  readonly limb?: string;
   /** `body` also carries the merged `dark` geometry with vertex colours. */
   readonly material: MaterialName;
   readonly mesh: InstancedMesh;
@@ -151,11 +169,22 @@ interface MeshSlot extends ModelInstance {
   count: number;
   /** Per-instance `bandOn` of a `team` slot with flag bands (spec 16 §5). */
   bandOn?: InstancedBufferAttribute;
+  /** Per-instance fade and blood of a limb slot (spec 22 §5). */
+  fx?: LimbFx;
 }
+
+/** Fade (1 opaque) and blood (0 clean .. 1 soaked) of one soldier. */
+interface Look {
+  readonly fade: number;
+  readonly blood: number;
+}
+
+const CLEAN: Look = { fade: 1, blood: 0 };
 
 interface TypeSlots {
   readonly hull: readonly MeshSlot[];
   readonly turret: readonly MeshSlot[];
+  readonly limbs: ReadonlyMap<string, readonly MeshSlot[]>;
 }
 
 function instanced(
@@ -309,8 +338,8 @@ export function scaffoldGeometry(): BufferGeometry {
  *  when no animator is supplied (spec 09 §4). */
 const NO_ANIMATOR: Animator = {
   recordShots() {},
-  pose(): { recoil: number; lift: number } {
-    return { recoil: 0, lift: 0 };
+  pose(): Pose {
+    return { recoil: 0, lift: 0, rig: null };
   },
 };
 
@@ -318,6 +347,7 @@ export function createEntityRenderer(
   capacity: number,
   models?: ModelRegistry,
   animator: Animator = NO_ANIMATOR,
+  corpses?: Corpses,
 ): EntityRenderer {
   const box = new BoxGeometry(1, 1, 1);
   const units = instanced(box, new MeshBasicMaterial(), capacity);
@@ -377,9 +407,152 @@ export function createEntityRenderer(
   const byId = new Map<number, EntityState>();
   const suspension = createSuspension();
   const tilt = new Euler();
+  const limbMatrices = new Map<string, Matrix4>();
+  const manState: ManBody = {
+    u: 0,
+    lift: 0,
+    tilt: 0,
+    joints: { thigh_l: 0, thigh_r: 0, shin_l: 0, shin_r: 0, arms: 0 },
+    drop: 0,
+    splay: 0,
+    scale: 1,
+  };
+  const yawQuaternion = new Quaternion();
+  const tiltAxis = new Vector3();
+  const limbOffset = resetPose({} as LimbPose);
+  const limbLocal = new Matrix4();
+  const limbSpin = new Matrix4();
+  const limbEuler = new Euler();
+  const limbScale = new Vector3();
+  const limbMove = new Vector3();
   const slots: MeshSlot[] = [];
   const byType = new Map<string, TypeSlots>();
   let generated: GeneratedTextures | null = null;
+
+  /** `world` = `parent` × joint offset × pose of `limb`: the joint sits at the
+   *  limb's resting joint in its parent's frame, moved and turned by `pose`. */
+  function composeLimb(
+    world: Matrix4,
+    parent: Matrix4,
+    limb: LimbModel,
+    offset: LimbPose,
+  ): void {
+    limbMove.set(
+      limb.local.x + offset.x,
+      limb.local.y + offset.y,
+      limb.local.z + offset.z,
+    );
+    limbEuler.set(offset.rx, offset.ry, offset.rz, "YXZ");
+    limbSpin.makeRotationFromEuler(limbEuler);
+    limbScale.set(offset.sx, offset.sy, offset.sz);
+    limbSpin.scale(limbScale);
+    limbLocal.makeTranslation(limbMove.x, limbMove.y, limbMove.z);
+    limbLocal.multiply(limbSpin);
+    world.multiplyMatrices(parent, limbLocal);
+  }
+
+  /** Draws every limb of `model` under `base`, each posed by `poseOf`
+   *  (offset from its neutral pose): `parent × joint × pose` (spec 20). */
+  function drawLimbs(
+    model: TypeModel,
+    typeSlots: TypeSlots,
+    base: (limb: LimbModel) => Matrix4,
+    hex: number,
+    poseOf: (name: string, out: LimbPose) => void,
+    look: Look = CLEAN,
+  ): void {
+    for (const limb of model.limbs ?? []) {
+      const parent =
+        limb.parent === null ? base(limb) : limbMatrices.get(limb.parent);
+      if (parent === undefined) continue;
+      poseOf(limb.name, limbOffset);
+      const world = limbMatrices.get(limb.name) ?? new Matrix4();
+      limbMatrices.set(limb.name, world);
+      composeLimb(world, parent, limb, limbOffset);
+      for (const slot of typeSlots.limbs.get(limb.name) ?? []) {
+        if (slot.count >= capacity) continue;
+        place(slot, slot.count, hex, () => world, look);
+      }
+    }
+  }
+
+  /** Blood on the clothes of a soldier with `hp` of `max`: none while
+   *  unhurt, spreading as he is wounded. */
+  function bloodOf(hp: number, max: number): number {
+    return max > 0 ? Math.min(1, Math.max(0, 1 - hp / max) ** 0.8) : 0;
+  }
+
+  /** Falling and lying soldiers (spec 22): every man of the team is a ragdoll
+   *  that tips over his own feet; props of the team stay where they were. */
+  function drawCorpses(nowMs: number): void {
+    for (const corpse of corpses?.live(nowMs) ?? []) {
+      const type = typeDef(corpse.kind);
+      const model = models?.get(type.id) ?? null;
+      if (model === null || model.fallback || model.limbs === undefined) {
+        continue;
+      }
+      const t = nowMs - corpse.startMs;
+      const fade = corpseFade(t);
+      const push = corpse.cause.push;
+      const dx = Math.cos(push);
+      const dz = Math.sin(push);
+      const sinYaw = Math.sin(corpse.yaw);
+      const cosYaw = Math.cos(corpse.yaw);
+      // How the push lies in the soldier's own frame: along where he faces,
+      // and to his right.
+      const along = Math.sin(corpse.yaw + push);
+      const across = -Math.cos(corpse.yaw + push);
+      yawQuaternion.setFromAxisAngle(UP, corpse.yaw);
+      // A man's feet are under his hips: the joint of the hips limb.
+      const men: string[] = [];
+      for (const limb of model.limbs) {
+        if (limb.name.endsWith("_hips"))
+          men.push(limb.name.split("_")[0] ?? "");
+      }
+      const bases = new Map<string, Matrix4>();
+      const bodies = new Map<string, ManBody>();
+      men.forEach((prefix, index) => {
+        const hips = model.limbs?.find(
+          (limb) => limb.name === `${prefix}_hips`,
+        );
+        if (hips === undefined) return;
+        const feet = manBody(corpse, prefix, index, t, manState);
+        const px = hips.world.x;
+        const pz = hips.world.z;
+        // His feet in the world: where he stood, then thrown along the push.
+        position.set(
+          corpse.x + px * cosYaw + pz * sinYaw + dx * feet.u,
+          feet.lift,
+          corpse.y - px * sinYaw + pz * cosYaw + dz * feet.u,
+        );
+        tiltAxis.set(dz, 0, -dx);
+        rotation.setFromAxisAngle(tiltAxis, feet.tilt).multiply(yawQuaternion);
+        scale.set(1, 1, 1);
+        const base = new Matrix4().compose(position, rotation, scale);
+        pivotMatrix.makeTranslation(-px, 0, -pz);
+        base.multiply(pivotMatrix);
+        bases.set(prefix, base);
+        bodies.set(prefix, { ...feet, joints: { ...feet.joints } });
+      });
+      // Props of the team (launchers) stay put, heading kept.
+      position.set(corpse.x, 0, corpse.y);
+      scale.set(1, 1, 1);
+      const hull = new Matrix4().compose(position, yawQuaternion, scale);
+      drawLimbs(
+        model,
+        slotsFor(type.id, model),
+        (limb) => bases.get(limb.name.split("_")[0] ?? "") ?? hull,
+        ownerColor(corpse.owner),
+        (name, out) => {
+          const at = name.indexOf("_");
+          const body = bodies.get(name.slice(0, at));
+          if (body === undefined) resetPose(out);
+          else corpseLimb(body, name.slice(at + 1), along, across, out);
+        },
+        { fade, blood: corpse.blood ?? 0.8 },
+      );
+    }
+  }
 
   /** The roof area the turret of `model` covers, for the Z (spec 13 §3). */
   function turretOccluders(model: TypeModel): Footprint[] {
@@ -442,8 +615,14 @@ export function createEntityRenderer(
     typeId: string,
     model: TypeModel,
     kind: ModelGroup,
+    limb?: LimbModel,
   ): MeshSlot[] {
-    const parts = kind === "turret" ? model.turret : model.parts;
+    const parts =
+      limb !== undefined
+        ? limb.parts
+        : kind === "turret"
+          ? model.turret
+          : model.parts;
     const created: MeshSlot[] = [];
     const type = RULES.types.find((entry) => entry.id === typeId);
     const livery =
@@ -500,7 +679,29 @@ export function createEntityRenderer(
       mesh.frustumCulled = true;
       mesh.castShadow = material !== "cage";
       mesh.receiveShadow = true;
-      const slot: MeshSlot = { typeId, group: kind, material, mesh, count: 0 };
+      const slot: MeshSlot = {
+        typeId,
+        group: kind,
+        material,
+        mesh,
+        count: 0,
+        ...(limb === undefined ? {} : { limb: limb.name }),
+      };
+      if (limb !== undefined && material !== "cage") {
+        // Limbs dissolve when their body fades and carry the blood of the wounds.
+        const fx: LimbFx = {
+          fade: new InstancedBufferAttribute(
+            new Float32Array(capacity).fill(1),
+            1,
+          ),
+          blood: new InstancedBufferAttribute(new Float32Array(capacity), 1),
+        };
+        geometry.setAttribute(FADE_ATTRIBUTE, fx.fade);
+        geometry.setAttribute(BLOOD_ATTRIBUTE, fx.blood);
+        enableLimbFx(mesh.material as MeshLambertMaterial, material === "body");
+        mesh.customDepthMaterial = limbDepthMaterial();
+        slot.fx = fx;
+      }
       if (material === "team" && bands !== null && bandOn !== undefined) {
         slot.bandOn = bandOn;
         enableBands(mesh.material as MeshLambertMaterial, bands);
@@ -534,6 +735,12 @@ export function createEntityRenderer(
     const created: TypeSlots = {
       hull: createSlots(typeId, model, "hull"),
       turret: createSlots(typeId, model, "turret"),
+      limbs: new Map(
+        (model.limbs ?? []).map((limb) => [
+          limb.name,
+          createSlots(typeId, model, "limb", limb),
+        ]),
+      ),
     };
     byType.set(typeId, created);
     return created;
@@ -544,6 +751,7 @@ export function createEntityRenderer(
     index: number,
     hex: number,
     composeTurret: (() => Matrix4) | null = null,
+    look: Look = CLEAN,
   ): void {
     if (slot.bandOn !== undefined) {
       // Flag bands show unless selected (spec 16 §5).
@@ -555,6 +763,10 @@ export function createEntityRenderer(
       slot.mesh.setColorAt(index, color.setHex(hex));
     } else {
       slot.mesh.setColorAt(index, color.setHex(0xffffff));
+    }
+    if (slot.fx !== undefined) {
+      slot.fx.fade.setX(index, look.fade);
+      slot.fx.blood.setX(index, look.blood);
     }
     slot.mesh.setMatrixAt(
       index,
@@ -607,7 +819,9 @@ export function createEntityRenderer(
         const isFallback =
           model === null ||
           model.fallback ||
-          (model.parts.size === 0 && model.turret.size === 0);
+          (model.parts.size === 0 &&
+            model.turret.size === 0 &&
+            (model.limbs?.length ?? 0) === 0);
 
         if (isGhost) {
           if (counts.ghosts < capacity) {
@@ -671,6 +885,34 @@ export function createEntityRenderer(
           const typeSlots = slotsFor(type.id, model);
           const hullYaw = type.category === "unit" ? heading.yaw : 0;
           const turretYaw = heading.turretYaw;
+          const rig = pose.rig;
+          if (rig !== null && model.limbs !== undefined) {
+            // Soldiers walk on their own legs: no hull bounce (spec 20).
+            position.set(entity.x, body.shake, entity.y);
+            rotation.setFromEuler(tilt.set(0, hullYaw, 0, "YXZ"));
+            if (rig.flinch !== 0) {
+              // A hit that did not kill jolts the body over its feet.
+              yawQuaternion.copy(rotation);
+              tiltAxis.set(
+                Math.sin(rig.flinchPush),
+                0,
+                -Math.cos(rig.flinchPush),
+              );
+              rotation
+                .setFromAxisAngle(tiltAxis, rig.flinch)
+                .multiply(yawQuaternion);
+            }
+            scale.set(1, 1, 1);
+            matrix.compose(position, rotation, scale);
+            drawLimbs(
+              model,
+              typeSlots,
+              () => matrix,
+              hex,
+              (name, out) => limbPose(type.id, model, name, rig, out),
+              { fade: 1, blood: bloodOf(entity.hp, type.hp) },
+            );
+          }
           for (const slot of typeSlots.hull) {
             if (slot.count >= capacity) continue;
             position.set(entity.x, lift, entity.y);
@@ -747,6 +989,7 @@ export function createEntityRenderer(
         }
       }
 
+      drawCorpses(nowMs);
       finish(units, counts.units);
       finish(buildings, counts.buildings);
       finish(ghosts, counts.ghosts);
@@ -754,6 +997,10 @@ export function createEntityRenderer(
       finish(scaffolds, scaffoldCount);
       for (const slot of slots) {
         finish(slot.mesh, slot.count);
+        if (slot.fx !== undefined) {
+          slot.fx.fade.needsUpdate = true;
+          slot.fx.blood.needsUpdate = true;
+        }
         slot.mesh.computeBoundingSphere();
       }
       scaffolds.visible = scaffoldCount > 0;

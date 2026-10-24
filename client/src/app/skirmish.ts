@@ -28,7 +28,14 @@ import {
 } from "../input/skirmishController";
 import { createPerfPanel } from "../perfPanel";
 import { type Animator, createAnimator } from "../render/animation";
-import { detectDeaths, spawnDeathEffects } from "../render/deaths";
+import { createCorpses } from "../render/corpses";
+import {
+  createDeathCauses,
+  detectDeaths,
+  detectHits,
+  spawnDeathEffects,
+  spawnHitBlood,
+} from "../render/deaths";
 import {
   createEffects,
   type EffectKind,
@@ -48,6 +55,7 @@ import {
   type ProjectileModel,
   type Projectiles,
 } from "../render/projectiles";
+import { poseOnDeath } from "../render/rig";
 import {
   createTerrain,
   rockCellsOf,
@@ -137,6 +145,7 @@ const NO_EFFECT_COUNTS: Record<EffectKind, number> = {
   wreck: 0,
   body: 0,
   blood: 0,
+  droplet: 0,
   debris: 0,
 };
 /** The builtin ruleset type without a committed `.glb` (spec 06 §3). */
@@ -589,6 +598,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     },
   });
   let animator: Animator;
+  const corpses = createCorpses();
+  const deathCauses = createDeathCauses();
   let entities: EntityRenderer | null = null;
   let terrain: Group | null = null;
   /** Generated PNGs, loaded the first time they are switched on (spec 12). */
@@ -722,7 +733,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       sun.target,
     );
     animator = createAnimator();
-    entities = createEntityRenderer(ENTITY_CAPACITY, registry, animator);
+    entities = createEntityRenderer(
+      ENTITY_CAPACITY,
+      registry,
+      animator,
+      corpses,
+    );
     scene.add(entities.group);
     effects = createEffects();
     scene.add(effects.group);
@@ -939,9 +955,33 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     ) {
       spawnShotEffects(snapshot, effects, effectTime(at));
       animator.recordShots(snapshot.entities, at);
+      deathCauses.record(snapshot.entities, effectTime(at));
+      if (previous !== null) {
+        const hits = detectHits(
+          previous,
+          snapshot,
+          deathCauses,
+          effectTime(at),
+        );
+        animator.recordHits?.(hits, at);
+        spawnHitBlood(hits, effects, settings.gore, effectTime(at));
+      }
       const deaths =
         previous === null ? [] : detectDeaths(previous, snapshot, viewer);
-      spawnDeathEffects(deaths, effects, settings.gore, effectTime(at));
+      spawnDeathEffects(
+        deaths,
+        effects,
+        settings.gore,
+        effectTime(at),
+        corpses,
+        deathCauses,
+        (entity) => {
+          const rig = animator.lastRig?.(entity.id);
+          return rig === undefined || rig === null
+            ? null
+            : poseOnDeath(typeDef(entity.kind).id, rig);
+        },
+      );
     }
     refreshOverlay();
   });
