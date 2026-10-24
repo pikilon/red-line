@@ -82,11 +82,3 @@ All models satisfy spec 06 conventions:
 * AC-18-07: Given the entity renderer, Then infantry `body` and `team` materials have `flatShading` false and vehicle ones true.
 * AC-18-08: Given `MATERIAL_NAMES`, Then it contains `mark`; Given an infantry model with a `mark` part, Then its vertices join the `body` mesh with `darkMask` = `MARK_MASK`.
 * AC-18-09: Given `loadGeneratedTextures`, Then `ua-camo` and `ru-camo` repeat `MODEL_TILE / INFANTRY_TILE` times and other textures once.
-
-## Traceability
-
-| Criterion | Test |
-| --- | --- |
-| AC-18-01..04 | `client/src/render/infantry.test.ts` |
-| AC-18-05..06 | `tools/models/check.mjs` and `client/src/render/infantry.test.ts` |
-| AC-18-07..09 | `client/src/render/infantryLook.test.ts` |

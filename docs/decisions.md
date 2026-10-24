@@ -72,29 +72,18 @@ approval, and record the change here with its date.
 * Local generation only (ComfyUI, ACE-Step, Kokoro/Piper, LM Studio). Check each
   model's license allows redistribution under CC BY-SA.
 
-## D-08 Agent workflow (2026-10-09)
+## D-08 Agent workflow (2026-10-09; replaced 2026-10-24)
 
-* Harnesses: Antigravity, Claude Code (>= 2.1.277, reads `AGENTS.md`),
-  OpenCode, DeepSeek harness. All share `AGENTS.md` + `.agents/skills/`.
-  Antigravity and DeepSeek Harness discover `.agents/skills/` natively; Claude
-  Code discovers skills through the `.claude/skills` symlink (amended
-  2026-10-12). Antigravity also reads the file-defined subagents in
-  `.agents/agents/` (their frontmatter uses its format: `model: flash`); Claude
-  Code reads thin wrappers in `.claude/agents/` (`model: haiku`); DeepSeek
-  Harness and OpenCode follow them as instructions.
-* Verification runs on a cheap model outside the caller's context
-  (2026-10-12): the `verification-runner` subagent (Flash or Haiku) first runs
-  `node --run verify:agent` on the local model. Without subagents,
-  `verify:agent` falls back to DeepSeek Flash only with the owner's
-  confirmation (D-11).
-* Model tiers:
-  * **S** (Opus): specs, failing tests, issue breakdown, PR review, 3D models.
-  * **A** (Sonnet, DeepSeek): complex implementation.
-  * **B** (Ornith via LM Studio + DeepSeek Harness or OpenCode, overnight): small, fully specified
-    issues labelled `ready-local`.
-  * **C** (Haiku): trivial edits.
-* GitHub issues are the task queue; one branch/worktree per issue; PR + CI.
-* Implementation PRs must not modify tests written in the spec phase.
+* `AGENTS.md` at the root is the only agent instruction file; there are no
+  skills, subfolder `AGENTS.md` files or tool-specific rule files. The only
+  file-defined subagent is `generals-precedent` (`.agents/agents/`, with a
+  thin Claude Code wrapper in `.claude/agents/`).
+* The owner describes use cases in product terms; the agent owns every
+  technical decision, including tests and model choice, verifies what the
+  change touches, opens a PR and merges it once CI passes.
+* The earlier workflow (tier S/A/B/C models, test-first spec phase,
+  traceability tables, `ready-local`/`ready-pro` issue queue, overnight runner
+  and local verification runner) was removed on 2026-10-24.
 
 ## D-09 Hardware (2026-10-09)
 
@@ -139,10 +128,7 @@ Owner answers to the Phase 2 design questions; elaborated in
 * A paid remote API (for example DeepSeek V4 Flash on the official API) may be
   used by agent tooling only after the owner confirms it for that run. An agent
   asks in chat; a script asks interactively and uses local models when there is
-  no answer (unattended runs never spend money). For an unattended run the
-  owner sets `RUNNER_PAID_CONFIRMED=<provider>/<model>` for that run only; the
-  runner skips the question when it matches the configured paid provider and
-  model exactly, and any other value behaves as if unset.
+  no answer (unattended runs never spend money).
 * Code, tests, CI and the game runtime never call a paid AI API.
 
 ## D-12 Production queue and Phase 1 test amendment (2026-10-10)

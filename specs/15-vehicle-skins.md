@@ -49,10 +49,3 @@ modulates by the skin detail and the bump fades out under it (the flag is flat).
   has no `bumpMap`.
 * AC-15-04: Given a running showcase, Then vehicles show the skin and relief
   (screenshot check by the agent) without console errors.
-
-## Traceability
-
-| Criterion | Test |
-| --- | --- |
-| AC-15-01..03 | `client/src/render/skins.test.ts` |
-| AC-15-04 | agent screenshots in issue #258; `client/tests/e2e/showcase.spec.ts` (no errors) |

@@ -229,28 +229,3 @@ differs; the existing determinism and native/WASM parity tests
 (AC-02-19, AC-02-20, AC-02-24) stay green unmodified.
 
 ---
-
-## 7. Traceability Matrix
-
-| Criterion | Component | Test Target | Test Name |
-|---|---|---|---|
-| AC-04-01 | `crates/sim` | `crates/sim/tests/movement.rs` | `ac_04_01_group_move_destination_spreading` |
-| AC-04-02 | `crates/sim` | `crates/sim/tests/movement.rs` | `ac_04_02_near_to_far_allocation_priority` |
-| AC-04-03 | `crates/sim` | `crates/sim/tests/movement.rs` | `ac_04_03_zero_jitter_equilibrium_settling` |
-| AC-04-04 | `crates/sim` | `crates/sim/tests/determinism.rs` | `ac_04_04_settling_determinism_parity` |
-
----
-
-## 8. Implementation Breakdown
-
-### Issue 1: Ring-Search Destination Allocation (#108) (`ready-local`, area:sim)
-* File: `crates/sim/src/world.rs`, `crates/sim/src/map.rs`
-* Implement `adjust_destination` ring search and near-to-far sorted allocation.
-* Tests: `ac_04_01`, `ac_04_02`.
-* Estimated size: ~90 lines.
-
-### Issue 2: Separation Settling Deadzone & Damping (#109, `ready-local`, area:sim)
-* File: `crates/sim/src/world.rs`
-* Add `SEPARATION_SETTLE_EPSILON`, idle-idle damping, and zero-velocity equilibrium.
-* Tests: `ac_04_03`, `ac_04_04`.
-* Estimated size: ~70 lines.

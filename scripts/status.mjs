@@ -1,4 +1,4 @@
-// Repository status: open PRs, issues waiting for the owner, and local
+// Repository status: open PRs and local
 // branches or worktrees that no PR accounts for. GitHub is the source of truth.
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -19,7 +19,6 @@ const gh = (args) => JSON.parse(run("gh", args));
 
 function main() {
   const openPrs = gh(["pr", "list", "--state", "open", "--json", "number,title,headRefName"]);
-  const owner = gh(["issue", "list", "--label", "needs-owner-test", "--json", "number,title"]);
   const branches = run("git", ["for-each-ref", "--format=%(refname:short)", "refs/heads"])
     .split("\n")
     .filter(Boolean);
@@ -30,8 +29,6 @@ function main() {
 
   console.log(`Open PRs (${openPrs.length})`);
   for (const pr of openPrs) console.log(`  #${pr.number} ${pr.title} [${pr.headRefName}]`);
-  console.log(`Waiting for owner test (${owner.length})`);
-  for (const i of owner) console.log(`  #${i.number} ${i.title}`);
 
   const stale = [];
   for (const name of branches) {

@@ -16,18 +16,19 @@ armies. Inspired by Red Alert 2 and C&C Generals.
 
 ## Development
 
-This project is built by AI agents under Spec-Driven Development.
+This project is built by AI agents.
 
-* Agent rules: [`AGENTS.md`](AGENTS.md) and [`.agents/skills/`](.agents/skills/).
 * Decisions: [`docs/decisions.md`](docs/decisions.md).
 * Roadmap: [`docs/roadmap.md`](docs/roadmap.md).
 * Check your toolchain: `scripts/doctor.sh`.
 
-### Harness notes
+### Agent instructions
 
-* **Claude Code** >= 2.1.277 reads `AGENTS.md` natively. Do not add a
-  `CLAUDE.md`: it would take precedence and hide `AGENTS.md`.
-* **OpenCode** and **Antigravity** read `AGENTS.md` natively.
+[`AGENTS.md`](AGENTS.md) is the only agent instruction file. Do not add
+`CLAUDE.md`, `GEMINI.md`, `.cursor/` rules or similar: tools that look for
+their own file must point to `AGENTS.md` instead (for example Gemini CLI with
+`"context": { "fileName": ["AGENTS.md"] }` in its settings). Claude Code,
+OpenCode and Antigravity read `AGENTS.md` natively.
 
 ## License
 
