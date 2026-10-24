@@ -81,17 +81,17 @@ jobs:
     needs: pick-runner
     runs-on: ${{ fromJSON(needs.pick-runner.outputs.runner) }}
     env:
-      RUST: ${{ needs.pick-runner.outputs.rust }}
-      SCRIPTS: ${{ needs.pick-runner.outputs.scripts }}
-      CLIENT: ${{ needs.pick-runner.outputs.client }}
-      DATA: ${{ needs.pick-runner.outputs.data }}
-      ASSETS: ${{ needs.pick-runner.outputs.assets }}
-      NODE: ${{ contains(needs.pick-runner.outputs.*, 'true') }}
-      CARGO: ${{ needs.pick-runner.outputs.rust == 'true' || needs.pick-runner.outputs.client == 'true' }}
+      CI_RUST: ${{ needs.pick-runner.outputs.rust }}
+      CI_SCRIPTS: ${{ needs.pick-runner.outputs.scripts }}
+      CI_CLIENT: ${{ needs.pick-runner.outputs.client }}
+      CI_DATA: ${{ needs.pick-runner.outputs.data }}
+      CI_ASSETS: ${{ needs.pick-runner.outputs.assets }}
+      CI_NODE: ${{ contains(needs.pick-runner.outputs.*, 'true') }}
+      CI_CARGO: ${{ needs.pick-runner.outputs.rust == 'true' || needs.pick-runner.outputs.client == 'true' }}
     steps:
       - uses: actions/checkout@v4
       # The Mac already has Node, Rust, wasm-pack and nextest.
-      - if: runner.os != 'macOS' && env.NODE == 'true'
+      - if: runner.os != 'macOS' && env.CI_NODE == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 26.9.0
@@ -99,36 +99,36 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             client/package-lock.json
-      - if: runner.os != 'macOS' && env.CARGO == 'true'
+      - if: runner.os != 'macOS' && env.CI_CARGO == 'true'
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
           components: rustfmt, clippy
-      - if: runner.os != 'macOS' && env.CARGO == 'true'
+      - if: runner.os != 'macOS' && env.CI_CARGO == 'true'
         uses: Swatinem/rust-cache@v2
-      - if: runner.os != 'macOS' && env.CARGO == 'true'
+      - if: runner.os != 'macOS' && env.CI_CARGO == 'true'
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest,wasm-pack
       - if: runner.os == 'macOS'
         run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
-      - if: env.NODE == 'true'
+      - if: env.CI_NODE == 'true'
         run: node --run install:root
-      - if: env.CLIENT == 'true'
+      - if: env.CI_CLIENT == 'true'
         run: node --run install:client
-      - if: runner.os != 'macOS' && env.CLIENT == 'true'
+      - if: runner.os != 'macOS' && env.CI_CLIENT == 'true'
         run: cd client && npx playwright install --with-deps chromium
-      - if: runner.os == 'macOS' && env.CLIENT == 'true'
+      - if: runner.os == 'macOS' && env.CI_CLIENT == 'true'
         run: cd client && npx playwright install chromium
-      - if: env.RUST == 'true'
+      - if: env.CI_RUST == 'true'
         run: node --run check:rust && node --run check:rules
-      - if: env.SCRIPTS == 'true'
+      - if: env.CI_SCRIPTS == 'true'
         run: node --run test:scripts
-      - if: env.CLIENT == 'true'
+      - if: env.CI_CLIENT == 'true'
         run: node --run build:wasm
-      - if: env.CLIENT == 'true'
+      - if: env.CI_CLIENT == 'true'
         run: node --run check && node --run typecheck && node --run test:unit && node --run build && node --run test:e2e
-      - if: env.DATA == 'true'
+      - if: env.CI_DATA == 'true'
         run: node --run check:data
-      - if: env.ASSETS == 'true'
+      - if: env.CI_ASSETS == 'true'
         run: node --run assets:check -- --strict
