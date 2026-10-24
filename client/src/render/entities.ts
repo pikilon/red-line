@@ -27,7 +27,7 @@ import {
   hasFlag,
   NEUTRAL,
 } from "../sim/matchSnapshot";
-import type { Animator } from "./animation";
+import type { Animator, Pose } from "./animation";
 import { createCageMaterial, createCageTexture } from "./cage";
 import { applyFacade, enableFacades, facadeTextureIds } from "./facades";
 import {
@@ -62,11 +62,13 @@ import {
   Z_ON_TURRET,
 } from "./liveries";
 import type {
+  LimbModel,
   MaterialName,
   ModelPart,
   ModelRegistry,
   TypeModel,
 } from "./models";
+import { type LimbPose, limbPose, resetPose } from "./rig";
 import { createSuspension, LEVEL_POSE } from "./suspension";
 
 export const OWNER_COLORS = [0x1d5fe0, 0xe01b1b] as const;
@@ -114,12 +116,14 @@ function articulationOf(
   return BLADE_RAISED * (1 - moving);
 }
 
-export type ModelGroup = "hull" | "turret";
+export type ModelGroup = "hull" | "turret" | "limb";
 
 /** One lazily created `InstancedMesh` of a loaded model (spec 06 §5). */
 export interface ModelInstance {
   readonly typeId: string;
   readonly group: ModelGroup;
+  /** Name of the limb of a `limb` group (spec 20). */
+  readonly limb?: string;
   /** `body` also carries the merged `dark` geometry with vertex colours. */
   readonly material: MaterialName;
   readonly mesh: InstancedMesh;
@@ -156,6 +160,7 @@ interface MeshSlot extends ModelInstance {
 interface TypeSlots {
   readonly hull: readonly MeshSlot[];
   readonly turret: readonly MeshSlot[];
+  readonly limbs: ReadonlyMap<string, readonly MeshSlot[]>;
 }
 
 function instanced(
@@ -309,8 +314,8 @@ export function scaffoldGeometry(): BufferGeometry {
  *  when no animator is supplied (spec 09 §4). */
 const NO_ANIMATOR: Animator = {
   recordShots() {},
-  pose(): { recoil: number; lift: number } {
-    return { recoil: 0, lift: 0 };
+  pose(): Pose {
+    return { recoil: 0, lift: 0, rig: null };
   },
 };
 
@@ -377,9 +382,38 @@ export function createEntityRenderer(
   const byId = new Map<number, EntityState>();
   const suspension = createSuspension();
   const tilt = new Euler();
+  const limbMatrices = new Map<string, Matrix4>();
+  const limbOffset = resetPose({} as LimbPose);
+  const limbLocal = new Matrix4();
+  const limbSpin = new Matrix4();
+  const limbEuler = new Euler();
+  const limbScale = new Vector3();
+  const limbMove = new Vector3();
   const slots: MeshSlot[] = [];
   const byType = new Map<string, TypeSlots>();
   let generated: GeneratedTextures | null = null;
+
+  /** `world` = `parent` × joint offset × pose of `limb`: the joint sits at the
+   *  limb's resting joint in its parent's frame, moved and turned by `pose`. */
+  function composeLimb(
+    world: Matrix4,
+    parent: Matrix4,
+    limb: LimbModel,
+    offset: LimbPose,
+  ): void {
+    limbMove.set(
+      limb.local.x + offset.x,
+      limb.local.y + offset.y,
+      limb.local.z + offset.z,
+    );
+    limbEuler.set(offset.rx, offset.ry, 0, "YXZ");
+    limbSpin.makeRotationFromEuler(limbEuler);
+    limbScale.set(offset.sx, offset.sy, offset.sz);
+    limbSpin.scale(limbScale);
+    limbLocal.makeTranslation(limbMove.x, limbMove.y, limbMove.z);
+    limbLocal.multiply(limbSpin);
+    world.multiplyMatrices(parent, limbLocal);
+  }
 
   /** The roof area the turret of `model` covers, for the Z (spec 13 §3). */
   function turretOccluders(model: TypeModel): Footprint[] {
@@ -442,8 +476,14 @@ export function createEntityRenderer(
     typeId: string,
     model: TypeModel,
     kind: ModelGroup,
+    limb?: LimbModel,
   ): MeshSlot[] {
-    const parts = kind === "turret" ? model.turret : model.parts;
+    const parts =
+      limb !== undefined
+        ? limb.parts
+        : kind === "turret"
+          ? model.turret
+          : model.parts;
     const created: MeshSlot[] = [];
     const type = RULES.types.find((entry) => entry.id === typeId);
     const livery =
@@ -500,7 +540,14 @@ export function createEntityRenderer(
       mesh.frustumCulled = true;
       mesh.castShadow = material !== "cage";
       mesh.receiveShadow = true;
-      const slot: MeshSlot = { typeId, group: kind, material, mesh, count: 0 };
+      const slot: MeshSlot = {
+        typeId,
+        group: kind,
+        material,
+        mesh,
+        count: 0,
+        ...(limb === undefined ? {} : { limb: limb.name }),
+      };
       if (material === "team" && bands !== null && bandOn !== undefined) {
         slot.bandOn = bandOn;
         enableBands(mesh.material as MeshLambertMaterial, bands);
@@ -534,6 +581,12 @@ export function createEntityRenderer(
     const created: TypeSlots = {
       hull: createSlots(typeId, model, "hull"),
       turret: createSlots(typeId, model, "turret"),
+      limbs: new Map(
+        (model.limbs ?? []).map((limb) => [
+          limb.name,
+          createSlots(typeId, model, "limb", limb),
+        ]),
+      ),
     };
     byType.set(typeId, created);
     return created;
@@ -607,7 +660,9 @@ export function createEntityRenderer(
         const isFallback =
           model === null ||
           model.fallback ||
-          (model.parts.size === 0 && model.turret.size === 0);
+          (model.parts.size === 0 &&
+            model.turret.size === 0 &&
+            (model.limbs?.length ?? 0) === 0);
 
         if (isGhost) {
           if (counts.ghosts < capacity) {
@@ -671,6 +726,26 @@ export function createEntityRenderer(
           const typeSlots = slotsFor(type.id, model);
           const hullYaw = type.category === "unit" ? heading.yaw : 0;
           const turretYaw = heading.turretYaw;
+          if (pose.rig !== null && model.limbs !== undefined) {
+            // Soldiers walk on their own legs: no hull bounce (spec 20).
+            position.set(entity.x, body.shake, entity.y);
+            rotation.setFromEuler(tilt.set(0, hullYaw, 0, "YXZ"));
+            scale.set(1, 1, 1);
+            matrix.compose(position, rotation, scale);
+            for (const limb of model.limbs) {
+              const parent =
+                limb.parent === null ? matrix : limbMatrices.get(limb.parent);
+              if (parent === undefined) continue;
+              limbPose(type.id, model, limb.name, pose.rig, limbOffset);
+              const world = limbMatrices.get(limb.name) ?? new Matrix4();
+              limbMatrices.set(limb.name, world);
+              composeLimb(world, parent, limb, limbOffset);
+              for (const slot of typeSlots.limbs.get(limb.name) ?? []) {
+                if (slot.count >= capacity) continue;
+                place(slot, slot.count, hex, () => world);
+              }
+            }
+          }
           for (const slot of typeSlots.hull) {
             if (slot.count >= capacity) continue;
             position.set(entity.x, lift, entity.y);

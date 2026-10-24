@@ -173,48 +173,57 @@ def _rotation_x(angle, pivot):
     return Matrix.Translation(pivot) @ Matrix.Rotation(angle, 4, "X") @ Matrix.Translation(-pivot)
 
 
-def leg(name, hip, knee, ankle, mats, segments, foot="flat"):
-    """Trouser leg through hip, knee and ankle, with knee pad and boot."""
+def leg(name, hip, knee, ankle, mats, segments):
+    """Trouser leg as two rigid limbs for the walk cycle: (thigh parts from the
+    hip to the knee with its pad, shin parts from the knee to a boot)."""
     body, dark = mats["body"], mats["dark"]
     hip, knee, ankle = Vector(hip), Vector(knee), Vector(ankle)
-    parts = [
+    thigh = [
         loft(
-            f"{name}_leg",
+            f"{name}_thigh",
             [
                 (hip + Vector((0, 0, 0.03)), 0.066, 0.07),
-                (_lerp(hip, knee, 0.45), 0.061, 0.066),
+                *([(_lerp(hip, knee, 0.45), 0.061, 0.066)] if segments >= 8 else []),
+                (knee, 0.047, 0.05),
+            ],
+            body,
+            segments,
+        ),
+        # Round knee hides the seam between thigh and shin whatever the bend.
+        sphere(f"{name}_knee", 0.05, knee, body, segments, 3 if segments >= 8 else 2),
+    ]
+    # Knee pad on the front of the knee, facing along the shin's normal.
+    shin_dir = (ankle - knee).normalized()
+    thigh_dir = (hip - knee).normalized()
+    front = -(shin_dir + thigh_dir).normalized() if (shin_dir + thigh_dir).length > 1e-3 else Vector((0, -1, 0))
+    pad = box(f"{name}_pad", (0.066, 0.03, 0.066), (0, 0, 0), dark)
+    up = (thigh_dir - shin_dir).normalized()
+    side = up.cross(front).normalized()
+    basis = Matrix((side, front, up)).transposed().to_4x4()
+    transform(pad, Matrix.Translation(knee + front * 0.04) @ basis)
+    if segments >= 8:
+        thigh.append(pad)
+    else:
+        bpy.data.objects.remove(pad)
+    shin = [
+        loft(
+            f"{name}_shin",
+            [
                 (knee, 0.047, 0.05),
                 *([(_lerp(knee, ankle, 0.35), 0.048, 0.052)] if segments >= 8 else []),
                 (ankle + Vector((0, 0, 0.01)), 0.038, 0.04),
             ],
-            body,
+            mats["body"],
             segments,
         )
     ]
-    # Knee pad on the front of the knee, facing along the shin's normal.
-    shin = (ankle - knee).normalized()
-    thigh = (hip - knee).normalized()
-    front = -(shin + thigh).normalized() if (shin + thigh).length > 1e-3 else Vector((0, -1, 0))
-    pad = box(f"{name}_pad", (0.066, 0.03, 0.066), (0, 0, 0), dark)
-    up = (thigh - shin).normalized()
-    side = up.cross(front).normalized()
-    basis = Matrix((side, front, up)).transposed().to_4x4()
-    transform(pad, Matrix.Translation(knee + front * 0.04) @ basis)
-    if knee.z > 0.1:  # a knee on the ground hides its pad
-        parts.append(pad)
-    else:
-        bpy.data.objects.remove(pad)
-    if foot == "flat":
-        boot = box(f"{name}_boot", (0.082, 0.15, 0.085), (ankle.x, ankle.y - 0.028, 0.0425), dark)
-        for v in boot.data.vertices:
-            if v.co.y < ankle.y - 0.06 and v.co.z > 0.05:
-                v.co.y += 0.035
-                v.co.z -= 0.035
-    else:
-        # Kneeling: boot stands on its toe behind the knee.
-        boot = box(f"{name}_boot", (0.07, 0.06, 0.13), (ankle.x, ankle.y + 0.02, ankle.z + 0.02), dark)
-    parts.append(boot)
-    return parts
+    boot = box(f"{name}_boot", (0.082, 0.15, 0.085), (ankle.x, ankle.y - 0.028, 0.0425), dark)
+    for v in boot.data.vertices:
+        if v.co.y < ankle.y - 0.06 and v.co.z > 0.05:
+            v.co.y += 0.035
+            v.co.z -= 0.035
+    shin.append(boot)
+    return thigh, shin
 
 
 def arm(name, shoulder, wrist, hint, mats, segments, band=True):
@@ -405,7 +414,7 @@ def rifle(name, mats, butt, down):
 
 def rpg7(name, mats, centre, segments=8):
     """RPG-7 lying on the right shoulder at `centre`, pointing -Y, PG-7 round
-    loaded; returns (parts, trigger hand, front grip hand)."""
+    loaded; returns (parts, trigger hand, front grip hand, round parts, round centre)."""
     body, dark = mats["body"], mats["dark"]
     x, y, z = centre
     p = lambda dy, dz=0.0: Vector((x, y + dy, z + dz))  # noqa: E731
@@ -417,6 +426,10 @@ def rpg7(name, mats, centre, segments=8):
         box(f"{name}_optic", (0.03, 0.07, 0.04), (x - 0.04, y - 0.01, z + 0.025), dark),
         box(f"{name}_trigger", (0.022, 0.03, 0.06), (x, y - 0.0, z - 0.045), dark),
         box(f"{name}_front_grip", (0.022, 0.03, 0.055), (x, y - 0.12, z - 0.042), dark),
+    ]
+    # The PG-7 round on the muzzle is its own limb: it leaves on firing and the
+    # reload slides a fresh one in.
+    round_parts = [
         loft(
             f"{name}_warhead",
             [
@@ -427,86 +440,150 @@ def rpg7(name, mats, centre, segments=8):
             ],
             body,
             segments,
-        ),
+        )
     ]
-    return parts, p(0.0, -0.075), p(-0.12, -0.07)
+    return parts, p(0.0, -0.075), p(-0.12, -0.07), round_parts, p(-0.25)
 
 
-def place(parts, name, height, offset=(0.0, 0.0), yaw=0.0):
-    """Joins `parts` into `name`, scales figure units to `height` tiles, turns
-    it `yaw` radians about Z and moves it by `offset` (tiles)."""
-    obj = lib.join(parts, name)
-    _bake(obj)
+class Rig:
+    """A soldier or prop split into rigid limbs (figure units). The game poses
+    each limb as its own instanced mesh (spec 20): a limb is a named group of
+    parts with the joint it turns about and the limb it hangs from."""
+
+    def __init__(self):
+        self.limbs = {}
+
+    def add(self, name, parts, pivot, parent=None):
+        self.limbs[name] = (list(parts), Vector(pivot), parent)
+
+
+def _soldier_legs(rig, name, mats, segments, hips, left, right):
+    """Thigh and shin limbs of both legs hanging from the `hips` limb."""
+    for side, (hip, knee, ankle) in (("l", left), ("r", right)):
+        thigh, shin = leg(f"{name}_{side}", hip, knee, ankle, mats, segments)
+        rig.add(f"thigh_{side}", thigh, hip, hips)
+        rig.add(f"shin_{side}", shin, knee, f"thigh_{side}")
+
+
+def soldier(name, mats, weapon="rifle", segments=8, pack="assault", earcups=True):
+    """Standing soldier rig, the neutral pose of every pose the game shows:
+    hips (torso, head, gear), arms (both arms and the weapon), thigh_l/r and
+    shin_l/r; an RPG gunner also has a `round` limb on the muzzle. `weapon` is
+    rifle (low ready), rpg (launcher on the shoulder) or console (a remote
+    control console held at the belly)."""
+    pelvis = (0.0, 0.0, 0.5)
+    lean = {"rifle": 0.08, "rpg": 0.05, "console": 0.1}[weapon]
+    body_parts, right, left = upper_body(name, mats, pelvis, lean, segments, pack, earcups=earcups)
+    rig = Rig()
+    rig.add("hips", body_parts, pelvis)
+    _soldier_legs(
+        rig,
+        name,
+        mats,
+        segments,
+        "hips",
+        ((-0.066, 0.0, 0.5), (-0.074, -0.085, 0.28), (-0.078, -0.07, 0.06)),
+        ((0.066, 0.01, 0.5), (0.088, 0.03, 0.272), (0.098, 0.075, 0.06)),
+    )
+    shoulders = (right + left) / 2
+    if weapon == "rifle":
+        gun, grip, guard = rifle(name, mats, right + Vector((-0.045, -0.06, -0.02)), math.radians(42))
+        arms = gun + arm(f"{name}_r", right, grip, (1.0, 0.4, -0.6), mats, segments)
+        arms += arm(f"{name}_l", left, guard, (-1.0, 0.0, -0.8), mats, segments)
+        rig.add("arms", arms, shoulders, "hips")
+    elif weapon == "rpg":
+        gun, trigger, front, round_parts, round_at = rpg7(name, mats, (right.x - 0.02, right.y - 0.02, right.z + 0.06), segments)
+        arms = gun + arm(f"{name}_r", right, trigger, (1.0, 0.5, -0.8), mats, segments)
+        arms += arm(f"{name}_l", left, front, (-1.0, 0.0, -1.0), mats, segments)
+        rig.add("arms", arms, shoulders, "hips")
+        rig.add("round", round_parts, round_at, "arms")
+    else:
+        dark, team = mats["dark"], mats["team"]
+        console = Vector((-0.02, -0.2, 0.64))
+        arms = [
+            box(f"{name}_console", (0.15, 0.1, 0.035), console, dark),
+            box(f"{name}_lid", (0.15, 0.022, 0.09), console + Vector((0, 0.05, 0.06)), dark),
+            # Screen glows in the team colour.
+            box(f"{name}_screen", (0.12, 0.006, 0.065), console + Vector((0, 0.037, 0.062)), team),
+        ]
+        arms += arm(f"{name}_r", right, console + Vector((0.06, -0.035, 0.03)), (1.0, 0.0, -1.0), mats, segments)
+        arms += arm(f"{name}_l", left, console + Vector((-0.06, -0.035, 0.03)), (-1.0, 0.0, -1.0), mats, segments)
+        rig.add("arms", arms, shoulders, "hips")
+    return rig
+
+
+def rifleman(name, mats, segments=8, pack="assault", earcups=True):
+    """Soldier at low ready with the rifle shouldered, muzzle down and forward."""
+    return soldier(name, mats, "rifle", segments, pack, earcups)
+
+
+def rpg_gunner(name, mats, segments=8, earcups=True):
+    """Standing RPG-7 gunner aiming from the right shoulder, spare round carried in the pack."""
+    return soldier(name, mats, "rpg", segments, "assault", earcups)
+
+
+def operator(name, mats, segments=8):
+    """Remote operator with the control console held at the belly."""
+    return soldier(name, mats, "console", segments)
+
+
+def place(rig, prefix, height, offset=(0.0, 0.0), yaw=0.0, parent_of_root=None):
+    """Scales a rig from figure units to `height` tiles, turns it `yaw` radians
+    about Z and moves it by `offset` (tiles). Returns {limb name: (parts,
+    pivot, parent)} with the limb names prefixed by `prefix`."""
     matrix = (
         Matrix.Translation(Vector((offset[0], offset[1], 0.0)))
         @ Matrix.Rotation(yaw, 4, "Z")
         @ Matrix.Scale(height, 4)
     )
-    return transform(obj, matrix)
+    placed = {}
+    for limb, (parts, pivot, parent) in rig.limbs.items():
+        for obj in parts:
+            transform(obj, matrix)
+        placed[f"{prefix}_{limb}"] = (
+            parts,
+            matrix @ pivot,
+            f"{prefix}_{parent}" if parent is not None else parent_of_root,
+        )
+    return placed
 
 
-def rifleman(name, mats, segments=8, pack="assault", earcups=True, kneel=False):
-    """Soldier at low ready: rifle shouldered, muzzle down and forward;
-    standing with the weak-side foot forward, or kneeling on the right knee.
-    Figure units; see place()."""
-    if kneel:
-        pelvis = (0.0, 0.0, 0.3)
-        parts, right, left = upper_body(name, mats, pelvis, 0.12, segments, pack, earcups=earcups)
-        parts += _kneeling_legs(name, mats, segments)
-    else:
-        pelvis = (0.0, 0.0, 0.5)
-        parts, right, left = upper_body(name, mats, pelvis, 0.08, segments, pack, earcups=earcups)
-        parts += leg(f"{name}_l", (-0.066, 0.0, 0.5), (-0.074, -0.085, 0.28), (-0.078, -0.07, 0.06), mats, segments)
-        parts += leg(f"{name}_r", (0.066, 0.01, 0.5), (0.088, 0.03, 0.272), (0.098, 0.075, 0.06), mats, segments)
-    gun, grip, guard = rifle(name, mats, right + Vector((-0.045, -0.06, -0.02)), math.radians(42))
-    parts += gun
-    parts += arm(f"{name}_r", right, grip, (1.0, 0.4, -0.6), mats, segments)
-    parts += arm(f"{name}_l", left, guard, (-1.0, 0.0, -0.8), mats, segments)
-    return parts
-
-
-def rpg_gunner(name, mats, segments=8, earcups=True):
-    """Standing RPG-7 gunner aiming from the right shoulder."""
-    pelvis = (0.0, 0.0, 0.5)
-    parts, right, left = upper_body(name, mats, pelvis, 0.05, segments, "assault", head_dy=0.0, earcups=earcups)
-    parts += leg(f"{name}_l", (-0.066, 0.0, 0.5), (-0.07, -0.09, 0.28), (-0.075, -0.075, 0.06), mats, segments)
-    parts += leg(f"{name}_r", (0.066, 0.01, 0.5), (0.09, 0.04, 0.272), (0.1, 0.085, 0.06), mats, segments)
-    gun, trigger, front = rpg7(name, mats, (right.x - 0.02, right.y - 0.02, right.z + 0.06), segments)
-    parts += gun
-    parts += arm(f"{name}_r", right, trigger, (1.0, 0.5, -0.8), mats, segments)
-    parts += arm(f"{name}_l", left, front, (-1.0, 0.0, -1.0), mats, segments)
-    return parts
-
-
-def _kneeling_legs(name, mats, segments):
-    """Right knee on the ground with the boot on its toe, left foot forward."""
-    return leg(f"{name}_r", (0.066, 0.02, 0.3), (0.075, -0.02, 0.06), (0.075, 0.2, 0.05), mats, segments, foot="toe") + leg(
-        f"{name}_l", (-0.066, 0.0, 0.3), (-0.078, -0.2, 0.27), (-0.08, -0.19, 0.06), mats, segments
-    )
-
-
-def kneeling_operator(name, mats, segments=8):
-    """Operator kneeling on the right knee, both hands on a remote control
-    console resting on the left thigh; returns (parts, console centre)."""
-    dark, team = mats["dark"], mats["team"]
-    pelvis = (0.0, 0.0, 0.3)
-    parts, right, left = upper_body(name, mats, pelvis, 0.32, segments, "assault", look_down=0.1)
-    parts += _kneeling_legs(name, mats, segments)
-    console = Vector((-0.02, -0.21, 0.33))
-    parts += [
-        box(f"{name}_console", (0.15, 0.1, 0.035), console, dark),
-        box(f"{name}_lid", (0.15, 0.022, 0.09), console + Vector((0, 0.05, 0.06)), dark),
-        # Screen glows in the team colour.
-        box(f"{name}_screen", (0.12, 0.006, 0.065), console + Vector((0, 0.037, 0.062)), team),
-    ]
-    parts += arm(f"{name}_r", right, console + Vector((0.06, -0.035, 0.03)), (1.0, 0.0, -1.0), mats, segments)
-    parts += arm(f"{name}_l", left, console + Vector((-0.06, -0.035, 0.03)), (-1.0, 0.0, -1.0), mats, segments)
-    return parts, console
-
-
-def centre(obj):
-    """Moves `obj` so its footprint (X and Y bounds) is centred on the origin."""
-    xs = [v.co.x for v in obj.data.vertices]
-    ys = [v.co.y for v in obj.data.vertices]
+def centre(limbs, anchors=()):
+    """Moves every limb (and anchor point) so the footprint of all parts is
+    centred on the origin; returns the moved anchors."""
+    xs = [v.co.x for parts, _, _ in limbs.values() for obj in parts for v in obj.data.vertices]
+    ys = [v.co.y for parts, _, _ in limbs.values() for obj in parts for v in obj.data.vertices]
     shift = Vector((-(min(xs) + max(xs)) / 2, -(min(ys) + max(ys)) / 2, 0.0))
-    return transform(obj, Matrix.Translation(shift))
+    for name, (parts, pivot, parent) in list(limbs.items()):
+        for obj in parts:
+            transform(obj, Matrix.Translation(shift))
+        limbs[name] = (parts, pivot + shift, parent)
+    return [Vector(a) + shift for a in anchors]
+
+
+def assemble(type_id, limbs, anchors=None):
+    """Joins every limb into a `limb_<name>` object whose origin is its joint
+    and parents the limbs to an empty root named `type_id`; `anchors` are
+    named empty marker nodes ({name: position}). Returns the root."""
+    root = bpy.data.objects.new(type_id, None)
+    bpy.context.scene.collection.objects.link(root)
+    objects = {}
+    for name, (parts, pivot, _) in limbs.items():
+        obj = lib.join(parts, f"limb_{name}")
+        cursor = bpy.context.scene.cursor
+        cursor.location = pivot
+        bpy.ops.object.select_all(action="DESELECT")
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
+        cursor.location = (0, 0, 0)
+        objects[name] = obj
+    bpy.context.view_layer.update()
+    for name, (_, _, parent) in limbs.items():
+        lib.parent(objects[name], objects[parent] if parent is not None else root)
+    for name, position in (anchors or {}).items():
+        marker = bpy.data.objects.new(name, None)
+        marker.location = position
+        bpy.context.scene.collection.objects.link(marker)
+        lib.parent(marker, root)
+    return root

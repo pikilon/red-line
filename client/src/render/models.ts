@@ -21,10 +21,31 @@ export interface ModelPart {
   readonly color: number;
 }
 
+/** Name prefix of the glTF nodes that are rigid limbs (spec 20). */
+export const LIMB_PREFIX = "limb_";
+
+/** One rigid limb of an articulated model (infantry, spec 20): its geometry
+ *  is relative to its own joint, which hangs from `parent`'s joint. */
+export interface LimbModel {
+  /** Node name without `LIMB_PREFIX`, e.g. `g_thigh_l`. */
+  readonly name: string;
+  /** Name of the limb it hangs from, null for the hull. */
+  readonly parent: string | null;
+  /** Joint in the parent's frame (the hull frame without a parent). */
+  readonly local: Vector3;
+  /** Joint in the hull frame. */
+  readonly world: Vector3;
+  readonly parts: ReadonlyMap<MaterialName, ModelPart>;
+}
+
 /** The parts of one type: hull and (optionally) turret, keyed by material. */
 export interface TypeModel {
   readonly parts: ReadonlyMap<MaterialName, ModelPart>;
   readonly turret: ReadonlyMap<MaterialName, ModelPart>;
+  /** Rigid limbs, parents before children; absent or empty without any. */
+  readonly limbs?: readonly LimbModel[];
+  /** Marker nodes (`anchor_*`) in the hull frame, by name. */
+  readonly anchors?: ReadonlyMap<string, Vector3>;
   /** Turret ring in the hull frame; zero when the type has no turret. */
   readonly pivot: Vector3;
   /** True when the `.glb` is missing and the renderer uses the box. */
@@ -96,9 +117,84 @@ function mergeBucket(bucket: Bucket): ReadonlyMap<MaterialName, ModelPart> {
   return parts;
 }
 
+function isLimbNode(object: Object3D | null): boolean {
+  return object?.name.startsWith(LIMB_PREFIX) === true;
+}
+
+/** The nearest limb node at or above `object`, null when it is not in one. */
+function limbOf(object: Object3D): Object3D | null {
+  for (
+    let current: Object3D | null = object;
+    current !== null;
+    current = current.parent
+  ) {
+    if (isLimbNode(current)) return current;
+  }
+  return null;
+}
+
+/** Limbs of `scene` with their geometry, parents before children. */
+function extractLimbs(scene: Object3D): LimbModel[] {
+  const nodes: Object3D[] = [];
+  scene.traverse((object) => {
+    if (isLimbNode(object)) nodes.push(object);
+  });
+  const sceneInverse = scene.matrixWorld.clone().invert();
+  const limbs: LimbModel[] = [];
+  for (const node of nodes) {
+    const bucket: Bucket = new Map();
+    const inverse = node.matrixWorld.clone().invert();
+    node.traverse((object) => {
+      if (!isMesh(object) || limbOf(object) !== node) return;
+      const material = Array.isArray(object.material)
+        ? object.material[0]
+        : object.material;
+      const name = material?.name;
+      if (!isMaterialName(name)) return;
+      const geometry = object.geometry.clone();
+      geometry.applyMatrix4(inverse.clone().multiply(object.matrixWorld));
+      const color = (material as MeshStandardMaterial).color?.getHex();
+      addToBucket(bucket, name, geometry, color ?? 0xffffff);
+    });
+    const parentNode = limbOf(node.parent ?? node);
+    const world = new Vector3().setFromMatrixPosition(
+      sceneInverse.clone().multiply(node.matrixWorld),
+    );
+    const parentWorld = new Vector3();
+    if (parentNode !== null) {
+      parentWorld.setFromMatrixPosition(
+        sceneInverse.clone().multiply(parentNode.matrixWorld),
+      );
+    }
+    limbs.push({
+      name: node.name.slice(LIMB_PREFIX.length),
+      parent:
+        parentNode === null ? null : parentNode.name.slice(LIMB_PREFIX.length),
+      local: world.clone().sub(parentWorld),
+      world,
+      parts: mergeBucket(bucket),
+    });
+  }
+  // Depth-first traversal already lists a parent before its children.
+  return limbs;
+}
+
 /** Hull and turret parts of a loaded glTF scene, in model-local frames. */
 function extractModel(scene: Object3D): TypeModel | null {
   scene.updateMatrixWorld(true);
+  const limbs = extractLimbs(scene);
+  const anchors = new Map<string, Vector3>();
+  const sceneFromWorld = scene.matrixWorld.clone().invert();
+  scene.traverse((object) => {
+    if (object.name.startsWith("anchor_")) {
+      anchors.set(
+        object.name,
+        new Vector3().setFromMatrixPosition(
+          sceneFromWorld.clone().multiply(object.matrixWorld),
+        ),
+      );
+    }
+  });
   const turretNode = scene.getObjectByName("turret") ?? null;
   const pivot = new Vector3();
   if (turretNode !== null) pivot.setFromMatrixPosition(turretNode.matrixWorld);
@@ -117,6 +213,7 @@ function extractModel(scene: Object3D): TypeModel | null {
     const name = material?.name;
     if (!isMaterialName(name)) return;
     found = true;
+    if (limbOf(object) !== null) return;
     const geometry = object.geometry.clone();
     const standard = material as MeshStandardMaterial;
     const color = standard.color?.getHex() ?? 0xffffff;
@@ -137,6 +234,8 @@ function extractModel(scene: Object3D): TypeModel | null {
   return {
     parts: mergeBucket(hull),
     turret: mergeBucket(turret),
+    limbs,
+    anchors,
     pivot,
     fallback: false,
   };
