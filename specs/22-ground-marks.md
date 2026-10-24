@@ -9,7 +9,7 @@ saves. Balance lives in `data/render/decals.json`.
 * Tracked and wheeled vehicles leave two strips behind them while they move.
   Strips are strong on dirt/mud (and snow once weather exists), faint on
   grass, absent on rock and nearly absent on asphalt.
-* Tracks fade slowly after `tracks.lifetimeMs` over `tracks.fadeMs`.
+* Tracks fade slowly after `tracks.lifetimeMs` (150 s) over `tracks.fadeMs` (150 s); marks carry relief through a bump map (`bumpScale`), lit by the sun.
 * Explosions leave a dark scorch; high-explosive hits also dig a crater on
   soil. Radius grows with the weapon's splash radius (`blasts.byDamageType`).
   Anti-tank hits leave a small scorch; thermobaric a wide scorch without crater.
@@ -30,7 +30,7 @@ saves. Balance lives in `data/render/decals.json`.
 
 ## 3. Caps
 
-Two rings with FIFO eviction: `tracks.maxMarks` (400) and `blasts.maxMarks`
+Two rings with FIFO eviction: `tracks.maxMarks` (3000) and `blasts.maxMarks`
 (500). Each ring is one mesh and one draw call; opacities update per frame.
 
 ## 4. Hooks for other layers

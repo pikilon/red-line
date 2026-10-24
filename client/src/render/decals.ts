@@ -5,7 +5,7 @@ import {
   DoubleSide,
   Group,
   Mesh,
-  MeshBasicMaterial,
+  MeshLambertMaterial,
   Uint32BufferAttribute,
 } from "three";
 import decalData from "../../../data/render/decals.json";
@@ -16,7 +16,12 @@ import {
   hasFlag,
   type MatchSnapshot,
 } from "../sim/matchSnapshot";
-import { ATLAS_CELLS, createDecalAtlas, DECAL_CELLS } from "./decalTextures";
+import {
+  ATLAS_CELLS,
+  createDecalAtlas,
+  createDecalHeightAtlas,
+  DECAL_CELLS,
+} from "./decalTextures";
 import { valueNoise } from "./terrainTexture";
 
 /** Balance values for the ground marks (`data/render/decals.json`, spec 22). */
@@ -363,8 +368,10 @@ function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
   geometry.setIndex(new Uint32BufferAttribute(indices, 1));
   geometry.setDrawRange(0, 0);
 
-  const material = new MeshBasicMaterial({
+  const material = new MeshLambertMaterial({
     map: createDecalAtlas(),
+    bumpMap: createDecalHeightAtlas(),
+    bumpScale: DECALS.bumpScale,
     vertexColors: true,
     transparent: true,
     depthWrite: false,

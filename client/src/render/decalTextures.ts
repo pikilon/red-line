@@ -91,3 +91,58 @@ export function createDecalAtlas(seed = 1): Texture {
   texture.needsUpdate = true;
   return texture;
 }
+
+/** Relief of a cell, 0..1 (bump map): grooved treads, a rimmed crater bowl. */
+function cellHeight(
+  cell: DecalCell,
+  u: number,
+  v: number,
+  seed: number,
+): number {
+  if (cell === "tread") {
+    const ridge = 0.5 + 0.5 * Math.sin(v * Math.PI * 2 * 4);
+    const groove = 1 - Math.min(1, Math.abs(u - 0.5) * 2) ** 2;
+    return 0.5 - 0.45 * groove * (0.4 + 0.6 * ridge);
+  }
+  if (cell === "scorch") {
+    return 0.5 + 0.08 * (valueNoise(u * 24, v * 24, 8, seed) - 0.5);
+  }
+  const radius = Math.hypot(u - 0.5, v - 0.5) * 2;
+  if (radius >= 1) return 0.5;
+  const bowl = 0.5 - 0.45 * (1 - radius / 0.75) ** 1 * (radius < 0.75 ? 1 : 0);
+  const rim =
+    radius >= 0.65 ? 0.4 * Math.sin(((radius - 0.65) / 0.35) * Math.PI) : 0;
+  return Math.max(0, Math.min(1, bowl + rim));
+}
+
+/** Greyscale height atlas matching `createDecalAtlas`, used as a bump map. */
+export function createDecalHeightAtlas(seed = 1): Texture {
+  const width = CELL_SIZE * ATLAS_CELLS;
+  const data = new Uint8Array(width * CELL_SIZE * 4);
+  const names: DecalCell[] = ["tread", "scorch", "crater"];
+  for (let py = 0; py < CELL_SIZE; py++) {
+    for (let px = 0; px < width; px++) {
+      const cell = names[Math.floor(px / CELL_SIZE)] ?? "tread";
+      const u = ((px % CELL_SIZE) + 0.5) / CELL_SIZE;
+      const v = (py + 0.5) / CELL_SIZE;
+      const value = Math.round(cellHeight(cell, u, v, seed + 5) * 255);
+      const offset = (py * width + px) * 4;
+      data[offset] = value;
+      data[offset + 1] = value;
+      data[offset + 2] = value;
+      data[offset + 3] = 255;
+    }
+  }
+  const texture = new DataTexture(
+    data,
+    width,
+    CELL_SIZE,
+    RGBAFormat,
+    UnsignedByteType,
+  );
+  texture.magFilter = LinearFilter;
+  texture.minFilter = LinearFilter;
+  texture.generateMipmaps = false;
+  texture.needsUpdate = true;
+  return texture;
+}
