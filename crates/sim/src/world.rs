@@ -43,6 +43,11 @@ pub enum Command {
         units: Vec<EntityId>,
         target: EntityId,
     },
+    /// Spec 20: force-fire at a ground point.
+    AttackGround {
+        units: Vec<EntityId>,
+        target: FxVec2,
+    },
     Harvest {
         units: Vec<EntityId>,
         depot: EntityId,
@@ -647,6 +652,9 @@ impl World {
                 Command::Stop { units } => self.apply_stop(player, &units),
                 Command::Harvest { units, depot } => self.apply_harvest(player, &units, depot),
                 Command::Attack { units, target } => self.apply_attack(player, &units, target),
+                Command::AttackGround { units, target } => {
+                    self.apply_attack_ground(player, &units, target);
+                }
                 Command::DebugSpawn { kind, pos } => self.apply_debug_spawn(player, kind, pos),
                 Command::DebugSetHp { entity, hp } => self.apply_debug_set_hp(entity, hp),
             }
@@ -819,6 +827,32 @@ impl World {
         }
     }
 
+    /// Spec 20 `AttackGround`: every listed armed unit of `player` receives the
+    /// order with the point clamped into the map; unarmed units and buildings
+    /// under construction ignore it.
+    pub(crate) fn apply_attack_ground(
+        &mut self,
+        player: PlayerId,
+        units: &[EntityId],
+        target: FxVec2,
+    ) {
+        let target = self.clamp_to_map(target);
+        let order_id = self.next_order_id;
+        self.next_order_id += 1;
+        let order = Order::AttackGround { order_id, target };
+        for &id in units {
+            if let Some(index) = self.index_of(id) {
+                let entity = &mut self.entities[index];
+                if entity.owner == player
+                    && entity.site.is_none()
+                    && self.rules.weapon_of(entity.kind).is_some()
+                {
+                    entity.order = order;
+                }
+            }
+        }
+    }
+
     /// Phase 1 move step 1: clamps `target` into the map bounds.
     pub(crate) fn clamp_to_map(&self, target: FxVec2) -> FxVec2 {
         let max_x = i32::from(self.nav.width()) * 65536 - 1;
@@ -842,6 +876,7 @@ impl World {
                 Order::Build { order_id, building } => self.step_build(index, order_id, building),
                 Order::Harvest { .. } => self.step_harvest(index),
                 Order::Attack { order_id, target } => self.step_attack(index, order_id, target),
+                Order::AttackGround { target, .. } => self.step_attack_ground(index, target),
                 _ => {}
             }
             // Spec 11 §5.2: a reverse move lasts for its Move order only, and a unit
@@ -885,6 +920,31 @@ impl World {
             return;
         }
         if let Some(goal) = self.attack_goal(target) {
+            self.step_toward_goal(index, goal);
+        }
+    }
+
+    /// Spec 20 `AttackGround`: no move once the point is inside the weapon
+    /// range; otherwise a step toward the point's (nearest passable) cell.
+    fn step_attack_ground(&mut self, index: usize, target: FxVec2) {
+        let (pos, kind) = {
+            let unit = &self.entities[index];
+            (unit.pos, unit.kind)
+        };
+        let range = self
+            .rules
+            .weapon_of(kind)
+            .map_or(Fx::ZERO, |weapon| fx_centi(weapon.range_centi));
+        if (target - pos).length() <= range {
+            return;
+        }
+        let cell = cell_of(target);
+        let goal = if self.nav.is_passable(cell) {
+            Some(cell)
+        } else {
+            self.nav.nearest_passable(cell)
+        };
+        if let Some(goal) = goal {
             self.step_toward_goal(index, goal);
         }
     }

@@ -381,6 +381,7 @@ impl World {
                 Order::Idle { last_order_id } => last_order_id,
                 Order::Move { order_id, .. }
                 | Order::Attack { order_id, .. }
+                | Order::AttackGround { order_id, .. }
                 | Order::Harvest { order_id, .. }
                 | Order::Build { order_id, .. } => order_id,
             };

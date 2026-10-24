@@ -147,6 +147,10 @@ pub enum OrderState {
         order_id: u32,
         target: u32,
     },
+    AttackGround {
+        order_id: u32,
+        target: [i32; 2],
+    },
     Harvest {
         order_id: u32,
         depot: u32,
@@ -224,6 +228,10 @@ pub enum CommandState {
     Attack {
         units: Vec<u32>,
         target: u32,
+    },
+    AttackGround {
+        units: Vec<u32>,
+        target: [i32; 2],
     },
     Harvest {
         units: Vec<u32>,
@@ -578,6 +586,10 @@ fn save_order(order: Order) -> OrderState {
             goal: cell(goal),
         },
         Order::Attack { order_id, target } => OrderState::Attack { order_id, target },
+        Order::AttackGround { order_id, target } => OrderState::AttackGround {
+            order_id,
+            target: vec2(target),
+        },
         Order::Harvest {
             order_id,
             depot,
@@ -613,6 +625,10 @@ fn load_order(order: OrderState) -> Order {
             goal: to_cell(goal),
         },
         OrderState::Attack { order_id, target } => Order::Attack { order_id, target },
+        OrderState::AttackGround { order_id, target } => Order::AttackGround {
+            order_id,
+            target: fx_vec2(target),
+        },
         OrderState::Harvest {
             order_id,
             depot,
@@ -807,6 +823,10 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
             units: units.clone(),
             target: *target,
         },
+        Command::AttackGround { units, target } => CommandState::AttackGround {
+            units: units.clone(),
+            target: vec2(*target),
+        },
         Command::Harvest { units, depot } => CommandState::Harvest {
             units: units.clone(),
             depot: *depot,
@@ -852,6 +872,10 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
 fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String> {
     Ok(match state {
         CommandState::Move { units, target } => Command::Move {
+            units: units.clone(),
+            target: fx_vec2(*target),
+        },
+        CommandState::AttackGround { units, target } => Command::AttackGround {
             units: units.clone(),
             target: fx_vec2(*target),
         },

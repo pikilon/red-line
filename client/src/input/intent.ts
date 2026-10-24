@@ -52,6 +52,36 @@ function moveCommand(
   ];
 }
 
+/**
+ * Ctrl + right click at ground (x, y) tiles: the armed selected units of
+ * `player` force-fire at that point (spec 20). Unarmed units and buildings
+ * keep their order.
+ */
+export function resolveAttackGround(args: {
+  player: number;
+  selected: readonly number[];
+  entities: readonly EntityState[];
+  x: number;
+  y: number;
+}): SimCommand[] {
+  const { player, selected, entities, x, y } = args;
+  const armed = unitIds(
+    ownSelected(selected, entities, player).filter(
+      (entity) => typeDef(entity.kind).category === "unit" && isArmed(entity),
+    ),
+  );
+  if (armed.length === 0) return [];
+  return [
+    {
+      kind: "attackGround",
+      player,
+      units: armed,
+      xRaw: toRaw(x),
+      yRaw: toRaw(y),
+    },
+  ];
+}
+
 function isUnderConstruction(entity: EntityState): boolean {
   return hasFlag(entity, ENTITY_FLAGS.underConstruction);
 }
