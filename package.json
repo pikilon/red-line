@@ -25,6 +25,7 @@
     "check:rust": "cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo nextest run",
     "build:wasm": "wasm-pack build crates/sim --target web",
     "status": "node scripts/status.mjs",
+    "generals:ini": "node scripts/generals-ini.mjs",
     "saves:list": "node scripts/saves.mjs list",
     "saves:run": "node scripts/saves.mjs run",
     "saves:import": "node scripts/saves.mjs import",
