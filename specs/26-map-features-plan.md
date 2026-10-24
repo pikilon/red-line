@@ -1,4 +1,4 @@
-# 25 — Map features plan (civilian structures, roads, rivers, bridges, vegetation, props)
+# 26 — Map features plan (civilian structures, roads, rivers, bridges, vegetation, props)
 
 Status: proposed (owner request 2026-10-25). Plan only: no code, no data, no
 art lands with this document.
@@ -433,6 +433,6 @@ layer machinery; 5 needs the commands UI; 6 is independent and can swap with 5;
 
 ## 10. Acceptance criteria (for the plan itself)
 
-* AC-25-01: the owner picks an order and answers the open questions; each
+* AC-26-01: the owner picks an order and answers the open questions; each
   accepted phase gets its own spec (garrison, bridges, roads) before code.
-* AC-25-02: this document ships alone: no data, schema or code changes.
+* AC-26-02: this document ships alone: no data, schema or code changes.
