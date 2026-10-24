@@ -20,7 +20,7 @@ import {
   Vector3,
 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { RULES, typeDef } from "../rules";
+import { RULES, type TypeDef, typeDef } from "../rules";
 import {
   ENTITY_FLAGS,
   type EntityState,
@@ -87,6 +87,32 @@ const TRACER_Y = 0.5;
 const PROGRESS_FULL = 1000;
 const SCAFFOLD_BEAM = 0.03;
 const UP = new Vector3(0, 1, 0);
+
+/** Folded launcher pod, radians about the hinge (negative lowers the front). */
+const LAUNCHER_STOWED = -1.05;
+/** Dozer blade raised from its modelled ground pose (negative lifts the front). */
+const BLADE_RAISED = -0.5;
+/** Blade raise-and-lower cycle while the dozer builds, in Hz. */
+const BLADE_WORK_HZ = 0.8;
+
+/** Pitch of the articulated model part: a launcher folds flat while its
+ *  vehicle drives; a dozer blade rests raised, drops to the ground when
+ *  driving and cycles up and down while the dozer works in place. */
+function articulationOf(
+  articulation: TypeDef["articulation"],
+  moving: number,
+  working: boolean,
+  nowMs: number,
+): number {
+  if (articulation === "launcher") return LAUNCHER_STOWED * moving;
+  if (articulation !== "blade") return 0;
+  if (working) {
+    const cycle =
+      0.5 + 0.5 * Math.sin((nowMs / 1000) * BLADE_WORK_HZ * 2 * Math.PI);
+    return BLADE_RAISED * (1 - cycle);
+  }
+  return BLADE_RAISED * (1 - moving);
+}
 
 export type ModelGroup = "hull" | "turret";
 
@@ -612,6 +638,14 @@ export function createEntityRenderer(
               )
             : LEVEL_POSE;
         const lift = pose.lift + body.shake;
+        const working =
+          hasFlag(entity, ENTITY_FLAGS.moving) && body.moving < 0.05;
+        const articulationPitch = articulationOf(
+          type.articulation,
+          body.moving,
+          working,
+          nowMs,
+        );
 
         if (isFallback || model === null) {
           if (type.category === "unit") {
@@ -663,6 +697,8 @@ export function createEntityRenderer(
               );
               turretMatrix.multiply(pivotMatrix);
               rotationMatrix.makeRotationY(turretYaw - hullYaw);
+              turretMatrix.multiply(rotationMatrix);
+              rotationMatrix.makeRotationX(articulationPitch);
               turretMatrix.multiply(rotationMatrix);
               recoilTranslation.makeTranslation(0, 0, -recoil);
               turretMatrix.multiply(recoilTranslation);

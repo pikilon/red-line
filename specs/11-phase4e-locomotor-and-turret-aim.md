@@ -351,6 +351,13 @@ rendered position and hull yaw, nothing in the sim: armoured units dip nose
 down when braking and squat when accelerating (pitch ≤ 0.06 rad), lean outward
 in turns (roll ≤ 0.07 rad, proportional to turn rate × speed) and shake
 slightly with the engine while moving. Both hull and turret take the tilt.
+Moving parts (`articulation` in the faction data, owner request 2026-10-24):
+`launcher` (HIMARS) folds its pod flat while driving and its weapon fires only
+when `speed == 0` (`stationaryFire`); `blade` (dozers) keeps the blade raised at
+rest, lowers it while driving and raises and lowers it in a cycle while the
+dozer works in place. A turreted vehicle with no target swings its turret ahead
+of the hull towards its `Move` goal at twice its aim rate; with a target it keeps
+aiming at it. Infantry animation stays deferred.
 Assumption: Generals' tread and wheel texture animation
 (`TreadDriveSpeedFraction`, W3DTankDraw) is not reproduced yet.
 

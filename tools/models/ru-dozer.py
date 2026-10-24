@@ -4,6 +4,8 @@ import math
 import os
 import sys
 
+import bpy
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib  # noqa: E402
 
@@ -38,6 +40,15 @@ panels = lib.join(
     [lib.box(f"panel_{s}", (0.02, 0.36, 0.08), (s * 0.31, 0.04, 0.36), m["team"]) for s in (-1, 1)],
     "panels",
 )
-root = lib.join([hull, tracks, wheels, cab, window, stack, blade, arms, ripper, panels], "ru-dozer")
+root = lib.join([hull, tracks, wheels, cab, window, stack, ripper, panels], "ru-dozer")
+
+# The blade and its arms are the articulated "turret" node: baked in the lowered
+# pose, hinged at the arm base; the client raises and lowers it (spec 11 §6.1).
+bpy.ops.object.select_all(action="DESELECT")
+blade.select_set(True)
+bpy.context.view_layer.objects.active = blade
+bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+lift = lib.turret([blade, arms], (0, -0.2, 0.3), "turret")
+lib.parent(lift, root)
 
 lib.export("ru-dozer", root)

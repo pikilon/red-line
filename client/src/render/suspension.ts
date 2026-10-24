@@ -9,13 +9,13 @@ const SMOOTH_SECONDS = 0.12;
 /** Spring that eases the body back to level, per second. */
 const SETTLE_RATE = 9;
 /** Radians of pitch per tile/s² of acceleration (positive = nose down). */
-const PITCH_PER_ACCEL = 0.012;
+const PITCH_PER_ACCEL = 0.03;
 /** Radians of roll per (rad/s × tile/s) of lateral acceleration. */
-const ROLL_PER_LATERAL = 0.05;
-const MAX_PITCH = 0.06;
-const MAX_ROLL = 0.07;
+const ROLL_PER_LATERAL = 0.12;
+const MAX_PITCH = 0.12;
+const MAX_ROLL = 0.14;
 /** Engine shake: height in tiles and frequency in Hz at full speed. */
-const SHAKE_HEIGHT = 0.012;
+const SHAKE_HEIGHT = 0.02;
 const SHAKE_HZ = 14;
 /** Tile/s at which the shake reaches full strength. */
 const SHAKE_FULL_SPEED = 2;
@@ -27,9 +27,16 @@ export interface BodyPose {
   readonly roll: number;
   /** Vertical shake in tiles. */
   readonly shake: number;
+  /** 0 at rest, 1 while driving; eases over `MOVING_EASE_SECONDS`. */
+  readonly moving: number;
 }
 
-export const LEVEL_POSE: BodyPose = { pitch: 0, roll: 0, shake: 0 };
+export const LEVEL_POSE: BodyPose = { pitch: 0, roll: 0, shake: 0, moving: 0 };
+
+/** Tile/s above which a vehicle counts as driving. */
+const DRIVING_SPEED = 0.15;
+/** Seconds a stowed launcher or a dozer blade takes to change pose. */
+const MOVING_EASE_SECONDS = 0.5;
 
 interface BodyEntry {
   x: number;
@@ -40,6 +47,7 @@ interface BodyEntry {
   turnRate: number;
   pitch: number;
   roll: number;
+  moving: number;
 }
 
 export interface Suspension {
@@ -81,6 +89,7 @@ export function createSuspension(): Suspension {
             turnRate: 0,
             pitch: 0,
             roll: 0,
+            moving: 0,
           });
         }
         return LEVEL_POSE;
@@ -112,13 +121,18 @@ export function createSuspension(): Suspension {
       previous.turnRate = turnRate;
       previous.pitch = pitch;
       previous.roll = roll;
+      const drivingNow = Math.abs(speed) > DRIVING_SPEED ? 1 : 0;
+      const ease = dt / MOVING_EASE_SECONDS;
+      previous.moving =
+        previous.moving +
+        Math.max(-ease, Math.min(ease, drivingNow - previous.moving));
 
       const strength = Math.min(1, Math.abs(speed) / SHAKE_FULL_SPEED);
       const shake =
         strength *
         SHAKE_HEIGHT *
         Math.sin(((nowMs / 1000) * SHAKE_HZ + id * 1.7) * 2 * Math.PI);
-      return { pitch, roll, shake };
+      return { pitch, roll, shake, moving: previous.moving };
     },
     prune(alive) {
       for (const id of entries.keys()) {

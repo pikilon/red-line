@@ -61,7 +61,9 @@ impl World {
         let aligned = if legacy {
             true
         } else {
-            self.aim_turret(index, &weapon, target_index)
+            let entity = &self.entities[index];
+            let stowed = self.rules.ty(kind).stationary_fire && entity.speed > Fx::ZERO;
+            self.aim_turret(index, &weapon, target_index) && !stowed
         };
         let cooldown = self.entities[index].cooldown;
         if cooldown > 0 {
@@ -143,7 +145,18 @@ impl World {
             entity.idle_aim_ticks = entity.idle_aim_ticks.saturating_add(1);
             if motion.turret_step > 0 {
                 if entity.speed > Fx::ZERO {
-                    entity.turret = entity.turret.turn_towards(Angle(0), motion.turret_step);
+                    // The turret looks where the hull is heading and swings
+                    // ahead of it in a turn, at twice its aim rate.
+                    let want = match entity.order {
+                        Order::Move { target, .. } if !entity.reversing => {
+                            let offset = target - entity.pos;
+                            Angle(atan2(offset.x, offset.y).0.wrapping_sub(entity.heading.0))
+                        }
+                        _ => Angle(0),
+                    };
+                    entity.turret = entity
+                        .turret
+                        .turn_towards(want, motion.turret_step.saturating_mul(2));
                 } else if entity.idle_aim_ticks > recenter {
                     let half = (motion.turret_step / 2).max(1);
                     entity.turret = entity.turret.turn_towards(Angle(0), half);
