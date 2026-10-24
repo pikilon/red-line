@@ -7,8 +7,10 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
-# CI prefers the owner's Mac (self-hosted runner `red-line-mac`) when it is
+# Each check runs only when the change touches what it covers: a docs-only
+# change runs nothing heavy. CI prefers the owner's Mac (self-hosted runner `red-line-mac`) when it is
 # online and idle, and falls back to GitHub's ubuntu-latest otherwise. Fork
 # PRs never run on the Mac. If the Mac goes off mid-job the job fails: re-run it
 # and it goes to GitHub.
@@ -17,14 +19,48 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       runner: ${{ steps.pick.outputs.runner }}
+      rust: ${{ steps.changes.outputs.rust }}
+      scripts: ${{ steps.changes.outputs.scripts }}
+      client: ${{ steps.changes.outputs.client }}
+      data: ${{ steps.changes.outputs.data }}
+      assets: ${{ steps.changes.outputs.assets }}
     steps:
+      - id: changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          if [ -n "$PR" ]; then
+            files=$(gh api --paginate "repos/$REPO/pulls/$PR/files" --jq '.[].filename') || files=ALL
+          elif [ -n "$BEFORE" ] && [ "$BEFORE" != "0000000000000000000000000000000000000000" ]; then
+            files=$(gh api "repos/$REPO/compare/$BEFORE...$AFTER" --jq '.files[].filename') || files=ALL
+          else
+            files=ALL
+          fi
+          echo "$files"
+          # A CI change, or an unknown file list, runs everything.
+          all=$(echo "$files" | grep -qE '^(ALL|\.github/)' && echo true || echo false)
+          flag() { if [ "$all" = true ] || echo "$files" | grep -qE "$2"; then echo "$1=true"; else echo "$1=false"; fi; }
+          {
+            flag rust    '^(crates/|Cargo\.|clippy\.toml)'
+            flag scripts '^(scripts/|tools/|package(-lock)?\.json)'
+            flag client  '^(client/|data/|crates/|package(-lock)?\.json)'
+            flag data    '^(data/|scripts/(build|check)-data)'
+            flag assets  '^tools/models/'
+          } | tee -a "$GITHUB_OUTPUT"
       - id: pick
         env:
           GH_TOKEN: ${{ secrets.RUNNER_STATUS_TOKEN }}
           TRUSTED: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
+          HEAVY: ${{ steps.changes.outputs.rust == 'true' || steps.changes.outputs.client == 'true' }}
         run: |
           runner='"ubuntu-latest"'
-          if [ "$TRUSTED" != "true" ]; then
+          if [ "$HEAVY" != "true" ]; then
+            echo "No Rust or client changes: using GitHub runner."
+          elif [ "$TRUSTED" != "true" ]; then
             echo "Untrusted event (fork PR): using GitHub runner."
           elif [ -z "$GH_TOKEN" ]; then
             echo "::warning::RUNNER_STATUS_TOKEN is not set; using GitHub runner."
@@ -44,10 +80,18 @@ jobs:
   verify:
     needs: pick-runner
     runs-on: ${{ fromJSON(needs.pick-runner.outputs.runner) }}
+    env:
+      CI_RUST: ${{ needs.pick-runner.outputs.rust }}
+      CI_SCRIPTS: ${{ needs.pick-runner.outputs.scripts }}
+      CI_CLIENT: ${{ needs.pick-runner.outputs.client }}
+      CI_DATA: ${{ needs.pick-runner.outputs.data }}
+      CI_ASSETS: ${{ needs.pick-runner.outputs.assets }}
+      CI_NODE: ${{ contains(needs.pick-runner.outputs.*, 'true') }}
+      CI_CARGO: ${{ needs.pick-runner.outputs.rust == 'true' || needs.pick-runner.outputs.client == 'true' }}
     steps:
       - uses: actions/checkout@v4
       # The Mac already has Node, Rust, wasm-pack and nextest.
-      - if: runner.os != 'macOS'
+      - if: runner.os != 'macOS' && env.CI_NODE == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 26.9.0
@@ -55,23 +99,36 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             client/package-lock.json
-      - if: runner.os != 'macOS'
+      - if: runner.os != 'macOS' && env.CI_CARGO == 'true'
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
           components: rustfmt, clippy
-      - if: runner.os != 'macOS'
+      - if: runner.os != 'macOS' && env.CI_CARGO == 'true'
         uses: Swatinem/rust-cache@v2
-      - if: runner.os != 'macOS'
+      - if: runner.os != 'macOS' && env.CI_CARGO == 'true'
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest,wasm-pack
       - if: runner.os == 'macOS'
         run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
-      - run: node --run install:root
-      - run: node --run install:client
-      - if: runner.os != 'macOS'
+      - if: env.CI_NODE == 'true'
+        run: node --run install:root
+      - if: env.CI_CLIENT == 'true'
+        run: node --run install:client
+      - if: runner.os != 'macOS' && env.CI_CLIENT == 'true'
         run: cd client && npx playwright install --with-deps chromium
-      - if: runner.os == 'macOS'
+      - if: runner.os == 'macOS' && env.CI_CLIENT == 'true'
         run: cd client && npx playwright install chromium
-      - run: node --run verify
+      - if: env.CI_RUST == 'true'
+        run: node --run check:rust && node --run check:rules
+      - if: env.CI_SCRIPTS == 'true'
+        run: node --run test:scripts
+      - if: env.CI_CLIENT == 'true'
+        run: node --run build:wasm
+      - if: env.CI_CLIENT == 'true'
+        run: node --run check && node --run typecheck && node --run test:unit && node --run build && node --run test:e2e
+      - if: env.CI_DATA == 'true'
+        run: node --run check:data
+      - if: env.CI_ASSETS == 'true'
+        run: node --run assets:check -- --strict
