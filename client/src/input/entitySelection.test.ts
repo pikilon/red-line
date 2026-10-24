@@ -4,6 +4,7 @@ import { ENTITY_FLAGS, type EntityState } from "../sim/matchSnapshot";
 import {
   boxSelect,
   clickSelect,
+  ORDER_PICK_RADIUS_TILES,
   pickEntity,
   selectAllOwnUnits,
 } from "./entitySelection";
@@ -49,6 +50,11 @@ describe("entity selection", () => {
     expect(clickSelect(entities, 1.1, 1, 0)).toEqual([2]);
     expect(clickSelect(entities, 1.25, 1, 0)).toEqual([]);
     expect(clickSelect(entities, 10, 10, 0)).toEqual([5]);
+
+    // Selection keeps the tight pick; orders use the wider model pick so a
+    // click anywhere on a unit counts (spec 20 §1).
+    expect(pickEntity(entities, 1, 1.8)).toBeNull();
+    expect(pickEntity(entities, 1, 1.8, ORDER_PICK_RADIUS_TILES)).toBe(2);
 
     const project = (x: number, y: number) => ({ x, y });
     expect(

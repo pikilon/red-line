@@ -235,12 +235,15 @@ function entityOf(
 function savedOrder(
   page: Page,
   id: number,
-): Promise<{ kind: string; target?: number[] } | null> {
+): Promise<{ kind: string; target?: number | number[] } | null> {
   return debugCall(
     page,
     async (api, entityId: number) => {
       const state = JSON.parse(await api.saveState()) as {
-        entities: { id: number; order: { kind: string; target?: number[] } }[];
+        entities: {
+          id: number;
+          order: { kind: string; target?: number | number[] };
+        }[];
       };
       return state.entities.find((row) => row.id === entityId)?.order ?? null;
     },
@@ -637,19 +640,26 @@ test("AC-03-59: attacks with a right click", async ({ page }) => {
   expect(await entityCount(page, 0, leopardKind)).toBeGreaterThan(0);
 });
 
-test("AC-20-03: force-fires at a point with Ctrl and either button", async ({
+test("AC-20-03: force-fires with Ctrl, the enemy pick and either button", async ({
   page,
 }) => {
   await bootDebug(page, "debug=1&speed=4");
   const himarsKind = await kindOf(page, "ua-himars");
+  const plantKind = await kindOf(page, "ru-power-plant");
   await spawnAt(page, 0, himarsKind, 30.5, 62.5);
+  await spawnAt(page, 1, plantKind, 34.5, 62.5);
   await expect
     .poll(() => entityCount(page, 0, himarsKind), { timeout: ms(5000) })
+    .toBeGreaterThan(0);
+  await expect
+    .poll(() => entityCount(page, 1, plantKind), { timeout: ms(5000) })
     .toBeGreaterThan(0);
   await debugCall(page, (api) => api.setCameraTarget(35.5, 62.5));
 
   const himars = await entityOf(page, 0, himarsKind);
   if (himars === null) throw new Error("missing ua-himars");
+  const plant = await entityOf(page, 1, plantKind);
+  if (plant === null) throw new Error("missing ru-power-plant");
   await clickTiles(page, himars.x, himars.y);
   await expect
     .poll(() =>
@@ -662,7 +672,7 @@ test("AC-20-03: force-fires at a point with Ctrl and either button", async ({
     .toBe(true);
 
   await page.keyboard.down("Control");
-  await clickTiles(page, 40, 62.5);
+  await clickTiles(page, 40, 58);
   await page.keyboard.up("Control");
 
   await expect
@@ -670,17 +680,23 @@ test("AC-20-03: force-fires at a point with Ctrl and either button", async ({
       timeout: ms(5000),
     })
     .toBe("attackGround");
-  const order = await savedOrder(page, himars.id);
-  expect(Math.abs((order?.target?.[0] ?? 0) - 40 * FX_ONE)).toBeLessThanOrEqual(
+  const groundOrder = await savedOrder(page, himars.id);
+  const target = Array.isArray(groundOrder?.target) ? groundOrder.target : [];
+  expect(Math.abs((target[0] ?? 0) - 40 * FX_ONE)).toBeLessThanOrEqual(
     Math.round(0.05 * FX_ONE),
   );
-  expect(
-    await debugCall(
-      page,
-      (api, id: number) => api.selectedIds().includes(id),
-      himars.id,
-    ),
-  ).toBe(true);
+
+  // The cursor pick decides object vs point: Ctrl + click on an enemy attacks
+  // it, so a moving target is followed instead of shelled where it stood.
+  await page.keyboard.down("Control");
+  await clickTiles(page, plant.x, plant.y);
+  await page.keyboard.up("Control");
+  await expect
+    .poll(async () => (await savedOrder(page, himars.id))?.kind, {
+      timeout: ms(5000),
+    })
+    .toBe("attack");
+  expect((await savedOrder(page, himars.id))?.target).toBe(plant.id);
 
   // The right button is the plain order button, so Ctrl + right click must
   // force-fire too (it is the contextmenu path on every platform).
@@ -691,19 +707,37 @@ test("AC-20-03: force-fires at a point with Ctrl and either button", async ({
     },
     himars.id,
   );
-  await expect
-    .poll(async () => (await savedOrder(page, himars.id))?.kind, {
-      timeout: ms(5000),
-    })
-    .toBe("idle");
   await page.keyboard.down("Control");
-  await clickTiles(page, 40, 62.5, "right");
+  await clickTiles(page, 40, 58, "right");
   await page.keyboard.up("Control");
   await expect
     .poll(async () => (await savedOrder(page, himars.id))?.kind, {
       timeout: ms(5000),
     })
     .toBe("attackGround");
+  expect(
+    await debugCall(
+      page,
+      (api, id: number) => api.selectedIds().includes(id),
+      himars.id,
+    ),
+  ).toBe(true);
+
+  // A plain left click on the enemy is enough to attack it (owner request).
+  await clickTiles(page, plant.x, plant.y);
+  await expect
+    .poll(async () => (await savedOrder(page, himars.id))?.kind, {
+      timeout: ms(5000),
+    })
+    .toBe("attack");
+  expect((await savedOrder(page, himars.id))?.target).toBe(plant.id);
+  expect(
+    await debugCall(
+      page,
+      (api, id: number) => api.selectedIds().includes(id),
+      himars.id,
+    ),
+  ).toBe(true);
 });
 
 /** Draw-call bound of spec 10 §3: `4 × types on screen + 10`, plus spec 21 §2:

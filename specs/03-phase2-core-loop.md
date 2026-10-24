@@ -1259,11 +1259,15 @@ from the green terrain (#136).
 `entitySelection.ts`:
 
 ```ts
-/** Units (category unit) within CLICK_PICK_RADIUS_TILES first (nearest, ties
- *  lowest id); otherwise the lowest-id building, depot or ghost whose
- *  footprint rectangle [x - w/2, x + w/2] x [y - h/2, y + h/2] contains the
- *  point; otherwise null. */
-export function pickEntity(entities: readonly EntityState[], x: number, y: number): number | null;
+/** Units (category unit) within `radiusTiles` first (nearest, ties lowest id);
+ *  otherwise the lowest-id building, depot or ghost whose footprint rectangle
+ *  [x - w/2, x + w/2] x [y - h/2, y + h/2] contains the point; otherwise null.
+ *  `radiusTiles` defaults to CLICK_PICK_RADIUS_TILES (spec 20 §1). */
+export function pickEntity(entities: readonly EntityState[], x: number, y: number,
+  radiusTiles?: number): number | null;
+/** Wider pick used by orders so a click anywhere on a unit model counts
+ *  (spec 20 §1). Selection keeps CLICK_PICK_RADIUS_TILES. */
+export const ORDER_PICK_RADIUS_TILES = 1;
 /** [id] if the picked entity is owned by player and not a ghost, else []. */
 export function clickSelect(entities: readonly EntityState[], x: number, y: number, player: number): number[];
 /** Ascending ids of units owned by player whose projected point is inside rect (edges inclusive). */
@@ -1285,7 +1289,9 @@ first):
 
 1. Empty selection → `[]`.
 2. A single building → `[rally]` if its type has `produces`, else `[]`.
-3. Units (ascending). `t = pickEntity(entities, x, y)`, ignoring ghosts:
+3. Units (ascending). `t = pickEntity(entities, x, y, ORDER_PICK_RADIUS_TILES)`,
+   ignoring ghosts (spec 20 §1: the wider pick lets a click on any part of the
+   unit model count as an order on it):
    * `t` owned by another player (not `NEUTRAL`): armed units (`weapon >= 0`)
      → `attack`; the rest → `move`.
    * `t` is a depot: units with `capacity > 0` → `harvest`; the rest → `move`.

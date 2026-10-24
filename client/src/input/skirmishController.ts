@@ -11,7 +11,7 @@ import type { EntityState } from "../sim/matchSnapshot";
 import type { SimCommand } from "../sim/protocol";
 import { PAN_SPEED_TILES_PER_SECOND, panDelta } from "./cameraPan";
 import { boxSelect, clickSelect, selectAllOwnUnits } from "./entitySelection";
-import { resolveAttackGround, resolveRightClick } from "./intent";
+import { resolveForceFire, resolveRightClick } from "./intent";
 import { canPlace, footprintOrigin } from "./placement";
 import {
   isDrag,
@@ -135,16 +135,17 @@ export function createSkirmishController(
   }
 
   /**
-   * Spec 20 §1: force fire at the ground point under `point` with the armed
-   * selected units. A context menu may not carry the pointer position, so the
-   * caller passes the last known one.
+   * Spec 20 §1: force fire under `point` with the armed selected units — an
+   * enemy under the cursor is attacked, any other point gets a ground shot. A
+   * context menu may not carry the pointer position, so the caller passes the
+   * last known one.
    */
   function forceFireAt(point: ScreenPoint): void {
     if (options.placementKind() !== null) return;
     if (selected.size === 0) return;
     const ground = groundAt(point);
     if (ground === null) return;
-    const commands = resolveAttackGround({
+    const commands = resolveForceFire({
       player: options.player(),
       selected: [...selected],
       entities: options.entities(),
@@ -152,6 +153,26 @@ export function createSkirmishController(
       y: ground.y,
     });
     for (const command of commands) options.command(command);
+  }
+
+  /**
+   * Spec 20 §1: a plain left click on an enemy with own units selected attacks
+   * it, so clicking the target is enough (owner request 2026-10-24). A left
+   * click on anything else keeps the normal selection behaviour; it never
+   * ground-fires.
+   */
+  function attackUnderCursor(ground: { x: number; y: number }): boolean {
+    if (selected.size === 0) return false;
+    const attacks = resolveForceFire({
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      x: ground.x,
+      y: ground.y,
+    }).filter((command) => command.kind === "attack");
+    if (attacks.length === 0) return false;
+    for (const command of attacks) options.command(command);
+    return true;
   }
 
   /** Lowest-id selected own unit whose type builds `kind`. */
@@ -215,6 +236,16 @@ export function createSkirmishController(
     forceFireArmed = false;
     options.selectionBox.show(null);
   });
+  // A release outside the canvas, or a focus change, must not leave force fire
+  // armed and turn the next right click into a ground shot.
+  window.addEventListener("blur", () => {
+    dragStart = null;
+    forceFireArmed = false;
+    forceFireIssued = false;
+  });
+  window.addEventListener("pointerup", () => {
+    forceFireArmed = false;
+  });
   canvas.addEventListener("pointerdown", (event) => {
     lastPointer = { x: event.clientX, y: event.clientY };
     forceFireIssued = false;
@@ -256,6 +287,7 @@ export function createSkirmishController(
     }
     const ground = groundAt(end);
     if (ground !== null && tryPlace(ground.x, ground.y)) return;
+    if (ground !== null && attackUnderCursor(ground)) return;
     setSelection(
       ground === null
         ? []

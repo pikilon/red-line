@@ -10,6 +10,10 @@ function isUnit(entity: EntityState): boolean {
   return typeDef(entity.kind).category === "unit";
 }
 
+/** Radius used to pick the entity an order targets: wide enough to click any
+ *  part of a unit model, while selection keeps the tighter click radius. */
+export const ORDER_PICK_RADIUS_TILES = 1;
+
 /** True when the point lies inside [x - w/2, x + w/2] x [y - h/2, y + h/2]. */
 function containsPoint(entity: EntityState, x: number, y: number): boolean {
   const [width, height] = typeDef(entity.kind).footprint;
@@ -22,14 +26,16 @@ function containsPoint(entity: EntityState, x: number, y: number): boolean {
 }
 
 /**
- * Units (category unit) within CLICK_PICK_RADIUS_TILES first (nearest, ties
- * lowest id); otherwise the lowest-id building, depot or ghost whose footprint
- * rectangle contains the point; otherwise null.
+ * Units (category unit) within `radiusTiles` first (nearest, ties lowest id);
+ * otherwise the lowest-id building, depot or ghost whose footprint rectangle
+ * contains the point; otherwise null. The radius defaults to the selection
+ * pick; orders pass `ORDER_PICK_RADIUS_TILES`.
  */
 export function pickEntity(
   entities: readonly EntityState[],
   x: number,
   y: number,
+  radiusTiles = CLICK_PICK_RADIUS_TILES,
 ): number | null {
   let unitId: number | null = null;
   let unitDistance = Number.POSITIVE_INFINITY;
@@ -38,7 +44,7 @@ export function pickEntity(
   for (const entity of entities) {
     if (isUnit(entity)) {
       const distance = Math.hypot(entity.x - x, entity.y - y);
-      if (distance > CLICK_PICK_RADIUS_TILES) continue;
+      if (distance > radiusTiles) continue;
       const closer = distance < unitDistance;
       const tiedLowerId =
         distance === unitDistance && unitId !== null && entity.id < unitId;

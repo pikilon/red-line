@@ -8,8 +8,19 @@
   `Ctrl` + left click also arrives as a context menu; the client treats that
   gesture as force fire, never as the plain right click. A plain right click
   keeps its normal action (spec 08 §3.7).
-* Every selected own **armed unit** receives an `AttackGround` order at that
-  point; unarmed units and buildings are unaffected and keep their order.
+* Every selected own **armed unit** receives the order: an enemy unit or
+  building under the cursor is attacked (so a moving target is followed,
+  §3); any other point gets an `AttackGround` order at that point. Unarmed
+  units and buildings are unaffected and keep their order.
+* Orders pick an enemy unit within `ORDER_PICK_RADIUS_TILES` (one tile, spec 03
+  §6.5), so clicking any part of the model counts; selection keeps the tighter
+  half-tile pick.
+* A plain left click on an enemy unit or building with own armed units
+  selected attacks it and keeps the selection (owner request 2026-10-24), so
+  clicking the target works without holding a modifier. The original leaves
+  this click to its order button (§3); Red Line accepts both because the owner
+  expects click-to-attack. A left click on the ground still selects or
+  deselects; it never fires.
 * The unit walks until the point is inside `[minRange, range]` of its weapon,
   stops there, turns its turret (or hull) to the point and fires with the
   normal weapon rules (cooldown, salvo, scatter, splash). It keeps firing
@@ -59,12 +70,12 @@
   deselects or cancels. Red Line uses the alternate one.
 
 Red Line copies the input: Ctrl is held, and either Ctrl + left click or
-Ctrl + right click force-fires at the cursor. The plain right click keeps its
-context action, and a move never fires. Two deliberate deviations: the click
-always fires at the point even over an enemy, so attack-at-a-point stays the
-only force-fire target (the plain right click already attacks objects, and the
-sim has no friendly fire); and buildings are not force-fired, so a selected
-production building keeps its rally orders.
+Ctrl + right click force-fires under the cursor, with the pick deciding object
+vs point as in the original. The plain right click keeps its context action,
+and a move never fires. Two deliberate deviations: own and neutral objects are
+not force-attacked (the sim has no friendly fire; the click falls back to a
+ground shot), and selected buildings are not force-fired, so a production
+building keeps its rally orders.
 
 ## 4. Assumptions
 
@@ -78,10 +89,14 @@ production building keeps its rally orders.
 * AC-20-01 (`crates/sim/tests/combat.rs`): a mortar shells a point with no
   enemy in sight, ignores another enemy in range, and `Stop` ends it; out of
   range it approaches only until the point is in range.
-* AC-20-02 (`client/src/input/intent.test.ts`): `resolveAttackGround` sends
-  only the armed own units.
+* AC-20-02 (`client/src/input/intent.test.ts`): `resolveForceFire` sends only
+  the armed own units, attacks an enemy unit or building under the cursor, and
+  sends `attackGround` for any other point.
 * AC-20-03 (Playwright): in `?debug=1&speed=4&ai=off`, a spawned owner-0
   `ua-himars` is selected with a left click; holding `Ctrl` and left clicking
-  the ground at `(40, 62.5)` keeps it selected and, on the next tick, its
-  saved order is `attackGround` toward `(40, 62.5)`; after a `Stop`, `Ctrl` +
-  right click at the same point does the same; no console error.
+  the ground at `(40, 58)` keeps it selected and, on the next tick, its saved
+  order is `attackGround` toward `(40, 58)`; `Ctrl` + left click on an enemy
+  building gives it an `attack` order on that building; after a `Stop`, `Ctrl`
+  + right click on the ground does the same as the left click; a plain left
+  click on the enemy building also gives it an `attack` order and keeps the
+  selection; no console error.

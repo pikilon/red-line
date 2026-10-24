@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { typeIndex } from "../rules";
 import { FX_ONE } from "../sim/fixed";
 import { ENTITY_FLAGS, type EntityState } from "../sim/matchSnapshot";
-import { resolveAttackGround, resolveRightClick } from "./intent";
+import { resolveForceFire, resolveRightClick } from "./intent";
 
 const entity = (args: {
   id: number;
@@ -220,16 +220,61 @@ describe("attack intents", () => {
     ]);
   });
 
+  it("AC-08-20: picks the enemy model, not only its centre", () => {
+    expect(clickAt(40.8, 40, [20])).toEqual([
+      { kind: "attack", player: 0, units: [20], target: 30 },
+    ]);
+  });
+
   it("AC-08-20: unarmed units ignore a right click on an enemy", () => {
     expect(clickAt(40, 40, [7, 21])).toEqual([]);
     expect(clickAt(25.5, 25.5, [7, 21])).toEqual([]);
   });
 });
 
-describe("resolveAttackGround (AC-20-02)", () => {
+describe("resolveForceFire (AC-20-02)", () => {
+  it("AC-20-02: attacks an enemy unit under the cursor", () => {
+    expect(
+      resolveForceFire({
+        player: 0,
+        selected: [7, 20, 30],
+        entities,
+        x: 40,
+        y: 40,
+      }),
+    ).toEqual([{ kind: "attack", player: 0, units: [20], target: 30 }]);
+  });
+
+  it("AC-20-02: picks the enemy model, not only its centre", () => {
+    expect(
+      resolveForceFire({
+        player: 0,
+        selected: [20],
+        entities,
+        x: 40.8,
+        y: 40,
+      }),
+    ).toEqual([{ kind: "attack", player: 0, units: [20], target: 30 }]);
+  });
+
+  it("AC-20-02: attacks an enemy building under the cursor", () => {
+    expect(
+      resolveForceFire({
+        player: 0,
+        selected: [20],
+        entities: [
+          ...entities,
+          entity({ id: 50, owner: 1, kind: "ru-barracks", x: 25.5, y: 25.5 }),
+        ],
+        x: 25.5,
+        y: 25.5,
+      }),
+    ).toEqual([{ kind: "attack", player: 0, units: [20], target: 50 }]);
+  });
+
   it("sends only the armed own units to the point", () => {
     expect(
-      resolveAttackGround({
+      resolveForceFire({
         player: 0,
         selected: [7, 20, 30],
         entities,
@@ -249,7 +294,7 @@ describe("resolveAttackGround (AC-20-02)", () => {
 
   it("does nothing when no selected unit is armed", () => {
     expect(
-      resolveAttackGround({
+      resolveForceFire({
         player: 0,
         selected: [7],
         entities,
