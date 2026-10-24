@@ -100,3 +100,54 @@ export function createSplatTexture(): DataTexture {
   texture.needsUpdate = true;
   return texture;
 }
+
+/** Side of the dust puff texture, texels. */
+const PUFF_SIZE = 64;
+/** Lumps on the outline of a puff. */
+const PUFF_LOBES = 7;
+
+/** A soft, lumpy puff of dust (spec 27 §3): white with a darker, denser core
+ *  so the tint per instance gives the soil colour; alpha falls off softly. */
+export function createPuffTexture(): DataTexture {
+  const rnd = random(0xd057);
+  const lobes = Array.from({ length: PUFF_LOBES }, () => ({
+    angle: rnd() * Math.PI * 2,
+    distance: 0.12 + rnd() * 0.14,
+    radius: 0.13 + rnd() * 0.1,
+  }));
+  const data = new Uint8Array(PUFF_SIZE * PUFF_SIZE * 4);
+  for (let py = 0; py < PUFF_SIZE; py++) {
+    for (let px = 0; px < PUFF_SIZE; px++) {
+      const x = (px + 0.5) / PUFF_SIZE - 0.5;
+      const y = (py + 0.5) / PUFF_SIZE - 0.5;
+      let density = 1 - smoothstep(0.05, 0.3, Math.hypot(x, y));
+      for (const lobe of lobes) {
+        const d = Math.hypot(
+          x - Math.cos(lobe.angle) * lobe.distance,
+          y - Math.sin(lobe.angle) * lobe.distance,
+        );
+        density = Math.max(density, 1 - smoothstep(0, lobe.radius, d));
+      }
+      // Sunlit top, shaded bottom: the puff reads as a volume.
+      const shade = 0.78 + 0.22 * smoothstep(-0.3, 0.3, y);
+      const o = (py * PUFF_SIZE + px) * 4;
+      const value = Math.round(255 * shade);
+      data[o] = value;
+      data[o + 1] = value;
+      data[o + 2] = value;
+      data[o + 3] = Math.round(255 * density * density);
+    }
+  }
+  const texture = new DataTexture(
+    data,
+    PUFF_SIZE,
+    PUFF_SIZE,
+    RGBAFormat,
+    UnsignedByteType,
+  );
+  texture.magFilter = LinearFilter;
+  texture.minFilter = LinearFilter;
+  texture.generateMipmaps = false;
+  texture.needsUpdate = true;
+  return texture;
+}

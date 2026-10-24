@@ -36,10 +36,9 @@ shader or a second mesh.
 
 ## 3. Behaviour
 
-1. Every shot `explosion` effect (`spawnShotEffects`, spec 07 §3) digs a crater
-   at its target when it detonates: radius `max(1.2, 0.9 × size)` tiles (cap
-   3.5), depth `0.18 × radius`. It sinks over 350 ms with a smoothstep ease.
-   Explosions under 0.5 tiles leave nothing.
+1. Superseded by spec 27 §4: craters come from each weapon's impact profile
+   at its detonation point, on a fine patched grid with a raised rim. They
+   still sink over 350 ms with a smoothstep ease.
 2. Total sink at one point is capped at 0.5 tiles; craters stack.
 3. Tracked vehicles (weight 1) and wheeled ones (0.5) sink the ground while
    they drive: 0.05 tiles per tile driven × weight × softness, floor

@@ -50,28 +50,12 @@
   "blasts": {
     "lifetimeMs": 3600000,
     "fadeMs": 0,
-    "scorchPerCrater": 1.7,
-    "scorchAlpha": 0.4,
-    "craterAlpha": 0.5,
+    "_comment": "Sizes and opacities per weapon live in impacts.json (spec 27).",
     "scorchColor": "0x0c0a08",
-    "craterColor": "0x1c140c",
-    "byDamageType": {
-      "antiTank": {
-        "radiusTiles": 0.35,
-        "splashFactor": 0.4,
-        "crater": false
-      },
-      "highExplosive": {
-        "radiusTiles": 0.55,
-        "splashFactor": 0.7,
-        "crater": true
-      },
-      "thermobaric": {
-        "radiusTiles": 0.7,
-        "splashFactor": 0.8,
-        "crater": false
-      }
-    },
+    "ejectaColor": "0x2a1c10",
+    "ejectaAlpha": 0.7,
+    "ejectaPerCrater": 1.45,
+    "pockColor": "0x0e0a06",
     "maxMarks": 500
   },
   "snow": {

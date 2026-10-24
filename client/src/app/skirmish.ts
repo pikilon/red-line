@@ -57,6 +57,10 @@ import {
   type GeneratedTextures,
   loadGeneratedTextures,
 } from "../render/generatedTextures";
+import {
+  createGroundImpacts,
+  type GroundImpacts,
+} from "../render/groundImpacts";
 import { loadModels, type ModelRegistry } from "../render/models";
 import {
   createProjectiles,
@@ -71,11 +75,7 @@ import {
   setTerrainTextures,
   terrainDeformerOf,
 } from "../render/terrain";
-import {
-  craterFor,
-  MIN_CRATER_SIZE,
-  pressSourcesOf,
-} from "../render/terrainRelief";
+import { pressSourcesOf } from "../render/terrainRelief";
 import {
   detectRicochets,
   detectVehicleHits,
@@ -90,7 +90,7 @@ import {
   startSecondsFrom,
   type Weather,
 } from "../render/weather";
-import { RULES, typeDef, typeIndex, typeName } from "../rules";
+import { RULES, typeDef, typeIndex, typeName, WEAPONS } from "../rules";
 import { loadSource, readExample, readSave } from "../saves/boot";
 import {
   buildSaveFile,
@@ -170,6 +170,8 @@ const NO_EFFECT_COUNTS: Record<EffectKind, number> = {
   blood: 0,
   droplet: 0,
   debris: 0,
+  dust: 0,
+  clod: 0,
 };
 /** The builtin ruleset type without a committed `.glb` (spec 06 §3). */
 const PLACEHOLDER_TYPE = "tech-slice-placeholder";
@@ -633,6 +635,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let effects: Effects | null = null;
   let attackMarker: AttackMarker | null = null;
   let decals: Decals | null = null;
+  let groundImpacts: GroundImpacts | null = null;
   let projectiles: Projectiles | null = null;
   /** Flying projectiles of the latest combat snapshot (spec 17 §5). */
   let flying: readonly ProjectileState[] = [];
@@ -812,6 +815,14 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       ),
     );
     scene.add(decals.group);
+    // Marks drape over the relief and follow it as craters dig (spec 27 §4).
+    const relief = terrainDeformerOf(terrain);
+    if (relief !== null) {
+      const marks = decals;
+      marks.setHeight((x, y) => relief.heightAt(x, y));
+      relief.onChange((x0, z0, x1, z1) => marks.relift(x0, z0, x1, z1));
+    }
+    groundImpacts = createGroundImpacts(effects, decals, () => relief);
     projectiles = createProjectiles();
     scene.add(projectiles.group);
     fogOverlay = createFogOverlay(mapInfo.mapWidth, mapInfo.mapHeight);
@@ -1056,20 +1067,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       effects !== null &&
       (previous === null || snapshot.tick > previous.tick)
     ) {
-      const relief = terrain === null ? null : terrainDeformerOf(terrain);
-      spawnShotEffects(
-        snapshot,
-        effects,
-        effectTime(at),
-        relief === null
-          ? undefined
-          : (x, z, size, startMs) => {
-              if (size < MIN_CRATER_SIZE) return;
-              const crater = craterFor(size);
-              relief.crater(x, z, crater.radius, crater.depth, startMs);
-            },
-      );
-      decals?.recordShots(snapshot, effectTime(at));
+      spawnShotEffects(snapshot, effects, effectTime(at));
+      groundImpacts?.record(snapshot, combat, effectTime(at));
       animator.recordShots(snapshot.entities, at);
       deathCauses.record(snapshot.entities, effectTime(at));
       vehicleFx.ricochet(detectRicochets(snapshot));
@@ -1324,10 +1323,17 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
           flushes: 0,
           flushMs: 0,
           vertices: 0,
+          refined: 0,
         },
       crater: (x, y, radius, depth) => {
         if (terrain === null) return;
         terrainDeformerOf(terrain)?.crater(x, y, radius, depth, 0);
+      },
+      impact: (weaponId, x, y) => {
+        const index = WEAPONS.findIndex((weapon) => weapon.id === weaponId);
+        if (index >= 0) {
+          groundImpacts?.impact(index, x, y, effectTime(performance.now()));
+        }
       },
       loadedSave: () => boot.loadedId,
       initialSnapshot: () =>

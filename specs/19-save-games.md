@@ -261,6 +261,7 @@ pub enum SetupOrder {                 // externally tagged: { attack: "leo1" }
     Attack(String),                   // label
     MoveCenti([i32; 2]),
     Harvest(String),                  // label of a depot
+    AttackGroundCenti([i32; 2]),      // spec 20 force fire at a point (spec 27)
 }
 ```
 
@@ -732,6 +733,7 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
 | `gore` | showcase | 20 `ua-rifleman` vs 20 `ru-rifleman` close, attacking. Gore follows the player's setting (setup examples never change it, §5.3); toggle it with G | 5 deaths within 900 ticks |
 | `victory-near` | showcase | `victory: true`; a `ua-hq` far away and one `ru-hq` at 5 % HP attacked by 4 `ua-leopard-2a4` in sight | `Winner(0)` within 900 ticks |
 | `ai-attack` | first-line | `starts: true`, `victory: true`; Ukrainian base with few defenders, controlled 0; Russia with a full base, credits 40000 and AI `russia-rush` active; `revealed: false` | A Russian unit inside 20 tiles of the Ukrainian HQ within 6000 ticks |
+| `weapon-impacts` | showcase | Spec 27: one unit per weapon class (rifleman, Kozak HMG, BMP-2 autocannon, RPG gunner, Leopard, HIMARS, TOS-1A) force-firing at open ground (`attackGroundCenti` orders); both HQs far away | All 7 weapons fire within 300 ticks |
 
 ## 8. Acceptance criteria
 

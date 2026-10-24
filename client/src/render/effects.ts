@@ -4,6 +4,7 @@ import {
   BoxGeometry,
   Color,
   Group,
+  InstancedBufferAttribute,
   InstancedMesh,
   Matrix4,
   MeshBasicMaterial,
@@ -12,6 +13,7 @@ import {
   Quaternion,
   Vector3,
 } from "three";
+import { ISOMETRIC_ELEVATION } from "../camera";
 import { typeDef } from "../rules";
 import {
   ENTITY_FLAGS,
@@ -19,7 +21,7 @@ import {
   hasFlag,
   type MatchSnapshot,
 } from "../sim/matchSnapshot";
-import { createSplatTexture } from "./splat";
+import { createPuffTexture, createSplatTexture } from "./splat";
 
 /** Instances kept per effect kind; the oldest is recycled when full (spec 07 §3). */
 export const EFFECT_CAPACITY = 512;
@@ -34,6 +36,8 @@ export const EFFECT_KINDS = [
   "blood",
   "droplet",
   "debris",
+  "dust",
+  "clod",
 ] as const;
 export type EffectKind = (typeof EFFECT_KINDS)[number];
 
@@ -147,7 +151,75 @@ const EFFECT_STYLES: Readonly<Record<EffectKind, EffectStyle>> = {
     color: 0x4a4038,
     additive: false,
   },
+  // A soft camera-facing puff of soil kicked up by an impact (spec 27 §3).
+  dust: {
+    durationMs: 800,
+    fadeMs: 800,
+    size: [0.3, 0.3, 0.3],
+    color: 0x8a6a48,
+    additive: false,
+  },
+  // A clod of soil thrown by a blast: flies, lands and shrinks away (spec 27).
+  clod: {
+    durationMs: 5000,
+    fadeMs: 1500,
+    size: [0.05, 0.035, 0.05],
+    color: 0x2e2014,
+    additive: false,
+  },
 };
+
+/** Gravity on a thrown clod, tiles/s²: heavier-looking than blood drops. */
+const CLOD_GRAVITY = 7;
+/** Tumble of a flying clod, radians per second. */
+const CLOD_SPIN = 9;
+/** A dust puff starts at this share of its size and grows to full. */
+const DUST_GROWTH_START = 0.35;
+/** Direction from the ground towards the fixed isometric camera (camera.ts). */
+const TO_CAMERA = new Vector3(
+  Math.cos(ISOMETRIC_ELEVATION) / Math.SQRT2,
+  Math.sin(ISOMETRIC_ELEVATION),
+  Math.cos(ISOMETRIC_ELEVATION) / Math.SQRT2,
+).normalize();
+const Z_AXIS = new Vector3(0, 0, 1);
+/** Turns a +Z facing plane towards the camera. */
+const FACE_CAMERA = new Quaternion().setFromUnitVectors(Z_AXIS, TO_CAMERA);
+
+function easeOut(t: number): number {
+  const c = Math.min(1, Math.max(0, t));
+  return 1 - (1 - c) * (1 - c);
+}
+
+/** Seconds until a body thrown up at `vz` from `height` over the ground
+ *  lands under `CLOD_GRAVITY`. */
+function landingTime(vz: number, height: number): number {
+  const lift = Math.max(0, height);
+  return (vz + Math.sqrt(vz * vz + 2 * CLOD_GRAVITY * lift)) / CLOD_GRAVITY;
+}
+
+/** Adds a per-instance opacity (`instanceAlpha`) to a basic material. */
+function withInstanceAlpha(material: MeshBasicMaterial): void {
+  material.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader
+      .replace(
+        "#include <common>",
+        "#include <common>\nattribute float instanceAlpha;\nvarying float vInstanceAlpha;",
+      )
+      .replace(
+        "#include <begin_vertex>",
+        "#include <begin_vertex>\nvInstanceAlpha = instanceAlpha;",
+      );
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "#include <common>",
+        "#include <common>\nvarying float vInstanceAlpha;",
+      )
+      .replace(
+        "#include <map_fragment>",
+        "#include <map_fragment>\ndiffuseColor.a *= vInstanceAlpha;",
+      );
+  };
+}
 
 export interface EffectSpawn {
   /** World tiles. */
@@ -171,6 +243,12 @@ export interface EffectSpawn {
   /** Blood only: ms a splat takes to spread to full size (a burst of drops
    *  is quick, a pool slow); defaults to `BLOOD_SPREAD_MS`. */
   spreadMs?: number;
+  /** Dust and clods: tint (defaults to the kind's colour). */
+  color?: number;
+  /** Dust: peak opacity 0..1 (default 1). */
+  alpha?: number;
+  /** Clods: ground height they land on, tiles (default 0). */
+  ground?: number;
 }
 
 export interface Effects {
@@ -203,6 +281,10 @@ interface Instance {
   vx: number;
   vy: number;
   vz: number;
+  /** Tint, or -1 for the kind's colour. */
+  color: number;
+  alpha: number;
+  ground: number;
   /** Drawn in at least one frame; an effect is never dropped unseen. */
   shown: boolean;
 }
@@ -216,11 +298,12 @@ export function createEffects(): Effects {
   for (const kind of EFFECT_KINDS) {
     const style = EFFECT_STYLES[kind];
     const decal = kind === "blood";
+    const puff = kind === "dust";
     const material = new MeshBasicMaterial({
       color: 0xffffff,
-      transparent: style.additive || decal,
+      transparent: style.additive || decal || puff,
       blending: style.additive ? AdditiveBlending : NormalBlending,
-      depthWrite: !style.additive && !decal,
+      depthWrite: !style.additive && !decal && !puff,
       // A blood splat is a flat textured quad lying on the ground.
       ...(decal
         ? {
@@ -229,25 +312,37 @@ export function createEffects(): Effects {
             polygonOffsetFactor: -2,
           }
         : {}),
+      ...(puff ? { map: createPuffTexture() } : {}),
     });
-    const mesh = new InstancedMesh(
-      decal
-        ? new PlaneGeometry(1, 1).rotateX(-Math.PI / 2)
-        : new BoxGeometry(1, 1, 1),
-      material,
-      EFFECT_CAPACITY,
-    );
+    let geometry = decal
+      ? new PlaneGeometry(1, 1).rotateX(-Math.PI / 2)
+      : new BoxGeometry(1, 1, 1);
+    if (puff) {
+      // Camera-facing puffs fade out through a per-instance opacity.
+      geometry = new PlaneGeometry(1, 1);
+      geometry.setAttribute(
+        "instanceAlpha",
+        new InstancedBufferAttribute(new Float32Array(EFFECT_CAPACITY), 1),
+      );
+      withInstanceAlpha(material);
+    }
+    const mesh = new InstancedMesh(geometry, material, EFFECT_CAPACITY);
     mesh.count = 0;
     mesh.visible = false;
     // Instances move every frame; bounds computed at creation would cull them.
     mesh.frustumCulled = false;
     // Only wrecks and debris enter the shadow pass (spec 10 §3).
     mesh.castShadow = kind === "wreck" || kind === "debris";
+    // Dust is drawn after the ground marks and solid effects.
+    if (puff) mesh.renderOrder = 2;
     meshes[kind] = mesh;
     pools[kind] = [];
     group.add(mesh);
   }
 
+  const dustAlpha = meshes.dust.geometry.getAttribute(
+    "instanceAlpha",
+  ) as InstancedBufferAttribute;
   const matrix = new Matrix4();
   const position = new Vector3();
   const scale = new Vector3();
@@ -281,6 +376,9 @@ export function createEffects(): Effects {
       vx: init.velocity?.[0] ?? 0,
       vy: init.velocity?.[1] ?? 0,
       vz: init.velocity?.[2] ?? 0,
+      color: init.color ?? -1,
+      alpha: init.alpha ?? 1,
+      ground: init.ground ?? 0,
       shown: false,
     });
   }
@@ -332,12 +430,47 @@ export function createEffects(): Effects {
           growth =
             BLOOD_SPREAD_START +
             (1 - BLOOD_SPREAD_START) * (1 - (1 - spread) ** 2);
+        } else if (kind === "dust") {
+          growth =
+            DUST_GROWTH_START + (1 - DUST_GROWTH_START) * easeOut(progress);
         }
-        // Additive tints fade to black; opaque decals shrink away instead.
-        const shrink = style.additive ? 1 : fade;
+        // Additive tints fade to black; opaque decals shrink away instead,
+        // and dust fades through its own opacity.
+        const shrink = style.additive || kind === "dust" ? 1 : fade;
         const grow = growth * shrink;
 
-        if (kind === "droplet") {
+        if (kind === "dust") {
+          // Kicked out and up, slowing down as it spreads.
+          const travel = (instance.durationMs / 1000) * easeOut(progress);
+          position.set(
+            instance.x + instance.vx * travel,
+            instance.z + instance.vz * travel,
+            instance.y + instance.vy * travel,
+          );
+          rotation.setFromAxisAngle(Z_AXIS, instance.rotationY);
+          rotation.premultiply(FACE_CAMERA);
+          dustAlpha.setX(visible, instance.alpha * (1 - progress) ** 1.5);
+        } else if (kind === "clod") {
+          // Thrown on a ballistic arc; it rests where it lands.
+          const flight = Math.min(
+            elapsed / 1000,
+            landingTime(instance.vz, instance.z - instance.ground),
+          );
+          position.set(
+            instance.x + instance.vx * flight,
+            Math.max(
+              instance.ground,
+              instance.z +
+                instance.vz * flight -
+                0.5 * CLOD_GRAVITY * flight * flight,
+            ),
+            instance.y + instance.vy * flight,
+          );
+          rotation.setFromAxisAngle(
+            X_AXIS,
+            instance.rotationY + CLOD_SPIN * flight,
+          );
+        } else if (kind === "droplet") {
           // Thrown from the wound: a ballistic arc until it lands.
           const flight = elapsed / 1000;
           position.set(
@@ -365,7 +498,7 @@ export function createEffects(): Effects {
             X_AXIS,
             streak.lengthSq() > 0 ? streak.normalize() : X_AXIS,
           );
-        } else {
+        } else if (kind !== "dust" && kind !== "clod") {
           rotation.setFromAxisAngle(Y_AXIS, instance.rotationY);
         }
         scale.set(
@@ -375,7 +508,7 @@ export function createEffects(): Effects {
         );
         matrix.compose(position, rotation, scale);
         mesh.setMatrixAt(visible, matrix);
-        color.setHex(style.color);
+        color.setHex(instance.color >= 0 ? instance.color : style.color);
         if (style.additive) {
           color.multiplyScalar(fade);
         } else if (kind === "wreck") {
@@ -393,6 +526,7 @@ export function createEffects(): Effects {
       mesh.visible = visible > 0;
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor !== null) mesh.instanceColor.needsUpdate = true;
+      if (kind === "dust") dustAlpha.needsUpdate = true;
     }
   }
 
