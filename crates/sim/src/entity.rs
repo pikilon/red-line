@@ -18,6 +18,9 @@ pub enum HarvestPhase {
     Unloading,
 }
 
+/// `Projectile::target` and `Entity::last_target` of a shot at the ground.
+pub const GROUND_TARGET: EntityId = u32::MAX;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Order {
     /// `last_order_id` is the order this unit completed (0 = none).
@@ -32,6 +35,12 @@ pub enum Order {
     Attack {
         order_id: u32,
         target: EntityId,
+    },
+    /// Force-fire at a ground point (spec 20): approach until the point is in
+    /// weapon range, then shoot at it until stopped or re-ordered.
+    AttackGround {
+        order_id: u32,
+        target: FxVec2,
     },
     Harvest {
         order_id: u32,

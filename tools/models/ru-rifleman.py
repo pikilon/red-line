@@ -12,7 +12,8 @@ m = infantry.palette("russia")
 
 # Render box: 0.30 wide (x), 0.60 high (z), 0.30 long (y); front is -Y.
 # One soldier per unit, as in C&C Generals.
-root = infantry.place(infantry.rifleman("ru-rifleman", m), "ru-rifleman", 0.54)
-infantry.centre(root)
+limbs = infantry.place(infantry.rifleman("ru-rifleman", m), "m", 0.54)
+infantry.centre(limbs)
+root = infantry.assemble("ru-rifleman", limbs)
 
 lib.export("ru-rifleman", root)

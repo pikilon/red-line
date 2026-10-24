@@ -1,6 +1,6 @@
 import { type BufferAttribute, type Group, Mesh } from "three";
 
-/** Visual-only ground relief (spec 22). The simulation never reads it: the
+/** Visual-only ground relief (spec 24). The simulation never reads it: the
  *  heights below only move the grass and dirt vertices and their normals. */
 
 /** Seconds a crater takes to reach its full depth. */

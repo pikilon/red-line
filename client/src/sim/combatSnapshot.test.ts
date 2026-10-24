@@ -28,6 +28,7 @@ function skirmishSim(
     command_move: vi.fn(),
     command_move_as: vi.fn(),
     command_attack: vi.fn(),
+    command_attack_ground: vi.fn(),
     command_harvest: vi.fn(),
     command_construct: vi.fn(),
     command_resume: vi.fn(),

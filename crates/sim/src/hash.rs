@@ -123,6 +123,12 @@ fn put_order(out: &mut Vec<u8>, order: &Order) {
             put_u32(out, order_id);
             put_u32(out, target);
         }
+        Order::AttackGround { order_id, target } => {
+            out.push(5);
+            put_u32(out, order_id);
+            put_i32(out, target.x.raw());
+            put_i32(out, target.y.raw());
+        }
         Order::Harvest {
             order_id,
             depot,

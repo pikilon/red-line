@@ -10,7 +10,7 @@ function build() {
   return { group, deformer };
 }
 
-describe("terrain relief (spec 22)", () => {
+describe("terrain relief (spec 24)", () => {
   it("sinks the ground under a crater and moves the mesh", () => {
     const { group, deformer } = build();
     deformer.crater(8, 8, 3, 0.4, 0);

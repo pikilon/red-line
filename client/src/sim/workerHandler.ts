@@ -60,6 +60,12 @@ export interface SkirmishSimLike {
     yRaw: number,
   ): void;
   command_attack(player: number, unitIds: Uint32Array, target: number): void;
+  command_attack_ground(
+    player: number,
+    unitIds: Uint32Array,
+    xRaw: number,
+    yRaw: number,
+  ): void;
   command_harvest(player: number, unitIds: Uint32Array, depot: number): void;
   command_construct(
     player: number,
@@ -127,6 +133,16 @@ const COMMANDS = {
       command.target,
     );
   }),
+  attackGround: run(
+    (sim, command: Extract<SimCommand, { kind: "attackGround" }>) => {
+      sim.command_attack_ground(
+        command.player,
+        Uint32Array.from(command.units),
+        command.xRaw,
+        command.yRaw,
+      );
+    },
+  ),
   harvest: run((sim, command: Extract<SimCommand, { kind: "harvest" }>) => {
     sim.command_harvest(
       command.player,

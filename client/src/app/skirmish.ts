@@ -28,7 +28,14 @@ import {
 } from "../input/skirmishController";
 import { createPerfPanel } from "../perfPanel";
 import { type Animator, createAnimator } from "../render/animation";
-import { detectDeaths, spawnDeathEffects } from "../render/deaths";
+import { createCorpses } from "../render/corpses";
+import {
+  createDeathCauses,
+  detectDeaths,
+  detectHits,
+  spawnDeathEffects,
+  spawnHitBlood,
+} from "../render/deaths";
 import {
   createEffects,
   type EffectKind,
@@ -48,6 +55,7 @@ import {
   type ProjectileModel,
   type Projectiles,
 } from "../render/projectiles";
+import { poseOnDeath } from "../render/rig";
 import {
   createTerrain,
   rockCellsOf,
@@ -59,6 +67,13 @@ import {
   MIN_CRATER_SIZE,
   pressSourcesOf,
 } from "../render/terrainRelief";
+import {
+  climateFor,
+  createWeather,
+  densityFrom,
+  startSecondsFrom,
+  type Weather,
+} from "../render/weather";
 import { RULES, typeDef, typeIndex, typeName } from "../rules";
 import { loadSource, readExample, readSave } from "../saves/boot";
 import {
@@ -136,6 +151,7 @@ const NO_EFFECT_COUNTS: Record<EffectKind, number> = {
   wreck: 0,
   body: 0,
   blood: 0,
+  droplet: 0,
   debris: 0,
 };
 /** The builtin ruleset type without a committed `.glb` (spec 06 §3). */
@@ -326,6 +342,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   if (!container) throw new Error("Missing #app container");
   const hudRoot = document.getElementById("hud") ?? container;
   const { seed, mapId, debug } = boot;
+  const pageParams = new URLSearchParams(window.location.search);
   const restored = boot.client;
 
   const renderer = new WebGLRenderer({ antialias: true });
@@ -374,6 +391,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     switchSide: () => switchSide(),
     toggleReveal: () => toggleReveal(),
     toggleFpsPanel: () => toggleFpsPanel(),
+    toggleWeather: () => toggleWeather(),
     restart: () => window.location.reload(),
   });
   // Joystick and menu button on touch screens only (spec 08 §3.6).
@@ -500,6 +518,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       gore: settings.gore,
       ai: aiActive,
       generatedTextures: settings.generatedTextures !== false,
+      weather: settings.weather !== false,
       revealed: viewer === OBSERVER,
       fpsPanel,
     });
@@ -585,6 +604,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     },
   });
   let animator: Animator;
+  const corpses = createCorpses();
+  const deathCauses = createDeathCauses();
   let entities: EntityRenderer | null = null;
   let terrain: Group | null = null;
   /** Generated PNGs, loaded the first time they are switched on (spec 12). */
@@ -595,6 +616,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   /** Flying projectiles of the latest combat snapshot (spec 17 §5). */
   let flying: readonly ProjectileState[] = [];
   let fogOverlay: FogOverlay | null = null;
+  let weather: Weather | null = null;
   const placementGhost = createPlacementGhost();
   const placementHint = createPlacementHint(document.body);
   /** Models applied to the entity renderer; fallback boxes until they load. */
@@ -717,7 +739,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       sun.target,
     );
     animator = createAnimator();
-    entities = createEntityRenderer(ENTITY_CAPACITY, registry, animator);
+    entities = createEntityRenderer(
+      ENTITY_CAPACITY,
+      registry,
+      animator,
+      corpses,
+    );
     scene.add(entities.group);
     effects = createEffects();
     scene.add(effects.group);
@@ -725,6 +752,20 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     scene.add(projectiles.group);
     fogOverlay = createFogOverlay(mapInfo.mapWidth, mapInfo.mapHeight);
     scene.add(fogOverlay.mesh);
+    const climate = climateFor(mapId, pageParams);
+    if (climate !== null) {
+      weather = createWeather(
+        climate,
+        mapInfo.mapWidth,
+        mapInfo.mapHeight,
+        rockCells,
+        seed,
+        densityFrom(pageParams),
+        startSecondsFrom(pageParams, climate),
+      );
+      weather.setEnabled(settings.weather !== false);
+      scene.add(weather.group);
+    }
     scene.add(placementGhost.mesh);
     controller = createSkirmishController({
       canvas: renderer.domElement,
@@ -932,9 +973,33 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
             },
       );
       animator.recordShots(snapshot.entities, at);
+      deathCauses.record(snapshot.entities, effectTime(at));
+      if (previous !== null) {
+        const hits = detectHits(
+          previous,
+          snapshot,
+          deathCauses,
+          effectTime(at),
+        );
+        animator.recordHits?.(hits, at);
+        spawnHitBlood(hits, effects, settings.gore, effectTime(at));
+      }
       const deaths =
         previous === null ? [] : detectDeaths(previous, snapshot, viewer);
-      spawnDeathEffects(deaths, effects, settings.gore, effectTime(at));
+      spawnDeathEffects(
+        deaths,
+        effects,
+        settings.gore,
+        effectTime(at),
+        corpses,
+        deathCauses,
+        (entity) => {
+          const rig = animator.lastRig?.(entity.id);
+          return rig === undefined || rig === null
+            ? null
+            : poseOnDeath(typeDef(entity.kind).id, rig);
+        },
+      );
     }
     refreshOverlay();
   });
@@ -947,6 +1012,14 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       hud.showError(error instanceof Error ? error.message : String(error));
     },
   );
+
+  /** Switches the snow effect live and persists the choice (spec 22 §4). */
+  function toggleWeather(): void {
+    settings = { ...settings, weather: settings.weather === false };
+    saveSettings(settings);
+    weather?.setEnabled(settings.weather !== false);
+    renderMenu();
+  }
 
   /** Toggles the gore filter, persists it and shows a toast (spec 07 §5). */
   function toggleGore(): void {
@@ -1083,6 +1156,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     effects?.update(effectTime(now));
     relief?.update(effectTime(now));
     fogOverlay?.update(fog);
+    if (weather !== null && settings.weather !== false && !paused) {
+      const focus = controller?.cameraTarget() ?? cameraTarget;
+      weather.update(dtMs / 1000, focus);
+    }
     renderer.render(scene, camera);
     drawCalls = renderer.info.render.calls;
   }

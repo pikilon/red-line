@@ -2,7 +2,7 @@ import { RULES, typeDef } from "../rules";
 import type { EntityState } from "../sim/matchSnapshot";
 import type { PressSource } from "./terrainDeform";
 
-/** How hard each locomotor presses on soft ground (spec 22 §3). */
+/** How hard each locomotor presses on soft ground (spec 24 §3). */
 const WEIGHT_BY_LOCOMOTOR = { foot: 0, wheels: 0.5, tracks: 1 } as const;
 
 /** Tiles of crater radius per tile of explosion size, and its floor. */

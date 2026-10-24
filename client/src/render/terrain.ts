@@ -282,7 +282,7 @@ export function createTerrain(
   const group = new Group();
   group.userData.procedural = procedural;
   group.add(grass, dirt, rock);
-  // Visual relief (spec 22); layers on top keep drawing against y = 0 meshes.
+  // Visual relief (spec 24); layers on top keep drawing against y = 0 meshes.
   group.userData.deformer = attachTerrainDeformer(
     group,
     width,
@@ -326,7 +326,7 @@ function definedOnly(
   return result;
 }
 
-/** The relief controller of a terrain made by `createTerrain` (spec 22). */
+/** The relief controller of a terrain made by `createTerrain` (spec 24). */
 export function terrainDeformerOf(group: Group): TerrainDeformer | null {
   return (group.userData.deformer as TerrainDeformer | undefined) ?? null;
 }

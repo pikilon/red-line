@@ -9,6 +9,8 @@ export interface GameMenuView {
   ai: boolean | null;
   /** Generated textures on (spec 12 §3); absent counts as off. */
   generatedTextures?: boolean;
+  /** Snow on (spec 22 §4); absent counts as off. */
+  weather?: boolean;
   /** Map revealed (spec 08 §3.5); absent counts as off. */
   revealed?: boolean;
   /** Performance panel shown (spec 08 §3.5); absent counts as off. */
@@ -29,6 +31,8 @@ export interface GameMenuActions {
   toggleAi(): void;
   /** Switches procedural/generated textures (spec 12 §3); no button when absent. */
   toggleTextures?(): void;
+  /** Switches the snow effect on or off (spec 22 §4); no button when absent. */
+  toggleWeather?(): void;
   /** Switches the controlled player, like `F2` (spec 08 §3.5); no button when absent. */
   switchSide?(): void;
   /** Reveals or hides the map, like `F3` (spec 08 §3.5); no button when absent. */
@@ -119,6 +123,14 @@ export function createGameMenu(
           toggleReveal.call(actions),
         );
   if (reveal !== null) panel.appendChild(reveal);
+  const toggleWeather = actions.toggleWeather;
+  const weather =
+    toggleWeather === undefined
+      ? null
+      : createButton("game-menu-weather", t("menu.weatherOn"), () =>
+          toggleWeather.call(actions),
+        );
+  if (weather !== null) panel.appendChild(weather);
   const toggleFpsPanel = actions.toggleFpsPanel;
   const fps =
     toggleFpsPanel === undefined
@@ -141,6 +153,7 @@ export function createGameMenu(
         last.gore === view.gore &&
         last.ai === view.ai &&
         last.generatedTextures === view.generatedTextures &&
+        last.weather === view.weather &&
         last.revealed === view.revealed &&
         last.fpsPanel === view.fpsPanel
       ) {
@@ -151,6 +164,7 @@ export function createGameMenu(
         gore: view.gore,
         ai: view.ai,
         generatedTextures: view.generatedTextures,
+        weather: view.weather,
         revealed: view.revealed,
         fpsPanel: view.fpsPanel,
       };
@@ -164,6 +178,12 @@ export function createGameMenu(
               ? "menu.texturesGenerated"
               : "menu.texturesProcedural",
           ),
+        );
+      }
+      if (weather !== null) {
+        setText(
+          weather,
+          t(view.weather === false ? "menu.weatherOff" : "menu.weatherOn"),
         );
       }
       if (reveal !== null) {

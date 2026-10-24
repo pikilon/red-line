@@ -400,3 +400,89 @@ fn ac_08_21_attackers_hold_position_within_weapon_range() {
     steps(&mut world, 30);
     assert_eq!(world.entity(mortar).unwrap().pos, stop);
 }
+
+#[test]
+fn attack_ground_shells_a_point_and_ignores_other_targets() {
+    // Spec 20: the mortar shells the ordered point, even with no enemy in
+    // sight, and keeps ignoring an enemy it could auto-target elsewhere.
+    let mut world = sandbox();
+    let mortar = world.spawn(0, 11, at(550, 1050));
+    let near = world.spawn(1, 9, at(1350, 1050));
+    let far = world.spawn(1, 9, at(550, 1750));
+    world.enqueue_as(
+        0,
+        Command::AttackGround {
+            units: vec![mortar],
+            target: at(1350, 1050),
+        },
+    );
+    steps(&mut world, 30);
+    assert!(world.entity(near).unwrap().hp < 50);
+    assert_eq!(world.entity(far).unwrap().hp, 50);
+    assert!(matches!(
+        world.entity(mortar).unwrap().order,
+        Order::AttackGround { .. }
+    ));
+    assert_eq!(world.entity(mortar).unwrap().pos, at(550, 1050));
+
+    // Stop ends the barrage.
+    world.enqueue_as(
+        0,
+        Command::Stop {
+            units: vec![mortar],
+        },
+    );
+    steps(&mut world, 2);
+    assert!(matches!(
+        world.entity(mortar).unwrap().order,
+        Order::Idle { .. }
+    ));
+}
+
+#[test]
+fn attack_ground_out_of_range_approaches_until_in_range() {
+    let mut world = sandbox();
+    let mortar = world.spawn(0, 11, at(250, 1050));
+    let point = at(3050, 1050);
+    world.enqueue_as(
+        0,
+        Command::AttackGround {
+            units: vec![mortar],
+            target: point,
+        },
+    );
+    steps_until_within(&mut world, mortar, point, fx_centi(1000), 400);
+    let stop = world.entity(mortar).unwrap().pos;
+    assert!((stop - point).length() > fx_centi(980));
+    steps(&mut world, 30);
+    assert_eq!(world.entity(mortar).unwrap().pos, stop);
+}
+
+#[test]
+fn retaliation_idle_victim_and_friend_chase_out_of_range_shooter() {
+    let mut world = sandbox();
+    // Mortar (range 10, min 3) shells from the fog: outside the soldier's sight 6.
+    let soldier = world.spawn(0, 9, at(1000, 1050));
+    let friend = world.spawn(0, 9, at(1100, 1250));
+    let busy = world.spawn(0, 9, at(1100, 850));
+    let mortar = world.spawn(1, 11, at(1800, 1050));
+    world.refresh_visibility();
+    world.enqueue_as(
+        0,
+        Command::Move {
+            units: vec![busy],
+            target: at(1100, 450),
+        },
+    );
+    steps(&mut world, 8);
+    assert!(world.entity(friend).unwrap().hp < 50);
+    let attacking = |id| {
+        matches!(
+            world.entity(id).map(|e| e.order),
+            Some(Order::Attack { target, .. }) if target == mortar
+        )
+    };
+    assert!(attacking(soldier));
+    assert!(attacking(friend));
+    assert!(!attacking(busy));
+}

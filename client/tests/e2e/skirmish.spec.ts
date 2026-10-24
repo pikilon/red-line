@@ -619,9 +619,18 @@ test("AC-03-59: attacks with a right click", async ({ page }) => {
   expect(await entityCount(page, 0, leopardKind)).toBeGreaterThan(0);
 });
 
-/** Draw-call bound of spec 10 §3: `4 × types on screen + 10`. */
+/** Draw-call bound of spec 10 §3: `4 × types on screen + 10`, plus spec 21 §2:
+ *  a soldier that animates through rigid limbs draws each limb as its own
+ *  instanced mesh (two materials), at most 28 calls for the largest team. */
 const DRAW_CALLS_PER_TYPE = 4;
 const DRAW_CALLS_BASE = 10;
+const DRAW_CALLS_PER_RIGGED_TYPE = 28;
+const RIGGED_TYPES = [
+  "ua-rifleman",
+  "ru-rifleman",
+  "ru-rpg-gunner",
+  "ua-stugna-team",
+];
 
 /** One rifleman block of AC-03-62; positions are cell centres. */
 interface SpawnBlock {
@@ -726,31 +735,48 @@ test("AC-03-62: renders a skirmish in at most 8 draw calls", async ({
     })
     .toBeGreaterThan(0);
   // Spec 10 §3 bound: four calls per visible type, plus ten.
-  const { drawCalls, types } = await page.evaluate(() => {
-    const api = (window as DebugWindow).__redline as SkirmishDebugView;
-    const rect = document.querySelector("canvas")?.getBoundingClientRect();
-    const onScreen = new Set<number>();
-    for (const entity of api.entities()) {
-      const point = api.worldToScreen(entity.x, entity.y);
-      if (
-        rect !== undefined &&
-        point.x >= rect.left &&
-        point.x < rect.left + rect.width &&
-        point.y >= rect.top &&
-        point.y < rect.top + rect.height
-      ) {
-        onScreen.add(entity.kind);
+  const { drawCalls, types, rigged } = await page.evaluate(
+    (riggedIds: string[]) => {
+      const api = (window as DebugWindow).__redline as SkirmishDebugView;
+      const rect = document.querySelector("canvas")?.getBoundingClientRect();
+      const onScreen = new Set<number>();
+      for (const entity of api.entities()) {
+        const point = api.worldToScreen(entity.x, entity.y);
+        if (
+          rect !== undefined &&
+          point.x >= rect.left &&
+          point.x < rect.left + rect.width &&
+          point.y >= rect.top &&
+          point.y < rect.top + rect.height
+        ) {
+          onScreen.add(entity.kind);
+        }
       }
-    }
-    return { drawCalls: api.drawCalls(), types: onScreen.size };
-  });
+      const riggedKinds = riggedIds.map((id) => api.typeIndex(id));
+      return {
+        drawCalls: api.drawCalls(),
+        types: onScreen.size,
+        // Rigged types present in the match: their limb meshes are drawn
+        // whether or not the type's first soldier is inside the canvas rect.
+        rigged: new Set(
+          api
+            .entities()
+            .map((entity) => entity.kind)
+            .filter((kind) => riggedKinds.includes(kind)),
+        ).size,
+      };
+    },
+    RIGGED_TYPES,
+  );
+  const bound =
+    DRAW_CALLS_PER_TYPE * types +
+    DRAW_CALLS_PER_RIGGED_TYPE * rigged +
+    DRAW_CALLS_BASE;
   console.log(
-    `AC-03-62 types=${types} drawCalls=${drawCalls} bound=${DRAW_CALLS_PER_TYPE * types + DRAW_CALLS_BASE}`,
+    `AC-03-62 types=${types} rigged=${rigged} drawCalls=${drawCalls} bound=${bound}`,
   );
   expect(drawCalls).toBeGreaterThanOrEqual(1);
-  expect(drawCalls).toBeLessThanOrEqual(
-    DRAW_CALLS_PER_TYPE * types + DRAW_CALLS_BASE,
-  );
+  expect(drawCalls).toBeLessThanOrEqual(bound);
 });
 
 test("AC-03-67: draws the selection box while dragging", async ({ page }) => {

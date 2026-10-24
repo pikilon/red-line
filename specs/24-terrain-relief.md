@@ -1,4 +1,4 @@
-# 22 — Terrain relief (visual only)
+# 24 — Terrain relief (visual only)
 
 Status: accepted (owner request 2026-10-24).
 Depends on `10-phase4d-remastered-look.md` §4 (terrain meshes),
@@ -81,11 +81,11 @@ craters and updates its pathfinding map explicitly.
 
 ## 7. Acceptance criteria
 
-* AC-22-01: a thermobaric or HE explosion makes the ground at its target sink
+* AC-24-01: a thermobaric or HE explosion makes the ground at its target sink
   smoothly within 350 ms.
-* AC-22-02: a tank driving over a dirt patch leaves it up to 0.07 tiles lower;
+* AC-24-02: a tank driving over a dirt patch leaves it up to 0.07 tiles lower;
   on plain grass it sinks about 0.
-* AC-22-03: the sink never exceeds 0.5 tiles and never changes the simulation
+* AC-24-03: the sink never exceeds 0.5 tiles and never changes the simulation
   hash.
-* AC-22-04: with 100+ vehicles moving, relief upkeep stays well under 0.5 ms
+* AC-24-04: with 100+ vehicles moving, relief upkeep stays well under 0.5 ms
   per frame.
