@@ -94,22 +94,62 @@ export function createTerrainSurface(
 
 /** Where the weather layer has put snow, and whether it is snowing now. */
 export interface SnowSource {
-  /** True when the ground at tile (x, y) is currently covered. */
-  covered(x: number, y: number): boolean;
+  /** Snow cover 0..1 at tile (x, y), as the ground cover layer draws it. */
+  coverage(x: number, y: number): number;
   /** True while snow is falling (marks on snow fill up). */
   falling(): boolean;
 }
 
-/** Surface of `base` with snow-covered ground replaced by the snow surface. */
+/** Cover at (x, y) the way the cover shader paints it: the per-cell thresholds
+ *  are filtered bilinearly (texel centres at cell centres) and the edge is a
+ *  smoothstep of width `edge` above the threshold (weather.ts, spec 22 §4). */
+export function snowCoverage(
+  thresholds: Uint8Array,
+  width: number,
+  height: number,
+  cover: number,
+  x: number,
+  y: number,
+  edge: number = DECALS.snow.coverEdge,
+): number {
+  const fx = Math.min(width - 1, Math.max(0, x - 0.5));
+  const fy = Math.min(height - 1, Math.max(0, y - 0.5));
+  const x0 = Math.floor(fx);
+  const y0 = Math.floor(fy);
+  const x1 = Math.min(width - 1, x0 + 1);
+  const y1 = Math.min(height - 1, y0 + 1);
+  const tx = fx - x0;
+  const ty = fy - y0;
+  const at = (cx: number, cy: number): number =>
+    (thresholds[cy * width + cx] ?? 255) / 255;
+  const top = at(x0, y0) * (1 - tx) + at(x1, y0) * tx;
+  const bottom = at(x0, y1) * (1 - tx) + at(x1, y1) * tx;
+  return smoothstep(
+    top * (1 - ty) + bottom * ty,
+    top * (1 - ty) + bottom * ty + edge,
+    cover,
+  );
+}
+
+/** Surface of `base` blended towards the snow surface by the snow coverage, so
+ *  marks neither turn white before the snow nor stay dark on it. */
 export function withSnow(
   base: SurfaceAt,
   snow: SnowSource,
   surfaces: Surfaces = DECALS.surfaces,
 ): SurfaceAt {
-  const snowy = { ...surfaceOf(surfaces, "snow"), snowy: true };
+  const white = surfaceOf(surfaces, "snow");
   return (x, y) => {
     const ground = base(x, y);
-    return ground.strength > 0 && snow.covered(x, y) ? snowy : ground;
+    if (ground.strength <= 0) return ground;
+    const amount = snow.coverage(x, y);
+    if (amount <= 0.01) return ground;
+    return {
+      strength: ground.strength + (white.strength - ground.strength) * amount,
+      color: amount > 0.5 ? white.color : ground.color,
+      hardness: ground.hardness + (white.hardness - ground.hardness) * amount,
+      snowy: amount > 0.5,
+    };
   };
 }
 
@@ -221,6 +261,8 @@ export function createDecals(
     const alpha = config.tracks.peakAlpha * sample.strength;
     if (alpha <= 0.01) return;
     const gauge = hullWidth * style.gaugePerHull;
+    // The strip trails behind the hull: nothing is marked ahead of the unit.
+    const trail = Math.max(0.1, hullLength * style.lengthPerHull);
     for (const side of [-1, 1]) {
       // Gaps, wobble and uneven pressure keep the strips from looking drawn.
       if (rng() < config.tracks.gapChance) continue;
@@ -231,8 +273,14 @@ export function createDecals(
       const dirX = walker.dirX * cos - walker.dirY * sin;
       const dirY = walker.dirX * sin + walker.dirY * cos;
       stamp({
-        x: entity.x - walker.dirY * (gauge * side + wobble),
-        y: entity.y + walker.dirX * (gauge * side + wobble),
+        x:
+          entity.x -
+          walker.dirY * (gauge * side + wobble) -
+          walker.dirX * trail,
+        y:
+          entity.y +
+          walker.dirX * (gauge * side + wobble) -
+          walker.dirY * trail,
         dirX,
         dirY,
         halfWidth:

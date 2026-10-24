@@ -34,6 +34,7 @@ import {
   createTerrainSurface,
   type Decals,
   type SnowSource,
+  snowCoverage,
   withSnow,
 } from "../render/decals";
 import {
@@ -776,10 +777,17 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         seed,
       );
       const snow: SnowSource = {
-        covered: (x, y) =>
-          settings.weather !== false &&
-          (thresholds[Math.floor(y) * width + Math.floor(x)] ?? 255) / 255 <
-            snowing.cover(),
+        coverage: (x, y) =>
+          settings.weather === false
+            ? 0
+            : snowCoverage(
+                thresholds,
+                width,
+                mapInfo.mapHeight,
+                snowing.cover(),
+                x,
+                y,
+              ),
         falling: () => settings.weather !== false,
       };
       decals?.setSurface(withSnow(surface, snow));

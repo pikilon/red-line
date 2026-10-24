@@ -49,10 +49,13 @@ Two rings with FIFO eviction: `tracks.maxMarks` (3000) and `blasts.maxMarks`
 * Marks are subtle and irregular: tread strips have ragged, patchy textures,
   random gaps (`gapChance`), wobble, angle jitter and uneven opacity; blasts get
   a random orientation, uneven axes and opacity.
-* Ground covered by the snow layer (`weather.cover()` against its per-cell
-  thresholds) counts as the `snow` surface. Marks on it age `snow.fillRate`
-  times faster while snow is falling (Snow: on); with snow off, or on bare
-  ground, they last their full lifetime.
+* Snow coverage is read exactly as the cover shader paints it (bilinear
+  thresholds, `snow.coverEdge`), and the surface blends between ground and snow
+  by that amount: marks never turn white before the snow starts and fade into
+  the bare ground as a vehicle leaves a patch. Above 50 % coverage a mark counts
+  as snowy: it ages `snow.fillRate` times faster while snow is falling. With
+  snow off, or on bare ground, marks last their full lifetime.
+* Tracks trail behind the hull: nothing is stamped ahead of the vehicle.
 
 ## 6. Assumptions
 

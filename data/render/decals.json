@@ -75,6 +75,7 @@
     "maxMarks": 500
   },
   "snow": {
-    "fillRate": 8
+    "fillRate": 8,
+    "coverEdge": 0.14
   }
 }
