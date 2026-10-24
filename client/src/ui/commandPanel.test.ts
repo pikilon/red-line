@@ -26,6 +26,8 @@ function entity(overrides: Partial<EntityState>): EntityState {
     flags: 0,
     progress: 0,
     target: null,
+    heading: 0,
+    turretAngle: 0,
     ...overrides,
   };
 }

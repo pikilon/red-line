@@ -136,3 +136,17 @@ export function createHeadingTracker(): HeadingTracker {
     },
   };
 }
+
+const ANGLE_TURN = 65536;
+
+/** Angle units (65536 per turn, 0 faces +y) as a yaw in (−π, π] (spec 11 §6). */
+export function angleToYaw(units: number): number {
+  return normalizeAngle((units * 2 * Math.PI) / ANGLE_TURN);
+}
+
+/** `a` to `b` along the shorter arc, in angle units, wrapped to 0..65536. */
+export function lerpAngle(a: number, b: number, t: number): number {
+  const delta =
+    ((((b - a) % ANGLE_TURN) + ANGLE_TURN * 1.5) % ANGLE_TURN) - ANGLE_TURN / 2;
+  return (((a + delta * t) % ANGLE_TURN) + ANGLE_TURN) % ANGLE_TURN;
+}

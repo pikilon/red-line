@@ -20,6 +20,8 @@ const entity = (args: {
   flags: args.flags ?? 0,
   progress: 0,
   target: null,
+  heading: 0,
+  turretAngle: 0,
 });
 
 const WIDTH = 8;

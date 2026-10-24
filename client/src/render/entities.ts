@@ -4,6 +4,7 @@ import {
   BufferGeometry,
   Color,
   DoubleSide,
+  Euler,
   Float32BufferAttribute,
   Group,
   InstancedBufferAttribute,
@@ -47,7 +48,7 @@ import {
   MARK_MASK,
   VEHICLE_TILE,
 } from "./generatedTextures";
-import { createHeadingTracker, turnRatesOf } from "./heading";
+import { angleToYaw } from "./heading";
 import {
   addLiveryAttribute,
   createLiveryTexture,
@@ -66,6 +67,7 @@ import type {
   ModelRegistry,
   TypeModel,
 } from "./models";
+import { createSuspension, LEVEL_POSE } from "./suspension";
 
 export const OWNER_COLORS = [0x1d5fe0, 0xe01b1b] as const;
 export const NEUTRAL_COLOR = 0x8b5a2b;
@@ -347,7 +349,8 @@ export function createEntityRenderer(
   const scale = new Vector3();
   const color = new Color();
   const byId = new Map<number, EntityState>();
-  const headings = createHeadingTracker();
+  const suspension = createSuspension();
+  const tilt = new Euler();
   const slots: MeshSlot[] = [];
   const byType = new Map<string, TypeSlots>();
   let generated: GeneratedTextures | null = null;
@@ -559,6 +562,7 @@ export function createEntityRenderer(
       const counts = { units: 0, buildings: 0, ghosts: 0, bars: 0 };
       byId.clear();
       for (const entity of entities) byId.set(entity.id, entity);
+      suspension.prune(new Set(byId.keys()));
       for (const slot of slots) slot.count = 0;
       let tracerCount = 0;
       let scaffoldCount = 0;
@@ -590,18 +594,24 @@ export function createEntityRenderer(
 
         const target =
           entity.target === null ? null : (byId.get(entity.target) ?? null);
-        const heading = headings.update(
-          entity.id,
-          entity.x,
-          entity.y,
-          target === null ? null : { x: target.x, y: target.y },
-          nowMs,
-          turnRatesOf(type),
-        );
+        const heading = {
+          yaw: angleToYaw(entity.heading),
+          turretYaw: angleToYaw(entity.turretAngle),
+        };
 
         const pose = animator.pose(entity, nowMs);
         const recoil = pose.recoil;
-        const lift = pose.lift;
+        const body =
+          type.category === "unit" && type.armor !== 0
+            ? suspension.update(
+                entity.id,
+                entity.x,
+                entity.y,
+                heading.yaw,
+                nowMs,
+              )
+            : LEVEL_POSE;
+        const lift = pose.lift + body.shake;
 
         if (isFallback || model === null) {
           if (type.category === "unit") {
@@ -630,7 +640,9 @@ export function createEntityRenderer(
           for (const slot of typeSlots.hull) {
             if (slot.count >= capacity) continue;
             position.set(entity.x, lift, entity.y);
-            rotation.setFromAxisAngle(UP, hullYaw);
+            rotation.setFromEuler(
+              tilt.set(body.pitch, hullYaw, body.roll, "YXZ"),
+            );
             scale.set(1, f, 1);
             matrix.compose(position, rotation, scale);
             place(slot, slot.count, hex);
@@ -639,7 +651,9 @@ export function createEntityRenderer(
             if (slot.count >= capacity) continue;
             const composeTurret = (): Matrix4 => {
               position.set(entity.x, lift, entity.y);
-              rotation.setFromAxisAngle(UP, hullYaw);
+              rotation.setFromEuler(
+                tilt.set(body.pitch, hullYaw, body.roll, "YXZ"),
+              );
               scale.set(1, f, 1);
               turretMatrix.compose(position, rotation, scale);
               pivotMatrix.makeTranslation(

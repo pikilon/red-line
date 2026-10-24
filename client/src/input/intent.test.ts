@@ -21,6 +21,8 @@ const entity = (args: {
   flags: args.flags ?? 0,
   progress: 0,
   target: null,
+  heading: 0,
+  turretAngle: 0,
 });
 
 // AC-03-49: own `ua-dozer` 7 at (5, 5), `ua-rifleman` 20 at (6, 5) and

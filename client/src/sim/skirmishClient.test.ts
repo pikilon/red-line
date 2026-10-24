@@ -48,6 +48,8 @@ const SNAPSHOT: MatchSnapshot = {
       flags: 0,
       progress: 1000,
       target: null,
+      heading: 0,
+      turretAngle: 0,
     },
   ],
   queues: [],
