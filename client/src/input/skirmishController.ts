@@ -11,7 +11,7 @@ import type { EntityState } from "../sim/matchSnapshot";
 import type { SimCommand } from "../sim/protocol";
 import { PAN_SPEED_TILES_PER_SECOND, panDelta } from "./cameraPan";
 import { boxSelect, clickSelect, selectAllOwnUnits } from "./entitySelection";
-import { resolveRightClick } from "./intent";
+import { resolveAttackGround, resolveRightClick } from "./intent";
 import { canPlace, footprintOrigin } from "./placement";
 import {
   isDrag,
@@ -190,7 +190,9 @@ export function createSkirmishController(
   });
   canvas.addEventListener("pointerdown", (event) => {
     lastPointer = { x: event.clientX, y: event.clientY };
-    if (event.button !== LEFT_BUTTON) return;
+    // Ctrl + click is the attack-ground command (macOS reports it as a
+    // context menu), not the start of a selection.
+    if (event.button !== LEFT_BUTTON || event.ctrlKey) return;
     dragStart = { x: event.clientX, y: event.clientY };
   });
 
@@ -241,7 +243,8 @@ export function createSkirmishController(
     const point = lastPointer ?? { x: event.clientX, y: event.clientY };
     const ground = groundAt(point);
     if (ground === null) return;
-    const commands = resolveRightClick({
+    const resolve = event.ctrlKey ? resolveAttackGround : resolveRightClick;
+    const commands = resolve({
       player: options.player(),
       selected: [...selected],
       entities: options.entities(),

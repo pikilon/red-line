@@ -24,6 +24,13 @@ export type SimCommand =
       yRaw: number;
     }
   | { kind: "attack"; player: number; units: number[]; target: number }
+  | {
+      kind: "attackGround";
+      player: number;
+      units: number[];
+      xRaw: number;
+      yRaw: number;
+    }
   | { kind: "harvest"; player: number; units: number[]; depot: number }
   | {
       kind: "construct";

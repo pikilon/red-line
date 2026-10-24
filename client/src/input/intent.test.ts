@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { typeIndex } from "../rules";
 import { FX_ONE } from "../sim/fixed";
 import { ENTITY_FLAGS, type EntityState } from "../sim/matchSnapshot";
-import { resolveRightClick } from "./intent";
+import { resolveAttackGround, resolveRightClick } from "./intent";
 
 const entity = (args: {
   id: number;
@@ -223,5 +223,39 @@ describe("attack intents", () => {
   it("AC-08-20: unarmed units ignore a right click on an enemy", () => {
     expect(clickAt(40, 40, [7, 21])).toEqual([]);
     expect(clickAt(25.5, 25.5, [7, 21])).toEqual([]);
+  });
+});
+
+describe("resolveAttackGround (AC-20-02)", () => {
+  it("sends only the armed own units to the point", () => {
+    expect(
+      resolveAttackGround({
+        player: 0,
+        selected: [7, 20, 30],
+        entities,
+        x: 12,
+        y: 34,
+      }),
+    ).toEqual([
+      {
+        kind: "attackGround",
+        player: 0,
+        units: [20],
+        xRaw: 12 * FX_ONE,
+        yRaw: 34 * FX_ONE,
+      },
+    ]);
+  });
+
+  it("does nothing when no selected unit is armed", () => {
+    expect(
+      resolveAttackGround({
+        player: 0,
+        selected: [7],
+        entities,
+        x: 12,
+        y: 34,
+      }),
+    ).toEqual([]);
   });
 });

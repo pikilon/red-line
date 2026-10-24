@@ -12,7 +12,7 @@
 //! enemy of the shooter inside its radius (no friendly fire).
 
 use crate::angle::{Angle, atan2};
-use crate::entity::{EntityId, NEUTRAL, Order, PlayerId, Projectile};
+use crate::entity::{EntityId, GROUND_TARGET, NEUTRAL, Order, PlayerId, Projectile};
 use crate::fixed::{Fx, FxVec2};
 use crate::rng::SplitMix64;
 use crate::rules::{Delivery, LocoKind, TypeId, WeaponDef, WeaponId, fx_centi};
@@ -52,6 +52,10 @@ impl World {
         let Some((weapon_id, weapon)) = self.weapon_data(kind) else {
             return;
         };
+        if let Order::AttackGround { target, .. } = self.entities[index].order {
+            self.fire_ground(index, weapon_id, &weapon, target);
+            return;
+        }
         let legacy = self.rules.ty(kind).motion.kind == LocoKind::Immediate;
         let target_index = if legacy {
             None
@@ -63,7 +67,7 @@ impl World {
         } else {
             let entity = &self.entities[index];
             let stowed = self.rules.ty(kind).stationary_fire && entity.speed > Fx::ZERO;
-            self.aim_turret(index, &weapon, target_index) && !stowed
+            self.aim_turret(index, &weapon, target_index.map(|i| self.entities[i].pos)) && !stowed
         };
         let cooldown = self.entities[index].cooldown;
         if cooldown > 0 {
@@ -83,23 +87,70 @@ impl World {
         if !aligned {
             return;
         }
-        let target = self.entities[target_index].id;
         let distance = self.entity_distance(self.entities[index].pos, &self.entities[target_index]);
-        let flight = self.flight_ticks(&weapon, distance);
+        let aim = self.entities[target_index].pos;
+        self.shoot(index, weapon_id, &weapon, Some(target_index), aim, distance);
+    }
+
+    /// Spec 20: one `AttackGround` step of a weapon — aims at the ordered
+    /// point, and fires at it once it is inside `[min_range, range]` and the
+    /// weapon is aligned. Any enemy standing at the point is hit by the shot.
+    fn fire_ground(
+        &mut self,
+        index: usize,
+        weapon_id: WeaponId,
+        weapon: &WeaponDef,
+        point: FxVec2,
+    ) {
+        let kind = self.entities[index].kind;
+        let distance = (point - self.entities[index].pos).length();
+        let in_range = distance >= fx_centi(weapon.min_range_centi)
+            && distance <= fx_centi(weapon.range_centi);
+        let aligned = if self.rules.ty(kind).motion.kind == LocoKind::Immediate {
+            true
+        } else {
+            let stowed =
+                self.rules.ty(kind).stationary_fire && self.entities[index].speed > Fx::ZERO;
+            self.aim_turret(index, weapon, in_range.then_some(point)) && !stowed
+        };
+        let cooldown = self.entities[index].cooldown;
+        if cooldown > 0 {
+            self.entities[index].cooldown = cooldown - 1;
+            if cooldown > 1 {
+                return;
+            }
+        }
+        if in_range && aligned {
+            self.shoot(index, weapon_id, weapon, None, point, distance);
+        }
+    }
+
+    /// Fires one shot (instant hit, or a salvo of projectiles) from entity
+    /// `index` at `aim`; `target` is the ordered victim, `None` for a shot at
+    /// the ground. Sets the cooldown and `last_target`.
+    fn shoot(
+        &mut self,
+        index: usize,
+        weapon_id: WeaponId,
+        weapon: &WeaponDef,
+        target: Option<usize>,
+        aim: FxVec2,
+        distance: Fx,
+    ) {
+        let target_id = target.map_or(GROUND_TARGET, |target| self.entities[target].id);
+        let flight = self.flight_ticks(weapon, distance);
         let owner = self.entities[index].owner;
         let shooter = self.entities[index].id;
         if flight == 0 {
             // Instant branch of §5.11 step 4, with the target's position as the
             // impact point for splash.
-            if weapon.splash_centi == 0 {
-                self.apply_hit(shooter, target_index, weapon_id, &weapon);
-            } else {
-                let impact = self.entities[target_index].pos;
-                self.apply_splash(owner, shooter, weapon_id, &weapon, impact);
+            if weapon.splash_centi > 0 {
+                self.apply_splash(owner, shooter, weapon_id, weapon, aim);
+            } else if let Some(hit) = target.or_else(|| self.direct_hit(owner, weapon, aim)) {
+                self.apply_hit(shooter, hit, weapon_id, weapon);
             }
         } else {
             let origin = self.entities[index].pos;
-            let aim = self.entities[target_index].pos;
             let tick = self.tick;
             for k in 0..weapon.salvo {
                 let projectile = Projectile {
@@ -107,9 +158,9 @@ impl World {
                     owner,
                     shooter,
                     weapon: weapon_id,
-                    target,
+                    target: target_id,
                     origin,
-                    impact: aim + self.scatter(&weapon, shooter, tick, k),
+                    impact: aim + self.scatter(weapon, shooter, tick, k),
                     launch_tick: tick + k * weapon.salvo_interval_ticks,
                     impact_tick: tick + k * weapon.salvo_interval_ticks + flight,
                 };
@@ -118,7 +169,7 @@ impl World {
             }
         }
         self.entities[index].cooldown = weapon.cooldown_ticks;
-        self.entities[index].last_target = Some(target);
+        self.entities[index].last_target = Some(target_id);
     }
 
     /// Spec 11 §5.3 step 1: the locked target while it stays valid, otherwise a
@@ -137,9 +188,9 @@ impl World {
     /// Spec 11 §5.3 steps 2, 3 and 6: turns the turret (or the hull of a
     /// turretless weapon) towards the target, or recentres it when there is
     /// none. Returns whether the weapon is aligned with the target.
-    fn aim_turret(&mut self, index: usize, weapon: &WeaponDef, target: Option<usize>) -> bool {
+    fn aim_turret(&mut self, index: usize, weapon: &WeaponDef, target: Option<FxVec2>) -> bool {
         let motion = self.rules.ty(self.entities[index].kind).motion;
-        let Some(target_index) = target else {
+        let Some(aim_point) = target else {
             let recenter = self.rules.turret_recenter_ticks;
             let entity = &mut self.entities[index];
             entity.idle_aim_ticks = entity.idle_aim_ticks.saturating_add(1);
@@ -164,7 +215,7 @@ impl World {
             }
             return false;
         };
-        let offset = self.entities[target_index].pos - self.entities[index].pos;
+        let offset = aim_point - self.entities[index].pos;
         let bearing = atan2(offset.x, offset.y);
         let entity = &mut self.entities[index];
         entity.idle_aim_ticks = 0;
@@ -173,7 +224,10 @@ impl World {
             entity.turret = entity.turret.turn_towards(want, motion.turret_step);
             return entity.turret.delta(want).abs() <= weapon.aim_tolerance;
         }
-        if matches!(entity.order, Order::Idle { .. } | Order::Attack { .. }) {
+        if matches!(
+            entity.order,
+            Order::Idle { .. } | Order::Attack { .. } | Order::AttackGround { .. }
+        ) {
             entity.heading = entity.heading.turn_towards(bearing, motion.turn_step);
         }
         entity.heading.delta(bearing).abs() <= weapon.aim_tolerance
@@ -302,7 +356,7 @@ impl World {
             None
         } else {
             match weapon.delivery {
-                Delivery::Homing => {
+                Delivery::Homing if projectile.target != GROUND_TARGET => {
                     let hit = self
                         .entity(projectile.target)
                         .filter(|entity| entity.hp > 0)
@@ -312,7 +366,8 @@ impl World {
                     }
                     hit
                 }
-                Delivery::Ballistic => {
+                // A shot at the ground (spec 20) lands like a ballistic one.
+                Delivery::Homing | Delivery::Ballistic => {
                     let index = self.direct_hit(projectile.owner, &weapon, projectile.impact);
                     index.map(|index| {
                         let id = self.entities[index].id;

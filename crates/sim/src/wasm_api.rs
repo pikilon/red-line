@@ -175,6 +175,16 @@ impl Sim {
         );
     }
 
+    pub fn command_attack_ground(&mut self, player: u8, unit_ids: &[u32], x_raw: i32, y_raw: i32) {
+        self.world.enqueue_as(
+            player,
+            Command::AttackGround {
+                units: unit_ids.to_vec(),
+                target: FxVec2::new(Fx::from_raw(x_raw), Fx::from_raw(y_raw)),
+            },
+        );
+    }
+
     pub fn command_harvest(&mut self, player: u8, unit_ids: &[u32], depot: u32) {
         self.world.enqueue_as(
             player,
