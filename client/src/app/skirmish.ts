@@ -30,6 +30,11 @@ import { createPerfPanel } from "../perfPanel";
 import { type Animator, createAnimator } from "../render/animation";
 import { detectDeaths, spawnDeathEffects } from "../render/deaths";
 import {
+  createDecals,
+  createTerrainSurface,
+  type Decals,
+} from "../render/decals";
+import {
   createEffects,
   type EffectKind,
   type Effects,
@@ -585,6 +590,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let generated: GeneratedTextures | null = null;
   let generatedLoading = false;
   let effects: Effects | null = null;
+  let decals: Decals | null = null;
   let projectiles: Projectiles | null = null;
   /** Flying projectiles of the latest combat snapshot (spec 17 §5). */
   let flying: readonly ProjectileState[] = [];
@@ -715,6 +721,15 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     scene.add(entities.group);
     effects = createEffects();
     scene.add(effects.group);
+    decals = createDecals(
+      createTerrainSurface(
+        mapInfo.mapWidth,
+        mapInfo.mapHeight,
+        rockCells,
+        seed,
+      ),
+    );
+    scene.add(decals.group);
     projectiles = createProjectiles();
     scene.add(projectiles.group);
     fogOverlay = createFogOverlay(mapInfo.mapWidth, mapInfo.mapHeight);
@@ -913,6 +928,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       (previous === null || snapshot.tick > previous.tick)
     ) {
       spawnShotEffects(snapshot, effects, effectTime(at));
+      decals?.recordShots(snapshot, effectTime(at));
       animator.recordShots(snapshot.entities, at);
       const deaths =
         previous === null ? [] : detectDeaths(previous, snapshot, viewer);
@@ -1045,8 +1061,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     updateSun();
     if (next !== null && prev !== null && entities !== null) {
       const alpha = (now - receivedAt) / TICK_MS;
+      const drawn = interpolateEntities(prev, next, alpha);
+      decals?.recordMovers(drawn, effectTime(now));
       entities.update(
-        interpolateEntities(prev, next, alpha),
+        drawn,
         controller?.selected ?? NO_SELECTION,
         effectTime(now),
       );
@@ -1060,6 +1078,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     }
     updatePlacementGhost();
     effects?.update(effectTime(now));
+    decals?.update(effectTime(now));
     fogOverlay?.update(fog);
     renderer.render(scene, camera);
     drawCalls = renderer.info.render.calls;
@@ -1120,6 +1139,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       command: (command) => interact.command(command),
       stateHash: () => interact.requestHash(),
       effectCounts: () => effects?.counts() ?? NO_EFFECT_COUNTS,
+      decalCount: () => decals?.count() ?? 0,
       projectileCounts: () => projectiles?.counts() ?? NO_PROJECTILE_COUNTS,
       projectileSamples: () => projectiles?.samples() ?? [],
       gore: () => settings.gore,
