@@ -7,6 +7,7 @@ import {
   type Texture,
   Uint32BufferAttribute,
 } from "three";
+import { attachTerrainDeformer, type TerrainDeformer } from "./terrainDeform";
 import {
   createRng,
   createTerrainTextures,
@@ -87,6 +88,15 @@ function smoothstep(edge0: number, edge1: number, value: number): number {
   return t * t * (3 - 2 * t);
 }
 
+/** Opacity of the dirt overlay at a tile corner; also the mud softness. */
+export function dirtAlphaAt(cx: number, cz: number, seed: number): number {
+  return smoothstep(
+    DIRT_ALPHA_LOW,
+    DIRT_ALPHA_HIGH,
+    valueNoise(cx, cz, DIRT_NOISE_PERIOD, seed),
+  );
+}
+
 /** Marks the cells of every `[x0, y0, x1, y1]` blocked rectangle of `map`. */
 export function rockCellsOf(map: RockMap): Uint8Array {
   const cells = new Uint8Array(map.width * map.height);
@@ -139,11 +149,7 @@ function groundGeometry(
       normals.set([0, 1, 0], vertex * 3);
       uvs.set([cx * TILE_UV_SCALE, cz * TILE_UV_SCALE], vertex * 2);
       if (withAlpha) {
-        const alpha = smoothstep(
-          DIRT_ALPHA_LOW,
-          DIRT_ALPHA_HIGH,
-          valueNoise(cx, cz, DIRT_NOISE_PERIOD, seed),
-        );
+        const alpha = dirtAlphaAt(cx, cz, seed);
         colors.set([1, 1, 1, alpha], vertex * 4);
       } else {
         colors.set([1, 1, 1], vertex * 3);
@@ -276,6 +282,14 @@ export function createTerrain(
   const group = new Group();
   group.userData.procedural = procedural;
   group.add(grass, dirt, rock);
+  // Visual relief (spec 24); layers on top keep drawing against y = 0 meshes.
+  group.userData.deformer = attachTerrainDeformer(
+    group,
+    width,
+    height,
+    rockCells,
+    (cx, cz) => dirtAlphaAt(cx, cz, seed),
+  );
   return group;
 }
 
@@ -310,4 +324,9 @@ function definedOnly(
     if (texture !== undefined) result[kind] = texture;
   }
   return result;
+}
+
+/** The relief controller of a terrain made by `createTerrain` (spec 24). */
+export function terrainDeformerOf(group: Group): TerrainDeformer | null {
+  return (group.userData.deformer as TerrainDeformer | undefined) ?? null;
 }

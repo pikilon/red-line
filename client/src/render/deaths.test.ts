@@ -7,7 +7,15 @@ import {
   type MatchSnapshot,
   NEUTRAL,
 } from "../sim/matchSnapshot";
-import { detectDeaths, spawnDeathEffects } from "./deaths";
+import { createCorpses } from "./corpses";
+import {
+  createDeathCauses,
+  detectDeaths,
+  detectHits,
+  spawnDeathEffects,
+  spawnHitBlood,
+  splashesFor,
+} from "./deaths";
 import { createEffects } from "./effects";
 
 function entity(
@@ -252,5 +260,208 @@ describe("death effects", () => {
     expect(effects.meshes.debris.count).toBe(8);
     effects.update(15_000);
     expect(effects.meshes.debris.count).toBe(0);
+  });
+});
+
+describe("hit detection (spec 22 §6)", () => {
+  it("reports soldiers that lost hp and lived, harder for blasts", () => {
+    const causes = createDeathCauses();
+    const hurt = entity(1, 0, "ua-rifleman", 12, 10, 90);
+    const rifle = entity(2, 1, "ru-rifleman", 5, 10, 90, {
+      flags: ENTITY_FLAGS.fired,
+      target: 1,
+    });
+    causes.record([hurt, rifle], 1000);
+    const prev = snapshot(1, [entity(1, 0, "ua-rifleman", 12, 10, 90), rifle]);
+    const next = snapshot(2, [entity(1, 0, "ua-rifleman", 12, 10, 80), rifle]);
+    const [hit] = detectHits(prev, next, causes, 1100);
+    expect(hit?.id).toBe(1);
+    expect(hit?.push).toBeCloseTo(0);
+    expect(hit?.amplitude).toBeGreaterThan(0.1);
+    expect(hit?.amplitude).toBeLessThanOrEqual(0.7);
+
+    const blasts = createDeathCauses();
+    const rpg = entity(3, 1, "ru-rpg-gunner", 5, 10, 90, {
+      flags: ENTITY_FLAGS.fired,
+      target: 1,
+    });
+    blasts.record([hurt, rpg], 1000);
+    const [blast] = detectHits(prev, next, blasts, 1100);
+    expect(blast?.amplitude).toBeGreaterThan(hit?.amplitude ?? 1);
+  });
+
+  it("skips the unhurt, the dead and what is not a soldier", () => {
+    const causes = createDeathCauses();
+    const prev = snapshot(1, [
+      entity(1, 0, "ua-rifleman", 1, 1, 90),
+      entity(2, 0, "ua-rifleman", 2, 2, 90),
+      entity(3, 0, "ua-leopard-2a4", 3, 3, 500),
+    ]);
+    const next = snapshot(2, [
+      entity(1, 0, "ua-rifleman", 1, 1, 90),
+      entity(2, 0, "ua-rifleman", 2, 2, 0),
+      entity(3, 0, "ua-leopard-2a4", 3, 3, 300),
+    ]);
+    expect(detectHits(prev, next, causes, 0)).toEqual([]);
+    expect(detectHits(next, prev, causes, 0)).toEqual([]);
+  });
+});
+
+describe("blood of a wound (spec 22 §6)", () => {
+  const hit = (amplitude: number, health = 0.4) => ({
+    id: 4,
+    x: 10,
+    y: 10,
+    push: 0,
+    amplitude,
+    health,
+  });
+
+  it("only bleeds under 70 % of his hp: above it the hit just jolts him", () => {
+    const effects = createEffects();
+    spawnHitBlood([hit(0.5, 0.7), hit(0.5, 0.9)], effects, true, 0);
+    effects.update(100);
+    expect(effects.meshes.droplet.count).toBe(0);
+    effects.update(6000);
+    expect(effects.meshes.blood.count).toBe(0);
+    spawnHitBlood([hit(0.2, 0.69)], effects, true, 7000);
+    effects.update(7250);
+    expect(effects.meshes.droplet.count).toBeGreaterThan(0);
+  });
+
+  it("throws one splash under 70 %, two under 60 % and never more than two", () => {
+    const droplets = (health: number): number => {
+      const effects = createEffects();
+      spawnHitBlood([hit(0.5, health)], effects, true, 0);
+      // Frames come in order, so every drop is drawn once before it lands.
+      effects.update(150);
+      effects.update(700);
+      effects.update(3000);
+      return effects.meshes.blood.count;
+    };
+    expect(droplets(0.72)).toBe(0);
+    expect(droplets(0.69)).toBe(1);
+    expect(droplets(0.61)).toBe(1);
+    expect(droplets(0.59)).toBe(2);
+    expect(droplets(0.3)).toBe(2);
+    expect(droplets(0.05)).toBe(2);
+    expect(splashesFor(0.19)).toBe(2);
+  });
+
+  it("a death throws four splashes", () => {
+    const effects = createEffects();
+    const bodies = createCorpses();
+    spawnDeathEffects(
+      [entity(1, 0, "ua-rifleman", 5, 5, 10)],
+      effects,
+      true,
+      0,
+      bodies,
+      {
+        record() {},
+        causeOf: () => ({ kind: "shot", push: 0 }),
+      },
+    );
+    effects.update(150);
+    effects.update(800);
+    effects.update(3000);
+    // Four splats from the splashes and the pool under the body.
+    expect(effects.meshes.blood.count).toBe(5);
+  });
+
+  it("flies the drops out along the push, up and down again", () => {
+    const effects = createEffects();
+    spawnHitBlood([hit(0.5)], effects, true, 0);
+    effects.update(150);
+    const matrix = new Matrix4();
+    const at = new Vector3();
+    let farthest = 0;
+    let highest = 0;
+    for (let i = 0; i < effects.meshes.droplet.count; i++) {
+      effects.meshes.droplet.getMatrixAt(i, matrix);
+      at.setFromMatrixPosition(matrix);
+      farthest = Math.max(farthest, at.x - 10);
+      highest = Math.max(highest, at.y);
+    }
+    expect(farthest).toBeGreaterThan(0);
+    expect(highest).toBeGreaterThan(0.1);
+  });
+
+  it("the splats land close to the soldier", () => {
+    for (let n = 0; n < 6; n++) {
+      const effects = createEffects();
+      spawnHitBlood([hit(0.5, 0.3)], effects, true, 0);
+      effects.update(150);
+      effects.update(700);
+      effects.update(3000);
+      const matrix = new Matrix4();
+      const at = new Vector3();
+      for (let i = 0; i < effects.meshes.blood.count; i++) {
+        effects.meshes.blood.getMatrixAt(i, matrix);
+        at.setFromMatrixPosition(matrix);
+        expect(Math.hypot(at.x - 10, at.z - 10)).toBeLessThan(0.55);
+      }
+    }
+  });
+
+  it("the splats of the drops are small", () => {
+    const effects = createEffects();
+    spawnHitBlood([hit(0.5)], effects, true, 0);
+    effects.update(3000);
+    const matrix = new Matrix4();
+    const q = new Quaternion();
+    const position = new Vector3();
+    const scale = new Vector3();
+    for (let i = 0; i < effects.meshes.blood.count; i++) {
+      effects.meshes.blood.getMatrixAt(i, matrix);
+      matrix.decompose(position, q, scale);
+      expect(scale.x).toBeLessThan(0.3);
+      expect(scale.z).toBeLessThan(0.06);
+    }
+  });
+
+  it("shows almost nothing before the jolt has started", () => {
+    const effects = createEffects();
+    spawnHitBlood([hit(0.5)], effects, true, 0);
+    effects.update(20);
+    expect(effects.meshes.droplet.count).toBe(0);
+    effects.update(90);
+    expect(effects.meshes.droplet.count).toBeGreaterThan(0);
+  });
+
+  it("is never the same jet twice, even on the same soldier", () => {
+    const jets: string[] = [];
+    for (let n = 0; n < 4; n++) {
+      const effects = createEffects();
+      spawnHitBlood([hit(0.5)], effects, true, 0);
+      effects.update(3000);
+      const matrix = new Matrix4();
+      const at = new Vector3();
+      const landed: string[] = [];
+      for (let i = 0; i < effects.meshes.blood.count; i++) {
+        effects.meshes.blood.getMatrixAt(i, matrix);
+        at.setFromMatrixPosition(matrix);
+        landed.push(`${at.x.toFixed(2)},${at.z.toFixed(2)}`);
+      }
+      jets.push(landed.join(" "));
+    }
+    expect(new Set(jets).size).toBe(4);
+  });
+
+  it("shows no blood without gore", () => {
+    const effects = createEffects();
+    spawnHitBlood([hit(0.5)], effects, false, 0);
+    effects.update(1000);
+    expect(effects.meshes.droplet.count).toBe(0);
+    expect(effects.meshes.blood.count).toBe(0);
+  });
+
+  it("dries up sooner than a pool", () => {
+    const effects = createEffects();
+    spawnHitBlood([hit(0.5)], effects, true, 0);
+    effects.update(3000);
+    expect(effects.meshes.blood.count).toBe(2);
+    effects.update(14_000);
+    expect(effects.meshes.blood.count).toBe(0);
   });
 });

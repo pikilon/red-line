@@ -8,6 +8,7 @@ import {
   Matrix4,
   MeshBasicMaterial,
   NormalBlending,
+  PlaneGeometry,
   Quaternion,
   Vector3,
 } from "three";
@@ -18,6 +19,7 @@ import {
   hasFlag,
   type MatchSnapshot,
 } from "../sim/matchSnapshot";
+import { createSplatTexture } from "./splat";
 
 /** Instances kept per effect kind; the oldest is recycled when full (spec 07 §3). */
 export const EFFECT_CAPACITY = 512;
@@ -30,6 +32,7 @@ export const EFFECT_KINDS = [
   "wreck",
   "body",
   "blood",
+  "droplet",
   "debris",
 ] as const;
 export type EffectKind = (typeof EFFECT_KINDS)[number];
@@ -54,7 +57,15 @@ const THERMOBARIC_SCALE = 1.5;
 /** The explosion grows in its first half (spec 07 AC-07-01). */
 const EXPLOSION_GROWTH_START = 0.5;
 
+/** Gravity on a thrown droplet, tiles/s² (a soldier is 0.5 tiles tall). */
+export const DROPLET_GRAVITY = 4;
+
+/** A blood splat starts at this fraction of its size and spreads in this time. */
+const BLOOD_SPREAD_START = 0.35;
+const BLOOD_SPREAD_MS = 700;
+
 const Y_AXIS = new Vector3(0, 1, 0);
+const X_AXIS = new Vector3(1, 0, 0);
 
 /** Wreck fire flicker period and tint (spec 07 §3). */
 const WRECK_FLICKER_MS = 180;
@@ -117,7 +128,16 @@ const EFFECT_STYLES: Readonly<Record<EffectKind, EffectStyle>> = {
     durationMs: 30_000,
     fadeMs: 5000,
     size: [0.5, 0.02, 0.5],
-    color: 0x5a0a0a,
+    // The splat texture carries the colour (spec 22 §4).
+    color: 0xffffff,
+    additive: false,
+  },
+  // A drop of blood thrown from a wound: a speck on a ballistic arc (spec 22 §6).
+  droplet: {
+    durationMs: 700,
+    fadeMs: 0,
+    size: [0.12, 0.012, 0.012],
+    color: 0x3a0606,
     additive: false,
   },
   debris: {
@@ -143,6 +163,14 @@ export interface EffectSpawn {
   startMs?: number;
   /** Life in ms; defaults to the kind's duration. */
   durationMs?: number;
+  /** Droplet only: launch velocity in tiles/s (x, y over the ground, up). Its
+   *  life should be the flight time; gravity is `DROPLET_GRAVITY`. */
+  velocity?: readonly [number, number, number];
+  /** Height the droplet starts at, tiles. */
+  height?: number;
+  /** Blood only: ms a splat takes to spread to full size (a burst of drops
+   *  is quick, a pool slow); defaults to `BLOOD_SPREAD_MS`. */
+  spreadMs?: number;
 }
 
 export interface Effects {
@@ -170,6 +198,11 @@ interface Instance {
   endMs: number;
   durationMs: number;
   fadeMs: number;
+  spreadMs: number;
+  /** Launch velocity and start height of a droplet, tiles/s and tiles. */
+  vx: number;
+  vy: number;
+  vz: number;
   /** Drawn in at least one frame; an effect is never dropped unseen. */
   shown: boolean;
 }
@@ -182,14 +215,25 @@ export function createEffects(): Effects {
 
   for (const kind of EFFECT_KINDS) {
     const style = EFFECT_STYLES[kind];
+    const decal = kind === "blood";
     const material = new MeshBasicMaterial({
       color: 0xffffff,
-      transparent: style.additive,
+      transparent: style.additive || decal,
       blending: style.additive ? AdditiveBlending : NormalBlending,
-      depthWrite: !style.additive,
+      depthWrite: !style.additive && !decal,
+      // A blood splat is a flat textured quad lying on the ground.
+      ...(decal
+        ? {
+            map: createSplatTexture(),
+            polygonOffset: true,
+            polygonOffsetFactor: -2,
+          }
+        : {}),
     });
     const mesh = new InstancedMesh(
-      new BoxGeometry(1, 1, 1),
+      decal
+        ? new PlaneGeometry(1, 1).rotateX(-Math.PI / 2)
+        : new BoxGeometry(1, 1, 1),
       material,
       EFFECT_CAPACITY,
     );
@@ -207,6 +251,7 @@ export function createEffects(): Effects {
   const matrix = new Matrix4();
   const position = new Vector3();
   const scale = new Vector3();
+  const streak = new Vector3();
   const rotation = new Quaternion();
   const color = new Color();
 
@@ -223,7 +268,7 @@ export function createEffects(): Effects {
     pool.push({
       x: init.x,
       y: init.y,
-      z: size[1] / 2,
+      z: init.height ?? size[1] / 2,
       sizeX: size[0],
       sizeY: size[1],
       sizeZ: size[2],
@@ -232,6 +277,10 @@ export function createEffects(): Effects {
       endMs: startMs + durationMs,
       durationMs,
       fadeMs: Math.min(style.fadeMs, durationMs),
+      spreadMs: init.spreadMs ?? BLOOD_SPREAD_MS,
+      vx: init.velocity?.[0] ?? 0,
+      vy: init.velocity?.[1] ?? 0,
+      vz: init.velocity?.[2] ?? 0,
       shown: false,
     });
   }
@@ -273,16 +322,52 @@ export function createEffects(): Effects {
           elapsed >= fadeStart && instance.fadeMs > 0
             ? Math.max(0, 1 - (elapsed - fadeStart) / instance.fadeMs)
             : 1;
-        const growth =
-          kind === "explosion"
-            ? EXPLOSION_GROWTH_START + (1 - EXPLOSION_GROWTH_START) * progress
-            : 1;
+        let growth = 1;
+        if (kind === "explosion") {
+          growth =
+            EXPLOSION_GROWTH_START + (1 - EXPLOSION_GROWTH_START) * progress;
+        } else if (kind === "blood") {
+          // A splat spreads when it appears, fast at first.
+          const spread = Math.min(1, elapsed / instance.spreadMs);
+          growth =
+            BLOOD_SPREAD_START +
+            (1 - BLOOD_SPREAD_START) * (1 - (1 - spread) ** 2);
+        }
         // Additive tints fade to black; opaque decals shrink away instead.
         const shrink = style.additive ? 1 : fade;
         const grow = growth * shrink;
 
-        position.set(instance.x, instance.z, instance.y);
-        rotation.setFromAxisAngle(Y_AXIS, instance.rotationY);
+        if (kind === "droplet") {
+          // Thrown from the wound: a ballistic arc until it lands.
+          const flight = elapsed / 1000;
+          position.set(
+            instance.x + instance.vx * flight,
+            Math.max(
+              0,
+              instance.z +
+                instance.vz * flight -
+                0.5 * DROPLET_GRAVITY * flight * flight,
+            ),
+            instance.y + instance.vy * flight,
+          );
+        } else {
+          position.set(instance.x, instance.z, instance.y);
+        }
+        if (kind === "droplet") {
+          // A thin streak lying along the way it flies (its velocity now).
+          const flight = elapsed / 1000;
+          streak.set(
+            instance.vx,
+            instance.vz - DROPLET_GRAVITY * flight,
+            instance.vy,
+          );
+          rotation.setFromUnitVectors(
+            X_AXIS,
+            streak.lengthSq() > 0 ? streak.normalize() : X_AXIS,
+          );
+        } else {
+          rotation.setFromAxisAngle(Y_AXIS, instance.rotationY);
+        }
         scale.set(
           instance.sizeX * grow,
           instance.sizeY * grow,
@@ -344,6 +429,7 @@ export function spawnShotEffects(
   snapshot: MatchSnapshot,
   effects: Effects,
   nowMs = 0,
+  onExplosion?: (x: number, y: number, size: number, startMs: number) => void,
 ): void {
   const byId = new Map<number, EntityState>();
   for (const entity of snapshot.entities) byId.set(entity.id, entity);
@@ -389,6 +475,7 @@ export function spawnShotEffects(
         size,
         startMs: nowMs + delayMs,
       });
+      onExplosion?.(target.x, target.y, size, nowMs + delayMs);
     }
   }
 }

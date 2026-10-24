@@ -28,7 +28,14 @@ import {
 } from "../input/skirmishController";
 import { createPerfPanel } from "../perfPanel";
 import { type Animator, createAnimator } from "../render/animation";
-import { detectDeaths, spawnDeathEffects } from "../render/deaths";
+import { createCorpses } from "../render/corpses";
+import {
+  createDeathCauses,
+  detectDeaths,
+  detectHits,
+  spawnDeathEffects,
+  spawnHitBlood,
+} from "../render/deaths";
 import {
   createDecals,
   createTerrainSurface,
@@ -56,11 +63,18 @@ import {
   type ProjectileModel,
   type Projectiles,
 } from "../render/projectiles";
+import { poseOnDeath } from "../render/rig";
 import {
   createTerrain,
   rockCellsOf,
   setTerrainTextures,
+  terrainDeformerOf,
 } from "../render/terrain";
+import {
+  craterFor,
+  MIN_CRATER_SIZE,
+  pressSourcesOf,
+} from "../render/terrainRelief";
 import {
   climateFor,
   coverThresholds,
@@ -146,6 +160,7 @@ const NO_EFFECT_COUNTS: Record<EffectKind, number> = {
   wreck: 0,
   body: 0,
   blood: 0,
+  droplet: 0,
   debris: 0,
 };
 /** The builtin ruleset type without a committed `.glb` (spec 06 §3). */
@@ -598,6 +613,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     },
   });
   let animator: Animator;
+  const corpses = createCorpses();
+  const deathCauses = createDeathCauses();
   let entities: EntityRenderer | null = null;
   let terrain: Group | null = null;
   /** Generated PNGs, loaded the first time they are switched on (spec 12). */
@@ -732,7 +749,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       sun.target,
     );
     animator = createAnimator();
-    entities = createEntityRenderer(ENTITY_CAPACITY, registry, animator);
+    entities = createEntityRenderer(
+      ENTITY_CAPACITY,
+      registry,
+      animator,
+      corpses,
+    );
     scene.add(entities.group);
     effects = createEffects();
     scene.add(effects.group);
@@ -986,12 +1008,48 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       effects !== null &&
       (previous === null || snapshot.tick > previous.tick)
     ) {
-      spawnShotEffects(snapshot, effects, effectTime(at));
+      const relief = terrain === null ? null : terrainDeformerOf(terrain);
+      spawnShotEffects(
+        snapshot,
+        effects,
+        effectTime(at),
+        relief === null
+          ? undefined
+          : (x, z, size, startMs) => {
+              if (size < MIN_CRATER_SIZE) return;
+              const crater = craterFor(size);
+              relief.crater(x, z, crater.radius, crater.depth, startMs);
+            },
+      );
       decals?.recordShots(snapshot, effectTime(at));
       animator.recordShots(snapshot.entities, at);
+      deathCauses.record(snapshot.entities, effectTime(at));
+      if (previous !== null) {
+        const hits = detectHits(
+          previous,
+          snapshot,
+          deathCauses,
+          effectTime(at),
+        );
+        animator.recordHits?.(hits, at);
+        spawnHitBlood(hits, effects, settings.gore, effectTime(at));
+      }
       const deaths =
         previous === null ? [] : detectDeaths(previous, snapshot, viewer);
-      spawnDeathEffects(deaths, effects, settings.gore, effectTime(at));
+      spawnDeathEffects(
+        deaths,
+        effects,
+        settings.gore,
+        effectTime(at),
+        corpses,
+        deathCauses,
+        (entity) => {
+          const rig = animator.lastRig?.(entity.id);
+          return rig === undefined || rig === null
+            ? null
+            : poseOnDeath(typeDef(entity.kind).id, rig);
+        },
+      );
     }
     refreshOverlay();
   });
@@ -1125,11 +1183,13 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     }
     lastFrameMs = now;
     controller?.update(dtMs / 1000);
+    const relief = terrain === null ? null : terrainDeformerOf(terrain);
     updateSun();
     if (next !== null && prev !== null && entities !== null) {
       const alpha = (now - receivedAt) / TICK_MS;
       const drawn = interpolateEntities(prev, next, alpha);
       decals?.recordMovers(drawn, effectTime(now));
+      relief?.press(pressSourcesOf(drawn), effectTime(now));
       entities.update(
         drawn,
         controller?.selected ?? NO_SELECTION,
@@ -1146,6 +1206,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     updatePlacementGhost();
     effects?.update(effectTime(now));
     decals?.update(effectTime(now));
+    relief?.update(effectTime(now));
     fogOverlay?.update(fog);
     if (weather !== null && settings.weather !== false && !paused) {
       const focus = controller?.cameraTarget() ?? cameraTarget;
@@ -1196,6 +1257,16 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       },
       cameraTarget: () => controller?.cameraTarget() ?? { ...cameraTarget },
       zoom: () => camera.zoom,
+      relief: () =>
+        (terrain === null ? null : terrainDeformerOf(terrain))?.stats() ?? {
+          flushes: 0,
+          flushMs: 0,
+          vertices: 0,
+        },
+      crater: (x, y, radius, depth) => {
+        if (terrain === null) return;
+        terrainDeformerOf(terrain)?.crater(x, y, radius, depth, 0);
+      },
       loadedSave: () => boot.loadedId,
       initialSnapshot: () =>
         initial === null
