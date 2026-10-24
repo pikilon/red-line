@@ -1,5 +1,5 @@
 //! AC-19-04..06: world save state round trip, continuity and load errors
-//! (spec 19 §3.1–§3.4, traceability §10).
+//! (spec 19 §3.1–§3.4).
 //!
 //! Committed in the RED phase (D-08). The implementer must make these pass
 //! without modifying them.

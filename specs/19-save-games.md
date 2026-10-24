@@ -35,8 +35,7 @@ special mode hardcoded in the client. Instead:
    among them.
 3. Saves become examples through a "Copy" button that puts the save on the
    clipboard; the agent imports it. No other import path.
-4. Agent tooling must work in any harness. Chosen: a skill
-   (`.agents/skills/test-saves/SKILL.md`) plus `node --run saves:*` scripts
+4. Agent tooling must work in any harness. Chosen: `node --run saves:*` scripts
    with one-line outputs. An MCP server is out of scope; it can wrap the same
    scripts later without changing this spec.
 
@@ -50,7 +49,7 @@ In:
   `data/generated/saves/`.
 * Client: `?load=<id>`, save manager in the game menu, IndexedDB slots,
   clipboard copy, removal of the showcase mode.
-* Headless `save` commands, `saves:*` scripts, the `test-saves` skill.
+* Headless `save` commands, `saves:*` scripts.
 * A catalogue of example saves (§7) with contract tests.
 
 Out:
@@ -550,7 +549,7 @@ The game menu (spec 08 §3.1) gains two buttons under Resume, as in Red Alert 2
 "Save game") and `#game-menu-load` (`t("menu.loadGame")`, "Load game"). Both
 open `#save-manager`, a panel over the menu built once, in **save** or
 **load** mode. Buttons are created once and updated on events, never per frame
-(client `AGENTS.md`):
+(per-frame re-renders made buttons unclickable with a real mouse):
 
 * A title, `t("saves.titleSave")` ("Save game") or `t("saves.titleLoad")`
   ("Load game"), and a close button `#save-manager-close`
@@ -702,29 +701,6 @@ node --run saves:import -- <file> <id> [--force]
   (exit 1).
 
 All three print at most one line per save and never dump save contents.
-
-### 6.3 Skill (`.agents/skills/test-saves/SKILL.md`, new)
-
-Description: "Create, run or import example saves (test scenes) and use them
-in tests and owner test steps." Contents:
-
-* When: a feature needs a specific situation to test (units, buildings,
-  combat, economy, AI...), writing e2e or sim tests, writing
-  `needs-owner-test` steps, or the owner pastes a save.
-* The setup-form YAML of §4.1 with one short example, the labels of §3.5 and
-  the `saves:*` commands.
-* Rules:
-  * E2E tests that need a prepared situation load an example save
-    (`/?load=<id>`) instead of issuing `debugSpawn` commands.
-  * Rust tests that need one use the test helper
-    `crates/sim/tests/common/saves.rs::load_example(id) -> Sim`.
-  * Every manual step in a `needs-owner-test` comment uses a `?load=` URL
-    when the step needs more than a fresh skirmish. When no example fits,
-    the PR adds one.
-  * A pasted save goes through `saves:import`, then gets a description in
-    `en.json` and a contract test (§7) when a test depends on it.
-* Root `AGENTS.md`, section "Done Means Self-Tested", gains one line: "Manual
-  test steps start from example saves: see the `test-saves` skill."
 
 ## 7. Example catalogue
 
@@ -883,38 +859,3 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
   They replaced the single "Saved games" button of P5-12 (#294, owner
   feedback: it did not say it saves). AC-19-13, 15 and 16 were updated to the
   two modes in that PR.
-
-## 10. Traceability
-
-| Criterion | File | Test |
-|---|---|---|
-| AC-19-01 | `scripts/build-data.test.mjs` | `AC-19-01: example saves build` |
-| AC-19-02 | `scripts/build-data.test.mjs` | `AC-19-02: showcase example` |
-| AC-19-03 | `crates/sim/tests/save.rs` | `ac_19_03_from_setup` |
-| AC-19-04 | `crates/sim/tests/save.rs`, `crates/sim/tests/example_saves.rs` | `ac_19_04_round_trip`, `ac_19_04_examples_round_trip` |
-| AC-19-05 | `crates/sim/tests/save.rs`, `crates/sim/tests/example_saves.rs` | `ac_19_05_continuity`, `ac_19_05_examples_continuity` |
-| AC-19-06 | `crates/sim/tests/save.rs` | `ac_19_06_load_errors` |
-| AC-19-07 | `client/src/sim/workerHandler.test.ts` | `AC-19-07: WASM save API` |
-| AC-19-08 | `crates/headless/tests/cli.rs` | `ac_19_08_save_commands` |
-| AC-19-09 | `scripts/saves.test.mjs` | `AC-19-09: saves scripts` |
-| AC-19-10 | `client/src/saves/saveFile.test.ts`, `scripts/save-file.test.mjs` | `AC-19-10: save file` |
-| AC-19-11 | `client/src/saves/store.test.ts` | `AC-19-11: memory store` |
-| AC-19-12 | `client/src/saves/boot.test.ts` | `AC-19-12: load source` |
-| AC-19-13 | `client/src/ui/saveManager.test.ts` | `AC-19-13: save manager render` |
-| AC-19-14 | `crates/sim/tests/example_saves.rs` | `ac_19_14_<id>` (one per example) |
-| AC-19-15 | `client/tests/e2e/saves.spec.ts` | `AC-19-15: save and load a slot` |
-| AC-19-16 | `client/tests/e2e/saves.spec.ts` | `AC-19-16: overwrite, rename, delete, copy` |
-| AC-19-17 | `client/tests/e2e/saves.spec.ts` | `AC-19-17: example saves and load errors` |
-
-## 11. Issue breakdown
-
-Work in order; each issue depends on the previous one.
-
-| Issue | Content | Criteria | Label |
-|---|---|---|---|
-| P5-09 (#280) | Sim: `map_id`, `save.rs` types, `save_state` / `load_state`, rng state | AC-19-04 (case a), 05 (first-line case), 06 | ready-pro |
-| P5-10 (#281) | Sim: `Setup`, `World::from_setup`; data: save schema, `globals.yaml` `saves`, `buildSaves`, `showcase` and `showcase-units` examples | AC-19-01, 02, 03 | ready-pro |
-| P5-11 (#282) | WASM API v4, worker protocol, `saveFile.ts`, `boot.ts`, `?load=`, debug API; showcase mode removal | AC-19-07, 10, 12, 17 | ready-pro |
-| P5-12 (#283) | Save manager UI, IndexedDB store, clipboard copy, i18n | AC-19-11, 13, 15, 16 | ready-pro |
-| P5-13 (#284) | Example catalogue of §7 and contract tests; AC-19-04 (b) and AC-19-05 example cases | AC-19-04, 05, 14 | ready-pro |
-| P5-14 (#285) | Headless `save` commands, `saves:*` scripts, `test-saves` skill, `AGENTS.md` line | AC-19-08, 09 | ready-pro |

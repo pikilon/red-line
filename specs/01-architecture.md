@@ -1,8 +1,7 @@
 # 01 — Architecture
 
-Status: approved for Phase 1. Elaborates D-05 (architecture), D-08 (agent
-workflow) and the code rules in `AGENTS.md`, `crates/AGENTS.md` and
-`client/AGENTS.md`. Feature specs (`02-*` onwards) define concrete interfaces
+Status: approved for Phase 1. Elaborates D-05 (architecture) and the
+determinism rules in `AGENTS.md`. Feature specs (`02-*` onwards) define concrete interfaces
 inside the boundaries set here.
 
 ## 1. Scope
@@ -130,13 +129,11 @@ the same hash after the same number of ticks.
   `createWorkerHandler` (`client/src/sim/workerHandler.ts`) that receives a sim
   factory and a `post` function; `sim.worker.ts` only binds it to `self`.
 * Messages are plain objects discriminated by a `type` string. Dispatch uses a
-  constant handler dictionary keyed by `type`, never `switch`.
+  constant handler dictionary keyed by `type`.
 * Snapshots are transferred (`Transferable`) as `Int32Array` buffers.
 
-## 8. Client code rules (recap, enforced)
+## 8. Client code rules
 
-* No `switch` and no `enum` in `client/src` (Biome + `scripts/check-rules.mjs`
-  rules `ts-switch`, `ts-enum`); use `as const` objects and dictionaries.
 * Player-facing strings come from `client/src/i18n/en.json` through `t()`.
 * No module under `client/src` decides outcomes (damage, movement, pathing).
 
@@ -151,8 +148,7 @@ the same hash after the same number of ticks.
 | Scripts (node:test) | `scripts/*.test.mjs` | `test("AC-NN-MM: <summary>")` |
 
 `NN` is the spec number, `MM` the criterion number. One criterion may have
-several tests; each test name starts with exactly one criterion ID. Tests
-written in the spec phase are never modified by implementation PRs (D-08).
+several tests; each test name starts with exactly one criterion ID.
 
 ## 10. Acceptance criteria
 
@@ -171,14 +167,6 @@ Given a Rust source file under `crates/sim/src/` containing `HashMap` or
 `sim-unseeded-random`) outside a `//` line comment,
 When `findViolations` scans it,
 Then it returns one violation per offending line with the matching rule.
-
-### AC-01-03 — `switch` and `enum` are rejected in the client
-
-Given a TypeScript file under `client/src/` containing `switch (` (rule
-`ts-switch`) or `enum <Identifier>` (rule `ts-enum`) outside a `//` line
-comment,
-When `findViolations` scans it,
-Then it returns a violation with that rule and line.
 
 ### AC-01-04 — Rules checker passes on clean input and ignores other paths
 
@@ -204,7 +192,7 @@ not `EXPECTED_API_VERSION`, when `createSimClient` receives it, then its
 ### `scripts/check-rules.mjs`
 
 ```js
-/** @typedef {"sim-float"|"sim-hash-collection"|"sim-wall-clock"|"sim-unseeded-random"|"ts-switch"|"ts-enum"} RuleId */
+/** @typedef {"sim-float"|"sim-hash-collection"|"sim-wall-clock"|"sim-unseeded-random"} RuleId */
 /** @typedef {{ file: string, line: number, rule: RuleId }} Violation */
 
 /** Repository-relative POSIX paths. Rules by path prefix:
@@ -212,12 +200,11 @@ not `EXPECTED_API_VERSION`, when `createSimClient` receives it, then its
  *     sim-hash-collection /\bHash(Map|Set)\b/,
  *     sim-wall-clock /std::time|\bSystemTime\b|\bInstant\b/,
  *     sim-unseeded-random /\bthread_rng\b|rand::random/
- *  "client/src/" + ".ts": ts-switch /\bswitch\s*\(/, ts-enum /\benum\s+[A-Za-z_]\w*/
  *  Before matching, everything from the first "//" on a line is removed.
  *  Results are sorted by file, then line, then rule. */
 export function findViolations(files /* {path: string, content: string}[] */) /* : Violation[] */;
 
-/** CLI (when run directly): walks crates/sim/src and client/src from the
+/** CLI (when run directly): walks crates/sim/src from the
  *  repository root, prints "<file>:<line> <rule>" per violation, exit 1 if any. */
 ```
 
@@ -244,20 +231,3 @@ disallowed-types = [
   `api_version_is_zero_in_the_skeleton` and the headless banner test predate the
   specs and are updated to `1` by the implementing issue).
 * `client/src/sim/protocol.ts`: `export const EXPECTED_API_VERSION = 1;`
-
-## 12. Traceability
-
-| Criterion | Test file | Test name |
-|---|---|---|
-| AC-01-01 | `scripts/check-rules.test.mjs` | `AC-01-01: rejects f32 and f64 in the simulation` |
-| AC-01-02 | `scripts/check-rules.test.mjs` | `AC-01-02: rejects hash collections, wall-clock time and unseeded randomness in the simulation` |
-| AC-01-03 | `scripts/check-rules.test.mjs` | `AC-01-03: rejects switch and enum in client TypeScript` |
-| AC-01-04 | `scripts/check-rules.test.mjs` | `AC-01-04: accepts clean files, comments and other paths` |
-| AC-01-05 | `crates/sim/tests/wasm_api.rs` | `ac_01_05_api_version_is_one` |
-| AC-01-05 | `client/src/sim/simClient.test.ts` | `AC-01-05: rejects a worker with a mismatched api version` |
-
-## 13. Issue breakdown
-
-Issues for this spec are part of the Phase 1 queue in
-`specs/02-phase1-tech-slice.md` §7 (issue P1-01 covers AC-01-01..04; AC-01-05
-is covered by P1-08 and P1-12).

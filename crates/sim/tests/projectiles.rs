@@ -1,5 +1,5 @@
 //! AC-17-02..10: projectile flight, delivery, scatter, salvos, combat events
-//! and the combat snapshot (spec 17 §4.2–§4.7, traceability §10).
+//! and the combat snapshot (spec 17 §4.2–§4.7).
 
 use serde_json::{Value, json};
 use sim::fixed::FxVec2;

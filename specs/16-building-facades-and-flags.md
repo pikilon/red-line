@@ -194,12 +194,3 @@ export function enableBands(material: MeshLambertMaterial, stripes: readonly num
 * AC-16-07: Given the showcase, When the game runs with generated textures,
   Then the facade textures load, the flags are drawn and there are no console
   errors (the agent also checks a screenshot).
-
-## Traceability
-
-| Criterion | Test |
-| --- | --- |
-| AC-16-01..03 | `client/src/render/facades.test.ts` |
-| AC-16-04..06 | `client/src/render/flags.test.ts` |
-| AC-16-08, 09 | `client/src/render/bands.test.ts` |
-| AC-16-07 | `client/tests/e2e/facades.spec.ts` |

@@ -218,24 +218,3 @@ and makes it false; a screenshot with the style on differs from one with it
 off (pixel diff over 1 %); no console error; `__redline.drawCalls()` stays
 within AC-06-06's bound with the style on. AC-03-62 and AC-03-63 pass
 unchanged with the default settings.
-
-## 10. Traceability
-
-| Criterion | File | Test |
-|---|---|---|
-| AC-09-01 | `client/src/render/animation.test.ts` | `AC-09-01: recoil and bob curves` |
-| AC-09-02 | `client/src/render/animation.test.ts` | `AC-09-02: animator poses` |
-| AC-09-03 | `client/src/render/entities.test.ts` | `AC-09-03: animated instances` |
-| AC-09-04 | `client/src/render/entities.test.ts` | `AC-09-04: scaffolding` |
-| AC-09-05 | `client/src/render/deaths.test.ts` | `AC-09-05: debris` |
-| AC-09-06 | `client/src/render/pixelArt.test.ts`, `client/src/settings.test.ts` | `AC-09-06: pixel-art pass`, `AC-09-06: settings with pixel art` |
-| AC-09-07 | `client/tests/e2e/style.spec.ts` | `AC-09-07: style in the skirmish` |
-
-## 11. Issue breakdown
-
-| Issue | Scope | Criteria | Tier | Depends on |
-|---|---|---|---|---|
-| P4-07 (#186) | `animation.ts`, animator in the entity renderer, skirmish wiring | AC-09-01..03 | ready-pro | #185 (pause clock) |
-| P4-08 (#188) | scaffolding in the entity renderer | AC-09-04 | ready-local | P4-07 |
-| P4-09 (#187) | `debris` effect kind and building debris | AC-09-05 | ready-local | — |
-| P4-10 (#189) | pixel-art pass, `pixelArt` setting, `V` toggle, debug hook, E2E | AC-09-06, 07 | ready-pro | #185 |

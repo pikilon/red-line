@@ -92,7 +92,7 @@ Put the note in the PR/issue comment or the relevant `specs/*.md` section
 
 ## Model tier
 
-* A cheap model is enough (tier C/B in D-08: Flash in Antigravity, Haiku in
-  Claude Code through `.claude/agents/generals-precedent.md`); escalate to
-  tier A when the behavior spans many files, mixes code with INI data, or the
-  answer is "not found" twice. You do not edit repository files: the caller reviews the note.
+* A cheap model is enough (Flash in Antigravity, Haiku in Claude Code through
+  `.claude/agents/generals-precedent.md`); escalate to a stronger model when
+  the behavior spans many files, mixes code with INI data, or the answer is
+  "not found" twice. You do not edit repository files: the caller reviews the note.

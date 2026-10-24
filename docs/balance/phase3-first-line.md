@@ -180,7 +180,7 @@ After the one weapon change above, the identity holds:
 
 ## Verification note
 
-AC-05-22 is a review criterion (spec 05 §8, traceability §9 lists `review` with
+AC-05-22 is a review criterion (spec 05 §8, with
 no test), so no automated balance test exists or is added here. The Rust and
 data test suites are unaffected by the personality values: AC-05-01 compares
 the generated `ai` array against the YAML sources, and AC-05-03/AC-05-12 pin

@@ -1,5 +1,5 @@
-// Repository rules checker: rejects floats and non-deterministic APIs in
-// crates/sim and `switch`/`enum` in client TypeScript (specs/01-architecture.md §3, §8).
+// Determinism checker: rejects floats and non-deterministic APIs in crates/sim
+// (specs/01-architecture.md §3).
 import { readFileSync, readdirSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,14 +13,6 @@ const RULE_SETS = [
       ["sim-hash-collection", /\bHash(Map|Set)\b/],
       ["sim-wall-clock", /std::time|\bSystemTime\b|\bInstant\b/],
       ["sim-unseeded-random", /\bthread_rng\b|rand::random/],
-    ],
-  },
-  {
-    prefix: "client/src/",
-    ext: ".ts",
-    rules: [
-      ["ts-switch", /\bswitch\s*\(/],
-      ["ts-enum", /\benum\s+[A-Za-z_]\w*/],
     ],
   },
 ];
@@ -51,7 +43,7 @@ function walk(dir) {
 
 function main() {
   const root = fileURLToPath(new URL("..", import.meta.url));
-  const files = ["crates/sim/src", "client/src"].flatMap((dir) =>
+  const files = ["crates/sim/src"].flatMap((dir) =>
     walk(join(root, dir)).map((full) => ({
       path: relative(root, full).split(sep).join("/"),
       content: readFileSync(full, "utf8"),

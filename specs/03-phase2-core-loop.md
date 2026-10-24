@@ -351,7 +351,7 @@ Map `first-line` (128 x 128, point-symmetric: cell `(x, y)` ↔
 
 ### 4.6 Test ruleset fixture
 
-`crates/sim/tests/fixtures/test-rules.json` is written by tier S in the RED
+`crates/sim/tests/fixtures/test-rules.json` is written in the RED
 commit of P2-03 with exactly this content (generated format, two-space JSON).
 All simulation criteria use it, so balance changes to the builtin data never
 break them. Types: 0 placeholder, 1 depot, 2 hq, 3 power, 4 center, 5 factory,
@@ -2018,117 +2018,4 @@ two owner-0 riflemen there with `debugSpawn`).
   reference values and "the hash changes after a step" remain.
 * AC-02-38..46: the URLs gain `mode=tech-slice`; nothing else changes.
 
-These test edits are part of the RED commits of P2-05 and P2-23 (tier S).
-
-## 8. Traceability
-
-| Criterion | Test file | Test name |
-|---|---|---|
-| AC-03-01 | `scripts/build-data.test.mjs` | `AC-03-01: builtin data is valid and the generated ruleset is current` |
-| AC-03-02 | `scripts/build-data.test.mjs` | `AC-03-02: reports schema violations with file and pointer` |
-| AC-03-03 | `scripts/build-data.test.mjs` | `AC-03-03: reports reference and semantic errors` |
-| AC-03-04 | `scripts/build-data.test.mjs` | `AC-03-04: rosters and the first-line map follow the design` |
-| AC-03-05 | `crates/sim/tests/rules.rs` | `ac_03_05_ruleset_parsing` |
-| AC-03-06 | `crates/sim/tests/rules.rs` | `ac_03_06_phase1_compatibility` |
-| AC-03-07 | `crates/sim/tests/world.rs` | `ac_03_07_sandbox_ownership_and_speed` |
-| AC-03-08 | `crates/sim/tests/determinism.rs` | `ac_03_08_state_hash_v2` |
-| AC-03-09 | `crates/sim/tests/world.rs` | `ac_03_09_skirmish_setup` |
-| AC-03-10 | `crates/sim/tests/nav.rs` | `ac_03_10_footprint_geometry` |
-| AC-03-11 | `crates/sim/tests/vision.rs` | `ac_03_11_visibility_and_exploration` |
-| AC-03-12 | `crates/sim/tests/vision.rs` | `ac_03_12_entity_visibility` |
-| AC-03-13 | `crates/sim/tests/economy.rs` | `ac_03_13_production_speed` |
-| AC-03-14 | `crates/sim/tests/economy.rs` | `ac_03_14_power_totals` |
-| AC-03-15 | `crates/sim/tests/economy.rs` | `ac_03_15_production_timing_payment_and_exit` |
-| AC-03-16 | `crates/sim/tests/economy.rs` | `ac_03_16_queue_rules` |
-| AC-03-17 | `crates/sim/tests/economy.rs` | `ac_03_17_low_power_slows_production` |
-| AC-03-18 | `crates/sim/tests/economy.rs` | `ac_03_18_rally_point` |
-| AC-03-19 | `crates/sim/tests/construction.rs` | `ac_03_19_construction_progress_and_hit_points` |
-| AC-03-20 | `crates/sim/tests/construction.rs` | `ac_03_20_placement_validation` |
-| AC-03-21 | `crates/sim/tests/construction.rs` | `ac_03_21_dozer_travels_to_the_site_and_sites_block_paths` |
-| AC-03-22 | `crates/sim/tests/construction.rs` | `ac_03_22_stop_and_resume` |
-| AC-03-23 | `crates/sim/tests/construction.rs` | `ac_03_23_free_unit_on_completion` |
-| AC-03-24 | `crates/sim/tests/harvest.rs` | `ac_03_24_truck_cycle` |
-| AC-03-25 | `crates/sim/tests/harvest.rs` | `ac_03_25_depot_exhaustion_and_sharing` |
-| AC-03-26 | `crates/sim/tests/combat.rs` | `ac_03_26_damage_formula` |
-| AC-03-27 | `crates/sim/tests/combat.rs` | `ac_03_27_auto_targeting_cooldown_and_id_order` |
-| AC-03-28 | `crates/sim/tests/combat.rs` | `ac_03_28_zero_modifiers_are_never_targeted` |
-| AC-03-29 | `crates/sim/tests/combat.rs` | `ac_03_29_range_min_range_and_shared_vision` |
-| AC-03-30 | `crates/sim/tests/combat.rs` | `ac_03_30_attack_order` |
-| AC-03-31 | `crates/sim/tests/combat.rs` | `ac_03_31_area_projectiles` |
-| AC-03-32 | `crates/sim/tests/combat.rs` | `ac_03_32_guided_projectiles` |
-| AC-03-33 | `crates/sim/tests/combat.rs` | `ac_03_33_powered_defenses` |
-| AC-03-34 | `crates/sim/tests/world.rs` | `ac_03_34_deaths_release_cells` |
-| AC-03-35 | `crates/sim/tests/vision.rs` | `ac_03_35_last_seen_buildings` |
-| AC-03-36 | `crates/sim/tests/world.rs` | `ac_03_36_victory_and_draw` |
-| AC-03-37 | `crates/sim/tests/determinism.rs` | `ac_03_37_match_snapshot_layout` |
-| AC-03-38 | `crates/sim/tests/vision.rs` | `ac_03_38_fog_encoding_and_filtering` |
-| AC-03-39 | `crates/sim/tests/wasm_api.rs` | `ac_03_39_wasm_api_v2_natively` |
-| AC-03-40 | `crates/headless/tests/cli.rs` | `ac_03_40_match_script_cli` |
-| AC-03-41 | `crates/headless/tests/match_script.rs` | `ac_03_41_skirmish_fixture_plays_a_short_game` |
-| AC-03-42 | `client/src/sim/matchParity.test.ts` | `AC-03-42: native and WASM skirmish hashes are identical` |
-| AC-03-43 | `client/src/rules.test.ts` | `AC-03-43: exposes the ruleset and type names` |
-| AC-03-44 | `client/src/sim/matchSnapshot.test.ts` | `AC-03-44: decodes a match snapshot` |
-| AC-03-45 | `client/src/sim/matchSnapshot.test.ts` | `AC-03-45: interpolates entities by id` |
-| AC-03-46 | `client/src/sim/workerHandler.test.ts` | `AC-03-46: runs a skirmish, commands and speed` |
-| AC-03-47 | `client/src/sim/skirmishClient.test.ts` | `AC-03-47: wraps the skirmish protocol` |
-| AC-03-48 | `client/src/input/entitySelection.test.ts` | `AC-03-48: picks entities and selects own units` |
-| AC-03-49 | `client/src/input/intent.test.ts` | `AC-03-49: resolves right-click intents` |
-| AC-03-50 | `client/src/input/placement.test.ts` | `AC-03-50: predicts building placement` |
-| AC-03-51 | `client/src/ui/commandPanel.test.ts` | `AC-03-51: lists construct and produce buttons` |
-| AC-03-52 | `client/src/ui/resourceBar.test.ts` | `AC-03-52: formats resources and the outcome` |
-| AC-03-53 | `client/src/render/fog.test.ts` | `AC-03-53: builds the fog texture` |
-| AC-03-54 | `client/src/render/entities.test.ts` | `AC-03-54: renders entities, bars and tracers` |
-| AC-03-55 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-55: boots a skirmish with fog` |
-| AC-03-56 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-56: builds a power plant through the UI` |
-| AC-03-57 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-57: produces and cancels through the UI` |
-| AC-03-58 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-58: harvests supplies` |
-| AC-03-59 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-59: attacks with a right click` |
-| AC-03-60 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-60: switches player and reveals the map` |
-| AC-03-61 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-61: shows victory and defeat` |
-| AC-03-62 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-62: renders a skirmish in at most 8 draw calls` |
-| AC-03-63 | `client/tests/e2e/perf.spec.ts` | `AC-03-63: keeps 60 fps in a 400-unit skirmish @perf` |
-| AC-03-64 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-64: shows placement feedback` |
-| AC-03-65 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-65: keeps the command panel stable under a held click` |
-| AC-03-66 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-66: renders the overlay on change only` |
-| AC-03-67 | `client/tests/e2e/skirmish.spec.ts` | `AC-03-67: draws the selection box while dragging` |
-
-## 9. Issue breakdown (Phase 2 queue)
-
-Opened as issues #55..#79 (label `phase:2` plus tier and area, blocked-by
-relationships set in GitHub). For each issue, the tier S author first
-commits the failing tests listed in §8 for its criteria (RED, D-08); the
-implementer then makes them pass without touching them. Estimated sizes exclude
-those tests.
-
-| ID | Issue | Title | Criteria | Files allowed (production) | Est. lines | Tier | Area | Depends on |
-|---|---|---|---|---|---|---|---|
-| P2-01 | #55 | Data schemas and build/check scripts | AC-03-02, 03 | `data/schema/*.schema.json`, `scripts/{build-data,check-data}.mjs`, `package.json`, `package-lock.json`, `.github/workflows/ci.yml` | 280 | ready-pro | area:data | — |
-| P2-02 | #56 | Builtin rules and the first-line map | AC-03-01, 04 | `data/rules/globals.yaml`, `data/factions/{ukraine,russia}.yaml`, `data/maps/first-line.yaml`, `data/generated/ruleset.json` | 300 (data) | ready-local | area:data | P2-01 |
-| P2-03 | #57 | Ruleset parsing in the simulation | AC-03-05 | `crates/sim/src/{rules,lib}.rs`, `crates/sim/Cargo.toml`, `Cargo.lock` | 200 | ready-local | area:sim | P2-02 |
-| P2-04 | #58 | Entities, players and Phase 1 compatibility | AC-03-06 | `crates/sim/src/{entity,player,world,lib,hash,snapshot,wasm_api}.rs` | 300 | ready-pro | area:sim | P2-03 |
-| P2-05 | #59 | State hash v2 and API version 2 | AC-03-08, AC-01-05 | `crates/sim/src/{hash,lib}.rs`, `crates/headless/src/main.rs`, `client/src/sim/protocol.ts` | 150 | ready-local | area:sim | P2-04 |
-| P2-06 | #60 | Footprints, navigation grid, sandbox buildings and ownership | AC-03-07, 10 | `crates/sim/src/{nav,world,lib}.rs` | 200 | ready-local | area:sim | P2-05 |
-| P2-07 | #61 | Visibility and exploration | AC-03-11, 12 | `crates/sim/src/{vision,world,player,lib}.rs` | 180 | ready-local | area:sim | P2-06 |
-| P2-08 | #62 | Skirmish setup | AC-03-09 | `crates/sim/src/world.rs` | 120 | ready-local | area:sim | P2-07 |
-| P2-09 | #63 | Power and production | AC-03-13..18 | `crates/sim/src/{economy,world,lib}.rs` | 280 | ready-pro | area:sim | P2-08 |
-| P2-10 | #64 | Construction by dozers | AC-03-19..23 | `crates/sim/src/{economy,world}.rs` | 290 | ready-pro | area:sim | P2-09 |
-| P2-11 | #65 | Harvesting | AC-03-24, 25 | `crates/sim/src/{economy,world}.rs` | 220 | ready-pro | area:sim | P2-10 |
-| P2-12 | #66 | Weapons, targeting and attack orders | AC-03-26..30 | `crates/sim/src/{combat,world,lib}.rs` | 290 | ready-pro | area:sim | P2-11 |
-| P2-13 | #67 | Projectiles, splash and powered defenses | AC-03-31..33 | `crates/sim/src/combat.rs` | 180 | ready-pro | area:sim | P2-12 |
-| P2-14 | #68 | Deaths, last-seen buildings and victory | AC-03-34..36 | `crates/sim/src/{world,vision}.rs` | 200 | ready-pro | area:sim | P2-13 |
-| P2-15 | #69 | Match snapshot and fog encoding | AC-03-37, 38 | `crates/sim/src/snapshot.rs` | 150 | ready-local | area:sim | P2-14 |
-| P2-16 | #70 | WASM API v2 | AC-03-39 | `crates/sim/src/wasm_api.rs` | 200 | ready-local | area:sim | P2-15 |
-| P2-17 | #71 | Headless match scripts and the skirmish fixture | AC-03-40, 41 | `crates/headless/src/{main,script}.rs` | 180 | ready-pro | area:sim | P2-16 |
-| P2-18 | #72 | Client ruleset, type names and match snapshots | AC-03-43..45 | `client/src/rules.ts`, `client/src/sim/matchSnapshot.ts`, `client/src/i18n/en.json`, `client/{vite,vitest}.config.ts`, `client/tsconfig.json` | 220 | ready-local | area:client | P2-02 |
-| P2-19 | #73 | Skirmish worker protocol, client and WASM parity | AC-03-46, 47, 42 | `client/src/sim/{protocol,workerHandler,sim.worker,skirmishClient,matchScript}.ts` | 290 | ready-pro | area:client | P2-17, P2-18 |
-| P2-20 | #74 | Entity and fog renderers | AC-03-53, 54 | `client/src/render/{entities,fog}.ts` | 280 | ready-pro | area:client | P2-18 |
-| P2-21 | #75 | Entity selection, right-click intents and placement predictor | AC-03-48..50 | `client/src/input/{entitySelection,intent,placement}.ts` | 220 | ready-local | area:client | P2-19 |
-| P2-22 | #76 | Command panel, resource bar and outcome overlay | AC-03-51, 52 | `client/src/ui/{commandPanel,resourceBar,outcome}.ts`, `client/src/i18n/en.json` | 220 | ready-local | area:client | P2-18 |
-| P2-23 | #77 | Skirmish app, debug API, hot-seat and victory | AC-03-55, 60, 61, AC-02-38..46 URL update | `client/src/main.ts`, `client/src/app/{techSlice,skirmish}.ts`, `client/src/{debug,hud}.ts`, `client/index.html`, `client/src/i18n/en.json` | 300 | ready-pro | area:client | P2-19, P2-20, P2-22 |
-| P2-24 | #78 | Skirmish controller, placement and panel wiring | AC-03-56..59 | `client/src/input/skirmishController.ts`, `client/src/app/skirmish.ts`, `client/index.html` | 280 | ready-pro | area:client | P2-21, P2-23 |
-| P2-25 | #79 | Skirmish performance | AC-03-62, 63 | `client/src/app/skirmish.ts`, `client/src/render/{entities,fog}.ts` | 60 | ready-pro | area:client | P2-24 |
-
-Every issue's "Done when" is `node --run verify` green (P2-25 additionally
-`node --run test:perf` green on the reference machine, reported in the PR).
-Files forbidden in every issue: tests and fixtures written in the spec phase,
-`AGENTS.md`, `.agents/skills/`, `specs/`, `docs/decisions.md`.
+These test edits are part of the RED commits of P2-05 and P2-23.
