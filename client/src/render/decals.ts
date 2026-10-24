@@ -257,12 +257,8 @@ export function createDecals(
       kind === "tracks" ? config.tracks.tracked : config.tracks.wheeled;
     const hullWidth = type.render.size[0] / 100;
     const hullLength = type.render.size[2] / 100;
-    const sample = surfaceAt(entity.x, entity.y);
-    const alpha = config.tracks.peakAlpha * sample.strength;
-    if (alpha <= 0.01) return;
     const gauge = hullWidth * style.gaugePerHull;
-    // The strip trails behind the hull: nothing is marked ahead of the unit.
-    const trail = Math.max(0.1, hullLength * style.lengthPerHull);
+    const halfLength = Math.max(0.1, hullLength * style.lengthPerHull);
     for (const side of [-1, 1]) {
       // Gaps, wobble and uneven pressure keep the strips from looking drawn.
       if (rng() < config.tracks.gapChance) continue;
@@ -272,21 +268,28 @@ export function createDecals(
       const sin = Math.sin(turn);
       const dirX = walker.dirX * cos - walker.dirY * sin;
       const dirY = walker.dirX * sin + walker.dirY * cos;
+      // The strip ends at the hull and trails behind it; its ground (colour,
+      // snow, hardness) is read where the strip lies, not under the hull.
+      const x =
+        entity.x -
+        walker.dirY * (gauge * side + wobble) -
+        walker.dirX * halfLength;
+      const y =
+        entity.y +
+        walker.dirX * (gauge * side + wobble) -
+        walker.dirY * halfLength;
+      const sample = surfaceAt(x, y);
+      const alpha = config.tracks.peakAlpha * sample.strength;
+      if (alpha <= 0.01) continue;
       stamp({
-        x:
-          entity.x -
-          walker.dirY * (gauge * side + wobble) -
-          walker.dirX * trail,
-        y:
-          entity.y +
-          walker.dirX * (gauge * side + wobble) -
-          walker.dirY * trail,
+        x,
+        y,
         dirX,
         dirY,
         halfWidth:
           Math.max(0.03, (hullWidth * style.stripWidthPerHull) / 2) *
           (0.8 + 0.4 * rng()),
-        halfLength: Math.max(0.1, hullLength * style.lengthPerHull),
+        halfLength,
         cell: "tread",
         color: sample.color,
         alpha: alpha * (0.5 + 0.5 * rng()),

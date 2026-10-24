@@ -1,7 +1,7 @@
 {
   "_comment": "Ground marks (spec 22). Visual only: the simulation never reads this file. Lengths are tiles, times are milliseconds.",
   "tracks": {
-    "spacingTiles": 0.4,
+    "spacingTiles": 0.3,
     "lifetimeMs": 150000,
     "fadeMs": 150000,
     "maxJumpTiles": 1.5,
@@ -9,12 +9,12 @@
     "tracked": {
       "stripWidthPerHull": 0.45,
       "gaugePerHull": 0.36,
-      "lengthPerHull": 0.55
+      "lengthPerHull": 0.3
     },
     "wheeled": {
       "stripWidthPerHull": 0.3,
       "gaugePerHull": 0.4,
-      "lengthPerHull": 0.5
+      "lengthPerHull": 0.28
     },
     "maxMarks": 3000,
     "gapChance": 0.15,
