@@ -734,9 +734,10 @@ does not exist, or an entity of the wrong owner or category, is ignored.
 
 * `Move`: Phase 1 algorithm. Only units owned by `p` receive the order;
   buildings, depots and other players' entities are skipped.
-* `Attack { units, target }`: valid if `target` exists, `hp > 0`, its owner is
-  neither `p` nor `NEUTRAL`, and `is_entity_visible(p, target)`; consumes one
-  order id; every listed unit owned by `p` with a weapon gets
+* `Attack { units, target }`: valid if `target` exists, `hp > 0` and its
+  owner is neither `p` nor `NEUTRAL`; fog does not invalidate it (Zero Hour
+  only filters automatic targeting by fog, precedent note 2026-10-25).
+  Consumes one order id; every listed unit owned by `p` with a weapon gets
   `Attack { order_id, target }`.
 * `Harvest { units, depot }`: valid if `depot` is a depot; consumes one order
   id; every listed unit of `p` with `capacity > 0` gets `Harvest { order_id,
@@ -824,9 +825,9 @@ A player has a **power deficit** when `produced < consumed`.
 For each unit (ascending id), by order:
 
 * `Idle`: nothing. `Move`: Phase 1 rule at the type's speed.
-* `Attack`: if the target is gone, has `hp == 0` or `!is_entity_visible(owner,
-  target)`: `Idle { last_order_id: order_id }`. Else if the entity distance to
-  the target is `<=` the weapon range: no move. Else step toward the goal.
+* `Attack`: if the target is gone or has `hp == 0`: `Idle { last_order_id:
+  order_id }` (fog does not end it). Else if the entity distance to the target
+  is `<=` the weapon range: no move. Else step toward the goal.
 * `Build`: if the building is gone or complete: `Idle`. Else if docked (§5.9):
   no move. Else step toward the goal.
 * `Harvest`: in `ToDepot` toward the depot and in `ToCenter` toward the center
@@ -851,11 +852,15 @@ pub fn damage_dealt(base: u32, modifier_percent: u32) -> u32;
    has a power deficit:
    * if `cooldown > 0`, `cooldown -= 1`; if `cooldown` is still `> 0`, skip.
    * **Target.** If `a.order` is `Attack { target }` and `target` is a valid
-     target in range, it is chosen. Otherwise the valid target in range with the
-     smallest entity distance from `a.pos`, ties lowest id. A valid target exists,
-     has `hp > 0`, an owner other than `a.owner` and `NEUTRAL`, is visible to
-     `a.owner`, and `modifier(w.damage_type, target armor) > 0`; in range means
-     `fx_centi(min_range) <= distance <= fx_centi(range)`.
+     target in range, it is chosen; a new order overrides a still-valid
+     turret lock (spec 11 §5.3). Otherwise the valid **and visible** target in
+     range with the smallest entity distance from `a.pos`, ties lowest id. A
+     valid target exists, has `hp > 0`, an owner other than `a.owner` and
+     `NEUTRAL`, and `modifier(w.damage_type, target armor) > 0`; in range means
+     `fx_centi(min_range) <= distance <= fx_centi(range)`. Visibility is
+     required only for the automatic pick: an explicit order may target an
+     enemy outside the player's fog (Zero Hour's weapon layer has no fog
+     check, precedent note 2026-10-25).
    * **Fire.** If `projectile_ticks == 0`, apply the hit now. Else push
      `Projectile { owner, weapon, target, impact: target pos (buildings:
      footprint centre), impact_tick: tick + projectile_ticks }`. Then
@@ -1724,9 +1729,11 @@ player 0 dozer at `(22.5, 5.5)` (id 1, spotter) and a player 1 soldier at
 `Attack { order_id: 1, target: 2 }` and moves east; after step 93 the soldier
 has hp 50 and after step 94 hp 30 (tank x raw `1284468`); the tank's position
 is unchanged between steps 95 and 100; after step 114 the soldier is gone;
-after step 115 the tank is `Idle { last_order_id: 1 }`. An `Attack` on a
-target not visible to the issuer, on an own entity or on a depot is ignored
-(`next_order_id` unchanged).
+after step 115 the tank is `Idle { last_order_id: 1 }`. An `Attack` on an own
+entity or on a depot is ignored (`next_order_id` unchanged); an enemy outside
+the issuer's fog is accepted, consumes one order id and gives the tank
+`Attack { target }` (Zero Hour only filters automatic targeting by fog,
+precedent note 2026-10-25).
 
 **AC-03-31 Area projectiles.** Given a player 0 mortar-unit at `(5.5, 10.5)`,
 player 1 soldiers B1 `(13.5, 10.5)`, B2 `(14.5, 10.5)`, B3 `(13.5, 12.5)` and a

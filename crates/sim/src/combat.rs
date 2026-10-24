@@ -179,13 +179,23 @@ impl World {
 
     /// Spec 11 §5.3 step 1: the locked target while it stays valid, otherwise a
     /// fresh pick; the result is stored in `aim` (Generals `TurretAI` keeps its
-    /// victim).
+    /// victim). The target of the current `Attack` order wins over the lock: a
+    /// new order must switch fire instead of shooting the old victim until it
+    /// dies or leaves.
     fn sticky_target(&mut self, index: usize, weapon: &WeaponDef) -> Option<usize> {
+        let ordered = match self.entities[index].order {
+            Order::Attack { target, .. } => self
+                .index_of(target)
+                .filter(|&target_index| self.is_valid_target(index, target_index, weapon)),
+            _ => None,
+        };
         let locked = self.entities[index]
             .aim
             .and_then(|id| self.index_of(id))
             .filter(|&target_index| self.is_valid_target(index, target_index, weapon));
-        let target = locked.or_else(|| self.select_target(index, weapon));
+        let target = ordered
+            .or(locked)
+            .or_else(|| self.select_target(index, weapon));
         self.entities[index].aim = target.map(|target_index| self.entities[target_index].id);
         target
     }
@@ -422,8 +432,8 @@ impl World {
     }
 
     /// The ordered target when it exists, is valid and in range; otherwise the
-    /// valid target in range at the smallest entity distance, ties to the
-    /// lowest id.
+    /// valid, visible target in range at the smallest entity distance, ties to
+    /// the lowest id.
     fn select_target(&self, index: usize, weapon: &WeaponDef) -> Option<usize> {
         if let Order::Attack { target, .. } = self.entities[index].order
             && let Some(target_index) = self.index_of(target)
@@ -433,7 +443,7 @@ impl World {
         }
         let mut best: Option<(Fx, usize)> = None;
         for target_index in 0..self.entities.len() {
-            if !self.is_valid_target(index, target_index, weapon) {
+            if !self.is_valid_auto_target(index, target_index, weapon) {
                 continue;
             }
             let distance =
@@ -445,9 +455,11 @@ impl World {
         best.map(|(_, target_index)| target_index)
     }
 
-    /// §5.11 target validity: exists, `hp > 0`, an owner other than the
-    /// attacker's and `NEUTRAL`, visible to the attacker's owner, a non-zero
-    /// damage modifier and a distance inside `[min_range, range]`.
+    /// §5.11 combat validity: exists, `hp > 0`, an owner other than the
+    /// attacker's and `NEUTRAL`, a non-zero damage modifier and a distance
+    /// inside `[min_range, range]`. Fog is not part of it (Zero Hour's weapon
+    /// layer deliberately lets ordered attacks fire at shrouded targets); it
+    /// only gates the automatic pick, `is_valid_auto_target`.
     fn is_valid_target(&self, index: usize, target_index: usize, weapon: &WeaponDef) -> bool {
         let attacker = &self.entities[index];
         let target = &self.entities[target_index];
@@ -458,12 +470,18 @@ impl World {
                 .rules
                 .modifier(weapon.damage_type, self.rules.ty(target.kind).armor)
                 == 0
-            || !self.is_entity_visible(attacker.owner, target.id)
         {
             return false;
         }
         let distance = self.entity_distance(attacker.pos, target);
         distance >= fx_centi(weapon.min_range_centi) && distance <= fx_centi(weapon.range_centi)
+    }
+
+    /// An automatic pick also needs the target visible to the attacker's
+    /// owner; an explicit order does not.
+    fn is_valid_auto_target(&self, index: usize, target_index: usize, weapon: &WeaponDef) -> bool {
+        self.is_valid_target(index, target_index, weapon)
+            && self.is_entity_visible(self.entities[index].owner, self.entities[target_index].id)
     }
 
     /// Instant or projectile hit: the target loses the modified damage

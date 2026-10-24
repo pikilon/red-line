@@ -841,16 +841,15 @@ impl World {
         }
     }
 
-    /// Spec §5.8 `Attack`: valid when the target exists, has `hp > 0`, is owned
-    /// by neither `player` nor `NEUTRAL`, and is visible to `player`. It
-    /// consumes one order id and every listed unit of `player` with a weapon
-    /// receives the order. Anything else is ignored.
+    /// Spec §5.8 `Attack` and the `generals-precedent` note of 2026-10-25:
+    /// valid when the target exists, has `hp > 0` and is owned by neither
+    /// `player` nor `NEUTRAL`. Fog does not invalidate the order (Zero Hour only
+    /// filters automatic targeting by fog); own entities, depots and missing
+    /// targets are ignored. An accepted order consumes one order id and every
+    /// listed unit of `player` with a weapon receives it.
     pub(crate) fn apply_attack(&mut self, player: PlayerId, units: &[EntityId], target: EntityId) {
         let valid = self.entity(target).is_some_and(|entity| {
-            entity.hp > 0
-                && entity.owner != player
-                && entity.owner != NEUTRAL
-                && self.is_entity_visible(player, target)
+            entity.hp > 0 && entity.owner != player && entity.owner != NEUTRAL
         });
         if !valid {
             return;
@@ -940,18 +939,14 @@ impl World {
     /// hidden to the owner; no move inside the weapon range; a step toward the
     /// target's goal beyond it.
     fn step_attack(&mut self, index: usize, order_id: u32, target: EntityId) {
-        let (owner, pos, kind) = {
+        let (pos, kind) = {
             let unit = &self.entities[index];
-            (unit.owner, unit.pos, unit.kind)
+            (unit.pos, unit.kind)
         };
-        // Spec 23: a target slipping into the fog is still chased while it is
-        // within the retaliation distance, so a reply to unseen fire keeps going.
-        let alive = self.entity(target).is_some_and(|entity| {
-            entity.hp > 0
-                && (self.is_entity_visible(owner, target)
-                    || self.entity_distance(pos, entity)
-                        <= fx_centi(crate::combat::RETALIATION_DISTANCE_CENTI))
-        });
+        // Zero Hour only filters automatic targeting by fog: an ordered target
+        // is chased until it dies, even when the player's vision does not cover
+        // it (generals-precedent note 2026-10-25).
+        let alive = self.entity(target).is_some_and(|entity| entity.hp > 0);
         if !alive {
             self.entities[index].order = Order::Idle {
                 last_order_id: order_id,
