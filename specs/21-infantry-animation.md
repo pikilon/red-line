@@ -44,29 +44,41 @@ Triangle budget and bounds of spec 06 still apply to the sum of the limbs.
 
 The animator keeps per-unit eased state (`RigState`): `walk` (0..1, 6/s),
 `phase` (cycles, 2 per second while walking), `stance` (kneeling..standing),
-`aim`, `carry`, `sinceShot`, `reloadMs`.
+`aim`, `carry` (launcher pick-up), `sinceShot`, `reloadMs`.
 
+* **What counts as walking.** The measured ground speed of the unit (above 0.3
+  tiles/s), not the snapshot `moving` flag: the simulation sets that flag for
+  any unit with an order, so an attacker (or a ground-fire unit) standing in
+  range would otherwise march on the spot. Units approach until the target is
+  in range and stop there (spec 20 §1); infantry never fire while walking
+  (Zero Hour: moving drops the fire pose).
 * **Walk.** Thighs swing in opposition, the knee flexes while the leg swings
   forward, the hips lean slightly and twist against the stride, the rifle
-  swings a little. The hull does not bounce: the old bob applies only to
+  swings a little. The two men of a team are 0.37 of a cycle apart, so they
+  never step in unison. The hull does not bounce: the old bob applies only to
   models without limbs (and to the box fallback).
-* **Aim.** A rifleman raises the rifle from low ready when he has a target and
-  stands still; firing kicks the arms back for 140 ms.
-* **Kneeling teams.** `ru-rpg-gunner` (both men) and the `ua-stugna-team`
-  operator kneel (right knee down, left foot forward, hips 0.2 figure heights
-  lower) while stationary and stand up to move (stand up 2.2/s, kneel 1.6/s).
-  A rifleman never kneels.
-* **RPG gunner.** Launcher on the shoulder aimed at a target; lowered in hand
-  to walk or when idle. Reload over the weapon cooldown (3 s): the spent round
-  disappears on firing; 8–25 % the launcher is lowered muzzle down; 28–78 % a
-  new round travels from behind the shoulder, over it and out in front, then
-  slides in at the muzzle; 80–96 % the launcher comes back up, ready when the
-  cooldown ends.
-* **Stugna team.** While the operator walks, the launcher lifts off the
-  ground to the shoulder (`anchor_carry`) over about 1 s, the tripod legs fold
-  together and swing back, and the cable disappears; it deploys again when the
-  team stops. Reload over the weapon cooldown (5 s): the spent canister
-  falls away (10–30 %) and a new one drops in from above (30–78 %).
+* **Aim.** A rifleman raises the rifle from low ready when he has a target or
+  fired in the last 1.5 s (ground fire has no target) and stands still;
+  firing kicks the arms back for 140 ms.
+* **Kneeling teams.** `ru-rpg-gunner` (both men) kneel (right knee down, left
+  foot forward, hips 0.2 figure heights lower) while stationary and stand up to
+  move (stand up 2.2/s, kneel 1.6/s). A rifleman never kneels.
+* **RPG team reload** over the weapon cooldown (3 s). The assistant brings the
+  round: 8–25 % the gunner stands the launcher muzzle up (a launcher is loaded
+  from the muzzle); 14–50 % the assistant turns to the gunner with his arms
+  out while a round (`a_spare`, standing in his rocket carrier) flies from his
+  back to the front of the muzzle, nose first; 50–78 % the gunner's own round
+  slides in; 80–96 % he brings the launcher back down to aim, ready when the
+  cooldown ends. The spent round disappears at the shot.
+* **Stugna team pick-up** (`carry`, 0.85/s forwards, 1.2/s back): the operator
+  stands up first (0–30 %), turns to the launcher and bends over it with his
+  arms reaching (25–70 %), while the launcher lifts to the shoulder
+  (`anchor_carry`) and the tripod legs fold together and swing back (40–100 %);
+  the cable disappears. Only then do his legs start walking (`carry` ≥ 95 %).
+  When he stops, the launcher goes down again and he kneels. The unit already
+  moves in the simulation during the pick-up, so it glides for about a second.
+* **Stugna reload** over the weapon cooldown (5 s): the spent canister falls
+  away (10–30 %) and a new one drops in from above (30–78 %).
 * Which weapons show a reload: those whose render `launch` is `backblast` or
   `softLaunch`. Rifles show none.
 
@@ -83,17 +95,22 @@ The animator keeps per-unit eased state (`RigState`): `walk` (0..1, 6/s),
 
 * AC-21-01: Given `limbPose` of a rifleman, When `walk` is 1, Then the two
   thighs swing in opposite directions and the hips never move more than 0.01
-  tiles vertically; at rest every limb is neutral.
+  tiles vertically; at rest every limb is neutral; the two men of a team have
+  different phases.
 * AC-21-02: Given the `ru-rpg-gunner` rig, When `stance` is 0, Then both men
   are lowered and the right shin is bent 90°; When walking, Then they are standing.
-* AC-21-03: Given a rocket reload, Then the round is hidden at the shot,
-  arrives from outside the tube mid-reload and rests in place when the cooldown
-  ends, and the launcher is lowered in the middle and raised at the end.
-* AC-21-04: Given the Stugna rig carrying (`carry` 1), Then the launcher is
-  offset to `anchor_carry`, the tripod is folded and the cable is hidden; the
+* AC-21-03: Given a rocket reload, Then the gunner's round is hidden at the
+  shot, the assistant's spare round flies to the muzzle and the gunner's round
+  appears at the front of the muzzle and rests in place when the cooldown ends;
+  the launcher is held muzzle up in the middle and aimed again at the end.
+* AC-21-04: Given the Stugna rig, Then the operator is standing at `carry`
+  0.3 and bent over the launcher around 0.45; carrying (`carry` 1) the launcher
+  is offset to `anchor_carry`, the tripod is folded and the cable is hidden; the
   canister falls and is replaced during the reload.
 * AC-21-05: Given the animator, Then only rigged infantry get a rig, the walk
-  eases in and out, moving drops the aim, and `sinceShot` and `reloadMs` follow
-  the shot and the weapon cooldown.
+  follows the measured speed (a unit with the `moving` flag and no speed does
+  not walk), moving drops the aim, a shot keeps the aim for 1.5 s, a launcher
+  team holds its legs until the pick-up is done, and `sinceShot` and `reloadMs`
+  follow the shot and the weapon cooldown.
 * AC-21-06: Given `node tools/models/check.mjs --strict`, Then the rigged
   models pass (root `<type id>`, materials, budget, bounds).

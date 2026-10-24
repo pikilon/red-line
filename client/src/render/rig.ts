@@ -16,7 +16,8 @@ export interface RigState {
   readonly stance: number;
   /** 0 weapon lowered .. 1 raised on a target. */
   readonly aim: number;
-  /** 0 launcher on the ground .. 1 carried. */
+  /** Pick-up progress of a carried launcher: 0 on the ground .. 1 on the
+   *  shoulder; it plays forwards when the team sets off, backwards when it stops. */
   readonly carry: number;
   /** Milliseconds since the last shot, Infinity without one. */
   readonly sinceShot: number;
@@ -61,18 +62,43 @@ interface Man {
   readonly kneels: boolean;
   /** Figure height in tiles (the `place()` height of the model script). */
   readonly height: number;
+  /** Walk cycle offset against the other man of the team, in turns, so two
+   *  soldiers never step in unison. */
+  readonly phase: number;
+  /** Hands the next round to the gunner during the reload. */
+  readonly feeds?: boolean;
+  /** Bends down to pick the launcher up (and kneels only once it is down). */
+  readonly pickup?: boolean;
 }
 
 /** Soldier prefixes of every rigged model (the `<man>_<part>` limb names). */
 const RIGS: Readonly<Record<string, Readonly<Record<string, Man>>>> = {
-  "ua-rifleman": { m: { weapon: "rifle", kneels: false, height: 0.54 } },
-  "ru-rifleman": { m: { weapon: "rifle", kneels: false, height: 0.54 } },
-  "ru-rpg-gunner": {
-    g: { weapon: "rpg", kneels: true, height: 0.5 },
-    a: { weapon: "rifle", kneels: true, height: 0.5 },
+  "ua-rifleman": {
+    m: { weapon: "rifle", kneels: false, height: 0.54, phase: 0 },
   },
-  "ua-stugna-team": { o: { weapon: "console", kneels: true, height: 0.46 } },
+  "ru-rifleman": {
+    m: { weapon: "rifle", kneels: false, height: 0.54, phase: 0 },
+  },
+  "ru-rpg-gunner": {
+    g: { weapon: "rpg", kneels: true, height: 0.5, phase: 0 },
+    a: { weapon: "rifle", kneels: true, height: 0.5, phase: 0.37, feeds: true },
+  },
+  "ua-stugna-team": {
+    o: {
+      weapon: "console",
+      kneels: true,
+      height: 0.46,
+      phase: 0,
+      pickup: true,
+    },
+  },
 };
+
+/** Whether the team of `typeId` bends down to pick something up before it
+ *  walks off: the animator holds the legs until the pick-up is done. */
+export function picksUp(typeId: string): boolean {
+  return Object.values(RIGS[typeId] ?? {}).some((man) => man.pickup === true);
+}
 
 /** Hips lowered to kneel, in figure heights. */
 const KNEEL_DROP = 0.2;
@@ -97,7 +123,7 @@ const FLEX = 0.85;
 const STEP_BOB = 0.012;
 /** Launcher muzzle pitch while carried or reloaded, radians (down is +). */
 const CARRY_PITCH = 0.55;
-const RELOAD_PITCH = 1.15;
+const RELOAD_PITCH = -1.1;
 /** Recoil kick of a fired weapon, in ms. */
 const KICK_MS = 140;
 
@@ -105,10 +131,26 @@ const KICK_MS = 140;
 const RELOAD = {
   lowered: [0.08, 0.25],
   raised: [0.8, 0.96],
-  newRoundIn: [0.28, 0.78],
+  /** The assistant takes the round from his pack and carries it over. */
+  handOver: [0.14, 0.5],
+  /** The gunner slides it in at the muzzle. */
+  slideIn: [0.5, 0.78],
 } as const;
 
-/** Carry offset, in tiles, of the Stugna launcher and its fold-up time. */
+/** Pick-up stages by `carry`: stand up, bend to the launcher, lift it. */
+const PICKUP = {
+  standUp: [0, 0.3],
+  bend: [0.25, 0.5],
+  straighten: [0.68, 1],
+  lift: [0.4, 1],
+  fold: [0.4, 0.75],
+} as const;
+
+/** The round waits in front of the muzzle before it is pushed in, and rises
+ *  over this arc on its way there (tiles, arms frame). */
+const ROUND_FRONT = { y: 0.04, z: 0.22 } as const;
+const ROUND_ARC = 0.1;
+/** Height of the launcher's arc while it is lifted, in tiles. */
 const CARRY_ARC = 0.07;
 
 function clamp01(v: number): number {
@@ -134,23 +176,164 @@ function reloadLowered(f: number): number {
   );
 }
 
+/** 1 while the assistant reaches out to hand the round over. */
+function handing(f: number): number {
+  return (
+    smooth(RELOAD.handOver[0], RELOAD.handOver[0] + 0.1, f) *
+    (1 - smooth(RELOAD.slideIn[0], RELOAD.slideIn[0] + 0.1, f))
+  );
+}
+
+/** 1 while the operator is bent over the launcher on the ground. */
+function bending(carry: number): number {
+  return (
+    smooth(PICKUP.bend[0], PICKUP.bend[1], carry) *
+    (1 - smooth(PICKUP.straighten[0], PICKUP.straighten[1], carry))
+  );
+}
+
+/** Kneeling factor of a man: 1 kneeling .. 0 standing. */
+function kneelOf(man: Man, s: RigState): number {
+  if (!man.kneels) return 0;
+  // A launcher team stands up first thing, then picks the launcher up.
+  if (man.pickup === true) {
+    return 1 - smooth(PICKUP.standUp[0], PICKUP.standUp[1], s.carry);
+  }
+  return 1 - s.stance;
+}
+
+/** Muzzle pitch of the RPG gunner's arms: carried low, raised on a target,
+ *  hanging down while the reload goes on. */
+function rpgPitch(s: RigState): number {
+  const f = reloadProgress(s);
+  const lowered = reloadLowered(f);
+  const carried = Math.max(s.walk, 1 - s.aim) * CARRY_PITCH;
+  const kick = clamp01(1 - s.sinceShot / KICK_MS);
+  return (
+    carried + (RELOAD_PITCH - carried) * lowered - 0.12 * kick * (1 - lowered)
+  );
+}
+
+/** Joints of a model that the poses depend on, in the hull frame. */
+interface Geometry {
+  /** Shoulders of the RPG gunner and the round at his muzzle (arms frame). */
+  readonly gunnerArms: Vector3 | null;
+  readonly roundLocal: Vector3 | null;
+  /** The spare round in the assistant's rocket carrier. */
+  readonly spare: Vector3 | null;
+  /** Heading, about Y, from the operator towards the grounded launcher. */
+  readonly launcherTurn: number;
+  /** Where the Stugna launcher rides, relative to its resting joint. */
+  readonly carry: Vector3 | null;
+}
+
+const geometries = new WeakMap<TypeModel, Geometry>();
+
+function geometryOf(model: TypeModel): Geometry {
+  const cached = geometries.get(model);
+  if (cached !== undefined) return cached;
+  const find = (name: string) =>
+    model.limbs?.find((limb) => limb.name === name);
+  const anchor = model.anchors?.get("anchor_carry");
+  const launcher = find("x_launcher");
+  const operator = find("o_hips");
+  const arms = find("g_arms");
+  const round = find("g_round");
+  const turn =
+    launcher !== undefined && operator !== undefined
+      ? Math.atan2(
+          launcher.world.x - operator.world.x,
+          launcher.world.z - operator.world.z,
+        )
+      : 0;
+  const geometry: Geometry = {
+    gunnerArms: arms?.world ?? null,
+    roundLocal: round?.local ?? null,
+    spare: find("a_spare")?.world ?? null,
+    launcherTurn: turn,
+    carry:
+      anchor !== undefined && launcher !== undefined
+        ? anchor.clone().sub(launcher.world)
+        : null,
+  };
+  geometries.set(model, geometry);
+  return geometry;
+}
+
+/** The round at the gunner's muzzle: gone at the shot, then pushed in from the
+ *  front of the muzzle once the assistant has brought it (arms frame). */
+function roundPose(s: RigState, out: LimbPose): void {
+  const f = reloadProgress(s);
+  if (f < RELOAD.slideIn[0]) {
+    out.sx = out.sy = out.sz = 0;
+    return;
+  }
+  const slide = smooth(RELOAD.slideIn[0], RELOAD.slideIn[1], f);
+  out.y = ROUND_FRONT.y * (1 - slide);
+  out.z = ROUND_FRONT.z * (1 - slide);
+}
+
+/** The spare round of the assistant, flying in the hull frame from his rocket
+ *  carrier to the front of the lowered muzzle, nose first. */
+function spareRoundPose(
+  s: RigState,
+  g: Geometry,
+  assistant: Man,
+  out: LimbPose,
+): void {
+  const f = reloadProgress(s);
+  const [from, to] = RELOAD.handOver;
+  const { spare, gunnerArms: arms, roundLocal: local } = g;
+  if (
+    f < from ||
+    f >= RELOAD.slideIn[0] ||
+    spare === null ||
+    arms === null ||
+    local === null
+  ) {
+    out.sx = out.sy = out.sz = 0;
+    return;
+  }
+  const travel = smooth(from, to, f);
+  const drop = KNEEL_DROP * assistant.height * kneelOf(assistant, s);
+  // The muzzle front while the launcher hangs lowered, from the shoulder.
+  const fy = ROUND_FRONT.y + local.y;
+  const fz = ROUND_FRONT.z + local.z;
+  const sin = Math.sin(RELOAD_PITCH);
+  const cos = Math.cos(RELOAD_PITCH);
+  const endX = arms.x + local.x;
+  const endY = arms.y - drop + fy * cos - fz * sin;
+  const endZ = arms.z + fy * sin + fz * cos;
+  out.x = (endX - spare.x) * travel;
+  out.y =
+    (endY - spare.y) * travel -
+    drop * (1 - travel) +
+    ROUND_ARC * Math.sin(Math.PI * travel);
+  out.z = (endZ - spare.z) * travel;
+  // Upright in the rack, lying along the lowered launcher at the end.
+  out.rx = (RELOAD_PITCH + Math.PI / 2) * travel;
+}
+
 function pose(
   man: Man,
   part: string,
   s: RigState,
   out: LimbPose,
-  carryMotion: Vector3 | null,
+  g: Geometry,
 ): void {
-  const k = man.kneels ? 1 - s.stance : 0;
-  const turn = 2 * Math.PI * s.phase;
+  const k = kneelOf(man, s);
+  const turn = 2 * Math.PI * (s.phase + man.phase);
   const f = reloadProgress(s);
   const kick = clamp01(1 - s.sinceShot / KICK_MS);
+  const bend = man.pickup === true ? bending(s.carry) : 0;
+  const hand = man.feeds === true ? handing(f) : 0;
   switch (part) {
     case "hips":
       out.y =
         (-KNEEL_DROP * k + STEP_BOB * s.walk * Math.cos(2 * turn)) * man.height;
-      out.rx = 0.06 * s.walk + KNEEL_LEAN[man.weapon] * k;
-      out.ry = 0.1 * s.walk * Math.sin(turn);
+      out.rx = 0.06 * s.walk + KNEEL_LEAN[man.weapon] * k + 0.55 * bend;
+      out.ry =
+        0.1 * s.walk * Math.sin(turn) + g.launcherTurn * bend - 0.8 * hand;
       break;
     case "thigh_l":
       out.rx = -SWING * s.walk * Math.sin(turn) + KNEEL.thighL * k;
@@ -166,52 +349,37 @@ function pose(
       break;
     case "arms": {
       if (man.weapon === "rifle") {
-        // Low ready, raised on a target; the walk swings it a little.
-        out.rx = -0.55 * s.aim + 0.1 * s.walk - 0.05 * kick;
+        // Low ready, raised on a target; the walk swings it a little. The
+        // assistant lifts his arms out to the gunner while he hands a round over.
+        out.rx = -0.55 * s.aim + 0.1 * s.walk - 0.05 * kick - 0.7 * hand;
         out.ry = -0.06 * s.walk * Math.sin(turn);
         out.z = -0.012 * kick;
       } else if (man.weapon === "rpg") {
-        // On the shoulder aimed; lowered in hand to walk, idle and reload.
-        const lowered = reloadLowered(f);
-        const carried = Math.max(s.walk, 1 - s.aim) * CARRY_PITCH;
-        out.rx =
-          carried +
-          (RELOAD_PITCH - carried) * lowered -
-          0.12 * kick * (1 - lowered);
+        out.rx = rpgPitch(s);
         out.z = -0.02 * kick;
       } else {
-        out.rx = 0.08 * s.walk;
+        out.rx = 0.08 * s.walk + 0.9 * bend;
       }
       break;
     }
-    case "round": {
-      // Spent on firing, then carried from the pack over the shoulder and
-      // pushed in at the muzzle while the launcher hangs lowered.
-      const [from, to] = RELOAD.newRoundIn;
-      if (f < from) {
-        out.sx = out.sy = out.sz = 0;
-        break;
-      }
-      const u = clamp01((f - from) / (to - from));
-      const first = smooth(0, 0.5, u);
-      const second = smooth(0.5, 1, u);
-      // From behind the shoulder, over it, out in front and back in.
-      out.y = 0.14 * (1 - second) * Math.sin(Math.PI * Math.min(1, u * 2));
-      out.z = -0.3 * (1 - first) + 0.22 * first * (1 - second);
+    case "round":
+      roundPose(s, out);
       break;
-    }
+    case "spare":
+      spareRoundPose(s, g, man, out);
+      break;
     case "launcher": {
-      const c = smooth(0, 1, s.carry);
-      if (carryMotion !== null) {
-        out.x = carryMotion.x * c;
-        out.y = carryMotion.y * c + CARRY_ARC * Math.sin(Math.PI * c);
-        out.z = carryMotion.z * c;
+      const c = smooth(PICKUP.lift[0], PICKUP.lift[1], s.carry);
+      if (g.carry !== null) {
+        out.x = g.carry.x * c;
+        out.y = g.carry.y * c + CARRY_ARC * Math.sin(Math.PI * c);
+        out.z = g.carry.z * c;
       }
       break;
     }
     case "tripod": {
       // Folds its legs together and swings them back along the tube.
-      const fold = smooth(0, 0.55, s.carry);
+      const fold = smooth(PICKUP.fold[0], PICKUP.fold[1], s.carry);
       out.sx = out.sz = 1 - 0.85 * fold;
       out.rx = 1.45 * fold;
       break;
@@ -233,7 +401,7 @@ function pose(
       break;
     }
     case "cable":
-      out.sx = out.sy = out.sz = 1 - smooth(0, 0.15, s.carry);
+      out.sx = out.sy = out.sz = 1 - smooth(0, 0.1, s.carry);
       break;
     default:
       break;
@@ -246,15 +414,12 @@ function splitLimb(name: string): [string, string] {
   return at < 0 ? [name, ""] : [name.slice(0, at), name.slice(at + 1)];
 }
 
-/** Where the Stugna launcher rides, relative to its resting joint. */
-function carryMotion(model: TypeModel): Vector3 | null {
-  const anchor = model.anchors?.get("anchor_carry");
-  const launcher = model.limbs?.find((limb) => limb.name === "x_launcher");
-  if (anchor === undefined || launcher === undefined) return null;
-  return anchor.clone().sub(launcher.world);
-}
-
-const carryMotions = new WeakMap<TypeModel, Vector3 | null>();
+const PROP: Man = {
+  weapon: "console",
+  kneels: false,
+  height: 1,
+  phase: 0,
+};
 
 /** Writes into `out` the pose of limb `name` of `typeId` for state `s`; limbs
  *  without a pose rule (or of unrigged types) stay neutral. */
@@ -269,18 +434,9 @@ export function limbPose(
   const men = RIGS[typeId];
   if (men === undefined) return out;
   const [prefix, part] = splitLimb(name);
-  const man = men[prefix];
-  if (man !== undefined) {
-    pose(man, part, s, out, null);
-    return out;
-  }
-  let motion = carryMotions.get(model);
-  if (motion === undefined) {
-    motion = carryMotion(model);
-    carryMotions.set(model, motion);
-  }
-  // Props of the team (`x_*`) follow the first soldier's state.
-  pose({ weapon: "console", kneels: false, height: 1 }, part, s, out, motion);
+  const geometry = geometryOf(model);
+  // Props of the team (`x_*`) follow the team's state.
+  pose(men[prefix] ?? PROP, part, s, out, geometry);
   return out;
 }
 

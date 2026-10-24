@@ -111,7 +111,22 @@ describe("AC-09-02: animator poses", () => {
 });
 
 describe("spec 21: soldier rig state", () => {
-  const MOVING = { flags: ENTITY_FLAGS.moving };
+  /** Poses `entity` every 50 ms from `from` to `to`, sliding it `speed`
+   *  tiles per second along x; returns the last rig. */
+  function run(
+    animator: ReturnType<typeof createAnimator>,
+    entity: EntityState,
+    from: number,
+    to: number,
+    speed: number,
+  ) {
+    let rig = animator.pose(entity, from).rig;
+    for (let ms = from + 50; ms <= to; ms += 50) {
+      entity.x += speed * 0.05;
+      rig = animator.pose(entity, ms).rig;
+    }
+    return rig;
+  }
 
   it("only rigged infantry get a rig", () => {
     const animator = createAnimator();
@@ -123,40 +138,60 @@ describe("spec 21: soldier rig state", () => {
     ).not.toBeNull();
   });
 
-  it("eases the walk in and advances the cycle only while walking", () => {
+  it("walks with the speed it really has, not with its order", () => {
     const animator = createAnimator();
-    const walker = entity(3, 0, "ru-rpg-gunner", 0, 0, 100);
-    animator.pose(walker, 0);
-    const moving = { ...walker, ...MOVING };
-    let rig = animator.pose(moving, 50)?.rig;
-    expect(rig?.walk).toBeGreaterThan(0);
-    expect(rig?.walk).toBeLessThan(1);
-    for (let ms = 100; ms <= 1000; ms += 50)
-      rig = animator.pose(moving, ms).rig;
+    // An attacker standing in range has an order (the moving flag) and no speed.
+    const standing = entity(3, 0, "ua-rifleman", 5, 5, 100, {
+      flags: ENTITY_FLAGS.moving,
+    });
+    expect(run(animator, standing, 0, 1000, 0)?.walk).toBe(0);
+    const walker = entity(4, 0, "ua-rifleman", 5, 5, 100);
+    const rig = run(animator, walker, 0, 1000, 1.2);
     expect(rig?.walk).toBe(1);
-    expect(rig?.stance).toBe(1);
-    const phase = rig?.phase ?? 0;
-    for (let ms = 1050; ms <= 2000; ms += 50)
-      rig = animator.pose(walker, ms).rig;
-    expect(rig?.walk).toBe(0);
-    expect(rig?.phase).toBeGreaterThan(phase);
-    expect(rig?.stance).toBeLessThan(1);
+    expect(rig?.phase).toBeGreaterThan(1);
+  });
+
+  it("eases the walk out and kneels a team that stops", () => {
+    const animator = createAnimator();
+    const unit = entity(5, 0, "ru-rpg-gunner", 5, 5, 100);
+    expect(run(animator, unit, 0, 1500, 1.2)?.stance).toBe(1);
+    const stopped = run(animator, unit, 1550, 3500, 0);
+    expect(stopped?.walk).toBe(0);
+    expect(stopped?.stance).toBe(0);
+  });
+
+  it("holds the legs of a launcher team until the pick-up is done", () => {
+    const animator = createAnimator();
+    const unit = entity(6, 0, "ua-stugna-team", 5, 5, 100);
+    const early = run(animator, unit, 0, 500, 1.2);
+    expect(early?.carry).toBeGreaterThan(0);
+    expect(early?.carry).toBeLessThan(0.95);
+    expect(early?.walk).toBe(0);
+    const later = run(animator, unit, 550, 2500, 1.2);
+    expect(later?.carry).toBe(1);
+    expect(later?.walk).toBe(1);
+    const stopped = run(animator, unit, 2550, 4500, 0);
+    expect(stopped?.carry).toBe(0);
   });
 
   it("drops the weapon pose while moving and raises it on a target", () => {
     const animator = createAnimator();
-    const shooter = entity(4, 0, "ua-rifleman", 0, 0, 100, { target: 9 });
-    let rig = animator.pose(shooter, 0).rig;
-    for (let ms = 50; ms <= 1000; ms += 50)
-      rig = animator.pose(shooter, ms).rig;
-    expect(rig?.aim).toBe(1);
-    rig = animator.pose({ ...shooter, ...MOVING }, 1050).rig;
-    expect(rig?.aim).toBeLessThan(1);
+    const shooter = entity(7, 0, "ua-rifleman", 5, 5, 100, { target: 9 });
+    expect(run(animator, shooter, 0, 1000, 0)?.aim).toBe(1);
+    expect(run(animator, shooter, 1050, 1300, 1.2)?.aim).toBeLessThan(1);
+  });
+
+  it("keeps aiming after a shot at the ground, which has no target", () => {
+    const animator = createAnimator();
+    const shooter = entity(8, 0, "ua-rifleman", 5, 5, 100);
+    animator.recordShots([{ ...shooter, flags: ENTITY_FLAGS.fired }], 0);
+    expect(run(animator, shooter, 0, 1000, 0)?.aim).toBe(1);
+    expect(run(animator, shooter, 1050, 4000, 0)?.aim).toBe(0);
   });
 
   it("times a rocket reload from the shot and forgets despawned units", () => {
     const animator = createAnimator();
-    const gunner = entity(5, 0, "ru-rpg-gunner", 0, 0, 100);
+    const gunner = entity(9, 0, "ru-rpg-gunner", 0, 0, 100);
     const fired = { ...gunner, flags: ENTITY_FLAGS.fired };
     animator.pose(gunner, 1000);
     animator.recordShots([fired], 1000);
@@ -165,7 +200,7 @@ describe("spec 21: soldier rig state", () => {
     expect(rig?.reloadMs).toBe(3000);
     // A rifle shows no reload.
     expect(
-      animator.pose(entity(6, 0, "ua-rifleman", 0, 0, 100), 0).rig?.reloadMs,
+      animator.pose(entity(10, 0, "ua-rifleman", 0, 0, 100), 0).rig?.reloadMs,
     ).toBe(0);
     animator.recordShots([], 3000);
     expect(animator.pose(gunner, 3000).rig?.sinceShot).toBe(

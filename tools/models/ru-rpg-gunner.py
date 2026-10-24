@@ -15,7 +15,7 @@ m = infantry.palette("russia")
 # them while they hold a position): the gunner `g` on the left, the assistant
 # `a` with the rocket carrier behind him on the right.
 limbs = infantry.place(infantry.rpg_gunner("gunner", m, segments=6, earcups=False), "g", 0.5, (-0.102, -0.03))
-limbs |= infantry.place(infantry.rifleman("assistant", m, segments=6, pack="rpg", earcups=False), "a", 0.5, (0.102, 0.03))
+limbs |= infantry.place(infantry.rifleman("assistant", m, segments=6, pack="rpg", earcups=False, spare=True), "a", 0.5, (0.102, 0.03))
 infantry.centre(limbs)
 root = infantry.assemble("ru-rpg-gunner", limbs)
 

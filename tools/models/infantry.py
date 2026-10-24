@@ -412,6 +412,14 @@ def rifle(name, mats, butt, down):
     return parts, place @ Vector((0.0, -0.14, -0.06)), place @ Vector((0.0, -0.31, -0.03))
 
 
+def pg7_round(name, mats, centre, forward, segments=8):
+    """PG-7 round (stick, shoulder and nose) centred on `centre` with its nose
+    towards the unit vector `forward`."""
+    centre, forward = Vector(centre), Vector(forward)
+    rings = ((-0.08, 0.018), (-0.05, 0.045), (0.0, 0.045), (0.08, 0.0))
+    return loft(name, [(centre + forward * t, r, r) for t, r in rings], mats["body"], segments)
+
+
 def rpg7(name, mats, centre, segments=8):
     """RPG-7 lying on the right shoulder at `centre`, pointing -Y, PG-7 round
     loaded; returns (parts, trigger hand, front grip hand, round parts, round centre)."""
@@ -429,19 +437,7 @@ def rpg7(name, mats, centre, segments=8):
     ]
     # The PG-7 round on the muzzle is its own limb: it leaves on firing and the
     # reload slides a fresh one in.
-    round_parts = [
-        loft(
-            f"{name}_warhead",
-            [
-                (p(-0.17), 0.018, 0.018),
-                (p(-0.2), 0.045, 0.045),
-                (p(-0.25), 0.045, 0.045),
-                (p(-0.33), 0.0, 0.0),
-            ],
-            body,
-            segments,
-        )
-    ]
+    round_parts = [pg7_round(f"{name}_warhead", mats, p(-0.25), (0, -1, 0), segments)]
     return parts, p(0.0, -0.075), p(-0.12, -0.07), round_parts, p(-0.25)
 
 
@@ -456,6 +452,13 @@ class Rig:
     def add(self, name, parts, pivot, parent=None):
         self.limbs[name] = (list(parts), Vector(pivot), parent)
 
+    @staticmethod
+    def tilted(lean, pivot_yz, point):
+        """`point` (figure units) after the torso leans `lean` radians forward
+        about the pelvis at (y, z) = `pivot_yz`."""
+        pelvis = Vector((0.0, pivot_yz[0], pivot_yz[1]))
+        return _rotation_x(lean, pelvis) @ Vector(point)
+
 
 def _soldier_legs(rig, name, mats, segments, hips, left, right):
     """Thigh and shin limbs of both legs hanging from the `hips` limb."""
@@ -465,7 +468,7 @@ def _soldier_legs(rig, name, mats, segments, hips, left, right):
         rig.add(f"shin_{side}", shin, knee, f"thigh_{side}")
 
 
-def soldier(name, mats, weapon="rifle", segments=8, pack="assault", earcups=True):
+def soldier(name, mats, weapon="rifle", segments=8, pack="assault", earcups=True, spare=False):
     """Standing soldier rig, the neutral pose of every pose the game shows:
     hips (torso, head, gear), arms (both arms and the weapon), thigh_l/r and
     shin_l/r; an RPG gunner also has a `round` limb on the muzzle. `weapon` is
@@ -485,6 +488,11 @@ def soldier(name, mats, weapon="rifle", segments=8, pack="assault", earcups=True
         ((-0.066, 0.0, 0.5), (-0.074, -0.085, 0.28), (-0.078, -0.07, 0.06)),
         ((0.066, 0.01, 0.5), (0.088, 0.03, 0.272), (0.098, 0.075, 0.06)),
     )
+    if spare:
+        # A round the assistant pulls from his rocket carrier to hand over: its
+        # own limb hanging from the hull, standing between the two in the rack.
+        top = Rig.tilted(lean, (0.0, 0.5), (0.0, 0.125, 0.86))
+        rig.add("spare", [pg7_round(f"{name}_spare", mats, top, (0, 0, 1), segments)], top)
     shoulders = (right + left) / 2
     if weapon == "rifle":
         gun, grip, guard = rifle(name, mats, right + Vector((-0.045, -0.06, -0.02)), math.radians(42))
@@ -512,9 +520,9 @@ def soldier(name, mats, weapon="rifle", segments=8, pack="assault", earcups=True
     return rig
 
 
-def rifleman(name, mats, segments=8, pack="assault", earcups=True):
+def rifleman(name, mats, segments=8, pack="assault", earcups=True, spare=False):
     """Soldier at low ready with the rifle shouldered, muzzle down and forward."""
-    return soldier(name, mats, "rifle", segments, pack, earcups)
+    return soldier(name, mats, "rifle", segments, pack, earcups, spare)
 
 
 def rpg_gunner(name, mats, segments=8, earcups=True):

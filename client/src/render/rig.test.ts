@@ -4,6 +4,7 @@ import type { LimbModel, TypeModel } from "./models";
 import {
   type LimbPose,
   limbPose,
+  picksUp,
   REST_RIG,
   type RigState,
   reloadProgress,
@@ -112,6 +113,29 @@ describe("rocket reload", () => {
     expect(reloadProgress(REST_RIG)).toBe(1);
   });
 
+  it("hands the spare round over from the assistant's pack", () => {
+    const model: TypeModel = {
+      ...EMPTY,
+      limbs: [
+        limb("g_arms", new Vector3(-0.1, 0.4, 0)),
+        {
+          ...limb("g_round", new Vector3(-0.1, 0.4, 0.12)),
+          parent: "g_arms",
+          local: new Vector3(0, 0, 0.12),
+        },
+        limb("a_spare", new Vector3(0.1, 0.45, -0.1)),
+      ],
+    };
+    const hidden = (since: number) =>
+      pose("ru-rpg-gunner", "a_spare", { ...SHOT, sinceShot: since }, model);
+    expect(hidden(0).sx).toBe(0);
+    expect(hidden(2900).sx).toBe(0);
+    const flying = hidden(1200);
+    expect(flying.sx).toBe(1);
+    expect(flying.x).toBeLessThan(0);
+    expect(flying.rx).toBeGreaterThan(0);
+  });
+
   it("hides the spent round, then slides a new one in", () => {
     const spent = pose("ru-rpg-gunner", "g_round", { ...SHOT, sinceShot: 0 });
     expect(spent.sx).toBe(0);
@@ -129,7 +153,7 @@ describe("rocket reload", () => {
     expect(loaded.y).toBeCloseTo(0);
   });
 
-  it("lowers the launcher in the middle of the reload and raises it after", () => {
+  it("holds the launcher muzzle up in the middle of the reload and aims after", () => {
     const aimed = { aim: 1 };
     const raised = pose("ru-rpg-gunner", "g_arms", aimed);
     const lowered = pose("ru-rpg-gunner", "g_arms", {
@@ -142,7 +166,7 @@ describe("rocket reload", () => {
       ...SHOT,
       sinceShot: 3000,
     });
-    expect(lowered.rx).toBeGreaterThan(raised.rx + 0.8);
+    expect(lowered.rx).toBeLessThan(raised.rx - 0.8);
     expect(after.rx).toBeCloseTo(raised.rx);
   });
 
@@ -164,7 +188,29 @@ describe("rocket reload", () => {
   });
 });
 
+describe("two men of a team", () => {
+  it("never step in unison", () => {
+    const gunner = pose("ru-rpg-gunner", "g_thigh_l", { walk: 1, phase: 0.1 });
+    const assistant = pose("ru-rpg-gunner", "a_thigh_l", {
+      walk: 1,
+      phase: 0.1,
+    });
+    expect(Math.abs(gunner.rx - assistant.rx)).toBeGreaterThan(0.2);
+  });
+});
+
 describe("Stugna pick-up", () => {
+  it("stands the operator up first, then bends to the launcher", () => {
+    const hips = (carry: number) =>
+      pose("ua-stugna-team", "o_hips", { carry }, STUGNA);
+    expect(hips(0).y).toBeCloseTo(-0.092);
+    expect(hips(0.3).y).toBeCloseTo(0, 2);
+    expect(hips(0.45).rx).toBeGreaterThan(0.3);
+    expect(hips(1).rx).toBeCloseTo(0);
+    expect(picksUp("ua-stugna-team")).toBe(true);
+    expect(picksUp("ru-rpg-gunner")).toBe(false);
+  });
+
   it("carries the launcher to the shoulder anchor and folds the tripod", () => {
     const resting = pose("ua-stugna-team", "x_launcher", {}, STUGNA);
     expect(resting.x).toBe(0);

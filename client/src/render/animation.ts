@@ -5,7 +5,7 @@
 
 import { typeDef, WEAPONS } from "../rules";
 import { ENTITY_FLAGS, type EntityState, hasFlag } from "../sim/matchSnapshot";
-import { isRigged, type RigState } from "./rig";
+import { isRigged, picksUp, type RigState } from "./rig";
 
 /** Turret kick at the moment of firing, in tiles (spec 09 §4). */
 export const RECOIL_TILES = 0.08;
@@ -39,7 +39,17 @@ const WALK_EASE = 6;
 const AIM_EASE = 5;
 const STAND_UP_EASE = 2.2;
 const KNEEL_EASE = 1.6;
-const CARRY_EASE = 0.9;
+/** Seconds-based rates of the launcher pick-up and put-down (per second). */
+const PICKUP_EASE = 0.85;
+const PUT_DOWN_EASE = 1.2;
+/** Pick-up progress at which the team may walk off. */
+const PICKUP_DONE = 0.95;
+/** Ground speed above which a soldier walks, tiles per second, and the rate
+ *  at which the measured speed follows the instant one. */
+const WALK_SPEED = 0.3;
+const SPEED_SMOOTHING = 10;
+/** A soldier keeps aiming this long after a shot. */
+const AIM_HOLD_MS = 1500;
 /** Walk cycles per second (one cycle is two steps). */
 const WALK_CYCLES_PER_SECOND = 2;
 /** Launch styles of weapons whose reload the soldier shows. */
@@ -72,6 +82,10 @@ export function createAnimator(): Animator {
 
   interface RigEntry {
     atMs: number;
+    x: number;
+    y: number;
+    /** Smoothed ground speed, tiles per second. */
+    speed: number;
     walk: number;
     phase: number;
     stance: number;
@@ -81,44 +95,66 @@ export function createAnimator(): Animator {
   }
   /** Entity id -> eased limb state of the infantry on screen. */
   const rigs = new Map<number, RigEntry>();
+  /** Entity id -> last shot, kept for as long as the unit is alive. */
+  const rigShots = new Map<number, number>();
 
   function ease(value: number, target: number, rate: number, dt: number) {
     const step = rate * dt;
     return value + Math.max(-step, Math.min(step, target - value));
   }
 
-  /** Eases the state of one soldier to what its flags ask for this frame. */
+  /** Eases the state of one soldier to what it is doing this frame. The `moving`
+   *  flag only says the unit has an order (an attacker that stands in range has
+   *  one too), so the walk follows the speed the unit really has. */
   function rigOf(entity: EntityState, nowMs: number): RigState {
-    const moving = hasFlag(entity, ENTITY_FLAGS.moving);
+    const type = typeDef(entity.kind);
     let entry = rigs.get(entity.id);
     if (entry === undefined) {
       entry = {
         atMs: nowMs,
-        walk: moving ? 1 : 0,
+        x: entity.x,
+        y: entity.y,
+        speed: 0,
+        walk: 0,
         phase: entity.id * 0.37,
-        stance: moving ? 1 : 0,
+        stance: 0,
         aim: 0,
-        carry: moving ? 1 : 0,
-        shotAt: Number.NEGATIVE_INFINITY,
+        carry: 0,
+        shotAt: rigShots.get(entity.id) ?? Number.NEGATIVE_INFINITY,
       };
       rigs.set(entity.id, entry);
     }
     const dt = Math.max(0, Math.min(0.1, (nowMs - entry.atMs) / 1000));
     entry.atMs = nowMs;
-    entry.walk = ease(entry.walk, moving ? 1 : 0, WALK_EASE, dt);
+    if (dt > 0) {
+      const instant = Math.hypot(entity.x - entry.x, entity.y - entry.y) / dt;
+      entry.speed +=
+        (instant - entry.speed) * Math.min(1, dt * SPEED_SMOOTHING);
+      entry.x = entity.x;
+      entry.y = entity.y;
+    }
+    const moving = entry.speed > WALK_SPEED;
+    // A team that picks something up stays put until it has it.
+    const ready = !picksUp(type.id) || entry.carry >= PICKUP_DONE;
+    entry.walk = ease(entry.walk, moving && ready ? 1 : 0, WALK_EASE, dt);
     entry.phase += dt * entry.walk * WALK_CYCLES_PER_SECOND;
-    const wantStand = moving ? 1 : 0;
     entry.stance = ease(
       entry.stance,
-      wantStand,
-      wantStand === 1 ? STAND_UP_EASE : KNEEL_EASE,
+      moving ? 1 : 0,
+      moving ? STAND_UP_EASE : KNEEL_EASE,
       dt,
     );
-    // Moving drops the weapon pose (Zero Hour: the fire states need ATTACKING).
-    const aiming = entity.target !== null && !moving;
+    // Moving drops the weapon pose (Zero Hour: the fire states need ATTACKING);
+    // a unit that fires at a point of the ground has no target but aims.
+    const firing = nowMs - entry.shotAt < AIM_HOLD_MS;
+    const aiming = (entity.target !== null || firing) && !moving;
     entry.aim = ease(entry.aim, aiming ? 1 : 0, AIM_EASE, dt);
-    entry.carry = ease(entry.carry, moving ? 1 : 0, CARRY_EASE, dt);
-    const type = typeDef(entity.kind);
+    entry.carry = ease(
+      entry.carry,
+      moving ? 1 : 0,
+      moving ? PICKUP_EASE : PUT_DOWN_EASE,
+      dt,
+    );
     const weapon = type.weapon >= 0 ? WEAPONS[type.weapon] : undefined;
     const reloadMs =
       weapon !== undefined && VISIBLE_RELOADS.has(weapon.render.launch)
@@ -141,11 +177,13 @@ export function createAnimator(): Animator {
       alive.add(entity.id);
       if (hasFlag(entity, ENTITY_FLAGS.fired)) {
         lastShotAt.set(entity.id, atMs);
+        rigShots.set(entity.id, atMs);
         const entry = rigs.get(entity.id);
         if (entry !== undefined) entry.shotAt = atMs;
       }
     }
     for (const id of rigs.keys()) if (!alive.has(id)) rigs.delete(id);
+    for (const id of rigShots.keys()) if (!alive.has(id)) rigShots.delete(id);
   }
 
   function pose(entity: EntityState, nowMs: number): Pose {
