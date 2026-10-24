@@ -24,11 +24,6 @@ C&C Generals. Behavior lives in `specs/*.md`; decisions in `docs/decisions.md`
   time, unseeded randomness or hash-order iteration (`check:rules` and clippy
   fail otherwise). The client only sends commands and renders; balance changes
   go in `data/`, not code.
-* **Licensing (D-01, D-02).** Never use EA art, names or sounds as assets.
-  Dependencies must be AGPL-3.0 compatible (code) or CC BY-SA 4.0 (assets).
-* **AI cost (D-11).** A paid remote AI API needs the owner's confirmation for
-  that run; code, tests, CI and the game never call one. In the ComfyUI MCP,
-  `partner_*`, `auth_login` and model downloads need confirmation too.
 
 ## Commands
 
