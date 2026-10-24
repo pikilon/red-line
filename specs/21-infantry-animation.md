@@ -39,6 +39,9 @@ under `arms`; the Stugna team has `launcher` → `tripod`, `canister`, plus
 its own joint; `entities.ts` draws each limb as its own instanced mesh with
 the matrix `parent × joint × pose`. The hull of a rigged model is empty.
 Triangle budget and bounds of spec 06 still apply to the sum of the limbs.
+Draw calls: each limb is an instanced mesh per material, so a rigged type costs
+up to 28 calls (the RPG team) instead of 4; the AC-03-62 bound of spec 10 §3
+becomes `4 × types + 28 × rigged types + 10`.
 
 ## 3. Poses (`client/src/render/rig.ts`, `animation.ts`)
 
