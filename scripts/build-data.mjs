@@ -352,6 +352,7 @@ const assemble = (globals, factions, maps, ai) => {
       buildTicks: t.buildTicks ?? 0,
       speedCenti: t.speedCenti ?? 0,
       turnRateDeg: t.turnRateDeg ?? 0,
+      radiusCenti: t.radiusCenti ?? 0,
       turretTurnRateDeg: t.turretTurnRateDeg ?? 0,
       articulation: t.articulation ?? "none",
       stationaryFire: t.articulation === "launcher",

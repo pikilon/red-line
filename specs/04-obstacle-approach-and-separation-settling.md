@@ -12,6 +12,16 @@ contention test. AC-04-03 uses a passable crowd, because spreading alone
 already settles the `Block A` case. §2 describes the reference; §3–§6 are normative and win where
 they differ from it.
 
+
+Amended 2026-10-24 (owner decision, overlapping armor): spreading now applies to
+every move of two or more units, not only to impassable targets. Each unit
+claims its own cell (ring search around the click, nearest unit first), so a
+group gathers around the click and never shares one destination. A single unit
+still goes to the exact point. Impassable targets keep the centroid offsets.
+Assumption: Zero Hour keeps the units' relative layout (clamped to 6 x radius)
+and only gathers when the click is inside the selection; the owner asked for the
+gather every time, so that is what is implemented.
+
 ---
 
 ## 1. Context and Problem Statement

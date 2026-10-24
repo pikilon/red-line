@@ -33,6 +33,7 @@ types:                               # required
     speedCenti: 8
     turnRateDeg: 540
     weapon: ru-rpg7
+    radiusCenti: 25
     render: { size: [40, 55, 40] }
   - id: ru-brdm-scout
     category: unit
@@ -46,6 +47,7 @@ types:                               # required
     turnRateDeg: 300
     turretTurnRateDeg: 240
     weapon: ru-kpvt
+    radiusCenti: 34
     render: { size: [60, 50, 90] }
   - id: ru-bmp-2
     category: unit
@@ -59,6 +61,7 @@ types:                               # required
     turnRateDeg: 240
     turretTurnRateDeg: 150
     weapon: ru-2a42
+    radiusCenti: 41
     render: { size: [70, 55, 110] }
   - id: ru-t-72b3
     category: unit
@@ -72,6 +75,7 @@ types:                               # required
     turnRateDeg: 200
     turretTurnRateDeg: 105
     weapon: ru-2a46m
+    radiusCenti: 45
     render: { size: [80, 55, 125] }
   - id: ru-tos-1a
     category: unit
@@ -85,6 +89,7 @@ types:                               # required
     turnRateDeg: 160
     turretTurnRateDeg: 75
     weapon: ru-tos-thermobaric
+    radiusCenti: 45
     render: { size: [80, 70, 125] }
   - id: ru-dozer
     category: unit
@@ -98,6 +103,7 @@ types:                               # required
     turnRateDeg: 150
     builds: [ru-power-plant, ru-supply-center, ru-barracks, ru-vehicle-factory, ru-defense]
     articulation: blade
+    radiusCenti: 38
     render: { size: [80, 60, 100] }
   - id: ru-supply-truck
     category: unit
@@ -112,6 +118,7 @@ types:                               # required
     capacity: 300
     loadTicks: 45
     unloadTicks: 15
+    radiusCenti: 38
     render: { size: [60, 60, 100] }
   - id: ru-hq
     category: building

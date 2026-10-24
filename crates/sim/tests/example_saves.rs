@@ -333,3 +333,31 @@ fn ac_19_05_examples_continuity() {
         }
     }
 }
+
+#[test]
+fn ordered_armor_does_not_pile_up_at_the_goal() {
+    // The owner's check: select every own vehicle and send them all to one point.
+    use sim::fixed::{Fx, FxVec2};
+    let (mut world, _, mut ais) = load_example("armor-duel");
+    let units: Vec<u32> = world
+        .entities()
+        .iter()
+        .filter(|e| e.owner == 0)
+        .map(|e| e.id)
+        .collect();
+    let target = FxVec2::new(Fx::from_raw(40 * 65536), Fx::from_raw(20 * 65536));
+    world.enqueue(sim::world::Command::Move { units, target });
+    run(&mut world, &mut ais, 1200);
+    let own: Vec<_> = world.entities().iter().filter(|e| e.owner == 0).collect();
+    for (i, a) in own.iter().enumerate() {
+        for b in &own[i + 1..] {
+            let d = (a.pos - b.pos).length().raw();
+            assert!(
+                d >= 65536 * 7 / 10,
+                "vehicles {} and {} overlap",
+                a.id,
+                b.id
+            );
+        }
+    }
+}
