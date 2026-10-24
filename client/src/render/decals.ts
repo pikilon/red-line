@@ -6,6 +6,7 @@ import {
   Group,
   Mesh,
   MeshLambertMaterial,
+  ShaderChunk,
   Uint32BufferAttribute,
 } from "three";
 import decalData from "../../../data/render/decals.json";
@@ -24,7 +25,7 @@ import {
 } from "./decalTextures";
 import { valueNoise } from "./terrainTexture";
 
-/** Balance values for the ground marks (`data/render/decals.json`, spec 22). */
+/** Balance values for the ground marks (`data/render/decals.json`, spec 24). */
 export type DecalConfig = typeof decalData;
 export const DECALS: DecalConfig = decalData;
 
@@ -41,6 +42,10 @@ const DIRT_ALPHA_HIGH = 0.7;
 export interface SurfaceSample {
   strength: number;
   color: number;
+  /** 0 soft (deep marks) .. 1 hard (flat marks); drives the relief. */
+  hardness: number;
+  /** Snow-covered ground: marks on it fill up while it snows. */
+  snowy?: boolean;
 }
 /** Tile coordinates in, surface out; swap it when weather or relief land. */
 export type SurfaceAt = (x: number, y: number) => SurfaceSample;
@@ -51,7 +56,11 @@ type Surfaces = DecalConfig["surfaces"];
 
 function surfaceOf(surfaces: Surfaces, name: keyof Surfaces): SurfaceSample {
   const entry = surfaces[name];
-  return { strength: entry.strength, color: Number(entry.color) };
+  return {
+    strength: entry.strength,
+    color: Number(entry.color),
+    hardness: entry.hardness,
+  };
 }
 
 function smoothstep(edge0: number, edge1: number, value: number): number {
@@ -84,12 +93,40 @@ export function createTerrainSurface(
     return {
       strength: grass.strength + (dirt.strength - grass.strength) * mix,
       color: mix > 0.5 ? dirt.color : grass.color,
+      hardness: grass.hardness + (dirt.hardness - grass.hardness) * mix,
     };
+  };
+}
+
+/** Where the weather layer has put snow, and whether it is snowing now. */
+export interface SnowSource {
+  /** True when the ground at tile (x, y) is currently covered. */
+  covered(x: number, y: number): boolean;
+  /** True while snow is falling (marks on snow fill up). */
+  falling(): boolean;
+}
+
+/** Surface of `base` with snow-covered ground replaced by the snow surface. */
+export function withSnow(
+  base: SurfaceAt,
+  snow: SnowSource,
+  surfaces: Surfaces = DECALS.surfaces,
+): SurfaceAt {
+  const snowy = { ...surfaceOf(surfaces, "snow"), snowy: true };
+  return (x, y) => {
+    const ground = base(x, y);
+    return ground.strength > 0 && snow.covered(x, y) ? snowy : ground;
   };
 }
 
 interface Mark {
   alive: boolean;
+  /** Relief 0..1 of this mark (1 - hardness). */
+  relief: number;
+  /** Ageing runs faster while snow falls on it. */
+  snowy: boolean;
+  /** Milliseconds of effective age since `startMs`. */
+  age: number;
   peak: number;
   startMs: number;
   lifeMs: number;
@@ -124,6 +161,9 @@ export interface MarkSpec {
   cell: keyof typeof DECAL_CELLS;
   color: number;
   alpha: number;
+  /** 0..1 depth of the relief; defaults to 1. */
+  relief?: number;
+  snowy?: boolean;
   startMs: number;
   lifeMs: number;
   fadeMs: number;
@@ -138,6 +178,8 @@ export interface Decals {
   /** Leaves scorches and craters where the shots of `snapshot` land. */
   recordShots(snapshot: MatchSnapshot, nowMs: number): void;
   setSurface(surface: SurfaceAt): void;
+  /** Makes marks on snow-covered ground shallow-lived while it snows. */
+  setSnow(snow: SnowSource): void;
   setHeight(height: HeightAt): void;
   /** Recomputes mark opacities at `nowMs`. */
   update(nowMs: number): void;
@@ -154,7 +196,7 @@ interface Walker {
   dirY: number;
 }
 
-/** Pooled ground marks drawn as one transparent mesh (spec 22). */
+/** Pooled ground marks drawn as one transparent mesh (spec 24). */
 export function createDecals(
   surface: SurfaceAt,
   config: DecalConfig = DECALS,
@@ -167,6 +209,8 @@ export function createDecals(
   const stamp = (spec: MarkSpec): void =>
     (spec.cell === "tread" ? trackLayer : blastLayer).stamp(spec);
   let surfaceAt = surface;
+  let snow: SnowSource | null = null;
+  let lastUpdateMs: number | null = null;
   const walkers = new Map<number, Walker>();
 
   function leaveTracks(
@@ -196,6 +240,8 @@ export function createDecals(
         cell: "tread",
         color: sample.color,
         alpha,
+        relief: 1 - sample.hardness,
+        snowy: sample.snowy,
         startMs: nowMs,
         lifeMs: config.tracks.lifetimeMs,
         fadeMs: config.tracks.fadeMs,
@@ -280,6 +326,8 @@ export function createDecals(
       y,
       dirX: 0,
       dirY: 1,
+      relief: 1 - sample.hardness,
+      snowy: sample.snowy,
       startMs,
       lifeMs: config.blasts.lifetimeMs,
       fadeMs: config.blasts.fadeMs,
@@ -313,16 +361,24 @@ export function createDecals(
     setSurface(next) {
       surfaceAt = next;
     },
+    setSnow(next) {
+      snow = next;
+    },
     setHeight(next) {
       heightAt = next;
     },
     update(nowMs) {
-      trackLayer.update(nowMs);
-      blastLayer.update(nowMs);
+      const dtMs =
+        lastUpdateMs === null ? 0 : Math.max(0, nowMs - lastUpdateMs);
+      lastUpdateMs = nowMs;
+      const snowing = snow?.falling() ?? false;
+      trackLayer.update(nowMs, dtMs, snowing);
+      blastLayer.update(nowMs, dtMs, snowing);
     },
     clear() {
       trackLayer.clear();
       blastLayer.clear();
+      lastUpdateMs = null;
       walkers.clear();
     },
     count: () => trackLayer.count() + blastLayer.count(),
@@ -332,16 +388,19 @@ export function createDecals(
 interface Layer {
   readonly mesh: Mesh;
   stamp(spec: MarkSpec): void;
-  update(nowMs: number): void;
+  update(nowMs: number, dtMs: number, snowing: boolean): void;
   clear(): void;
   count(): number;
 }
 
 /** One ring of marks drawn as a single transparent mesh; the oldest mark is
- *  recycled when full (Zero Hour evicts FIFO too, spec 22 §2). */
+ *  recycled when full (Zero Hour evicts FIFO too, spec 24 §2). */
 function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
   const marks: Mark[] = Array.from({ length: capacity }, () => ({
     alive: false,
+    relief: 1,
+    snowy: false,
+    age: 0,
     peak: 0,
     startMs: 0,
     lifeMs: 0,
@@ -361,6 +420,9 @@ function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
   const geometry = new BufferGeometry();
   const positionAttribute = new BufferAttribute(positions, 3);
   const colorAttribute = new BufferAttribute(colors, 4);
+  const reliefs = new Float32Array(capacity * 4);
+  const reliefAttribute = new BufferAttribute(reliefs, 1);
+  geometry.setAttribute("aRelief", reliefAttribute);
   geometry.setAttribute("position", positionAttribute);
   const uvAttribute = new BufferAttribute(uvs, 2);
   geometry.setAttribute("uv", uvAttribute);
@@ -380,6 +442,20 @@ function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
     polygonOffsetFactor: -2,
     polygonOffsetUnits: -2,
   });
+  material.onBeforeCompile = (shader) => {
+    // Per-mark relief: soft ground keeps deep marks, hard ground shallow ones.
+    shader.vertexShader = shader.vertexShader.replace(
+      "void main() {",
+      "attribute float aRelief;\nvarying float vRelief;\nvoid main() {\n  vRelief = aRelief;",
+    );
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <bumpmap_pars_fragment>",
+      `varying float vRelief;\n${ShaderChunk.bumpmap_pars_fragment.replace(
+        /bumpScale \*/g,
+        "bumpScale * vRelief *",
+      )}`,
+    );
+  };
   const mesh = new Mesh(geometry, material);
   mesh.name = "decals";
   mesh.frustumCulled = false;
@@ -397,6 +473,9 @@ function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
     if (mark === undefined) return;
     if (!mark.alive) alive++;
     mark.alive = true;
+    mark.age = 0;
+    mark.snowy = spec.snowy === true;
+    mark.relief = spec.relief ?? 1;
     mark.peak = spec.alpha;
     mark.startMs = spec.startMs;
     mark.lifeMs = spec.lifeMs;
@@ -427,18 +506,26 @@ function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
       positions.set([px, lift, py], vertex * 3);
       const cellU = (DECAL_CELLS[spec.cell] + (side + 1) / 2) / ATLAS_CELLS;
       uvs.set([cellU, (end + 1) / 2], vertex * 2);
+      reliefs[vertex] = mark.relief;
     });
     positionAttribute.needsUpdate = true;
     uvAttribute.needsUpdate = true;
+    reliefAttribute.needsUpdate = true;
     geometry.setDrawRange(0, highest * 6);
   }
 
-  function update(nowMs: number): void {
+  function update(nowMs: number, dtMs: number, snowing: boolean): void {
     let live = 0;
     for (let slot = 0; slot < highest; slot++) {
       const mark = marks[slot];
       if (mark === undefined || !mark.alive) continue;
-      const age = nowMs - mark.startMs;
+      // Snowfall fills in marks lying on snow; before `startMs` nothing ages.
+      if (nowMs >= mark.startMs) {
+        mark.age += dtMs * (mark.snowy && snowing ? DECALS.snow.fillRate : 1);
+      } else {
+        mark.age = 0;
+      }
+      const age = nowMs >= mark.startMs ? mark.age : -1;
       if (age >= mark.lifeMs + mark.fadeMs) mark.alive = false;
       else live++;
       const alpha = mark.alive

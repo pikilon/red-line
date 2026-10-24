@@ -1,4 +1,4 @@
-# 22 · Ground marks (tracks, scorches, craters)
+# 24 · Ground marks (tracks, scorches, craters)
 
 Client-only visuals (`client/src/render/decals.ts`, `decalTextures.ts`). The
 simulation neither stores nor reads marks; they never affect determinism or
@@ -41,7 +41,18 @@ Two rings with FIFO eviction: `tracks.maxMarks` (3000) and `blasts.maxMarks`
 * `Decals.setHeight(fn)`: relief supplies the ground height; default flat.
 * Marks are quads per mark, lifted 0.012 tiles with polygon offset.
 
-## 5. Assumptions
+## 5. Hardness and snow (after spec 22-snow)
+
+* Each surface in `data/render/decals.json` has a `hardness` (0 soft .. 1
+  hard). Relief depth per mark is `1 - hardness`: deep in mud and snow,
+  shallow on grass, almost flat on asphalt (per-mark `aRelief` attribute
+  scaling the bump map).
+* Ground covered by the snow layer (`weather.cover()` against its per-cell
+  thresholds) counts as the `snow` surface. Marks on it age `snow.fillRate`
+  times faster while snow is falling (Snow: on); with snow off, or on bare
+  ground, they last their full lifetime.
+
+## 6. Assumptions
 
 * Wheeled/tracked is read from the unit's locomotor kind; strips are placed at
   the hull gauge from the unit's `render.size`.

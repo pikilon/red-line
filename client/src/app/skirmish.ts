@@ -33,6 +33,8 @@ import {
   createDecals,
   createTerrainSurface,
   type Decals,
+  type SnowSource,
+  withSnow,
 } from "../render/decals";
 import {
   createEffects,
@@ -60,6 +62,7 @@ import {
 } from "../render/terrain";
 import {
   climateFor,
+  coverThresholds,
   createWeather,
   densityFrom,
   startSecondsFrom,
@@ -758,6 +761,29 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       );
       weather.setEnabled(settings.weather !== false);
       scene.add(weather.group);
+      const snowing = weather;
+      const thresholds = coverThresholds(
+        mapInfo.mapWidth,
+        mapInfo.mapHeight,
+        rockCells,
+        seed,
+      );
+      const width = mapInfo.mapWidth;
+      const surface = createTerrainSurface(
+        width,
+        mapInfo.mapHeight,
+        rockCells,
+        seed,
+      );
+      const snow: SnowSource = {
+        covered: (x, y) =>
+          settings.weather !== false &&
+          (thresholds[Math.floor(y) * width + Math.floor(x)] ?? 255) / 255 <
+            snowing.cover(),
+        falling: () => settings.weather !== false,
+      };
+      decals?.setSurface(withSnow(surface, snow));
+      decals?.setSnow(snow);
     }
     scene.add(placementGhost.mesh);
     controller = createSkirmishController({

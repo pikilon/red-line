@@ -21,27 +21,33 @@
   "surfaces": {
     "rock": {
       "strength": 0.0,
-      "color": "0x2a2a2a"
+      "color": "0x2a2a2a",
+      "hardness": 1.0
     },
     "grass": {
       "strength": 0.45,
-      "color": "0x0c1006"
+      "color": "0x0c1006",
+      "hardness": 0.5
     },
     "dirt": {
       "strength": 0.85,
-      "color": "0x120a04"
+      "color": "0x120a04",
+      "hardness": 0.25
     },
     "asphalt": {
       "strength": 0.05,
-      "color": "0x111111"
+      "color": "0x111111",
+      "hardness": 0.95
     },
     "mud": {
       "strength": 1.0,
-      "color": "0x22160c"
+      "color": "0x22160c",
+      "hardness": 0.05
     },
     "snow": {
       "strength": 1.0,
-      "color": "0x4a5560"
+      "color": "0x4a5560",
+      "hardness": 0.1
     }
   },
   "blasts": {
@@ -71,5 +77,9 @@
     },
     "maxMarks": 500
   },
-  "bumpScale": 6
+  "bumpScale": 6,
+  "snow": {
+    "fillRate": 8
+  },
+  "reliefByHardness": 1.0
 }
