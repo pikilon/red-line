@@ -5,8 +5,7 @@ import {
   DoubleSide,
   Group,
   Mesh,
-  MeshLambertMaterial,
-  ShaderChunk,
+  MeshBasicMaterial,
   Uint32BufferAttribute,
 } from "three";
 import decalData from "../../../data/render/decals.json";
@@ -17,13 +16,8 @@ import {
   hasFlag,
   type MatchSnapshot,
 } from "../sim/matchSnapshot";
-import {
-  ATLAS_CELLS,
-  createDecalAtlas,
-  createDecalHeightAtlas,
-  DECAL_CELLS,
-} from "./decalTextures";
-import { valueNoise } from "./terrainTexture";
+import { ATLAS_CELLS, createDecalAtlas, DECAL_CELLS } from "./decalTextures";
+import { createRng, valueNoise } from "./terrainTexture";
 
 /** Balance values for the ground marks (`data/render/decals.json`, spec 24). */
 export type DecalConfig = typeof decalData;
@@ -42,7 +36,7 @@ const DIRT_ALPHA_HIGH = 0.7;
 export interface SurfaceSample {
   strength: number;
   color: number;
-  /** 0 soft (deep marks) .. 1 hard (flat marks); drives the relief. */
+  /** 0 soft .. 1 hard; hard ground keeps fainter marks. */
   hardness: number;
   /** Snow-covered ground: marks on it fill up while it snows. */
   snowy?: boolean;
@@ -57,7 +51,7 @@ type Surfaces = DecalConfig["surfaces"];
 function surfaceOf(surfaces: Surfaces, name: keyof Surfaces): SurfaceSample {
   const entry = surfaces[name];
   return {
-    strength: entry.strength,
+    strength: 1 - entry.hardness,
     color: Number(entry.color),
     hardness: entry.hardness,
   };
@@ -121,8 +115,6 @@ export function withSnow(
 
 interface Mark {
   alive: boolean;
-  /** Relief 0..1 of this mark (1 - hardness). */
-  relief: number;
   /** Ageing runs faster while snow falls on it. */
   snowy: boolean;
   /** Milliseconds of effective age since `startMs`. */
@@ -161,8 +153,6 @@ export interface MarkSpec {
   cell: keyof typeof DECAL_CELLS;
   color: number;
   alpha: number;
-  /** 0..1 depth of the relief; defaults to 1. */
-  relief?: number;
   snowy?: boolean;
   startMs: number;
   lifeMs: number;
@@ -212,6 +202,8 @@ export function createDecals(
   let snow: SnowSource | null = null;
   let lastUpdateMs: number | null = null;
   const walkers = new Map<number, Walker>();
+  /** Cosmetic variation only; never feeds the simulation. */
+  const rng = createRng(0x5eed);
 
   function leaveTracks(
     entity: EntityState,
@@ -230,17 +222,26 @@ export function createDecals(
     if (alpha <= 0.01) return;
     const gauge = hullWidth * style.gaugePerHull;
     for (const side of [-1, 1]) {
+      // Gaps, wobble and uneven pressure keep the strips from looking drawn.
+      if (rng() < config.tracks.gapChance) continue;
+      const wobble = (rng() - 0.5) * 2 * config.tracks.wobbleTiles;
+      const turn = (rng() - 0.5) * 2 * config.tracks.angleJitter;
+      const cos = Math.cos(turn);
+      const sin = Math.sin(turn);
+      const dirX = walker.dirX * cos - walker.dirY * sin;
+      const dirY = walker.dirX * sin + walker.dirY * cos;
       stamp({
-        x: entity.x - walker.dirY * gauge * side,
-        y: entity.y + walker.dirX * gauge * side,
-        dirX: walker.dirX,
-        dirY: walker.dirY,
-        halfWidth: Math.max(0.03, (hullWidth * style.stripWidthPerHull) / 2),
+        x: entity.x - walker.dirY * (gauge * side + wobble),
+        y: entity.y + walker.dirX * (gauge * side + wobble),
+        dirX,
+        dirY,
+        halfWidth:
+          Math.max(0.03, (hullWidth * style.stripWidthPerHull) / 2) *
+          (0.8 + 0.4 * rng()),
         halfLength: Math.max(0.1, hullLength * style.lengthPerHull),
         cell: "tread",
         color: sample.color,
-        alpha,
-        relief: 1 - sample.hardness,
+        alpha: alpha * (0.5 + 0.5 * rng()),
         snowy: sample.snowy,
         startMs: nowMs,
         lifeMs: config.tracks.lifetimeMs,
@@ -321,12 +322,13 @@ export function createDecals(
     const sample = surfaceAt(x, y);
     // Rock shows scorches but no craters.
     const soil = sample.strength > 0 ? 1 : 0;
+    // A random orientation and uneven axes make each blast different.
+    const angle = rng() * Math.PI * 2;
     const base = {
       x,
       y,
-      dirX: 0,
-      dirY: 1,
-      relief: 1 - sample.hardness,
+      dirX: Math.cos(angle),
+      dirY: Math.sin(angle),
       snowy: sample.snowy,
       startMs,
       lifeMs: config.blasts.lifetimeMs,
@@ -335,20 +337,20 @@ export function createDecals(
     const scorchHalf = radius * config.blasts.scorchPerCrater;
     stamp({
       ...base,
-      halfWidth: scorchHalf,
-      halfLength: scorchHalf,
+      halfWidth: scorchHalf * (0.85 + 0.3 * rng()),
+      halfLength: scorchHalf * (0.85 + 0.3 * rng()),
       cell: "scorch",
       color: Number(config.blasts.scorchColor),
-      alpha: config.blasts.scorchAlpha,
+      alpha: config.blasts.scorchAlpha * (0.75 + 0.25 * rng()),
     });
     if (crater && soil > 0) {
       stamp({
         ...base,
-        halfWidth: radius,
-        halfLength: radius,
+        halfWidth: radius * (0.85 + 0.3 * rng()),
+        halfLength: radius * (0.85 + 0.3 * rng()),
         cell: "crater",
         color: Number(config.blasts.craterColor),
-        alpha: config.blasts.craterAlpha,
+        alpha: config.blasts.craterAlpha * (0.75 + 0.25 * rng()),
       });
     }
   }
@@ -398,7 +400,6 @@ interface Layer {
 function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
   const marks: Mark[] = Array.from({ length: capacity }, () => ({
     alive: false,
-    relief: 1,
     snowy: false,
     age: 0,
     peak: 0,
@@ -420,9 +421,7 @@ function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
   const geometry = new BufferGeometry();
   const positionAttribute = new BufferAttribute(positions, 3);
   const colorAttribute = new BufferAttribute(colors, 4);
-  const reliefs = new Float32Array(capacity * 4);
-  const reliefAttribute = new BufferAttribute(reliefs, 1);
-  geometry.setAttribute("aRelief", reliefAttribute);
+
   geometry.setAttribute("position", positionAttribute);
   const uvAttribute = new BufferAttribute(uvs, 2);
   geometry.setAttribute("uv", uvAttribute);
@@ -430,10 +429,8 @@ function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
   geometry.setIndex(new Uint32BufferAttribute(indices, 1));
   geometry.setDrawRange(0, 0);
 
-  const material = new MeshLambertMaterial({
+  const material = new MeshBasicMaterial({
     map: createDecalAtlas(),
-    bumpMap: createDecalHeightAtlas(),
-    bumpScale: DECALS.bumpScale,
     vertexColors: true,
     transparent: true,
     depthWrite: false,
@@ -442,20 +439,6 @@ function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
     polygonOffsetFactor: -2,
     polygonOffsetUnits: -2,
   });
-  material.onBeforeCompile = (shader) => {
-    // Per-mark relief: soft ground keeps deep marks, hard ground shallow ones.
-    shader.vertexShader = shader.vertexShader.replace(
-      "void main() {",
-      "attribute float aRelief;\nvarying float vRelief;\nvoid main() {\n  vRelief = aRelief;",
-    );
-    shader.fragmentShader = shader.fragmentShader.replace(
-      "#include <bumpmap_pars_fragment>",
-      `varying float vRelief;\n${ShaderChunk.bumpmap_pars_fragment.replace(
-        /bumpScale \*/g,
-        "bumpScale * vRelief *",
-      )}`,
-    );
-  };
   const mesh = new Mesh(geometry, material);
   mesh.name = "decals";
   mesh.frustumCulled = false;
@@ -475,7 +458,6 @@ function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
     mark.alive = true;
     mark.age = 0;
     mark.snowy = spec.snowy === true;
-    mark.relief = spec.relief ?? 1;
     mark.peak = spec.alpha;
     mark.startMs = spec.startMs;
     mark.lifeMs = spec.lifeMs;
@@ -506,11 +488,9 @@ function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
       positions.set([px, lift, py], vertex * 3);
       const cellU = (DECAL_CELLS[spec.cell] + (side + 1) / 2) / ATLAS_CELLS;
       uvs.set([cellU, (end + 1) / 2], vertex * 2);
-      reliefs[vertex] = mark.relief;
     });
     positionAttribute.needsUpdate = true;
     uvAttribute.needsUpdate = true;
-    reliefAttribute.needsUpdate = true;
     geometry.setDrawRange(0, highest * 6);
   }
 

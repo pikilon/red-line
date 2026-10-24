@@ -9,7 +9,7 @@ saves. Balance lives in `data/render/decals.json`.
 * Tracked and wheeled vehicles leave two strips behind them while they move.
   Strips are strong on dirt/mud (and snow once weather exists), faint on
   grass, absent on rock and nearly absent on asphalt.
-* Tracks fade slowly after `tracks.lifetimeMs` (150 s) over `tracks.fadeMs` (150 s); marks carry relief through a bump map (`bumpScale`), lit by the sun.
+* Tracks fade slowly after `tracks.lifetimeMs` (150 s) over `tracks.fadeMs` (150 s); marks are unlit flat sprites (a bump-map relief was tried and dropped: not visible, extra cost).
 * Explosions leave a dark scorch; high-explosive hits also dig a crater on
   soil. Radius grows with the weapon's splash radius (`blasts.byDamageType`).
   Anti-tank hits leave a small scorch; thermobaric a wide scorch without crater.
@@ -44,9 +44,11 @@ Two rings with FIFO eviction: `tracks.maxMarks` (3000) and `blasts.maxMarks`
 ## 5. Hardness and snow (after spec 22-snow)
 
 * Each surface in `data/render/decals.json` has a `hardness` (0 soft .. 1
-  hard). Relief depth per mark is `1 - hardness`: deep in mud and snow,
-  shallow on grass, almost flat on asphalt (per-mark `aRelief` attribute
-  scaling the bump map).
+  hard). Marks are as visible as the ground is soft: faint on grass, clear in
+  mud and snow, almost none on asphalt, none on rock.
+* Marks are subtle and irregular: tread strips have ragged, patchy textures,
+  random gaps (`gapChance`), wobble, angle jitter and uneven opacity; blasts get
+  a random orientation, uneven axes and opacity.
 * Ground covered by the snow layer (`weather.cover()` against its per-cell
   thresholds) counts as the `snow` surface. Marks on it age `snow.fillRate`
   times faster while snow is falling (Snow: on); with snow off, or on bare
