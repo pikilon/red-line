@@ -24,11 +24,10 @@ This project is built by AI agents.
 
 ### Agent instructions
 
-[`AGENTS.md`](AGENTS.md) is the only agent instruction file. Do not add
-`CLAUDE.md`, `GEMINI.md`, `.cursor/` rules or similar: tools that look for
-their own file must point to `AGENTS.md` instead (for example Gemini CLI with
-`"context": { "fileName": ["AGENTS.md"] }` in its settings). Claude Code,
-OpenCode and Antigravity read `AGENTS.md` natively.
+[`AGENTS.md`](AGENTS.md) is the only agent instruction file. Claude Code,
+Antigravity, DeepSeek Harness (`dsh`) and OpenCode read it natively. Do not add
+`CLAUDE.md`, `.cursor/` rules or similar: a tool that looks for its own file
+must be configured to read `AGENTS.md` instead.
 
 ## License
 
