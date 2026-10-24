@@ -7,12 +7,14 @@ import {
   type MatchSnapshot,
   NEUTRAL,
 } from "../sim/matchSnapshot";
+import { createCorpses } from "./corpses";
 import {
   createDeathCauses,
   detectDeaths,
   detectHits,
   spawnDeathEffects,
   spawnHitBlood,
+  splashesFor,
 } from "./deaths";
 import { createEffects } from "./effects";
 
@@ -315,37 +317,56 @@ describe("blood of a wound (spec 22 §6)", () => {
     health,
   });
 
-  it("only bleeds under 60 % of his hp: above it the hit just jolts him", () => {
+  it("only bleeds under 70 % of his hp: above it the hit just jolts him", () => {
     const effects = createEffects();
-    spawnHitBlood([hit(0.5, 0.6), hit(0.5, 0.9)], effects, true, 0);
+    spawnHitBlood([hit(0.5, 0.7), hit(0.5, 0.9)], effects, true, 0);
     effects.update(100);
     expect(effects.meshes.droplet.count).toBe(0);
     effects.update(6000);
     expect(effects.meshes.blood.count).toBe(0);
-    spawnHitBlood([hit(0.2, 0.59)], effects, true, 7000);
+    spawnHitBlood([hit(0.2, 0.69)], effects, true, 7000);
     effects.update(7250);
     expect(effects.meshes.droplet.count).toBeGreaterThan(0);
   });
 
-  it("throws a fan of droplets, more for a hard hit, that land and stain the ground", () => {
-    const light = createEffects();
-    spawnHitBlood([hit(0.12)], light, true, 0);
-    light.update(250);
-    const hard = createEffects();
-    spawnHitBlood([hit(0.5)], hard, true, 0);
-    hard.update(250);
-    expect(light.meshes.droplet.count).toBeGreaterThanOrEqual(2);
-    expect(light.meshes.droplet.count).toBeLessThanOrEqual(4);
-    expect(hard.meshes.droplet.count).toBeGreaterThan(
-      light.meshes.droplet.count,
+  it("throws one splash under 70 %, two under 60 % and never more than two", () => {
+    const droplets = (health: number): number => {
+      const effects = createEffects();
+      spawnHitBlood([hit(0.5, health)], effects, true, 0);
+      // Frames come in order, so every drop is drawn once before it lands.
+      effects.update(150);
+      effects.update(700);
+      effects.update(3000);
+      return effects.meshes.blood.count;
+    };
+    expect(droplets(0.72)).toBe(0);
+    expect(droplets(0.69)).toBe(1);
+    expect(droplets(0.61)).toBe(1);
+    expect(droplets(0.59)).toBe(2);
+    expect(droplets(0.3)).toBe(2);
+    expect(droplets(0.05)).toBe(2);
+    expect(splashesFor(0.19)).toBe(2);
+  });
+
+  it("a death throws four splashes", () => {
+    const effects = createEffects();
+    const bodies = createCorpses();
+    spawnDeathEffects(
+      [entity(1, 0, "ua-rifleman", 5, 5, 10)],
+      effects,
+      true,
+      0,
+      bodies,
+      {
+        record() {},
+        causeOf: () => ({ kind: "shot", push: 0 }),
+      },
     );
-    // Nothing on the ground until the first drop lands, then one splat each.
-    expect(hard.meshes.blood.count).toBe(0);
-    // Frames come in order, so every drop is drawn once before it lands.
-    hard.update(700);
-    hard.update(3000);
-    expect(hard.meshes.droplet.count).toBe(0);
-    expect(hard.meshes.blood.count).toBeGreaterThanOrEqual(4);
+    effects.update(150);
+    effects.update(800);
+    effects.update(3000);
+    // Four splats from the splashes and the pool under the body.
+    expect(effects.meshes.blood.count).toBe(5);
   });
 
   it("flies the drops out along the push, up and down again", () => {
@@ -363,7 +384,24 @@ describe("blood of a wound (spec 22 §6)", () => {
       highest = Math.max(highest, at.y);
     }
     expect(farthest).toBeGreaterThan(0);
-    expect(highest).toBeGreaterThan(0.2);
+    expect(highest).toBeGreaterThan(0.1);
+  });
+
+  it("the splats land close to the soldier", () => {
+    for (let n = 0; n < 6; n++) {
+      const effects = createEffects();
+      spawnHitBlood([hit(0.5, 0.3)], effects, true, 0);
+      effects.update(150);
+      effects.update(700);
+      effects.update(3000);
+      const matrix = new Matrix4();
+      const at = new Vector3();
+      for (let i = 0; i < effects.meshes.blood.count; i++) {
+        effects.meshes.blood.getMatrixAt(i, matrix);
+        at.setFromMatrixPosition(matrix);
+        expect(Math.hypot(at.x - 10, at.z - 10)).toBeLessThan(0.55);
+      }
+    }
   });
 
   it("the splats of the drops are small", () => {
@@ -422,7 +460,7 @@ describe("blood of a wound (spec 22 §6)", () => {
     const effects = createEffects();
     spawnHitBlood([hit(0.5)], effects, true, 0);
     effects.update(3000);
-    expect(effects.meshes.blood.count).toBeGreaterThanOrEqual(4);
+    expect(effects.meshes.blood.count).toBe(2);
     effects.update(14_000);
     expect(effects.meshes.blood.count).toBe(0);
   });

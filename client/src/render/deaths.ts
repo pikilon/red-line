@@ -241,19 +241,29 @@ export function detectHits(
   return hits;
 }
 
-/** A soldier bleeds when a hit leaves him with less than this share of his hp:
- *  above it a hit only jolts him and stains his clothes (spec 22 §6). */
-export const WOUND_BELOW = 0.6;
-/** Droplets thrown by a light and by a hard hit (jolt >= `HARD_HIT`). */
-const WOUND_DROPS = { light: 3, hard: 5 } as const;
-const HARD_HIT = 0.3;
-/** Where on the body the blood leaves, tiles above the ground. */
-const WOUND_HEIGHT = 0.3;
-/** Spread of the spray around the push direction, radians. */
-const SPRAY_CONE = 0.14;
-/** How far the whole jet leans to one side of the push, radians. */
-const JET_LEAN = 0.12;
-/** The first drop leaves this long after the hit, ms: the jolt has started. */
+/** A soldier starts to bleed when a hit leaves him with less than this share
+ *  of his hp: above it a hit only jolts him and stains his clothes (spec 22 §6). */
+export const WOUND_BELOW = 0.7;
+/** Splashes (jets) a hit throws by what is left of his hp: one under 70 %, two
+ *  under 60 % and never more than two until he dies; a death throws four. */
+export function splashesFor(health: number): number {
+  if (health >= WOUND_BELOW) return 0;
+  return health >= 0.6 ? 1 : 2;
+}
+const DEATH_SPLASHES = 4;
+/** Where on the body a splash can leave, tiles above the ground and across the
+ *  body: head, chest, arm, thigh. */
+const WOUND_SITES = [
+  { height: 0.43, across: 0 },
+  { height: 0.3, across: 0 },
+  { height: 0.27, across: 0.05 },
+  { height: 0.14, across: 0.03 },
+] as const;
+/** Spread of a splash around the push direction, radians. */
+const SPRAY_CONE = 0.2;
+/** How far a splash leans to one side of the push, radians. */
+const JET_LEAN = 0.15;
+/** A splash leaves this long after the hit, ms: the jolt has started. */
 const JET_ONSET_MS = 55;
 /** Size of the splat a droplet leaves, tiles. */
 const DROP_SPLAT = 0.05;
@@ -261,10 +271,11 @@ const DROP_SPLAT_SPREAD_MS = 120;
 /** A wound's drops dry up sooner than a pool, ms. */
 const WOUND_BLOOD_MS = 10_000;
 
-/** Blood thrown out of a wound that left the soldier under `WOUND_BELOW` of
- *  his hp: a fan of droplets leaves the wound along the push, flies on a
- *  ballistic arc and, where each lands, stains the ground with a small splat
- *  (spec 22 §6). Nothing without gore. */
+/** Blood thrown out of wounds that left the soldier under `WOUND_BELOW` of his
+ *  hp: from a random place of the body a thin jet leaves along the push, flies
+ *  on a ballistic arc and, close by, stains the ground with a small splat; one
+ *  splash under 70 %, two under 60 %, three under 20 % (spec 22 §6). Nothing
+ *  without gore. */
 export function spawnHitBlood(
   hits: readonly Impact[],
   effects: Effects,
@@ -273,54 +284,63 @@ export function spawnHitBlood(
 ): void {
   if (!gore) return;
   for (const hit of hits) {
-    if (hit.health >= WOUND_BELOW) continue;
-    // Every hit is different: the jet changes with a running number, not
-    // only with who is hit.
-    hitSerial += 1;
-    const seed = hit.id * 12.9898 + hitSerial * 4.1414;
-    const roll = (i: number, k: number) => {
-      const h = Math.sin((seed + i * 78.233 + k * 37.719) * 43758.5453);
-      return h - Math.floor(h);
-    };
-    const base =
-      hit.amplitude >= HARD_HIT ? WOUND_DROPS.hard : WOUND_DROPS.light;
-    const count = Math.max(2, base + Math.floor(roll(0, 9) * 3) - 1);
-    // The whole jet leans a little to one side and is a little faster or slower.
-    const lean = (roll(0, 7) - 0.5) * 2 * JET_LEAN;
-    const force = 0.8 + roll(0, 8) * 0.4;
-    const height = WOUND_HEIGHT + (roll(0, 6) - 0.5) * 0.14;
-    for (let i = 0; i < count; i++) {
-      const angle = hit.push + lean + (roll(i, 1) - 0.5) * 2 * SPRAY_CONE;
-      const speed = (1.4 + roll(i, 2) * 0.9 + hit.amplitude * 0.6) * force;
-      const rise = 0.2 + roll(i, 3) * 0.6;
-      const vx = Math.cos(angle) * speed;
-      const vy = Math.sin(angle) * speed;
-      // Time to come down from the wound to the ground.
-      const flight =
-        (rise + Math.sqrt(rise * rise + 2 * DROPLET_GRAVITY * height)) /
-        DROPLET_GRAVITY;
-      // Nothing before the jolt has started: the first drop leaves a moment
-      // after the hit, the rest follow it in quick succession.
-      const delay = JET_ONSET_MS + i * 30 + roll(i, 5) * 25;
-      effects.spawn("droplet", {
-        x: hit.x,
-        y: hit.y,
-        height,
-        velocity: [vx, vy, rise],
-        durationMs: flight * 1000,
-        startMs: nowMs + delay,
-      });
-      const size = DROP_SPLAT * (0.7 + roll(i, 4) * 0.8);
-      effects.spawn("blood", {
-        x: hit.x + vx * flight,
-        y: hit.y + vy * flight,
-        sizeXYZ: [size * (2.6 + roll(i, 10) * 1.2), 0.02, size * 0.75],
-        rotationY: -angle,
-        startMs: nowMs + delay + flight * 1000,
-        spreadMs: DROP_SPLAT_SPREAD_MS,
-        durationMs: WOUND_BLOOD_MS,
-      });
-    }
+    const count = splashesFor(hit.health);
+    if (count > 0) spawnSplashes(effects, hit, count, nowMs);
+  }
+}
+
+/** `count` splashes from random places of the body of a soldier at (x, y). */
+function spawnSplashes(
+  effects: Effects,
+  hit: Pick<Impact, "id" | "x" | "y" | "push" | "amplitude">,
+  count: number,
+  nowMs: number,
+): void {
+  // Every hit is different: the splashes change with a running number, not
+  // only with who is hit.
+  hitSerial += 1;
+  const seed = hit.id * 12.9898 + hitSerial * 4.1414;
+  const roll = (i: number, k: number) => {
+    const h = Math.sin((seed + i * 78.233 + k * 37.719) * 43758.5453);
+    return h - Math.floor(h);
+  };
+  const lean = (roll(0, 7) - 0.5) * 2 * JET_LEAN;
+  for (let i = 0; i < count; i++) {
+    const site = WOUND_SITES[Math.floor(roll(i, 6) * WOUND_SITES.length)];
+    const height = site?.height ?? 0.3;
+    const side = (site?.across ?? 0) * (roll(i, 11) < 0.5 ? -1 : 1);
+    const angle = hit.push + lean + (roll(i, 1) - 0.5) * 2 * SPRAY_CONE;
+    // Close by: the jet is short and falls quickly.
+    const speed = 0.3 + roll(i, 2) * 0.45 + hit.amplitude * 0.25;
+    const rise = 0.1 + roll(i, 3) * 0.3;
+    const vx = Math.cos(angle) * speed;
+    const vy = Math.sin(angle) * speed;
+    const flight =
+      (rise + Math.sqrt(rise * rise + 2 * DROPLET_GRAVITY * height)) /
+      DROPLET_GRAVITY;
+    const x = hit.x - Math.sin(hit.push) * side;
+    const y = hit.y + Math.cos(hit.push) * side;
+    // Nothing before the jolt has started: the first leaves a moment after the
+    // hit, the rest follow in quick succession.
+    const delay = JET_ONSET_MS + i * 45 + roll(i, 5) * 30;
+    effects.spawn("droplet", {
+      x,
+      y,
+      height,
+      velocity: [vx, vy, rise],
+      durationMs: flight * 1000,
+      startMs: nowMs + delay,
+    });
+    const size = DROP_SPLAT * (0.7 + roll(i, 4) * 0.8);
+    effects.spawn("blood", {
+      x: x + vx * flight,
+      y: y + vy * flight,
+      sizeXYZ: [size * (2.6 + roll(i, 10) * 1.2), 0.02, size * 0.75],
+      rotationY: -angle,
+      startMs: nowMs + delay + flight * 1000,
+      spreadMs: DROP_SPLAT_SPREAD_MS,
+      durationMs: WOUND_BLOOD_MS,
+    });
   }
 }
 
@@ -471,18 +491,14 @@ function spawnBlood(effects: Effects, corpse: Corpse, nowMs: number): void {
     burst(along(reach + 0.35, 0.2), 0.26, spin + 1, down.ms, 1.3);
     return;
   }
-  // Three quick spurts at the wound, flying the way he is hit, then the pool
-  // under the body once it is down.
-  for (let i = 0; i < 3; i++) {
-    const side = (((corpse.id + i * 3) % 5) - 2) * 0.09;
-    burst(
-      along(0.1 + i * 0.1, side),
-      0.15 + (i % 2) * 0.04,
-      -push + side * 5,
-      40 + i * 90,
-      1.6,
-    );
-  }
+  // Four splashes from random places of the body, thrown the way he is hit,
+  // then the pool under the body once it is down.
+  spawnSplashes(
+    effects,
+    { id: corpse.id, x: corpse.x, y: corpse.y, push, amplitude: 0.4 },
+    DEATH_SPLASHES,
+    nowMs,
+  );
   effects.spawn("blood", {
     ...along(0.2 + Math.max(0, down.u)),
     sizeXYZ: [0.5, 0.02, 0.44],
