@@ -727,6 +727,7 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
 | `construction` | showcase | Barracks and vehicle factories of both factions at `buildPercent` 0, 30, 60 and 100 (no builders: setups have no build orders) | Site progress at tick 0 matches the percentages |
 | `damaged-base` | showcase | Each building type of both factions at 100, 75, 50, 25 and 10 % HP | HP matches the percentages at tick 0 |
 | `pathfinding-river` | first-line | 10 Ukrainian units on the west bank with a move order to a point on the east bank away from the fords | ≥ 8 units within 3 tiles of the target within 1800 ticks |
+| `tank-through-group` | showcase | One `ua-leopard-2a4` ordered from (28.5, 15.5) to (44.5, 15.5) straight across 15 idle `ua-leopard-2a4` packed one tile apart at x 34.5–38.5, y 14.5–16.5 (spec 04 §5.3–5.4) | The lone tank within 0.5 tile of its target at 900 ticks, and no two tanks ever closer than both radii minus 0.02 tile |
 | `crowd` | showcase | 60 units per side in two blocks 3 tiles apart, both advancing through each other | 60 units per side; a death within 900 |
 | `gore` | showcase | 20 `ua-rifleman` vs 20 `ru-rifleman` close, attacking. Gore follows the player's setting (setup examples never change it, §5.3); toggle it with G | 5 deaths within 900 ticks |
 | `victory-near` | showcase | `victory: true`; a `ua-hq` far away and one `ru-hq` at 5 % HP attacked by 4 `ua-leopard-2a4` in sight | `Winner(0)` within 900 ticks |

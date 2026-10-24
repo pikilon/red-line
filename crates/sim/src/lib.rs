@@ -21,6 +21,7 @@ pub mod snapshot;
 pub mod vision;
 pub mod wasm_api;
 pub mod world;
+pub mod yielding;
 
 /// Version of the simulation API exposed to the client through WASM.
 pub const API_VERSION: u32 = 4;

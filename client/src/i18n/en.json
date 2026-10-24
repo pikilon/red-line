@@ -115,6 +115,8 @@
   "saves.damaged-base.description": "Every building type at 100, 75, 50, 25 and 10 % HP.",
   "saves.pathfinding-river.name": "River crossing",
   "saves.pathfinding-river.description": "Ten units ordered across the river, away from the fords.",
+  "saves.tank-through-group.name": "Tank through a parked group",
+  "saves.tank-through-group.description": "One tank ordered across a packed block of idle tanks, which make way for it.",
   "saves.crowd.name": "Crowd",
   "saves.crowd.description": "Sixty units per side advancing through each other.",
   "saves.gore.name": "Gore",

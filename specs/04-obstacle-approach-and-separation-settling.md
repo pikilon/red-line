@@ -198,6 +198,82 @@ In `World::separate_units()`:
 3. **Axis Wall Rejection:**
    Apply $\mathbf{push}$ per-axis against `nav.is_passable()`, exactly as in Phase 1.
 
+### 5.3 Idle Allies Step Aside (`yield_to_movers`)
+
+Amended 2026-10-24 (owner report: a tank sent across a parked group drove
+through it). Reference, `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`:
+after each new path, a path crossing idle allies (`Path::blockedByAlly`,
+`AIPathfind.cpp:L9067`) calls `Pathfinder::moveAllies`
+(`AIPathfind.cpp:L10112-10185`). It asks every ally on the path to move away
+when that ally is not moving, not attacking and not busy, unless both units
+are infantry (infantry walk through each other). `getMoveAwayFromPath`
+(`AIPathfind.cpp:L10195-10345`) sends the ally at least one cell, to the
+nearest free cell whose box clears the mover's path by both radii.
+
+Runs every tick before the move phase, in ascending entity index:
+
+1. Each unit with `Order::Move` traces its path from its position:
+   straight to `target` when inside `goal` or when `line_passable`,
+   otherwise flow-field steps between cell centres. The path is cut after
+   `YIELD_LOOKAHEAD` (3 tiles).
+2. An ally is asked when all of these hold: same owner, a unit (`site` is
+   `None`), `Order::Idle` with a `last_order_id` different from the mover's
+   order (so the mover's own group still arrives by contact), no
+   `last_target` (it is not firing), not infantry if the mover is infantry
+   (`LocoKind::Foot`), and its centre lies closer than the sum of the two
+   radii to a segment of that path (exact `i128` arithmetic).
+3. Its new cell is searched in Chebyshev rings 1..=`YIELD_SEARCH_RING` (4)
+   around its cell. A cell qualifies when it is in bounds and passable, holds
+   no unit centre, is not the mover's `goal`, was not claimed by another
+   yield this tick, can be reached in a straight passable line, its centre
+   stays at least both radii away from the mover's path cut after
+   `YIELD_CLEARANCE_LOOKAHEAD` (6 tiles), it is not on the mover's side of
+   the ally (`dot(center - ally, mover - ally) <= 0`, so nobody backs into
+   the mover), and the straight drive to it keeps both radii from every
+   nearby unit except idle units of the same owner (those are asked to step
+   aside in turn, since the yielder is now a mover). The first ring with any
+   such cell wins; inside it the nearest centre wins, ties by `y`, then `x`.
+4. The ally gets `Order::Move { order_id: fresh, target: cell_center(cell),
+   goal: cell }` (a flow field is ensured) and becomes idle on arrival. With
+   no qualifying cell it stays, and separation (§5.2) applies as before.
+
+Deviations: Zero Hour runs `moveAllies` once per path over the whole path and
+caps the chain of yields at depth 2. Red Line has flow fields instead of
+stored paths, so it checks a bounded look-ahead every tick; a yielder is a
+mover too, which lets the chain end naturally when no idle ally is left in a
+short corridor. A* ally cost (+42 per cell) and repathing around stuck
+blockers are out of scope. So are `Attack`, `Harvest` and `Build` approaches.
+
+Local copy of the same source used on 2026-10-25:
+`Core/GameEngine/Source/GameLogic/AI/AIPathfind.cpp` `moveAllies` L6379-6473,
+`getMoveAwayFromPath` L6480-6650 (BFS to the first cell whose box, grown by
+both radii, does not touch the path, at least one cell away).
+
+### 5.4 Waiting Behind a Unit Making Way (`blocked_by_newer_mover`)
+
+Amended 2026-10-25 (owner: units must never visibly pass through each other).
+Reference: `AIUpdateInterface::processCollision`
+(`GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/AIUpdate.cpp`
+L1440-1548 of the local copy): a moving unit blocked by the unit ahead slows
+to `calculateMaxBlockedSpeed` and waits instead of driving through; a
+deadlock is broken by `hasHigherPathPriority`.
+
+In `step_move`, after the locomotor step from `from` to `to`, the step is
+undone (position back to `from`, `speed = 0`; the heading change stays) when
+some other unit `b` that is not a building:
+
+* has an `Order::Move` whose `order_id` is greater than the stepping unit's
+  (a yielder from §5.3 always has a newer id than the unit it makes way for),
+* would be closer than both radii after the step, and closer than before it,
+* and is not heading toward the stepping unit:
+  `dot(b.target - b.pos, from - b.pos) <= 0`.
+
+The unit then tries again next tick, so it drives on as soon as the way is
+clear. Order ids only grow, so waits never form a cycle (this is Red Line's
+path priority). Units of the same order (one group), idle units and older
+orders are not waited for: separation (§5.2) and arrival by contact handle
+them as before. The `Attack`, `Harvest` and `Build` approaches do not wait.
+
 ---
 
 ## 6. Acceptance Criteria
@@ -237,5 +313,22 @@ commanded on tick 0 to move to raw $(2260992, 2260992)$ = $(34.5, 34.5)$ inside
 **Then** both seed-42 runs have the same `state_hash` and the seed-43 run
 differs; the existing determinism and native/WASM parity tests
 (AC-02-19, AC-02-20, AC-02-24) stay green unmodified.
+
+### AC-04-05: Idle Allies Step Out of the Way
+**Given** `World::new(MapGrid::open(32, 32))` with a unit at $(8.5, 10.5)$ and
+15 idle allies at the cell centres of $x \in 14..=18$, $y \in 9..=11$,<br>
+**When** the lone unit is ordered to $(24.5, 10.5)$ and 200 ticks run,<br>
+**Then** it ends exactly on the target and never comes closer than 0.4 tile to
+any ally (without §5.3 it drives through the block).
+
+### AC-04-06: A Tank Crosses a Packed Idle Tank Group
+**Given** the example save `tank-through-group` (spec 19 §7): one
+`ua-leopard-2a4` ordered from $(28.5, 15.5)$ to $(44.5, 15.5)$ across 15 idle
+`ua-leopard-2a4` one tile apart at $x \in 34.5..38.5$, $y \in 14.5..16.5$,<br>
+**When** 900 ticks run,<br>
+**Then** the lone tank is within 0.5 tile of its target and no two tanks are
+ever closer than their two radii minus 0.02 tile (without §5.3–5.4 the mover
+shoves through the block, down to 0.82 tile apart; tested in
+`ac_19_14_tank_through_group`).
 
 ---

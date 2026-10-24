@@ -553,6 +553,7 @@ impl World {
         self.events.clear();
         self.apply_commands();
         self.update_economy();
+        self.yield_to_movers();
         self.move_units();
         self.separate_units();
         self.arrive_on_contact();
@@ -1041,6 +1042,14 @@ impl World {
             in_goal,
             target,
         );
+        // Spec 04 §5.4: wait behind a unit stepping out of the way.
+        let after = self.entities[index].pos;
+        if after != pos && self.blocked_by_newer_mover(index, order_id, pos, after) {
+            let unit = &mut self.entities[index];
+            unit.pos = pos;
+            unit.speed = Fx::ZERO;
+            return;
+        }
         if arrived {
             self.entities[index].order = Order::Idle {
                 last_order_id: order_id,
@@ -1183,7 +1192,7 @@ impl World {
     }
 
     /// Collision radius of every entity, indexed like `entities`.
-    fn unit_radii(&self) -> Vec<Fx> {
+    pub(crate) fn unit_radii(&self) -> Vec<Fx> {
         let half = Fx::from_raw(SEPARATION_DISTANCE.raw() / 2);
         self.entities
             .iter()
@@ -1233,7 +1242,7 @@ impl World {
 
     /// Unit indices grouped by the cell of `positions`, ascending within a cell.
     /// Units are always in passable (hence in-bounds) cells.
-    fn bucket_by_cell(&self, positions: &[FxVec2]) -> Vec<Vec<usize>> {
+    pub(crate) fn bucket_by_cell(&self, positions: &[FxVec2]) -> Vec<Vec<usize>> {
         let cells = usize::from(self.nav.width()) * usize::from(self.nav.height());
         let mut buckets = vec![Vec::new(); cells];
         for (i, &pos) in positions.iter().enumerate() {
@@ -1245,7 +1254,7 @@ impl World {
     /// Unit indices in the 3 x 3 cells around `center`. Both
     /// `SEPARATION_DISTANCE` and `ARRIVAL_CONTACT` are below one tile, so
     /// this covers every candidate.
-    fn neighbours<'a>(
+    pub(crate) fn neighbours<'a>(
         &'a self,
         buckets: &'a [Vec<usize>],
         center: Cell,
