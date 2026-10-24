@@ -123,6 +123,25 @@ fn ac_19_14_artillery_range() {
 }
 
 #[test]
+fn ac_19_14_force_fire_demo() {
+    let (mut world, _, mut ais) = load_example("force-fire-demo");
+    assert_eq!(count(&world, 0, Category::Unit), 2);
+    assert_eq!(count(&world, 1, Category::Unit), 1);
+    assert_eq!(count(&world, 1, Category::Building), 1);
+    let plant = world
+        .entities()
+        .iter()
+        .find(|e| world.rules().ty(e.kind).id == "ru-power-plant")
+        .map(|e| (e.id, e.hp))
+        .expect("demo power plant");
+    run(&mut world, &mut ais, 900);
+    assert!(
+        world.entity(plant.0).is_none_or(|e| e.hp < plant.1),
+        "the HIMARS shells the power plant"
+    );
+}
+
+#[test]
 fn ac_19_14_defenses() {
     assert!(deaths("defenses", 900) > 0);
 }

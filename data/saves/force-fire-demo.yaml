@@ -1,0 +1,18 @@
+# Spec 19 §7 and spec 20: a HIMARS with a dozer spotter and a Russian supply
+# truck in sight. The HIMARS starts shelling the power plant, so the player can
+# select it and click the truck to switch to that target; Ctrl + click on the
+# ground still force-fires at the point.
+id: force-fire-demo
+map: first-line
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 36.5, y: 62.5, zoom: 1.2 }
+entities:
+  - { player: 0, type: ua-himars, atCenti: [3050, 6250], order: { attack: rpp } }
+  - { player: 0, type: ua-dozer, atCenti: [4350, 6250] }
+  - { player: 1, type: ru-supply-truck, atCenti: [4050, 6250] }
+  - { player: 1, type: ru-power-plant, origin: [46, 60], label: rpp }

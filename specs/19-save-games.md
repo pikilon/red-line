@@ -718,6 +718,7 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
 | `infantry-vs-armor` | showcase | 8 `ua-rifleman` + 4 `ua-stugna-team` in a line; 3 `ru-t-72b3` with move orders through them | A unit takes damage within 900 ticks |
 | `rpg-ambush` | showcase | 6 `ru-rpg-gunner` + 4 `ru-rifleman` beside the path of 4 `ua-bradley` moving across the map | A death within 900 ticks |
 | `artillery-range` | showcase | 2 `ua-himars` and 2 `ru-tos-1a`, each attacking an enemy building (power plant, barracks); one scout per side spots the targets; both HQs present | A projectile in flight within 300 ticks; a targeted building's HP lower at 900 |
+| `force-fire-demo` | first-line | `starts: false`, `revealed: false`; a `ua-himars` attacking a `ru-power-plant`, a `ua-dozer` spotting a `ru-supply-truck` 10 tiles from the HIMARS (inside weapon range, outside its sight); select the HIMARS and click the truck (spec 20) | The HIMARS damages the power plant within 900 ticks |
 | `defenses` | showcase | `ua-defense` and `ru-defense`, each with 4 enemy units moving into range | A death within 900 ticks |
 | `base-assault` | first-line | `starts: true`, `victory: true`; complete Ukrainian base; 12 mixed Russian units driving into it (move orders; units fire on the move); controlled 0 | A Ukrainian building damaged within 900 ticks |
 | `economy` | first-line | `starts: true`, AI off, `revealed: false`; each side has a supply center and 2 supply trucks harvesting the nearest depot | Both players' credits rise within 900 ticks |
