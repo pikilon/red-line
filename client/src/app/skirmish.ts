@@ -138,6 +138,7 @@ const NO_EFFECT_COUNTS: Record<EffectKind, number> = {
   wreck: 0,
   body: 0,
   blood: 0,
+  droplet: 0,
   debris: 0,
 };
 /** The builtin ruleset type without a committed `.glb` (spec 06 §3). */

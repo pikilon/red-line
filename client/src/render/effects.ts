@@ -32,6 +32,7 @@ export const EFFECT_KINDS = [
   "wreck",
   "body",
   "blood",
+  "droplet",
   "debris",
 ] as const;
 export type EffectKind = (typeof EFFECT_KINDS)[number];
@@ -55,6 +56,9 @@ const MIN_EXPLOSION_SIZE = 0.6;
 const THERMOBARIC_SCALE = 1.5;
 /** The explosion grows in its first half (spec 07 AC-07-01). */
 const EXPLOSION_GROWTH_START = 0.5;
+
+/** Gravity on a thrown droplet, tiles/s² (a soldier is 0.5 tiles tall). */
+export const DROPLET_GRAVITY = 4;
 
 /** A blood splat starts at this fraction of its size and spreads in this time. */
 const BLOOD_SPREAD_START = 0.35;
@@ -127,6 +131,14 @@ const EFFECT_STYLES: Readonly<Record<EffectKind, EffectStyle>> = {
     color: 0xffffff,
     additive: false,
   },
+  // A drop of blood thrown from a wound: a speck on a ballistic arc (spec 22 §6).
+  droplet: {
+    durationMs: 700,
+    fadeMs: 0,
+    size: [0.022, 0.022, 0.022],
+    color: 0x3a0606,
+    additive: false,
+  },
   debris: {
     durationMs: 15_000,
     fadeMs: 3000,
@@ -150,6 +162,11 @@ export interface EffectSpawn {
   startMs?: number;
   /** Life in ms; defaults to the kind's duration. */
   durationMs?: number;
+  /** Droplet only: launch velocity in tiles/s (x, y over the ground, up). Its
+   *  life should be the flight time; gravity is `DROPLET_GRAVITY`. */
+  velocity?: readonly [number, number, number];
+  /** Height the droplet starts at, tiles. */
+  height?: number;
   /** Blood only: ms a splat takes to spread to full size (a burst of drops
    *  is quick, a pool slow); defaults to `BLOOD_SPREAD_MS`. */
   spreadMs?: number;
@@ -181,6 +198,10 @@ interface Instance {
   durationMs: number;
   fadeMs: number;
   spreadMs: number;
+  /** Launch velocity and start height of a droplet, tiles/s and tiles. */
+  vx: number;
+  vy: number;
+  vz: number;
   /** Drawn in at least one frame; an effect is never dropped unseen. */
   shown: boolean;
 }
@@ -245,7 +266,7 @@ export function createEffects(): Effects {
     pool.push({
       x: init.x,
       y: init.y,
-      z: size[1] / 2,
+      z: init.height ?? size[1] / 2,
       sizeX: size[0],
       sizeY: size[1],
       sizeZ: size[2],
@@ -255,6 +276,9 @@ export function createEffects(): Effects {
       durationMs,
       fadeMs: Math.min(style.fadeMs, durationMs),
       spreadMs: init.spreadMs ?? BLOOD_SPREAD_MS,
+      vx: init.velocity?.[0] ?? 0,
+      vy: init.velocity?.[1] ?? 0,
+      vz: init.velocity?.[2] ?? 0,
       shown: false,
     });
   }
@@ -311,7 +335,22 @@ export function createEffects(): Effects {
         const shrink = style.additive ? 1 : fade;
         const grow = growth * shrink;
 
-        position.set(instance.x, instance.z, instance.y);
+        if (kind === "droplet") {
+          // Thrown from the wound: a ballistic arc until it lands.
+          const flight = elapsed / 1000;
+          position.set(
+            instance.x + instance.vx * flight,
+            Math.max(
+              0,
+              instance.z +
+                instance.vz * flight -
+                0.5 * DROPLET_GRAVITY * flight * flight,
+            ),
+            instance.y + instance.vy * flight,
+          );
+        } else {
+          position.set(instance.x, instance.z, instance.y);
+        }
         rotation.setFromAxisAngle(Y_AXIS, instance.rotationY);
         scale.set(
           instance.sizeX * grow,

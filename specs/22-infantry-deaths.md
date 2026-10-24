@@ -112,12 +112,17 @@ When a soldier of a rigged type loses hp between two snapshots and lives
 arms jerk and the knees give for a moment; two hits add up under a cap of 0.75
 rad. Nothing changes in the game simulation.
 
-A hit also throws **blood** (`spawnHitBlood`, gore on only): two small spurts
-from the wound along the push for a light hit, four for a hard one (jolt ≥ 0.3
-rad), stretched along the push, a little bigger the harder it is, and drying up
-after 12 s (a pool lasts 30 s). The wound shows on his clothes through the same
-rule as everything else (§5): the blood level follows the hp he has lost, so
-every hit stains the uniform a little more and the stains stay while he lives.
+**Blood from a wound** (`spawnHitBlood`, gore on only) starts only when a hit
+leaves the soldier with **less than 60 % of his hp** (`WOUND_BELOW`): above it a
+hit only jolts him and stains his clothes (§5). Below it, the shot that lands
+throws blood out of the wound: a fan of 5 droplets (8 for a hard hit, jolt ≥ 0.3
+rad) leaves the chest (0.3 tiles up) along the push, ±0.55 rad, at 0.7–2.4
+tiles/s with a rise of 0.5–1.6 tiles/s, each a speck (`droplet` effect) on a
+ballistic arc (gravity 4 tiles/s²) in quick bursts (25 ms apart); where each
+one comes down it stains the ground with a **small** splat (about 0.06–0.11
+tiles, stretched along its flight) that dries up after 10 s. The wound shows on
+his clothes through the rule of §5: the blood level follows the hp he has lost,
+so every hit stains the uniform a little more, from the first one.
 
 ## 7. Assumptions
 
@@ -152,5 +157,7 @@ every hit stains the uniform a little more and the stains stay while he lives.
 * AC-22-09: the animator jolts a hit soldier (zero at the hit, the peak 70 ms
   later, recovered after 0.7 s), adds two hits under the 0.75 cap and ignores
   hits on ids it never saw.
-* AC-22-10: `spawnHitBlood` throws two spurts for a light hit and four for a hard
-  one, none without gore, and they dry up after 12 s.
+* AC-22-10: `spawnHitBlood` throws droplets only when the hit leaves him under 60 %
+  of his hp (5 for a light hit, 8 for a hard one), they fly along the push and
+  come down, each leaves a small splat (under 0.2 × 0.12 tiles), none without
+  gore, and the splats dry up after 10 s.

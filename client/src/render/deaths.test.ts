@@ -306,38 +306,95 @@ describe("hit detection (spec 22 §6)", () => {
 });
 
 describe("blood of a wound (spec 22 §6)", () => {
-  const hit = (amplitude: number) => ({
+  const hit = (amplitude: number, health = 0.4) => ({
     id: 4,
     x: 10,
     y: 10,
     push: 0,
     amplitude,
+    health,
   });
 
-  it("throws a few spurts, more for a hard hit", () => {
+  it("only bleeds under 60 % of his hp: above it the hit just jolts him", () => {
+    const effects = createEffects();
+    spawnHitBlood([hit(0.5, 0.6), hit(0.5, 0.9)], effects, true, 0);
+    effects.update(100);
+    expect(effects.meshes.droplet.count).toBe(0);
+    effects.update(6000);
+    expect(effects.meshes.blood.count).toBe(0);
+    spawnHitBlood([hit(0.2, 0.59)], effects, true, 7000);
+    effects.update(7060);
+    expect(effects.meshes.droplet.count).toBeGreaterThan(0);
+  });
+
+  it("throws a fan of droplets, more for a hard hit, that land and stain the ground", () => {
     const light = createEffects();
     spawnHitBlood([hit(0.12)], light, true, 0);
-    light.update(1000);
+    light.update(250);
     const hard = createEffects();
     spawnHitBlood([hit(0.5)], hard, true, 0);
-    hard.update(1000);
-    expect(light.meshes.blood.count).toBe(2);
-    expect(hard.meshes.blood.count).toBe(4);
+    hard.update(250);
+    expect(light.meshes.droplet.count).toBe(5);
+    expect(hard.meshes.droplet.count).toBeGreaterThan(
+      light.meshes.droplet.count,
+    );
+    // Nothing on the ground until the first drop lands, then one splat each.
+    expect(hard.meshes.blood.count).toBe(0);
+    // Frames come in order, so every drop is drawn once before it lands.
+    hard.update(700);
+    hard.update(3000);
+    expect(hard.meshes.droplet.count).toBe(0);
+    expect(hard.meshes.blood.count).toBe(8);
+  });
+
+  it("flies the drops out along the push, up and down again", () => {
+    const effects = createEffects();
+    spawnHitBlood([hit(0.5)], effects, true, 0);
+    effects.update(150);
+    const matrix = new Matrix4();
+    const at = new Vector3();
+    let farthest = 0;
+    let highest = 0;
+    for (let i = 0; i < effects.meshes.droplet.count; i++) {
+      effects.meshes.droplet.getMatrixAt(i, matrix);
+      at.setFromMatrixPosition(matrix);
+      farthest = Math.max(farthest, at.x - 10);
+      highest = Math.max(highest, at.y);
+    }
+    expect(farthest).toBeGreaterThan(0);
+    expect(highest).toBeGreaterThan(0.3);
+  });
+
+  it("the splats of the drops are small", () => {
+    const effects = createEffects();
+    spawnHitBlood([hit(0.5)], effects, true, 0);
+    effects.update(3000);
+    const matrix = new Matrix4();
+    const q = new Quaternion();
+    const position = new Vector3();
+    const scale = new Vector3();
+    for (let i = 0; i < effects.meshes.blood.count; i++) {
+      effects.meshes.blood.getMatrixAt(i, matrix);
+      matrix.decompose(position, q, scale);
+      expect(scale.x).toBeLessThan(0.2);
+      expect(scale.z).toBeLessThan(0.12);
+    }
   });
 
   it("shows no blood without gore", () => {
     const effects = createEffects();
     spawnHitBlood([hit(0.5)], effects, false, 0);
     effects.update(1000);
+    expect(effects.meshes.droplet.count).toBe(0);
     expect(effects.meshes.blood.count).toBe(0);
   });
 
   it("dries up sooner than a pool", () => {
     const effects = createEffects();
     spawnHitBlood([hit(0.5)], effects, true, 0);
-    effects.update(1000);
-    expect(effects.meshes.blood.count).toBe(4);
-    effects.update(13_000);
+    effects.update(3000);
+    expect(effects.meshes.blood.count).toBe(8);
+    effects.update(14_000);
     expect(effects.meshes.blood.count).toBe(0);
   });
 });

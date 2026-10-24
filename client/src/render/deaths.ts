@@ -9,7 +9,7 @@ import {
 } from "../sim/matchSnapshot";
 import type { Hit as Jolt } from "./animation";
 import { type Corpse, type Corpses, type DeathCause, landing } from "./corpses";
-import type { Effects } from "./effects";
+import { DROPLET_GRAVITY, type Effects } from "./effects";
 import { angleToYaw } from "./heading";
 import { isRigged } from "./rig";
 
@@ -200,6 +200,8 @@ const JOLT_MAX = 0.7;
 export interface Impact extends Jolt {
   readonly x: number;
   readonly y: number;
+  /** Share of his hp he has left after the hit. */
+  readonly health: number;
 }
 
 /** Soldiers that lost hp between two snapshots and lived: who, the way the hit
@@ -228,6 +230,7 @@ export function detectHits(
       id: entity.id,
       x: entity.x,
       y: entity.y,
+      health: entity.hp / Math.max(1, type.hp),
       push: cause.push,
       amplitude: Math.min(
         JOLT_MAX,
@@ -238,14 +241,26 @@ export function detectHits(
   return hits;
 }
 
-/** Spurts of a wound: how many for a light and for a hard hit, and the size
- *  of the drops, tiles (spec 22 §6). */
-const WOUND_SPURTS = { light: 2, hard: 4 } as const;
+/** A soldier bleeds when a hit leaves him with less than this share of his hp:
+ *  above it a hit only jolts him and stains his clothes (spec 22 §6). */
+export const WOUND_BELOW = 0.6;
+/** Droplets thrown by a light and by a hard hit (jolt >= `HARD_HIT`). */
+const WOUND_DROPS = { light: 5, hard: 8 } as const;
 const HARD_HIT = 0.3;
+/** Where on the body the blood leaves, tiles above the ground. */
+const WOUND_HEIGHT = 0.3;
+/** Spread of the spray around the push direction, radians. */
+const SPRAY_CONE = 0.55;
+/** Size of the splat a droplet leaves, tiles. */
+const DROP_SPLAT = 0.06;
+const DROP_SPLAT_SPREAD_MS = 120;
+/** A wound's drops dry up sooner than a pool, ms. */
+const WOUND_BLOOD_MS = 10_000;
 
-/** Blood thrown by hits that did not kill: a few small spurts from the wound
- *  along the push, more and bigger for a hard hit. The clothes show the wound
- *  through his hp (spec 22 §5). Nothing without gore. */
+/** Blood thrown out of a wound that left the soldier under `WOUND_BELOW` of
+ *  his hp: a fan of droplets leaves the wound along the push, flies on a
+ *  ballistic arc and, where each lands, stains the ground with a small splat
+ *  (spec 22 §6). Nothing without gore. */
 export function spawnHitBlood(
   hits: readonly Impact[],
   effects: Effects,
@@ -254,36 +269,54 @@ export function spawnHitBlood(
 ): void {
   if (!gore) return;
   for (const hit of hits) {
+    if (hit.health >= WOUND_BELOW) continue;
     const count =
-      hit.amplitude >= HARD_HIT ? WOUND_SPURTS.hard : WOUND_SPURTS.light;
+      hit.amplitude >= HARD_HIT ? WOUND_DROPS.hard : WOUND_DROPS.light;
     for (let i = 0; i < count; i++) {
-      const seed = hit.id * 5 + i * 3;
-      const side = ((seed % 5) - 2) * 0.07;
-      const reach = 0.12 + i * 0.1;
+      const roll = (k: number) => {
+        const h = Math.sin(
+          (hit.id * 12.9898 + i * 78.233 + k * 37.719) * 43758.5453,
+        );
+        return h - Math.floor(h);
+      };
+      const angle = hit.push + (roll(1) - 0.5) * 2 * SPRAY_CONE;
+      const speed = 0.7 + roll(2) * 0.9 + hit.amplitude * 0.8;
+      const rise = 0.5 + roll(3) * 1.1;
+      const vx = Math.cos(angle) * speed;
+      const vy = Math.sin(angle) * speed;
+      // Time to come down from the wound to the ground.
+      const flight =
+        (rise + Math.sqrt(rise * rise + 2 * DROPLET_GRAVITY * WOUND_HEIGHT)) /
+        DROPLET_GRAVITY;
+      const delay = i * 25 + Math.floor(i / 3) * 60;
+      effects.spawn("droplet", {
+        x: hit.x,
+        y: hit.y,
+        height: WOUND_HEIGHT,
+        velocity: [vx, vy, rise],
+        durationMs: flight * 1000,
+        startMs: nowMs + delay,
+      });
+      const size = DROP_SPLAT * (0.7 + roll(4) * 0.8);
       effects.spawn("blood", {
-        x: hit.x + Math.cos(hit.push) * reach - Math.sin(hit.push) * side,
-        y: hit.y + Math.sin(hit.push) * reach + Math.cos(hit.push) * side,
-        sizeXYZ: [
-          (0.11 + hit.amplitude * 0.18) * 1.5,
-          0.02,
-          0.11 + hit.amplitude * 0.18,
-        ],
-        rotationY: -hit.push + side * 5,
-        startMs: nowMs + i * 55,
-        spreadMs: SPURT_SPREAD_MS,
+        x: hit.x + vx * flight,
+        y: hit.y + vy * flight,
+        sizeXYZ: [size * 1.7, 0.02, size],
+        rotationY: -angle,
+        startMs: nowMs + delay + flight * 1000,
+        spreadMs: DROP_SPLAT_SPREAD_MS,
         durationMs: WOUND_BLOOD_MS,
       });
     }
   }
 }
 
-/** A wound's drops dry up sooner than a pool, ms. */
-const WOUND_BLOOD_MS = 12_000;
-
 /** Tiles of wreck height relative to the model's render size (spec 07 §3). */
 const WRECK_HEIGHT = 0.6;
 /** Spread times of a spurt of drops and of a pool of blood, ms (spec 22 §4). */
 const SPURT_SPREAD_MS = 180;
+/** The ground spurts of a death are this much of the size they were first drawn. */
+const SPURT_SCALE = 0.6;
 const POOL_SPREAD_MS = 1400;
 /** Overlapping blood decals under an infantry body (spec 07 §3). */
 const BLOOD_DECALS = 3;
@@ -391,7 +424,7 @@ function spawnBlood(effects: Effects, corpse: Corpse, nowMs: number): void {
   ) =>
     effects.spawn("blood", {
       ...at,
-      sizeXYZ: [size * stretch, 0.02, size],
+      sizeXYZ: [size * SPURT_SCALE * stretch, 0.02, size * SPURT_SCALE],
       rotationY: turn,
       startMs: nowMs + delayMs,
       spreadMs: SPURT_SPREAD_MS,
