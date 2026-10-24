@@ -80,9 +80,9 @@ export function createSplatTexture(): DataTexture {
       // Dark and thick in the middle, redder and thinner towards the edge.
       const depth = 1 - smoothstep(0, Math.max(edge, 0.05), r);
       const o = (py * SIZE + px) * 4;
-      data[o] = Math.round(70 + 60 * (1 - depth));
-      data[o + 1] = Math.round(6 + 10 * (1 - depth));
-      data[o + 2] = Math.round(8 + 10 * (1 - depth));
+      data[o] = Math.round(34 + 36 * (1 - depth));
+      data[o + 1] = Math.round(2 + 5 * (1 - depth));
+      data[o + 2] = Math.round(3 + 6 * (1 - depth));
       data[o + 3] = Math.round(255 * (0.82 + 0.18 * depth) * alpha);
     }
   }

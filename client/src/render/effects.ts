@@ -150,6 +150,9 @@ export interface EffectSpawn {
   startMs?: number;
   /** Life in ms; defaults to the kind's duration. */
   durationMs?: number;
+  /** Blood only: ms a splat takes to spread to full size (a burst of drops
+   *  is quick, a pool slow); defaults to `BLOOD_SPREAD_MS`. */
+  spreadMs?: number;
 }
 
 export interface Effects {
@@ -177,6 +180,7 @@ interface Instance {
   endMs: number;
   durationMs: number;
   fadeMs: number;
+  spreadMs: number;
   /** Drawn in at least one frame; an effect is never dropped unseen. */
   shown: boolean;
 }
@@ -250,6 +254,7 @@ export function createEffects(): Effects {
       endMs: startMs + durationMs,
       durationMs,
       fadeMs: Math.min(style.fadeMs, durationMs),
+      spreadMs: init.spreadMs ?? BLOOD_SPREAD_MS,
       shown: false,
     });
   }
@@ -297,7 +302,7 @@ export function createEffects(): Effects {
             EXPLOSION_GROWTH_START + (1 - EXPLOSION_GROWTH_START) * progress;
         } else if (kind === "blood") {
           // A splat spreads when it appears, fast at first.
-          const spread = Math.min(1, elapsed / BLOOD_SPREAD_MS);
+          const spread = Math.min(1, elapsed / instance.spreadMs);
           growth =
             BLOOD_SPREAD_START +
             (1 - BLOOD_SPREAD_START) * (1 - (1 - spread) ** 2);

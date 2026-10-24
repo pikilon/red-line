@@ -64,14 +64,17 @@ and shrinks away over the last 3 s.
 ## 4. Blood (`effects.ts`, `splat.ts`, `deaths.ts`)
 
 The `blood` effect is now a flat quad with a generated splat texture (an
-irregular pool darker in the middle, soft edge, scattered drops and streaks)
-instead of a box, drawn with a polygon offset over the ground. A splat spreads
-from 35 % to full size in 0.7 s when it appears.
+irregular pool, dark red nearly black in the middle, soft edge, scattered
+drops and streaks) instead of a box, drawn with a polygon offset over the
+ground. A splat spreads from 35 % to full size when it appears: 0.18 s for a
+spurt, 1.4 s for a pool (`spreadMs`).
 
-* **Shot**: a drop flies off at the hit; once the body is down a pool spreads
-  under it, with a smaller splash beside it.
-* **Explosion**: four streaks, stretched along the flight and shrinking with
-  distance, a wide pool where the body lands and two splashes ahead of it.
+* **Shot**: spurts first, six small stretched splatters in three quick bursts
+  (40–220 ms) from the wound along the way he is hit; the pool appears just as
+  the body lands and spreads slowly, with a small splash beside it.
+* **Explosion**: nine spurts that follow the body through the air in rapid
+  bursts of two or three, a wide pool where it lands (spreading slowly) and two
+  splashes ahead of it.
 * Gore off (`G`): no blood at all; bodies still fall.
 
 ## 5. Assumptions

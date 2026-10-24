@@ -196,6 +196,9 @@ function yawToPush(yaw: number): number {
 
 /** Tiles of wreck height relative to the model's render size (spec 07 §3). */
 const WRECK_HEIGHT = 0.6;
+/** Spread times of a spurt of drops and of a pool of blood, ms (spec 22 §4). */
+const SPURT_SPREAD_MS = 180;
+const POOL_SPREAD_MS = 1400;
 /** Overlapping blood decals under an infantry body (spec 07 §3). */
 const BLOOD_DECALS = 3;
 /** Rubble pieces scattered around a destroyed building (spec 09 §6). */
@@ -269,71 +272,85 @@ export function spawnDeathEffects(
   }
 }
 
-/** Blood of a falling soldier: a shot leaves a pool under the body once it is
- *  down; a blast sprays a streak along the toss and a big pool where he lands
- *  (spec 22 §4). Splats grow when they appear. */
+/** Blood of a falling soldier (spec 22 §4): first spurts, small splatters
+ *  that appear in quick bursts while he is hit and thrown, then the pool, which
+ *  spreads slowly once the body is down. */
 function spawnBlood(effects: Effects, corpse: Corpse, nowMs: number): void {
   const { push, kind } = corpse.cause;
-  const along = (distance: number) => ({
-    x: corpse.x + Math.cos(push) * distance,
-    y: corpse.y + Math.sin(push) * distance,
+  const along = (distance: number, side = 0) => ({
+    x: corpse.x + Math.cos(push) * distance - Math.sin(push) * side,
+    y: corpse.y + Math.sin(push) * distance + Math.cos(push) * side,
   });
   const spin = corpse.id * 2.399;
+  const landed = nowMs + settleMs(corpse);
+  const burst = (
+    at: { x: number; y: number },
+    size: number,
+    turn: number,
+    delayMs: number,
+    stretch = 1,
+  ) =>
+    effects.spawn("blood", {
+      ...at,
+      sizeXYZ: [size * stretch, 0.02, size],
+      rotationY: turn,
+      startMs: nowMs + delayMs,
+      spreadMs: SPURT_SPREAD_MS,
+    });
+
   if (kind === "explosion") {
     const reach = tossReach(corpse);
-    // Spray: stretched streaks along the flight, smaller the farther they are.
-    for (let i = 0; i < 4; i++) {
-      const f = 0.2 + i * 0.22;
-      const at = along(reach * f);
-      effects.spawn("blood", {
-        ...at,
-        sizeXYZ: [0.7 - i * 0.12, 0.02, 0.28 - i * 0.03],
-        rotationY: -push + (i % 2 === 0 ? 0.15 : -0.15),
-        startMs: nowMs + 150 + i * 120,
-      });
+    // Spurts follow the body through the air, in rapid bursts of two or three.
+    for (let i = 0; i < 9; i++) {
+      const f = 0.1 + i * 0.1;
+      const side = (((corpse.id + i * 5) % 7) - 3) * 0.07;
+      burst(
+        along(reach * f, side),
+        0.2 + ((corpse.id + i) % 3) * 0.06,
+        -push + side * 4,
+        120 + i * 70 + (i % 3) * 25,
+        1.7,
+      );
     }
-    // Where he lands: a wide pool and two splashes thrown ahead of it.
-    const landing = along(reach);
+    // Where he lands: a wide pool that spreads slowly, and two splashes ahead.
     effects.spawn("blood", {
-      ...landing,
+      ...along(reach),
       sizeXYZ: [1.05, 0.02, 0.95],
       rotationY: spin,
-      startMs: nowMs + settleMs(corpse) * 0.6,
+      startMs: landed,
+      spreadMs: POOL_SPREAD_MS,
     });
     for (const side of [-1, 1]) {
-      const splash = along(reach + 0.35);
-      effects.spawn("blood", {
-        x: splash.x - Math.sin(push) * 0.28 * side,
-        y: splash.y + Math.cos(push) * 0.28 * side,
-        sizeXYZ: [0.4, 0.02, 0.32],
-        rotationY: spin + side,
-        startMs: nowMs + settleMs(corpse) * 0.7,
-      });
+      burst(
+        along(reach + 0.35, 0.28 * side),
+        0.34,
+        spin + side,
+        settleMs(corpse),
+        1.3,
+      );
     }
     return;
   }
-  // The pool spreads under the body as it comes to rest, a little downhill of
-  // the hit, plus a few drops that flew off.
-  const pool = along(0.18);
-  const landed = nowMs + settleMs(corpse) * 0.5;
+  // A burst at the wound, in three quick spurts that fly the way he is hit,
+  // then the pool under the body once it is down.
+  for (let i = 0; i < 6; i++) {
+    const side = (((corpse.id + i * 3) % 5) - 2) * 0.09;
+    burst(
+      along(0.1 + i * 0.07, side),
+      0.16 + (i % 3) * 0.05,
+      -push + side * 5,
+      40 + Math.floor(i / 2) * 90 + (i % 2) * 20,
+      1.6,
+    );
+  }
   effects.spawn("blood", {
-    ...pool,
-    sizeXYZ: [0.62, 0.02, 0.55],
+    ...along(0.18),
+    sizeXYZ: [0.66, 0.02, 0.58],
     rotationY: spin,
-    startMs: landed,
+    startMs: landed - 150,
+    spreadMs: POOL_SPREAD_MS,
   });
-  effects.spawn("blood", {
-    ...along(0.5),
-    sizeXYZ: [0.3, 0.02, 0.24],
-    rotationY: spin + 1.7,
-    startMs: landed + 120,
-  });
-  effects.spawn("blood", {
-    ...along(-0.3),
-    sizeXYZ: [0.22, 0.02, 0.2],
-    rotationY: spin + 3.1,
-    startMs: nowMs + 60,
-  });
+  burst(along(0.5, 0.1), 0.26, spin + 1.7, settleMs(corpse), 1.2);
 }
 
 /** Scatters `DEBRIS_PIECES` debris pieces around a destroyed building (spec 10 §6,
