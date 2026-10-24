@@ -1,0 +1,21 @@
+{
+  "mapClimate": { "showcase": "snow" },
+  "climates": {
+    "snow": {
+      "flakes": 5000,
+      "fallSpeed": 3.5,
+      "windX": 0.8,
+      "windZ": 0.3,
+      "swayAmplitude": 0.6,
+      "boxTiles": 44,
+      "boxHeight": 22,
+      "flakeSize": 3,
+      "flakeAlpha": 0.7,
+      "flakeColor": "#ffffff",
+      "coverColor": "#eef3fa",
+      "coverSeconds": 300,
+      "maxCover": 0.9,
+      "coverOpacity": 0.92
+    }
+  }
+}

@@ -6,6 +6,8 @@ export interface Settings {
   gore: boolean;
   /** Absent means true: generated textures are the default (spec 12 §2). */
   generatedTextures?: boolean;
+  /** Absent means true: snow shows on snow maps (spec 22 §4). */
+  weather?: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = { gore: true };
@@ -37,7 +39,12 @@ export function loadSettings(storage?: Storage): Settings {
     if (typeof gore !== "boolean") return { ...DEFAULT_SETTINGS };
     const generatedTextures = (parsed as { generatedTextures?: unknown })
       .generatedTextures;
-    return generatedTextures === false ? { gore, generatedTextures } : { gore };
+    const weather = (parsed as { weather?: unknown }).weather;
+    return {
+      gore,
+      ...(generatedTextures === false ? { generatedTextures } : {}),
+      ...(weather === false ? { weather } : {}),
+    };
   } catch {
     return { ...DEFAULT_SETTINGS };
   }
@@ -50,11 +57,13 @@ export function saveSettings(settings: Settings, storage?: Storage): void {
   try {
     target.setItem(
       SETTINGS_KEY,
-      JSON.stringify(
-        settings.generatedTextures === false
-          ? { gore: settings.gore, generatedTextures: false }
-          : { gore: settings.gore },
-      ),
+      JSON.stringify({
+        gore: settings.gore,
+        ...(settings.generatedTextures === false
+          ? { generatedTextures: false }
+          : {}),
+        ...(settings.weather === false ? { weather: false } : {}),
+      }),
     );
   } catch {
     // A full or locked storage must not break the game.
