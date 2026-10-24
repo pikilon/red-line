@@ -115,6 +115,7 @@
           "maxItems": 2,
           "items": { "type": "integer", "minimum": 1, "maximum": 8 }
         },
+        "radiusCenti": { "$ref": "#/$defs/positive" },
         "power": { "type": "integer" },
         "requiresPower": { "type": "boolean" },
         "dropOff": { "type": "boolean" },

@@ -245,6 +245,10 @@ pub struct TypeDef {
     /// Index into `Ruleset::locomotors`; `-1` for Immediate types.
     #[serde(default = "no_locomotor")]
     pub locomotor: i32,
+    /// Collision radius of a unit in centi-tiles; `0` uses the default
+    /// (`SEPARATION_DISTANCE / 2`). Two units keep `ra + rb` apart.
+    #[serde(default)]
+    pub radius_centi: u32,
     #[serde(default)]
     pub turn_rate_deg: u32,
     #[serde(default)]

@@ -706,8 +706,14 @@ impl World {
         let goal = cell_of(target);
         if !self.nav.is_passable(goal) {
             if self.nav.nearest_passable(goal).is_some() {
-                self.apply_spread_move(player, units, target);
+                self.apply_spread_move(player, units, target, false);
             }
+            return;
+        }
+        // A group never shares one destination: each unit keeps its offset
+        // from the group centroid and claims its own cell.
+        if self.commanded_units(player, units).len() > 1 {
+            self.apply_spread_move(player, units, target, true);
             return;
         }
         let map = &self.nav;
@@ -734,13 +740,9 @@ impl World {
         }
     }
 
-    /// Spec 04 §5.1: a move into an impassable cell gives every commanded unit
-    /// its own goal: centroid offset, near-to-far order, ring search over the
-    /// cells not yet claimed by this command.
-    fn apply_spread_move(&mut self, player: PlayerId, units: &[EntityId], target: FxVec2) {
-        let order_id = self.next_order_id;
-        self.next_order_id += 1;
-        let commanded: Vec<usize> = units
+    /// Entity indices of the distinct units of `player` in `units`, ascending.
+    fn commanded_units(&self, player: PlayerId, units: &[EntityId]) -> Vec<usize> {
+        units
             .iter()
             .filter_map(|&id| self.index_of(id))
             .filter(|&index| {
@@ -749,7 +751,22 @@ impl World {
             })
             .collect::<BTreeSet<usize>>()
             .into_iter()
-            .collect();
+            .collect()
+    }
+
+    /// Spec 04 §5.1: a move into an impassable cell gives every commanded unit
+    /// its own goal: centroid offset, near-to-far order, ring search over the
+    /// cells not yet claimed by this command.
+    fn apply_spread_move(
+        &mut self,
+        player: PlayerId,
+        units: &[EntityId],
+        target: FxVec2,
+        gather: bool,
+    ) {
+        let order_id = self.next_order_id;
+        self.next_order_id += 1;
+        let commanded = self.commanded_units(player, units);
         if commanded.is_empty() {
             return;
         }
@@ -770,8 +787,17 @@ impl World {
         let mut claimed = BTreeSet::new();
         for index in sorted {
             let pos = self.entities[index].pos;
-            let dx = (pos.x.raw() - centroid.0).clamp(-limit, limit);
-            let dy = (pos.y.raw() - centroid.1).clamp(-limit, limit);
+            // `gather`: every unit aims at the click and takes the nearest free cell.
+            let dx = if gather {
+                0
+            } else {
+                (pos.x.raw() - centroid.0).clamp(-limit, limit)
+            };
+            let dy = if gather {
+                0
+            } else {
+                (pos.y.raw() - centroid.1).clamp(-limit, limit)
+            };
             let dest = self.clamp_to_map(FxVec2::new(
                 Fx::from_raw(target.x.raw() + dx),
                 Fx::from_raw(target.y.raw() + dy),
@@ -785,6 +811,24 @@ impl World {
                 continue;
             };
             claimed.insert(goal);
+            if gather && self.rules.ty(self.entities[index].kind).radius_centi >= 30 {
+                // Gathered vehicles leave one free cell between each other.
+                for (dx, dy) in [
+                    (-1, -1),
+                    (0, -1),
+                    (1, -1),
+                    (-1, 0),
+                    (1, 0),
+                    (-1, 1),
+                    (0, 1),
+                    (1, 1),
+                ] {
+                    claimed.insert(Cell {
+                        x: goal.x + dx,
+                        y: goal.y + dy,
+                    });
+                }
+            }
             let map = &self.nav;
             self.fields
                 .entry(map.index(goal))
@@ -1086,6 +1130,7 @@ impl World {
             .iter()
             .map(|e| matches!(e.order, Order::Idle { .. }))
             .collect();
+        let radius = self.unit_radii();
         for a in 0..self.entities.len() {
             if !is_unit[a] {
                 continue;
@@ -1097,7 +1142,8 @@ impl World {
                 }
                 let offset = before[a] - before[b];
                 let d = offset.length();
-                if d >= SEPARATION_DISTANCE {
+                let reach = radius[a] + radius[b];
+                if d >= reach {
                     continue;
                 }
                 let term = if d == Fx::ZERO {
@@ -1106,7 +1152,7 @@ impl World {
                 } else {
                     offset
                         .normalize()
-                        .scale(Fx::from_raw((SEPARATION_DISTANCE - d).raw() / 2))
+                        .scale(Fx::from_raw((reach - d).raw() / 2))
                 };
                 // Spec 04 §5.2: two idle units repel each other at half strength.
                 let term = if is_idle[a] && is_idle[b] {
@@ -1141,22 +1187,46 @@ impl World {
         }
     }
 
+    /// Collision radius of every entity, indexed like `entities`.
+    fn unit_radii(&self) -> Vec<Fx> {
+        let half = Fx::from_raw(SEPARATION_DISTANCE.raw() / 2);
+        self.entities
+            .iter()
+            .map(|e| match self.rules.ty(e.kind).radius_centi {
+                0 => half,
+                centi => fx_centi(centi),
+            })
+            .collect()
+    }
+
     /// Phase 4: a moving unit stops when it touches a unit that already
-    /// completed the same order.
+    /// completed the same order, or, inside the goal cell, another unit that
+    /// is still driving to it (the lower index keeps going, so a pile-up at
+    /// the goal always resolves). Touching means closer than both radii plus
+    /// the `ARRIVAL_CONTACT` margin.
     fn arrive_on_contact(&mut self) {
         let orders: Vec<Order> = self.entities.iter().map(|unit| unit.order).collect();
         let positions: Vec<FxVec2> = self.entities.iter().map(|unit| unit.pos).collect();
+        let radius = self.unit_radii();
+        let margin = ARRIVAL_CONTACT - SEPARATION_DISTANCE;
         let buckets = self.bucket_by_cell(&positions);
         for a in 0..self.entities.len() {
-            let Order::Move { order_id, .. } = orders[a] else {
+            let Order::Move { order_id, goal, .. } = orders[a] else {
                 continue;
             };
+            let in_goal = cell_of(positions[a]) == goal;
             let touches = self.neighbours(&buckets, cell_of(positions[a])).any(|b| {
-                orders[b]
-                    == Order::Idle {
-                        last_order_id: order_id,
-                    }
-                    && (positions[a] - positions[b]).length() <= ARRIVAL_CONTACT
+                if b == a || (positions[a] - positions[b]).length() > radius[a] + radius[b] + margin
+                {
+                    return false;
+                }
+                match orders[b] {
+                    Order::Idle { last_order_id } => last_order_id == order_id,
+                    Order::Move {
+                        order_id: other, ..
+                    } => in_goal && other == order_id && cell_of(positions[b]) == goal && b < a,
+                    _ => false,
+                }
             });
             if touches {
                 self.entities[a].order = Order::Idle {
