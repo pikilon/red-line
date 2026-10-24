@@ -199,27 +199,3 @@ true; a screenshot in classic mode differs from the Remastered one by more than
 **AC-10-08 Scaffolding casts no shadow.** With shadows enabled, `scaffolds`
 has `receiveShadow` true and `castShadow` false, while model instances of a
 building under construction still cast shadows.
-
-## 9. Traceability
-
-| Criterion | File | Test |
-|---|---|---|
-| AC-10-01 | `client/src/render/terrainTexture.test.ts` | `AC-10-01: procedural textures` |
-| AC-10-02 | `client/src/render/terrain.test.ts` | `AC-10-02: terrain meshes` |
-| AC-10-03 | `client/tests/e2e/look.spec.ts` | `AC-10-03: shadows and lighting` |
-| AC-10-04 | `tools/models/check.test.mjs`, `client/src/render/entities.test.ts` | `AC-10-04: model detail` |
-| AC-10-05 | `client/src/render/deaths.test.ts` | `AC-10-05: building debris only` |
-| AC-10-06 | `client/src/render/pixelArt.test.ts`, `client/src/settings.test.ts` | `AC-10-06: classic pass`, `AC-10-06: classic setting` |
-| AC-10-07 | `client/tests/e2e/look.spec.ts` | `AC-10-07: classic mode in the skirmish` |
-| AC-10-08 | `client/src/render/entities.test.ts` | `AC-10-08: scaffolding casts no shadow` |
-
-## 10. Issue breakdown
-
-| Issue | Scope | Criteria | Tier | Depends on |
-|---|---|---|---|---|
-| P4-11 (#194) | Building death without wreck (§6) | AC-10-05 | ready-local | — |
-| P4-12 (#195) | Procedural terrain textures and rock tiles (§4) | AC-10-01, 02 | ready-local | — |
-| P4-13 (#196) | Shadows, lighting, saturated team colours, debug `renderInfo` (§3) | AC-10-03 | ready-local | P4-12 |
-| P4-14 (#197) | Bevels and baked AO in the model library, AO in the client, rebuilt models (§5) | AC-10-04 | ready-pro | P4-13 |
-| P4-10 (#189, revised) | Classic mode (§7) | AC-10-06, 07 | ready-local | P4-13 |
-| P4-17 (#216) | Scaffolding casts no shadow (§3.1), deferred | AC-10-08 | unscheduled | P4-13 |

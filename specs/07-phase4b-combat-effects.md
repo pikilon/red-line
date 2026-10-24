@@ -101,20 +101,3 @@ JSON or a throwing storage; `saveSettings` round-trips and never throws.
 two enemy units spawned in range through the debug API, after 3 s the effect
 mesh counts reported by `__redline.effectCounts()` include at least one
 `muzzle`; pressing `G` shows the toast; AC-03-62/63 still pass.
-
-## 7. Traceability
-
-| Criterion | File | Test |
-|---|---|---|
-| AC-07-01 | `client/src/render/effects.test.ts` | `AC-07-01: effect pool` |
-| AC-07-02 | `client/src/render/effects.test.ts` | `AC-07-02: shot effects by damage type` |
-| AC-07-03 | `client/src/render/deaths.test.ts` | `AC-07-03: death detection` |
-| AC-07-04 | `client/src/render/deaths.test.ts` | `AC-07-04: death effects and gore filter` |
-| AC-07-05 | `client/src/settings.test.ts` | `AC-07-05: settings` |
-| AC-07-06 | `client/tests/e2e/effects.spec.ts` | `AC-07-06: effects in the skirmish` |
-
-## 8. Issue breakdown
-
-| Issue | Scope | Criteria | Tier | Depends on |
-|---|---|---|---|---|
-| P4-06 | effect pool, shot effects, death detection, wrecks/bodies/blood, settings + `G` toggle, debug `effectCounts`, wiring in skirmish | AC-07-01..06 | ready-pro | — |

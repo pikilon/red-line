@@ -1,8 +1,6 @@
 //! AC-03-05: Ruleset parsing in the simulation.
 //!
-//! Committed by tier S (see `specs/03-phase2-core-loop.md` §4.6 and the
-//! traceability table §8). The implementer must make this pass without
-//! modifying it.
+//! See `specs/03-phase2-core-loop.md` §4.6.
 
 use sim::fixed::{Fx, FxVec2};
 use sim::map::MapGrid;

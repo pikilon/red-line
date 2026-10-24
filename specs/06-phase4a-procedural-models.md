@@ -210,29 +210,3 @@ screenshot of the starting base differs from the Phase 2 box rendering (pixel
 diff over 5 %).
 
 **AC-06-07 Performance holds.** AC-03-62 and AC-03-63 pass unchanged.
-
-## 7. Traceability
-
-| Criterion | File | Test |
-|---|---|---|
-| AC-06-01 | `tools/models/check.test.mjs` | `AC-06-01: model check` |
-| AC-06-02 | PR description | manual |
-| AC-06-03 | `client/src/render/models.test.ts` | `AC-06-03: model registry` |
-| AC-06-04 | `client/src/render/entities.test.ts` | `AC-06-04: instanced model rendering` |
-| AC-06-05 | `client/src/render/heading.test.ts` | `AC-06-05: heading and turret aim` |
-| AC-06-08 | `client/src/render/heading.test.ts` | `AC-06-08: gradual turning` |
-| AC-06-09 | `scripts/build-data.test.mjs`, `client/src/render/heading.test.ts` | `AC-06-09: turn rates from data` |
-| AC-06-06 | `client/tests/e2e/models.spec.ts` | `AC-06-06: models in the skirmish` |
-| AC-06-07 | existing perf tests | — |
-
-## 8. Issue breakdown
-
-| Issue | Scope | Criteria | Tier | Depends on |
-|---|---|---|---|---|
-| P4-01 (this PR) | `lib.py`, `build.mjs`, `check.mjs`, exemplar `ru-t-72b3.py` and `ua-leopard-2a4.py` (tier S per D-07) | AC-06-01, 02 | S (Opus) | — |
-| P4-02 (#165) | Ukraine vehicles and infantry scripts + `.glb` | AC-06-01 | ready-pro | P4-01 |
-| P4-03 (#166) | Russia vehicles and infantry scripts + `.glb` | AC-06-01 | ready-pro | P4-01 |
-| P4-04 (#167) | Buildings of both factions and the depot + `.glb` | AC-06-01 | ready-pro | P4-01 |
-| P4-05 (#168) | Client model registry, instanced rendering, heading, lights | AC-06-03..07 | ready-pro | P4-01 |
-| P4-15 (#202) | Gradual hull and turret turning (§5.1) | AC-06-08, AC-06-09 (`turnRatesOf`) | ready-local | P4-05, P4-16 |
-| P4-16 (#204) | Turn rates in the faction data (§5.1) | AC-06-09 (data) | ready-local | — |

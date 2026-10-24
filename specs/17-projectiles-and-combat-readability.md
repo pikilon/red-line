@@ -571,42 +571,4 @@ then right-click the building.
   behaviour again. This is the only spec-phase test this spec changes. Its
   muzzle, impact and absent-target cases stay.
 * AI-vs-AI outcomes (`crates/sim/tests/ai_match.rs`, `crates/headless/tests/cli.rs`)
-  may change with the new builtin data. Do not edit them. If one fails, report
-  it on the issue with `needs-pro` and stop.
-
-## 10. Traceability
-
-| Criterion | File | Test |
-|---|---|---|
-| AC-17-01 | `scripts/build-data.test.mjs` | `AC-17-01: weapon schema` |
-| AC-17-17 | `scripts/build-data.test.mjs` | `AC-17-17: builtin weapons` |
-| AC-17-02 | `crates/sim/tests/projectiles.rs` | `ac_17_02_flight_time_from_speed` |
-| AC-17-03 | `crates/sim/tests/projectiles.rs` | `ac_17_03_legacy_behaviour` |
-| AC-17-04 | `crates/sim/tests/projectiles.rs` | `ac_17_04_homing_tracks` |
-| AC-17-05 | `crates/sim/tests/projectiles.rs` | `ac_17_05_ballistic_can_miss` |
-| AC-17-06 | `crates/sim/tests/projectiles.rs` | `ac_17_06_scatter` |
-| AC-17-07 | `crates/sim/tests/projectiles.rs` | `ac_17_07_salvo` |
-| AC-17-08 | `crates/sim/tests/projectiles.rs` | `ac_17_08_events_and_killer` |
-| AC-17-09 | `crates/sim/tests/projectiles.rs` | `ac_17_09_combat_snapshot` |
-| AC-17-10 | `crates/sim/tests/projectiles.rs` | `ac_17_10_hash` |
-| AC-17-11 | `client/src/sim/combatSnapshot.test.ts` | `AC-17-11: client decode` |
-| AC-17-12 | `client/src/render/flight.test.ts` | `AC-17-12: flight profiles` |
-| AC-17-13 | `client/src/render/projectiles.test.ts` | `AC-17-13: projectile renderer` |
-| AC-17-14 | `client/src/render/projectiles.test.ts` | `AC-17-14: launch effects and trails` |
-| AC-17-15 | `client/src/render/effects.test.ts` | `AC-17-15: detonations and deaths from events` |
-| AC-17-16 | `client/tests/e2e/projectiles.spec.ts` | `AC-17-16: projectiles in the skirmish` |
-
-Sandbox tests for AC-17-02..10 add their own weapons through a ruleset built
-in the test file (a copy of the fixture JSON with extra weapons). They do not
-edit `test-rules.json`.
-
-## 11. Issue breakdown
-
-| Issue | Scope | Criteria | Tier | Depends on |
-|---|---|---|---|---|
-| P4-26 | Weapon schema, build script defaults, `WeaponDef` parse | AC-17-01 | ready-local | — |
-| P4-27 | Sim: flight time, delivery, scatter, salvo, hash; builtin values of §3.3; AC-07-02 HIMARS case removal | AC-17-02..07, 10, 17 | ready-pro | P4-26 |
-| P4-28 | Sim: events, `last_hit`, `combat_for`; client decode and worker plumbing | AC-17-08, 09, 11 | ready-pro | P4-27 |
-| P4-29 | Flight profiles and projectile renderer, tracer lines removed | AC-17-12, 13 | ready-pro | P4-28 |
-| P4-30 | Launch effects, dust, trails, effect velocity/growth | AC-17-14 | ready-pro | P4-29 |
-| P4-31 | Detonations and deaths from events, AC-07-02 amendment, e2e | AC-17-15, 16 | ready-pro | P4-30 |
+  may change with the new builtin data.

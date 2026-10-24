@@ -5,6 +5,6 @@
   },
   "formatter": { "indentStyle": "space", "indentWidth": 2 },
   "linter": {
-    "rules": { "preset": "recommended", "style": { "noEnum": "error" } }
+    "rules": { "preset": "recommended" }
   }
 }

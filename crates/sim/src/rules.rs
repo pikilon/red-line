@@ -3,7 +3,7 @@
 //! Parses a generated-format ruleset (see `data/generated/ruleset.json`) into
 //! strongly-typed definitions and validates every reference, so the rest of the
 //! simulation can index by `TypeId`/`WeaponId` without re-checking. See
-//! `specs/03-phase2-core-loop.md` §5.2 and the traceability table §8.
+//! `specs/03-phase2-core-loop.md` §5.2.
 
 use serde::Deserialize;
 

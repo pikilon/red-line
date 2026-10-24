@@ -1,99 +1,50 @@
 # AGENTS.md
 
-Modern Conquest: Red Line is an open-source, browser-based 2.5D RTS (Red Alert 2
-/ C&C Generals style, modern real-world conflicts). The owner does not write
-code: agents implement, the owner reviews quality hands-on.
+## Working Mode
+* The owner describes use cases in product terms and never discusses tests, code, database or AI models. The agent owns every technical decision.
+* Ask only when product behavior is genuinely ambiguous; otherwise choose the narrowest reasonable option and record it as an assumption in the spec (if the project keeps specs).
+* For each use case: implement it, verify what the change touches, open a pull request and merge it once CI passes. A wrong merge is rolled back.
+* Report the result in product terms: what a user can do now and how to try it.
+* Keep token use low: read only what the task needs and leave the full suite to CI. Occasionally suggest a way to save usage.
 
-## Sources of Truth
+## Project
 
-* `specs/*.md` defines behavior. Functional changes are test-first: write the
-  failing test and see it fail because the behavior is missing, then implement.
-  Never edit, skip or weaken a test written in the spec phase; if one looks
-  wrong, stop and report it on the issue with the `needs-pro` label.
-* `docs/decisions.md` (D-01, D-02...) holds architecture, licensing, faction and
-  model-tier decisions. Never contradict it; flag conflicts instead.
-* Work comes from GitHub issues. State lives in the repository and GitHub,
-  never only in a chat.
-* Do not reinvent solved problems. Before designing or changing a gameplay or
-  engine mechanism (pathfinding, locomotion, production, economy, damage,
-  AI...), find how C&C Generals/Zero Hour (or the C&C Remastered source) solved
-  it: follow `.agents/agents/generals-precedent/agent.md`, in a subagent or
-  separate session when your harness has one. Reuse that solution and cite the
-  note in the spec or issue; never guess. A deviation needs the owner's
-  approval and is recorded as one in the spec.
+Modern Conquest: Red Line, a browser 2.5D RTS in the style of Red Alert 2 and
+C&C Generals. Behavior lives in `specs/*.md`; decisions in `docs/decisions.md`
+(D-01...) are binding: flag a conflict instead of contradicting one.
 
-## Language
-
-* Everything in the repository and GitHub is English. Player-facing strings go
-  through i18n files, never hardcoded.
-* Chat with the owner in Spanish, quoting identifiers and paths unchanged.
-
-## Architecture
-
-* `crates/sim`: deterministic Rust simulation (WASM and native). No rendering,
-  time, I/O or browser. Fixed-point only: no floats, wall-clock time, unseeded
-  randomness or hash-order iteration.
-* `client/`: strict TypeScript + Three.js + Vite. Sends commands and renders
-  state; never decides game outcomes.
-* `data/`: YAML validated by JSON Schema. Balance changes touch data, not code.
-* Layers talk only through the documented WASM API and data schemas.
-* TypeScript: no `switch` (use a constant object dictionary) and no `enum` (use
-  `as const` objects with derived types). `node --run check:rules`, Biome and
-  clippy enforce these rules.
+* **How the original does it.** Before designing a mechanism (pathfinding,
+  production, economy, damage, AI...), ask the `generals-precedent` subagent
+  (`.agents/agents/generals-precedent/agent.md`) one question and copy what
+  Zero Hour does; cite its note in the spec. Do not guess or reinvent.
+* **Language.** Everything in the repository and GitHub is English;
+  player-facing strings go through `client/src/i18n/`. Talk to the owner in
+  Spanish, keeping identifiers and paths unchanged.
+* **Determinism.** `crates/sim` is fixed-point Rust: no floats, wall-clock
+  time, unseeded randomness or hash-order iteration (`check:rules` and clippy
+  fail otherwise). The client only sends commands and renders; balance changes
+  go in `data/`, not code.
 
 ## Commands
 
-* Scripts run with `node --run <script>`, never `npm run`. `node --run` skips
-  pre/post hooks, so every step lives inside the script itself.
-* Fresh clone or worktree: `node --run install:root && node --run install:client`.
-* Before declaring any change done, verify on a cheap model outside your
-  context: delegate to the `verification-runner` subagent
-  (`.agents/agents/verification-runner/agent.md`; Flash in Antigravity, Haiku
-  in Claude Code), which tries the local model first and runs only the steps
-  the change can break (`node --run verify:plan`). Harnesses without
-  file-defined subagents run `node --run verify:agent` themselves: it uses the
-  local model, or DeepSeek Flash only with the owner's confirmation (D-11), and
-  prints a report starting with `Verdict:`. `UNAVAILABLE` means no cheap model:
-  ask the owner. `ERROR`: stop and tell the owner. `node --run verify` is the
-  same check sequence CI runs.
-* `node --run status` lists open PRs, issues waiting for the owner, and local
-  branches or worktrees no PR accounts for. Delete merged and orphan ones.
-* Non-interactive shells may lack cargo: prefix commands with
-  `PATH="$HOME/.cargo/bin:$PATH"`. When a tool seems missing, run
-  `scripts/doctor.sh`.
+* Scripts run with `node --run <script>`, never `npm run`. Fresh clone or
+  worktree: `node --run install:root && node --run install:client`.
+* CI runs `node --run verify`. Shells may lack cargo: prefix
+  `PATH="$HOME/.cargo/bin:$PATH"`; `scripts/doctor.sh` checks the toolchain.
+* To let the owner try a situation, give a `?load=<id>` URL from an example
+  save (`node --run saves:list`; spec 19).
+* `node --run deploy:pages` publishes the game publicly: only when the owner
+  asks.
 
-## Done Means Tested, Then Owner-Confirmed
+## GitHub
 
-* A player-facing change is covered by automated tests (Playwright e2e for UI).
-  Agents do not test by hand in a browser: the owner does all manual testing
-  (2026-10-15). When the tests pass and CI is green, the agent merges the PR
-  itself, labels the issue `needs-owner-test` and comments on it the manual
-  steps the owner must try, numbered, each with the expected result and a
-  localhost URL from a dev server on `main`.
-* Manual test steps start from example saves: see the `test-saves` skill.
-* The owner confirms in the morning. A failure becomes a new bug issue linked
-  to the original, fixed the same way. Remove `needs-owner-test` once confirmed.
-* Work issues one at a time, in order: merge a PR and delete its branch and
-  worktree before starting the next, so no stale branches or conflicting
-  rebases pile up.
-
-## AI Providers (D-11)
-
-* Agents may start local models (LM Studio on `http://127.0.0.1:1234/v1`,
-  through `dsh` or OpenCode) whenever useful, never at game runtime. If a local
-  model or harness fails, stop and tell the owner instead of working around it.
-* The ComfyUI MCP (`.mcp.json`, `tools/asset-pipeline/MCP.md`) runs local
-  workflows only: `partner_*`, `auth_login` and model downloads need the
-  owner's confirmation.
-* A paid remote AI API needs the owner's confirmation for that run: agents ask
-  in chat, scripts ask interactively and fall back to local models. Code,
-  tests, CI and the game never call one.
-
-## Instruction Files
-
-* Read the nearest `AGENTS.md` before editing under `crates/` or `client/`.
-* Each rule lives in one place: `AGENTS.md` files, `.agents/skills/<name>/SKILL.md`
-  or `.agents/agents/<name>/agent.md` (subagent frontmatter in Antigravity
-  format). `.claude/` only holds a symlink to the skills and thin subagent
-  wrappers with Claude Code frontmatter. Never create `CLAUDE.md`, `GEMINI.md`, `.cursor/`
-  or other agent-specific rule files.
+* Act as `pikilon`; if `gh` or git uses another account, stop and tell the
+  owner. Commits are authored `pikilon <pikilon@gmail.com>`; remote
+  `git@github-pikilon:pikilon/red-line.git`.
+* Merge with `gh pr merge --auto --squash` and end the turn: never wait for
+  CI. `main` requires the `verify` check, so GitHub merges once it passes. At
+  the start of each task run `node --run status`; a PR with `CI failing` comes
+  first: tell the owner what broke and fix it.
+* Commit messages: English, third person, one prefix (`feat`, `fix`, `chore`,
+  `docs`, `refactor`, `test`, `build`, `ci`, `perf`, `style`), e.g.
+  `feat: adds flow field integration pass`.

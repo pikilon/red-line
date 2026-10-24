@@ -129,11 +129,3 @@ follows the relief of the skin.
 * AC-13-06: Given a running skirmish, When a Ukrainian and a Russian vehicle are
   on screen, Then the blue/yellow and the white Z are visible (screenshot check
   by the agent; the game keeps running without console errors).
-
-## Traceability
-
-| Criterion | Test |
-| --- | --- |
-| AC-13-01..04, 07, 08 | `client/src/render/liveries.test.ts` |
-| AC-13-05 | `client/src/render/liveries.test.ts` "AC-13-05: renderer slots" |
-| AC-13-06 | `client/tests/e2e/liveries.spec.ts` |

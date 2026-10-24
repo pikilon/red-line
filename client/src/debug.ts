@@ -80,6 +80,10 @@ export interface SkirmishDebug {
     tick: number;
     entities: { id: number; x: number; y: number }[];
   } | null;
+  /** Pauses or resumes only the worker clock, without the game menu, so a
+   *  test can hold production still between UI steps (#299). Commands sent
+   *  while paused apply on the first step after resuming. */
+  setSimPaused(paused: boolean): void;
   /** Target in tiles. */
   setCameraTarget(x: number, y: number): void;
   command(command: SimCommand): void;

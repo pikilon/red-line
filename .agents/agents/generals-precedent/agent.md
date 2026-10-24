@@ -13,7 +13,7 @@ mainAgent: false
 
 # Generals Precedent
 
-You run isolated from the main conversation. Read EA's released source, then
+You run isolated from the main conversation. Read EA's released source and the game's INI data, then
 return **only** the note below (max ~25 lines): no file dumps, no code, no
 process narration. Study and reimplement; never paste code (D-02: GPL-3.0 reuse
 is legal but must be a conscious owner choice, and the sim is Rust fixed-point,
@@ -21,32 +21,47 @@ so a port is not a copy anyway).
 
 ## Source location
 
-* Official repo: `https://github.com/electronicarts/CnC_Generals_Zero_Hour`
-  (GPL-3.0). Red Alert 1 / Remastered: `electronicarts/CnC_Remastered_Collection`.
-* Read it **online, read-only**; never clone or download the repository. Use
-  `gh`:
-  * Read a file: `gh api -H "Accept: application/vnd.github.raw" "repos/electronicarts/CnC_Generals_Zero_Hour/contents/<path>"`
-    Find a term with `| grep -n -i "<term>"`, then read only the function you
-    need with `| sed -n 'START,ENDp'`; the line numbers are your citations.
+* Code: EA's release, `electronicarts/CnC_Generals_Zero_Hour` (GPL-3.0), at
+  commit `0a05454d8574207440a5fb15241b98ad0b435590`; cite it as
+  `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`. Red Alert 1 / Remastered:
+  `electronicarts/CnC_Remastered_Collection`.
+* Fast path, local and read-only: if `$GENERALS_SRC` points at the owner's
+  OpenZH checkout (`pikilon/openzh`), EA's commit is in its history, so read it
+  with git and never touch the working tree (its files carry later
+  TheSuperHackers and port changes):
+  * Find: `git -C "$GENERALS_SRC" grep -n -i "<term>" 0a05454d8 -- GeneralsMD/Code`
+  * Read: `git -C "$GENERALS_SRC" show 0a05454d8:<path> | sed -n 'START,ENDp'`
+  * Later fixes, when they matter: `git -C "$GENERALS_SRC" log --oneline 0a05454d8..HEAD -- <path>`.
+    A TheSuperHackers fix that changes behavior is worth a line in the note:
+    retail behaves as EA's code does, bug included.
+* Otherwise read EA's repo online with `gh`; never clone or download it:
+  * Read a file: `gh api -H "Accept: application/vnd.github.raw" "repos/electronicarts/CnC_Generals_Zero_Hour/contents/<path>"`,
+    then `| grep -n -i "<term>"` and `| sed -n 'START,ENDp'` for the function.
   * List a folder: `gh api "repos/electronicarts/CnC_Generals_Zero_Hour/contents/<dir>" --jq '.[].name'`.
-* If `gh` fails (e.g. not logged in inside a sandboxed harness), fall back to
-  read-only HTTP on public URLs, no login needed: `curl -sL https://raw.githubusercontent.com/electronicarts/CnC_Generals_Zero_Hour/<sha>/<path>`
-  (or your URL-reading tool), and `https://api.github.com/repos/electronicarts/CnC_Generals_Zero_Hour/contents/<dir>`
-  for listings. Pin `<sha>` so the citations stay valid.
-* Record the commit: `gh api repos/electronicarts/CnC_Generals_Zero_Hour/commits/HEAD --jq .sha`.
-* `gh search code` returned nothing when tested: do not rely on it. Browse by
-  directory from "Where to look" and grep each file's content instead.
-* If a local clone already exists at `$GENERALS_SRC`, you may use `rg` on it
-  instead; never create one without the owner's confirmation.
+  * If `gh` fails, use public raw URLs: `curl -sL https://raw.githubusercontent.com/electronicarts/CnC_Generals_Zero_Hour/0a05454d8574207440a5fb15241b98ad0b435590/<path>`.
+  * `gh search code` returned nothing when tested: browse by directory instead.
+* Data: EA's release has no `Data/INI`; the numbers and flags live in the
+  owner's game copy (`INIZH.big`, Zero Hour 1.04). Read them with
+  `node --run generals:ini -- grep "<regex>"`, `-- list [regex]` or
+  `-- show "Data\INI\<file>.ini"` (add `--generals` for Generals 1.0's
+  `INI.big`). Hits print as `INIZH.big:Data\INI\<file>.ini:<line>:`, which is
+  the citation. It needs `GENERALS_GAME_DIR` (or OpenZH's `ZHWP_GAME_DIR`) and
+  the external drive mounted; if it fails, say so in the note. Quote values,
+  never whole INI blocks: they are EA's data, not GPL code.
+* Running OpenZH in the browser is the owner's tool, not yours. When code and
+  INI cannot settle a question, end the note with the exact thing the owner
+  could watch in an OpenZH skirmish to settle it.
 
 ## Where to look
 
-* `Generals/Code/GameEngine/Source/GameLogic/` — AI, object modules, `Object/`,
-  `AI/` (pathfinding in `AIPathfind.cpp`), production in `Object/Update/ProductionUpdate.cpp`.
-* `GeneralsMD/` is Zero Hour (superset); prefer it when both exist.
-* Data-driven rules live in the INI definitions (`Data/INI/`) and the parsers in
-  `GameEngine/Source/Common/INI/`: many "decisions" are numbers and flags there,
-  not code.
+* `GeneralsMD/Code/GameEngine/Source/GameLogic/` (Zero Hour, a superset of
+  `Generals/`; prefer it): `AI/` (pathfinding in `AIPathfind.cpp`), `Object/`,
+  production in `Object/Update/ProductionUpdate.cpp`.
+* The INI parsers and their defaults live next to the classes that read them
+  (each class's `FieldParse` table, e.g. `LocomotorTemplate::getFieldParse`,
+  and `GameEngine/Source/Common/INI/`); the
+  shipped values come from `generals:ini`. Many "decisions" are numbers and
+  flags there, not code.
 * Start the search from class/INI names (`Locomotor`, `ProductionUpdate`, `WeaponTemplate`).
 
 ## Procedure
@@ -65,10 +80,10 @@ summarizes it to the owner in Spanish.
 
 ```
 Question: <one line>
-Source: <repo@commit>
+Source: <repo@commit>; data: INIZH.big (Zero Hour 1.04)
 Findings:
 * <behavior> — `path/File.cpp:Lline` (`FunctionName`) [fact|inference]
-Values: <constants/INI defaults with file:line>
+Values: <code defaults with file:line, shipped INI values with INIZH.big:file:line>
 Red Line recommendation: <what to specify, and deviations with reasons>
 ```
 
@@ -77,7 +92,7 @@ Put the note in the PR/issue comment or the relevant `specs/*.md` section
 
 ## Model tier
 
-* A cheap model is enough (tier C/B in D-08: Flash in Antigravity, Haiku in
-  Claude Code through `.claude/agents/generals-precedent.md`); escalate to
-  tier A when the behavior spans many files, mixes code with INI data, or the
-  answer is "not found" twice. You do not edit repository files: the caller reviews the note.
+* A cheap model is enough (Flash in Antigravity, Haiku in Claude Code through
+  `.claude/agents/generals-precedent.md`); escalate to a stronger model when
+  the behavior spans many files, mixes code with INI data, or the answer is
+  "not found" twice. You do not edit repository files: the caller reviews the note.

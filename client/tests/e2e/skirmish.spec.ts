@@ -43,6 +43,7 @@ interface SkirmishDebugView {
   frameStats(): { frames: number; p95FrameMs: number };
   injectFrameTimes(frameTimesMs: number[]): void;
   resumeFrameTimes(): void;
+  setSimPaused(paused: boolean): void;
 }
 
 type DebugWindow = Window & { __redline?: SkirmishDebugView };
@@ -532,8 +533,13 @@ test("AC-03-57: produces and cancels through the UI", async ({ page }) => {
   await clickButton(page, rifleButton);
   await clickButton(page, rifleButton);
   await expect(page.locator("#queue .queue-item")).toHaveCount(2);
+  // Hold the worker clock while the page checks the queue and cancels, so the
+  // head cannot finish in between on a slow runner (#299). The cancel applies
+  // on the first step after resuming.
+  await debugCall(page, (api) => api.setSimPaused(true));
   await expect(page.locator("#res-credits")).toHaveText("Credits 3700");
   await clickButton(page, rifleButton, "right");
+  await debugCall(page, (api) => api.setSimPaused(false));
   await expect(page.locator("#queue .queue-item")).toHaveCount(1);
   await expect(page.locator("#res-credits")).toHaveText("Credits 3800");
   await expect

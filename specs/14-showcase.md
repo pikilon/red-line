@@ -75,12 +75,3 @@ counted).
 * AC-14-04: Given `?showcase=1`, When the match is ready, Then both sides'
   buildings and units exist (14 per faction) and clicking a unit with the real
   mouse shows its name in `#hud-selected-type`.
-
-## Traceability
-
-| Criterion | Test |
-| --- | --- |
-| AC-14-01 | `crates/sim/tests/wasm_api.rs` `ac_14_01_debug_spawn_places_buildings` |
-| AC-14-02 | `client/src/app/showcase.test.ts` |
-| AC-14-03 | `client/src/hud.test.ts` |
-| AC-14-04 | `client/tests/e2e/showcase.spec.ts` |

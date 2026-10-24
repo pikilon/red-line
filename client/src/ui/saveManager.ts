@@ -1,6 +1,6 @@
 /** The `#save-manager` panel of the game menu (spec 19 §5.5). Every element
  *  is created once; renders only change text, `hidden` and `disabled`, so
- *  the buttons stay clickable with a real mouse (client `AGENTS.md`). */
+ *  the buttons stay clickable with a real mouse. */
 import { type MessageKey, t } from "../i18n";
 import { gameTime, MAX_NAME_LENGTH, type SlotId } from "../saves/saveFile";
 import type { SaveSummary } from "../saves/store";
