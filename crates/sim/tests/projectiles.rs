@@ -269,7 +269,7 @@ fn ac_17_05_ballistic_can_miss() {
     );
 
     // An enemy standing within `DIRECT_HIT_CENTI` of the impact is hit instead.
-    let mut world = World::sandbox(rules, MapGrid::open(60, 40), &[0, 0]);
+    let mut world = World::sandbox(rules, MapGrid::open(60, 40), &[0, 0, 0]);
     let _shooter = world.spawn(0, gunner, at(1000, 1000));
     let runner = world.spawn(1, runner_kind, at(1500, 1000));
     world.enqueue_as(
@@ -281,7 +281,9 @@ fn ac_17_05_ballistic_can_miss() {
     );
     world.step();
     let impact = world.projectiles()[0].impact;
-    let sitter = world.spawn(1, runner_kind, impact);
+    // A third player's unit, so it does not step out of the runner's way
+    // (spec 04 §5.3).
+    let sitter = world.spawn(2, runner_kind, impact);
     let mut guard = 0;
     while !world.projectiles().is_empty() && guard < 40 {
         world.step();

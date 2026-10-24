@@ -92,6 +92,12 @@
       "entities": 10
     },
     {
+      "id": "tank-through-group",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 16
+    },
+    {
       "id": "crowd",
       "map": "showcase",
       "form": "setup",

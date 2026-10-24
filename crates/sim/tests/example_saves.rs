@@ -256,6 +256,35 @@ fn ac_19_14_pathfinding_river() {
     assert!(near >= 8, "{near} of 10 units reached the east bank");
 }
 
+/// Spec 04 §5.3: the lone tank reaches the far side of the packed idle block
+/// and no two tanks ever overlap on the way (the parked ones make way).
+#[test]
+fn ac_19_14_tank_through_group() {
+    let (mut world, _, mut ais) = load_example("tank-through-group");
+    let mover = world.entities()[0].id;
+    let radius = fx_centi(world.rules().ty(world.entities()[0].kind).radius_centi);
+    let mut closest = fx_centi(10_000);
+    for _ in 0..900 {
+        step_with_ai(&mut world, &mut ais);
+        let units = world.entities();
+        for (i, a) in units.iter().enumerate() {
+            for b in &units[i + 1..] {
+                closest = closest.min((a.pos - b.pos).length());
+            }
+        }
+    }
+    let target = FxVec2::new(fx_centi(4450), fx_centi(1550));
+    let end = world.entity(mover).unwrap().pos;
+    assert!(
+        (end - target).length() <= fx_centi(50),
+        "tank ended at {end:?}"
+    );
+    assert!(
+        closest >= radius + radius - fx_centi(2),
+        "two tanks came within {closest:?} of each other"
+    );
+}
+
 #[test]
 fn ac_19_14_crowd() {
     let (world, _, _) = load_example("crowd");

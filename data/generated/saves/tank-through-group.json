@@ -1,0 +1,171 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "tank-through-group",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 36,
+      "y": 16,
+      "zoom": 0.8
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          2850,
+          1550
+        ],
+        "order": {
+          "moveCenti": [
+            4450,
+            1550
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3450,
+          1450
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3550,
+          1450
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3650,
+          1450
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3750,
+          1450
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3850,
+          1450
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3450,
+          1550
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3550,
+          1550
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3650,
+          1550
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3750,
+          1550
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3850,
+          1550
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3450,
+          1650
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3550,
+          1650
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3650,
+          1650
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3750,
+          1650
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3850,
+          1650
+        ]
+      }
+    ]
+  }
+}

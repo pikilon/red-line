@@ -328,3 +328,37 @@ fn ac_02_17_units_never_enter_blocked_cells() {
         }
     }
 }
+
+/// AC-04-05, spec 04 §5.3: a unit sent through a block of idle allies does
+/// not drive through them; the allies in its way step aside first.
+#[test]
+fn ac_04_05_idle_allies_step_out_of_the_way() {
+    let mut world = World::new(MapGrid::open(32, 32));
+    let mover = world.spawn_unit_at(raw(8 * 65536 + 32768, 10 * 65536 + 32768));
+    for y in 9..=11 {
+        for x in 14..=18 {
+            world.spawn_unit_at(raw((x << 16) + 32768, (y << 16) + 32768));
+        }
+    }
+    let target = raw(24 * 65536 + 32768, 10 * 65536 + 32768);
+    world.enqueue(Command::Move {
+        units: vec![mover],
+        target,
+    });
+    let mut closest = Fx::from_int(100);
+    for _ in 0..200 {
+        world.step();
+        let pos = world.unit(mover).unwrap().pos;
+        for unit in world.units().iter().filter(|unit| unit.id != mover) {
+            let d = (unit.pos - pos).length();
+            if d < closest {
+                closest = d;
+            }
+        }
+    }
+    assert_eq!(world.unit(mover).unwrap().pos, target);
+    assert!(
+        closest >= Fx::from_raw(26214),
+        "the mover came within {closest:?} of an ally"
+    );
+}

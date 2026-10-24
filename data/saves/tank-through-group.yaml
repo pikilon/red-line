@@ -1,0 +1,27 @@
+# Spec 04 §5.3, spec 19 §7: one tank ordered straight across a packed block of fifteen idle tanks.
+id: tank-through-group
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 36, y: 16, zoom: 0.8 }
+entities:
+  - { player: 0, type: ua-leopard-2a4, atCenti: [2850, 1550], order: { moveCenti: [4450, 1550] } }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3450, 1450] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3550, 1450] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3650, 1450] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3750, 1450] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3850, 1450] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3450, 1550] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3550, 1550] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3650, 1550] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3750, 1550] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3850, 1550] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3450, 1650] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3550, 1650] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3650, 1650] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3750, 1650] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3850, 1650] }
