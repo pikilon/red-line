@@ -18,6 +18,11 @@ fn sandbox() -> World {
     World::sandbox(test_rules(), MapGrid::open(40, 24), &[0, 0])
 }
 
+/// Built-in rules, needed for turreted (non-`Immediate`) units.
+fn builtin_sandbox() -> World {
+    World::sandbox(Ruleset::builtin(), MapGrid::open(40, 24), &[0, 0])
+}
+
 fn steps(world: &mut World, count: u32) {
     for _ in 0..count {
         world.step();
@@ -197,8 +202,9 @@ fn ac_03_30_attack_order() {
         Order::Idle { last_order_id: 1 }
     );
 
-    // An Attack on a target that is not visible to the issuer, on an own entity
-    // or on a depot is ignored and consumes no order id.
+    // An Attack on an own entity or a depot is ignored and consumes no order
+    // id. An enemy outside the player's fog is a valid order now: Zero Hour
+    // only filters automatic targeting by fog (precedent note 2026-10-25).
     let mut world = sandbox();
     let tank = world.spawn(0, 10, at(550, 550));
     let dozer = world.spawn(0, 7, at(2250, 550));
@@ -208,7 +214,7 @@ fn ac_03_30_attack_order() {
     assert!(!world.is_entity_visible(0, hidden));
 
     let order_id = world.next_order_id();
-    for target in [dozer, depot, hidden] {
+    for target in [dozer, depot] {
         world.enqueue_as(
             0,
             Command::Attack {
@@ -223,6 +229,20 @@ fn ac_03_30_attack_order() {
         world.entity(tank).unwrap().order,
         Order::Idle { last_order_id: 0 }
     );
+
+    world.enqueue_as(
+        0,
+        Command::Attack {
+            units: vec![tank],
+            target: hidden,
+        },
+    );
+    world.step();
+    assert_eq!(world.next_order_id(), order_id + 1);
+    assert!(matches!(
+        world.entity(tank).unwrap().order,
+        Order::Attack { target, .. } if target == hidden
+    ));
 }
 
 #[test]
@@ -399,6 +419,89 @@ fn ac_08_21_attackers_hold_position_within_weapon_range() {
     assert!((stop - at(3050, 1050)).length() > fx_centi(980));
     steps(&mut world, 30);
     assert_eq!(world.entity(mortar).unwrap().pos, stop);
+}
+
+#[test]
+fn a_new_attack_order_overrides_the_locked_turret_target() {
+    // AC-11-18: the Leopard locks the truck it is firing at. A new order on a
+    // rifleman in range must switch the aim and the next volley, not keep
+    // shooting the old victim (the click-to-attack bug).
+    let mut world = builtin_sandbox();
+    let leopard = world
+        .rules()
+        .type_index("ua-leopard-2a4")
+        .expect("builtin type exists");
+    let truck_kind = world
+        .rules()
+        .type_index("ru-supply-truck")
+        .expect("builtin type exists");
+    let rifleman_kind = world
+        .rules()
+        .type_index("ru-rifleman")
+        .expect("builtin type exists");
+    let tank = world.spawn(0, leopard, at(550, 550));
+    let truck = world.spawn(1, truck_kind, at(1050, 550));
+    let rifleman = world.spawn(1, rifleman_kind, at(550, 1050));
+    world.enqueue_as(
+        0,
+        Command::Attack {
+            units: vec![tank],
+            target: truck,
+        },
+    );
+    steps(&mut world, 30);
+    assert_eq!(world.entity(tank).unwrap().aim, Some(truck));
+    let truck_hp = world.entity(truck).unwrap().hp;
+    assert!(truck_hp < 250);
+
+    world.enqueue_as(
+        0,
+        Command::Attack {
+            units: vec![tank],
+            target: rifleman,
+        },
+    );
+    world.step();
+    assert_eq!(world.entity(tank).unwrap().aim, Some(rifleman));
+    // 45 ticks: two volleys hit the rifleman, which survives; the truck must
+    // stay untouched. (After the ordered target dies, auto-targeting may pick
+    // another enemy, which is not what this test checks.)
+    steps(&mut world, 45);
+    assert_eq!(world.entity(truck).unwrap().hp, truck_hp);
+    assert!(world.entity(rifleman).unwrap().hp < 100);
+}
+
+#[test]
+fn an_ordered_attack_fires_at_a_target_outside_the_fog() {
+    // AC-03-30: Zero Hour does not fog-gate attack orders. A HIMARS (sight 6)
+    // ignores a truck 10 tiles away until it is ordered to attack it, then it
+    // fires and kills it; automatic targeting still ignores the hidden truck.
+    let mut world = builtin_sandbox();
+    let himars = world
+        .rules()
+        .type_index("ua-himars")
+        .expect("builtin type exists");
+    let truck_kind = world
+        .rules()
+        .type_index("ru-supply-truck")
+        .expect("builtin type exists");
+    let himars = world.spawn(0, himars, at(550, 550));
+    let truck = world.spawn(1, truck_kind, at(1550, 550));
+    world.refresh_visibility();
+    assert!(!world.is_entity_visible(0, truck));
+
+    steps(&mut world, 40);
+    assert_eq!(world.entity(truck).unwrap().hp, 250);
+
+    world.enqueue_as(
+        0,
+        Command::Attack {
+            units: vec![himars],
+            target: truck,
+        },
+    );
+    steps(&mut world, 120);
+    assert!(world.entity(truck).unwrap().hp < 250);
 }
 
 #[test]

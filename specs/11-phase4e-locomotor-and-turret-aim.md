@@ -300,8 +300,10 @@ check). Separation (§5.10 phase 3) is unchanged and does not change heading.
 
 For each armed entity in the combat phase (order unchanged: ascending id):
 
-1. Target: `aim` when still valid (§5.11 validity), else `select_target` as
-   today; store it in `aim` (sticky lock, Generals `TurretAI` keeps its victim).
+1. Target: the current `Attack` order's target when valid (a new order
+   overrides the lock, AC-11-18), else `aim` when still valid (§5.11
+   validity), else `select_target` as today; store it in `aim` (sticky lock,
+   Generals `TurretAI` keeps its victim while no new order replaces it).
 2. With `turret_step > 0` and a target: `want = atan2(target − pos) −
    heading`; `turret = turret.turn_towards(want, turret_step)`;
    `aligned = |turret.delta(want)| ≤ aim_tolerance`; `idle_aim_ticks = 0`.
@@ -472,6 +474,11 @@ instead (AC-11-03/05). The same holds for a `tracked` unit.
 and a `ua-defense` attacking enemy units, when 5 s pass, then at least one snapshot shows each
 shooter's `turretAngle` within 2° of the direction to its target and no
 console error.
+
+**AC-11-18 A new attack order overrides a locked victim.** Given a mortar
+that has just fired at truck A and locked it, when it is ordered to attack
+soldier B in range, then on the next combat tick `aim` is B, the next volley
+damages B, and A's HP no longer changes (`crates/sim/tests/combat.rs`).
 
 ## 8. Open questions for the owner
 

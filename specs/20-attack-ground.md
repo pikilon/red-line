@@ -41,8 +41,8 @@
 
 ## 3. Precedent
 
-`generals-precedent` note 2026-10-24, source
-`electronicarts/CnC_Generals_Zero_Hour@0a05454d8` (paths under
+`generals-precedent` notes 2026-10-24 (input) and 2026-10-25 (targeting),
+source `electronicarts/CnC_Generals_Zero_Hour@0a05454d8` (paths under
 `GeneralsMD/Code/GameEngine/`):
 
 * Ctrl is a held force-attack mode, not a click chord of its own: the command
@@ -64,18 +64,52 @@
   (`CommandXlat.cpp:886-902`, `:2295`). The force-attack cursor
   `ForceAttackGround` shows the mode before the click
   (`INIZH.big:Data\INI\Mouse.ini:76`).
+* A new attack order replaces the locked victim on the command tick:
+  `AIUpdateInterface::privateAttackObject` clears the AI state machine and
+  re-enters `AI_ATTACK_OBJECT` (`Source/GameLogic/Object/Update/AIUpdate.cpp:3433-3436`);
+  its `onExit` nulls the victim and clears every turret goal
+  (`Source/GameLogic/AI/AIStates.cpp:5692-5722`), and
+  `TurretAI::setTurretTargetObject` re-aims at the new target
+  (`AI/TurretAI.cpp:571-600`). The weapon reload is not reset
+  (`Source/GameLogic/Object/Weapon.cpp:2661-2671`,
+  `WeaponSet.cpp:788`), so the first shot at the new target waits out the
+  remaining cooldown. An auto-acquired victim stays sticky until it dies, is
+  unattackable or leaves range (`AIStates.cpp:5600-5603`,
+  `TurretAI.cpp:1013-1023`).
 * Which button is the plain order button is the `UseAlternateMouse` option
   (`Source/GameClient/GUI/GUICallbacks/Menus/OptionsMenu.cpp:322-334`):
   alternate = left selects, right orders; regular = left orders, right
-  deselects or cancels. Red Line uses the alternate one.
+  deselects or cancels. Red Line uses the alternate one. A plain left click
+  attacks an enemy only in the regular scheme (`CommandXlat.cpp:3678-3711` for
+  the alternate right click, `:3741-3781` for the regular left click;
+  `Source/GameClient/SelectionInfo.cpp:198-206`, `SelectionXlat.cpp:712-726`).
+* Attack orders are not fog-gated: the weapon layer's shroud check is
+  deliberately commented out (`Source/GameLogic/Object/WeaponSet.cpp:531-545`);
+  fog only gates automatic acquisition (`Source/GameLogic/Object/Update/AIUpdate.cpp:4640`)
+  and the client's hiding/picking (`GameClient.cpp:718`,
+  `EngineDevice/Source/W3DDevice/GameClient/W3DScene.cpp:351`). Dispatch only
+  checks that the target still exists (`GameLogicDispatch.cpp:1207-1219`).
+* Picking is a camera ray against the model's bounds
+  (`EngineDevice/Source/W3DDevice/GameClient/W3DView.cpp:2207-2232`,
+  `W3DScene.cpp:351-377`), not a screen-space radius; only area selection
+  projects centres.
 
 Red Line copies the input: Ctrl is held, and either Ctrl + left click or
 Ctrl + right click force-fires under the cursor, with the pick deciding object
 vs point as in the original. The plain right click keeps its context action,
-and a move never fires. Two deliberate deviations: own and neutral objects are
-not force-attacked (the sim has no friendly fire; the click falls back to a
-ground shot), and selected buildings are not force-fired, so a production
-building keeps its rally orders.
+and a move never fires. An ordered attack on an enemy outside the player's fog
+is accepted and chased, matching Zero Hour; automatic targeting stays fog-gated
+(§1 and spec 03 §5.11). Deliberate deviations:
+
+* Red Line uses the alternate scheme but also accepts a plain left click on an
+  enemy as attack (owner request 2026-10-24), so the target can be clicked
+  without a modifier.
+* Own and neutral objects are not force-attacked (the sim has no friendly
+  fire; the click falls back to a ground shot).
+* Selected buildings are not force-fired, so a production building keeps its
+  rally orders.
+* Picking approximates the original ray with a one-tile order radius; selection
+  keeps the half-tile pick (spec 03 §6.5).
 
 ## 4. Assumptions
 
@@ -100,3 +134,8 @@ building keeps its rally orders.
   + right click on the ground does the same as the left click; a plain left
   click on the enemy building also gives it an `attack` order and keeps the
   selection; no console error.
+* AC-20-04 (`crates/sim/tests/combat.rs`): a HIMARS does not auto-target a
+  truck 10 tiles away outside its sight; once ordered to attack it, it fires
+  and damages the truck, and a new attack order on an in-range rifleman
+  switches the fire to it (spec 11 AC-11-18) instead of keeping the old
+  target.
