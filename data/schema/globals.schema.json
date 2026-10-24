@@ -49,7 +49,10 @@
         "brakingCenti": { "type": "integer", "minimum": 1 },
         "reverseAngleDeg": { "type": "integer", "minimum": 90, "maximum": 180 },
         "reverseMaxCenti": { "type": "integer", "minimum": 0 },
-        "reverseSpeedPercent": { "type": "integer", "minimum": 10, "maximum": 100 }
+        "reverseSpeedPercent": { "type": "integer", "minimum": 10, "maximum": 100 },
+        "crusherLevel": { "type": "integer", "minimum": 0, "maximum": 3 },
+        "shoveDamage": { "type": "integer", "minimum": 0 },
+        "shovePushCenti": { "type": "integer", "minimum": 0, "maximum": 100 }
       }
     }
   }

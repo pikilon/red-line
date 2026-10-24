@@ -5,6 +5,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 pub mod ai;
 pub mod angle;
 pub mod combat;
+pub mod crush;
 pub mod economy;
 pub mod entity;
 pub mod fixed;

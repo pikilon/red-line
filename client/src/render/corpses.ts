@@ -8,7 +8,9 @@
 
 import { KNEEL, KNEEL_DROP, type LimbPose, resetPose } from "./rig";
 
-export type DeathKind = "shot" | "explosion";
+/** `crush`: run over by tracks; `shove`: knocked down by a wheeled vehicle
+ *  (spec 28), which falls like a shot. */
+export type DeathKind = "shot" | "explosion" | "crush" | "shove";
 
 export interface DeathCause {
   readonly kind: DeathKind;
@@ -106,7 +108,8 @@ function hash(a: number, b: number): number {
 
 /** Style of a shot death, stable per soldier. */
 export function variantOf(corpse: Corpse): number {
-  return corpse.cause.kind === "shot" ? corpse.id % SHOT_VARIANTS : 0;
+  const { kind } = corpse.cause;
+  return kind === "shot" || kind === "shove" ? corpse.id % SHOT_VARIANTS : 0;
 }
 
 type Joints = Record<JointName, number>;
@@ -180,6 +183,19 @@ function newSim(corpse: Corpse, prefix: string, index: number): ManSim {
       sim.aw[joint] = (r(5 + JOINTS.indexOf(joint)) - 0.5) * 16;
     }
     sim.aw.arms = -9 - r(11) * 3;
+    return sim;
+  }
+  if (corpse.cause.kind === "crush") {
+    // Run over (spec 28): slammed flat at once along the hull's way, the feet
+    // swept from under him and the limbs thrown about.
+    sim.pinned = false;
+    sim.theta = 0.3;
+    sim.vu = 1.3 + r(1) * 0.3;
+    sim.w = 7 + r(2) * 2;
+    for (const joint of JOINTS) {
+      sim.aw[joint] = (r(5 + JOINTS.indexOf(joint)) - 0.5) * 10;
+    }
+    sim.aw.arms = -8 - r(11) * 3;
     return sim;
   }
   const style = corpse.id % SHOT_VARIANTS;

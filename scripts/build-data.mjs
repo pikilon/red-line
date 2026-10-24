@@ -316,6 +316,9 @@ const assemble = (globals, factions, maps, ai) => {
       reverseAngleDeg: l.reverseAngleDeg ?? 0,
       reverseMaxCenti: l.reverseMaxCenti ?? 0,
       reverseSpeedPercent: l.reverseSpeedPercent ?? 0,
+      crusherLevel: l.crusherLevel ?? 0,
+      shoveDamage: l.shoveDamage ?? 0,
+      shovePushCenti: l.shovePushCenti ?? 0,
     })),
     weapons: weaponList.map((w) => ({
       id: w.id,

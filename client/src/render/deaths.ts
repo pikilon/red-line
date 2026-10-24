@@ -1,5 +1,5 @@
 import ruleset from "@data/ruleset.json";
-import { typeDef, WEAPONS as WEAPON_DEFS } from "../rules";
+import { RULES, typeDef, WEAPONS as WEAPON_DEFS } from "../rules";
 import {
   ENTITY_FLAGS,
   type EntityState,
@@ -40,6 +40,48 @@ const MAX_SINGLE_HIT = Array.from({ length: ARMOR_COUNT }, (_, armor) =>
   maxSingleHit(armor),
 );
 
+/** Collision radius the sim uses when a type sets none, tiles. */
+const DEFAULT_RADIUS = 0.3;
+/** Slack on the sim's contact distance: snapshots arrive a few ticks apart. */
+const CONTACT_MARGIN = 0.35;
+
+/** How a vehicle type runs soldiers over (spec 28): tracks crush, wheels
+ *  shove; `null` for everything else. */
+export function runOverOf(kind: number): "crush" | "shove" | null {
+  const type = typeDef(kind);
+  if (type.category !== "unit") return null;
+  const locomotor = RULES.locomotors[type.locomotor];
+  if (locomotor === undefined || locomotor.kind === "foot") return null;
+  if ((locomotor.crusherLevel ?? 0) > 0) return "crush";
+  return (locomotor.shoveDamage ?? 0) > 0 ? "shove" : null;
+}
+
+function radiusOf(kind: number): number {
+  const centi = typeDef(kind).radiusCenti ?? 0;
+  return centi > 0 ? centi / 100 : DEFAULT_RADIUS;
+}
+
+/** Whether `vehicle` touches `soldier`: within its reach (its radius for a
+ *  crush, both radii for a shove) plus the snapshot slack. */
+function touches(vehicle: EntityState, soldier: EntityState): boolean {
+  const mode = runOverOf(vehicle.kind);
+  if (mode === null || vehicle.owner === soldier.owner) return false;
+  const reach =
+    radiusOf(vehicle.kind) +
+    (mode === "shove" ? radiusOf(soldier.kind) : 0) +
+    CONTACT_MARGIN;
+  return Math.hypot(soldier.x - vehicle.x, soldier.y - vehicle.y) <= reach;
+}
+
+/** An enemy crusher of `snapshot` runs `soldier` over (spec 28). */
+function crushedIn(snapshot: MatchSnapshot, soldier: EntityState): boolean {
+  if (typeDef(soldier.kind).armor !== 0) return false;
+  return snapshot.entities.some(
+    (vehicle) =>
+      runOverOf(vehicle.kind) === "crush" && touches(vehicle, soldier),
+  );
+}
+
 /** Entities that died between two snapshots (spec 07 §4, AC-07-03).
  *
  *  A `prev` entity that is not a ghost, not a depot and still has `hp > 0`, is
@@ -76,7 +118,8 @@ export function detectDeaths(
       type.category === "building" ||
       viewer === OBSERVER ||
       diesInOneHit ||
-      targeted.has(entity.id)
+      targeted.has(entity.id) ||
+      crushedIn(prev, entity)
     ) {
       deaths.push(entity);
     }
@@ -115,13 +158,30 @@ export interface DeathCauses {
   causeOf(victim: EntityState, nowMs: number): DeathCause;
 }
 
+/** How long a vehicle stays the possible cause of a crush or shove, ms. */
+const CONTACT_MEMORY_MS = 600;
+
+interface Contact {
+  readonly vehicle: EntityState;
+  readonly atMs: number;
+}
+
 export function createDeathCauses(): DeathCauses {
   const shots = new Map<number, Hit>();
   let blasts: Blast[] = [];
+  let contacts: Contact[] = [];
 
   function record(entities: readonly EntityState[], atMs: number): void {
     const byId = new Map<number, EntityState>();
     for (const entity of entities) byId.set(entity.id, entity);
+    contacts = contacts.filter(
+      (contact) => atMs - contact.atMs < CONTACT_MEMORY_MS,
+    );
+    for (const entity of entities) {
+      if (runOverOf(entity.kind) !== null) {
+        contacts.push({ vehicle: entity, atMs });
+      }
+    }
     blasts = blasts.filter((blast) => atMs - blast.atMs < CAUSE_MEMORY_MS);
     for (const [id, hit] of shots) {
       if (atMs - hit.atMs >= CAUSE_MEMORY_MS) shots.delete(id);
@@ -149,6 +209,23 @@ export function createDeathCauses(): DeathCauses {
   }
 
   function causeOf(victim: EntityState, nowMs: number): DeathCause {
+    // Run over (spec 28): the newest vehicle that touched him.
+    for (let i = contacts.length - 1; i >= 0; i--) {
+      const contact = contacts[i];
+      if (contact === undefined || nowMs - contact.atMs >= CONTACT_MEMORY_MS) {
+        continue;
+      }
+      const { vehicle } = contact;
+      if (!touches(vehicle, victim)) continue;
+      if (runOverOf(vehicle.kind) === "crush") {
+        // Knocked down along the way the hull drives.
+        return { kind: "crush", push: yawToPush(angleToYaw(vehicle.heading)) };
+      }
+      return {
+        kind: "shove",
+        push: Math.atan2(victim.y - vehicle.y, victim.x - vehicle.x),
+      };
+    }
     let best: Blast | null = null;
     let bestDistance = Number.POSITIVE_INFINITY;
     for (const blast of blasts) {
@@ -193,7 +270,13 @@ function yawToPush(yaw: number): number {
  *  hit took of his hp (spec 22 §6). */
 const JOLT_SHOT = 0.1;
 const JOLT_BLAST = 0.28;
-const JOLT_PER_LOSS = { shot: 1, explosion: 1.2 } as const;
+const JOLT_SHOVE = 0.45;
+const JOLT_PER_LOSS = {
+  shot: 1,
+  explosion: 1.2,
+  crush: 1.2,
+  shove: 1,
+} as const;
 const JOLT_MAX = 0.7;
 
 /** A hit that did not kill, with where it landed. */
@@ -225,7 +308,12 @@ export function detectHits(
     if (!isRigged(type.id)) continue;
     const cause = causes.causeOf(entity, nowMs);
     const loss = (earlier.hp - entity.hp) / Math.max(1, type.hp);
-    const floor = cause.kind === "explosion" ? JOLT_BLAST : JOLT_SHOT;
+    const floor =
+      cause.kind === "shove"
+        ? JOLT_SHOVE
+        : cause.kind === "shot"
+          ? JOLT_SHOT
+          : JOLT_BLAST;
     hits.push({
       id: entity.id,
       x: entity.x,
@@ -415,7 +503,7 @@ export function spawnDeathEffects(
           1,
           1 -
             Math.min(1, entity.hp / Math.max(1, type.hp)) +
-            (cause.kind === "explosion" ? 0.7 : 0.45),
+            (cause.kind === "explosion" || cause.kind === "crush" ? 0.7 : 0.45),
         ),
         startMs: nowMs,
       };
@@ -466,6 +554,21 @@ function spawnBlood(effects: Effects, corpse: Corpse, nowMs: number): void {
       spreadMs: SPURT_SPREAD_MS,
     });
 
+  if (kind === "crush") {
+    // Run over (spec 28): a wide pool where he went under the hull and two
+    // smears dragged along the way it drives, one per track.
+    effects.spawn("blood", {
+      ...along(0.15),
+      sizeXYZ: [0.95, 0.02, 0.8],
+      rotationY: spin,
+      startMs: nowMs + 60,
+      spreadMs: SPURT_SPREAD_MS * 2,
+    });
+    for (const side of [-0.18, 0.18]) {
+      burst(along(0.55, side), 0.3, -push, 90, 2.4);
+    }
+    return;
+  }
   if (kind === "explosion") {
     const reach = Math.max(0.5, down.u);
     // A few spurts follow the body through the air, in two quick bursts.

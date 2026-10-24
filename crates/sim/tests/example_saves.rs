@@ -92,6 +92,25 @@ fn ac_19_14_infantry_vs_armor() {
 }
 
 #[test]
+fn ac_25_08_run_over() {
+    // Spec 25: the tank's lane is crushed; the truck's lane is shoved, hurt, alive.
+    let (mut world, _, mut ais) = load_example("run-over");
+    run(&mut world, &mut ais, 900);
+    let rules = world.rules();
+    let soldiers: Vec<_> = world.entities().iter().filter(|e| e.owner == 1).collect();
+    let lane = fx_centi(2000);
+    assert!(
+        soldiers.iter().all(|e| e.pos.y > lane),
+        "no rifleman survives the tank"
+    );
+    assert!(!soldiers.is_empty(), "the truck does not crush");
+    assert!(
+        soldiers.iter().any(|e| e.hp < rules.ty(e.kind).hp),
+        "the truck's shove hurts"
+    );
+}
+
+#[test]
 fn ac_19_14_rpg_ambush() {
     assert!(deaths("rpg-ambush", 900) > 0);
 }
