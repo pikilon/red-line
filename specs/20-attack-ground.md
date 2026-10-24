@@ -2,8 +2,12 @@
 
 ## 1. Behaviour
 
-* **Player input:** `Ctrl` + right click on the map (on macOS also `Ctrl` + left
-  click, which the browser reports as a context menu) with units selected.
+* **Player input:** hold `Ctrl` and left click on the map with units selected
+  (Zero Hour's held force-attack mode, §3). `Ctrl` + right click does the same,
+  because in Red Line the right button is the plain order button. On macOS
+  `Ctrl` + left click also arrives as a context menu; the client treats that
+  gesture as force fire, never as the plain right click. A plain right click
+  keeps its normal action (spec 08 §3.7).
 * Every selected own **armed unit** receives an `AttackGround` order at that
   point; unarmed units and buildings are unaffected and keep their order.
 * The unit walks until the point is inside `[minRange, range]` of its weapon,
@@ -24,16 +28,60 @@
   (`u32::MAX`) marks a projectile / `last_target` aimed at the ground.
 * `aim_turret` takes the aim point instead of an entity index.
 
-## 3. Assumptions
+## 3. Precedent
 
-* Zero Hour's force-fire-at-location (Ctrl + click) behaves the same way; the
-  `generals-precedent` note was not consulted, so verify the details.
-* No ground marker is drawn; the shells themselves are the feedback.
+`generals-precedent` note 2026-10-24, source
+`electronicarts/CnC_Generals_Zero_Hour@0a05454d8` (paths under
+`GeneralsMD/Code/GameEngine/`):
 
-## 4. Acceptance criteria
+* Ctrl is a held force-attack mode, not a click chord of its own: the command
+  map arms `BEGIN_FORCEATTACK` on Ctrl down and disarms it on release
+  (`Data\English\CommandMap.ini:814-826` in `EnglishZH.big`;
+  `Source/GameClient/MessageStream/CommandXlat.cpp:3483-3489`). While it is
+  armed, both click messages call `evaluateForceAttack` instead of the normal
+  context action (`CommandXlat.cpp:3678-3710` for the right button and
+  `:3741-3781` for the left).
+* On empty ground that sends `MSG_DO_FORCE_ATTACK_GROUND` with the world point
+  (`CommandXlat.cpp:1388-1398`), which becomes `AIGroup::groupAttackPosition`
+  (`Source/GameLogic/System/GameLogicDispatch.cpp:1249-1277`); its
+  `NO_MAX_SHOTS_LIMIT` keeps the unit firing until it gets another order or is
+  stopped (`Source/GameLogic/AI/AIGroup.cpp:2223`). The clicked point decides
+  the order; there is no "nearest enemy" lookup.
+* Over an attackable object the same mode sends `MSG_DO_FORCE_ATTACK_OBJECT`
+  and forces an attack on that object (`CommandXlat.cpp:1352-1370`).
+* A plain order click on empty ground is a pure move and never fires
+  (`CommandXlat.cpp:886-902`, `:2295`). The force-attack cursor
+  `ForceAttackGround` shows the mode before the click
+  (`INIZH.big:Data\INI\Mouse.ini:76`).
+* Which button is the plain order button is the `UseAlternateMouse` option
+  (`Source/GameClient/GUI/GUICallbacks/Menus/OptionsMenu.cpp:322-334`):
+  alternate = left selects, right orders; regular = left orders, right
+  deselects or cancels. Red Line uses the alternate one.
+
+Red Line copies the input: Ctrl is held, and either Ctrl + left click or
+Ctrl + right click force-fires at the cursor. The plain right click keeps its
+context action, and a move never fires. Two deliberate deviations: the click
+always fires at the point even over an enemy, so attack-at-a-point stays the
+only force-fire target (the plain right click already attacks objects, and the
+sim has no friendly fire); and buildings are not force-fired, so a selected
+production building keeps its rally orders.
+
+## 4. Assumptions
+
+* No ground marker is drawn and the mouse cursor does not change; the shells
+  themselves are the feedback.
+* Ctrl is latched on the button press: releasing Ctrl before the button still
+  fires.
+
+## 5. Acceptance criteria
 
 * AC-20-01 (`crates/sim/tests/combat.rs`): a mortar shells a point with no
   enemy in sight, ignores another enemy in range, and `Stop` ends it; out of
   range it approaches only until the point is in range.
 * AC-20-02 (`client/src/input/intent.test.ts`): `resolveAttackGround` sends
   only the armed own units.
+* AC-20-03 (Playwright): in `?debug=1&speed=4&ai=off`, a spawned owner-0
+  `ua-himars` is selected with a left click; holding `Ctrl` and left clicking
+  the ground at `(40, 62.5)` keeps it selected and, on the next tick, its
+  saved order is `attackGround` toward `(40, 62.5)`; after a `Stop`, `Ctrl` +
+  right click at the same point does the same; no console error.

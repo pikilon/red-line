@@ -79,6 +79,7 @@ export interface SkirmishController {
 }
 
 const LEFT_BUTTON = 0;
+const RIGHT_BUTTON = 2;
 const GROUND = new Plane(new Vector3(0, 1, 0), 0);
 
 /** Mouse, keyboard and placement wiring of the skirmish (spec §6.5). */
@@ -94,6 +95,11 @@ export function createSkirmishController(
   let dragStart: ScreenPoint | null = null;
   // Pointer events carry sub-pixel coordinates; contextmenu may not.
   let lastPointer: ScreenPoint | null = null;
+  // Zero Hour's held force-attack mode (spec 20 §3): while Ctrl is down the
+  // next click force-fires. Ctrl + left click also arrives as a context menu on
+  // macOS, so `forceFireIssued` keeps the two event paths from ordering twice.
+  let forceFireArmed = false;
+  let forceFireIssued = false;
 
   function setSelection(ids: Iterable<number>): void {
     selected.clear();
@@ -126,6 +132,26 @@ export function createSkirmishController(
     raycaster.setFromCamera(ndc, camera);
     const hit = raycaster.ray.intersectPlane(GROUND, new Vector3());
     return hit === null ? null : { x: hit.x, y: hit.z };
+  }
+
+  /**
+   * Spec 20 §1: force fire at the ground point under `point` with the armed
+   * selected units. A context menu may not carry the pointer position, so the
+   * caller passes the last known one.
+   */
+  function forceFireAt(point: ScreenPoint): void {
+    if (options.placementKind() !== null) return;
+    if (selected.size === 0) return;
+    const ground = groundAt(point);
+    if (ground === null) return;
+    const commands = resolveAttackGround({
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      x: ground.x,
+      y: ground.y,
+    });
+    for (const command of commands) options.command(command);
   }
 
   /** Lowest-id selected own unit whose type builds `kind`. */
@@ -186,18 +212,33 @@ export function createSkirmishController(
   });
   canvas.addEventListener("pointercancel", () => {
     dragStart = null;
+    forceFireArmed = false;
     options.selectionBox.show(null);
   });
   canvas.addEventListener("pointerdown", (event) => {
     lastPointer = { x: event.clientX, y: event.clientY };
-    // Ctrl + click is the attack-ground command (macOS reports it as a
-    // context menu), not the start of a selection.
-    if (event.button !== LEFT_BUTTON || event.ctrlKey) return;
+    forceFireIssued = false;
+    // Ctrl + click is Zero Hour's force-attack mode (spec 20 §3): it fires,
+    // never starts a selection box.
+    forceFireArmed =
+      event.button === LEFT_BUTTON &&
+      event.ctrlKey &&
+      options.placementKind() === null;
+    if (event.button !== LEFT_BUTTON || forceFireArmed) return;
     dragStart = { x: event.clientX, y: event.clientY };
   });
 
   canvas.addEventListener("pointerup", (event) => {
-    if (event.button !== LEFT_BUTTON || dragStart === null) return;
+    if (event.button !== LEFT_BUTTON) return;
+    if (forceFireArmed) {
+      forceFireArmed = false;
+      forceFireIssued = true;
+      dragStart = null;
+      options.selectionBox.show(null);
+      forceFireAt({ x: event.clientX, y: event.clientY });
+      return;
+    }
+    if (dragStart === null) return;
     const end = { x: event.clientX, y: event.clientY };
     const start = dragStart;
     dragStart = null;
@@ -236,15 +277,34 @@ export function createSkirmishController(
   canvas.addEventListener("contextmenu", (event) => {
     event.preventDefault();
     if (options.placementKind() !== null) {
-      options.exitPlacement();
+      // On macOS Ctrl + left click arrives here too; that gesture still places
+      // the building (the pointerup does), so only a right click cancels.
+      if (!(event.ctrlKey && event.button === LEFT_BUTTON)) {
+        options.exitPlacement();
+      }
+      return;
+    }
+    if (forceFireIssued) {
+      // The Ctrl + left click already force-fired in pointerup (macOS).
+      forceFireIssued = false;
       return;
     }
     if (selected.size === 0) return;
+    if (forceFireArmed || (event.ctrlKey && event.button === RIGHT_BUTTON)) {
+      // Ctrl + either button force-fires: both clicks route to the force
+      // attack in Zero Hour (spec 20 §3). This path covers Ctrl + right click
+      // everywhere and Ctrl + left click on macOS when no pointerup arrives.
+      forceFireArmed = false;
+      forceFireIssued = true;
+      forceFireAt(lastPointer ?? { x: event.clientX, y: event.clientY });
+      return;
+    }
+    // A macOS Ctrl + left click must never become the plain right click.
+    if (event.ctrlKey && event.button === LEFT_BUTTON) return;
     const point = lastPointer ?? { x: event.clientX, y: event.clientY };
     const ground = groundAt(point);
     if (ground === null) return;
-    const resolve = event.ctrlKey ? resolveAttackGround : resolveRightClick;
-    const commands = resolve({
+    const commands = resolveRightClick({
       player: options.player(),
       selected: [...selected],
       entities: options.entities(),

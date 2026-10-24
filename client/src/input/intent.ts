@@ -53,9 +53,9 @@ function moveCommand(
 }
 
 /**
- * Ctrl + right click at ground (x, y) tiles: the armed selected units of
- * `player` force-fire at that point (spec 20). Unarmed units and buildings
- * keep their order.
+ * Ctrl + click (left or right) at ground (x, y) tiles: the armed selected
+ * units of `player` force-fire at that point (spec 20). Unarmed units and
+ * buildings keep their order.
  */
 export function resolveAttackGround(args: {
   player: number;

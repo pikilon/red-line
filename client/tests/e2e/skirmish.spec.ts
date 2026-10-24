@@ -37,6 +37,7 @@ interface SkirmishDebugView {
   setCameraTarget(x: number, y: number): void;
   command(command: Record<string, unknown>): void;
   stateHash(): Promise<string>;
+  saveState(): Promise<string>;
   drawCalls(): number;
   uiRenders(): number;
   resetFrameStats(): void;
@@ -227,6 +228,23 @@ function entityOf(
           (entity) => entity.owner === args.owner && entity.kind === args.kind,
         ) ?? null,
     { owner, kind },
+  );
+}
+
+/** The saved order of entity `id` (spec 19 §5.6), for order-level assertions. */
+function savedOrder(
+  page: Page,
+  id: number,
+): Promise<{ kind: string; target?: number[] } | null> {
+  return debugCall(
+    page,
+    async (api, entityId: number) => {
+      const state = JSON.parse(await api.saveState()) as {
+        entities: { id: number; order: { kind: string; target?: number[] } }[];
+      };
+      return state.entities.find((row) => row.id === entityId)?.order ?? null;
+    },
+    id,
   );
 }
 
@@ -617,6 +635,75 @@ test("AC-03-59: attacks with a right click", async ({ page }) => {
     .poll(() => entityCount(page, 1, tankKind), { timeout: ms(30_000) })
     .toBe(0);
   expect(await entityCount(page, 0, leopardKind)).toBeGreaterThan(0);
+});
+
+test("AC-20-03: force-fires at a point with Ctrl and either button", async ({
+  page,
+}) => {
+  await bootDebug(page, "debug=1&speed=4");
+  const himarsKind = await kindOf(page, "ua-himars");
+  await spawnAt(page, 0, himarsKind, 30.5, 62.5);
+  await expect
+    .poll(() => entityCount(page, 0, himarsKind), { timeout: ms(5000) })
+    .toBeGreaterThan(0);
+  await debugCall(page, (api) => api.setCameraTarget(35.5, 62.5));
+
+  const himars = await entityOf(page, 0, himarsKind);
+  if (himars === null) throw new Error("missing ua-himars");
+  await clickTiles(page, himars.x, himars.y);
+  await expect
+    .poll(() =>
+      debugCall(
+        page,
+        (api, id: number) => api.selectedIds().includes(id),
+        himars.id,
+      ),
+    )
+    .toBe(true);
+
+  await page.keyboard.down("Control");
+  await clickTiles(page, 40, 62.5);
+  await page.keyboard.up("Control");
+
+  await expect
+    .poll(async () => (await savedOrder(page, himars.id))?.kind, {
+      timeout: ms(5000),
+    })
+    .toBe("attackGround");
+  const order = await savedOrder(page, himars.id);
+  expect(Math.abs((order?.target?.[0] ?? 0) - 40 * FX_ONE)).toBeLessThanOrEqual(
+    Math.round(0.05 * FX_ONE),
+  );
+  expect(
+    await debugCall(
+      page,
+      (api, id: number) => api.selectedIds().includes(id),
+      himars.id,
+    ),
+  ).toBe(true);
+
+  // The right button is the plain order button, so Ctrl + right click must
+  // force-fire too (it is the contextmenu path on every platform).
+  await debugCall(
+    page,
+    (api, id: number) => {
+      api.command({ kind: "stop", player: 0, units: [id] });
+    },
+    himars.id,
+  );
+  await expect
+    .poll(async () => (await savedOrder(page, himars.id))?.kind, {
+      timeout: ms(5000),
+    })
+    .toBe("idle");
+  await page.keyboard.down("Control");
+  await clickTiles(page, 40, 62.5, "right");
+  await page.keyboard.up("Control");
+  await expect
+    .poll(async () => (await savedOrder(page, himars.id))?.kind, {
+      timeout: ms(5000),
+    })
+    .toBe("attackGround");
 });
 
 /** Draw-call bound of spec 10 §3: `4 × types on screen + 10`, plus spec 21 §2:
