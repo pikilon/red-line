@@ -19,7 +19,7 @@ use crate::rules::{Delivery, LocoKind, TypeId, WeaponDef, WeaponId, fx_centi};
 use crate::world::{CombatEvent, DIRECT_HIT_CENTI, World};
 
 /// Spec 23: farthest attacker (from the victim) that triggers retaliation.
-const RETALIATION_DISTANCE_CENTI: u32 = 900;
+pub(crate) const RETALIATION_DISTANCE_CENTI: u32 = 900;
 /// Spec 23: idle friends of the victim within this distance join the reply.
 const RETALIATION_FRIENDS_CENTI: u32 = 550;
 
@@ -492,7 +492,8 @@ impl World {
     }
 
     /// Spec 23: the damaged unit and its idle, armed, mobile friends nearby
-    /// attack an enemy shooter that is visible to them and not too far away.
+    /// attack an enemy shooter that is not too far away, seen or not (a shot
+    /// gives the shooter away).
     fn retaliate(&mut self, victim_index: usize, shooter: EntityId) {
         let Some(shooter_index) = self.index_of(shooter) else {
             return;
@@ -507,7 +508,6 @@ impl World {
             || aggressor.owner == NEUTRAL
             || owner == NEUTRAL
             || self.entity_distance(victim_pos, aggressor) > fx_centi(RETALIATION_DISTANCE_CENTI)
-            || !self.is_entity_visible(owner, shooter)
         {
             return;
         }

@@ -8,11 +8,13 @@
 * Responders are own units that are armed (weapon able to hurt the shooter),
   mobile and idle (no order). Units with an order (move, attack, harvest,
   build...) keep it. Buildings never move, so they only use normal targeting.
-* The shooter must be visible to the victim's owner and at most 9 tiles from the
-  victim (so far artillery is not chased). Friends are the idle units within
+* The shooter must be at most 9 tiles from the victim (so far artillery is not
+  chased). It does **not** need to be visible: a shot gives it away, and an
+  `Attack` order keeps chasing a target hidden in the fog while it is within 9
+  tiles of the unit. Friends are the idle units within
   5.5 tiles of the victim.
-* The chase ends like any attack order: when the shooter dies or is lost from
-  sight, the unit goes idle (and then auto-targets as usual).
+* The chase ends like any attack order: when the shooter dies or gets more than 9
+  tiles away, the unit goes idle (and then auto-targets as usual).
 
 ## 2. Simulation
 
