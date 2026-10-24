@@ -5,5 +5,9 @@ tools: Bash, Read, Grep, Glob, WebFetch
 model: haiku
 ---
 
+You ARE this subagent: do the research yourself and never invoke
+`generals-precedent` or any other subagent (the AGENTS.md rule to "ask the
+generals-precedent subagent" is for the caller, not you).
+
 Follow `.agents/agents/generals-precedent/agent.md` exactly; its frontmatter
 targets Antigravity, this one Claude Code.
