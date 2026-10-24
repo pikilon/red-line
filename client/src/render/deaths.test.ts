@@ -7,7 +7,12 @@ import {
   type MatchSnapshot,
   NEUTRAL,
 } from "../sim/matchSnapshot";
-import { detectDeaths, spawnDeathEffects } from "./deaths";
+import {
+  createDeathCauses,
+  detectDeaths,
+  detectHits,
+  spawnDeathEffects,
+} from "./deaths";
 import { createEffects } from "./effects";
 
 function entity(
@@ -252,5 +257,49 @@ describe("death effects", () => {
     expect(effects.meshes.debris.count).toBe(8);
     effects.update(15_000);
     expect(effects.meshes.debris.count).toBe(0);
+  });
+});
+
+describe("hit detection (spec 22 §6)", () => {
+  it("reports soldiers that lost hp and lived, harder for blasts", () => {
+    const causes = createDeathCauses();
+    const hurt = entity(1, 0, "ua-rifleman", 12, 10, 90);
+    const rifle = entity(2, 1, "ru-rifleman", 5, 10, 90, {
+      flags: ENTITY_FLAGS.fired,
+      target: 1,
+    });
+    causes.record([hurt, rifle], 1000);
+    const prev = snapshot(1, [entity(1, 0, "ua-rifleman", 12, 10, 90), rifle]);
+    const next = snapshot(2, [entity(1, 0, "ua-rifleman", 12, 10, 80), rifle]);
+    const [hit] = detectHits(prev, next, causes, 1100);
+    expect(hit?.id).toBe(1);
+    expect(hit?.push).toBeCloseTo(0);
+    expect(hit?.amplitude).toBeGreaterThan(0.1);
+    expect(hit?.amplitude).toBeLessThanOrEqual(0.7);
+
+    const blasts = createDeathCauses();
+    const rpg = entity(3, 1, "ru-rpg-gunner", 5, 10, 90, {
+      flags: ENTITY_FLAGS.fired,
+      target: 1,
+    });
+    blasts.record([hurt, rpg], 1000);
+    const [blast] = detectHits(prev, next, blasts, 1100);
+    expect(blast?.amplitude).toBeGreaterThan(hit?.amplitude ?? 1);
+  });
+
+  it("skips the unhurt, the dead and what is not a soldier", () => {
+    const causes = createDeathCauses();
+    const prev = snapshot(1, [
+      entity(1, 0, "ua-rifleman", 1, 1, 90),
+      entity(2, 0, "ua-rifleman", 2, 2, 90),
+      entity(3, 0, "ua-leopard-2a4", 3, 3, 500),
+    ]);
+    const next = snapshot(2, [
+      entity(1, 0, "ua-rifleman", 1, 1, 90),
+      entity(2, 0, "ua-rifleman", 2, 2, 0),
+      entity(3, 0, "ua-leopard-2a4", 3, 3, 300),
+    ]);
+    expect(detectHits(prev, next, causes, 0)).toEqual([]);
+    expect(detectHits(next, prev, causes, 0)).toEqual([]);
   });
 });

@@ -208,3 +208,30 @@ describe("spec 21: soldier rig state", () => {
     );
   });
 });
+
+describe("spec 22 §6: hits that do not kill", () => {
+  it("jolts the body quickly and lets it recover, never past the cap", () => {
+    const animator = createAnimator();
+    const unit = entity(20, 0, "ua-rifleman", 5, 5, 100);
+    animator.pose(unit, 0);
+    animator.recordHits?.([{ id: 20, push: 1, amplitude: 0.4 }], 1000);
+    expect(animator.pose(unit, 1000).rig?.flinch).toBeCloseTo(0);
+    const peak = animator.pose(unit, 1070).rig;
+    expect(peak?.flinch).toBeCloseTo(0.4, 1);
+    expect(peak?.flinchPush).toBe(1);
+    const later = animator.pose(unit, 1400).rig?.flinch ?? 1;
+    expect(later).toBeLessThan(0.15);
+    expect(animator.pose(unit, 1800).rig?.flinch).toBe(0);
+    // Two hits add up but stay under the cap.
+    animator.recordHits?.([{ id: 20, push: 0, amplitude: 0.6 }], 2000);
+    animator.recordHits?.([{ id: 20, push: 0, amplitude: 0.6 }], 2070);
+    expect(animator.pose(unit, 2140).rig?.flinch).toBeLessThanOrEqual(0.75);
+  });
+
+  it("ignores hits on units that were never drawn as soldiers", () => {
+    const animator = createAnimator();
+    expect(() =>
+      animator.recordHits?.([{ id: 999, push: 0, amplitude: 0.5 }], 0),
+    ).not.toThrow();
+  });
+});

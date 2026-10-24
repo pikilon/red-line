@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import { typeIndex } from "../rules";
 import { ENTITY_FLAGS, type EntityState } from "../sim/matchSnapshot";
 import {
-  type BodyPose,
-  bodyPose,
   CORPSE_MS,
   type Corpse,
   corpseFade,
   corpseLimb,
   createCorpses,
-  tossReach,
+  landing,
+  type ManBody,
+  manBody,
 } from "./corpses";
 import { createDeathCauses, spawnDeathEffects } from "./deaths";
 import { createEffects } from "./effects";
@@ -46,107 +46,165 @@ function corpse(id: number, kind: "shot" | "explosion", push = 0): Corpse {
   };
 }
 
-function body(c: Corpse, t: number): BodyPose {
-  return bodyPose(c, t, {
-    x: 0,
-    y: 0,
+const ZERO_JOINTS = { thigh_l: 0, thigh_r: 0, shin_l: 0, shin_r: 0, arms: 0 };
+
+function body(c: Corpse, t: number, prefix = "m", index = 0): ManBody {
+  return manBody(c, prefix, index, t, {
+    u: 0,
     lift: 0,
-    yaw: 0,
-    pitch: 0,
-    roll: 0,
+    tilt: 0,
+    joints: { ...ZERO_JOINTS },
+    drop: 0,
+    splay: 0,
     scale: 1,
   });
 }
 
-function limb(c: Corpse, t: number, name: string): LimbPose {
-  return corpseLimb(c, t, name, resetPose({} as LimbPose));
+/** True when the body lies flat: its axis is horizontal. */
+function lies(m: ManBody): boolean {
+  return Math.abs(Math.cos(m.tilt)) < 0.15;
 }
 
-describe("shot deaths", () => {
-  // The soldier faces +y (yaw 0): a push along +y comes from behind, along -y
-  // from the front, along +x from the side.
-  const BEHIND = Math.PI / 2;
-  const FRONT = -Math.PI / 2;
-  const SIDE = 0;
-
-  it("falls on its face, on its back or on its side by where the hit comes from", () => {
-    expect(body(corpse(0, "shot", BEHIND), 2000).pitch).toBeCloseTo(
-      Math.PI / 2,
-    );
-    expect(body(corpse(1, "shot", FRONT), 2000).pitch).toBeCloseTo(
-      -Math.PI / 2,
-    );
-    const side = body(corpse(2, "shot", SIDE), 2000);
-    expect(Math.abs(side.roll)).toBeCloseTo(Math.PI / 2);
-    expect(side.lift).toBeGreaterThan(0);
-  });
-
-  it("never turns on its feet before it falls", () => {
-    for (const push of [BEHIND, FRONT, SIDE, 2]) {
-      for (const id of [0, 1, 2]) {
-        for (const t of [0, 200, 500, 2000]) {
-          expect(body(corpse(id, "shot", push), t).yaw).toBe(0);
-        }
-      }
-    }
-  });
-
-  it("falls over time, not at once", () => {
-    const c = corpse(0, "shot", BEHIND);
-    expect(body(c, 0).pitch).toBe(0);
-    expect(body(c, 400).pitch).toBeGreaterThan(0);
-    expect(body(c, 400).pitch).toBeLessThan(body(c, 800).pitch);
-  });
-
-  it("tips the whole body over the same way whatever its style", () => {
+describe("shot deaths (ragdoll)", () => {
+  it("tips over its feet and comes to rest lying down, whatever the style", () => {
     for (const id of [0, 1, 2]) {
-      expect(body(corpse(id, "shot", FRONT), 2000).pitch).toBeCloseTo(
-        -Math.PI / 2,
-      );
+      const c = corpse(id, "shot", 1);
+      expect(body(c, 0).tilt).toBeCloseTo(0.05, 2);
+      expect(body(c, 200).tilt).toBeGreaterThan(0.05);
+      expect(body(c, 200).tilt).toBeLessThan(1.2);
+      const end = body(c, 4000);
+      expect(lies(end)).toBe(true);
+      expect(end.lift).toBeLessThan(0.08);
     }
   });
 
-  it("buckles the knees while it crumples", () => {
-    const c = corpse(2, "shot", BEHIND);
-    expect(limb(c, 0, "m_shin_r").rx).toBeCloseTo(0);
-    expect(limb(c, 500, "m_shin_r").rx).toBeCloseTo(Math.PI / 2, 1);
-    expect(limb(c, 500, "m_hips").y).toBeLessThan(0);
+  it("falls towards the hit and stays near where it stood", () => {
+    const end = body(corpse(0, "shot", 0), 4000);
+    expect(end.tilt).toBeGreaterThan(1);
+    expect(Math.abs(end.u)).toBeLessThan(0.6);
   });
 
-  it("falls from the kneel when it died kneeling, without standing up", () => {
-    const kneeling = { ...corpse(0, "shot", BEHIND), kneel: 1 };
-    expect(limb(kneeling, 0, "g_hips").y).toBeLessThan(0);
-    expect(limb(kneeling, 0, "g_shin_r").rx).toBeCloseTo(Math.PI / 2, 1);
-    expect(limb(kneeling, 400, "g_shin_r").rx).toBeGreaterThan(1.4);
-    const standing = corpse(0, "shot", BEHIND);
-    expect(limb(standing, 0, "g_hips").y).toBeCloseTo(0);
+  it("is deterministic", () => {
+    const a = body(corpse(5, "shot", 0.4), 1500);
+    const b = body(corpse(5, "shot", 0.4), 1500);
+    expect(a.tilt).toBe(b.tilt);
+    expect(a.joints.thigh_l).toBe(b.joints.thigh_l);
+  });
+
+  it("lets the legs go limp instead of keeping the pose it died in", () => {
+    const striding = {
+      ...corpse(0, "shot", 1),
+      joints: {
+        m: { thigh_l: -0.6, thigh_r: 0.6, shin_l: 0.8, shin_r: 0, arms: 0 },
+      },
+    };
+    const start = body(striding, 0).joints;
+    expect(start.thigh_l).toBeCloseTo(-0.6, 1);
+    expect(start.shin_l).toBeCloseTo(0.8, 1);
+    const end = body(striding, 4000).joints;
+    expect(
+      Math.abs(end.thigh_l + 0.6) + Math.abs(end.thigh_r - 0.6),
+    ).toBeGreaterThan(0.2);
+    // They settle: nothing moves after the body lies still.
+    const later = body(striding, 5000).joints;
+    expect(later.thigh_l).toBeCloseTo(end.thigh_l, 3);
+  });
+
+  it("keeps the joints inside their limits and the shins bending one way", () => {
+    for (const t of [100, 300, 700, 1500, 4000]) {
+      const j = body(corpse(1, "shot", 0), t).joints;
+      expect(j.shin_l).toBeGreaterThanOrEqual(0);
+      expect(j.shin_l).toBeLessThanOrEqual(2.6);
+      expect(j.shin_r).toBeGreaterThanOrEqual(0);
+      expect(j.thigh_l).toBeGreaterThanOrEqual(-1.8);
+      expect(j.thigh_l).toBeLessThanOrEqual(1.4);
+    }
+  });
+
+  it("crumples: the knees give way and the hips drop", () => {
+    const c = corpse(2, "shot", 1);
+    const mid = body(c, 300);
+    expect(mid.drop).toBeGreaterThan(0.5);
+    expect(mid.joints.shin_r).toBeGreaterThan(0.8);
+  });
+
+  it("a kneeling soldier keeps the hips low and falls from the kneel", () => {
+    const kneeling = {
+      ...corpse(0, "shot", 1),
+      kneel: 1,
+      joints: {
+        g: {
+          thigh_l: -1.056,
+          shin_l: 1.03,
+          thigh_r: -0.253,
+          shin_r: 1.571,
+          arms: 0,
+        },
+      },
+    };
+    const start = body(kneeling, 0, "g");
+    expect(start.drop).toBe(1);
+    expect(start.joints.shin_r).toBeCloseTo(1.571, 1);
+  });
+
+  it("the second man of a team reacts a moment later", () => {
+    const c = corpse(0, "shot", 1);
+    expect(body(c, 150, "a", 1).tilt).toBeLessThan(body(c, 150, "g", 0).tilt);
+  });
+
+  it("turns the body into the limb offsets of the fall plane", () => {
+    const m = body(corpse(0, "shot", 1), 4000);
+    const out = () => resetPose({} as LimbPose);
+    const forward = corpseLimb(m, "shin_l", 1, 0, out());
+    expect(forward.rx).toBeCloseTo(m.joints.shin_l);
+    expect(forward.rz).toBeCloseTo(0);
+    expect(corpseLimb(m, "shin_l", -1, 0, out()).rx).toBeCloseTo(
+      -m.joints.shin_l,
+    );
+    expect(corpseLimb(m, "shin_l", 0, 1, out()).rz).toBeCloseTo(
+      m.joints.shin_l,
+    );
+    expect(corpseLimb(m, "torso", 1, 0, out()).rx).toBe(0);
+    // Once it lies, the thighs fall apart sideways, the left one to the left.
+    expect(m.splay).toBeGreaterThan(0.1);
+    expect(corpseLimb(m, "thigh_l", 1, 0, out()).rz).toBeGreaterThan(0);
+    expect(corpseLimb(m, "thigh_r", 1, 0, out()).rz).toBeLessThan(0);
   });
 });
 
-describe("explosion deaths", () => {
-  it("throws the body away from the blast and lands it", () => {
+describe("explosion deaths (ragdoll)", () => {
+  it("throws the body up and away along the push and lands it", () => {
     const c = corpse(1, "explosion", 0);
-    const start = body(c, 0);
-    const air = body(c, 300);
-    const end = body(c, 2000);
-    expect(start.x).toBeCloseTo(10);
-    expect(air.lift).toBeGreaterThan(0.3);
-    expect(end.x).toBeCloseTo(10 + tossReach(c));
-    expect(end.y).toBeCloseTo(10);
-    expect(end.lift).toBeLessThan(0.1);
+    const peak = Math.max(
+      ...[100, 200, 300, 400, 500].map((t) => body(c, t).lift),
+    );
+    expect(peak).toBeGreaterThan(0.3);
+    const end = body(c, 5000);
+    expect(end.u).toBeGreaterThan(1);
+    expect(lies(end)).toBe(true);
+    expect(end.lift).toBeLessThan(0.08);
   });
 
-  it("flips over in the air and lands face down or up", () => {
-    const c = corpse(1, "explosion", Math.PI / 2);
-    expect(Math.abs(body(c, 100).pitch)).toBeGreaterThan(Math.PI);
-    expect(body(c, 100).yaw).toBe(0);
-    expect(Math.abs(body(c, 2000).pitch)).toBeCloseTo(Math.PI / 2);
+  it("tumbles in the air: well over a half turn before it lands", () => {
+    const c = corpse(1, "explosion", 0);
+    expect(Math.abs(body(c, 450).tilt)).toBeGreaterThan(Math.PI);
   });
 
-  it("flings the arms up and then lets them go limp", () => {
-    const c = corpse(1, "explosion");
-    expect(limb(c, 100, "m_arms").rx).toBeLessThan(-2);
-    expect(limb(c, 2000, "m_arms").rx).toBeCloseTo(-1);
+  it("flings the arms and legs about while it flies", () => {
+    const c = corpse(1, "explosion", 0);
+    const mid = body(c, 350).joints;
+    const moved =
+      Math.abs(mid.arms) + Math.abs(mid.thigh_l) + Math.abs(mid.thigh_r);
+    expect(moved).toBeGreaterThan(1);
+  });
+
+  it("knows where and when it lands, for the blood", () => {
+    const c = corpse(1, "explosion", 0);
+    const down = landing(c);
+    expect(down.u).toBeGreaterThan(1);
+    expect(down.ms).toBeGreaterThan(500);
+    expect(down.ms).toBeLessThan(5000);
+    expect(landing(corpse(0, "shot", 0)).u).toBeLessThan(down.u);
   });
 });
 
@@ -294,5 +352,23 @@ describe("blood splat texture", () => {
     // Irregular: neither empty nor a filled square.
     expect(covered / (size * size)).toBeGreaterThan(0.15);
     expect(covered / (size * size)).toBeLessThan(0.6);
+  });
+});
+
+describe("blood on the clothes", () => {
+  it("a death is soaked by the blow plus what hurt him before", () => {
+    const effects = createEffects();
+    const bodies = createCorpses();
+    const wounded = soldier(1, { hp: 30 });
+    const fresh = soldier(2, { hp: 90 });
+    const cause = { kind: "shot" as const, push: 0 };
+    spawnDeathEffects([wounded, fresh], effects, true, 0, bodies, {
+      record() {},
+      causeOf: () => cause,
+    });
+    const [a, b] = bodies.live(0);
+    expect(a?.blood).toBeGreaterThan(b?.blood ?? 1);
+    expect(b?.blood).toBeGreaterThan(0.4);
+    expect(a?.blood).toBeLessThanOrEqual(1);
   });
 });

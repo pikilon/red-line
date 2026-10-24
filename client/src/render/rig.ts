@@ -23,6 +23,11 @@ export interface RigState {
   readonly sinceShot: number;
   /** Milliseconds a visible reload takes, 0 for weapons that show none. */
   readonly reloadMs: number;
+  /** Tilt, radians, the body is knocked over its feet by a hit that did not
+   *  kill (already shaped in time: jolt, then recovery), and the tile-plane
+   *  direction it is pushed. Spec 22 §6. */
+  readonly flinch: number;
+  readonly flinchPush: number;
 }
 
 export const REST_RIG: RigState = {
@@ -33,6 +38,8 @@ export const REST_RIG: RigState = {
   carry: 0,
   sinceShot: Number.POSITIVE_INFINITY,
   reloadMs: 0,
+  flinch: 0,
+  flinchPush: 0,
 };
 
 /** Offset of one limb from its neutral pose: tiles in the parent frame, then
@@ -43,13 +50,15 @@ export interface LimbPose {
   z: number;
   rx: number;
   ry: number;
+  /** Roll about the facing: positive swings a hanging limb to the left. */
+  rz: number;
   sx: number;
   sy: number;
   sz: number;
 }
 
 export function resetPose(pose: LimbPose): LimbPose {
-  pose.x = pose.y = pose.z = pose.rx = pose.ry = 0;
+  pose.x = pose.y = pose.z = pose.rx = pose.ry = pose.rz = 0;
   pose.sx = pose.sy = pose.sz = 1;
   return pose;
 }
@@ -327,6 +336,8 @@ function pose(
   const kick = clamp01(1 - s.sinceShot / KICK_MS);
   const bend = man.pickup === true ? bending(s.carry) : 0;
   const hand = man.feeds === true ? handing(f) : 0;
+  // A hit that did not kill: arms jerk, knees give for a moment.
+  const jolt = Math.min(1, Math.abs(s.flinch) / 0.4);
   switch (part) {
     case "hips":
       out.y =
@@ -342,20 +353,27 @@ function pose(
       out.rx = SWING * s.walk * Math.sin(turn) + KNEEL.thighR * k;
       break;
     case "shin_l":
-      out.rx = FLEX * s.walk * Math.max(0, Math.cos(turn)) + KNEEL.shinL * k;
+      out.rx =
+        FLEX * s.walk * Math.max(0, Math.cos(turn)) +
+        KNEEL.shinL * k +
+        0.35 * jolt;
       break;
     case "shin_r":
-      out.rx = FLEX * s.walk * Math.max(0, -Math.cos(turn)) + KNEEL.shinR * k;
+      out.rx =
+        FLEX * s.walk * Math.max(0, -Math.cos(turn)) +
+        KNEEL.shinR * k +
+        0.35 * jolt;
       break;
     case "arms": {
       if (man.weapon === "rifle") {
         // Low ready, raised on a target; the walk swings it a little. The
         // assistant lifts his arms out to the gunner while he hands a round over.
-        out.rx = -0.55 * s.aim + 0.1 * s.walk - 0.05 * kick - 0.7 * hand;
+        out.rx =
+          -0.55 * s.aim + 0.1 * s.walk - 0.05 * kick - 0.7 * hand - 0.9 * jolt;
         out.ry = -0.06 * s.walk * Math.sin(turn);
         out.z = -0.012 * kick;
       } else if (man.weapon === "rpg") {
-        out.rx = rpgPitch(s);
+        out.rx = rpgPitch(s) - 0.5 * jolt;
         out.z = -0.02 * kick;
       } else {
         out.rx = 0.08 * s.walk + 0.9 * bend;
@@ -445,9 +463,33 @@ export function isRigged(typeId: string): boolean {
   return RIGS[typeId] !== undefined;
 }
 
-/** Kneeling factor of the first man of `typeId` in state `s`: 1 kneeling ..
- *  0 standing (a soldier who dies keeps the pose he died in). */
-export function kneelingOf(typeId: string, s: RigState): number {
-  const man = Object.values(RIGS[typeId] ?? {})[0];
-  return man === undefined ? 0 : kneelOf(man, s);
+const NO_GEOMETRY: Geometry = {
+  gunnerArms: null,
+  roundLocal: null,
+  spare: null,
+  launcherTurn: 0,
+  carry: null,
+};
+
+/** Joint angles (rx of each limb) and kneel factor of each man of `typeId` in
+ *  state `s`: the pose a soldier dies in, which his ragdoll starts from. */
+export function poseOnDeath(
+  typeId: string,
+  s: RigState,
+): { kneel: number; joints: Record<string, Record<string, number>> } {
+  const joints: Record<string, Record<string, number>> = {};
+  let kneel = 0;
+  let first = true;
+  const probe = resetPose({} as LimbPose);
+  for (const [prefix, man] of Object.entries(RIGS[typeId] ?? {})) {
+    const angles: Record<string, number> = {};
+    for (const part of ["thigh_l", "thigh_r", "shin_l", "shin_r", "arms"]) {
+      pose(man, part, s, resetPose(probe), NO_GEOMETRY);
+      angles[part] = probe.rx;
+    }
+    joints[prefix] = angles;
+    if (first) kneel = kneelOf(man, s);
+    first = false;
+  }
+  return { kneel, joints };
 }

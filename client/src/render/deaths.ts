@@ -7,13 +7,8 @@ import {
   type MatchSnapshot,
   OBSERVER,
 } from "../sim/matchSnapshot";
-import {
-  type Corpse,
-  type Corpses,
-  type DeathCause,
-  settleMs,
-  tossReach,
-} from "./corpses";
+import type { Hit as Jolt } from "./animation";
+import { type Corpse, type Corpses, type DeathCause, landing } from "./corpses";
 import type { Effects } from "./effects";
 import { angleToYaw } from "./heading";
 import { isRigged } from "./rig";
@@ -194,6 +189,47 @@ function yawToPush(yaw: number): number {
   return Math.atan2(Math.cos(yaw), Math.sin(yaw));
 }
 
+/** Jolt, radians, of a hit that did not kill: a floor by kind plus what the
+ *  hit took of his hp (spec 22 §6). */
+const JOLT_SHOT = 0.1;
+const JOLT_BLAST = 0.28;
+const JOLT_PER_LOSS = { shot: 1, explosion: 1.2 } as const;
+const JOLT_MAX = 0.7;
+
+/** Soldiers that lost hp between two snapshots and lived: who, the way the hit
+ *  pushes them and how hard (spec 22 §6). */
+export function detectHits(
+  prev: MatchSnapshot,
+  next: MatchSnapshot,
+  causes: DeathCauses,
+  nowMs: number,
+): Jolt[] {
+  if (next.tick <= prev.tick) return [];
+  const before = new Map<number, EntityState>();
+  for (const entity of prev.entities) before.set(entity.id, entity);
+  const hits: Jolt[] = [];
+  for (const entity of next.entities) {
+    const earlier = before.get(entity.id);
+    if (earlier === undefined || entity.hp >= earlier.hp || entity.hp <= 0) {
+      continue;
+    }
+    const type = typeDef(entity.kind);
+    if (!isRigged(type.id)) continue;
+    const cause = causes.causeOf(entity, nowMs);
+    const loss = (earlier.hp - entity.hp) / Math.max(1, type.hp);
+    const floor = cause.kind === "explosion" ? JOLT_BLAST : JOLT_SHOT;
+    hits.push({
+      id: entity.id,
+      push: cause.push,
+      amplitude: Math.min(
+        JOLT_MAX,
+        floor + loss * JOLT_PER_LOSS[cause.kind] * 2,
+      ),
+    });
+  }
+  return hits;
+}
+
 /** Tiles of wreck height relative to the model's render size (spec 07 §3). */
 const WRECK_HEIGHT = 0.6;
 /** Spread times of a spurt of drops and of a pool of blood, ms (spec 22 §4). */
@@ -214,7 +250,10 @@ export function spawnDeathEffects(
   nowMs = 0,
   corpses?: Corpses,
   causes?: DeathCauses,
-  kneelOf?: (entity: EntityState) => number,
+  poseOf?: (entity: EntityState) => {
+    kneel: number;
+    joints: Readonly<Record<string, Record<string, number>>>;
+  } | null,
 ): void {
   for (const entity of deaths) {
     const type = typeDef(entity.kind);
@@ -251,7 +290,14 @@ export function spawnDeathEffects(
         y: entity.y,
         yaw: angleToYaw(entity.heading),
         cause,
-        kneel: kneelOf?.(entity) ?? 0,
+        ...(poseOf?.(entity) ?? {}),
+        // What hurt him before plus the blow that killed him.
+        blood: Math.min(
+          1,
+          1 -
+            Math.min(1, entity.hp / Math.max(1, type.hp)) +
+            (cause.kind === "explosion" ? 0.7 : 0.45),
+        ),
         startMs: nowMs,
       };
       corpses.add(corpse);
@@ -284,7 +330,8 @@ function spawnBlood(effects: Effects, corpse: Corpse, nowMs: number): void {
     y: corpse.y + Math.sin(push) * distance + Math.cos(push) * side,
   });
   const spin = corpse.id * 2.399;
-  const landed = nowMs + settleMs(corpse);
+  const down = landing(corpse);
+  const landed = nowMs + down.ms;
   const burst = (
     at: { x: number; y: number },
     size: number,
@@ -301,7 +348,7 @@ function spawnBlood(effects: Effects, corpse: Corpse, nowMs: number): void {
     });
 
   if (kind === "explosion") {
-    const reach = tossReach(corpse);
+    const reach = Math.max(0.5, down.u);
     // A few spurts follow the body through the air, in two quick bursts.
     for (let i = 0; i < 4; i++) {
       const f = 0.2 + i * 0.22;
@@ -322,7 +369,7 @@ function spawnBlood(effects: Effects, corpse: Corpse, nowMs: number): void {
       startMs: landed,
       spreadMs: POOL_SPREAD_MS,
     });
-    burst(along(reach + 0.35, 0.2), 0.26, spin + 1, settleMs(corpse), 1.3);
+    burst(along(reach + 0.35, 0.2), 0.26, spin + 1, down.ms, 1.3);
     return;
   }
   // Three quick spurts at the wound, flying the way he is hit, then the pool
@@ -338,7 +385,7 @@ function spawnBlood(effects: Effects, corpse: Corpse, nowMs: number): void {
     );
   }
   effects.spawn("blood", {
-    ...along(0.18),
+    ...along(0.2 + Math.max(0, down.u)),
     sizeXYZ: [0.5, 0.02, 0.44],
     rotationY: spin,
     startMs: landed - 150,

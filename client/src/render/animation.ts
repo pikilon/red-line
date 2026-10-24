@@ -55,6 +55,20 @@ const WALK_CYCLES_PER_SECOND = 2;
 /** Launch styles of weapons whose reload the soldier shows. */
 const VISIBLE_RELOADS = new Set(["backblast", "softLaunch"]);
 
+/** A hit that did not kill: who, from which tile-plane direction it pushes
+ *  (atan2(dy, dx)) and the tilt it jolts the body by, radians. */
+export interface Hit {
+  readonly id: number;
+  readonly push: number;
+  readonly amplitude: number;
+}
+
+/** Jolt of a hit: it peaks this long after the hit, lasts this long (ms) and
+ *  never tilts more than `FLINCH_MAX` radians. */
+const FLINCH_PEAK_MS = 70;
+const FLINCH_MS = 700;
+const FLINCH_MAX = 0.75;
+
 export interface Pose {
   /** Tiles, pushed back along the turret's facing. */
   readonly recoil: number;
@@ -72,6 +86,8 @@ export interface Animator {
    *  lift = bobHeight(id, nowMs) for a moving infantry unit (category "unit",
    *  armor 0, `moving` flag), otherwise 0. */
   pose(entity: EntityState, nowMs: number): Pose;
+  /** Knocks the soldiers that took a hit without dying (spec 22 §6). */
+  recordHits?(hits: readonly Hit[], atMs: number): void;
   /** Rig state of the last pose of `id`, null for units without one. */
   lastRig?(id: number): RigState | null;
 }
@@ -94,12 +110,37 @@ export function createAnimator(): Animator {
     aim: number;
     carry: number;
     shotAt: number;
+    /** Last hit that did not kill: when, how hard (radians), which way. */
+    hitAt: number;
+    hitAmp: number;
+    hitPush: number;
   }
   /** Entity id -> eased limb state of the infantry on screen. */
   const rigs = new Map<number, RigEntry>();
   /** Entity id -> last shot, kept for as long as the unit is alive. */
   const rigShots = new Map<number, number>();
   const lastRigs = new Map<number, RigState>();
+
+  /** Tilt of the body now: a quick jolt that peaks `FLINCH_PEAK_MS` after the
+   *  hit and recovers, shaped t·e^(1−t) so it never overshoots. */
+  function flinchOf(entry: RigEntry, nowMs: number): number {
+    const t = nowMs - entry.hitAt;
+    if (t < 0 || t > FLINCH_MS) return 0;
+    const x = t / FLINCH_PEAK_MS;
+    return entry.hitAmp * x * Math.exp(1 - x);
+  }
+
+  function recordHits(hits: readonly Hit[], atMs: number): void {
+    for (const hit of hits) {
+      const entry = rigs.get(hit.id);
+      if (entry === undefined) continue;
+      // A second hit adds to what is left of the first.
+      const left = flinchOf(entry, atMs);
+      entry.hitAmp = Math.min(FLINCH_MAX, hit.amplitude + left);
+      entry.hitAt = atMs;
+      entry.hitPush = hit.push;
+    }
+  }
 
   function ease(value: number, target: number, rate: number, dt: number) {
     const step = rate * dt;
@@ -124,6 +165,9 @@ export function createAnimator(): Animator {
         aim: 0,
         carry: 0,
         shotAt: rigShots.get(entity.id) ?? Number.NEGATIVE_INFINITY,
+        hitAt: Number.NEGATIVE_INFINITY,
+        hitAmp: 0,
+        hitPush: 0,
       };
       rigs.set(entity.id, entry);
     }
@@ -171,6 +215,8 @@ export function createAnimator(): Animator {
       carry: entry.carry,
       sinceShot: nowMs - entry.shotAt,
       reloadMs,
+      flinch: flinchOf(entry, nowMs),
+      flinchPush: entry.hitPush,
     };
   }
 
@@ -219,6 +265,7 @@ export function createAnimator(): Animator {
 
   return {
     recordShots,
+    recordHits,
     pose,
     lastRig: (id) => lastRigs.get(id) ?? null,
   };

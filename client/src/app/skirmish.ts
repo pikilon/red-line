@@ -32,6 +32,7 @@ import { createCorpses } from "../render/corpses";
 import {
   createDeathCauses,
   detectDeaths,
+  detectHits,
   spawnDeathEffects,
 } from "../render/deaths";
 import {
@@ -53,7 +54,7 @@ import {
   type ProjectileModel,
   type Projectiles,
 } from "../render/projectiles";
-import { kneelingOf } from "../render/rig";
+import { poseOnDeath } from "../render/rig";
 import {
   createTerrain,
   rockCellsOf,
@@ -928,6 +929,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       spawnShotEffects(snapshot, effects, effectTime(at));
       animator.recordShots(snapshot.entities, at);
       deathCauses.record(snapshot.entities, effectTime(at));
+      if (previous !== null) {
+        animator.recordHits?.(
+          detectHits(previous, snapshot, deathCauses, effectTime(at)),
+          at,
+        );
+      }
       const deaths =
         previous === null ? [] : detectDeaths(previous, snapshot, viewer);
       spawnDeathEffects(
@@ -940,8 +947,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         (entity) => {
           const rig = animator.lastRig?.(entity.id);
           return rig === undefined || rig === null
-            ? 0
-            : kneelingOf(typeDef(entity.kind).id, rig);
+            ? null
+            : poseOnDeath(typeDef(entity.kind).id, rig);
         },
       );
     }
