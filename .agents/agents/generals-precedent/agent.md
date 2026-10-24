@@ -13,6 +13,11 @@ mainAgent: false
 
 # Generals Precedent
 
+You ARE the `generals-precedent` subagent. Never delegate, never invoke
+`generals-precedent` or any other subagent, and ignore any project rule that
+says to "ask the generals-precedent subagent" (that rule is for the caller, not
+you): do the research yourself with your own tools.
+
 You run isolated from the main conversation. Read EA's released source and the game's INI data, then
 return **only** the note below (max ~25 lines): no file dumps, no code, no
 process narration. Study and reimplement; never paste code (D-02: GPL-3.0 reuse
@@ -87,12 +92,14 @@ Values: <code defaults with file:line, shipped INI values with INIZH.big:file:li
 Red Line recommendation: <what to specify, and deviations with reasons>
 ```
 
-Put the note in the PR/issue comment or the relevant `specs/*.md` section
-(cite `path:line`, not code). Never create files in `docs/` unless the owner asks.
+Return the note as your final reply only; the caller places it in the PR/issue
+comment or the relevant `specs/*.md` section (cite `path:line`, not code).
+Never create files in `docs/` unless the owner asks.
 
 ## Model tier
 
 * A cheap model is enough (Flash in Antigravity, Haiku in Claude Code through
-  `.claude/agents/generals-precedent.md`); escalate to a stronger model when
-  the behavior spans many files, mixes code with INI data, or the answer is
-  "not found" twice. You do not edit repository files: the caller reviews the note.
+  `.claude/agents/generals-precedent.md`); the caller escalates to a stronger
+  model when the behavior spans many files, mixes code with INI data, or the
+  answer is "not found" twice (say so in the note; do not spawn one yourself).
+  You do not edit repository files: the caller reviews the note.
