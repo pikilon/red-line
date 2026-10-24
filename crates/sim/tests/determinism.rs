@@ -132,7 +132,7 @@ fn ac_03_37_match_snapshot_layout() {
             1, 0, 1000, 10, 0, 0, -1, 2, // header
             0, 0, 3, 65536, 65536, 400, 0, 1000, -1, 0, 0, // power plant
             1, 0, 9, 360448, 360448, 50, 0, 0, -1, 0, 0, // soldier
-            0,  // queue_count
+            0, // queue_count
         ]
     );
 
