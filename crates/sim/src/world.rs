@@ -900,9 +900,14 @@ impl World {
             let unit = &self.entities[index];
             (unit.owner, unit.pos, unit.kind)
         };
-        let alive = self
-            .entity(target)
-            .is_some_and(|entity| entity.hp > 0 && self.is_entity_visible(owner, target));
+        // Spec 23: a target slipping into the fog is still chased while it is
+        // within the retaliation distance, so a reply to unseen fire keeps going.
+        let alive = self.entity(target).is_some_and(|entity| {
+            entity.hp > 0
+                && (self.is_entity_visible(owner, target)
+                    || self.entity_distance(pos, entity)
+                        <= fx_centi(crate::combat::RETALIATION_DISTANCE_CENTI))
+        });
         if !alive {
             self.entities[index].order = Order::Idle {
                 last_order_id: order_id,
