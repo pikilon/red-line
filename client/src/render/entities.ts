@@ -29,6 +29,7 @@ import {
 } from "../sim/matchSnapshot";
 import type { Animator, Pose } from "./animation";
 import { createCageMaterial, createCageTexture } from "./cage";
+import { type BodyPose, bodyPose, type Corpses, corpseLimb } from "./corpses";
 import { applyFacade, enableFacades, facadeTextureIds } from "./facades";
 import {
   addBandAttribute,
@@ -323,6 +324,7 @@ export function createEntityRenderer(
   capacity: number,
   models?: ModelRegistry,
   animator: Animator = NO_ANIMATOR,
+  corpses?: Corpses,
 ): EntityRenderer {
   const box = new BoxGeometry(1, 1, 1);
   const units = instanced(box, new MeshBasicMaterial(), capacity);
@@ -383,6 +385,15 @@ export function createEntityRenderer(
   const suspension = createSuspension();
   const tilt = new Euler();
   const limbMatrices = new Map<string, Matrix4>();
+  const bodyState: BodyPose = {
+    x: 0,
+    y: 0,
+    lift: 0,
+    yaw: 0,
+    pitch: 0,
+    roll: 0,
+    scale: 1,
+  };
   const limbOffset = resetPose({} as LimbPose);
   const limbLocal = new Matrix4();
   const limbSpin = new Matrix4();
@@ -413,6 +424,56 @@ export function createEntityRenderer(
     limbLocal.makeTranslation(limbMove.x, limbMove.y, limbMove.z);
     limbLocal.multiply(limbSpin);
     world.multiplyMatrices(parent, limbLocal);
+  }
+
+  /** Draws every limb of `model` under `base`, each posed by `poseOf`
+   *  (offset from its neutral pose): `parent × joint × pose` (spec 20). */
+  function drawLimbs(
+    model: TypeModel,
+    typeSlots: TypeSlots,
+    base: Matrix4,
+    hex: number,
+    poseOf: (name: string, out: LimbPose) => void,
+  ): void {
+    for (const limb of model.limbs ?? []) {
+      const parent =
+        limb.parent === null ? base : limbMatrices.get(limb.parent);
+      if (parent === undefined) continue;
+      poseOf(limb.name, limbOffset);
+      const world = limbMatrices.get(limb.name) ?? new Matrix4();
+      limbMatrices.set(limb.name, world);
+      composeLimb(world, parent, limb, limbOffset);
+      for (const slot of typeSlots.limbs.get(limb.name) ?? []) {
+        if (slot.count >= capacity) continue;
+        place(slot, slot.count, hex, () => world);
+      }
+    }
+  }
+
+  /** Falling and lying soldiers (spec 22), posed by time since the death. */
+  function drawCorpses(nowMs: number): void {
+    for (const corpse of corpses?.live(nowMs) ?? []) {
+      const type = typeDef(corpse.kind);
+      const model = models?.get(type.id) ?? null;
+      if (model === null || model.fallback || model.limbs === undefined) {
+        continue;
+      }
+      const t = nowMs - corpse.startMs;
+      bodyPose(corpse, t, bodyState);
+      position.set(bodyState.x, bodyState.lift, bodyState.y);
+      rotation.setFromEuler(
+        tilt.set(bodyState.pitch, bodyState.yaw, bodyState.roll, "YXZ"),
+      );
+      scale.set(bodyState.scale, bodyState.scale, bodyState.scale);
+      matrix.compose(position, rotation, scale);
+      drawLimbs(
+        model,
+        slotsFor(type.id, model),
+        matrix,
+        ownerColor(corpse.owner),
+        (name, out) => corpseLimb(corpse, t, name, out),
+      );
+    }
   }
 
   /** The roof area the turret of `model` covers, for the Z (spec 13 §3). */
@@ -726,25 +787,16 @@ export function createEntityRenderer(
           const typeSlots = slotsFor(type.id, model);
           const hullYaw = type.category === "unit" ? heading.yaw : 0;
           const turretYaw = heading.turretYaw;
-          if (pose.rig !== null && model.limbs !== undefined) {
+          const rig = pose.rig;
+          if (rig !== null && model.limbs !== undefined) {
             // Soldiers walk on their own legs: no hull bounce (spec 20).
             position.set(entity.x, body.shake, entity.y);
             rotation.setFromEuler(tilt.set(0, hullYaw, 0, "YXZ"));
             scale.set(1, 1, 1);
             matrix.compose(position, rotation, scale);
-            for (const limb of model.limbs) {
-              const parent =
-                limb.parent === null ? matrix : limbMatrices.get(limb.parent);
-              if (parent === undefined) continue;
-              limbPose(type.id, model, limb.name, pose.rig, limbOffset);
-              const world = limbMatrices.get(limb.name) ?? new Matrix4();
-              limbMatrices.set(limb.name, world);
-              composeLimb(world, parent, limb, limbOffset);
-              for (const slot of typeSlots.limbs.get(limb.name) ?? []) {
-                if (slot.count >= capacity) continue;
-                place(slot, slot.count, hex, () => world);
-              }
-            }
+            drawLimbs(model, typeSlots, matrix, hex, (name, out) =>
+              limbPose(type.id, model, name, rig, out),
+            );
           }
           for (const slot of typeSlots.hull) {
             if (slot.count >= capacity) continue;
@@ -822,6 +874,7 @@ export function createEntityRenderer(
         }
       }
 
+      drawCorpses(nowMs);
       finish(units, counts.units);
       finish(buildings, counts.buildings);
       finish(ghosts, counts.ghosts);

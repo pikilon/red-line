@@ -28,7 +28,12 @@ import {
 } from "../input/skirmishController";
 import { createPerfPanel } from "../perfPanel";
 import { type Animator, createAnimator } from "../render/animation";
-import { detectDeaths, spawnDeathEffects } from "../render/deaths";
+import { createCorpses } from "../render/corpses";
+import {
+  createDeathCauses,
+  detectDeaths,
+  spawnDeathEffects,
+} from "../render/deaths";
 import {
   createEffects,
   type EffectKind,
@@ -579,6 +584,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     },
   });
   let animator: Animator;
+  const corpses = createCorpses();
+  const deathCauses = createDeathCauses();
   let entities: EntityRenderer | null = null;
   let terrain: Group | null = null;
   /** Generated PNGs, loaded the first time they are switched on (spec 12). */
@@ -711,7 +718,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       sun.target,
     );
     animator = createAnimator();
-    entities = createEntityRenderer(ENTITY_CAPACITY, registry, animator);
+    entities = createEntityRenderer(
+      ENTITY_CAPACITY,
+      registry,
+      animator,
+      corpses,
+    );
     scene.add(entities.group);
     effects = createEffects();
     scene.add(effects.group);
@@ -914,9 +926,17 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     ) {
       spawnShotEffects(snapshot, effects, effectTime(at));
       animator.recordShots(snapshot.entities, at);
+      deathCauses.record(snapshot.entities, effectTime(at));
       const deaths =
         previous === null ? [] : detectDeaths(previous, snapshot, viewer);
-      spawnDeathEffects(deaths, effects, settings.gore, effectTime(at));
+      spawnDeathEffects(
+        deaths,
+        effects,
+        settings.gore,
+        effectTime(at),
+        corpses,
+        deathCauses,
+      );
     }
     refreshOverlay();
   });

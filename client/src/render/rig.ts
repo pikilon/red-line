@@ -101,10 +101,10 @@ export function picksUp(typeId: string): boolean {
 }
 
 /** Hips lowered to kneel, in figure heights. */
-const KNEEL_DROP = 0.2;
+export const KNEEL_DROP = 0.2;
 /** Joint angles of the kneeling pose against the standing one, radians
  *  (right knee on the ground, left foot forward). */
-const KNEEL = {
+export const KNEEL = {
   thighL: -1.056,
   shinL: 1.03,
   thighR: -0.253,

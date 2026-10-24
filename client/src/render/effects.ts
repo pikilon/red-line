@@ -8,6 +8,7 @@ import {
   Matrix4,
   MeshBasicMaterial,
   NormalBlending,
+  PlaneGeometry,
   Quaternion,
   Vector3,
 } from "three";
@@ -18,6 +19,7 @@ import {
   hasFlag,
   type MatchSnapshot,
 } from "../sim/matchSnapshot";
+import { createSplatTexture } from "./splat";
 
 /** Instances kept per effect kind; the oldest is recycled when full (spec 07 §3). */
 export const EFFECT_CAPACITY = 512;
@@ -53,6 +55,10 @@ const MIN_EXPLOSION_SIZE = 0.6;
 const THERMOBARIC_SCALE = 1.5;
 /** The explosion grows in its first half (spec 07 AC-07-01). */
 const EXPLOSION_GROWTH_START = 0.5;
+
+/** A blood splat starts at this fraction of its size and spreads in this time. */
+const BLOOD_SPREAD_START = 0.35;
+const BLOOD_SPREAD_MS = 700;
 
 const Y_AXIS = new Vector3(0, 1, 0);
 
@@ -117,7 +123,8 @@ const EFFECT_STYLES: Readonly<Record<EffectKind, EffectStyle>> = {
     durationMs: 30_000,
     fadeMs: 5000,
     size: [0.5, 0.02, 0.5],
-    color: 0x5a0a0a,
+    // The splat texture carries the colour (spec 22 §4).
+    color: 0xffffff,
     additive: false,
   },
   debris: {
@@ -182,14 +189,25 @@ export function createEffects(): Effects {
 
   for (const kind of EFFECT_KINDS) {
     const style = EFFECT_STYLES[kind];
+    const decal = kind === "blood";
     const material = new MeshBasicMaterial({
       color: 0xffffff,
-      transparent: style.additive,
+      transparent: style.additive || decal,
       blending: style.additive ? AdditiveBlending : NormalBlending,
-      depthWrite: !style.additive,
+      depthWrite: !style.additive && !decal,
+      // A blood splat is a flat textured quad lying on the ground.
+      ...(decal
+        ? {
+            map: createSplatTexture(),
+            polygonOffset: true,
+            polygonOffsetFactor: -2,
+          }
+        : {}),
     });
     const mesh = new InstancedMesh(
-      new BoxGeometry(1, 1, 1),
+      decal
+        ? new PlaneGeometry(1, 1).rotateX(-Math.PI / 2)
+        : new BoxGeometry(1, 1, 1),
       material,
       EFFECT_CAPACITY,
     );
@@ -273,10 +291,17 @@ export function createEffects(): Effects {
           elapsed >= fadeStart && instance.fadeMs > 0
             ? Math.max(0, 1 - (elapsed - fadeStart) / instance.fadeMs)
             : 1;
-        const growth =
-          kind === "explosion"
-            ? EXPLOSION_GROWTH_START + (1 - EXPLOSION_GROWTH_START) * progress
-            : 1;
+        let growth = 1;
+        if (kind === "explosion") {
+          growth =
+            EXPLOSION_GROWTH_START + (1 - EXPLOSION_GROWTH_START) * progress;
+        } else if (kind === "blood") {
+          // A splat spreads when it appears, fast at first.
+          const spread = Math.min(1, elapsed / BLOOD_SPREAD_MS);
+          growth =
+            BLOOD_SPREAD_START +
+            (1 - BLOOD_SPREAD_START) * (1 - (1 - spread) ** 2);
+        }
         // Additive tints fade to black; opaque decals shrink away instead.
         const shrink = style.additive ? 1 : fade;
         const grow = growth * shrink;
