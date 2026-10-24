@@ -756,8 +756,14 @@ test("AC-03-62: renders a skirmish in at most 8 draw calls", async ({
       return {
         drawCalls: api.drawCalls(),
         types: onScreen.size,
-        rigged: [...onScreen].filter((kind) => riggedKinds.includes(kind))
-          .length,
+        // Rigged types present in the match: their limb meshes are drawn
+        // whether or not the type's first soldier is inside the canvas rect.
+        rigged: new Set(
+          api
+            .entities()
+            .map((entity) => entity.kind)
+            .filter((kind) => riggedKinds.includes(kind)),
+        ).size,
       };
     },
     RIGGED_TYPES,
