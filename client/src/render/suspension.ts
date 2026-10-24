@@ -5,9 +5,9 @@
 /** Longest frame step used, so a stalled tab cannot fling the body. */
 const MAX_DT_SECONDS = 0.1;
 /** Smoothing time of the measured speed and turn rate, in seconds. */
-const SMOOTH_SECONDS = 0.12;
+const SMOOTH_SECONDS = 0.2;
 /** Spring that eases the body back to level, per second. */
-const SETTLE_RATE = 9;
+const SETTLE_RATE = 5;
 /** Radians of pitch per tile/s² of acceleration (positive = nose down). */
 const PITCH_PER_ACCEL = 0.03;
 /** Radians of roll per (rad/s × tile/s) of lateral acceleration. */
@@ -15,7 +15,7 @@ const ROLL_PER_LATERAL = 0.12;
 const MAX_PITCH = 0.12;
 const MAX_ROLL = 0.14;
 /** Engine shake: height in tiles and frequency in Hz at full speed. */
-const SHAKE_HEIGHT = 0.02;
+const SHAKE_HEIGHT = 0;
 const SHAKE_HZ = 14;
 /** Tile/s at which the shake reaches full strength. */
 const SHAKE_FULL_SPEED = 2;
@@ -45,6 +45,7 @@ interface BodyEntry {
   nowMs: number;
   speed: number;
   turnRate: number;
+  accel: number;
   pitch: number;
   roll: number;
   moving: number;
@@ -87,6 +88,7 @@ export function createSuspension(): Suspension {
             nowMs,
             speed: 0,
             turnRate: 0,
+            accel: 0,
             pitch: 0,
             roll: 0,
             moving: 0,
@@ -104,7 +106,9 @@ export function createSuspension(): Suspension {
       const speed = previous.speed + (along - previous.speed) * blend;
       const turn = wrap(yaw - previous.yaw) / dt;
       const turnRate = previous.turnRate + (turn - previous.turnRate) * blend;
-      const accel = (speed - previous.speed) / dt;
+      const accel =
+        previous.accel +
+        ((speed - previous.speed) / dt - previous.accel) * blend;
 
       const settle = Math.exp(-SETTLE_RATE * dt);
       const pitchTarget = clamp(accel * PITCH_PER_ACCEL, MAX_PITCH);
@@ -119,6 +123,7 @@ export function createSuspension(): Suspension {
       previous.nowMs = nowMs;
       previous.speed = speed;
       previous.turnRate = turnRate;
+      previous.accel = accel;
       previous.pitch = pitch;
       previous.roll = roll;
       const drivingNow = Math.abs(speed) > DRIVING_SPEED ? 1 : 0;
