@@ -1,0 +1,73 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "force-fire-demo",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "first-line",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": false,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 36.5,
+      "y": 62.5,
+      "zoom": 1.2
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "first-line",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-himars",
+        "atCenti": [
+          3050,
+          6250
+        ],
+        "order": {
+          "attack": "rpp"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-dozer",
+        "atCenti": [
+          4350,
+          6250
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-supply-truck",
+        "atCenti": [
+          4050,
+          6250
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          46,
+          60
+        ],
+        "label": "rpp"
+      }
+    ]
+  }
+}

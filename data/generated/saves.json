@@ -38,6 +38,12 @@
       "entities": 12
     },
     {
+      "id": "force-fire-demo",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 4
+    },
+    {
       "id": "defenses",
       "map": "showcase",
       "form": "setup",

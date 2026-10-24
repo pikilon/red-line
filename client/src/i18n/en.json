@@ -97,6 +97,8 @@
   "saves.rpg-ambush.description": "RPG gunners on both sides of the road as four Bradleys drive past.",
   "saves.artillery-range.name": "Artillery range",
   "saves.artillery-range.description": "HIMARS and TOS-1A fire at enemy buildings from long range, guided by scouts.",
+  "saves.force-fire-demo.name": "Force fire",
+  "saves.force-fire-demo.description": "Select the HIMARS and click the spotted Russian truck to give it an attack order.",
   "saves.defenses.name": "Defenses",
   "saves.defenses.description": "Stugna-P and Kornet emplacements against vehicles driving into range.",
   "saves.base-assault.name": "Base assault",
