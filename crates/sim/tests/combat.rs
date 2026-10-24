@@ -457,3 +457,32 @@ fn attack_ground_out_of_range_approaches_until_in_range() {
     steps(&mut world, 30);
     assert_eq!(world.entity(mortar).unwrap().pos, stop);
 }
+
+#[test]
+fn retaliation_idle_victim_and_friend_chase_out_of_range_shooter() {
+    let mut world = sandbox();
+    // Mortar (range 10, min 3) outside the soldier's range 5 but inside sight.
+    let soldier = world.spawn(0, 9, at(1000, 1050));
+    let friend = world.spawn(0, 9, at(1100, 1250));
+    let busy = world.spawn(0, 9, at(1100, 850));
+    let mortar = world.spawn(1, 11, at(1550, 1050));
+    world.refresh_visibility();
+    world.enqueue_as(
+        0,
+        Command::Move {
+            units: vec![busy],
+            target: at(1100, 450),
+        },
+    );
+    steps(&mut world, 8);
+    assert!(world.entity(friend).unwrap().hp < 50);
+    let attacking = |id| {
+        matches!(
+            world.entity(id).map(|e| e.order),
+            Some(Order::Attack { target, .. }) if target == mortar
+        )
+    };
+    assert!(attacking(soldier));
+    assert!(attacking(friend));
+    assert!(!attacking(busy));
+}

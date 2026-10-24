@@ -18,6 +18,11 @@ use crate::rng::SplitMix64;
 use crate::rules::{Delivery, LocoKind, TypeId, WeaponDef, WeaponId, fx_centi};
 use crate::world::{CombatEvent, DIRECT_HIT_CENTI, World};
 
+/// Spec 23: farthest attacker (from the victim) that triggers retaliation.
+const RETALIATION_DISTANCE_CENTI: u32 = 900;
+/// Spec 23: idle friends of the victim within this distance join the reply.
+const RETALIATION_FRIENDS_CENTI: u32 = 550;
+
 /// `0` when `modifier_percent == 0`; otherwise `max(1, base * modifier_percent
 /// / 100)` with a `u64` intermediate (saturating at `u32::MAX`).
 pub fn damage_dealt(base: u32, modifier_percent: u32) -> u32 {
@@ -483,6 +488,58 @@ impl World {
         }
         self.entities[target_index].hp = self.entities[target_index].hp.saturating_sub(damage);
         self.entities[target_index].last_hit = Some((shooter, weapon_id));
+        self.retaliate(target_index, shooter);
+    }
+
+    /// Spec 23: the damaged unit and its idle, armed, mobile friends nearby
+    /// attack an enemy shooter that is visible to them and not too far away.
+    fn retaliate(&mut self, victim_index: usize, shooter: EntityId) {
+        let Some(shooter_index) = self.index_of(shooter) else {
+            return;
+        };
+        let (owner, victim_pos) = {
+            let victim = &self.entities[victim_index];
+            (victim.owner, victim.pos)
+        };
+        let aggressor = &self.entities[shooter_index];
+        if aggressor.hp == 0
+            || aggressor.owner == owner
+            || aggressor.owner == NEUTRAL
+            || owner == NEUTRAL
+            || self.entity_distance(victim_pos, aggressor) > fx_centi(RETALIATION_DISTANCE_CENTI)
+            || !self.is_entity_visible(owner, shooter)
+        {
+            return;
+        }
+        let armor = self.rules.ty(aggressor.kind).armor;
+        let radius = fx_centi(RETALIATION_FRIENDS_CENTI);
+        let responders: Vec<usize> = (0..self.entities.len())
+            .filter(|&i| {
+                let unit = &self.entities[i];
+                let ty = self.rules.ty(unit.kind);
+                unit.owner == owner
+                    && unit.hp > 0
+                    && unit.site.is_none()
+                    && ty.speed_centi > 0
+                    && matches!(unit.order, Order::Idle { .. })
+                    && self
+                        .rules
+                        .weapon_of(unit.kind)
+                        .is_some_and(|weapon| self.rules.modifier(weapon.damage_type, armor) > 0)
+                    && (unit.pos - victim_pos).length() <= radius
+            })
+            .collect();
+        if responders.is_empty() {
+            return;
+        }
+        let order_id = self.next_order_id;
+        self.next_order_id += 1;
+        for i in responders {
+            self.entities[i].order = Order::Attack {
+                order_id,
+                target: shooter,
+            };
+        }
     }
 
     /// §5.11 step 4 splash: every entity with `hp > 0` that belongs to neither
@@ -516,6 +573,7 @@ impl World {
             }
             self.entities[index].hp = self.entities[index].hp.saturating_sub(damage);
             self.entities[index].last_hit = Some((shooter, weapon_id));
+            self.retaliate(index, shooter);
         }
     }
 }
