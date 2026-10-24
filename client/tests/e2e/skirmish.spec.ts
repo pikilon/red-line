@@ -38,6 +38,7 @@ interface SkirmishDebugView {
   command(command: Record<string, unknown>): void;
   stateHash(): Promise<string>;
   saveState(): Promise<string>;
+  attackMarkerCount(): number;
   drawCalls(): number;
   uiRenders(): number;
   resetFrameStats(): void;
@@ -671,6 +672,23 @@ test("AC-20-03: force-fires with Ctrl, the enemy pick and either button", async 
     )
     .toBe(true);
 
+  // An unarmed unit in the selection (Ctrl+A adds the dozer) must not block
+  // the HIMARS; the click attacks and shows the red marker.
+  await page.keyboard.press("Control+a");
+  await page.waitForTimeout(100);
+  await clickTiles(page, plant.x, plant.y);
+  await expect
+    .poll(async () => (await savedOrder(page, himars.id))?.kind, {
+      timeout: ms(5000),
+    })
+    .toBe("attack");
+  expect((await savedOrder(page, himars.id))?.target).toBe(plant.id);
+  await expect
+    .poll(() => debugCall(page, (api) => api.attackMarkerCount()), {
+      timeout: ms(2000),
+    })
+    .toBeGreaterThan(0);
+
   await page.keyboard.down("Control");
   await clickTiles(page, 40, 58);
   await page.keyboard.up("Control");
@@ -738,6 +756,13 @@ test("AC-20-03: force-fires with Ctrl, the enemy pick and either button", async 
       himars.id,
     ),
   ).toBe(true);
+  await expect
+    .poll(() => debugCall(page, (api) => api.attackMarkerCount()), {
+      timeout: ms(2000),
+    })
+    .toBeGreaterThan(0);
+  await page.waitForTimeout(1500);
+  expect(await debugCall(page, (api) => api.attackMarkerCount())).toBe(0);
 });
 
 /** Draw-call bound of spec 10 §3: `4 × types on screen + 10`, plus spec 21 §2:

@@ -28,6 +28,7 @@ import {
 } from "../input/skirmishController";
 import { createPerfPanel } from "../perfPanel";
 import { type Animator, createAnimator } from "../render/animation";
+import { type AttackMarker, createAttackMarker } from "../render/attackMarker";
 import { createCorpses } from "../render/corpses";
 import {
   createDeathCauses,
@@ -96,6 +97,7 @@ import {
 import { createIndexedDbSaveStore, type SaveStore } from "../saves/store";
 import { loadSettings, type Settings, saveSettings } from "../settings";
 import type { ProjectileState } from "../sim/combatSnapshot";
+import { fromRaw } from "../sim/fixed";
 import {
   type EntityState,
   interpolateEntities,
@@ -103,7 +105,7 @@ import {
   OBSERVER,
   type QueueState,
 } from "../sim/matchSnapshot";
-import { type ReadyMessage, TICK_MS } from "../sim/protocol";
+import { type ReadyMessage, type SimCommand, TICK_MS } from "../sim/protocol";
 import {
   createSkirmishClient,
   type SkirmishClient,
@@ -621,6 +623,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let generated: GeneratedTextures | null = null;
   let generatedLoading = false;
   let effects: Effects | null = null;
+  let attackMarker: AttackMarker | null = null;
   let decals: Decals | null = null;
   let projectiles: Projectiles | null = null;
   /** Flying projectiles of the latest combat snapshot (spec 17 §5). */
@@ -639,6 +642,36 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     models = loaded;
     modelsReady = true;
   });
+
+  /** Spec 20 §4: a short red pulse acknowledges an attack order (client-only). */
+  function markAttack(command: SimCommand): void {
+    if (attackMarker === null) return;
+    if (command.kind === "attack") {
+      const target = next?.entities.find(
+        (entity) => entity.id === command.target,
+      );
+      if (target === undefined) return;
+      const type = typeDef(target.kind);
+      const radius =
+        type.category === "building"
+          ? Math.max(type.footprint[0], type.footprint[1]) / 2 + 0.6
+          : 0.9;
+      attackMarker.show(
+        { id: target.id, x: target.x, y: target.y, radius },
+        effectTime(performance.now()),
+      );
+    } else if (command.kind === "attackGround") {
+      attackMarker.show(
+        {
+          id: null,
+          x: fromRaw(command.xRaw),
+          y: fromRaw(command.yRaw),
+          radius: 0.9,
+        },
+        effectTime(performance.now()),
+      );
+    }
+  }
 
   /** The queue of the selected production building, if any. */
   function selectedQueue(): QueueState | null {
@@ -758,6 +791,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     scene.add(entities.group);
     effects = createEffects();
     scene.add(effects.group);
+    attackMarker = createAttackMarker();
+    scene.add(attackMarker.group);
     decals = createDecals(
       createTerrainSurface(
         mapInfo.mapWidth,
@@ -832,7 +867,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         refreshOverlay();
       },
       player: () => controlled,
-      command: (command) => interact.command(command),
+      command: (command) => {
+        markAttack(command);
+        interact.command(command);
+      },
       onSelectionChange: (ids) => {
         hud.setSelectedCount(ids.size);
         hud.setSelectedTypes(
@@ -1205,6 +1243,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     }
     updatePlacementGhost();
     effects?.update(effectTime(now));
+    attackMarker?.update(effectTime(now), (id) => {
+      const entity = next?.entities.find((row) => row.id === id);
+      return entity === undefined ? null : { x: entity.x, y: entity.y };
+    });
     decals?.update(effectTime(now));
     relief?.update(effectTime(now));
     fogOverlay?.update(fog);
@@ -1281,6 +1323,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       command: (command) => interact.command(command),
       stateHash: () => interact.requestHash(),
       effectCounts: () => effects?.counts() ?? NO_EFFECT_COUNTS,
+      attackMarkerCount: () => attackMarker?.activeCount() ?? 0,
       decalCount: () => decals?.count() ?? 0,
       projectileCounts: () => projectiles?.counts() ?? NO_PROJECTILE_COUNTS,
       projectileSamples: () => projectiles?.samples() ?? [],

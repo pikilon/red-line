@@ -111,10 +111,15 @@ is accepted and chased, matching Zero Hour; automatic targeting stays fog-gated
 * Picking approximates the original ray with a one-tile order radius; selection
   keeps the half-tile pick (spec 03 §6.5).
 
-## 4. Assumptions
+## 4. Feedback and assumptions
 
-* No ground marker is drawn and the mouse cursor does not change; the shells
-  themselves are the feedback.
+* A client-only red disc and ring pulse on the ground under the ordered target
+  (or at the attack-ground point) for `ATTACK_MARKER_MS` = 1300 ms, growing
+  slightly and blinking out; an entity target is followed while the marker is
+  alive (`client/src/render/attackMarker.ts`, owner request 2026-10-25). Up to
+  four markers coexist; a fifth recycles the oldest. It acknowledges the order
+  without touching the simulation.
+* The mouse cursor itself does not change.
 * Ctrl is latched on the button press: releasing Ctrl before the button still
   fires.
 
@@ -133,9 +138,14 @@ is accepted and chased, matching Zero Hour; automatic targeting stays fog-gated
   building gives it an `attack` order on that building; after a `Stop`, `Ctrl`
   + right click on the ground does the same as the left click; a plain left
   click on the enemy building also gives it an `attack` order and keeps the
-  selection; no console error.
+  selection; with `Ctrl+A` selecting the HIMARS and the unarmed dozer, the
+  same click still gives the HIMARS the `attack` order (the unarmed unit does
+  not block it); no console error.
 * AC-20-04 (`crates/sim/tests/combat.rs`): a HIMARS does not auto-target a
   truck 10 tiles away outside its sight; once ordered to attack it, it fires
   and damages the truck, and a new attack order on an in-range rifleman
   switches the fire to it (spec 11 AC-11-18) instead of keeping the old
   target.
+* AC-20-05 (Playwright): in the AC-20-03 scene, an attack order or an
+  `AttackGround` order makes `__redline.attackMarkerCount()` at least 1 in the
+  next frame; after 1.5 s it is 0 again; no console error.

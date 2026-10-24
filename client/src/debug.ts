@@ -93,6 +93,8 @@ export interface SkirmishDebug {
   stateHash(): Promise<string>;
   /** Visible effect mesh counts of the last frame (spec 07 AC-07-06). */
   effectCounts(): Record<EffectKind, number>;
+  /** Live red attack markers on the ground (spec 20 AC-20-05). */
+  attackMarkerCount(): number;
   /** Ground marks alive: tracks plus scorches (spec 24). */
   decalCount(): number;
   /** Drawn projectiles per model of the last frame (spec 17 §7.7). */
