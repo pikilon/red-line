@@ -7,7 +7,7 @@ import {
   NEUTRAL,
 } from "../sim/matchSnapshot";
 import type { SimCommand } from "../sim/protocol";
-import { pickEntity } from "./entitySelection";
+import { ORDER_PICK_RADIUS_TILES, pickEntity } from "./entitySelection";
 
 /** Selected entities owned by player, ascending id; missing ids are dropped. */
 function ownSelected(
@@ -52,12 +52,30 @@ function moveCommand(
   ];
 }
 
+/** Enemy unit or building under (x, y), ignoring ghosts; null otherwise. */
+function enemyAt(
+  entities: readonly EntityState[],
+  player: number,
+  x: number,
+  y: number,
+): number | null {
+  const picked = pickEntity(entities, x, y, ORDER_PICK_RADIUS_TILES);
+  const entity = entities.find((candidate) => candidate.id === picked);
+  if (entity === undefined || hasFlag(entity, ENTITY_FLAGS.ghost)) return null;
+  const category = typeDef(entity.kind).category;
+  if (category !== "unit" && category !== "building") return null;
+  if (entity.owner === player || entity.owner === NEUTRAL) return null;
+  return entity.id;
+}
+
 /**
- * Ctrl + click (left or right) at ground (x, y) tiles: the armed selected
- * units of `player` force-fire at that point (spec 20). Unarmed units and
+ * Ctrl + click (left or right) at (x, y) tiles: the armed selected units of
+ * `player` force-fire (spec 20). As in Zero Hour, the cursor pick decides:
+ * an enemy unit or building under it is attacked, so moving targets are
+ * followed; any other point gets an `AttackGround` order. Unarmed units and
  * buildings keep their order.
  */
-export function resolveAttackGround(args: {
+export function resolveForceFire(args: {
   player: number;
   selected: readonly number[];
   entities: readonly EntityState[];
@@ -71,6 +89,10 @@ export function resolveAttackGround(args: {
     ),
   );
   if (armed.length === 0) return [];
+  const target = enemyAt(entities, player, x, y);
+  if (target !== null) {
+    return [{ kind: "attack", player, units: armed, target }];
+  }
   return [
     {
       kind: "attackGround",
@@ -124,7 +146,7 @@ export function resolveRightClick(args: {
     }
   }
 
-  const target = pickEntity(entities, x, y);
+  const target = pickEntity(entities, x, y, ORDER_PICK_RADIUS_TILES);
   const hovered = entities.find((entity) => entity.id === target) ?? null;
   const cursor =
     hovered !== null && hasFlag(hovered, ENTITY_FLAGS.ghost) ? null : hovered;
