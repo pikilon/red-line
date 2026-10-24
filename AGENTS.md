@@ -41,6 +41,10 @@ C&C Generals. Behavior lives in `specs/*.md`; decisions in `docs/decisions.md`
 * Act as `pikilon`; if `gh` or git uses another account, stop and tell the
   owner. Commits are authored `pikilon <pikilon@gmail.com>`; remote
   `git@github-pikilon:pikilon/red-line.git`.
+* Merge with `gh pr merge --auto --squash` and end the turn: never wait for
+  CI. `main` requires the `verify` check, so GitHub merges once it passes. At
+  the start of each task run `node --run status`; a PR with `CI failing` comes
+  first: tell the owner what broke and fix it.
 * Commit messages: English, third person, one prefix (`feat`, `fix`, `chore`,
   `docs`, `refactor`, `test`, `build`, `ci`, `perf`, `style`), e.g.
   `feat: adds flow field integration pass`.

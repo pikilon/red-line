@@ -20,3 +20,7 @@ unsafe_code = "forbid"
 
 [workspace.lints.clippy]
 float_arithmetic = "deny"
+
+# Tests run whole AI matches; unoptimized they take minutes.
+[profile.test]
+opt-level = 2
