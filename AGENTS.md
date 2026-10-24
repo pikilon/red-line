@@ -24,8 +24,6 @@ C&C Generals. Behavior lives in `specs/*.md`; decisions in `docs/decisions.md`
   time, unseeded randomness or hash-order iteration (`check:rules` and clippy
   fail otherwise). The client only sends commands and renders; balance changes
   go in `data/`, not code.
-* **Licensing (D-02).** Dependencies must be AGPL-3.0 compatible (code) or
-  CC BY-SA 4.0 (assets).
 
 ## Commands
 
