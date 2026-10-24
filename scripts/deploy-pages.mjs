@@ -12,8 +12,8 @@ const out = (cmd, args, cwd) =>
   execFileSync(cmd, args, { cwd, encoding: "utf8" }).trim();
 
 const remote = out("git", ["remote", "get-url", "origin"]);
-const repo = remote.replace(/\.git$/, "").split(/[/:]/).pop();
-const base = `/${repo}/`;
+const domain = "red-line.pikilon.com";
+const base = "/";
 const source = out("git", ["rev-parse", "--short", "HEAD"]);
 const dirty = out("git", ["status", "--porcelain"]) !== "";
 
@@ -28,6 +28,7 @@ try {
     "client",
   );
   writeFileSync(join(site, ".nojekyll"), "");
+  writeFileSync(join(site, "CNAME"), `${domain}\n`);
 
   const pub = join(work, "pub");
   cpSync(site, pub, { recursive: true });
@@ -40,7 +41,7 @@ try {
   );
   run("git", ["remote", "add", "origin", remote], pub);
   run("git", ["push", "-f", "origin", "gh-pages"], pub);
-  console.log(`Published ${source} to https://<owner>.github.io${base}`);
+  console.log(`Published ${source} to https://${domain}/`);
 } finally {
   rmSync(work, { recursive: true, force: true });
 }
