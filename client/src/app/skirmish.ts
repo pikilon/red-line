@@ -52,7 +52,13 @@ import {
   createTerrain,
   rockCellsOf,
   setTerrainTextures,
+  terrainDeformerOf,
 } from "../render/terrain";
+import {
+  craterFor,
+  MIN_CRATER_SIZE,
+  pressSourcesOf,
+} from "../render/terrainRelief";
 import { RULES, typeDef, typeIndex, typeName } from "../rules";
 import { loadSource, readExample, readSave } from "../saves/boot";
 import {
@@ -912,7 +918,19 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       effects !== null &&
       (previous === null || snapshot.tick > previous.tick)
     ) {
-      spawnShotEffects(snapshot, effects, effectTime(at));
+      const relief = terrain === null ? null : terrainDeformerOf(terrain);
+      spawnShotEffects(
+        snapshot,
+        effects,
+        effectTime(at),
+        relief === null
+          ? undefined
+          : (x, z, size, startMs) => {
+              if (size < MIN_CRATER_SIZE) return;
+              const crater = craterFor(size);
+              relief.crater(x, z, crater.radius, crater.depth, startMs);
+            },
+      );
       animator.recordShots(snapshot.entities, at);
       const deaths =
         previous === null ? [] : detectDeaths(previous, snapshot, viewer);
@@ -1042,11 +1060,14 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     }
     lastFrameMs = now;
     controller?.update(dtMs / 1000);
+    const relief = terrain === null ? null : terrainDeformerOf(terrain);
     updateSun();
     if (next !== null && prev !== null && entities !== null) {
       const alpha = (now - receivedAt) / TICK_MS;
+      const drawn = interpolateEntities(prev, next, alpha);
+      relief?.press(pressSourcesOf(drawn), effectTime(now));
       entities.update(
-        interpolateEntities(prev, next, alpha),
+        drawn,
         controller?.selected ?? NO_SELECTION,
         effectTime(now),
       );
@@ -1060,6 +1081,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     }
     updatePlacementGhost();
     effects?.update(effectTime(now));
+    relief?.update(effectTime(now));
     fogOverlay?.update(fog);
     renderer.render(scene, camera);
     drawCalls = renderer.info.render.calls;
@@ -1106,6 +1128,16 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       },
       cameraTarget: () => controller?.cameraTarget() ?? { ...cameraTarget },
       zoom: () => camera.zoom,
+      relief: () =>
+        (terrain === null ? null : terrainDeformerOf(terrain))?.stats() ?? {
+          flushes: 0,
+          flushMs: 0,
+          vertices: 0,
+        },
+      crater: (x, y, radius, depth) => {
+        if (terrain === null) return;
+        terrainDeformerOf(terrain)?.crater(x, y, radius, depth, 0);
+      },
       loadedSave: () => boot.loadedId,
       initialSnapshot: () =>
         initial === null
