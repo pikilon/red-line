@@ -444,3 +444,10 @@ export function limbPose(
 export function isRigged(typeId: string): boolean {
   return RIGS[typeId] !== undefined;
 }
+
+/** Kneeling factor of the first man of `typeId` in state `s`: 1 kneeling ..
+ *  0 standing (a soldier who dies keeps the pose he died in). */
+export function kneelingOf(typeId: string, s: RigState): number {
+  const man = Object.values(RIGS[typeId] ?? {})[0];
+  return man === undefined ? 0 : kneelOf(man, s);
+}

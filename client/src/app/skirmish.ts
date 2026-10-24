@@ -53,6 +53,7 @@ import {
   type ProjectileModel,
   type Projectiles,
 } from "../render/projectiles";
+import { kneelingOf } from "../render/rig";
 import {
   createTerrain,
   rockCellsOf,
@@ -936,6 +937,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         effectTime(at),
         corpses,
         deathCauses,
+        (entity) => {
+          const rig = animator.lastRig?.(entity.id);
+          return rig === undefined || rig === null
+            ? 0
+            : kneelingOf(typeDef(entity.kind).id, rig);
+        },
       );
     }
     refreshOverlay();

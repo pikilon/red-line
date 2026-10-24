@@ -24,6 +24,9 @@ export interface Corpse {
   /** Hull yaw at the moment of death. */
   readonly yaw: number;
   readonly cause: DeathCause;
+  /** 0 standing .. 1 kneeling when he died; a kneeling soldier falls from the
+   *  kneel instead of standing up. */
+  readonly kneel?: number;
   readonly startMs: number;
 }
 
@@ -49,6 +52,10 @@ export interface BodyPose {
 export const SHOT_VARIANTS = 3;
 const HALF_TURN = Math.PI;
 const QUARTER_TURN = Math.PI / 2;
+/** A hit within this of square across the facing tips the body on its side. */
+const SIDE_HIT = 0.45;
+/** Forward lean of a kneeling soldier, radians (the operator bends further). */
+const KNEEL_LEAN = 0.06;
 /** Half the thickness of a lying body, tiles. */
 const BODY_THICKNESS = 0.05;
 /** Figure height of the soldiers, for the kneel-drop of a crumpling body. */
@@ -73,20 +80,22 @@ function smooth(a: number, b: number, v: number): number {
   return t * t * (3 - 2 * t);
 }
 
-/** `a` to `b` along the shorter arc. */
-function turnTowards(a: number, b: number, t: number): number {
-  const delta = ((b - a + HALF_TURN * 3) % (HALF_TURN * 2)) - HALF_TURN;
-  return a + delta * t;
-}
-
-/** Variant of a death, stable per soldier. */
+/** Style of a shot death, stable per soldier: stumble, jerk or crumple. */
 export function variantOf(corpse: Corpse): number {
   return corpse.cause.kind === "shot" ? corpse.id % SHOT_VARIANTS : 0;
 }
 
-/** Yaw that faces the push direction. */
-function pushYaw(corpse: Corpse): number {
-  return Math.atan2(Math.cos(corpse.cause.push), Math.sin(corpse.cause.push));
+export type FallAxis = "forward" | "back" | "side";
+
+/** Which way the hit tips the body, from where it was facing: pushed along
+ *  its facing it falls on its face, against it on its back, across it on its
+ *  side. The body never turns on its feet first (spec 22 §3). */
+export function fallAxis(corpse: Corpse): { axis: FallAxis; right: 1 | -1 } {
+  const push = corpse.cause.push;
+  const along = Math.sin(corpse.yaw + push);
+  const right = -Math.cos(corpse.yaw + push) > 0 ? 1 : -1;
+  if (Math.abs(along) < SIDE_HIT) return { axis: "side", right };
+  return { axis: along > 0 ? "forward" : "back", right };
 }
 
 /** Milliseconds a death animation takes before the body lies still. */
@@ -108,6 +117,10 @@ export function corpseFade(t: number): number {
     : clamp01((CORPSE_MS - t) / CORPSE_FADE_MS);
 }
 
+/** Timing of the fall of each style, ms: when it starts and how long it takes. */
+const FALL_START = [150, 80, 380] as const;
+const FALL_DURATION = [650, 720, 460] as const;
+
 /** Where, and how tipped over, the body is `t` ms after the death. */
 export function bodyPose(corpse: Corpse, t: number, out: BodyPose): BodyPose {
   out.x = corpse.x;
@@ -118,6 +131,7 @@ export function bodyPose(corpse: Corpse, t: number, out: BodyPose): BodyPose {
   out.roll = 0;
   out.scale = corpseFade(t);
   const push = corpse.cause.push;
+  const { axis, right } = fallAxis(corpse);
   if (corpse.cause.kind === "explosion") {
     const reach = tossReach(corpse);
     const slide = clamp01(t / TOSS_SLIDE_MS);
@@ -130,39 +144,29 @@ export function bodyPose(corpse: Corpse, t: number, out: BodyPose): BodyPose {
       const bounce = clamp01((t - TOSS_FLIGHT_MS) / TOSS_BOUNCE_MS);
       height = TOSS_BOUNCE_HEIGHT * 4 * bounce * (1 - bounce);
     }
-    // Faces the blast, flips once in the air and lands on its face or back.
-    const side = corpse.id % 2 === 0 ? 1 : -1;
+    // Flips once in the air the way it is thrown and lands face down or on
+    // its back (on its side after a side blast), keeping the way it faced.
     const spin = 1 - smooth(0, TOSS_SPIN_MS, t);
-    out.pitch = side * (QUARTER_TURN + 2 * HALF_TURN * spin);
-    out.yaw =
-      turnTowards(corpse.yaw, pushYaw(corpse) + HALF_TURN, smooth(0, 300, t)) +
-      0.6 * smooth(0, TOSS_SPIN_MS, t) * side;
-    out.lift = height + BODY_THICKNESS * Math.abs(Math.sin(out.pitch));
+    const turn = QUARTER_TURN + 2 * HALF_TURN * spin;
+    if (axis === "side") out.roll = right * turn;
+    else out.pitch = (axis === "forward" ? 1 : -1) * turn;
+    out.lift =
+      height +
+      BODY_THICKNESS *
+        Math.max(Math.abs(Math.sin(out.pitch)), Math.abs(Math.sin(out.roll)));
     return out;
   }
-  const variant = variantOf(corpse);
-  const faceYaw = pushYaw(corpse);
-  if (variant === 0) {
-    // Stumbles forward and falls on its face.
-    const fall = clamp01((t - 150) / 650);
-    out.pitch = QUARTER_TURN * fall * fall;
-    out.yaw = turnTowards(corpse.yaw, faceYaw, smooth(0, 0.4, fall));
-  } else if (variant === 1) {
-    // Jerked back by the hit, then falls on its back.
-    const fall = clamp01((t - 80) / 720);
-    const jerk = Math.sin(Math.PI * clamp01(t / 220));
-    out.pitch = -QUARTER_TURN * fall * fall - 0.18 * jerk * (1 - fall);
-    out.yaw = turnTowards(
-      corpse.yaw,
-      faceYaw + HALF_TURN,
-      smooth(0, 0.4, fall),
-    );
-  } else {
-    // Knees give way, then it topples on its side towards the hit.
-    const fall = clamp01((t - 380) / 460);
-    const right = -Math.cos(corpse.yaw + push) > 0 ? 1 : -1;
-    out.roll = right * QUARTER_TURN * fall * fall;
+  const style = variantOf(corpse);
+  const fall = clamp01(
+    (t - (FALL_START[style] ?? 0)) / (FALL_DURATION[style] ?? 1),
+  );
+  let tip = QUARTER_TURN * fall * fall;
+  if (style === 1) {
+    // Jerked by the hit before it goes.
+    tip += 0.18 * Math.sin(Math.PI * clamp01(t / 220)) * (1 - fall);
   }
+  if (axis === "side") out.roll = right * tip;
+  else out.pitch = (axis === "forward" ? 1 : -1) * tip;
   out.lift =
     BODY_THICKNESS *
     Math.max(Math.abs(Math.sin(out.pitch)), Math.abs(Math.sin(out.roll)));
@@ -170,7 +174,7 @@ export function bodyPose(corpse: Corpse, t: number, out: BodyPose): BodyPose {
 }
 
 /** Offsets of a limb of the falling soldier `t` ms after the death. The limb
- *  name is `<man>_<part>`. */
+ *  name is `<man>_<part>`. A soldier who died kneeling starts from the kneel. */
 export function corpseLimb(
   corpse: Corpse,
   t: number,
@@ -179,104 +183,113 @@ export function corpseLimb(
 ): LimbPose {
   resetPose(out);
   const part = name.slice(name.indexOf("_") + 1);
+  const kneel = corpse.kneel ?? 0;
+  // The pose he died in: kneeling soldiers do not stand up to fall.
+  switch (part) {
+    case "hips":
+      out.y = -KNEEL_DROP * FIGURE_HEIGHT * kneel;
+      out.rx = KNEEL_LEAN * kneel;
+      break;
+    case "thigh_l":
+      out.rx = KNEEL.thighL * kneel;
+      break;
+    case "shin_l":
+      out.rx = KNEEL.shinL * kneel;
+      break;
+    case "thigh_r":
+      out.rx = KNEEL.thighR * kneel;
+      break;
+    case "shin_r":
+      out.rx = KNEEL.shinR * kneel;
+      break;
+    default:
+      break;
+  }
+  const rest = 1 - kneel;
   if (corpse.cause.kind === "explosion") {
     // Thrown: arms flung up and back, legs kicking, then they go limp.
     const limp = 1 - smooth(500, 1300, t);
     const kick = Math.sin(t / 85) * limp;
     switch (part) {
       case "hips":
-        out.rx = -0.35 * limp;
+        out.rx += -0.35 * limp;
         break;
       case "arms":
         out.rx = -1 - 1.5 * limp;
         out.ry = 0.5 * kick;
         break;
       case "thigh_l":
-        out.rx = -0.5 - 0.5 * kick;
+        out.rx += (-0.5 - 0.5 * kick) * rest;
         break;
       case "thigh_r":
-        out.rx = 0.4 + 0.5 * kick;
+        out.rx += (0.4 + 0.5 * kick) * rest;
         break;
       case "shin_l":
-        out.rx = 0.9 * limp + 0.3;
+        out.rx += (0.9 * limp + 0.3) * rest;
         break;
       case "shin_r":
-        out.rx = 0.7 * limp + 0.3;
+        out.rx += (0.7 * limp + 0.3) * rest;
         break;
       default:
         break;
     }
     return out;
   }
-  const variant = variantOf(corpse);
-  if (variant === 0) {
-    const u = smooth(0, 700, t);
-    switch (part) {
-      case "arms":
-        out.rx = -1.1 * smooth(0, 450, t) + 0.5 * u;
-        break;
-      case "thigh_l":
-        out.rx = -0.7 * u;
-        break;
-      case "shin_l":
-        out.rx = 0.9 * u;
-        break;
-      case "thigh_r":
-        out.rx = 0.3 * u;
-        break;
-      case "shin_r":
-        out.rx = 0.5 * u;
-        break;
-      default:
-        break;
-    }
-  } else if (variant === 1) {
-    const u = smooth(0, 500, t);
-    switch (part) {
-      case "arms":
-        out.rx = -2.3 * smooth(0, 300, t) + 0.8 * smooth(400, 800, t);
-        out.ry = 0.4 * u;
-        break;
-      case "thigh_l":
-        out.rx = -0.4 * u;
-        break;
-      case "thigh_r":
-        out.rx = 0.4 * u;
-        break;
-      case "shin_l":
-        out.rx = 0.5 * u;
-        break;
-      case "shin_r":
-        out.rx = 0.8 * u;
-        break;
-      default:
-        break;
-    }
-  } else {
-    const k = smooth(0, 380, t);
+  const style = variantOf(corpse);
+  const { axis } = fallAxis(corpse);
+  if (style === 2) {
+    // Crumples: the knees give way first, then the body topples.
+    const k = smooth(0, 380, t) * rest;
     switch (part) {
       case "hips":
-        out.y = -KNEEL_DROP * FIGURE_HEIGHT * k;
-        out.rx = 0.25 * k;
+        out.y -= KNEEL_DROP * FIGURE_HEIGHT * k;
+        out.rx += 0.25 * k;
         break;
       case "arms":
-        out.rx = 0.7 * k;
+        out.rx = 0.7 * smooth(0, 380, t);
         break;
       case "thigh_l":
-        out.rx = KNEEL.thighL * k;
+        out.rx += KNEEL.thighL * k;
         break;
       case "shin_l":
-        out.rx = KNEEL.shinL * k;
+        out.rx += KNEEL.shinL * k;
         break;
       case "thigh_r":
-        out.rx = KNEEL.thighR * k;
+        out.rx += KNEEL.thighR * k;
         break;
       case "shin_r":
-        out.rx = KNEEL.shinR * k;
+        out.rx += KNEEL.shinR * k;
         break;
       default:
         break;
     }
+    return out;
+  }
+  // Stumble or jerk: arms flung out (up when falling back, reaching when
+  // falling forward), legs going slack.
+  const u = smooth(0, axis === "back" ? 500 : 700, t) * rest;
+  switch (part) {
+    case "arms":
+      out.rx =
+        axis === "back"
+          ? -2.3 * smooth(0, 300, t) + 0.8 * smooth(400, 800, t)
+          : -1.1 * smooth(0, 450, t) + 0.5 * smooth(0, 700, t);
+      out.ry = (axis === "back" ? 0.4 : 0) * smooth(0, 500, t);
+      break;
+    case "thigh_l":
+      out.rx += (axis === "back" ? -0.4 : -0.7) * u;
+      break;
+    case "thigh_r":
+      out.rx += (axis === "back" ? 0.4 : 0.3) * u;
+      break;
+    case "shin_l":
+      out.rx += (axis === "back" ? 0.5 : 0.9) * u;
+      break;
+    case "shin_r":
+      out.rx += (axis === "back" ? 0.8 : 0.5) * u;
+      break;
+    default:
+      break;
   }
   return out;
 }

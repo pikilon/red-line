@@ -214,6 +214,7 @@ export function spawnDeathEffects(
   nowMs = 0,
   corpses?: Corpses,
   causes?: DeathCauses,
+  kneelOf?: (entity: EntityState) => number,
 ): void {
   for (const entity of deaths) {
     const type = typeDef(entity.kind);
@@ -250,6 +251,7 @@ export function spawnDeathEffects(
         y: entity.y,
         yaw: angleToYaw(entity.heading),
         cause,
+        kneel: kneelOf?.(entity) ?? 0,
         startMs: nowMs,
       };
       corpses.add(corpse);
@@ -300,57 +302,48 @@ function spawnBlood(effects: Effects, corpse: Corpse, nowMs: number): void {
 
   if (kind === "explosion") {
     const reach = tossReach(corpse);
-    // Spurts follow the body through the air, in rapid bursts of two or three.
-    for (let i = 0; i < 9; i++) {
-      const f = 0.1 + i * 0.1;
-      const side = (((corpse.id + i * 5) % 7) - 3) * 0.07;
+    // A few spurts follow the body through the air, in two quick bursts.
+    for (let i = 0; i < 4; i++) {
+      const f = 0.2 + i * 0.22;
+      const side = (((corpse.id + i * 5) % 5) - 2) * 0.08;
       burst(
         along(reach * f, side),
-        0.2 + ((corpse.id + i) % 3) * 0.06,
+        0.2 - i * 0.025,
         -push + side * 4,
-        120 + i * 70 + (i % 3) * 25,
+        150 + i * 110,
         1.7,
       );
     }
-    // Where he lands: a wide pool that spreads slowly, and two splashes ahead.
+    // Where he lands: a pool that spreads slowly, and one splash ahead.
     effects.spawn("blood", {
       ...along(reach),
-      sizeXYZ: [1.05, 0.02, 0.95],
+      sizeXYZ: [0.8, 0.02, 0.72],
       rotationY: spin,
       startMs: landed,
       spreadMs: POOL_SPREAD_MS,
     });
-    for (const side of [-1, 1]) {
-      burst(
-        along(reach + 0.35, 0.28 * side),
-        0.34,
-        spin + side,
-        settleMs(corpse),
-        1.3,
-      );
-    }
+    burst(along(reach + 0.35, 0.2), 0.26, spin + 1, settleMs(corpse), 1.3);
     return;
   }
-  // A burst at the wound, in three quick spurts that fly the way he is hit,
-  // then the pool under the body once it is down.
-  for (let i = 0; i < 6; i++) {
+  // Three quick spurts at the wound, flying the way he is hit, then the pool
+  // under the body once it is down.
+  for (let i = 0; i < 3; i++) {
     const side = (((corpse.id + i * 3) % 5) - 2) * 0.09;
     burst(
-      along(0.1 + i * 0.07, side),
-      0.16 + (i % 3) * 0.05,
+      along(0.1 + i * 0.1, side),
+      0.15 + (i % 2) * 0.04,
       -push + side * 5,
-      40 + Math.floor(i / 2) * 90 + (i % 2) * 20,
+      40 + i * 90,
       1.6,
     );
   }
   effects.spawn("blood", {
     ...along(0.18),
-    sizeXYZ: [0.66, 0.02, 0.58],
+    sizeXYZ: [0.5, 0.02, 0.44],
     rotationY: spin,
     startMs: landed - 150,
     spreadMs: POOL_SPREAD_MS,
   });
-  burst(along(0.5, 0.1), 0.26, spin + 1.7, settleMs(corpse), 1.2);
 }
 
 /** Scatters `DEBRIS_PIECES` debris pieces around a destroyed building (spec 10 §6,

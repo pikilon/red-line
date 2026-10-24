@@ -72,6 +72,8 @@ export interface Animator {
    *  lift = bobHeight(id, nowMs) for a moving infantry unit (category "unit",
    *  armor 0, `moving` flag), otherwise 0. */
   pose(entity: EntityState, nowMs: number): Pose;
+  /** Rig state of the last pose of `id`, null for units without one. */
+  lastRig?(id: number): RigState | null;
 }
 
 /** Builds the recoil and lift poses for a snapshot (spec 09 §4). State lives
@@ -97,6 +99,7 @@ export function createAnimator(): Animator {
   const rigs = new Map<number, RigEntry>();
   /** Entity id -> last shot, kept for as long as the unit is alive. */
   const rigShots = new Map<number, number>();
+  const lastRigs = new Map<number, RigState>();
 
   function ease(value: number, target: number, rate: number, dt: number) {
     const step = rate * dt;
@@ -182,7 +185,12 @@ export function createAnimator(): Animator {
         if (entry !== undefined) entry.shotAt = atMs;
       }
     }
-    for (const id of rigs.keys()) if (!alive.has(id)) rigs.delete(id);
+    for (const id of rigs.keys()) {
+      if (!alive.has(id)) {
+        rigs.delete(id);
+        lastRigs.delete(id);
+      }
+    }
     for (const id of rigShots.keys()) if (!alive.has(id)) rigShots.delete(id);
   }
 
@@ -205,8 +213,13 @@ export function createAnimator(): Animator {
     }
 
     const rig = isRigged(type.id) ? rigOf(entity, nowMs) : null;
+    if (rig !== null) lastRigs.set(entity.id, rig);
     return { recoil, lift, rig };
   }
 
-  return { recordShots, pose };
+  return {
+    recordShots,
+    pose,
+    lastRig: (id) => lastRigs.get(id) ?? null,
+  };
 }

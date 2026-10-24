@@ -51,14 +51,22 @@ soldier walked with, posed by time since the death (`bodyPose` tips the whole
 body over its feet, `corpseLimb` moves the limbs). It lies `CORPSE_MS` = 20 s
 and shrinks away over the last 3 s.
 
-* **Shot, three variants by id**: stumbles forward (knees buckle, arms
-  reaching, falls on its face towards the hit); jerked back (a recoil of the
-  chest, arms flung up, falls on its back); crumples (knees give way as in the
-  kneel pose, then topples on its side, towards the hit).
-* **Explosion**: faces the blast, is thrown 1.0–1.5 tiles along the push in
-  0.9 s on a 0.6-tile arc, flips once in the air with the arms flung up and
-  the legs kicking, bounces once (0.14 tiles) and lands on its face or back,
-  limp.
+* **Which way it falls** comes from where the hit comes from, against the way
+  the soldier faces: pushed along his facing (hit from behind) he falls on his
+  face; against it (hit from the front) on his back; within about 27° of square
+  across it, on his side. The body **never turns on its feet** first: it tips
+  over the soles it stands on, keeping its heading.
+* **Shot, three styles by id** (same axis rule): stumbles (arms reaching,
+  knees going slack); jerked by the hit (a kick of the chest, arms flung up
+  when falling back); crumples (knees give way as in the kneel pose, then
+  topples).
+* **A soldier who dies kneeling** (the RPG team and Stugna operator while they
+  hold a position) falls from the kneel: the animator's last pose is captured in
+  `Corpse.kneel`, so he does not stand up before falling.
+* **Explosion**: thrown 1.0–1.5 tiles along the push in 0.9 s on a 0.6-tile
+  arc, flipping once in the air the way he is thrown (forward over the face,
+  backward over the back, sideways after a side blast) without turning on his
+  feet, arms flung up and legs kicking, one bounce (0.14 tiles), then limp.
 * Other infantry types without a rig keep the flat `body` box of spec 07.
 
 ## 4. Blood (`effects.ts`, `splat.ts`, `deaths.ts`)
@@ -69,12 +77,11 @@ drops and streaks) instead of a box, drawn with a polygon offset over the
 ground. A splat spreads from 35 % to full size when it appears: 0.18 s for a
 spurt, 1.4 s for a pool (`spreadMs`).
 
-* **Shot**: spurts first, six small stretched splatters in three quick bursts
-  (40–220 ms) from the wound along the way he is hit; the pool appears just as
-  the body lands and spreads slowly, with a small splash beside it.
-* **Explosion**: nine spurts that follow the body through the air in rapid
-  bursts of two or three, a wide pool where it lands (spreading slowly) and two
-  splashes ahead of it.
+* **Shot** (little blood): spurts first, three small stretched splatters in
+  quick succession (40–220 ms) from the wound along the way he is hit; the
+  pool, about half a tile, appears just as the body lands and spreads slowly.
+* **Explosion**: four spurts that follow the body through the air, a pool of
+  about 0.8 tiles where it lands (spreading slowly) and one splash ahead.
 * Gore off (`G`): no blood at all; bodies still fall.
 
 ## 5. Assumptions
@@ -90,7 +97,8 @@ spurt, 1.4 s for a pool (`spreadMs`).
   radius of a rocket's blast (target or neighbour) with the push away from the
   centre, `shot` pushed away from a rifle shooter, and forgets shots after 5 s.
 * AC-22-02: `bodyPose` of a shot ends lying (face down, on the back or on the
-  side by variant) in the direction of the hit; the fall takes time.
+  side by where the hit comes from), never turns the body on its feet, and the
+  fall takes time; a soldier who died kneeling starts from the kneel.
 * AC-22-03: `bodyPose` of an explosion carries the body `tossReach` tiles from
   where it stood, in the air at 0.3 s, flipped past a half turn, and landed
   near the ground at 2 s.
