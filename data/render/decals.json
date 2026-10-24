@@ -1,0 +1,81 @@
+{
+  "_comment": "Ground marks (spec 22). Visual only: the simulation never reads this file. Lengths are tiles, times are milliseconds.",
+  "tracks": {
+    "spacingTiles": 0.3,
+    "lifetimeMs": 150000,
+    "fadeMs": 150000,
+    "maxJumpTiles": 1.5,
+    "peakAlpha": 0.8,
+    "tracked": {
+      "stripWidthPerHull": 0.45,
+      "gaugePerHull": 0.36,
+      "lengthPerHull": 0.3
+    },
+    "wheeled": {
+      "stripWidthPerHull": 0.3,
+      "gaugePerHull": 0.4,
+      "lengthPerHull": 0.28
+    },
+    "maxMarks": 3000,
+    "gapChance": 0.15,
+    "wobbleTiles": 0.04,
+    "angleJitter": 0.12
+  },
+  "surfaces": {
+    "rock": {
+      "color": "0x2a2a2a",
+      "hardness": 1.0
+    },
+    "grass": {
+      "color": "0x0c1006",
+      "hardness": 0.5
+    },
+    "dirt": {
+      "color": "0x120a04",
+      "hardness": 0.25
+    },
+    "asphalt": {
+      "color": "0x111111",
+      "hardness": 0.95
+    },
+    "mud": {
+      "color": "0x22160c",
+      "hardness": 0.05
+    },
+    "snow": {
+      "color": "0x4a5560",
+      "hardness": 0.1
+    }
+  },
+  "blasts": {
+    "lifetimeMs": 3600000,
+    "fadeMs": 0,
+    "scorchPerCrater": 1.7,
+    "scorchAlpha": 0.4,
+    "craterAlpha": 0.5,
+    "scorchColor": "0x0c0a08",
+    "craterColor": "0x1c140c",
+    "byDamageType": {
+      "antiTank": {
+        "radiusTiles": 0.35,
+        "splashFactor": 0.4,
+        "crater": false
+      },
+      "highExplosive": {
+        "radiusTiles": 0.55,
+        "splashFactor": 0.7,
+        "crater": true
+      },
+      "thermobaric": {
+        "radiusTiles": 0.7,
+        "splashFactor": 0.8,
+        "crater": false
+      }
+    },
+    "maxMarks": 500
+  },
+  "snow": {
+    "fillRate": 8,
+    "coverEdge": 0.14
+  }
+}

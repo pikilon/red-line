@@ -37,6 +37,14 @@ import {
   spawnHitBlood,
 } from "../render/deaths";
 import {
+  createDecals,
+  createTerrainSurface,
+  type Decals,
+  type SnowSource,
+  snowCoverage,
+  withSnow,
+} from "../render/decals";
+import {
   createEffects,
   type EffectKind,
   type Effects,
@@ -69,6 +77,7 @@ import {
 } from "../render/terrainRelief";
 import {
   climateFor,
+  coverThresholds,
   createWeather,
   densityFrom,
   startSecondsFrom,
@@ -612,6 +621,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let generated: GeneratedTextures | null = null;
   let generatedLoading = false;
   let effects: Effects | null = null;
+  let decals: Decals | null = null;
   let projectiles: Projectiles | null = null;
   /** Flying projectiles of the latest combat snapshot (spec 17 §5). */
   let flying: readonly ProjectileState[] = [];
@@ -748,6 +758,15 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     scene.add(entities.group);
     effects = createEffects();
     scene.add(effects.group);
+    decals = createDecals(
+      createTerrainSurface(
+        mapInfo.mapWidth,
+        mapInfo.mapHeight,
+        rockCells,
+        seed,
+      ),
+    );
+    scene.add(decals.group);
     projectiles = createProjectiles();
     scene.add(projectiles.group);
     fogOverlay = createFogOverlay(mapInfo.mapWidth, mapInfo.mapHeight);
@@ -765,6 +784,36 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       );
       weather.setEnabled(settings.weather !== false);
       scene.add(weather.group);
+      const snowing = weather;
+      const thresholds = coverThresholds(
+        mapInfo.mapWidth,
+        mapInfo.mapHeight,
+        rockCells,
+        seed,
+      );
+      const width = mapInfo.mapWidth;
+      const surface = createTerrainSurface(
+        width,
+        mapInfo.mapHeight,
+        rockCells,
+        seed,
+      );
+      const snow: SnowSource = {
+        coverage: (x, y) =>
+          settings.weather === false
+            ? 0
+            : snowCoverage(
+                thresholds,
+                width,
+                mapInfo.mapHeight,
+                snowing.cover(),
+                x,
+                y,
+              ),
+        falling: () => settings.weather !== false,
+      };
+      decals?.setSurface(withSnow(surface, snow));
+      decals?.setSnow(snow);
     }
     scene.add(placementGhost.mesh);
     controller = createSkirmishController({
@@ -972,6 +1021,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
               relief.crater(x, z, crater.radius, crater.depth, startMs);
             },
       );
+      decals?.recordShots(snapshot, effectTime(at));
       animator.recordShots(snapshot.entities, at);
       deathCauses.record(snapshot.entities, effectTime(at));
       if (previous !== null) {
@@ -1138,6 +1188,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     if (next !== null && prev !== null && entities !== null) {
       const alpha = (now - receivedAt) / TICK_MS;
       const drawn = interpolateEntities(prev, next, alpha);
+      decals?.recordMovers(drawn, effectTime(now));
       relief?.press(pressSourcesOf(drawn), effectTime(now));
       entities.update(
         drawn,
@@ -1154,6 +1205,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     }
     updatePlacementGhost();
     effects?.update(effectTime(now));
+    decals?.update(effectTime(now));
     relief?.update(effectTime(now));
     fogOverlay?.update(fog);
     if (weather !== null && settings.weather !== false && !paused) {
@@ -1229,6 +1281,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       command: (command) => interact.command(command),
       stateHash: () => interact.requestHash(),
       effectCounts: () => effects?.counts() ?? NO_EFFECT_COUNTS,
+      decalCount: () => decals?.count() ?? 0,
       projectileCounts: () => projectiles?.counts() ?? NO_PROJECTILE_COUNTS,
       projectileSamples: () => projectiles?.samples() ?? [],
       gore: () => settings.gore,
