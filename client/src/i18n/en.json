@@ -21,6 +21,8 @@
   "menu.texturesProcedural": "Textures: procedural",
   "menu.texturesGenerated": "Textures: generated",
   "menu.switchSide": "Switch side",
+  "menu.weatherOn": "Snow: on",
+  "menu.weatherOff": "Snow: off",
   "menu.revealOn": "Reveal map: on",
   "menu.revealOff": "Reveal map: off",
   "menu.fpsOn": "FPS panel: on",
