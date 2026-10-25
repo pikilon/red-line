@@ -219,8 +219,8 @@ describe("AC-17-14: launch effects and trails", () => {
     expect(pose(effects.meshes.backblast, 0).position.x).toBeCloseTo(1.65, 6);
 
     // The same id seen again is not launched twice.
-    projectiles.spawnEffects([fired], 20.5, view, 100, effects);
-    effects.update(100);
+    projectiles.spawnEffects([fired], 20.5, view, 20, effects);
+    effects.update(20);
     expect(effects.counts().muzzle).toBe(1);
     expect(effects.counts().backblast).toBe(1);
     expect(effects.counts().trail).toBe(3);

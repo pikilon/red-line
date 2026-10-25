@@ -23,6 +23,8 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { typeDef, WEAPONS } from "../rules";
 import type { ProjectileState } from "../sim/combatSnapshot";
 import type { MatchSnapshot } from "../sim/matchSnapshot";
+import type { Effects } from "./effects";
+import { groundY } from "./elevation";
 import { FLIGHT_PROFILES, type FlightProfile, flightPoint } from "./flight";
 
 export const PROJECTILE_MODELS = [
@@ -37,10 +39,14 @@ export type ProjectileModel = (typeof PROJECTILE_MODELS)[number];
 
 /** Per model; extra projectiles are not drawn. */
 export const PROJECTILE_CAPACITY = 1024;
+/** Real milliseconds between two puffs of a smoke trail (spec 17 §7.3). */
+export const TRAIL_INTERVAL_MS = 40;
 /** Muzzle height when the shooter is not in the snapshot (tiles). */
 const DEFAULT_MUZZLE = 0.5;
 /** Muzzle height as a share of the shooter's render height. */
 const MUZZLE_SHARE = 0.7;
+/** Tiles in front of the shooter where the muzzle flash sits (spec 17 §7.2). */
+const MUZZLE_OFFSET = 0.3;
 const FIN_COUNT = 4;
 const FIN_THICKNESS = 0.006;
 const TAIL_LENGTH = 0.03;
@@ -115,6 +121,15 @@ export interface Projectiles {
   counts(): Record<ProjectileModel, number>;
   /** One entry per drawn projectile, in draw order (spec 17 §7.7). */
   samples(): { model: ProjectileModel; z: number; t: number }[];
+  /** Spawns the launch effects of projectiles seen for the first time and the
+   *  smoke trail of the flying ones (spec 17 §7.2–7.3). */
+  spawnEffects(
+    states: readonly ProjectileState[],
+    tick: number,
+    snapshot: MatchSnapshot,
+    nowMs: number,
+    effects: Effects,
+  ): void;
 }
 
 /** Non-indexed copies so primitives of different kinds merge. */
@@ -189,6 +204,164 @@ const zeroCounts = (): Record<ProjectileModel, number> =>
     number
   >;
 
+/** Muzzle height of every entity of `snapshot`, tiles (spec 17 §6). */
+function muzzleHeights(snapshot: MatchSnapshot): Map<number, number> {
+  const muzzles = new Map<number, number>();
+  for (const entity of snapshot.entities) {
+    muzzles.set(
+      entity.id,
+      (MUZZLE_SHARE * typeDef(entity.kind).render.size[1]) / 100,
+    );
+  }
+  return muzzles;
+}
+
+/** The shooter end of a projectile path, where launch effects spawn. */
+interface LaunchPoint {
+  readonly originX: number;
+  readonly originY: number;
+  /** Unit vector from the impact back to the origin. */
+  readonly backX: number;
+  readonly backY: number;
+  /** `origin − back × 0.3`, the muzzle point (spec 17 §7.2). */
+  readonly muzzleX: number;
+  readonly muzzleY: number;
+  readonly height: number;
+  readonly nowMs: number;
+}
+
+/** Tiles behind the origin where the backblast flashes. */
+const BACKBLAST_OFFSET = 0.35;
+/** Trail puffs left along `back` by a backblast launch, tiles. */
+const BACKBLAST_TRAILS = [0.3, 0.6, 0.9] as const;
+/** Trail puffs left along `back` by a soft launch, tiles. */
+const SOFT_TRAILS = [0.3, 0.6] as const;
+/** Launch dust and smoke, tiles (spec 17 §7.2). */
+const DUST_SIZE = 0.15;
+const DUST_GROW_TO = 0.45;
+const DUST_COLOR = 0x8a7a5c;
+const DUST_MS = 1000;
+const DUST_FADE_MS = 600;
+const TRAIL_SIZE = 0.1;
+const TRAIL_GROW_TO = 0.4;
+const SMOKE_SIZE = 0.6;
+const SMOKE_GROW_TO = 1.4;
+
+/** A ring of launch dust around the shooter, drifting outward. */
+function spawnDustRing(
+  at: LaunchPoint,
+  count: number,
+  radius: number,
+  speed: number,
+  effects: Effects,
+): void {
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2;
+    const dx = Math.cos(angle);
+    const dy = Math.sin(angle);
+    const x = at.originX + dx * radius;
+    const y = at.originY + dy * radius;
+    effects.spawn("dust", {
+      x,
+      y,
+      height: groundY(x, y) + 0.08,
+      size: DUST_SIZE,
+      growTo: DUST_GROW_TO,
+      durationMs: DUST_MS,
+      fadeMs: DUST_FADE_MS,
+      vx: dx * speed,
+      vy: dy * speed,
+      color: DUST_COLOR,
+      startMs: at.nowMs,
+    });
+  }
+}
+
+/** Trail puffs left behind the muzzle along the back of the shot. */
+function spawnTrailPuffs(
+  at: LaunchPoint,
+  offsets: readonly number[],
+  effects: Effects,
+): void {
+  for (const offset of offsets) {
+    effects.spawn("trail", {
+      x: at.muzzleX + at.backX * offset,
+      y: at.muzzleY + at.backY * offset,
+      z: at.height,
+      size: TRAIL_SIZE,
+      growTo: TRAIL_GROW_TO,
+      vx: at.backX * 1.5,
+      vy: at.backY * 1.5,
+      startMs: at.nowMs,
+    });
+  }
+}
+
+/** The launch effects of `launch` at the shooter end of the path
+ *  (spec 17 §7.2). An unknown launch draws a plain muzzle flash. */
+function spawnLaunch(launch: string, at: LaunchPoint, effects: Effects): void {
+  const muzzle = (size?: number): void => {
+    effects.spawn("muzzle", {
+      x: at.muzzleX,
+      y: at.muzzleY,
+      z: at.height,
+      startMs: at.nowMs,
+      ...(size === undefined ? {} : { size }),
+    });
+  };
+  const backblast = (size: number): void => {
+    effects.spawn("backblast", {
+      x: at.originX + at.backX * BACKBLAST_OFFSET,
+      y: at.originY + at.backY * BACKBLAST_OFFSET,
+      z: at.height,
+      size,
+      startMs: at.nowMs,
+    });
+  };
+  switch (launch) {
+    case "cannon":
+      muzzle(0.35);
+      spawnDustRing(at, 6, 0.3, 0.6, effects);
+      break;
+    case "backblast":
+      muzzle();
+      backblast(0.5);
+      spawnTrailPuffs(at, BACKBLAST_TRAILS, effects);
+      spawnDustRing(at, 8, 0.2, 0.9, effects);
+      break;
+    case "softLaunch":
+      muzzle(0.1);
+      spawnTrailPuffs(at, SOFT_TRAILS, effects);
+      break;
+    case "rocketLaunch":
+      backblast(1);
+      spawnSmokeRing(at, effects);
+      break;
+    default:
+      muzzle();
+      break;
+  }
+}
+
+/** The six smoke puffs a rocket launch rolls out of its tube. */
+function spawnSmokeRing(at: LaunchPoint, effects: Effects): void {
+  for (let i = 0; i < 6; i++) {
+    const angle = (i / 6) * Math.PI * 2;
+    const dx = Math.cos(angle);
+    const dy = Math.sin(angle);
+    effects.spawn("launchSmoke", {
+      x: at.originX + dx * 0.4,
+      y: at.originY + dy * 0.4,
+      z: 0.15,
+      size: SMOKE_SIZE,
+      growTo: SMOKE_GROW_TO,
+      vx: dx * 0.4,
+      vy: dy * 0.4,
+      startMs: at.nowMs,
+    });
+  }
+}
+
 export function createProjectiles(): Projectiles {
   const group = new Group();
   const meshes = Object.fromEntries(
@@ -212,6 +385,10 @@ export function createProjectiles(): Projectiles {
   const rotation = new Quaternion();
   const unit = new Vector3(1, 1, 1);
   const muzzles = new Map<number, number>();
+  /** Projectile ids whose launch effects already spawned (spec 17 §7.2). */
+  const launched = new Set<number>();
+  /** Last trail puff of each projectile, real ms (spec 17 §7.3). */
+  const lastTrailMs = new Map<number, number>();
 
   return {
     group,
@@ -220,11 +397,8 @@ export function createProjectiles(): Projectiles {
       counts = zeroCounts();
       samples = [];
       muzzles.clear();
-      for (const entity of snapshot.entities) {
-        muzzles.set(
-          entity.id,
-          (MUZZLE_SHARE * typeDef(entity.kind).render.size[1]) / 100,
-        );
+      for (const [id, height] of muzzleHeights(snapshot)) {
+        muzzles.set(id, height);
       }
       for (const state of states) {
         if (state.launchTick > tick || tick >= state.impactTick) continue;
@@ -259,5 +433,59 @@ export function createProjectiles(): Projectiles {
     },
     counts: () => ({ ...counts }),
     samples: () => samples.map((sample) => ({ ...sample })),
+    spawnEffects(states, tick, snapshot, nowMs, effects) {
+      const heights = muzzleHeights(snapshot);
+      for (const state of states) {
+        const render = WEAPONS[state.weapon]?.render;
+        if (render === undefined) continue;
+        const height = heights.get(state.shooter) ?? DEFAULT_MUZZLE;
+        if (state.launchTick <= tick && !launched.has(state.id)) {
+          launched.add(state.id);
+          lastTrailMs.set(state.id, nowMs);
+          const dx = state.impactX - state.originX;
+          const dy = state.impactY - state.originY;
+          const length = Math.hypot(dx, dy);
+          // A shot straight up has no ground direction; pick a stable one.
+          const backX = length > 0 ? -dx / length : 0;
+          const backY = length > 0 ? -dy / length : -1;
+          spawnLaunch(
+            render.launch,
+            {
+              originX: state.originX,
+              originY: state.originY,
+              backX,
+              backY,
+              muzzleX: state.originX - backX * MUZZLE_OFFSET,
+              muzzleY: state.originY - backY * MUZZLE_OFFSET,
+              height,
+              nowMs,
+            },
+            effects,
+          );
+        }
+        if (render.trail !== "smoke") continue;
+        const flying = state.launchTick <= tick && tick < state.impactTick;
+        if (!flying) continue;
+        const last = lastTrailMs.get(state.id) ?? nowMs;
+        if (nowMs - last < TRAIL_INTERVAL_MS) continue;
+        lastTrailMs.set(state.id, nowMs);
+        const profile = isProfile(render.flight) ? render.flight : "straight";
+        const point = flightPoint(
+          state,
+          tick,
+          profile,
+          height,
+          render.apexCenti / 100,
+        );
+        effects.spawn("trail", {
+          x: point.x,
+          y: point.y,
+          z: point.z - groundY(point.x, point.y),
+          size: TRAIL_SIZE,
+          growTo: TRAIL_GROW_TO,
+          startMs: nowMs,
+        });
+      }
+    },
   };
 }

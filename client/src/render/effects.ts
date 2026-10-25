@@ -29,6 +29,7 @@ export const EFFECT_CAPACITY = 512;
 
 export const EFFECT_KINDS = [
   "muzzle",
+  "backblast",
   "impact",
   "blast",
   "explosion",
@@ -38,6 +39,8 @@ export const EFFECT_KINDS = [
   "droplet",
   "debris",
   "dust",
+  "launchSmoke",
+  "trail",
   "clod",
 ] as const;
 export type EffectKind = (typeof EFFECT_KINDS)[number];
@@ -92,6 +95,15 @@ const EFFECT_STYLES: Readonly<Record<EffectKind, EffectStyle>> = {
     fadeMs: 80,
     size: [0.15, 0.15, 0.15],
     color: 0xfff2a8,
+    additive: true,
+  },
+  // The flash out of the back of a launcher (spec 17 §7.2): a brief, hot
+  // orange-white glow behind the shooter.
+  backblast: {
+    durationMs: 150,
+    fadeMs: 150,
+    size: [0.5, 0.5, 0.5],
+    color: 0xffd9a0,
     additive: true,
   },
   impact: {
@@ -160,6 +172,22 @@ const EFFECT_STYLES: Readonly<Record<EffectKind, EffectStyle>> = {
     color: 0x8a6a48,
     additive: false,
   },
+  // The smoke a rocket launch rolls out of its tube (spec 17 §7.2).
+  launchSmoke: {
+    durationMs: 2500,
+    fadeMs: 1500,
+    size: [0.6, 0.6, 0.6],
+    color: 0x9a9a92,
+    additive: false,
+  },
+  // The puff a flying missile leaves behind (spec 17 §7.3).
+  trail: {
+    durationMs: 1200,
+    fadeMs: 900,
+    size: [0.1, 0.1, 0.1],
+    color: 0xd8d8d0,
+    additive: false,
+  },
   // A clod of soil thrown by a blast: flies, lands and shrinks away (spec 29).
   clod: {
     durationMs: 5000,
@@ -169,6 +197,18 @@ const EFFECT_STYLES: Readonly<Record<EffectKind, EffectStyle>> = {
     additive: false,
   },
 };
+
+/** Kinds drawn as camera-facing puffs that fade through per-instance opacity. */
+const PUFF_KINDS: ReadonlySet<EffectKind> = new Set([
+  "dust",
+  "launchSmoke",
+  "trail",
+]);
+/** Camera-facing kinds, including the additive backblast flash. */
+const BILLBOARD_KINDS: ReadonlySet<EffectKind> = new Set([
+  ...PUFF_KINDS,
+  "backblast",
+]);
 
 /** Gravity on a thrown clod, tiles/s²: heavier-looking than blood drops. */
 const CLOD_GRAVITY = 7;
@@ -236,6 +276,8 @@ export interface EffectSpawn {
   startMs?: number;
   /** Life in ms; defaults to the kind's duration. */
   durationMs?: number;
+  /** Fade-out time in ms; defaults to the kind's. */
+  fadeMs?: number;
   /** Droplet only: launch velocity in tiles/s (x, y over the ground, up). Its
    *  life should be the flight time; gravity is `DROPLET_GRAVITY`. */
   velocity?: readonly [number, number, number];
@@ -250,6 +292,13 @@ export interface EffectSpawn {
   alpha?: number;
   /** Clods: ground height they land on, tiles (default 0). */
   ground?: number;
+  /** Height above the ground, tiles (puffs); defaults to half the size. */
+  z?: number;
+  /** Horizontal velocity, tiles per second (puffs); defaults to 0. */
+  vx?: number;
+  vy?: number;
+  /** Final uniform size, tiles; the instance grows to it over its life. */
+  growTo?: number;
 }
 
 export interface Effects {
@@ -289,6 +338,8 @@ interface Instance {
   color: number;
   alpha: number;
   ground: number;
+  /** Final uniform size in tiles, or -1 for no growth target. */
+  growTo: number;
   /** Drawn in at least one frame; an effect is never dropped unseen. */
   shown: boolean;
 }
@@ -302,7 +353,7 @@ export function createEffects(): Effects {
   for (const kind of EFFECT_KINDS) {
     const style = EFFECT_STYLES[kind];
     const decal = kind === "blood";
-    const puff = kind === "dust";
+    const puff = PUFF_KINDS.has(kind);
     const material = new MeshBasicMaterial({
       color: 0xffffff,
       transparent: style.additive || decal || puff,
@@ -344,9 +395,13 @@ export function createEffects(): Effects {
     group.add(mesh);
   }
 
-  const dustAlpha = meshes.dust.geometry.getAttribute(
-    "instanceAlpha",
-  ) as InstancedBufferAttribute;
+  /** Per-instance opacity of a puff kind, null for solid kinds. */
+  function puffAlpha(kind: EffectKind): InstancedBufferAttribute | null {
+    const attribute = meshes[kind].geometry.getAttribute("instanceAlpha");
+    return attribute === undefined
+      ? null
+      : (attribute as InstancedBufferAttribute);
+  }
   const matrix = new Matrix4();
   const position = new Vector3();
   const scale = new Vector3();
@@ -367,7 +422,7 @@ export function createEffects(): Effects {
     pool.push({
       x: init.x,
       y: init.y,
-      z: init.height ?? size[1] / 2,
+      z: init.z ?? init.height ?? size[1] / 2,
       base: groundY(init.x, init.y),
       sizeX: size[0],
       sizeY: size[1],
@@ -376,14 +431,15 @@ export function createEffects(): Effects {
       startMs,
       endMs: startMs + durationMs,
       durationMs,
-      fadeMs: Math.min(style.fadeMs, durationMs),
+      fadeMs: Math.min(init.fadeMs ?? style.fadeMs, durationMs),
       spreadMs: init.spreadMs ?? BLOOD_SPREAD_MS,
-      vx: init.velocity?.[0] ?? 0,
-      vy: init.velocity?.[1] ?? 0,
+      vx: init.vx ?? init.velocity?.[0] ?? 0,
+      vy: init.vy ?? init.velocity?.[1] ?? 0,
       vz: init.velocity?.[2] ?? 0,
       color: init.color ?? -1,
       alpha: init.alpha ?? 1,
       ground: init.ground ?? 0,
+      growTo: init.growTo ?? -1,
       shown: false,
     });
   }
@@ -393,6 +449,7 @@ export function createEffects(): Effects {
       const pool = pools[kind];
       const style = EFFECT_STYLES[kind];
       const mesh = meshes[kind];
+      const puff = PUFF_KINDS.has(kind);
 
       let live = 0;
       for (let i = 0; i < pool.length; i++) {
@@ -426,7 +483,14 @@ export function createEffects(): Effects {
             ? Math.max(0, 1 - (elapsed - fadeStart) / instance.fadeMs)
             : 1;
         let growth = 1;
-        if (kind === "explosion") {
+        if (instance.growTo >= 0) {
+          // A puff grows from its spawn size to an explicit target (spec 17 §7.2).
+          const start = instance.sizeX;
+          growth =
+            start > 0
+              ? (start + (instance.growTo - start) * progress) / start
+              : 1;
+        } else if (kind === "explosion") {
           growth =
             EXPLOSION_GROWTH_START + (1 - EXPLOSION_GROWTH_START) * progress;
         } else if (kind === "blood") {
@@ -440,8 +504,8 @@ export function createEffects(): Effects {
             DUST_GROWTH_START + (1 - DUST_GROWTH_START) * easeOut(progress);
         }
         // Additive tints fade to black; opaque decals shrink away instead,
-        // and dust fades through its own opacity.
-        const shrink = style.additive || kind === "dust" ? 1 : fade;
+        // and puffs fade through their own opacity.
+        const shrink = style.additive || puff ? 1 : fade;
         const grow = growth * shrink;
 
         if (kind === "dust") {
@@ -454,7 +518,28 @@ export function createEffects(): Effects {
           );
           rotation.setFromAxisAngle(Z_AXIS, instance.rotationY);
           rotation.premultiply(FACE_CAMERA);
-          dustAlpha.setX(visible, instance.alpha * (1 - progress) ** 1.5);
+          puffAlpha("dust")?.setX(
+            visible,
+            instance.alpha * (1 - progress) ** 1.5,
+          );
+        } else if (
+          kind === "launchSmoke" ||
+          kind === "trail" ||
+          kind === "backblast"
+        ) {
+          // Launch puffs drift with their velocity and fade in place
+          // (spec 17 §7.2–7.3).
+          const age = elapsed / 1000;
+          position.set(
+            instance.x + instance.vx * age,
+            instance.base + instance.z,
+            instance.y + instance.vy * age,
+          );
+          rotation.setFromAxisAngle(Z_AXIS, instance.rotationY);
+          rotation.premultiply(FACE_CAMERA);
+          if (kind !== "backblast") {
+            puffAlpha(kind)?.setX(visible, instance.alpha * fade);
+          }
         } else if (kind === "clod") {
           // Thrown on a ballistic arc; it rests where it lands.
           const flight = Math.min(
@@ -508,7 +593,7 @@ export function createEffects(): Effects {
             X_AXIS,
             streak.lengthSq() > 0 ? streak.normalize() : X_AXIS,
           );
-        } else if (kind !== "dust" && kind !== "clod") {
+        } else if (!BILLBOARD_KINDS.has(kind) && kind !== "clod") {
           rotation.setFromAxisAngle(Y_AXIS, instance.rotationY);
         }
         scale.set(
@@ -536,7 +621,8 @@ export function createEffects(): Effects {
       mesh.visible = visible > 0;
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor !== null) mesh.instanceColor.needsUpdate = true;
-      if (kind === "dust") dustAlpha.needsUpdate = true;
+      const alpha = puffAlpha(kind);
+      if (alpha !== null) alpha.needsUpdate = true;
     }
   }
 
