@@ -735,6 +735,7 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
 | `ai-attack` | first-line | `starts: true`, `victory: true`; Ukrainian base with few defenders, controlled 0; Russia with a full base, credits 40000 and AI `russia-rush` active; `revealed: false` | A Russian unit inside 20 tiles of the Ukrainian HQ within 6000 ticks |
 | `weapon-impacts` | showcase | Spec 27: one unit per weapon class (rifleman, Kozak HMG, BMP-2 autocannon, RPG gunner, Leopard, HIMARS, TOS-1A) force-firing at open ground (`attackGroundCenti` orders); both HQs far away | All 7 weapons fire within 300 ticks |
 | `friendly-fire` | showcase | Spec 03: a Russian TOS-1A fires at a mixed cluster with its own rifleman and BMP inside the blast radius, next to Ukrainian units | The Russian rifleman and BMP lose HP within 300 ticks |
+| `crater-crossing` | showcase | Spec 24: a HIMARS salvo digs a crater under a Leopard that has just stopped on its rim, so the vehicle follows the visual relief | The Leopard is within 1.5 tiles of the crater centre after 600 ticks |
 
 ## 8. Acceptance criteria
 

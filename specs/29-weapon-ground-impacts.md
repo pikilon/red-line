@@ -91,8 +91,9 @@ uses decals).
   curvature term (hollows darker, crests lighter) so the shape reads from the
   high camera. Torn soil in the bowl and on the rim shows the dirt texture.
 * Craters stay shallow, never wells (owner request 2026-10-25): depth is
-  `radius × depthPerRadius`, with 0.09 for shells, 0.12 for vehicle deaths,
-  0.13 for HE rockets and 0.03 for thermobaric warheads. The bowl floor is
+  `radius × depthPerRadius`, with 0.06 for shells, 0.08 for vehicle deaths,
+  0.09 for HE rockets and 0.02 for thermobaric warheads; rim heights fall with
+  them (0.25, 0.2, 0.22 and 0.15 of the depth). The bowl floor is
   shaded soot-black in the mesh (`CRATER_SOOT`, so the black follows the
   relief instead of sitting flat on it) and every crater also stamps a small
   near-black soot mark (`craterSoot*` in `decals.json`, crater atlas cell)
@@ -123,7 +124,7 @@ uses decals).
 ## 7. Acceptance criteria
 
 * AC-29-01: a rifle hit kicks dust and leaves a pock; an HE rocket leaves a
-  crater deeper than 0.15 tiles with clods (unit tests).
+  crater deeper than 0.1 tiles with clods (unit tests).
 * AC-29-02: a shell hitting a building leaves no mark and no crater.
 * AC-29-03: the fine crater patches share every vertex height with the coarse
   ground they touch (unit test), and the profile has no step.
@@ -134,7 +135,7 @@ uses decals).
   no crater under it; an armoured vehicle destroyed by an explosive weapon
   digs one minimal crater (`unitDeathCrater`) under the wreck, and one killed
   by a non-explosive weapon digs none.
-* AC-29-06: every dug crater is at most 0.17 tiles deep (HE rocket, the
+* AC-29-06: every dug crater is at most 0.12 tiles deep (HE rocket, the
   deepest profile) and stamps one dark soot mark inside it; shell craters are
-  under 0.08 tiles deep and no longer read as wells (unit tests and
+  under 0.05 tiles deep and read as burnt dents, not wells (unit tests and
   `?load=weapon-impacts`).

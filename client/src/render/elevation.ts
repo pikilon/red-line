@@ -111,19 +111,32 @@ export function fromCorners(
 }
 
 let current: Elevation = flatElevation(1, 1);
+/** Visual surface on top of the elevation (craters and tread press, spec 24). */
+let reliefAt: ((x: number, y: number) => number) | null = null;
 
 /** Makes `elevation` the ground every renderer stands things on. */
 export function setGroundElevation(elevation: Elevation | null): void {
   current = elevation ?? flatElevation(1, 1);
+  reliefAt = null;
+}
+
+/** Makes `heightOf` the visual surface the renderer stands things on: the
+ *  elevation plus the craters and the sinking under vehicles (spec 24). The
+ *  skirmish passes `TerrainDeformer.heightAt`. `null` clears it. */
+export function setGroundRelief(
+  heightOf: ((x: number, y: number) => number) | null,
+): void {
+  reliefAt = heightOf;
 }
 
 export function groundElevation(): Elevation {
   return current;
 }
 
-/** Ground height at sim tile (x, y), in tiles (Three y). */
+/** Ground height at sim tile (x, y), in tiles (Three y), including the visual
+ *  relief under it (spec 24). */
 export function groundY(x: number, y: number): number {
-  return current.at(x, y);
+  return reliefAt === null ? current.at(x, y) : reliefAt(x, y);
 }
 
 /** Ground a building of `w` x `d` tiles centred at (x, y) stands on: the
@@ -149,8 +162,9 @@ export function footprintGround(
 
 /** Pitch and roll, in radians, that sit a body of `length` x `width` tiles
  *  facing `yaw` on the ground at (x, y): the slope between its front and
- *  back, and between its sides (spec 30 §4). Three's YXZ Euler convention:
- *  negative pitch lifts the nose, positive roll lifts the right side. */
+ *  back, and between its sides (spec 30 §4), including any crater relief
+ *  under it (spec 24). Three's YXZ Euler convention: negative pitch lifts the
+ *  nose, positive roll lifts the right side. */
 export function groundTilt(
   x: number,
   y: number,
@@ -158,16 +172,16 @@ export function groundTilt(
   length: number,
   width: number,
 ): { pitch: number; roll: number } {
-  if (!current.raised) return { pitch: 0, roll: 0 };
+  if (!current.raised && reliefAt === null) return { pitch: 0, roll: 0 };
   const fx = Math.sin(yaw);
   const fz = Math.cos(yaw);
   const halfLength = Math.max(0.25, length / 2);
   const halfWidth = Math.max(0.25, width / 2);
-  const front = current.at(x + fx * halfLength, y + fz * halfLength);
-  const back = current.at(x - fx * halfLength, y - fz * halfLength);
+  const front = groundY(x + fx * halfLength, y + fz * halfLength);
+  const back = groundY(x - fx * halfLength, y - fz * halfLength);
   // Right of the hull: Three rotates +x to (cos yaw, -sin yaw).
-  const right = current.at(x + fz * halfWidth, y - fx * halfWidth);
-  const left = current.at(x - fz * halfWidth, y + fx * halfWidth);
+  const right = groundY(x + fz * halfWidth, y - fx * halfWidth);
+  const left = groundY(x - fz * halfWidth, y + fx * halfWidth);
   return {
     pitch: -Math.atan2(front - back, 2 * halfLength),
     roll: Math.atan2(right - left, 2 * halfWidth),

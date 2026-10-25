@@ -10,6 +10,7 @@ import {
   groundY,
   pickGround,
   setGroundElevation,
+  setGroundRelief,
 } from "./elevation";
 import { createTerrain, terrainDeformerOf } from "./terrain";
 
@@ -81,6 +82,25 @@ describe("elevation (spec 30)", () => {
     setGroundElevation(ramp(8));
     expect(footprintGround(4, 4, 2, 2)).toBeCloseTo(1.5, 6);
     expect(groundY(4, 4)).toBeCloseTo(2, 6);
+  });
+
+  it("AC-30-16: units and their tilt follow the crater relief", () => {
+    const elevation = ramp(8);
+    setGroundElevation(elevation);
+    // Dig a crater under the unit and leave a lower lip on its left side:
+    // the hook returns the whole surface, like TerrainDeformer.heightAt.
+    setGroundRelief(
+      (x, y) =>
+        elevation.at(x, y) + (x === 4 && y === 4 ? -0.3 : x < 4 ? -0.2 : 0),
+    );
+    expect(groundY(4, 4)).toBeCloseTo(1.7, 6);
+    const tilt = groundTilt(4, 4, 0, 2, 1);
+    // The left side sits 0.2 tiles lower than the right.
+    expect(tilt.roll).toBeGreaterThan(0.15);
+    // Clearing the elevation clears the relief with it.
+    setGroundElevation(null);
+    expect(groundY(4, 4)).toBe(0);
+    expect(groundTilt(4, 4, 0, 2, 1)).toEqual({ pitch: 0, roll: 0 });
   });
 
   it("AC-30-11: a click picks the hill the ray meets first", () => {

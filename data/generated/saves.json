@@ -146,6 +146,12 @@
       "entities": 11
     },
     {
+      "id": "crater-crossing",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
       "id": "friendly-fire",
       "map": "showcase",
       "form": "setup",

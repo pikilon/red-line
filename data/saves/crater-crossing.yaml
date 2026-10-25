@@ -1,0 +1,16 @@
+# Spec 24: a HIMARS salvo digs a crater under a Leopard that has just
+# stopped, so the relief moves the vehicle instead of only the ground.
+id: crater-crossing
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 47.5, y: 19, zoom: 2.1 }
+entities:
+  - { player: 0, type: ua-hq, origin: [4, 30] }
+  - { player: 1, type: ru-hq, origin: [92, 30] }
+  - { player: 0, type: ua-himars, atCenti: [3900, 1900], order: { attackGroundCenti: [4800, 1900] } }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [4500, 1900], order: { moveCenti: [4900, 1900] } }

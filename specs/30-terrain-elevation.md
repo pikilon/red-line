@@ -84,17 +84,19 @@ Note from `generals-precedent` (EA source `CnC_Generals_Zero_Hour@0a05454d8`):
    shadows. Slopes from 0.3 tiles/tile show bare earth; from 0.55 a rock face
    (rock texture projected from the side it faces) fades in, full at 1.
 3. Rock tiles stand on the ground they cover.
-4. Units stand on `groundY`. Vehicles pitch and roll to the ground under their
-   nose, tail and sides (`groundTilt`); soldiers stay upright. Buildings,
-   scaffolds, health bars, flags and the placement ghost stand on the lowest
-   point of the footprint (Zero Hour flattens the ground instead).
+4. Units stand on `groundY`, which includes the crater and tread relief of
+   spec 24. Vehicles pitch and roll to the surface under their nose, tail and
+   sides (`groundTilt`); soldiers stay upright. Buildings, scaffolds, health
+   bars, flags and the placement ghost stand on the lowest point of the
+   footprint (Zero Hour flattens the ground instead).
 5. Projectile arcs ride the line from the ground at the muzzle to the ground
    at the impact; effects and blood droplets start at the ground where they
    spawn; tracers and the attack marker follow the ground.
 6. The fog of war and the snow cover drape over the heights. Snow slides off
    steep ground (none holds from 1.1 tiles/tile).
 7. The crater and tread relief (spec 24) adds to the elevation:
-   `heightAt` now returns elevation + sink, and decals follow it.
+   `heightAt` now returns elevation + sink, decals follow it, and units stand
+   and tilt on it (owner request 2026-10-25).
 8. Clicks and box selection pick the first hill the camera ray meets.
 
 ## 5. Map
@@ -122,6 +124,9 @@ plateau of first-line by its ramp; Russian tanks wait under its cliff.
 * AC-30-13 (e2e): in `hills-and-cliffs` the first Leopard reaches the plateau.
 * AC-30-14/15 (data): rasterizing, cliff flags, first-line point symmetry;
   footprints on cliffs are refused.
+* AC-30-16 (client unit): with a visual relief installed, `groundY` returns
+  the relief surface and `groundTilt` reads it; clearing the elevation clears
+  the relief.
 
 ## 8. Next (not in this spec)
 
