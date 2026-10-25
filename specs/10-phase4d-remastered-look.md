@@ -1,8 +1,10 @@
 # 10 — Phase 4d Remastered look and classic mode
 
-Status: proposed for owner review (written for the 2026-10-11 unattended run).
-Supersedes `09-phase4c-animation-and-finish.md` §7–8 (pixel-art pass) and
-amends its §6 (building death). Depends on specs 06, 07 and 09. Roadmap:
+Status: partly implemented (§§3–5). The classic mode of §7 (P4-10, #189, `V`)
+is **postponed indefinitely by owner decision (2026-10-25)**: do not implement
+it, but keep this spec for when the owner revives it. It supersedes
+`09-phase4c-animation-and-finish.md` §7–8 (pixel-art pass) and amends its §6
+(building death). Depends on specs 06, 07 and 09. Roadmap:
 Phase 4. Decisions: D-05 (2.5D low-poly, orthographic isometric camera), D-07
 (models as code).
 
@@ -19,7 +21,8 @@ default look but the classic mode.
 **Exit criterion:** the owner opens a skirmish and finds the scene closer to
 Red Alert Remastered than to coloured boxes on a flat green plane (textured
 ground with rock outcrops, cast shadows, bevelled shaded models), `V` switches
-to a pixelated classic look and back, and AC-03-62/63 still pass.
+to a pixelated classic look and back (postponed indefinitely, see §7), and
+AC-03-62/63 still pass.
 
 ## 2. Scope
 
@@ -140,6 +143,10 @@ the `wreck`. The `debris` colour becomes `0x4a4038` and each piece's height is
 
 ## 7. Classic mode (replaces spec 09 §7–8)
 
+> **Postponed indefinitely by owner decision (2026-10-25).** P4-10 / #189 is
+> not to be implemented. The section is kept as written so the owner can
+> revive it without a new spec.
+
 Spec 09 §7 applies with these changes:
 
 * `PIXEL_SIZE = 3`, `COLOR_LEVELS = 8` (512 colours, close to the original
@@ -188,10 +195,10 @@ colour; without `COLOR_0` it equals today's.
 **AC-10-05 Building debris only.** A dead building spawns 8 `debris` and no
 `wreck`; a dead vehicle still spawns one `wreck`.
 
-**AC-10-06 Classic mode.** Spec 09 AC-09-06 with `COLOR_LEVELS = 8`
+**AC-10-06 Classic mode (postponed indefinitely, 2026-10-25).** Spec 09 AC-09-06 with `COLOR_LEVELS = 8`
 (`posterize(0.5)` = 4/7) and the `classic` setting defaulting to false.
 
-**AC-10-07 Classic mode in the skirmish (Playwright).** With cleared storage
+**AC-10-07 Classic mode in the skirmish (Playwright; postponed indefinitely, 2026-10-25).** With cleared storage
 `__redline.classic()` is false; `V` shows "Classic graphics" and makes it
 true; a screenshot in classic mode differs from the Remastered one by more than
 1 %; `V` again shows "Remastered graphics".

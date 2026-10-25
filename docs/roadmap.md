@@ -16,13 +16,14 @@ quality.
 | 0.5 | Public GitHub repository, labels, issue/PR templates, project board | done |
 | 0.6 | Toolchain skeleton: Cargo workspace (`crates/sim`, `crates/headless`), `client/` (Vite + TS + Three.js), Biome, Vitest, Playwright, empty green CI | done |
 | 0.7 | Specs: `00-vision`, `01-architecture`, `02-phase1-tech-slice` | done |
-| 0.8 | Harness smoke test (Antigravity, Claude Code, OpenCode, DeepSeek) | todo |
-| 0.9 | Overnight runner: DeepSeek Harness headless (or OpenCode) + LM Studio (Ornith) + worktrees, dry run on a trivial issue (removed 2026-10-24) | done |
-| 0.10 | Local AI asset tooling: ComfyUI, Hunyuan3D-2 (MPS), ACE-Step, Kokoro/Piper; Blender procedural model pipeline proof (one tank) | todo |
+| 0.8 | Harness smoke test (Antigravity, Claude Code, OpenCode, DeepSeek) | obsolete (2026-10-24) |
+| 0.9 | Overnight runner and local verification runner | removed (2026-10-24) |
+| 0.10 | Local asset tooling: Blender procedural model pipeline (phase 4a, done) and ComfyUI texture loop; Hunyuan3D-2 infantry, ACE-Step music and Kokoro/Piper voices not started | partial |
 | 0.11 | Break spec 02 into Phase 1 issues (#10..#26) | done |
 
-Exit: CI green, every harness passes the smoke test, the overnight runner closed
-one trivial issue, and a Phase 1 issue queue exists.
+Exit: CI green and a Phase 1 issue queue exists. The harness smoke test and the
+overnight runner were dropped on 2026-10-24 with the workflow they belonged to
+(D-08); `AGENTS.md` replaced that workflow and no runner is planned.
 
 ## Phase 1 — Tech slice
 
@@ -52,12 +53,17 @@ Procedural Blender models, infantry pipeline, effects and gore filter, music and
 voices, final visual style.
 
 Slices: 4a procedural models (`specs/06-phase4a-procedural-models.md`, P4-01..05,
-done), 4b combat effects and gore filter (`specs/07-phase4b-combat-effects.md`,
-P4-06, done), 4c animation and visual finish
-(`specs/09-phase4c-animation-and-finish.md`, P4-07..10, #186..#189). Still to
-specify: textures, Hunyuan3D infantry, music and voices.
-4d Remastered look and classic mode (`specs/10-phase4d-remastered-look.md`):
-style reference *Red Alert Remastered*, `V` toggles the classic pixelated look.
+done: every unit and building is built procedurally from `tools/models`), 4b
+combat effects and gore filter (`specs/07-phase4b-combat-effects.md`, P4-06,
+done), 4c animation and visual finish
+(`specs/09-phase4c-animation-and-finish.md`, P4-07..09, #186..#188, done).
+P4-10 (#189), the classic pixelated mode toggled with `V`, is postponed
+indefinitely by owner decision (2026-10-25); its spec is kept, not deleted.
+Still to specify: Hunyuan3D infantry, music and voices (`specs/25-audio.md`).
+4d Remastered look (`specs/10-phase4d-remastered-look.md`): style reference
+*Red Alert Remastered*; terrain textures, lighting and shadows, model detail
+and building death are done. The classic mode (§7) shares the P4-10
+postponement.
 
 ## Phase 5+ — Content and multiplayer
 

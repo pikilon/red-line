@@ -82,8 +82,8 @@ approval, and record the change here with its date.
   technical decision, including tests and model choice, verifies what the
   change touches, opens a PR and merges it once CI passes.
 * The earlier workflow (tier S/A/B/C models, test-first spec phase,
-  traceability tables, `ready-local`/`ready-pro` issue queue, overnight runner
-  and local verification runner) was removed on 2026-10-24.
+  traceability tables, a pre-screened issue queue, an overnight runner and a
+  local verification runner) was removed on 2026-10-24.
 
 ## D-09 Hardware (2026-10-09)
 

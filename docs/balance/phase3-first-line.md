@@ -7,7 +7,7 @@ checked by review, not CI (spec 05 §8).
 
 ## How to reproduce
 
-From the repository root, build the headless runner, write the tournament
+From the repository root, build the headless tournament CLI (`crates/headless`), write the tournament
 config and run it:
 
 ```sh
