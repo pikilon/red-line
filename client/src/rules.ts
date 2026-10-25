@@ -29,12 +29,18 @@ export interface TypeDef {
   freeUnit: number;
   /** Index into `Ruleset.locomotors`, -1 for types without one (spec 11 §4.1). */
   locomotor: number;
+  /** Collision radius in centi-tiles; 0 uses the sim default. */
+  radiusCenti?: number;
   render: { size: [number, number, number] };
 }
 
 export interface LocomotorDef {
   id: string;
   kind: "foot" | "tracks" | "wheels";
+  /** Zero Hour `CrusherLevel`: 1 crushes infantry (spec 28). */
+  crusherLevel?: number;
+  /** Damage dealt to an enemy soldier shoved aside (spec 28). */
+  shoveDamage?: number;
 }
 
 export interface FactionDef {

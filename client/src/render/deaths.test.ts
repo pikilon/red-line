@@ -465,3 +465,33 @@ describe("blood of a wound (spec 22 §6)", () => {
     expect(effects.meshes.blood.count).toBe(0);
   });
 });
+
+describe("run over by vehicles (spec 28)", () => {
+  it("AC-28-06: a full-hp soldier under an enemy tank dies crushed", () => {
+    const soldier = entity(1, 1, "ru-rifleman", 5, 5, 100);
+    const tank = entity(2, 0, "ua-leopard-2a4", 4.8, 5, 1000);
+    const prev = snapshot(10, [soldier, tank]);
+    const next = snapshot(11, [{ ...tank, x: 5 }]);
+    expect(detectDeaths(prev, next, 0).map((e) => e.id)).toEqual([1]);
+    const causes = createDeathCauses();
+    causes.record(prev.entities, 0);
+    expect(causes.causeOf(soldier, 100).kind).toBe("crush");
+  });
+
+  it("AC-28-07: a friendly tank crushes nobody; a wheeled truck shoves", () => {
+    const soldier = entity(1, 0, "ru-rifleman", 5, 5, 100);
+    const friendly = entity(2, 0, "ua-leopard-2a4", 4.8, 5, 1000);
+    const friendlyCauses = createDeathCauses();
+    friendlyCauses.record([soldier, friendly], 0);
+    expect(friendlyCauses.causeOf(soldier, 50).kind).toBe("shot");
+    const enemy = entity(3, 1, "ru-rifleman", 5, 5, 60);
+    const truck = entity(4, 0, "ua-supply-truck", 4.5, 5, 300);
+    const causes = createDeathCauses();
+    causes.record([enemy, truck], 0);
+    const cause = causes.causeOf(enemy, 50);
+    expect(cause.kind).toBe("shove");
+    // Pushed away from the truck (east).
+    expect(Math.abs(cause.push)).toBeLessThan(0.01);
+    expect(causes.causeOf(enemy, 1000).kind).toBe("shot");
+  });
+});

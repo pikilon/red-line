@@ -120,6 +120,12 @@
       "map": "first-line",
       "form": "setup",
       "entities": 8
+    },
+    {
+      "id": "run-over",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 10
     }
   ]
 }

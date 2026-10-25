@@ -1,0 +1,22 @@
+# Spec 25: a Leopard (tracks) and a supply truck (wheels) drive through
+# Russian riflemen. The tank crushes them; the truck shoves them aside.
+id: run-over
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 46, y: 20, zoom: 1.5 }
+entities:
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3650, 1650], order: { moveCenti: [5650, 1650] } }
+  - { player: 0, type: ua-supply-truck, atCenti: [3650, 2350], order: { moveCenti: [5650, 2350] } }
+  - { player: 1, type: ru-rifleman, atCenti: [4300, 1650] }
+  - { player: 1, type: ru-rifleman, atCenti: [4550, 1620] }
+  - { player: 1, type: ru-rifleman, atCenti: [4800, 1680] }
+  - { player: 1, type: ru-rifleman, atCenti: [5050, 1650] }
+  - { player: 1, type: ru-rifleman, atCenti: [4300, 2350] }
+  - { player: 1, type: ru-rifleman, atCenti: [4550, 2330] }
+  - { player: 1, type: ru-rifleman, atCenti: [4800, 2370] }
+  - { player: 1, type: ru-rifleman, atCenti: [5050, 2350] }

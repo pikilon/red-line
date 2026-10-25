@@ -58,6 +58,14 @@ pub struct Motion {
     pub reverse_angle: i32,
     pub reverse_max: Fx,
     pub reverse_speed: Fx,
+    /// What this hull crushes when it drives over it (spec 28 §2): `0`
+    /// nothing, `1` infantry (Zero Hour's `CrusherLevel`).
+    pub crusher_level: u8,
+    /// Damage a non-crushing vehicle deals to enemy infantry it shoves aside
+    /// (spec 28 §3); `0` with no shove.
+    pub shove_damage: u32,
+    /// How far, sideways from the vehicle's path, a shoved soldier is thrown.
+    pub shove_push: Fx,
 }
 
 /// A locomotor from `globals.locomotors` (spec 11 §4.1). `id` is its key.
@@ -74,6 +82,9 @@ pub struct LocomotorDef {
     pub reverse_angle_deg: u32,
     pub reverse_max_centi: u32,
     pub reverse_speed_percent: u32,
+    pub crusher_level: u8,
+    pub shove_damage: u32,
+    pub shove_push_centi: u32,
 }
 
 fn no_locomotor() -> i32 {
@@ -105,6 +116,9 @@ fn motion_of(ty: &TypeDef, locomotor: Option<&LocomotorDef>) -> Motion {
         motion.reverse_angle = deg_to_units(l.reverse_angle_deg);
         motion.reverse_max = fx_centi(l.reverse_max_centi);
         motion.reverse_speed = percent_of(max_speed, l.reverse_speed_percent);
+        motion.crusher_level = l.crusher_level;
+        motion.shove_damage = l.shove_damage;
+        motion.shove_push = fx_centi(l.shove_push_centi);
     }
     motion
 }

@@ -555,6 +555,7 @@ impl World {
         self.update_economy();
         self.yield_to_movers();
         self.move_units();
+        self.run_over();
         self.separate_units();
         self.arrive_on_contact();
         self.update_visibility();
@@ -1142,6 +1143,10 @@ impl World {
             let mut push = FxVec2::ZERO;
             for b in self.neighbours(&buckets, cell_of(before[a])) {
                 if b == a || !is_unit[b] {
+                    continue;
+                }
+                // Spec 25 §2: a crusher drives over enemy soldiers, unpushed.
+                if self.crushes(a, b) || self.crushes(b, a) {
                     continue;
                 }
                 let offset = before[a] - before[b];

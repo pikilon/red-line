@@ -63,7 +63,10 @@
       "brakingCenti": 0,
       "reverseAngleDeg": 0,
       "reverseMaxCenti": 0,
-      "reverseSpeedPercent": 0
+      "reverseSpeedPercent": 0,
+      "crusherLevel": 0,
+      "shoveDamage": 0,
+      "shovePushCenti": 0
     },
     {
       "id": "tracked",
@@ -75,7 +78,10 @@
       "brakingCenti": 4,
       "reverseAngleDeg": 120,
       "reverseMaxCenti": 300,
-      "reverseSpeedPercent": 50
+      "reverseSpeedPercent": 50,
+      "crusherLevel": 1,
+      "shoveDamage": 0,
+      "shovePushCenti": 0
     },
     {
       "id": "wheeled",
@@ -87,7 +93,10 @@
       "brakingCenti": 3,
       "reverseAngleDeg": 120,
       "reverseMaxCenti": 300,
-      "reverseSpeedPercent": 40
+      "reverseSpeedPercent": 40,
+      "crusherLevel": 0,
+      "shoveDamage": 20,
+      "shovePushCenti": 40
     }
   ],
   "weapons": [

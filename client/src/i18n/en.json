@@ -125,6 +125,8 @@
   "saves.victory-near.description": "The last Russian building at 5 % HP under attack.",
   "saves.ai-attack.name": "AI attack",
   "saves.ai-attack.description": "A small Ukrainian base against the russia-rush AI with 40000 credits.",
+  "saves.run-over.name": "Run over",
+  "saves.run-over.description": "A Leopard and a supply truck drive through Russian riflemen: the tank crushes them, the truck shoves them aside.",
   "menu.saveGame": "Save game",
   "menu.loadGame": "Load game",
   "saves.titleSave": "Save game",
