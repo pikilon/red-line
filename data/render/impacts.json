@@ -3,7 +3,7 @@
   "buildingStandOff": 0.15,
   "unitDeathCrater": {
     "radiusTiles": 0.5,
-    "depthPerRadius": 0.22,
+    "depthPerRadius": 0.12,
     "rim": 0.3
   },
   "dustColors": {
@@ -68,7 +68,7 @@
       "crater": {
         "radiusTiles": 0.65,
         "splashFactor": 0.4,
-        "depthPerRadius": 0.22,
+        "depthPerRadius": 0.09,
         "rim": 0.35,
         "decal": false
       }
@@ -105,7 +105,7 @@
       "crater": {
         "radiusTiles": 1.3,
         "splashFactor": 0.7,
-        "depthPerRadius": 0.28,
+        "depthPerRadius": 0.13,
         "rim": 0.3,
         "decal": true
       }
@@ -142,7 +142,7 @@
       "crater": {
         "radiusTiles": 2.2,
         "splashFactor": 0.8,
-        "depthPerRadius": 0.05,
+        "depthPerRadius": 0.03,
         "rim": 0.2,
         "decal": false
       }
@@ -155,7 +155,7 @@
       "crater": {
         "radiusTiles": 0.75,
         "splashFactor": 0,
-        "depthPerRadius": 0.22,
+        "depthPerRadius": 0.09,
         "rim": 0.35,
         "decal": false
       }
@@ -164,7 +164,7 @@
       "crater": {
         "radiusTiles": 0.75,
         "splashFactor": 0,
-        "depthPerRadius": 0.22,
+        "depthPerRadius": 0.09,
         "rim": 0.35,
         "decal": false
       }

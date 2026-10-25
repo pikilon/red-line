@@ -223,6 +223,30 @@ export function createGroundImpacts(
     });
   }
 
+  /** The soot-black footprint inside a fresh crater (owner request
+   *  2026-10-25): darker than the grey of the bare bowl. */
+  function stampCraterSoot(
+    x: number,
+    y: number,
+    radius: number,
+    sample: SurfaceSample,
+    nowMs: number,
+  ): void {
+    const blasts = DECALS.blasts;
+    stampMark(
+      "crater",
+      x,
+      y,
+      radius * blasts.craterSootPerCrater,
+      Number(blasts.craterSootColor),
+      blasts.craterSootAlpha * Math.min(1, 0.55 + sample.strength * 0.45),
+      sample,
+      nowMs,
+      blasts.lifetimeMs,
+      blasts.fadeMs,
+    );
+  }
+
   /** Every ground effect of `profile` at (x, y); `onBuilding` keeps only the
    *  dust (the shot struck a wall, not the ground). */
   function land(
@@ -292,19 +316,22 @@ export function createGroundImpacts(
           nowMs,
           spec.rim,
         ) ?? false;
-      if (spec.decal && dug) {
-        stampMark(
-          "ejecta",
-          x,
-          y,
-          radius * blasts.ejectaPerCrater,
-          Number(blasts.ejectaColor),
-          blasts.ejectaAlpha * Math.min(1, 0.4 + sample.strength),
-          sample,
-          nowMs,
-          blasts.lifetimeMs,
-          blasts.fadeMs,
-        );
+      if (dug) {
+        if (spec.decal) {
+          stampMark(
+            "ejecta",
+            x,
+            y,
+            radius * blasts.ejectaPerCrater,
+            Number(blasts.ejectaColor),
+            blasts.ejectaAlpha * Math.min(1, 0.4 + sample.strength),
+            sample,
+            nowMs,
+            blasts.lifetimeMs,
+            blasts.fadeMs,
+          );
+        }
+        stampCraterSoot(x, y, radius, sample, nowMs);
       }
     }
   }
@@ -320,16 +347,19 @@ export function createGroundImpacts(
    *  never the full shell crater of a ground hit (spec 29 §3.6). */
   function digUnitDeathCrater(x: number, y: number, nowMs: number): void {
     // Rock keeps no craters (spec 29 §3.3).
-    if (decals.surfaceAt(x, y).strength <= 0) return;
+    const sample = decals.surfaceAt(x, y);
+    if (sample.strength <= 0) return;
     const spec = IMPACTS.unitDeathCrater;
-    relief()?.crater(
-      x,
-      y,
-      spec.radiusTiles,
-      spec.radiusTiles * spec.depthPerRadius,
-      nowMs,
-      spec.rim,
-    );
+    const dug =
+      relief()?.crater(
+        x,
+        y,
+        spec.radiusTiles,
+        spec.radiusTiles * spec.depthPerRadius,
+        nowMs,
+        spec.rim,
+      ) ?? false;
+    if (dug) stampCraterSoot(x, y, spec.radiusTiles, sample, nowMs);
   }
 
   return {
