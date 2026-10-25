@@ -546,17 +546,16 @@ with no delay. A `death` event of a vehicle killed by `antiTank` spawns a
 `wreck` and an `explosion`, and its debris moves away from the killer.
 `spawnShotEffects` adds nothing for a shooter with a projectile weapon.
 
-**AC-17-16 Projectiles in the skirmish (Playwright).** In `?debug=1&seed=1`:
+**AC-17-16 Projectiles in the skirmish (Playwright).** With `debug=1`:
 
-* Given a `ru-rpg-gunner` and an enemy `ua-leopard-2a4` spawned 4 tiles apart,
-  within 5 s `projectileCounts().rpg >= 1` and `effectCounts().dust >= 1`.
-* Given a `ua-himars` with an enemy building 20 tiles away, kept visible by a
-  friendly `ua-kozak-scout` spawned 3 tiles from the building, some
-  `projectileSamples()` entry has `model: "rocket"` with `z > 4` after an
-  attack order on the building.
+* `?load=rpg-ambush`: some drawn frame has `projectileCounts().rpg >= 1` and
+  `effectCounts().dust >= 1`.
+* `?load=artillery-range`: a real left click selects a HIMARS, a real right
+  click orders it onto an enemy building, and some `projectileSamples()` entry
+  has `model: "rocket"` with `z > 4`.
 
-The attack order is given with real mouse input: select the unit with a click,
-then right-click the building.
+Both checks sample every animation frame, so a busy software renderer still
+catches the half-second flight.
 
 ## 9. Amendments
 
