@@ -97,6 +97,8 @@
   "saves.infantry-vs-armor.description": "Riflemen and Stugna teams hold a line; three T-72s drive through it.",
   "saves.weapon-impacts.name": "Weapon impacts",
   "saves.weapon-impacts.description": "Every weapon class fires across open ground: compare the dust, scorches, debris and craters each one leaves.",
+  "saves.crater-crossing.name": "Crater crossing",
+  "saves.crater-crossing.description": "A HIMARS salvo digs a crater under a Leopard that has just stopped, so the hull drops and tilts with the relief.",
   "saves.rpg-ambush.name": "RPG ambush",
   "saves.rpg-ambush.description": "RPG gunners on both sides of the road as four Bradleys drive past.",
   "saves.artillery-range.name": "Artillery range",

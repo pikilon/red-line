@@ -144,6 +144,12 @@
       "map": "first-line",
       "form": "setup",
       "entities": 11
+    },
+    {
+      "id": "crater-crossing",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
     }
   ]
 }

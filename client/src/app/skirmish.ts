@@ -58,6 +58,7 @@ import {
   flatElevation,
   footprintGround,
   setGroundElevation,
+  setGroundRelief,
 } from "../render/elevation";
 import { createEntityRenderer, type EntityRenderer } from "../render/entities";
 import { createFogOverlay } from "../render/fog";
@@ -791,6 +792,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       elevation,
     );
     scene.add(terrain);
+    // Units, hulks and corpses stand on the visual surface, craters included
+    // (spec 24 §3.6). The simulation keeps its flat 2D height.
+    const relief = terrainDeformerOf(terrain);
+    setGroundRelief(relief === null ? null : (x, y) => relief.heightAt(x, y));
     const sun = new DirectionalLight(SUN_COLOR, SUN_INTENSITY);
     sun.castShadow = true;
     sun.shadow.mapSize.set(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
@@ -835,7 +840,6 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     );
     scene.add(decals.group);
     // Marks drape over the relief and follow it as craters dig (spec 29 §4).
-    const relief = terrainDeformerOf(terrain);
     if (relief !== null) {
       const marks = decals;
       marks.setHeight((x, y) => relief.heightAt(x, y));
