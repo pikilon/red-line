@@ -29,6 +29,28 @@ function snapshotWith(entities: EntityState[]): MatchSnapshot {
   return { tick: 1, entities } as unknown as MatchSnapshot;
 }
 
+function death(
+  victimKind: number,
+  weaponIndex: number | null,
+  x: number,
+  y: number,
+): CombatSnapshot {
+  return {
+    projectiles: [],
+    events: [
+      {
+        kind: "death",
+        victim: 9,
+        victimKind,
+        killer: 1,
+        weapon: weaponIndex,
+        x,
+        y,
+      },
+    ],
+  };
+}
+
 function detonation(
   weaponIndex: number,
   x: number,
@@ -99,6 +121,52 @@ describe("ground impacts per weapon (spec 29)", () => {
     relief?.update(1000);
     decals.update(10);
     expect(decals.count()).toBe(0);
+    expect(relief?.heightAt(16, 16)).toBe(0);
+  });
+
+  it("leaves the ground clean when a shell strikes an armoured vehicle", () => {
+    const { relief, effects, decals, impacts } = setup();
+    const tank = {
+      id: 9,
+      kind: typeIndex("ua-leopard-2a4"),
+      x: 16,
+      y: 16,
+    } as unknown as EntityState;
+    impacts.record(
+      snapshotWith([tank]),
+      detonation(weapon("ru-2a46m"), 16, 16, 9),
+      0,
+    );
+    relief?.update(1000);
+    effects.update(100);
+    decals.update(10);
+    // The hull takes the hit: no scorch, no dust and no crater under it.
+    expect(decals.count()).toBe(0);
+    expect(effects.counts().dust).toBe(0);
+    expect(relief?.heightAt(16, 16)).toBe(0);
+  });
+
+  it("digs only a minimal crater when an armoured vehicle explodes", () => {
+    const { relief, impacts } = setup();
+    impacts.record(
+      snapshotWith([]),
+      death(typeIndex("ua-leopard-2a4"), weapon("ua-stugna-p"), 16, 16),
+      0,
+    );
+    relief?.update(1000);
+    const depth = -(relief?.heightAt(16, 16) ?? 0);
+    expect(depth).toBeGreaterThan(0.05);
+    expect(depth).toBeLessThan(0.2);
+  });
+
+  it("leaves no crater when an armoured vehicle is not blown up", () => {
+    const { relief, impacts } = setup();
+    impacts.record(
+      snapshotWith([]),
+      death(typeIndex("ua-leopard-2a4"), weapon("ua-rifle"), 16, 16),
+      0,
+    );
+    relief?.update(1000);
     expect(relief?.heightAt(16, 16)).toBe(0);
   });
 
