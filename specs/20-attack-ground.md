@@ -27,8 +27,9 @@
   until stopped (`Stop`) or given any other order.
 * The order ignores other targets: the unit does not auto-target enemies while
   it holds it. A shot hits whatever enemy is at the impact point
-  (splash, or direct hit within `DIRECT_HIT_CENTI`). No friendly fire, as for
-  every shot.
+  (splash, or direct hit within `DIRECT_HIT_CENTI`). Splash also hits friendly
+  units and buildings in its radius (owner request 2026-10-25); direct hits
+  never target friendlies.
 * A homing weapon fired at the ground flies as a ballistic one (no victim).
 * An unreachable point (blocked cell) walks to the nearest passable cell.
 
@@ -104,8 +105,8 @@ is accepted and chased, matching Zero Hour; automatic targeting stays fog-gated
 * Red Line uses the alternate scheme but also accepts a plain left click on an
   enemy as attack (owner request 2026-10-24), so the target can be clicked
   without a modifier.
-* Own and neutral objects are not force-attacked (the sim has no friendly
-  fire; the click falls back to a ground shot).
+* Own and neutral objects are not force-attacked directly (a click falls back
+  to a ground shot); a ground shot's splash can still catch own units.
 * Selected buildings are not force-fired, so a production building keeps its
   rally orders.
 * Picking approximates the original ray with a one-tile order radius; selection

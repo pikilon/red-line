@@ -9,7 +9,8 @@
 //! then resolve in creation order and are removed: a homing one hits its target
 //! wherever it moved, a ballistic one hits the nearest valid enemy within
 //! `DIRECT_HIT_CENTI` of its scattered impact, and a splash one damages every
-//! enemy of the shooter inside its radius (no friendly fire).
+//! player-owned entity inside its radius, friend or foe (owner request
+//! 2026-10-25). Neutral depots are never hit.
 
 use crate::angle::{Angle, atan2};
 use crate::entity::{EntityId, GROUND_TARGET, NEUTRAL, Order, PlayerId, Projectile};
@@ -150,7 +151,7 @@ impl World {
             // Instant branch of §5.11 step 4, with the target's position as the
             // impact point for splash.
             if weapon.splash_centi > 0 {
-                self.apply_splash(owner, shooter, weapon_id, weapon, aim);
+                self.apply_splash(shooter, weapon_id, weapon, aim);
             } else if let Some(hit) = target.or_else(|| self.direct_hit(owner, weapon, aim)) {
                 self.apply_hit(shooter, hit, weapon_id, weapon);
             }
@@ -362,7 +363,6 @@ impl World {
         };
         let hit = if weapon.splash_centi > 0 {
             self.apply_splash(
-                projectile.owner,
                 projectile.shooter,
                 projectile.weapon,
                 &weapon,
@@ -560,13 +560,13 @@ impl World {
         }
     }
 
-    /// §5.11 step 4 splash: every entity with `hp > 0` that belongs to neither
-    /// the shooter nor `NEUTRAL` and lies within `splash_centi` of the impact
-    /// point loses the modified damage (no friendly fire). Each damaged entity
-    /// records `(shooter, weapon)` as its last hit.
+    /// §5.11 step 4 splash: every entity with `hp > 0`, except the shooter and
+    /// neutral depots, that lies within `splash_centi` of the impact point
+    /// loses the modified damage. Blasts hit friends and the shooter's own
+    /// units too (owner request 2026-10-25), as in Zero Hour. Each damaged
+    /// entity records `(shooter, weapon)` as its last hit.
     fn apply_splash(
         &mut self,
-        owner: PlayerId,
         shooter: EntityId,
         weapon_id: WeaponId,
         weapon: &WeaponDef,
@@ -575,8 +575,12 @@ impl World {
         let radius = fx_centi(weapon.splash_centi);
         for index in 0..self.entities.len() {
             let entity = &self.entities[index];
+            // Zero Hour's default splash mask skips the shooter (and its
+            // producer) but hits allies, enemies and neutrals; Red Line keeps
+            // NEUTRAL out because here it only marks supply depots (owner
+            // request 2026-10-25).
             if entity.hp == 0
-                || entity.owner == owner
+                || entity.id == shooter
                 || entity.owner == NEUTRAL
                 || self.entity_distance(impact, entity) > radius
             {

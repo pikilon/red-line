@@ -271,13 +271,13 @@ fn ac_03_31_area_projectiles() {
     }
     assert_eq!(world.entity(dozer).unwrap().hp, 100);
 
-    // Step 5: splash 150 centi reaches B1 and B2 but not B3, and the shooter's
-    // own dozer takes no friendly fire.
+    // Step 5: splash 150 centi reaches B1, B2 and the shooter's own dozer, but
+    // not B3. Blasts hit friendly units too (owner request 2026-10-25).
     world.step();
     assert_eq!(world.entity(b1).unwrap().hp, 35);
     assert_eq!(world.entity(b2).unwrap().hp, 35);
     assert_eq!(world.entity(b3).unwrap().hp, 50);
-    assert_eq!(world.entity(dozer).unwrap().hp, 100);
+    assert_eq!(world.entity(dozer).unwrap().hp, 70);
     assert!(world.projectiles().is_empty());
 }
 
