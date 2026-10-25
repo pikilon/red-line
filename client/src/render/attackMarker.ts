@@ -7,6 +7,7 @@ import {
   NormalBlending,
   RingGeometry,
 } from "three";
+import { groundY } from "./elevation";
 
 /** How long a marker stays on the ground, in ms (spec 20 §4). */
 export const ATTACK_MARKER_MS = 1300;
@@ -100,7 +101,7 @@ export function createAttackMarker(): AttackMarker {
   }
 
   function place(slot: Slot, target: AttackMarkerTarget): void {
-    slot.group.position.set(target.x, 0, target.y);
+    slot.group.position.set(target.x, groundY(target.x, target.y), target.y);
     slot.group.scale.setScalar(target.radius);
   }
 
@@ -139,7 +140,11 @@ export function createAttackMarker(): AttackMarker {
           expire(slot);
           continue;
         }
-        slot.group.position.set(position.x, 0, position.y);
+        slot.group.position.set(
+          position.x,
+          groundY(position.x, position.y),
+          position.y,
+        );
       }
       const t = age / ATTACK_MARKER_MS;
       // Three pulses fading out; the ring grows slightly as it blinks.

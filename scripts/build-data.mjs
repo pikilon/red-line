@@ -200,6 +200,123 @@ function checkFaction(file, faction, fail) {
   }
 }
 
+/** Height steps per tile (one byte per corner) and the cliff spread (spec 30 §2). */
+export const HEIGHT_STEPS_PER_TILE = 16;
+export const CLIFF_SPREAD = 16;
+
+const smoothstep01 = (t) => {
+  const c = Math.min(1, Math.max(0, t));
+  return c * c * (3 - 2 * c);
+};
+
+/** Rounded dome profile: 1 at the centre, 0 at `radius`, flat slope at both ends. */
+const dome = (distance, radius) => {
+  if (radius <= 0 || distance >= radius) return 0;
+  const t = distance / radius;
+  return (1 - t * t) * (1 - t * t);
+};
+
+/** Distance from (x, y) to the segment a-b and the projection 0..1 along it. */
+const toSegment = (x, y, [ax, ay], [bx, by]) => {
+  const dx = bx - ax;
+  const dy = by - ay;
+  const length2 = dx * dx + dy * dy;
+  const t = length2 === 0 ? 0 : Math.min(1, Math.max(0, ((x - ax) * dx + (y - ay) * dy) / length2));
+  return { distance: Math.hypot(x - ax - t * dx, y - ay - t * dy), t };
+};
+
+/** Integer hash of a lattice point to [-1, 1]; the same on every machine. */
+const lattice = (x, y, seed) => {
+  let h = Math.imul(x, 374761393) ^ Math.imul(y, 668265263) ^ Math.imul(seed, 2246822519);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  h ^= h >>> 16;
+  return ((h >>> 0) / 4294967295) * 2 - 1;
+};
+
+/** Tiles per lattice cell of the plateau edge noise. */
+const EDGE_NOISE_PERIOD = 3;
+
+/** Smooth value noise in [-1, 1] at corner (x, y), one lattice per `seed`. */
+const signedNoise = (x, y, seed) => {
+  const gx = x / EDGE_NOISE_PERIOD;
+  const gy = y / EDGE_NOISE_PERIOD;
+  const ix = Math.floor(gx);
+  const iy = Math.floor(gy);
+  const sx = smoothstep01(gx - ix);
+  const sy = smoothstep01(gy - iy);
+  const top = lattice(ix, iy, seed) * (1 - sx) + lattice(ix + 1, iy, seed) * sx;
+  const bottom = lattice(ix, iy + 1, seed) * (1 - sx) + lattice(ix + 1, iy + 1, seed) * sx;
+  return top * (1 - sy) + bottom * sy;
+};
+
+/** Tiles of smooth shoulder on each side of a ramp. */
+const RAMP_SHOULDER = 3;
+
+/**
+ * Spec 30 §3: the corner heights of `map.elevation`, row-major over
+ * `(width + 1) x (height + 1)`, in 1/16 tile steps; null for a flat map. Every
+ * feature gives a height per corner and the highest wins. Runs at build time
+ * only; the sim reads the result.
+ */
+export function rasterizeElevation(map) {
+  const e = map.elevation;
+  if (!e) return null;
+  const stride = map.width + 1;
+  const heights = new Uint8Array(stride * (map.height + 1));
+  const plateaus = e.plateaus ?? [];
+  for (let y = 0; y <= map.height; y++) {
+    for (let x = 0; x <= map.width; x++) {
+      let h = 0;
+      for (const hill of e.hills ?? []) {
+        h = Math.max(h, hill.height * dome(Math.hypot(x - hill.center[0], y - hill.center[1]), hill.radius));
+      }
+      for (const ridge of e.ridges ?? []) {
+        h = Math.max(h, ridge.height * dome(toSegment(x, y, ridge.from, ridge.to).distance, ridge.radius));
+      }
+      for (const plateau of plateaus) {
+        const [x0, y0, x1, y1] = plateau.rect;
+        // Signed distance to the rectangle's corner outline: < 0 inside.
+        const outside = Math.hypot(Math.max(x0 - x, 0, x - (x1 + 1)), Math.max(y0 - y, 0, y - (y1 + 1)));
+        const inside = Math.min(x - x0, x1 + 1 - x, y - y0, y1 + 1 - y);
+        const rough = plateau.rough ?? 0;
+        // Noise in plateau-local coordinates, made point-symmetric, so the
+        // mirrored plateau of a point-symmetric map gets the same outline.
+        const u = x - (x0 + x1 + 1) / 2;
+        const v = y - (y0 + y1 + 1) / 2;
+        const noise = (signedNoise(u, v, 7) + signedNoise(-u, -v, 7)) / 2;
+        const edge = (outside > 0 ? outside : -inside) + rough * noise;
+        const slope = plateau.slope ?? 0;
+        const f = edge <= 0 ? 1 : slope > 0 ? smoothstep01(1 - edge / slope) : 0;
+        h = Math.max(h, plateau.height * f);
+      }
+      for (const ramp of e.ramps ?? []) {
+        const { distance, t } = toSegment(x, y, ramp.from, ramp.to);
+        const side = Math.max(0, distance - ramp.width / 2);
+        h = Math.max(h, ramp.height * (1 - t) * smoothstep01(1 - side / RAMP_SHOULDER));
+      }
+      heights[y * stride + x] = Math.min(255, Math.max(0, Math.round(h)));
+    }
+  }
+  return heights;
+}
+
+/** Cells whose four corners spread by `CLIFF_SPREAD` steps or more, as "x,y". */
+export function cliffCells(map, heights) {
+  const cells = new Set();
+  if (!heights) return cells;
+  const stride = map.width + 1;
+  for (let y = 0; y < map.height; y++) {
+    for (let x = 0; x < map.width; x++) {
+      const corners = [heights[y * stride + x], heights[y * stride + x + 1], heights[(y + 1) * stride + x], heights[(y + 1) * stride + x + 1]];
+      if (Math.max(...corners) - Math.min(...corners) >= CLIFF_SPREAD) cells.add(`${x},${y}`);
+    }
+  }
+  return cells;
+}
+
+/** Two lowercase hex digits per corner; "" for a flat map. */
+export const heightsHex = (heights) => (heights ? Buffer.from(heights).toString("hex") : "");
+
 function checkMap(file, map, globals, factions, index, fail) {
   const blocked = new Set();
   const occupied = new Set();
@@ -211,6 +328,8 @@ function checkMap(file, map, globals, factions, index, fail) {
     }
     for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) blocked.add(`${x},${y}`);
   });
+  // Footprints may not stand on cliffs either (spec 30 §3).
+  for (const cell of cliffCells(map, rasterizeElevation(map))) blocked.add(cell);
 
   const place = (pointer, [ox, oy], [w, h], what) => {
     if (!inBounds(ox, oy) || !inBounds(ox + w - 1, oy + h - 1)) {
@@ -381,6 +500,7 @@ const assemble = (globals, factions, maps, ai) => {
       height: m.height,
       blocked: m.blocked,
       depots: m.depots,
+      heights: heightsHex(rasterizeElevation(m)),
       starts: m.starts.map((s) => ({
         faction: factions.findIndex((f) => f.id === s.faction),
         hq: s.hq,

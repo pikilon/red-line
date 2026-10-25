@@ -59,7 +59,8 @@ shader or a second mesh.
 * `crater(x, z, radius, depth, startMs)`: schedule a crater.
 * `press(sources, nowMs)`: weights moving over the ground.
 * `setSoftness(mask | null)`: per-corner softness, `(width+1)×(height+1)`.
-* `heightAt(x, z)`: current sink (≤ 0) so decals can follow the surface.
+* `heightAt(x, z)`: current surface height, the map elevation (spec 30) plus
+  the sink (≤ 0), so decals can follow the surface.
 * `update(nowMs)`: called once per frame by the skirmish loop.
 
 ## 5. Performance

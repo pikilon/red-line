@@ -174,7 +174,8 @@ pub struct World {
     pub(crate) map_id: Option<String>,
 }
 
-/// Open terrain of `map` with its blocked rectangles (spec 03 §5.6).
+/// Open terrain of `map` with its blocked rectangles (spec 03 §5.6) and its
+/// elevation, cliffs blocked (spec 30).
 pub(crate) fn map_terrain(map: &MapDef) -> MapGrid {
     let mut terrain = MapGrid::open(map.width, map.height);
     for rect in &map.blocked {
@@ -184,6 +185,8 @@ pub(crate) fn map_terrain(map: &MapDef) -> MapGrid {
             }
         }
     }
+    // Cliffs block ground movement like rocks (spec 30 §3).
+    terrain.set_heights(map.corner_heights());
     terrain
 }
 
@@ -1304,6 +1307,12 @@ impl World {
 
     pub fn rules(&self) -> &Ruleset {
         &self.rules
+    }
+
+    /// Ground height under `pos`, in tiles (spec 30 §3): the z a ground unit
+    /// stands at.
+    pub fn ground_height(&self, pos: FxVec2) -> Fx {
+        self.terrain.ground_height(pos)
     }
 
     /// Navigation grid (terrain + footprints).

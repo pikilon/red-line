@@ -21,6 +21,7 @@ import {
   hasFlag,
   type MatchSnapshot,
 } from "../sim/matchSnapshot";
+import { groundY } from "./elevation";
 import { createPuffTexture, createSplatTexture } from "./splat";
 
 /** Instances kept per effect kind; the oldest is recycled when full (spec 07 §3). */
@@ -268,6 +269,9 @@ interface Instance {
   x: number;
   y: number;
   z: number;
+  /** Ground height where it spawned (spec 30): heights are relative to it,
+   *  except dust and clods, whose callers give world heights. */
+  base: number;
   sizeX: number;
   sizeY: number;
   sizeZ: number;
@@ -364,6 +368,7 @@ export function createEffects(): Effects {
       x: init.x,
       y: init.y,
       z: init.height ?? size[1] / 2,
+      base: groundY(init.x, init.y),
       sizeX: size[0],
       sizeY: size[1],
       sizeZ: size[2],
@@ -473,18 +478,23 @@ export function createEffects(): Effects {
         } else if (kind === "droplet") {
           // Thrown from the wound: a ballistic arc until it lands.
           const flight = elapsed / 1000;
+          const px = instance.x + instance.vx * flight;
+          const pz = instance.y + instance.vy * flight;
+          const floor = groundY(px, pz);
           position.set(
-            instance.x + instance.vx * flight,
+            px,
             Math.max(
-              0,
-              instance.z +
+              floor,
+              instance.base +
+                instance.z +
                 instance.vz * flight -
                 0.5 * DROPLET_GRAVITY * flight * flight,
             ),
-            instance.y + instance.vy * flight,
+            pz,
           );
         } else {
-          position.set(instance.x, instance.z, instance.y);
+          // Effects sit on the ground where they spawned (spec 30 §4).
+          position.set(instance.x, instance.base + instance.z, instance.y);
         }
         if (kind === "droplet") {
           // A thin streak lying along the way it flies (its velocity now).

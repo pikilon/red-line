@@ -5,6 +5,7 @@ import type { EntityState, MatchSnapshot } from "../sim/matchSnapshot";
 import { DECALS, type Decals, IMPACTS, type SurfaceSample } from "./decals";
 import type { DecalCell } from "./decalTextures";
 import type { Effects } from "./effects";
+import { groundY } from "./elevation";
 import type { TerrainDeformer } from "./terrainDeform";
 import { createRng } from "./terrainTexture";
 
@@ -125,7 +126,7 @@ export function createGroundImpacts(
   /** Launch point of every projectile seen in flight. */
   const origins = new Map<number, [number, number]>();
   const groundAt = (x: number, y: number): number =>
-    relief()?.heightAt(x, y) ?? 0;
+    relief()?.heightAt(x, y) ?? groundY(x, y);
 
   function spawnDust(
     spec: DustSpec,

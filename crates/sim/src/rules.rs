@@ -308,6 +308,31 @@ pub struct MapDef {
     pub blocked: Vec<[i32; 4]>,
     pub depots: Vec<DepotDef>,
     pub starts: Vec<StartDef>,
+    /// Corner heights as two hex digits per corner, row-major over
+    /// `(width + 1) x (height + 1)`; empty for a flat map (spec 30 §3).
+    #[serde(default)]
+    pub heights: String,
+}
+
+impl MapDef {
+    /// The decoded corner heights; empty when the map is flat or `heights`
+    /// is not valid hex.
+    pub fn corner_heights(&self) -> Vec<u8> {
+        decode_hex(&self.heights).unwrap_or_default()
+    }
+}
+
+/// Two hex digits per byte, or `None` on an odd length or a non-hex digit.
+fn decode_hex(text: &str) -> Option<Vec<u8>> {
+    let bytes = text.as_bytes();
+    if !bytes.len().is_multiple_of(2) {
+        return None;
+    }
+    let digit = |b: u8| (b as char).to_digit(16).map(|d| d as u8);
+    bytes
+        .chunks(2)
+        .map(|pair| Some(digit(pair[0])? * 16 + digit(pair[1])?))
+        .collect()
 }
 
 /// A named unit mix of an AI personality (spec 05 §5.1).
@@ -557,6 +582,17 @@ impl Ruleset {
         }
 
         for (mi, m) in self.maps.iter().enumerate() {
+            if !m.heights.is_empty() {
+                let corners = (usize::from(m.width) + 1) * (usize::from(m.height) + 1);
+                match decode_hex(&m.heights) {
+                    Some(heights) if heights.len() == corners => {}
+                    _ => {
+                        return Err(format!(
+                            "maps[{mi}].heights is not {corners} hex-encoded corners"
+                        ));
+                    }
+                }
+            }
             for (si, s) in m.starts.iter().enumerate() {
                 if usize::from(s.faction) >= self.factions.len() {
                     return Err(format!(

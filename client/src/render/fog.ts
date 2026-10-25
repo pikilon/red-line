@@ -3,9 +3,9 @@ import {
   Mesh,
   MeshBasicMaterial,
   NearestFilter,
-  PlaneGeometry,
   RGBAFormat,
 } from "three";
+import { drapedGrid, type Elevation, flatElevation } from "./elevation";
 
 export const FOG_ALPHA = [255, 140, 0] as const; // unexplored, explored, visible
 
@@ -32,6 +32,7 @@ function writeFogAlpha(fog: Uint8Array, rgba: Uint8Array): void {
 export function createFogOverlay(
   width: number,
   height: number,
+  elevation: Elevation = flatElevation(width, height),
 ): { mesh: Mesh; update(fog: Uint8Array): void } {
   const data = new Uint8Array(width * height * 4);
   const texture = new DataTexture(data, width, height, RGBAFormat);
@@ -39,14 +40,9 @@ export function createFogOverlay(
   texture.minFilter = NearestFilter;
   texture.needsUpdate = true;
 
-  const geometry = new PlaneGeometry(width, height);
-  geometry.rotateX(-Math.PI / 2);
-  // After the rotation v = 0 lies at world z = height; flip it so texture
-  // row 0 (cell row 0) covers z = 0..1.
-  const uv = geometry.getAttribute("uv");
-  for (let i = 0; i < uv.count; i++) {
-    uv.setY(i, 1 - uv.getY(i));
-  }
+  // Drapes over the hills (spec 30); texture row 0 (cell row 0) covers
+  // z = 0..1.
+  const geometry = drapedGrid(elevation, FOG_Y);
   const mesh = new Mesh(
     geometry,
     new MeshBasicMaterial({
@@ -55,7 +51,6 @@ export function createFogOverlay(
       depthWrite: false,
     }),
   );
-  mesh.position.set(width / 2, FOG_Y, height / 2);
 
   return {
     mesh,

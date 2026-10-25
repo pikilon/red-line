@@ -11,6 +11,21 @@ depots:                              # required; origin = top-left cell, ids 0..
   - { origin: [90, 106], amount: 10000 }
   - { origin: [36, 100], amount: 10000 }
   - { origin: [90, 26], amount: 10000 }
+elevation:                           # optional; heights in 1/16 tile steps at tile corners (spec 30)
+  plateaus:                          # rect = cells; slope = tiles of edge fall (steep = cliff), rough = tiles of edge noise
+    - { rect: [40, 80, 47, 89], height: 40, slope: 1.5, rough: 1.5 }
+    - { rect: [80, 38, 87, 47], height: 40, slope: 1.5, rough: 1.5 }
+  ramps:                             # height at `from`, ground at `to`; the way up a plateau
+    - { from: [40, 85], to: [31, 85], width: 4, height: 40 }
+    - { from: [88, 43], to: [97, 43], width: 4, height: 40 }
+  hills:
+    - { center: [24, 26], radius: 9, height: 28 }
+    - { center: [104, 102], radius: 9, height: 28 }
+    - { center: [22, 100], radius: 8, height: 22 }
+    - { center: [106, 28], radius: 8, height: 22 }
+  ridges:
+    - { from: [46, 8], to: [55, 20], radius: 6, height: 20 }
+    - { from: [82, 120], to: [73, 108], radius: 6, height: 20 }
 starts:                              # required, exactly 2 entries; start i is player i
   - { faction: ukraine, hq: [12, 60], dozerCenti: [1850, 6150] }
   - { faction: russia, hq: [112, 64], dozerCenti: [10950, 6650] }
