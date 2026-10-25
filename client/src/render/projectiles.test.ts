@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { typeDef, typeIndex, WEAPONS } from "../rules";
 import type { ProjectileState } from "../sim/combatSnapshot";
 import type { EntityState, MatchSnapshot } from "../sim/matchSnapshot";
+import { createEffects } from "./effects";
 import { type FlightProfile, flightPoint } from "./flight";
 import { createProjectiles, PROJECTILE_MODELS } from "./projectiles";
 
@@ -174,5 +175,117 @@ describe("AC-17-13: projectile renderer", () => {
     for (const model of PROJECTILE_MODELS) {
       expect(projectiles.meshes[model].castShadow).toBe(false);
     }
+  });
+});
+
+describe("AC-17-14: launch effects and trails", () => {
+  const rpgWeapon = weaponIndex("ru-rpg7");
+  const rocketWeapon = weaponIndex("ru-tos-thermobaric");
+  const stugnaWeapon = weaponIndex("ua-stugna-p");
+  const gunner = entity(1, 1, "ru-rpg-gunner", 2, 3);
+  const view = snapshot(16, [gunner]);
+
+  function shot(
+    weapon: number,
+    extra: Partial<ProjectileState> = {},
+  ): ProjectileState {
+    return projectile({
+      id: 7,
+      owner: 1,
+      weapon,
+      shooter: gunner.id,
+      originX: 2,
+      originY: 3,
+      impactX: 6,
+      impactY: 3,
+      launchTick: 15,
+      impactTick: 25,
+      ...extra,
+    });
+  }
+
+  it("spawns the launch effects of a backblast projectile once", () => {
+    const effects = createEffects();
+    const projectiles = createProjectiles();
+    const fired = shot(rpgWeapon);
+    projectiles.spawnEffects([fired], 15, view, 0, effects);
+    effects.update(0);
+    expect(effects.counts().muzzle).toBe(1);
+    expect(effects.counts().backblast).toBe(1);
+    expect(effects.counts().trail).toBe(3);
+    expect(effects.counts().dust).toBe(8);
+    // The muzzle flash sits at origin - back × 0.3, the backblast behind it.
+    expect(pose(effects.meshes.muzzle, 0).position.x).toBeCloseTo(2.3, 6);
+    expect(pose(effects.meshes.backblast, 0).position.x).toBeCloseTo(1.65, 6);
+
+    // The same id seen again is not launched twice.
+    projectiles.spawnEffects([fired], 20.5, view, 100, effects);
+    effects.update(100);
+    expect(effects.counts().muzzle).toBe(1);
+    expect(effects.counts().backblast).toBe(1);
+    expect(effects.counts().trail).toBe(3);
+    expect(effects.counts().dust).toBe(8);
+  });
+
+  it("moves the launch dust away from the shooter", () => {
+    const effects = createEffects();
+    const projectiles = createProjectiles();
+    const fired = shot(rpgWeapon, { id: 8 });
+    projectiles.spawnEffects([fired], 15, view, 0, effects);
+    effects.update(0);
+    const start = Math.hypot(
+      pose(effects.meshes.dust, 0).position.x - gunner.x,
+      pose(effects.meshes.dust, 0).position.z - gunner.y,
+    );
+    effects.update(500);
+    const later = Math.hypot(
+      pose(effects.meshes.dust, 0).position.x - gunner.x,
+      pose(effects.meshes.dust, 0).position.z - gunner.y,
+    );
+    expect(start).toBeCloseTo(0.2, 6);
+    expect(later).toBeGreaterThan(start + 0.4);
+  });
+
+  it("spawns launch smoke for a rocket launch", () => {
+    const effects = createEffects();
+    const projectiles = createProjectiles();
+    const tos = entity(2, 0, "ru-tos-1a", 10, 10);
+    const rocket = shot(rocketWeapon, {
+      id: 9,
+      shooter: tos.id,
+      originX: 10,
+      originY: 10,
+      impactX: 20,
+      impactY: 10,
+    });
+    projectiles.spawnEffects([rocket], 15, snapshot(16, [tos]), 0, effects);
+    effects.update(0);
+    expect(effects.counts().launchSmoke).toBe(6);
+    expect(effects.counts().backblast).toBe(1);
+    expect(effects.counts().muzzle).toBe(0);
+  });
+
+  it("adds a smoke trail every 40 ms in flight", () => {
+    const effects = createEffects();
+    const projectiles = createProjectiles();
+    const missile = shot(stugnaWeapon, {
+      id: 10,
+      launchTick: 0,
+      impactTick: 10,
+    });
+    const missileView = snapshot(1, [gunner]);
+    projectiles.spawnEffects([missile], 0.5, missileView, 0, effects);
+    effects.update(0);
+    // A soft launch leaves two trail puffs of its own.
+    expect(effects.counts().trail).toBe(2);
+    projectiles.spawnEffects([missile], 0.5, missileView, 39, effects);
+    effects.update(39);
+    expect(effects.counts().trail).toBe(2);
+    projectiles.spawnEffects([missile], 0.5, missileView, 40, effects);
+    effects.update(40);
+    expect(effects.counts().trail).toBe(3);
+    projectiles.spawnEffects([missile], 0.5, missileView, 80, effects);
+    effects.update(80);
+    expect(effects.counts().trail).toBe(4);
   });
 });
