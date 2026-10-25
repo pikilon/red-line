@@ -19,9 +19,9 @@ function build() {
 describe("terrain relief (spec 24)", () => {
   it("sinks the ground under a crater and moves the mesh", () => {
     const { group, deformer } = build();
-    deformer.crater(8, 8, 3, 0.4, 0);
+    deformer.crater(8, 8, 3, 0.2, 0);
     deformer.update(1000);
-    expect(deformer.heightAt(8, 8)).toBeCloseTo(-0.4, 2);
+    expect(deformer.heightAt(8, 8)).toBeCloseTo(-0.2, 2);
     // The fine patch draws the crater; the coarse tiles under it fold away.
     const patch = group.getObjectByName("grass-relief") as Mesh;
     const position = patch.geometry.getAttribute("position");
@@ -31,7 +31,7 @@ describe("terrain relief (spec 24)", () => {
       lowest = Math.min(lowest, position.getY(i));
       highest = Math.max(highest, position.getY(i));
     }
-    expect(lowest).toBeCloseTo(-0.4, 2);
+    expect(lowest).toBeCloseTo(-0.2, 2);
     // A raised rim around the bowl (spec 29 §4).
     expect(highest).toBeGreaterThan(0.05);
     expect(highest).toBeLessThanOrEqual(MAX_RISE + 1e-6);
@@ -82,10 +82,10 @@ describe("terrain relief (spec 24)", () => {
     const { deformer } = build();
     const seen: number[][] = [];
     deformer.onChange((...box) => seen.push(box));
-    deformer.crater(8, 8, 1.2, 0.25, 0);
+    deformer.crater(8, 8, 1.2, 0.15, 0);
     deformer.update(1000);
     expect(seen.length).toBeGreaterThan(0);
-    expect(deformer.heightAt(8, 8)).toBeLessThan(-0.2);
+    expect(deformer.heightAt(8, 8)).toBeLessThan(-0.1);
     expect(deformer.heightAt(12, 12)).toBe(0);
   });
 
@@ -108,11 +108,32 @@ describe("terrain relief (spec 24)", () => {
     expect(centre).toBeLessThan(outside * 0.7);
   });
 
-  it("caps stacked craters at MAX_SINK", () => {
+  it("bites mini craters into the rim instead of leaving a clean circle", () => {
     const { deformer } = build();
+    deformer.crater(8, 8, 2, 0.12, 0);
+    deformer.update(1000);
+    // The coarse bowl and smooth rim never dip below the outside, so a
+    // negative height on the rim ring can only be an edge mini crater.
+    let bites = 0;
+    for (let deg = 0; deg < 360; deg += 5) {
+      const angle = (deg * Math.PI) / 180;
+      const height = deformer.heightAt(
+        8 + Math.cos(angle) * 2.2,
+        8 + Math.sin(angle) * 2.2,
+      );
+      if (height < -0.005) bites++;
+    }
+    expect(bites).toBeGreaterThanOrEqual(2);
+  });
+
+  it("caps stacked craters below a scout/Humvee height", () => {
+    const { deformer } = build();
+    // The scout model is 0.5 tiles tall, so the floor must stop well above it.
+    expect(MAX_SINK).toBeLessThanOrEqual(0.2);
+    expect(MAX_SINK).toBeLessThan(0.5);
     for (let i = 0; i < 10; i++) deformer.crater(8, 8, 3, 0.4, 0);
     deformer.update(1000);
-    expect(deformer.heightAt(8, 8)).toBeGreaterThanOrEqual(-MAX_SINK - 1e-6);
+    expect(deformer.heightAt(8, 8)).toBeCloseTo(-MAX_SINK, 5);
   });
 
   it("sinks vehicles only on soft ground, and not past the vehicle floor", () => {

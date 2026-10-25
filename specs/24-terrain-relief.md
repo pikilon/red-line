@@ -39,7 +39,9 @@ shader or a second mesh.
 1. Superseded by spec 29 §4: craters come from each weapon's impact profile
    at its detonation point, on a fine patched grid with a raised rim. They
    still sink over 350 ms with a smoothstep ease.
-2. Total sink at one point is capped at 0.5 tiles; craters stack.
+2. Crater sink at one point is capped at 0.2 tiles; further hits only change
+   the rim (spec 29 §4, owner request 2026-10-25). Vehicle press adds at most
+   0.07 on top, still well under the 0.5-tile scout/Humvee height.
 3. Tracked vehicles (weight 1) and wheeled ones (0.5) sink the ground while
    they drive: 0.05 tiles per tile driven × weight × softness, floor
    `0.07 × softness`. Infantry and buildings press nothing.
@@ -90,8 +92,8 @@ craters and updates its pathfinding map explicitly.
   smoothly within 350 ms.
 * AC-24-02: a tank driving over a dirt patch leaves it up to 0.07 tiles lower;
   on plain grass it sinks about 0.
-* AC-24-03: the sink never exceeds 0.5 tiles and never changes the simulation
-  hash.
+* AC-24-03: the crater sink never exceeds 0.2 tiles, the relief never exceeds
+  0.5 tiles with vehicle press, and it never changes the simulation hash.
 * AC-24-04: with 100+ vehicles moving, relief upkeep stays well under 0.5 ms
   per frame.
 * AC-24-05: a unit standing on a fresh crater is drawn at the crater surface

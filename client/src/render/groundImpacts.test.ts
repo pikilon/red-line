@@ -136,6 +136,21 @@ describe("ground impacts per weapon (spec 29)", () => {
     expect(rockets.decals.count()).toBe(3);
   });
 
+  it("does not stack soot into a well on repeated hits at one spot", () => {
+    const { decals, impacts } = setup();
+    for (let i = 0; i < 5; i++) {
+      impacts.record(
+        snapshotWith([]),
+        detonation(weapon("ua-gmlrs"), 16, 16),
+        i * 500,
+      );
+    }
+    decals.update(2500);
+    // Each hit still adds its scorch and ejecta (2), but the black footprint
+    // inside the hole stays one layer (3 + 4 × 2) instead of five (15).
+    expect(decals.count()).toBe(11);
+  });
+
   it("keeps marks off the roof when a shell strikes a building", () => {
     const { relief, decals, impacts } = setup();
     const hq = {

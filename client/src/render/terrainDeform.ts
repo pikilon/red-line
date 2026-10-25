@@ -22,8 +22,9 @@ import { type Elevation, flatElevation, SHADING_RELIEF } from "./elevation";
 
 /** Seconds a crater takes to reach its full depth. */
 export const CRATER_RISE_MS = 350;
-/** Deepest total sink of any point, in tiles. */
-export const MAX_SINK = 0.5;
+/** Deepest total sink of any point, in tiles: well under the 0.5-tile
+ *  scout/Humvee height, even with the sink under a moving vehicle on top. */
+export const MAX_SINK = 0.2;
 /** Highest a crater rim can pile up, in tiles. */
 export const MAX_RISE = 0.2;
 /** Deepest sink a vehicle's weight alone digs on fully soft ground, in tiles. */
@@ -51,6 +52,12 @@ const OUTER = 1.6;
 /** Outline wobble of a crater (share of its radius) so no two are circles. */
 const WOBBLE = [0.06, 0.04, 0.03] as const;
 const WOBBLE_LOBES = [2, 3, 5] as const;
+/** Edge mini craters: every hole this size or larger gets 3 or 4 of them,
+ *  spread unevenly around the rim. They break the circular outline and make
+ *  repeated hits read as a shelled patch instead of one smooth well. */
+const SATELLITE_FROM_RADIUS = 0.6;
+const SATELLITE_MIN_RADIUS = 0.2;
+const SATELLITE_RIM = 0.2;
 
 /** Damp, turned-up soil is darker: brightness lost at `DARKEN_DEPTH` of sink. */
 const DARKEN = 0.45;
@@ -139,13 +146,19 @@ export interface TerrainDeformer {
   stats(): DeformStats;
 }
 
-interface Job {
+/** One bowl of a crater: the main hole or one of its edge mini craters. */
+interface Bowl {
   x: number;
   z: number;
   radius: number;
   depth: number;
   rim: number;
   phases: readonly [number, number, number];
+}
+
+interface Job extends Bowl {
+  /** Small craters bitten out of the rim so no two holes look like circles. */
+  satellites: readonly Bowl[];
   startMs: number;
   applied: number;
 }
@@ -185,6 +198,42 @@ function createWobbleRng(seed: number): () => number {
     state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
     return state / 0x100000000;
   };
+}
+
+/** Three or four smaller bowls around a crater rim. Their sizes, depths and
+ *  spacing vary, so repeated hits on one spot never stack into a clean circle.
+ *  Tiny holes (wrecks, dents) are left alone. */
+function satelliteBowls(
+  x: number,
+  z: number,
+  radius: number,
+  depth: number,
+  random: () => number,
+): Bowl[] {
+  if (radius < SATELLITE_FROM_RADIUS) return [];
+  const tau = Math.PI * 2;
+  const count = 3 + Math.floor(random() * 2);
+  const sector = tau / count;
+  const base = random() * tau;
+  const bowls: Bowl[] = [];
+  for (let i = 0; i < count; i++) {
+    // A jittered ring: all sides get a bite, but never at even spacing.
+    const angle = base + i * sector + (random() - 0.5) * sector * 0.7;
+    const distance = radius * (0.92 + random() * 0.25);
+    const miniRadius = Math.max(
+      SATELLITE_MIN_RADIUS,
+      radius * (0.16 + random() * 0.14),
+    );
+    bowls.push({
+      x: x + Math.cos(angle) * distance,
+      z: z + Math.sin(angle) * distance,
+      radius: miniRadius,
+      depth: depth * (0.35 + random() * 0.25),
+      rim: SATELLITE_RIM,
+      phases: [random() * tau, random() * tau, random() * tau],
+    });
+  }
+  return bowls;
 }
 
 /** The pooled fine patches drawn over one coarse ground mesh. */
@@ -501,34 +550,59 @@ export function attachTerrainDeformer(
     ];
   }
 
-  /** Adds `fraction` of a crater's profile to the fine crater field. */
-  function digCrater(job: Job, fraction: number): void {
+  /** Tile rectangle that covers the main bowl and all its mini craters. */
+  function craterTilesFor(
+    bowls: readonly Bowl[],
+  ): [number, number, number, number] {
+    let tx0 = width - 1;
+    let tz0 = height - 1;
+    let tx1 = 0;
+    let tz1 = 0;
+    for (const bowl of bowls) {
+      const [x0, z0, x1, z1] = craterTiles(bowl.x, bowl.z, bowl.radius);
+      tx0 = Math.min(tx0, x0);
+      tz0 = Math.min(tz0, z0);
+      tx1 = Math.max(tx1, x1);
+      tz1 = Math.max(tz1, z1);
+    }
+    return [tx0, tz0, tx1, tz1];
+  }
+
+  /** Adds `fraction` of one bowl to the fine crater field. */
+  function digBowl(bowl: Bowl, fraction: number): void {
     const field = craterField();
-    const [tx0, tz0, tx1, tz1] = craterTiles(job.x, job.z, job.radius);
+    const [tx0, tz0, tx1, tz1] = craterTiles(bowl.x, bowl.z, bowl.radius);
     for (let fz = tz0 * SUB; fz <= (tz1 + 1) * SUB; fz++) {
       for (let fx = tx0 * SUB; fx <= (tx1 + 1) * SUB; fx++) {
         const px = fx / SUB;
         const pz = fz / SUB;
-        const dx = px - job.x;
-        const dz = pz - job.z;
+        const dx = px - bowl.x;
+        const dz = pz - bowl.z;
         const angle = Math.atan2(dz, dx);
         let scale = 1;
         for (let k = 0; k < WOBBLE.length; k++) {
           scale +=
             (WOBBLE[k] ?? 0) *
-            Math.sin((WOBBLE_LOBES[k] ?? 1) * angle + (job.phases[k] ?? 0));
+            Math.sin((WOBBLE_LOBES[k] ?? 1) * angle + (bowl.phases[k] ?? 0));
         }
-        const t = Math.hypot(dx, dz) / (job.radius * scale);
+        const t = Math.hypot(dx, dz) / (bowl.radius * scale);
         if (t >= OUTER) continue;
         // Only samples inside refined tiles may move; on their outline the
         // field stays zero so patches meet the coarse ground exactly.
         if (!movable(fx, fz)) continue;
-        const shape = craterProfile(t, job.rim) * job.depth * fraction;
+        const shape = craterProfile(t, bowl.rim) * bowl.depth * fraction;
         const index = fz * fineWidth + fx;
         const next = (field[index] ?? 0) + shape * maskAt(px, pz);
         field[index] = Math.min(MAX_RISE, Math.max(-MAX_SINK, next));
       }
     }
+  }
+
+  /** Adds `fraction` of a crater and its edge mini craters to the field. */
+  function digCrater(job: Job, fraction: number): void {
+    digBowl(job, fraction);
+    for (const satellite of job.satellites) digBowl(satellite, fraction);
+    const [tx0, tz0, tx1, tz1] = craterTilesFor([job, ...job.satellites]);
     mark(tx0, tz0, tx1 + 1, tz1 + 1);
   }
 
@@ -784,7 +858,17 @@ export function attachTerrainDeformer(
   return {
     crater(x, z, radius, depth, startMs, rim = RIM_RATIO) {
       if (radius <= 0 || depth <= 0) return false;
-      const [tx0, tz0, tx1, tz1] = craterTiles(x, z, radius);
+      const tau = Math.PI * 2;
+      const main: Bowl = {
+        x,
+        z,
+        radius,
+        depth,
+        rim,
+        phases: [wobble() * tau, wobble() * tau, wobble() * tau],
+      };
+      const satellites = satelliteBowls(x, z, radius, depth, wobble);
+      const [tx0, tz0, tx1, tz1] = craterTilesFor([main, ...satellites]);
       for (let tz = tz0; tz <= tz1; tz++) {
         for (let tx = tx0; tx <= tx1; tx++) {
           if (rockAt(tx, tz)) continue;
@@ -795,17 +879,7 @@ export function attachTerrainDeformer(
         const oldest = jobs.shift();
         if (oldest !== undefined) digCrater(oldest, 1 - oldest.applied);
       }
-      const tau = Math.PI * 2;
-      jobs.push({
-        x,
-        z,
-        radius,
-        depth,
-        rim,
-        phases: [wobble() * tau, wobble() * tau, wobble() * tau],
-        startMs,
-        applied: 0,
-      });
+      jobs.push({ ...main, satellites, startMs, applied: 0 });
       return true;
     },
 
