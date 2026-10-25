@@ -14,7 +14,7 @@ import {
   Vector3,
 } from "three";
 import { ISOMETRIC_ELEVATION } from "../camera";
-import { typeDef } from "../rules";
+import { typeDef, WEAPONS, type WeaponDef } from "../rules";
 import {
   ENTITY_FLAGS,
   type EntityState,
@@ -45,14 +45,6 @@ export const EFFECT_KINDS = [
 ] as const;
 export type EffectKind = (typeof EFFECT_KINDS)[number];
 
-/** Weapon fields used to pick and size a shot effect; `data/` is the source. */
-interface WeaponDef {
-  damageType: number;
-  splashCenti: number;
-  projectileTicks: number;
-}
-
-const WEAPONS = ruleset.weapons as readonly WeaponDef[];
 const DAMAGE_TYPES = ruleset.damageTypes as readonly string[];
 
 /** Tiles from the shooter to the muzzle flash (spec 07 §3). */
@@ -209,6 +201,9 @@ const BILLBOARD_KINDS: ReadonlySet<EffectKind> = new Set([
   ...PUFF_KINDS,
   "backblast",
 ]);
+
+/** Real ms debris slides before it rests (spec 17 §7.5). */
+const DEBRIS_THROW_MS = 600;
 
 /** Gravity on a thrown clod, tiles/s²: heavier-looking than blood drops. */
 const CLOD_GRAVITY = 7;
@@ -578,8 +573,15 @@ export function createEffects(): Effects {
             pz,
           );
         } else {
-          // Effects sit on the ground where they spawned (spec 30 §4).
-          position.set(instance.x, instance.base + instance.z, instance.y);
+          // Effects sit on the ground where they spawned (spec 30 §4). Debris
+          // kicked by a death slides a short way and rests (spec 17 §7.5).
+          const travel =
+            (DEBRIS_THROW_MS / 1000) * easeOut(elapsed / DEBRIS_THROW_MS);
+          position.set(
+            instance.x + instance.vx * travel,
+            instance.base + instance.z,
+            instance.y + instance.vy * travel,
+          );
         }
         if (kind === "droplet") {
           // A thin streak lying along the way it flies (its velocity now).
@@ -651,21 +653,64 @@ export function createEffects(): Effects {
   };
 }
 
-/** One shot effect per `fired` entity: a muzzle flash plus an impact, a blast
- *  or a delayed explosion sized by the shooter weapon's damage type
- *  (spec 07 §3, AC-07-02). A target missing from the snapshot draws only the
- *  muzzle. */
+/** The spec 07 explosion of `weapon` at (x, y): its splash size, 1.5× for a
+ *  thermobaric warhead. Returns the size in tiles. */
+function spawnExplosion(
+  effects: Effects,
+  weapon: WeaponDef,
+  x: number,
+  y: number,
+  startMs: number,
+): number {
+  const damageType = DAMAGE_TYPES[weapon.damageType] ?? "";
+  const base = Math.max(MIN_EXPLOSION_SIZE, weapon.splashCenti / 100);
+  const size = damageType === "thermobaric" ? base * THERMOBARIC_SCALE : base;
+  effects.spawn("explosion", { x, y, size, startMs });
+  return size;
+}
+
+/** The spec 07 shot effect of a detonation at the event position (spec 17
+ *  §7.4): an impact, a blast or an explosion, with no delay. A ballistic miss
+ *  explodes on the ground where it landed. */
+export function spawnDetonationEffect(
+  effects: Effects,
+  weaponIndex: number,
+  x: number,
+  y: number,
+  nowMs = 0,
+): void {
+  const weapon = WEAPONS[weaponIndex];
+  if (weapon === undefined) return;
+  const damageType = DAMAGE_TYPES[weapon.damageType] ?? "";
+  if (damageType === "smallArms" || damageType === "autocannon") {
+    effects.spawn("impact", { x, y, startMs: nowMs });
+  } else if (damageType === "antiTank") {
+    effects.spawn("blast", { x, y, startMs: nowMs });
+  } else if (damageType === "highExplosive" || damageType === "thermobaric") {
+    spawnExplosion(effects, weapon, x, y, nowMs);
+  }
+}
+
+/** One shot effect per `fired` entity with a hit-scan weapon: a muzzle flash
+ *  plus an impact, a blast or an explosion sized by the shooter weapon's damage
+ *  type (spec 07 §3, AC-07-02). Projectile weapons draw nothing here: their
+ *  launch effects and detonations come from the combat snapshot (spec 17
+ *  §7.4, §7.6). A target missing from the snapshot draws only the muzzle. */
 export function spawnShotEffects(
   snapshot: MatchSnapshot,
   effects: Effects,
   nowMs = 0,
   onExplosion?: (x: number, y: number, size: number, startMs: number) => void,
+  weapons: readonly WeaponDef[] = WEAPONS,
 ): void {
   const byId = new Map<number, EntityState>();
   for (const entity of snapshot.entities) byId.set(entity.id, entity);
 
   for (const shooter of snapshot.entities) {
     if (!hasFlag(shooter, ENTITY_FLAGS.fired)) continue;
+    const weapon = weapons[typeDef(shooter.kind).weapon];
+    if (weapon === undefined) continue;
+    if (weapon.speedCenti !== 0 || weapon.projectileTicks !== 0) continue;
     const target =
       shooter.target === null ? null : (byId.get(shooter.target) ?? null);
 
@@ -687,24 +732,20 @@ export function spawnShotEffects(
     });
     if (target === null) continue;
 
-    const weapon = WEAPONS[typeDef(shooter.kind).weapon];
-    if (weapon === undefined) continue;
-    const damageType = DAMAGE_TYPES[weapon.damageType];
+    const damageType = DAMAGE_TYPES[weapon.damageType] ?? "";
     if (damageType === "smallArms" || damageType === "autocannon") {
       effects.spawn("impact", { x: target.x, y: target.y, startMs: nowMs });
     } else if (damageType === "antiTank") {
       effects.spawn("blast", { x: target.x, y: target.y, startMs: nowMs });
     } else if (damageType === "highExplosive" || damageType === "thermobaric") {
       const delayMs = (weapon.projectileTicks / TICKS_PER_SECOND) * 1000;
-      const base = Math.max(MIN_EXPLOSION_SIZE, weapon.splashCenti / 100);
-      const size =
-        damageType === "thermobaric" ? base * THERMOBARIC_SCALE : base;
-      effects.spawn("explosion", {
-        x: target.x,
-        y: target.y,
-        size,
-        startMs: nowMs + delayMs,
-      });
+      const size = spawnExplosion(
+        effects,
+        weapon,
+        target.x,
+        target.y,
+        nowMs + delayMs,
+      );
       onExplosion?.(target.x, target.y, size, nowMs + delayMs);
     }
   }

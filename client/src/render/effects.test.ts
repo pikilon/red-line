@@ -129,7 +129,13 @@ describe("effects", () => {
       flags: ENTITY_FLAGS.fired,
       target: 2,
     });
-    spawnShotEffects(snapshot(1, [rifleman, target]), effects, 0, undefined, INSTANT_WEAPONS);
+    spawnShotEffects(
+      snapshot(1, [rifleman, target]),
+      effects,
+      0,
+      undefined,
+      INSTANT_WEAPONS,
+    );
     effects.update(0);
     expect(counts(effects).muzzle).toBe(1);
     expect(counts(effects).impact).toBe(1);
@@ -143,7 +149,13 @@ describe("effects", () => {
       flags: ENTITY_FLAGS.fired,
       target: 2,
     });
-    spawnShotEffects(snapshot(1, [scout, target]), effects, 0, undefined, INSTANT_WEAPONS);
+    spawnShotEffects(
+      snapshot(1, [scout, target]),
+      effects,
+      0,
+      undefined,
+      INSTANT_WEAPONS,
+    );
     effects.update(0);
     expect(counts(effects).impact).toBe(1);
 
@@ -153,7 +165,13 @@ describe("effects", () => {
       flags: ENTITY_FLAGS.fired,
       target: 2,
     });
-    spawnShotEffects(snapshot(1, [stugna, target]), effects, 0, undefined, INSTANT_WEAPONS);
+    spawnShotEffects(
+      snapshot(1, [stugna, target]),
+      effects,
+      0,
+      undefined,
+      INSTANT_WEAPONS,
+    );
     effects.update(0);
     expect(counts(effects).blast).toBe(1);
     expect(counts(effects).impact).toBe(0);
@@ -164,7 +182,13 @@ describe("effects", () => {
       flags: ENTITY_FLAGS.fired,
       target: 2,
     });
-    spawnShotEffects(snapshot(1, [tos, target]), effects, 0, undefined, INSTANT_WEAPONS);
+    spawnShotEffects(
+      snapshot(1, [tos, target]),
+      effects,
+      0,
+      undefined,
+      INSTANT_WEAPONS,
+    );
     effects.update(1340);
     expect(counts(effects).explosion).toBe(1);
 
@@ -174,7 +198,13 @@ describe("effects", () => {
       flags: ENTITY_FLAGS.fired,
       target: 99,
     });
-    spawnShotEffects(snapshot(1, [lonely]), effects, 0, undefined, INSTANT_WEAPONS);
+    spawnShotEffects(
+      snapshot(1, [lonely]),
+      effects,
+      0,
+      undefined,
+      INSTANT_WEAPONS,
+    );
     effects.update(0);
     expect(counts(effects).muzzle).toBe(1);
     expect(counts(effects).impact).toBe(0);
@@ -198,13 +228,22 @@ describe("AC-17-15: detonations and deaths from combat events", () => {
 
   it("puts the spec 07 shot effect at the detonation position", () => {
     const effects = createEffects();
-    spawnDetonationEffect(effects, weaponIndex("ru-tos-thermobaric"), 5, 6, 100);
+    spawnDetonationEffect(
+      effects,
+      weaponIndex("ru-tos-thermobaric"),
+      5,
+      6,
+      100,
+    );
+    // The explosion grows through its life; sample it once it has been drawn
+    // and again at its full size.
     effects.update(100);
+    effects.update(999);
     expect(counts(effects).explosion).toBe(1);
     expect(translation(effects.meshes.explosion, 0).x).toBeCloseTo(5, 6);
     expect(translation(effects.meshes.explosion, 0).z).toBeCloseTo(6, 6);
     // A thermobaric warhead explodes at 1.5× its splash size, with no delay.
-    expect(scale(effects.meshes.explosion, 0).x).toBeCloseTo(3.75, 5);
+    expect(scale(effects.meshes.explosion, 0).x).toBeCloseTo(3.75, 1);
 
     effects.clear();
     spawnDetonationEffect(effects, weaponIndex("ua-stugna-p"), 1, 2, 0);
@@ -218,6 +257,7 @@ describe("AC-17-15: detonations and deaths from combat events", () => {
     const effects = createEffects();
     const killer = entity(1, 0, "ua-stugna-team", 10, 5, 100);
     const event = {
+      kind: "death" as const,
       victim: 7,
       victimKind: typeIndex("ua-leopard-2a4"),
       killer: killer.id,

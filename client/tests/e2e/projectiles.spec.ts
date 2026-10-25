@@ -76,12 +76,12 @@ async function clickTiles(
   button: "left" | "right" = "left",
 ): Promise<void> {
   const point = await page.evaluate(
-    ([px, py]) =>
-      (window as DebugWindow).__redline?.worldToScreen(px, py) ?? {
+    (tiles: [number, number]) =>
+      (window as DebugWindow).__redline?.worldToScreen(tiles[0], tiles[1]) ?? {
         x: -1,
         y: -1,
       },
-    [x, y],
+    [x, y] as [number, number],
   );
   await page.mouse.click(point.x, point.y, { button });
 }
@@ -151,8 +151,9 @@ test("AC-17-16: projectiles in the skirmish", async ({ page }) => {
   }
 
   await page.evaluate(
-    ([x, y]) => (window as DebugWindow).__redline?.setCameraTarget(x, y),
-    [launcher.x, launcher.y],
+    ([x, y]: [number, number]) =>
+      (window as DebugWindow).__redline?.setCameraTarget(x, y),
+    [launcher.x, launcher.y] as [number, number],
   );
   await clickTiles(page, launcher.x, launcher.y);
   await expect
@@ -166,8 +167,9 @@ test("AC-17-16: projectiles in the skirmish", async ({ page }) => {
     .toBeGreaterThan(0);
 
   await page.evaluate(
-    ([x, y]) => (window as DebugWindow).__redline?.setCameraTarget(x, y),
-    [building.x, building.y],
+    ([x, y]: [number, number]) =>
+      (window as DebugWindow).__redline?.setCameraTarget(x, y),
+    [building.x, building.y] as [number, number],
   );
   await page.waitForTimeout(ms(200));
   await clickTiles(page, building.x, building.y, "right");
