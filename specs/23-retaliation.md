@@ -15,8 +15,9 @@
   5.5 tiles of the victim.
 * The chase ends like any attack order: when the shooter dies or gets more than 9
   tiles away, the unit goes idle (and then auto-targets as usual).
-* A friendly blast that hits a unit does not trigger retaliation: the aggressor
-  is on the victim's side (owner request 2026-10-25 makes such blasts possible).
+* A friendly hit (blast or direct shell) does not trigger retaliation: the
+  aggressor is on the victim's side (owner request 2026-10-25 makes such hits
+  possible).
 
 ## 2. Simulation
 

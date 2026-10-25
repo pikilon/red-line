@@ -219,9 +219,11 @@ Then every projectile with `impact_tick == tick` resolves and is removed:
 * **Homing, `splash == 0`:** spec 03 behaviour. The target, if it exists with
   `hp > 0`, takes the hit; `hit = Some(target)`.
 * **Ballistic, `splash == 0`:** the direct hit is the entity with `hp > 0`,
-  owner neither the shooter's owner nor `NEUTRAL`, `modifier > 0`, and the
-  smallest entity distance from `impact`, as long as that distance is
-  `<= fx_centi(DIRECT_HIT_CENTI)`. Ties go to the lowest id. If there is no
+  not the shooter, not `NEUTRAL`, `modifier > 0`, and the smallest entity
+  distance from `impact`, as long as that distance is
+  `<= fx_centi(DIRECT_HIT_CENTI)`. It may belong to the shooter's side (owner
+  request 2026-10-25): a shell that lands on a friendly hurts it. Automatic
+  targeting still only picks enemies. Ties go to the lowest id. If there is no
   such entity, the projectile misses (`hit = None`).
 * **`splash > 0`** (either delivery): spec 03 splash around `impact`;
   every player-owned entity in radius takes it, friend or foe (owner request

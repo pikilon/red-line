@@ -543,6 +543,25 @@ fn attack_ground_shells_a_point_and_ignores_other_targets() {
 }
 
 #[test]
+fn a_ground_shot_hurts_a_friendly_unit_at_the_impact_point() {
+    // Owner request 2026-10-25: a cannon shell that lands on a friendly unit
+    // damages it. Auto-targeting still only picks enemies, so this is a force
+    // fire at the ground under the friendly.
+    let mut world = sandbox();
+    let tank = world.spawn(0, 10, at(550, 1050));
+    let friend = world.spawn(0, 7, at(550, 1600));
+    world.enqueue_as(
+        0,
+        Command::AttackGround {
+            units: vec![tank],
+            target: at(550, 1600),
+        },
+    );
+    steps(&mut world, 5);
+    assert_eq!(world.entity(friend).unwrap().hp, 60);
+}
+
+#[test]
 fn attack_ground_out_of_range_approaches_until_in_range() {
     let mut world = sandbox();
     let mortar = world.spawn(0, 11, at(250, 1050));

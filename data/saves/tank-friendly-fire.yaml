@@ -1,0 +1,17 @@
+# Spec 03: a Leopard force-fires at a point while its own Kozak scout drives
+# into it. The first shell digs the crater; the next shells hit the friendly
+# scout inside it, so direct cannon fire hurts friendlies too.
+id: tank-friendly-fire
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 47, y: 19, zoom: 2.1 }
+entities:
+  - { player: 0, type: ua-hq, origin: [4, 30] }
+  - { player: 1, type: ru-hq, origin: [92, 30] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [4400, 2000], order: { attackGroundCenti: [4900, 1900] } }
+  - { player: 0, type: ua-kozak-scout, atCenti: [4300, 1900], order: { moveCenti: [4900, 1900] } }
