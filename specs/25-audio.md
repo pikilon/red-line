@@ -1,6 +1,7 @@
 # 25 — Voices and sound (plan)
 
-Status: proposed (owner request 2026-10-25). Plan only: no code in this change.
+Status: proposed (owner request 2026-10-25; revised 2026-10-25 with the
+reference-pack process). Plan only: no code in this change.
 Depends on `01-architecture.md` (audio lives in the client main thread),
 `07-phase4b-combat-effects.md` (combat events), `17-projectiles-and-combat-readability.md`,
 `19-save-games.md` (example saves).
@@ -11,10 +12,18 @@ Decisions: D-02 (the sim stays deterministic and untouched; assets are CC BY-SA
 
 The game is silent today (`00-vision.md` lists "Art and audio" as future,
 `07` §1 puts audio out of scope). The owner wants voices and sounds: unit voice
-lines (select, move, attack, under fire, dying) per faction and unit type with
-translation in mind, EVA/announcer lines, a sound for every weapon, impacts,
-explosions, vehicle engines and tracks, infantry footsteps, buildings, ambient,
-UI and music.
+lines (select, move, attack, under fire, dying) per faction and unit type,
+EVA/announcer lines, a sound for every weapon, impacts, explosions, vehicle
+engines and tracks, infantry footsteps, buildings, ambient, UI and music.
+
+**Process (owner, 2026-10-25).** First clone how Zero Hour's audio *behaves*
+(overlap, limits, mix, volume with camera zoom, stereo panning, unit movement,
+weapons), and tune it by ear using the owner's own Zero Hour sounds as a
+**local, private reference pack** that never enters the repository or a build.
+Once the behaviour is right, the same event list becomes the inventory and
+brief for generating our own sounds automatically. The Zero Hour sounds are
+scaffolding only: none ships, none is used as input to a generator (§4.2), and
+the final voices are Ukrainian and Russian, with strong language.
 
 ## 2. Precedent (Zero Hour) and the differences
 
@@ -84,91 +93,137 @@ and `INIZH.big` (Zero Hour 1.04). Facts unless marked inference.
 1. Add `underFire` and `die` unit voice events. They are throttled harder than
    any original event (§6) so they never become noise.
 2. Generated audio instead of EA's recorded assets (D-02 forbids EA's sounds).
-   The event table, flags and rules are copied; the content is original.
-3. i18n-ready voices (the original ships one language set per installation).
+   The event table, flags and rules are copied; the content is original. EA's
+   sounds are only a local reference while tuning (§4.2).
+3. Voices speak the faction's language (Ukrainian for Ukraine, Russian for
+   Russia) with strong language, and carry optional translated subtitles
+   (the original ships one language set per installation).
 4. The original's voice is on the unit's owner only as a UI sound; we keep it,
    but `underFire` and `die` are positional world sounds heard by the owner only
-   when on screen (an assumption, §12).
+   when on screen (an assumption, §13).
 
 ## 3. Scope and phases
 
 | Phase | Deliverable | Player-visible result |
 |---|---|---|
-| A. Engine | Audio layer, mixer, event table loader, settings, procedural placeholder voices, `?audio=debug` overlay | Every existing action makes a placeholder sound; volume sliders work |
-| B. SFX set | Procedural recipes for all combat/engine/UI/building sounds, throttling and priorities | A fight sounds like a fight; nothing is silent or deafening |
-| C. Voices + EVA | TTS pipeline, radio filter, unit voice sets for 28 types, EVA lines, `en` locale | Units answer orders, warn when hit; EVA announces base attacks and low power |
-| D. Baked SFX/music | AI SFX and music for the 6-8 sounds that matter most, music playlist with states | Weapon signatures and a soundtrack |
-| E. Polish | Ducking tuning, locale add-on proof (second language), bundle budget check, ambient per map | Mix is tuned; a second language works |
+| 1. Engine clone with reference pack | Local extractor for the owner's Zero Hour `.big` files (§4.2), event table loader, admission rules, voice rule, limits and priorities, buses and ducking, stereo pan, distance and zoom volume, fog cull, engine/track/footstep loops from unit speed, weapon fire/impact/explosion events, EVA queue, settings sliders, minimal procedural fallback, `?audio=debug` overlay, example save `audio-fight` | On the owner's machine a fight sounds and mixes like Zero Hour; elsewhere every action makes a simple placeholder sound; volume sliders work |
+| 2. Inventory and briefs | Listening review of every event on the debug page; `data/audio/inventory.yaml` with one written brief per event (what our sound should be, in our own words), variant counts, voice line scripts in Ukrainian and Russian | A complete, owner-approved list of what to make; nothing new to hear yet |
+| 3. Automated generation | `scripts/audio/gen.mjs` pipeline (§4.5): SFX (libraries + local model), voices (uk/ru TTS, radio filter, strong language), EVA per faction, music; each generated sound replaces its reference entry | The game ships with its own sounds; the reference pack is no longer needed |
+| 4. Polish | Mix retune with the final sounds, ambient per map, subtitles, bundle budget check, strong-language toggle | Mix is tuned; subtitles and the language filter work |
 
-Each phase is its own PR and example save. The owner approves by ear after A,
-C and D.
+Each phase is its own PR (phase 3 may split by content class: SFX, voices,
+EVA, music). The owner approves by ear after phases 1, 3 and 4. Phase 1 is
+the long one: the goal is that the *behaviour* is right before any of our own
+content exists, so phase 3 only swaps files and never re-tunes rules.
 
-## 4. Generation approach
+## 4. Content approach
 
 ### 4.1 Options
 
-| Content | Procedural Web Audio | AI generation (offline, baked to files) |
-|---|---|---|
-| UI beeps, clicks, EVA tones | Best: exact, tiny, themeable | Not needed |
-| Footsteps, tracks squeal, engine loops | Good: noise + oscillators + filters, pitch from speed | OK as a texture layer |
-| Weapon shots, impacts, explosions | Fair: needs layered noise bursts + sub thump + tail | Better: richer tails; needs curation |
-| Voices (select/move/attack/...) | Not possible | Required: TTS |
-| Music | Poor | Required: music model |
+| Content | Procedural Web Audio | Free libraries (CC0 / CC-BY) | AI generation (offline, baked to files) |
+|---|---|---|---|
+| UI beeps, clicks, EVA tones | Best: exact, tiny, themeable | Good (Kenney) | Not needed |
+| Footsteps, tracks squeal, engine loops | Good: noise + oscillators + filters, pitch from speed | Good (Freesound) | OK as a texture layer |
+| Weapon shots, impacts, explosions | Fair | Best: real recordings (Freesound) | Good for gaps; needs curation |
+| Voices (select/move/attack/...) | Not possible | Not possible | Required: TTS |
+| Music | Poor | Limited (OpenGameArt) | Required: music model |
 
-**Recommendation: hybrid.** Phase A-B ship procedural recipes for everything
-that is not speech or music (zero download, instant iteration, works offline).
-Phase C-D bake files for voices, music and the sounds where procedural is
-audibly poor. Procedural recipes stay as the fallback when a file is missing or
-still loading, and as the placeholder while a sound has not been generated.
-Procedural recipes are data too (§7), not hard-coded per sound.
+**Decision.** Phase 1 uses the local reference pack for listening and a
+minimal procedural fallback (one recipe per sound class) so builds without the
+pack are not silent. Phase 3 fills each event in this order: free library
+recording (CC0 or CC-BY only; CC-BY-NC, Pixabay, Mixkit, Zapsplat and the
+Sonniss GDC bundle are excluded because their terms do not fit CC BY-SA 4.0
+redistribution), else local AI generation, else a tuned procedural recipe.
+The procedural recipe stays as the fallback while a file is loading.
 
-### 4.2 Candidate tools (verify licence before adoption)
+### 4.2 Local reference pack (phase 1-2 only)
+
+* **Source.** The owner's own Zero Hour 1.04 install (owned copy). Files used:
+  `AudioZH.big`, `AudioEnglishZH.big`, `SpeechZH.big`, `SpeechEnglishZH.big`,
+  `MusicZH.big`, and `INIZH.big` for the event definitions, plus the Generals
+  base `.big` files the Zero Hour INIs still reference. Path given once to the
+  extractor (`--zh <dir>`; the owner's is on the external disk under
+  `download zero hour/.../Command & Conquer Generals Zero Hour`) and
+  remembered in the gitignored `.env.local` as `ZH_DIR`.
+* **Extractor.** `scripts/audio/zh-ref.mjs` (new, local only, never in CI)
+  reads the BIG archives (`BIGF` header, big-endian directory of
+  offset/size/name), parses the audio INIs and writes:
+  * `.local/audio-ref/<zh file>` the referenced `.wav`/`.mp3` files, as is;
+  * `.local/audio-ref/zh-events.json` the parsed Zero Hour events (fields of
+    §2) for the debug page.
+* **Mapping.** `data/audio/reference.yaml` (committed) maps our event ids to
+  Zero Hour *event names* only (for example `weapon.t72.fire: CrusaderTankWeapon`).
+  It contains names, no audio. Our own event fields (`volume`, `limit`,
+  `pitchShift`...) are written in `events.yaml` using Zero Hour's numbers as
+  the starting point, cited per event.
+* **Serving.** The files live outside `client/public/`, so Vite never copies
+  them into a build. A dev-server-only middleware serves `/audio-ref/*` from
+  `.local/audio-ref/` (`apply: 'serve'`); production builds and
+  `deploy:pages` cannot contain them. The loader resolves an event: our file
+  (phase 3) -> reference file (dev, pack present) -> procedural fallback.
+* **Guards.** `.local/` is gitignored; `check:audio` fails if any tracked file
+  sits under `.local/audio-ref/` or if the client build output contains an
+  `audio-ref` path.
+* **Not an input.** Reference files are only for listening and A/B comparison.
+  They are never fed to a generator (no audio-to-audio, no voice cloning, no
+  stems), and briefs in phase 2 describe the sound in our own words.
+
+### 4.3 Candidate tools (verify licence before adoption)
 
 Licence rule: only tools whose outputs may ship under CC BY-SA 4.0. Each
-generated file records its tool, model, model licence and prompt in the
-manifest (§7.3) so `NOTICE.md` stays accurate.
+generated or downloaded file records its source (library URL and author, or
+tool, model, model licence, prompt and seed) in the manifest so `NOTICE.md`
+stays accurate; CC-BY sources are credited there.
 
-* **Speech (TTS), local:** Kokoro-82M (Apache-2.0, small, multi-language, runs
-  on CPU/MPS), Chatterbox (MIT, expressive, voice control), Piper (fast,
-  voices have individual licences: check each). Avoid models with
-  non-commercial clauses (XTTS) and never clone a real person's voice.
-  Cloud TTS (ElevenLabs etc.) is acceptable only if its terms allow shipping
-  the output in an open-licensed game: owner's call, not assumed.
-* **SFX, local:** Stable Audio Open 1.0 (text to SFX/loops up to ~47 s; Stability
-  Community Licence, check terms; ComfyUI has native Stable Audio nodes).
-  AudioLDM2 / MMAudio as alternatives (check licence).
+* **Speech (TTS), local, Ukrainian and Russian:** Piper has `uk_UA` and
+  `ru_RU` voices (each voice has its own licence: check each); Chatterbox
+  Multilingual (MIT) covers Russian, Ukrainian to verify; other open
+  Ukrainian TTS projects to evaluate in phase 3. Kokoro does not cover either
+  language. Avoid non-commercial models (XTTS, Silero) and never clone a real
+  person's voice. Cloud TTS is acceptable only if its terms allow shipping the
+  output in an open-licensed game: owner's call, not assumed. Some TTS models
+  soften or refuse profanity; the phase 3 pick is tested with the strong
+  language lines first.
+* **Script writing:** voice and EVA lines are drafted with a text model
+  (OpenRouter or local), reviewed by the owner, and committed as text.
+* **SFX, libraries:** Freesound.org (CC0 and CC-BY filters), Kenney.nl (CC0),
+  OpenGameArt.org (CC0, CC-BY, CC-BY-SA).
+* **SFX, local model:** Stable Audio Open 1.0 (text to SFX/loops up to ~47 s;
+  Stability Community Licence, check terms; ComfyUI has native Stable Audio
+  nodes). AudioLDM2 / MMAudio as alternatives (check licence).
 * **Music, local:** ACE-Step (Apache-2.0; ComfyUI template available) for
   instrumental loops; Stable Audio Open for short stingers.
 * **Post-processing:** `ffmpeg` (present: `/opt/homebrew/bin/ffmpeg`) for the
   radio filter, loudness normalization (EBU R128), trimming, loop crossfades and
   encoding. `sox` is not installed and is not needed.
 
-### 4.3 What exists locally (checked, nothing heavy run)
+### 4.4 What exists locally (checked, nothing heavy run)
 
 * ComfyUI core v0.39.0 at `~/.local/share/comfyui/ComfyUI` (comfy-cli 1.22),
   server **not running**, **no audio checkpoints** (the `checkpoints`,
   `audio_encoders`, `text_encoders` folders are empty) and only the example
   custom node. Machine: Apple M2 Max, 64 GB unified memory: enough for Stable
-  Audio Open, ACE-Step and Kokoro locally.
-* So Phase C-D start by downloading models (hundreds of MB to a few GB each),
+  Audio Open, ACE-Step and the TTS candidates locally.
+* So phase 3 starts by downloading models (hundreds of MB to a few GB each),
   which needs the owner's go-ahead per download (name, source, size).
-  Kokoro/Piper can also run as plain Python via `uv` without ComfyUI.
+  Piper can also run as plain Python via `uv` without ComfyUI.
 
-### 4.4 Workflow (reproducible, offline from the game's point of view)
+### 4.5 Generation workflow (phase 3; offline from the game's point of view)
 
-1. **Script.** Voice and EVA text lives in `client/src/i18n/` keys (§5.3); the
-   generator reads it, so translation and generation share one source.
+1. **Brief and script.** `data/audio/inventory.yaml` (phase 2) holds the brief
+   per event; voice and EVA lines live in `data/audio/lines/<faction>.yaml`
+   in the faction's language (§5.3).
 2. **Generate.** `scripts/audio/gen.mjs` (new, runs locally only, never in CI)
-   reads `data/audio/*.yaml`, calls the chosen tool for every event whose output
-   file is missing or whose prompt/script hash changed, N takes per line.
+   reads the inventory and calls the chosen source for every event whose output
+   file is missing or whose brief/script hash changed, N takes per line.
 3. **Process.** ffmpeg chain per class: voices: band-pass 300-3400 Hz, soft
    clip, short noise squelch head/tail ("radio" look), loudness -20 LUFS;
    SFX: trim, peak -3 dBFS, short fades; loops: crossfade join.
-4. **Review.** The owner listens through a contact sheet page
-   (`?audio=debug` or a static page) with a keep/reject toggle per take.
+4. **Review.** The owner listens on the debug page with our take and the
+   reference side by side (dev only) and a keep/reject toggle per take.
    Rejected takes are regenerated with a new seed; seeds are in the manifest.
 5. **Commit.** Encoded files under `client/public/audio/`, manifest
-   `data/audio/manifest.json` (file, hash, tool, seed, licence). CI only
+   `data/audio/manifest.json` (file, hash, source, seed, licence). CI only
    validates that every event's files exist and the manifest matches
    (`check:audio`, new), never generates.
 
@@ -190,7 +245,11 @@ manifest (§7.3) so `NOTICE.md` stays accurate.
 * `eva.yaml`: EVA events: `priority`, `cooldownMs`, `expireMs` (Zero Hour's
   `TimeBetweenChecksMS`, `ExpirationTimeMS`), lines per faction.
 * `mix.yaml`: bus volumes, ducking rules, global limits (§9), music states.
-* `manifest.json`: generated, lists files and provenance (§4.4).
+* `reference.yaml`: our event id -> Zero Hour event name, for the local
+  reference pack (§4.2); names only, no audio.
+* `inventory.yaml` (phase 2): per event, the written brief, variant count and
+  approval state; the generator's input.
+* `manifest.json`: generated, lists files and provenance (§4.5).
 * Schema in `data/schema/` (same validator as the rules), checked by
   `check:audio`.
 
@@ -209,22 +268,24 @@ fall back through a chain so every weapon sounds like something:
   Movement: `move.<locomotor>` (engine loop, tracks, footsteps).
 * Building: `building.<typeId>.<place|complete|working|die>` -> by category.
 
-### 5.3 i18n
+### 5.3 Voice language, strong language and subtitles
 
-* Each spoken line is a message in `client/src/i18n/<locale>.json` under keys
-  `voice.<set>.<event>.<n>` and `eva.<event>.<n>` (player-facing strings go
-  through `client/src/i18n/`; the file is also the TTS script and the optional
-  subtitle). Messages use ASCII ids, text in the locale.
-* Audio files per locale: `audio/<locale>/voice/<set>/<event>_<n>.webm`,
-  `audio/<locale>/eva/<event>_<n>.webm`. Non-speech audio is shared by all
-  locales.
-* Resolution: current locale file, else `en`, else the procedural fallback.
-  Lines of the `n` variants may differ in number per locale; the table stores
-  counts from the manifest, not code.
-* Assumption: v1 ships `en` only, with faction flavour in the words and
-  voice (Russian-sounding vs Ukrainian-sounding accent where the TTS allows),
-  not in a different language; adding `es`, `ru`, `uk` is "add keys + run the
-  generator for that locale" with no code change.
+* **Spoken language is the faction's**, independent of the UI locale:
+  Ukrainian units and EVA speak Ukrainian, Russian ones speak Russian. The
+  lines are audio content, so their source text lives in
+  `data/audio/lines/<faction>.yaml` (`<set>.<event>: [{ id, text, explicit }]`),
+  which is also the TTS script.
+* **Strong language.** Lines are written as soldiers talk, profanity included.
+  Each line carries `explicit: true|false`; every event keeps at least one
+  clean variant. A "Strong language" setting (on by default, next to the gore
+  filter of D-03) excludes `explicit` variants when off.
+* **Subtitles** (phase 4, off by default) are player-facing text, so they go
+  through `client/src/i18n/<locale>.json` under `voice.<faction>.<set>.<event>.<id>`
+  and `eva.<faction>.<event>.<id>`; a missing translation falls back to `en`,
+  then to no subtitle.
+* Audio files: `audio/voice/<faction>/<set>/<event>_<id>.webm`,
+  `audio/eva/<faction>/<event>_<id>.webm`. Variant counts come from the
+  manifest, not code.
 
 ## 6. Runtime behaviour (copied from Zero Hour)
 
@@ -261,8 +322,12 @@ fall back through a chain so every weapon sounds like something:
    client-side RNG (`Math.random` is allowed in the client; it never touches
    the sim).
 
-## 7. Procedural recipes (Phase A-B)
+## 7. Procedural recipes (fallback, phase 1; tuned where used, phase 3)
 
+* Phase 1 ships one minimal recipe per sound class (click, shot, impact,
+  explosion, engine, footstep, voice blip) so builds without the reference
+  pack are never silent. Recipes for events that end up procedural in phase 3
+  are tuned then.
 * A recipe is data in `data/audio/synth/*.yaml`: a small graph (oscillator or
   noise source, filter, envelope, optional layers and a convolver tail) that the
   client turns into an `AudioBuffer` once at load (offline render with
@@ -342,9 +407,11 @@ fall back through a chain so every weapon sounds like something:
   `move`, `attack`, `underFire`, `die`, `created`; 4-5 variants for
   `select|move|attack`, 3 for `underFire|die`, 1-2 for `created`. Sets are
   shared by role (rifleman, anti-tank, scout, apc/ifv, tank, artillery,
-  engineer, truck), flavoured per faction: 8 sets x 2 factions x ~22 lines.
-  Vehicles use a shorter radio-style line ("Acknowledged", "On my way").
-* **EVA**: ~20 events per faction voice (the EVA voice differs per faction).
+  engineer, truck), flavoured per faction: 8 sets x 2 factions x ~22 lines,
+  in Ukrainian or Russian with strong language (§5.3). Vehicles use a shorter
+  radio-style line.
+* **EVA**: ~20 events per faction voice (the EVA voice differs per faction and
+  speaks its language).
 * **Weapons:** the 7 current weapon ids per faction (rifle, RPG, heavy MG,
   autocannon, tank gun, thermobaric, ATGM, ...) get a `fire` event; shared
   `impact` and `explosion` families by size, material and damage type.
@@ -363,13 +430,13 @@ fall back through a chain so every weapon sounds like something:
 
 * Format: Opus in WebM (`.webm`), mono 24-32 kbps for voices, mono 48-64 kbps
   for SFX, stereo 96 kbps for music and long ambient loops. Browser support
-  for Opus-WebM (Chrome, Firefox, Safari) is verified in Phase A; the fallback
+  for Opus-WebM (Chrome, Firefox, Safari) is verified in phase 1; the fallback
   if Safari fails is AAC `.m4a` of the same files, chosen by the loader.
 * Short SFX are decoded once into `AudioBuffer`s (Zero Hour kept 4 MB of
   samples cached; our decoded budget is 64 MB, LRU, and the encoded budget is
   below). Music streams through a `MediaElementAudioSourceNode`.
 * Download budget (gzip is useless on Opus): core pack (UI, combat SFX,
-  shared) at most 4 MB; faction voices at most 3 MB per faction and locale,
+  shared) at most 4 MB; faction voices at most 3 MB per faction,
   lazy-loaded when a faction is picked; music at most 20 MB, streamed in the
   background; whole game audio under 35 MB. `check:audio` fails CI above these.
 * Preloading: core pack on game load, weapons/units of both factions before the
@@ -377,14 +444,19 @@ fall back through a chain so every weapon sounds like something:
 
 ## 13. Assumptions
 
-* Voices ship in English first; faction flavour through wording and voice
-  choice, and a second locale is a data-and-generate task (Phase E proves it).
+* The Zero Hour reference pack comes from the owner's own copy, stays on the
+  owner's machine, is served only by the dev server and is never committed,
+  built, deployed or used as generator input (§4.2). It is removed from the
+  loader chain once phase 3 covers every event.
+* Voices speak the faction's language (Ukrainian, Russian) with strong
+  language; a "Strong language" setting, on by default, switches to clean
+  variants. Subtitles are optional and translated through i18n.
 * `underFire` and `die` voices are positional world sounds heard by their
   owner only, on screen only; `select/move/attack` as in Zero Hour (UI,
   owner only, group leader speaks).
-* Generated audio is acceptable under D-02 if its model licence allows
-  redistribution; models are chosen per §4.2 and recorded in the manifest.
-  Model downloads need the owner's approval each time.
+* Library and generated audio is acceptable under D-02 if its licence allows
+  redistribution under CC BY-SA 4.0; sources are chosen per §4.3 and recorded
+  in the manifest. Model downloads need the owner's approval each time.
 * Music is generated instrumentals (no sung voices, no sound-alike of EA's
   themes).
 * The sim and `crates/sim` are untouched; any output-only snapshot additions are
@@ -392,11 +464,18 @@ fall back through a chain so every weapon sounds like something:
 
 ## 14. Verification plan (per phase)
 
-* Phase A: unit tests of admission rules (limit, voice rule, priority stealing,
-  EVA queue cooldown/expiry) with a fake clock; typecheck; example save
-  `audio-fight` (a skirmish with both factions, mixed units) to hear it.
-* Phase B-D: `check:audio` (schema, files exist, budgets, manifest); a listening
-  page `?audio=debug` listing every event with play buttons and the live voice
-  count; owner listens (visual-iteration rule: tests after approval).
-* Phase E: a locale smoke test (`es` pack with 3 lines resolves, falls back to
-  `en` for the rest).
+* Phase 1: unit tests of admission rules (limit, voice rule, priority stealing,
+  EVA queue cooldown/expiry), pan/distance/zoom gain curves, and the BIG
+  reader (on a tiny synthetic archive, not EA data) with a fake clock;
+  `check:audio` guard that nothing under `.local/audio-ref/` is tracked or
+  built; example save `audio-fight` (a skirmish with both factions, mixed
+  units); owner listens with the reference pack on `?audio=debug` (event list
+  with play buttons, live voice count, rejected/culled sounds).
+* Phase 2: `check:audio` validates that every event in `events.yaml` has an
+  inventory entry with a brief and that every line has an `explicit` flag and
+  each event a clean variant.
+* Phase 3: `check:audio` (schema, files exist, budgets, manifest, licence per
+  file); owner A/B listens our takes against the reference (visual-iteration
+  rule: tests after approval).
+* Phase 4: subtitle smoke test (a translated line resolves, falls back to
+  `en`); strong-language toggle excludes explicit variants.

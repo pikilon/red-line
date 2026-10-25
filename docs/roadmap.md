@@ -59,7 +59,7 @@ done), 4c animation and visual finish
 (`specs/09-phase4c-animation-and-finish.md`, P4-07..09, #186..#188, done).
 P4-10 (#189), the classic pixelated mode toggled with `V`, is postponed
 indefinitely by owner decision (2026-10-25); its spec is kept, not deleted.
-Still to specify: Hunyuan3D infantry, music and voices (`specs/25-audio.md`).
+Still to specify: Hunyuan3D infantry. Audio: `specs/25-audio.md` (phase 1 clones Zero Hour audio behaviour with a local reference pack; phase 3 generates our own sounds).
 4d Remastered look (`specs/10-phase4d-remastered-look.md`): style reference
 *Red Alert Remastered*; terrain textures, lighting and shadows, model detail
 and building death are done. The classic mode (§7) shares the P4-10
