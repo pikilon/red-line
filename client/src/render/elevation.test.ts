@@ -117,7 +117,7 @@ describe("elevation (spec 30)", () => {
     for (let i = 0; i < position.count; i++)
       top = Math.max(top, position.getY(i));
     expect(top).toBeCloseTo(2, 6);
-    expect(group.getObjectByName("cliff")).toBeDefined();
+    expect(grass.geometry.getAttribute("aCliff")).toBeDefined();
     const relief = terrainDeformerOf(group);
     expect(relief?.heightAt(2, 2)).toBeCloseTo(1, 6);
     relief?.crater(2, 2, 1.5, 0.2, 0);
@@ -129,7 +129,8 @@ describe("elevation (spec 30)", () => {
 
   it("AC-30-12: a flat map keeps the flat ground", () => {
     const group = createTerrain(2, 2, new Uint8Array(4), 1);
-    expect(group.getObjectByName("cliff")).toBeUndefined();
+    const flat = group.getObjectByName("grass") as Mesh;
+    expect(flat.geometry.getAttribute("aCliff")).toBeUndefined();
     expect(terrainDeformerOf(group)?.heightAt(1, 1)).toBe(0);
   });
 });

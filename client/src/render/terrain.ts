@@ -6,6 +6,7 @@ import {
   MeshLambertMaterial,
   type Texture,
   Uint32BufferAttribute,
+  Vector3,
 } from "three";
 import { type Elevation, flatElevation, SHADING_RELIEF } from "./elevation";
 import { attachTerrainDeformer, type TerrainDeformer } from "./terrainDeform";
@@ -170,6 +171,9 @@ function groundGeometry(
   elevation: Elevation,
 ): BufferGeometry {
   const withAlpha = layer !== "grass";
+  // The rock faces ride on the grass mesh as extra attributes (a shader mix),
+  // so the hills cost no extra draw call (spec 10 §3).
+  const withCliff = layer === "grass" && elevation.raised;
   const passable: number[] = [];
   for (let tile = 0; tile < width * height; tile++) {
     if ((rockCells[tile] ?? 0) === 0) passable.push(tile);
@@ -178,6 +182,8 @@ function groundGeometry(
   const positions = new Float32Array(vertexCount * 3);
   const normals = new Float32Array(vertexCount * 3);
   const uvs = new Float32Array(vertexCount * 2);
+  const cliffUvs = new Float32Array(withCliff ? vertexCount * 2 : 0);
+  const cliffs = new Float32Array(withCliff ? vertexCount : 0);
   const colors = new Float32Array(vertexCount * (withAlpha ? 4 : 3));
   const indices = new Uint32Array(passable.length * INDICES_PER_TILE);
 
@@ -203,17 +209,22 @@ function groundGeometry(
       const cy = corner(cx, cz);
       positions.set([cx, cy, cz], vertex * 3);
       normals.set(cornerNormal(corner, cx, cz), vertex * 3);
-      if (layer === "cliff") {
+      uvs.set([cx * TILE_UV_SCALE, cz * TILE_UV_SCALE], vertex * 2);
+      if (withCliff) {
         const across = faceX ? cz : cx;
-        uvs.set([across * TILE_UV_SCALE, -cy * TILE_UV_SCALE * 2], vertex * 2);
-      } else {
-        uvs.set([cx * TILE_UV_SCALE, cz * TILE_UV_SCALE], vertex * 2);
+        cliffUvs.set(
+          [across * TILE_UV_SCALE, -cy * TILE_UV_SCALE * 2],
+          vertex * 2,
+        );
+        cliffs[vertex] = layerAlpha("cliff", elevation.slope(cx, cz), 0);
       }
       if (withAlpha) {
-        const base = layer === "dirt" ? dirtAlphaAt(cx, cz, seed) : 0;
-        const alpha = layerAlpha(layer, elevation.slope(cx, cz), base);
-        const tint = layer === "cliff" ? CLIFF_TINT : ([1, 1, 1] as const);
-        colors.set([...tint, alpha], vertex * 4);
+        // Bare earth gives way to the rock face the grass mesh now shows.
+        const slope = elevation.slope(cx, cz);
+        const alpha =
+          layerAlpha(layer, slope, dirtAlphaAt(cx, cz, seed)) *
+          (1 - layerAlpha("cliff", slope, 0));
+        colors.set([1, 1, 1, alpha], vertex * 4);
       } else {
         colors.set([1, 1, 1], vertex * 3);
       }
@@ -233,8 +244,40 @@ function groundGeometry(
     "color",
     new Float32BufferAttribute(colors, withAlpha ? 4 : 3),
   );
+  if (withCliff) {
+    geometry.setAttribute("aCliffUv", new Float32BufferAttribute(cliffUvs, 2));
+    geometry.setAttribute("aCliff", new Float32BufferAttribute(cliffs, 1));
+  }
   geometry.setIndex(new Uint32BufferAttribute(indices, 1));
   return geometry;
+}
+
+/** Mixes the rock faces (`aCliff`, mapped by `aCliffUv`) over the grass of
+ *  `material`; `material.userData.cliffMap` holds the rock texture. */
+function attachCliffMix(
+  material: MeshLambertMaterial,
+  rock: Texture | undefined,
+): void {
+  const cliffMap = { value: rock };
+  material.userData.cliffMap = cliffMap;
+  const tint = new Vector3(...CLIFF_TINT);
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.uCliffMap = cliffMap;
+    shader.uniforms.uCliffTint = { value: tint };
+    shader.vertexShader = shader.vertexShader.replace(
+      "void main() {",
+      "attribute vec2 aCliffUv;\nattribute float aCliff;\nvarying vec2 vCliffUv;\nvarying float vCliff;\nvoid main() {\n  vCliffUv = aCliffUv;\n  vCliff = aCliff;",
+    );
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "void main() {",
+        "uniform sampler2D uCliffMap;\nuniform vec3 uCliffTint;\nvarying vec2 vCliffUv;\nvarying float vCliff;\nvoid main() {",
+      )
+      .replace(
+        "#include <map_fragment>",
+        "#include <map_fragment>\n  diffuseColor.rgb = mix(diffuseColor.rgb, texture2D(uCliffMap, vCliffUv).rgb * uCliffTint, clamp(vCliff, 0.0, 1.0));",
+      );
+  };
 }
 
 /** One merged box per rock tile, with a jittered top and a noise height. */
@@ -331,6 +374,9 @@ export function createTerrain(
   grass.receiveShadow = true;
   // Hills and cliffs shade the ground behind them (spec 30 §4).
   grass.castShadow = elevation.raised;
+  if (elevation.raised) {
+    attachCliffMix(grass.material as MeshLambertMaterial, textures.rock);
+  }
 
   const dirt = new Mesh(
     groundGeometry(width, height, rockCells, "dirt", seed, elevation),
@@ -355,23 +401,6 @@ export function createTerrain(
   const group = new Group();
   group.userData.procedural = procedural;
   group.add(grass, dirt, rock);
-  if (elevation.raised) {
-    // Rock faces over the steep corners (spec 30 §4): same tiles as the
-    // grass, so the relief moves them too.
-    const cliff = new Mesh(
-      groundGeometry(width, height, rockCells, "cliff", seed, elevation),
-      new MeshLambertMaterial({
-        map: textures.rock,
-        transparent: true,
-        vertexColors: true,
-        depthWrite: false,
-      }),
-    );
-    cliff.name = "cliff";
-    cliff.receiveShadow = true;
-    cliff.renderOrder = 1;
-    group.add(cliff);
-  }
   // Visual relief (spec 24) on top of the elevation (spec 30).
   group.userData.deformer = attachTerrainDeformer(
     group,
@@ -394,11 +423,16 @@ export function setTerrainTextures(
     | Record<TerrainKind, Texture>
     | undefined;
   if (procedural === undefined) return;
-  const layers: [string, TerrainKind][] = [
-    ...TERRAIN_KINDS.map((kind): [string, TerrainKind] => [kind, kind]),
-    ["cliff", "rock"],
-  ];
-  for (const [name, kind] of layers) {
+  const grassMaterial = (group.getObjectByName("grass") as Mesh | null)
+    ?.material as MeshLambertMaterial | undefined;
+  const cliffMap = grassMaterial?.userData.cliffMap as
+    | { value: Texture | undefined }
+    | undefined;
+  if (cliffMap !== undefined) {
+    cliffMap.value = textures?.rock ?? procedural.rock;
+  }
+  for (const kind of TERRAIN_KINDS) {
+    const name: string = kind;
     const mesh = group.getObjectByName(name);
     if (!(mesh instanceof Mesh)) continue;
     const material = mesh.material as MeshLambertMaterial;
