@@ -1,5 +1,6 @@
 import ruleset from "@data/ruleset.json";
 import { RULES, typeDef, WEAPONS as WEAPON_DEFS } from "../rules";
+import type { CombatEventState } from "../sim/combatSnapshot";
 import {
   ENTITY_FLAGS,
   type EntityState,
@@ -446,6 +447,11 @@ const POOL_SPREAD_MS = 1400;
 const BLOOD_DECALS = 3;
 /** Rubble pieces scattered around a destroyed building (spec 09 §6). */
 const DEBRIS_PIECES = 8;
+/** Pieces thrown off a wreck by the blast that killed it (spec 17 §7.5). */
+const WRECK_DEBRIS = 4;
+/** Tiles per second the debris of a death flies away from the killer
+ *  (spec 17 §7.5). */
+const DEBRIS_PUSH = 0.8;
 
 /** Spawns the wreck, body and blood effects of `deaths` (spec 07 §3,
  *  AC-07-04, spec 22). Blood is skipped when the gore filter is off. A rigged
@@ -461,6 +467,10 @@ export function spawnDeathEffects(
     kneel: number;
     joints: Readonly<Record<string, Record<string, number>>>;
   } | null,
+  /** Unit direction the debris of `deaths` flies (spec 17 §7.5). */
+  push?: { readonly x: number; readonly y: number },
+  /** Skips the vehicle wreck box when the caller draws its own hulk. */
+  skipWreck = false,
 ): void {
   for (const entity of deaths) {
     const type = typeDef(entity.kind);
@@ -472,14 +482,20 @@ export function spawnDeathEffects(
     if (!infantry) {
       // Buildings leave only their rubble; vehicles keep the wreck box (spec 10 §6).
       if (type.category === "building") {
-        spawnDebris(effects, entity, width, depth, nowMs);
+        spawnDebris(effects, entity, width, depth, nowMs, push);
       } else {
-        effects.spawn("wreck", {
-          x: entity.x,
-          y: entity.y,
-          sizeXYZ: [width, height * WRECK_HEIGHT, depth],
-          startMs: nowMs,
-        });
+        if (!skipWreck) {
+          effects.spawn("wreck", {
+            x: entity.x,
+            y: entity.y,
+            sizeXYZ: [width, height * WRECK_HEIGHT, depth],
+            startMs: nowMs,
+          });
+        }
+        // A known killer throws pieces of the hull away (spec 17 §7.5).
+        if (push !== undefined) {
+          spawnWreckDebris(effects, entity, width, depth, push, nowMs);
+        }
       }
       continue;
     }
@@ -621,6 +637,7 @@ function spawnDebris(
   width: number,
   depth: number,
   nowMs: number,
+  push?: { readonly x: number; readonly y: number },
 ): void {
   const id = entity.id;
   for (let i = 0; i < DEBRIS_PIECES; i++) {
@@ -632,7 +649,191 @@ function spawnDebris(
       y: entity.y + Math.sin(angle) * radius,
       sizeXYZ: [s, s * 0.8, s],
       rotationY: angle,
+      ...(push === undefined
+        ? {}
+        : { vx: push.x * DEBRIS_PUSH, vy: push.y * DEBRIS_PUSH }),
       startMs: nowMs,
     });
   }
 }
+
+/** Pieces of a vehicle hull thrown away from the killer (spec 17 §7.5). */
+function spawnWreckDebris(
+  effects: Effects,
+  entity: EntityState,
+  width: number,
+  depth: number,
+  push: { readonly x: number; readonly y: number },
+  nowMs: number,
+): void {
+  const angle = Math.atan2(push.y, push.x);
+  for (let i = 0; i < WRECK_DEBRIS; i++) {
+    const spread = angle + (i / WRECK_DEBRIS) * Math.PI * 2;
+    const radius = 0.2 * Math.min(width, depth);
+    const s = 0.14 + 0.05 * i;
+    effects.spawn("debris", {
+      x: entity.x + Math.cos(spread) * radius,
+      y: entity.y + Math.sin(spread) * radius,
+      sizeXYZ: [s, s * 0.8, s],
+      rotationY: spread,
+      vx: push.x * DEBRIS_PUSH,
+      vy: push.y * DEBRIS_PUSH,
+      startMs: nowMs,
+    });
+  }
+}
+
+/** The `death` events of a combat snapshot (spec 17 §4.7, §7.5). */
+export type DeathEvent = Extract<CombatEventState, { kind: "death" }>;
+
+/** The entity a death event removed, with the heading and hp it had in the
+ *  previous snapshot. */
+export function deathEventEntity(
+  event: DeathEvent,
+  previous: MatchSnapshot | null,
+): EntityState {
+  const earlier = previous?.entities.find(
+    (entity) => entity.id === event.victim,
+  );
+  return {
+    id: event.victim,
+    owner: earlier?.owner ?? 0,
+    kind: event.victimKind,
+    x: event.x,
+    y: event.y,
+    hp: earlier?.hp ?? 0,
+    flags: 0,
+    progress: 0,
+    target: null,
+    heading: earlier?.heading ?? 0,
+    turretAngle: earlier?.turretAngle ?? 0,
+  };
+}
+
+/** How a death event killed its victim: away from the killer, along the
+ *  crusher, or a blast when the weapon is explosive (spec 17 §7.5). */
+export function deathEventCause(
+  event: DeathEvent,
+  previous: MatchSnapshot | null,
+): DeathCause {
+  const victim = previous?.entities.find(
+    (entity) => entity.id === event.victim,
+  );
+  const fallback: DeathCause = {
+    kind: "shot",
+    push:
+      victim === undefined
+        ? Math.PI
+        : yawToPush(angleToYaw(victim.heading)) + Math.PI,
+  };
+  const damageType =
+    event.weapon === null
+      ? ""
+      : (DAMAGE_TYPE_NAMES[WEAPONS[event.weapon]?.damageType ?? -1] ?? "");
+  const killer =
+    event.killer === null
+      ? undefined
+      : previous?.entities.find((entity) => entity.id === event.killer);
+  if (killer === undefined) {
+    return EXPLOSIVE.has(damageType)
+      ? { kind: "explosion", push: fallback.push }
+      : fallback;
+  }
+  const mode = runOverOf(killer.kind);
+  if (mode === "crush") {
+    return { kind: "crush", push: yawToPush(angleToYaw(killer.heading)) };
+  }
+  const push = Math.atan2(event.y - killer.y, event.x - killer.x);
+  if (mode === "shove") return { kind: "shove", push };
+  return { kind: EXPLOSIVE.has(damageType) ? "explosion" : "shot", push };
+}
+
+/** A `DeathCauses` view over one batch of death events, so the death effects
+ *  and the vehicle hulks push the same way (spec 17 §7.5). */
+export function deathEventCauses(
+  events: readonly DeathEvent[],
+  previous: MatchSnapshot | null,
+): DeathCauses {
+  const causes = new Map<number, DeathCause>();
+  for (const event of events) {
+    causes.set(event.victim, deathEventCause(event, previous));
+  }
+  return {
+    record() {
+      // Death events are already the cause; nothing to remember.
+    },
+    causeOf(victim) {
+      return causes.get(victim.id) ?? { kind: "shot", push: Math.PI };
+    },
+  };
+}
+
+export interface EventDeathOptions {
+  readonly gore: boolean;
+  readonly nowMs?: number;
+  readonly corpses?: Corpses;
+  readonly poseOf?: (entity: EntityState) => {
+    kneel: number;
+    joints: Readonly<Record<string, Readonly<Record<string, number>>>>;
+  } | null;
+  /** False when the caller draws vehicle hulks itself (`vehicleFx`). */
+  readonly vehicleWrecks?: boolean;
+}
+
+/** Spawns the death effects of combat `death` events (spec 17 §7.5): the spec
+ *  07 death effects for the victim kind, debris thrown away from the killer,
+ *  and an explosion for a vehicle or building killed by an explosive weapon. */
+export function spawnEventDeaths(
+  events: readonly DeathEvent[],
+  previous: MatchSnapshot | null,
+  effects: Effects,
+  options: EventDeathOptions,
+): void {
+  const nowMs = options.nowMs ?? 0;
+  const causes = deathEventCauses(events, previous);
+  for (const event of events) {
+    const victim = deathEventEntity(event, previous);
+    const type = typeDef(victim.kind);
+    const killer =
+      event.killer === null
+        ? undefined
+        : previous?.entities.find((entity) => entity.id === event.killer);
+    let push: { x: number; y: number } | undefined;
+    if (killer !== undefined) {
+      const dx = victim.x - killer.x;
+      const dy = victim.y - killer.y;
+      const length = Math.hypot(dx, dy);
+      if (length > 0) push = { x: dx / length, y: dy / length };
+    }
+    const vehicle = type.category === "unit" && type.armor !== 0;
+    const building = type.category === "building";
+    spawnDeathEffects(
+      [victim],
+      effects,
+      options.gore,
+      nowMs,
+      options.corpses,
+      causes,
+      options.poseOf,
+      push,
+      vehicle && options.vehicleWrecks === false,
+    );
+    const explosive =
+      event.weapon !== null &&
+      EXPLOSIVE.has(
+        DAMAGE_TYPE_NAMES[WEAPONS[event.weapon]?.damageType ?? -1] ?? "",
+      );
+    if ((vehicle || building) && explosive) {
+      effects.spawn("explosion", {
+        x: victim.x,
+        y: victim.y,
+        size: DEATH_EXPLOSION_SIZE,
+        startMs: nowMs,
+      });
+    }
+  }
+}
+
+/** Size of the extra blast over a vehicle or building killed by an explosive
+ *  weapon, tiles (spec 17 §7.5). */
+const DEATH_EXPLOSION_SIZE = 0.8;

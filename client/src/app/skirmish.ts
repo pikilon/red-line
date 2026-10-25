@@ -32,9 +32,10 @@ import { type AttackMarker, createAttackMarker } from "../render/attackMarker";
 import { createCorpses } from "../render/corpses";
 import {
   createDeathCauses,
-  detectDeaths,
+  deathEventCauses,
+  deathEventEntity,
   detectHits,
-  spawnDeathEffects,
+  spawnEventDeaths,
   spawnHitBlood,
 } from "../render/deaths";
 import {
@@ -49,6 +50,7 @@ import {
   createEffects,
   type EffectKind,
   type Effects,
+  spawnDetonationEffect,
   spawnShotEffects,
 } from "../render/effects";
 import {
@@ -1091,45 +1093,50 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       effects !== null &&
       (previous === null || snapshot.tick > previous.tick)
     ) {
-      spawnShotEffects(snapshot, effects, effectTime(at));
-      groundImpacts?.record(snapshot, combat, effectTime(at));
+      const atMs = effectTime(at);
+      // Launch effects come from the snapshot, not from the next rendered
+      // frame, so a bullet that is already gone by the next frame still
+      // flashes its muzzle (spec 17 §7.2).
+      projectiles?.spawnEffects(flying, snapshot.tick, snapshot, atMs, effects);
+      spawnShotEffects(snapshot, effects, atMs);
+      groundImpacts?.record(snapshot, combat, atMs);
       animator.recordShots(snapshot.entities, at);
-      deathCauses.record(snapshot.entities, effectTime(at));
+      deathCauses.record(snapshot.entities, atMs);
       vehicleFx.ricochet(detectRicochets(snapshot));
       if (previous !== null) {
-        const hits = detectHits(
-          previous,
-          snapshot,
-          deathCauses,
-          effectTime(at),
-        );
+        const hits = detectHits(previous, snapshot, deathCauses, atMs);
         animator.recordHits?.(hits, at);
         vehicleFx.hit(
-          detectVehicleHits(previous, snapshot, deathCauses, effectTime(at)),
-          effectTime(at),
+          detectVehicleHits(previous, snapshot, deathCauses, atMs),
+          atMs,
         );
-        spawnHitBlood(hits, effects, settings.gore, effectTime(at));
+        spawnHitBlood(hits, effects, settings.gore, atMs);
       }
-      const dead =
-        previous === null ? [] : detectDeaths(previous, snapshot, viewer);
+      // Deaths and detonations come from the combat events (spec 17 §7.4–7.5).
+      const deaths = combat.events.filter((event) => event.kind === "death");
+      const causes = deathEventCauses(deaths, previous);
       // Vehicles leave burning hulks of their own (spec 27 §4).
-      const vehicles = dead.filter((entity) => isVehicle(typeDef(entity.kind)));
-      vehicleFx.kill(vehicles, deathCauses, effectTime(at));
-      const deaths = dead.filter((entity) => !isVehicle(typeDef(entity.kind)));
-      spawnDeathEffects(
-        deaths,
-        effects,
-        settings.gore,
-        effectTime(at),
+      const vehicles = deaths
+        .map((event) => deathEventEntity(event, previous))
+        .filter((entity) => isVehicle(typeDef(entity.kind)));
+      vehicleFx.kill(vehicles, causes, atMs);
+      spawnEventDeaths(deaths, previous, effects, {
+        gore: settings.gore,
+        nowMs: atMs,
         corpses,
-        deathCauses,
-        (entity) => {
+        vehicleWrecks: false,
+        poseOf: (entity) => {
           const rig = animator.lastRig?.(entity.id);
           return rig === undefined || rig === null
             ? null
             : poseOnDeath(typeDef(entity.kind).id, rig);
         },
-      );
+      });
+      for (const event of combat.events) {
+        if (event.kind === "detonate") {
+          spawnDetonationEffect(effects, event.weapon, event.x, event.y, atMs);
+        }
+      }
     }
     refreshOverlay();
   });
