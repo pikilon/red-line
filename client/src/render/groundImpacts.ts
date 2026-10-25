@@ -65,6 +65,9 @@ export interface ImpactProfile {
 }
 
 const DAMAGE_TYPES = ruleset.damageTypes as readonly string[];
+/** Weapons that blow a vehicle up, and so leave the small death crater
+ *  (spec 29 §3.6). */
+const EXPLOSIVE = new Set(["antiTank", "highExplosive", "thermobaric"]);
 const BY_DAMAGE_TYPE = IMPACTS.byDamageType as Record<string, ImpactProfile>;
 const BY_WEAPON = IMPACTS.byWeapon as Record<string, Partial<ImpactProfile>>;
 
@@ -313,11 +316,34 @@ export function createGroundImpacts(
     land(profile, splash, x, y, false, nowMs);
   }
 
+  /** A destroyed armoured vehicle digs only a small crater under its wreck,
+   *  never the full shell crater of a ground hit (spec 29 §3.6). */
+  function digUnitDeathCrater(x: number, y: number, nowMs: number): void {
+    // Rock keeps no craters (spec 29 §3.3).
+    if (decals.surfaceAt(x, y).strength <= 0) return;
+    const spec = IMPACTS.unitDeathCrater;
+    relief()?.crater(
+      x,
+      y,
+      spec.radiusTiles,
+      spec.radiusTiles * spec.depthPerRadius,
+      nowMs,
+      spec.rim,
+    );
+  }
+
   return {
     impact,
     record(snapshot, combat, nowMs) {
       const byId = new Map<number, EntityState>();
       for (const entity of snapshot.entities) byId.set(entity.id, entity);
+      // A vehicle this snapshot removed is still a target: its death event
+      // names the kind (spec 29 §3.6).
+      const deadKinds = new Map<number, number>();
+      for (const event of combat.events) {
+        if (event.kind === "death")
+          deadKinds.set(event.victim, event.victimKind);
+      }
       for (const event of combat.events) {
         if (event.kind !== "detonate") continue;
         const profile = impactProfile(event.weapon);
@@ -335,6 +361,20 @@ export function createGroundImpacts(
         // wall facing the shooter and the ground under the roof stays clean.
         let onBuilding = false;
         const struck = event.hit === null ? undefined : byId.get(event.hit);
+        const struckKind =
+          struck?.kind ??
+          (event.hit === null ? undefined : deadKinds.get(event.hit));
+        const struckType =
+          struckKind === undefined ? null : typeDef(struckKind);
+        // The hull takes the hit: no dust, clods, scorch or crater under an
+        // armoured vehicle, which would read as a ground hit (spec 29 §3.6).
+        if (
+          struckType !== null &&
+          struckType.category === "unit" &&
+          struckType.armor !== 0
+        ) {
+          continue;
+        }
         const half = struck === undefined ? null : buildingHalf(struck);
         if (struck !== undefined && half !== null) {
           const from = origins.get(event.projectile) ?? [x - 1, y];
@@ -354,6 +394,18 @@ export function createGroundImpacts(
         const splash = (WEAPONS[event.weapon]?.splashCenti ?? 0) / 100;
         // A wall hit still throws dust; marks stay off the roof.
         land(profile, splash, x, y, onBuilding && scatter === 0, nowMs);
+      }
+      // Only the explosion of an armoured vehicle leaves a crater, and a
+      // minimal one (spec 29 §3.6).
+      for (const event of combat.events) {
+        if (event.kind !== "death") continue;
+        const type = typeDef(event.victimKind);
+        if (type.category !== "unit" || type.armor === 0) continue;
+        if (event.weapon === null) continue;
+        const damageType =
+          DAMAGE_TYPES[WEAPONS[event.weapon]?.damageType ?? -1] ?? "";
+        if (!EXPLOSIVE.has(damageType)) continue;
+        digUnitDeathCrater(event.x, event.y, nowMs);
       }
       // Remember where the flying projectiles came from, for wall hits.
       const flying = new Set<number>();

@@ -69,6 +69,12 @@ uses decals).
    ground at the wall's foot.
 5. Pocks fade after 90 s (+30 s fade, ring of 800); scorches and ejecta last
    like spec 24 blasts (ring of 500, FIFO).
+6. A shot that strikes an armoured vehicle leaves no ground layer under the
+   hull: no dust, clods, scorch or crater (the blast FX of spec 07 still
+   plays). When such a vehicle is destroyed by an explosive weapon
+   (`antiTank`, `highExplosive`, `thermobaric`), one minimal crater from
+   `data/render/impacts.json` (`unitDeathCrater`) is dug under the wreck; a
+   non-explosive death leaves no crater. Owner request, 2026-10-25.
 
 ## 4. Crater relief (replaces spec 24 §3.1)
 
@@ -117,3 +123,7 @@ uses decals).
 * AC-29-04: `?load=weapon-impacts` shows every weapon class force-firing at
   open ground within 300 ticks (example contract). Setups gain the
   `attackGroundCenti` order for this (spec 19 §3.5, spec 20 `AttackGround`).
+* AC-29-05: a shell striking an armoured vehicle leaves no decal, no dust and
+  no crater under it; an armoured vehicle destroyed by an explosive weapon
+  digs one minimal crater (`unitDeathCrater`) under the wreck, and one killed
+  by a non-explosive weapon digs none.
