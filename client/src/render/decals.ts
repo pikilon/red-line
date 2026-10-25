@@ -483,6 +483,8 @@ function createLayer(
   mesh.name = "decals";
   mesh.frustumCulled = false;
   mesh.renderOrder = 1;
+  // An empty layer is not drawn at all (spec 10 §3 draw-call budget).
+  mesh.visible = false;
 
   let cursor = 0;
   let highest = 0;
@@ -550,6 +552,7 @@ function createLayer(
     positionAttribute.needsUpdate = true;
     uvAttribute.needsUpdate = true;
     geometry.setDrawRange(0, highest * indicesPerMark);
+    mesh.visible = true;
   }
 
   function relift(x0: number, y0: number, x1: number, y1: number): void {
