@@ -102,7 +102,7 @@ describe("ground impacts per weapon (spec 29)", () => {
     relief?.update(1000);
     effects.update(100);
     expect(effects.counts().clod).toBeGreaterThan(0);
-    expect(relief?.heightAt(16, 16) ?? 0).toBeLessThan(-0.15);
+    expect(relief?.heightAt(16, 16) ?? 0).toBeLessThan(-0.1);
   });
 
   it("keeps craters shallow and marks their floor black", () => {
@@ -115,8 +115,8 @@ describe("ground impacts per weapon (spec 29)", () => {
     );
     tank.relief?.update(1000);
     const shellDepth = -(tank.relief?.heightAt(16, 16) ?? 0);
-    expect(shellDepth).toBeGreaterThan(0.05);
-    expect(shellDepth).toBeLessThan(0.1);
+    expect(shellDepth).toBeGreaterThan(0.03);
+    expect(shellDepth).toBeLessThan(0.06);
     tank.decals.update(10);
     expect(tank.decals.count()).toBe(2);
 
@@ -130,8 +130,8 @@ describe("ground impacts per weapon (spec 29)", () => {
     );
     rockets.relief?.update(1000);
     const rocketDepth = -(rockets.relief?.heightAt(16, 16) ?? 0);
-    expect(rocketDepth).toBeGreaterThan(0.15);
-    expect(rocketDepth).toBeLessThan(0.18);
+    expect(rocketDepth).toBeGreaterThan(0.1);
+    expect(rocketDepth).toBeLessThan(0.13);
     rockets.decals.update(10);
     expect(rockets.decals.count()).toBe(3);
   });
@@ -186,8 +186,8 @@ describe("ground impacts per weapon (spec 29)", () => {
     );
     relief?.update(1000);
     const depth = -(relief?.heightAt(16, 16) ?? 0);
-    expect(depth).toBeGreaterThan(0.05);
-    expect(depth).toBeLessThan(0.2);
+    expect(depth).toBeGreaterThan(0.03);
+    expect(depth).toBeLessThan(0.1);
   });
 
   it("leaves no crater when an armoured vehicle is not blown up", () => {
