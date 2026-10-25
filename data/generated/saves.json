@@ -128,17 +128,16 @@
       "entities": 10
     },
     {
-<<<<<<< HEAD
       "id": "vehicle-deaths",
       "map": "showcase",
       "form": "setup",
       "entities": 15
-=======
+    },
+    {
       "id": "weapon-impacts",
       "map": "showcase",
       "form": "setup",
       "entities": 9
->>>>>>> 18d10a7 (feat: adds per-weapon ground impacts and smoother crater relief)
     }
   ]
 }
