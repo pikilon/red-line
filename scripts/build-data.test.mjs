@@ -4,7 +4,15 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { parse, stringify } from "yaml";
-import { buildRuleset, buildSaves, readSources, serializeRuleset } from "./build-data.mjs";
+import {
+  buildRuleset,
+  buildSaves,
+  cliffCells,
+  heightsHex,
+  rasterizeElevation,
+  readSources,
+  serializeRuleset,
+} from "./build-data.mjs";
 import { TURRETED } from "../tools/models/check.mjs";
 
 // Repository root (this file lives in scripts/), used by the two criteria that
@@ -689,4 +697,42 @@ test("AC-11-02: locomotors in the data", async () => {
   const missing = changed((d) => { delete d.ukraine.types[0].locomotor; });
   const errors = build.checkLocomotorCoverage(missing);
   assert.ok(errors.some((e) => /ua-rifleman/.test(e.message)), "the unit without a locomotor is reported");
+});
+
+test("AC-30-14: elevation rasterizes, flags cliffs and keeps first-line point-symmetric", () => {
+  const map = {
+    width: 8,
+    height: 8,
+    elevation: { plateaus: [{ rect: [2, 2, 4, 4], height: 32 }], hills: [{ center: [7, 7], radius: 1, height: 8 }] },
+  };
+  const heights = rasterizeElevation(map);
+  assert.equal(heights.length, 81);
+  assert.equal(heights[3 * 9 + 3], 32, "plateau top");
+  assert.equal(heights[0], 0, "open ground");
+  assert.equal(heights[7 * 9 + 7], 8, "hill top");
+  const cliffs = cliffCells(map, heights);
+  assert.ok(cliffs.has("1,3") && cliffs.has("5,3"), "plateau edges are cliffs");
+  assert.ok(!cliffs.has("3,3"), "plateau top is not a cliff");
+  assert.equal(rasterizeElevation({ width: 8, height: 8 }), null);
+  assert.equal(heightsHex(Uint8Array.from([0, 16, 255])), "0010ff");
+
+  const ruleset = JSON.parse(readFileSync(join(repoRoot(), "data/generated/ruleset.json"), "utf8"));
+  const firstLine = ruleset.maps.find((m) => m.id === "first-line");
+  const bytes = Buffer.from(firstLine.heights, "hex");
+  assert.equal(bytes.length, 129 * 129);
+  for (let y = 0; y <= 128; y++) {
+    for (let x = 0; x <= 128; x++) {
+      assert.equal(bytes[y * 129 + x], bytes[(128 - y) * 129 + (128 - x)], `height not symmetric at (${x},${y})`);
+    }
+  }
+});
+
+test("AC-30-15: footprints may not stand on cliffs", () => {
+  const sources = readSources(repoRoot());
+  const map = sources.maps.find((m) => m.file.endsWith("first-line.yaml"));
+  const doc = parse(map.text);
+  doc.elevation.plateaus.push({ rect: [13, 40, 20, 53], height: 40 });
+  map.text = stringify(doc);
+  const { errors } = buildRuleset(sources);
+  assert.ok(errors.some((e) => e.message.includes("overlaps a blocked cell")), JSON.stringify(errors));
 });

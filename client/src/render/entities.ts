@@ -36,6 +36,7 @@ import {
   type ManBody,
   manBody,
 } from "./corpses";
+import { footprintGround, groundTilt, groundY } from "./elevation";
 import { applyFacade, enableFacades, facadeTextureIds } from "./facades";
 import {
   addBandAttribute,
@@ -85,6 +86,8 @@ import type {
 import { type LimbPose, limbPose, resetPose } from "./rig";
 import { createSuspension, LEVEL_POSE } from "./suspension";
 import type { VehicleBodies } from "./vehicleFx";
+
+const LEVEL_TILT = { pitch: 0, roll: 0 } as const;
 
 export const OWNER_COLORS = [0x1d5fe0, 0xe01b1b] as const;
 export const NEUTRAL_COLOR = 0x8b5a2b;
@@ -506,9 +509,25 @@ export function createEntityRenderer(
       const tint = charColor.setHex(0xffffff).lerp(CHARRED, pose.char).getHex();
       const hex = ownerColor(hulk.owner);
       const typeSlots = slotsFor(type.id, model);
+      // The wreck rests on the hill under it, leaning with the slope.
+      const hulkGround = groundY(pose.x, pose.y);
+      const hulkSlope = groundTilt(
+        pose.x,
+        pose.y,
+        pose.yaw,
+        (type.render.size[2] ?? 100) / 100,
+        (type.render.size[0] ?? 100) / 100,
+      );
       const composeHull = (out: Matrix4): Matrix4 => {
-        position.set(pose.x, pose.lift, pose.y);
-        rotation.setFromEuler(tilt.set(pose.pitch, pose.yaw, pose.roll, "YXZ"));
+        position.set(pose.x, hulkGround + pose.lift, pose.y);
+        rotation.setFromEuler(
+          tilt.set(
+            pose.pitch + hulkSlope.pitch,
+            pose.yaw,
+            pose.roll + hulkSlope.roll,
+            "YXZ",
+          ),
+        );
         scale.set(1, 1, 1);
         return out.compose(position, rotation, scale);
       };
@@ -530,7 +549,7 @@ export function createEntityRenderer(
           rotationMatrix.makeRotationY(pose.turretYaw - pose.yaw);
           return turretMatrix.multiply(rotationMatrix);
         }
-        position.set(flight.x, flight.z, flight.y);
+        position.set(flight.x, flight.z + hulkGround, flight.y);
         tiltAxis.set(flight.axisX, 0, flight.axisZ).normalize();
         yawQuaternion.setFromAxisAngle(UP, flight.yaw);
         rotation
@@ -565,6 +584,7 @@ export function createEntityRenderer(
       const along = Math.sin(corpse.yaw + push);
       const across = -Math.cos(corpse.yaw + push);
       yawQuaternion.setFromAxisAngle(UP, corpse.yaw);
+      const corpseGround = groundY(corpse.x, corpse.y);
       // A man's feet are under his hips: the joint of the hips limb.
       const men: string[] = [];
       for (const limb of model.limbs) {
@@ -584,7 +604,7 @@ export function createEntityRenderer(
         // His feet in the world: where he stood, then thrown along the push.
         position.set(
           corpse.x + px * cosYaw + pz * sinYaw + dx * feet.u,
-          feet.lift,
+          corpseGround + feet.lift,
           corpse.y - px * sinYaw + pz * cosYaw + dz * feet.u,
         );
         tiltAxis.set(dz, 0, -dx);
@@ -597,7 +617,7 @@ export function createEntityRenderer(
         bodies.set(prefix, { ...feet, joints: { ...feet.joints } });
       });
       // Props of the team (launchers) stay put, heading kept.
-      position.set(corpse.x, 0, corpse.y);
+      position.set(corpse.x, corpseGround, corpse.y);
       scale.set(1, 1, 1);
       const hull = new Matrix4().compose(position, yawQuaternion, scale);
       drawLimbs(
@@ -883,6 +903,12 @@ export function createEntityRenderer(
           number,
         ];
         const isSelected = selected.has(entity.id);
+        // Units stand on the ground under them, buildings on the lowest
+        // point of their footprint (spec 30 §4).
+        const ground =
+          type.category === "unit"
+            ? groundY(entity.x, entity.y)
+            : footprintGround(entity.x, entity.y, w, d);
         const hex = isSelected ? SELECTED_COLOR : ownerColor(entity.owner);
         const isGhost = hasFlag(entity, ENTITY_FLAGS.ghost);
         const model = models?.get(type.id) ?? null;
@@ -895,7 +921,7 @@ export function createEntityRenderer(
 
         if (isGhost) {
           if (counts.ghosts < capacity) {
-            position.set(entity.x, h / 2, entity.y);
+            position.set(entity.x, ground + h / 2, entity.y);
             scale.set(w, h, d);
             placeBox(ghosts, counts.ghosts++, hex);
           }
@@ -926,8 +952,14 @@ export function createEntityRenderer(
           vehicles !== undefined && type.category === "unit" && type.armor !== 0
             ? vehicles.rock(entity.id, heading.yaw, nowMs)
             : null;
-        const pitch = body.pitch + (rock?.pitch ?? 0);
-        const roll = body.roll + (rock?.roll ?? 0);
+        // Vehicles sit on the slope: the ground under nose and tail, and
+        // under both sides (spec 30 §4). Soldiers stay upright.
+        const slope =
+          type.category === "unit" && pose.rig === null
+            ? groundTilt(entity.x, entity.y, heading.yaw, d, w)
+            : LEVEL_TILT;
+        const pitch = body.pitch + slope.pitch + (rock?.pitch ?? 0);
+        const roll = body.roll + slope.roll + (rock?.roll ?? 0);
         const lift = pose.lift + body.shake + (rock?.lift ?? 0);
         const working =
           hasFlag(entity, ENTITY_FLAGS.moving) && body.moving < 0.05;
@@ -941,7 +973,7 @@ export function createEntityRenderer(
         if (isFallback || model === null) {
           if (type.category === "unit") {
             if (counts.units < capacity) {
-              position.set(entity.x, h / 2, entity.y);
+              position.set(entity.x, ground + h / 2, entity.y);
               scale.set(w, h, d);
               placeBox(units, counts.units++, hex);
             }
@@ -950,7 +982,7 @@ export function createEntityRenderer(
               const f = hasFlag(entity, ENTITY_FLAGS.underConstruction)
                 ? 0.2 + (0.8 * entity.progress) / PROGRESS_FULL
                 : 1;
-              position.set(entity.x, (h * f) / 2, entity.y);
+              position.set(entity.x, ground + (h * f) / 2, entity.y);
               scale.set(w, h * f, d);
               placeBox(buildings, counts.buildings++, hex);
             }
@@ -965,7 +997,7 @@ export function createEntityRenderer(
           const rig = pose.rig;
           if (rig !== null && model.limbs !== undefined) {
             // Soldiers walk on their own legs: no hull bounce (spec 20).
-            position.set(entity.x, body.shake, entity.y);
+            position.set(entity.x, ground + body.shake, entity.y);
             rotation.setFromEuler(tilt.set(0, hullYaw, 0, "YXZ"));
             if (rig.flinch !== 0) {
               // A hit that did not kill jolts the body over its feet.
@@ -992,7 +1024,7 @@ export function createEntityRenderer(
           }
           for (const slot of typeSlots.hull) {
             if (slot.count >= capacity) continue;
-            position.set(entity.x, lift, entity.y);
+            position.set(entity.x, ground + lift, entity.y);
             rotation.setFromEuler(tilt.set(pitch, hullYaw, roll, "YXZ"));
             scale.set(1, f, 1);
             matrix.compose(position, rotation, scale);
@@ -1001,7 +1033,7 @@ export function createEntityRenderer(
           for (const slot of typeSlots.turret) {
             if (slot.count >= capacity) continue;
             const composeTurret = (): Matrix4 => {
-              position.set(entity.x, lift, entity.y);
+              position.set(entity.x, ground + lift, entity.y);
               rotation.setFromEuler(tilt.set(pitch, hullYaw, roll, "YXZ"));
               scale.set(1, f, 1);
               turretMatrix.compose(position, rotation, scale);
@@ -1029,7 +1061,7 @@ export function createEntityRenderer(
           hasFlag(entity, ENTITY_FLAGS.underConstruction) &&
           scaffoldCount < capacity
         ) {
-          position.set(entity.x, 0, entity.y);
+          position.set(entity.x, ground, entity.y);
           scale.set(w, h, d);
           matrix.compose(position, rotation.identity(), scale);
           scaffolds.setMatrixAt(scaffoldCount, matrix);
@@ -1042,7 +1074,7 @@ export function createEntityRenderer(
           counts.bars < capacity
         ) {
           const ratio = type.hp > 0 ? entity.hp / type.hp : 0;
-          position.set(entity.x, h + BAR_GAP, entity.y);
+          position.set(entity.x, ground + h + BAR_GAP, entity.y);
           scale.set(Math.max(BAR_MIN_SCALE, ratio), 1, 1);
           placeBox(bars, counts.bars++, healthColor(ratio));
         }
@@ -1053,8 +1085,13 @@ export function createEntityRenderer(
           tracerCount < capacity
         ) {
           const base = tracerCount * 2;
-          tracerPositions.setXYZ(base, entity.x, TRACER_Y, entity.y);
-          tracerPositions.setXYZ(base + 1, target.x, TRACER_Y, target.y);
+          tracerPositions.setXYZ(base, entity.x, ground + TRACER_Y, entity.y);
+          tracerPositions.setXYZ(
+            base + 1,
+            target.x,
+            groundY(target.x, target.y) + TRACER_Y,
+            target.y,
+          );
           color.setHex(ownerColor(entity.owner));
           tracerColors.setXYZ(base, color.r, color.g, color.b);
           tracerColors.setXYZ(base + 1, color.r, color.g, color.b);

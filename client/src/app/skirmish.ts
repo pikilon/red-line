@@ -51,6 +51,12 @@ import {
   type Effects,
   spawnShotEffects,
 } from "../render/effects";
+import {
+  elevationOf,
+  flatElevation,
+  footprintGround,
+  setGroundElevation,
+} from "../render/elevation";
 import { createEntityRenderer, type EntityRenderer } from "../render/entities";
 import { createFogOverlay } from "../render/fog";
 import {
@@ -765,11 +771,19 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       mapDefinition === undefined
         ? new Uint8Array(mapInfo.mapWidth * mapInfo.mapHeight)
         : rockCellsOf(mapDefinition);
+    // Hills and cliffs of the map (spec 30): the sim's corner heights.
+    const elevation =
+      mapDefinition === undefined
+        ? flatElevation(mapInfo.mapWidth, mapInfo.mapHeight)
+        : elevationOf(mapDefinition);
+    setGroundElevation(elevation);
     terrain = createTerrain(
       mapInfo.mapWidth,
       mapInfo.mapHeight,
       rockCells,
       seed,
+      undefined,
+      elevation,
     );
     scene.add(terrain);
     const sun = new DirectionalLight(SUN_COLOR, SUN_INTENSITY);
@@ -825,7 +839,11 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     groundImpacts = createGroundImpacts(effects, decals, () => relief);
     projectiles = createProjectiles();
     scene.add(projectiles.group);
-    fogOverlay = createFogOverlay(mapInfo.mapWidth, mapInfo.mapHeight);
+    fogOverlay = createFogOverlay(
+      mapInfo.mapWidth,
+      mapInfo.mapHeight,
+      elevation,
+    );
     scene.add(fogOverlay.mesh);
     const climate = climateFor(mapId, pageParams);
     if (climate !== null) {
@@ -837,6 +855,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         seed,
         densityFrom(pageParams),
         startSecondsFrom(pageParams, climate),
+        elevation,
       );
       weather.setEnabled(settings.weather !== false);
       scene.add(weather.group);
@@ -1036,10 +1055,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     );
     if (preview === null) return;
     const [width, height] = typeDef(preview.kind).footprint;
+    const centerX = preview.origin.x + width / 2;
+    const centerY = preview.origin.y + height / 2;
     placementGhost.mesh.position.set(
-      preview.origin.x + width / 2,
-      PLACEMENT_GHOST_Y,
-      preview.origin.y + height / 2,
+      centerX,
+      footprintGround(centerX, centerY, width, height) + PLACEMENT_GHOST_Y,
+      centerY,
     );
     placementGhost.mesh.scale.set(width, 1, height);
     placementGhost.material.color.set(

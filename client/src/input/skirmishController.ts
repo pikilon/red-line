@@ -1,11 +1,6 @@
-import {
-  type OrthographicCamera,
-  Plane,
-  Raycaster,
-  Vector2,
-  Vector3,
-} from "three";
+import { type OrthographicCamera, Raycaster, Vector2, Vector3 } from "three";
 import { setCameraTarget, zoomAfterWheel } from "../camera";
+import { groundY, pickGround } from "../render/elevation";
 import { typeDef } from "../rules";
 import type { EntityState } from "../sim/matchSnapshot";
 import type { SimCommand } from "../sim/protocol";
@@ -80,7 +75,6 @@ export interface SkirmishController {
 
 const LEFT_BUTTON = 0;
 const RIGHT_BUTTON = 2;
-const GROUND = new Plane(new Vector3(0, 1, 0), 0);
 
 /** Mouse, keyboard and placement wiring of the skirmish (spec §6.5). */
 export function createSkirmishController(
@@ -115,7 +109,7 @@ export function createSkirmishController(
   }
 
   function worldToScreen(x: number, y: number): ScreenPoint {
-    const ndc = new Vector3(x, 0, y).project(camera);
+    const ndc = new Vector3(x, groundY(x, y), y).project(camera);
     const rect = canvas.getBoundingClientRect();
     return {
       x: rect.left + ((ndc.x + 1) / 2) * rect.width,
@@ -130,8 +124,8 @@ export function createSkirmishController(
       1 - ((point.y - rect.top) / rect.height) * 2,
     );
     raycaster.setFromCamera(ndc, camera);
-    const hit = raycaster.ray.intersectPlane(GROUND, new Vector3());
-    return hit === null ? null : { x: hit.x, y: hit.z };
+    // The first hill or plateau the ray meets (spec 30 §4).
+    return pickGround(raycaster.ray);
   }
 
   /**

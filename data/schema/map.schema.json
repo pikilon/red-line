@@ -21,6 +21,67 @@
         }
       }
     },
+    "elevation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "hills": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["center", "radius", "height"],
+            "properties": {
+              "center": { "$ref": "#/$defs/pair" },
+              "radius": { "type": "number", "exclusiveMinimum": 0 },
+              "height": { "$ref": "#/$defs/height" }
+            }
+          }
+        },
+        "ridges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from", "to", "radius", "height"],
+            "properties": {
+              "from": { "$ref": "#/$defs/pair" },
+              "to": { "$ref": "#/$defs/pair" },
+              "radius": { "type": "number", "exclusiveMinimum": 0 },
+              "height": { "$ref": "#/$defs/height" }
+            }
+          }
+        },
+        "plateaus": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["rect", "height"],
+            "properties": {
+              "rect": { "$ref": "#/$defs/cells4" },
+              "height": { "$ref": "#/$defs/height" },
+              "slope": { "type": "number", "minimum": 0 },
+              "rough": { "type": "number", "minimum": 0 }
+            }
+          }
+        },
+        "ramps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from", "to", "width", "height"],
+            "properties": {
+              "from": { "$ref": "#/$defs/pair" },
+              "to": { "$ref": "#/$defs/pair" },
+              "width": { "type": "number", "exclusiveMinimum": 0 },
+              "height": { "$ref": "#/$defs/height" }
+            }
+          }
+        }
+      }
+    },
     "starts": {
       "type": "array",
       "minItems": 2,
@@ -44,6 +105,7 @@
       "maxItems": 2,
       "items": { "type": "integer", "minimum": 0 }
     },
+    "height": { "type": "integer", "minimum": 0, "maximum": 255 },
     "cells4": {
       "type": "array",
       "minItems": 4,

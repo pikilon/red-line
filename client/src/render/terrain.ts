@@ -7,6 +7,7 @@ import {
   type Texture,
   Uint32BufferAttribute,
 } from "three";
+import { type Elevation, flatElevation, SHADING_RELIEF } from "./elevation";
 import { attachTerrainDeformer, type TerrainDeformer } from "./terrainDeform";
 import {
   createRng,
@@ -41,6 +42,50 @@ export interface RockMap {
   readonly width: number;
   readonly height: number;
   readonly blocked: readonly (readonly number[])[];
+}
+
+/** Ground layers of the elevated terrain (spec 30 §4). `cliff` is a rock
+ *  overlay whose alpha follows the steepness. */
+export type GroundLayer = "grass" | "dirt" | "cliff";
+
+/** Slopes (tiles of rise per tile) where bare earth starts and covers fully. */
+const EARTH_SLOPE_LOW = 0.3;
+const EARTH_SLOPE_HIGH = 0.75;
+/** Slopes where the rock face starts and covers fully; the sim's cliff is a
+ *  spread of one tile over a cell (slope about 1). */
+const CLIFF_SLOPE_LOW = 0.55;
+const CLIFF_SLOPE_HIGH = 1;
+/** Rock faces are a touch darker and cooler than the flat rock. */
+const CLIFF_TINT = [0.82, 0.8, 0.78] as const;
+
+/** Alpha of `layer` at a corner of `slope`, over the flat default `base`. */
+export function layerAlpha(
+  layer: GroundLayer,
+  slope: number,
+  base: number,
+): number {
+  if (layer === "dirt") {
+    return Math.max(base, smoothstep(EARTH_SLOPE_LOW, EARTH_SLOPE_HIGH, slope));
+  }
+  if (layer === "cliff") {
+    return smoothstep(CLIFF_SLOPE_LOW, CLIFF_SLOPE_HIGH, slope);
+  }
+  return 1;
+}
+
+/** Shading normal of the elevation at a corner (central differences, slope
+ *  scaled by `SHADING_RELIEF`). */
+export function cornerNormal(
+  heightOf: (cx: number, cz: number) => number,
+  cx: number,
+  cz: number,
+): [number, number, number] {
+  const slopeX =
+    ((heightOf(cx + 1, cz) - heightOf(cx - 1, cz)) / 2) * SHADING_RELIEF;
+  const slopeZ =
+    ((heightOf(cx, cz + 1) - heightOf(cx, cz - 1)) / 2) * SHADING_RELIEF;
+  const inverse = 1 / Math.hypot(slopeX, 1, slopeZ);
+  return [-slopeX * inverse, inverse, -slopeZ * inverse];
 }
 
 /** One box per rock tile: bottom face first, then the jittered top face. */
@@ -120,9 +165,11 @@ function groundGeometry(
   width: number,
   height: number,
   rockCells: Uint8Array,
-  withAlpha: boolean,
+  layer: GroundLayer,
   seed: number,
+  elevation: Elevation,
 ): BufferGeometry {
+  const withAlpha = layer !== "grass";
   const passable: number[] = [];
   for (let tile = 0; tile < width * height; tile++) {
     if ((rockCells[tile] ?? 0) === 0) passable.push(tile);
@@ -143,14 +190,30 @@ function groundGeometry(
       [x + 1, y + 1],
       [x, y + 1],
     ] as const;
-    corners.forEach(([cx, cz], corner) => {
-      const vertex = slot * VERTICES_PER_TILE + corner;
-      positions.set([cx, 0, cz], vertex * 3);
-      normals.set([0, 1, 0], vertex * 3);
-      uvs.set([cx * TILE_UV_SCALE, cz * TILE_UV_SCALE], vertex * 2);
+    // Rock faces take their texture from the side they face, so it runs up
+    // the cliff instead of stretching (spec 30 §4).
+    const corner = elevation.corner;
+    const faceX =
+      Math.abs(corner(x + 1, y) - corner(x, y)) +
+        Math.abs(corner(x + 1, y + 1) - corner(x, y + 1)) >
+      Math.abs(corner(x, y + 1) - corner(x, y)) +
+        Math.abs(corner(x + 1, y + 1) - corner(x + 1, y));
+    corners.forEach(([cx, cz], index) => {
+      const vertex = slot * VERTICES_PER_TILE + index;
+      const cy = corner(cx, cz);
+      positions.set([cx, cy, cz], vertex * 3);
+      normals.set(cornerNormal(corner, cx, cz), vertex * 3);
+      if (layer === "cliff") {
+        const across = faceX ? cz : cx;
+        uvs.set([across * TILE_UV_SCALE, -cy * TILE_UV_SCALE * 2], vertex * 2);
+      } else {
+        uvs.set([cx * TILE_UV_SCALE, cz * TILE_UV_SCALE], vertex * 2);
+      }
       if (withAlpha) {
-        const alpha = dirtAlphaAt(cx, cz, seed);
-        colors.set([1, 1, 1, alpha], vertex * 4);
+        const base = layer === "dirt" ? dirtAlphaAt(cx, cz, seed) : 0;
+        const alpha = layerAlpha(layer, elevation.slope(cx, cz), base);
+        const tint = layer === "cliff" ? CLIFF_TINT : ([1, 1, 1] as const);
+        colors.set([...tint, alpha], vertex * 4);
       } else {
         colors.set([1, 1, 1], vertex * 3);
       }
@@ -180,6 +243,7 @@ function rockGeometry(
   height: number,
   rockCells: Uint8Array,
   seed: number,
+  elevation: Elevation,
 ): BufferGeometry {
   const cells: { x: number; z: number }[] = [];
   for (let z = 0; z < height; z++) {
@@ -212,15 +276,21 @@ function rockGeometry(
       ROCK_HEIGHT_RANGE *
         valueNoise(cell.x, cell.z, ROCK_NOISE_PERIOD, seed + 1);
     const jitter = (): number => (rng() - 0.5) * 2 * ROCK_JITTER;
+    // Rocks stand on the ground they cover (spec 30 §4).
+    const ground = (dx: number, dz: number): number =>
+      elevation.corner(cell.x + dx, cell.z + dz);
+    const top =
+      Math.max(ground(0, 0), ground(1, 0), ground(1, 1), ground(0, 1)) +
+      boxHeight;
     const corners: [number, number, number][] = [
-      [cell.x, 0, cell.z],
-      [cell.x + 1, 0, cell.z],
-      [cell.x + 1, 0, cell.z + 1],
-      [cell.x, 0, cell.z + 1],
-      [cell.x + jitter(), boxHeight, cell.z + jitter()],
-      [cell.x + 1 + jitter(), boxHeight, cell.z + jitter()],
-      [cell.x + 1 + jitter(), boxHeight, cell.z + 1 + jitter()],
-      [cell.x + jitter(), boxHeight, cell.z + 1 + jitter()],
+      [cell.x, ground(0, 0), cell.z],
+      [cell.x + 1, ground(1, 0), cell.z],
+      [cell.x + 1, ground(1, 1), cell.z + 1],
+      [cell.x, ground(0, 1), cell.z + 1],
+      [cell.x + jitter(), top, cell.z + jitter()],
+      [cell.x + 1 + jitter(), top, cell.z + jitter()],
+      [cell.x + 1 + jitter(), top, cell.z + 1 + jitter()],
+      [cell.x + jitter(), top, cell.z + 1 + jitter()],
     ];
     corners.forEach(([cx, cy, cz], corner) => {
       const vertex = slot * VERTICES_PER_ROCK + corner;
@@ -249,18 +319,21 @@ export function createTerrain(
   rockCells: Uint8Array,
   seed = 1,
   generated?: Partial<Record<TerrainKind, Texture>>,
+  elevation: Elevation = flatElevation(width, height),
 ): Group {
   const procedural = createTerrainTextures(seed);
   const textures = { ...procedural, ...definedOnly(generated) };
   const grass = new Mesh(
-    groundGeometry(width, height, rockCells, false, seed),
+    groundGeometry(width, height, rockCells, "grass", seed, elevation),
     new MeshLambertMaterial({ map: textures.grass, vertexColors: true }),
   );
   grass.name = "grass";
   grass.receiveShadow = true;
+  // Hills and cliffs shade the ground behind them (spec 30 §4).
+  grass.castShadow = elevation.raised;
 
   const dirt = new Mesh(
-    groundGeometry(width, height, rockCells, true, seed),
+    groundGeometry(width, height, rockCells, "dirt", seed, elevation),
     new MeshLambertMaterial({
       map: textures.dirt,
       transparent: true,
@@ -272,7 +345,7 @@ export function createTerrain(
   dirt.receiveShadow = true;
 
   const rock = new Mesh(
-    rockGeometry(width, height, rockCells, seed),
+    rockGeometry(width, height, rockCells, seed, elevation),
     new MeshLambertMaterial({ map: textures.rock, flatShading: true }),
   );
   rock.name = "rock";
@@ -282,13 +355,31 @@ export function createTerrain(
   const group = new Group();
   group.userData.procedural = procedural;
   group.add(grass, dirt, rock);
-  // Visual relief (spec 24); layers on top keep drawing against y = 0 meshes.
+  if (elevation.raised) {
+    // Rock faces over the steep corners (spec 30 §4): same tiles as the
+    // grass, so the relief moves them too.
+    const cliff = new Mesh(
+      groundGeometry(width, height, rockCells, "cliff", seed, elevation),
+      new MeshLambertMaterial({
+        map: textures.rock,
+        transparent: true,
+        vertexColors: true,
+        depthWrite: false,
+      }),
+    );
+    cliff.name = "cliff";
+    cliff.receiveShadow = true;
+    cliff.renderOrder = 1;
+    group.add(cliff);
+  }
+  // Visual relief (spec 24) on top of the elevation (spec 30).
   group.userData.deformer = attachTerrainDeformer(
     group,
     width,
     height,
     rockCells,
     (cx, cz) => dirtAlphaAt(cx, cz, seed),
+    elevation,
   );
   return group;
 }
@@ -303,8 +394,12 @@ export function setTerrainTextures(
     | Record<TerrainKind, Texture>
     | undefined;
   if (procedural === undefined) return;
-  for (const kind of TERRAIN_KINDS) {
-    const mesh = group.getObjectByName(kind);
+  const layers: [string, TerrainKind][] = [
+    ...TERRAIN_KINDS.map((kind): [string, TerrainKind] => [kind, kind]),
+    ["cliff", "rock"],
+  ];
+  for (const [name, kind] of layers) {
+    const mesh = group.getObjectByName(name);
     if (!(mesh instanceof Mesh)) continue;
     const material = mesh.material as MeshLambertMaterial;
     const next = textures?.[kind] ?? procedural[kind];

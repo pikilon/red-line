@@ -4,6 +4,7 @@
  * knows origin, impact and ticks; the arc is presentation.
  */
 import type { ProjectileState } from "../sim/combatSnapshot";
+import { groundY as groundAt } from "./elevation";
 
 export const FLIGHT_PROFILES = [
   "straight",
@@ -89,9 +90,17 @@ export function flightPoint(
     profile === "ballistic"
       ? Math.max(apexTiles, BALLISTIC_RISE * Math.hypot(groundX, groundY))
       : apexTiles;
+  // Heights are above the ground line from muzzle to impact, so shots climb
+  // to and fall from high ground (spec 30 §4).
+  const fromGround = groundAt(p.originX, p.originY);
+  const toGround = groundAt(p.impactX, p.impactY);
   const at = (u: number): { x: number; y: number; z: number } => {
     const { s, z } = flightSample(profile, u, h0, apex);
-    return { x: p.originX + groundX * s, y: p.originY + groundY * s, z };
+    return {
+      x: p.originX + groundX * s,
+      y: p.originY + groundY * s,
+      z: z + fromGround + (toGround - fromGround) * s,
+    };
   };
   const here = at(t);
   const [from, to] =

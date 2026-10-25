@@ -19,7 +19,18 @@ pub struct MapGrid {
     width: u16,
     height: u16,
     blocked: Vec<bool>,
+    /// Corner heights in `HEIGHT_STEPS_PER_TILE`ths of a tile, row-major over
+    /// `(width + 1) x (height + 1)`; empty for a flat map (spec 30 §3).
+    heights: Vec<u8>,
 }
+
+/// Height steps per tile: one byte per corner, 1/16 tile each, like Zero
+/// Hour's `MAP_HEIGHT_SCALE = MAP_XY_FACTOR / 16` (spec 30 §2).
+pub const HEIGHT_STEPS_PER_TILE: i32 = 16;
+/// A cell whose four corners spread by at least this many steps is a cliff:
+/// Zero Hour's `PATHFIND_CLIFF_SLOPE_LIMIT_F = 9.8` world units over 0.625 per
+/// step, so a spread of 16 (10 units) is the first that counts (spec 30 §2).
+pub const CLIFF_SPREAD: u8 = 16;
 
 impl MapGrid {
     /// A grid where every cell is passable.
@@ -28,7 +39,92 @@ impl MapGrid {
             width,
             height,
             blocked: vec![false; usize::from(width) * usize::from(height)],
+            heights: Vec::new(),
         }
+    }
+
+    /// Gives the grid its corner heights and blocks every cliff cell (spec 30
+    /// §3). Panics unless `heights` is empty or `(width + 1) * (height + 1)`
+    /// long.
+    pub fn set_heights(&mut self, heights: Vec<u8>) {
+        if heights.is_empty() {
+            self.heights = heights;
+            return;
+        }
+        let stride = usize::from(self.width) + 1;
+        assert_eq!(
+            heights.len(),
+            stride * (usize::from(self.height) + 1),
+            "heights must cover every corner"
+        );
+        self.heights = heights;
+        for y in 0..i32::from(self.height) {
+            for x in 0..i32::from(self.width) {
+                let cell = Cell { x, y };
+                if self.is_cliff(cell) {
+                    self.set_blocked(cell, true);
+                }
+            }
+        }
+    }
+
+    /// Corner heights, row-major over `(width + 1) x (height + 1)`; empty when
+    /// the map is flat.
+    pub fn heights(&self) -> &[u8] {
+        &self.heights
+    }
+
+    /// Height steps of corner `(x, y)`, clamped to the map edge; 0 on a flat map.
+    pub fn corner_height(&self, x: i32, y: i32) -> u8 {
+        if self.heights.is_empty() {
+            return 0;
+        }
+        let x = x.clamp(0, i32::from(self.width)) as usize;
+        let y = y.clamp(0, i32::from(self.height)) as usize;
+        self.heights[y * (usize::from(self.width) + 1) + x]
+    }
+
+    /// Zero Hour's `setCellCliffFlagFromHeights`: the spread of the cell's four
+    /// corners reaches `CLIFF_SPREAD`.
+    pub fn is_cliff(&self, cell: Cell) -> bool {
+        if self.heights.is_empty() || !self.in_bounds(cell) {
+            return false;
+        }
+        let corners = [
+            self.corner_height(cell.x, cell.y),
+            self.corner_height(cell.x + 1, cell.y),
+            self.corner_height(cell.x, cell.y + 1),
+            self.corner_height(cell.x + 1, cell.y + 1),
+        ];
+        let max = corners.iter().copied().max().unwrap_or(0);
+        let min = corners.iter().copied().min().unwrap_or(0);
+        max - min >= CLIFF_SPREAD
+    }
+
+    /// Ground height at `pos`, in tiles: the plane of the cell triangle `pos`
+    /// lies in, split along the `(x, y)`-`(x + 1, y + 1)` diagonal like Zero
+    /// Hour's `getHeightMapHeight` (and the client mesh). Integer only.
+    pub fn ground_height(&self, pos: FxVec2) -> Fx {
+        if self.heights.is_empty() {
+            return Fx::ZERO;
+        }
+        let max_x = i32::from(self.width) << 16;
+        let max_y = i32::from(self.height) << 16;
+        let px = pos.x.raw().clamp(0, max_x);
+        let py = pos.y.raw().clamp(0, max_y);
+        let cx = (px >> 16).min(i32::from(self.width) - 1);
+        let cy = (py >> 16).min(i32::from(self.height) - 1);
+        let fx = i64::from(px - (cx << 16));
+        let fy = i64::from(py - (cy << 16));
+        let h = |dx: i32, dy: i32| i64::from(self.corner_height(cx + dx, cy + dy));
+        let (h00, h10, h01, h11) = (h(0, 0), h(1, 0), h(0, 1), h(1, 1));
+        // Steps x 65536, then / 16 steps per tile = tiles in Q16.16.
+        let steps = if fx >= fy {
+            (h00 << 16) + (h10 - h00) * fx + (h11 - h10) * fy
+        } else {
+            (h00 << 16) + (h11 - h01) * fx + (h01 - h00) * fy
+        };
+        Fx::from_raw((steps / i64::from(HEIGHT_STEPS_PER_TILE)) as i32)
     }
 
     /// The built-in 128 x 128 tech-slice layout.

@@ -5,6 +5,7 @@ import {
   Mesh,
   Uint32BufferAttribute,
 } from "three";
+import { type Elevation, flatElevation, SHADING_RELIEF } from "./elevation";
 
 /** Visual-only ground relief (specs 24, 27). The simulation never reads it:
  *  the heights below only move the grass and dirt vertices and their normals.
@@ -123,8 +124,9 @@ export interface TerrainDeformer {
   /** Per-corner softness in 0..1 over a (width+1) x (height+1) grid, row
    *  major; null restores the default (the dirt patches). Snow layers use this. */
   setSoftness(softness: Float32Array<ArrayBuffer> | null): void;
-  /** Relief at a world position relative to the base ground: negative where
-   *  it sank, positive on crater rims. */
+  /** Surface height at a world position: the map elevation (spec 30) plus
+   *  the relief on top of it (negative where it sank, positive on crater
+   *  rims). */
   heightAt(x: number, z: number): number;
   /** Applies due craters and uploads the changed vertices. */
   update(nowMs: number): void;
@@ -193,6 +195,10 @@ interface PatchLayer {
   colors: Float32Array<ArrayBuffer>;
   /** Dirt opacity of the base ground per patch vertex. */
   baseAlpha: Float32Array<ArrayBuffer>;
+  /** Rock-face mix and its UVs, when the source mesh carries them (spec 30). */
+  readonly withCliff: boolean;
+  cliffUvs: Float32Array<ArrayBuffer>;
+  cliffs: Float32Array<ArrayBuffer>;
 }
 
 function patchGeometry(layer: PatchLayer): BufferGeometry {
@@ -204,6 +210,10 @@ function patchGeometry(layer: PatchLayer): BufferGeometry {
     "color",
     new BufferAttribute(layer.colors, layer.colorSize),
   );
+  if (layer.withCliff) {
+    geometry.setAttribute("aCliffUv", new BufferAttribute(layer.cliffUvs, 2));
+    geometry.setAttribute("aCliff", new BufferAttribute(layer.cliffs, 1));
+  }
   const indices = new Uint32Array(layer.capacity * PATCH_INDICES);
   for (let slot = 0; slot < layer.capacity; slot++) {
     let offset = slot * PATCH_INDICES;
@@ -231,6 +241,7 @@ export function attachTerrainDeformer(
   height: number,
   rockCells: Uint8Array,
   defaultSoftness: (cx: number, cz: number) => number,
+  elevation: Elevation = flatElevation(width, height),
 ): TerrainDeformer {
   const stride = width + 1;
   const press = new Float32Array(stride * (height + 1));
@@ -261,21 +272,12 @@ export function attachTerrainDeformer(
     if (mesh instanceof Mesh) meshes.push(mesh);
   }
 
-  // Base height of every corner as the terrain built it (flat today; the
-  // relief adds to it, so a hilly base keeps its shape).
+  // Base height of every corner: the map elevation (spec 30) the ground mesh
+  // was built with. The relief adds to it, so craters dig on top of hills.
   const base = new Float32Array(press.length);
-  const grassPositions = meshes[0]?.geometry.getAttribute("position");
-  for (let tile = 0; tile < width * height; tile++) {
-    const slot = slotOf[tile] ?? -1;
-    if (slot < 0 || grassPositions === undefined) continue;
-    const tx = tile % width;
-    const tz = Math.floor(tile / width);
-    for (let corner = 0; corner < VERTICES_PER_TILE; corner++) {
-      const cx = tx + (CORNER_DX[corner] ?? 0);
-      const cz = tz + (CORNER_DZ[corner] ?? 0);
-      base[cz * stride + cx] = grassPositions.getY(
-        slot * VERTICES_PER_TILE + corner,
-      );
+  for (let cz = 0; cz <= height; cz++) {
+    for (let cx = 0; cx <= width; cx++) {
+      base[cz * stride + cx] = elevation.corner(cx, cz);
     }
   }
 
@@ -316,6 +318,9 @@ export function attachTerrainDeformer(
       uvs: new Float32Array(0),
       colors: new Float32Array(0),
       baseAlpha: new Float32Array(0),
+      withCliff: source.geometry.getAttribute("aCliff") !== undefined,
+      cliffUvs: new Float32Array(0),
+      cliffs: new Float32Array(0),
     };
     layer.mesh.name = `${source.name}-relief`;
     layer.mesh.receiveShadow = source.receiveShadow;
@@ -340,6 +345,8 @@ export function attachTerrainDeformer(
     layer.uvs = copy(layer.uvs, 2);
     layer.colors = copy(layer.colors, layer.colorSize);
     layer.baseAlpha = copy(layer.baseAlpha, 1);
+    layer.cliffUvs = copy(layer.cliffUvs, 2);
+    layer.cliffs = copy(layer.cliffs, 1);
     layer.capacity = capacity;
     const previous = layer.mesh.geometry;
     layer.mesh.geometry = patchGeometry(layer);
@@ -391,8 +398,27 @@ export function attachTerrainDeformer(
               color.getW(first + 3) * w3;
           }
           layer.baseAlpha[vertex] = alpha;
+          if (layer.withCliff) {
+            const cliffUv = layer.source.geometry.getAttribute("aCliffUv");
+            const cliff = layer.source.geometry.getAttribute("aCliff");
+            for (let axis = 0; axis < 2; axis++) {
+              const at = (corner: number): number =>
+                cliffUv?.getComponent(first + corner, axis) ?? 0;
+              layer.cliffUvs[vertex * 2 + axis] =
+                at(0) * w0 + at(1) * w1 + at(2) * w2 + at(3) * w3;
+            }
+            layer.cliffs[vertex] =
+              (cliff?.getX(first) ?? 0) * w0 +
+              (cliff?.getX(first + 1) ?? 0) * w1 +
+              (cliff?.getX(first + 2) ?? 0) * w2 +
+              (cliff?.getX(first + 3) ?? 0) * w3;
+          }
         }
       }
+      const cliffUvAttribute = layer.mesh.geometry.getAttribute("aCliffUv");
+      if (cliffUvAttribute !== undefined) cliffUvAttribute.needsUpdate = true;
+      const cliffAttribute = layer.mesh.geometry.getAttribute("aCliff");
+      if (cliffAttribute !== undefined) cliffAttribute.needsUpdate = true;
       const uvAttribute = layer.mesh.geometry.getAttribute("uv");
       if (uvAttribute !== undefined) uvAttribute.needsUpdate = true;
       layer.mesh.geometry.setDrawRange(0, patchTiles.length * PATCH_INDICES);
@@ -555,6 +581,15 @@ export function attachTerrainDeformer(
     return cornerBilinear(base, fx / SUB, fz / SUB) + reliefFine(fx, fz);
   }
 
+  /** The height the normals see: the elevation bent like the static mesh
+   *  (spec 30 §4) so gentle hills still read, the relief as it is. */
+  function shadedFine(fx: number, fz: number): number {
+    return (
+      SHADING_RELIEF * cornerBilinear(base, fx / SUB, fz / SUB) +
+      reliefFine(fx, fz)
+    );
+  }
+
   /** Normal at fine sample (fx, fz) from differences `step` samples apart. */
   function normalAt(
     fx: number,
@@ -567,10 +602,10 @@ export function attachTerrainDeformer(
     const back = Math.max(0, fz - step);
     const front = Math.min(fineHeight - 1, fz + step);
     const slopeX =
-      ((surfaceFine(right, fz) - surfaceFine(left, fz)) * SUB) /
+      ((shadedFine(right, fz) - shadedFine(left, fz)) * SUB) /
       Math.max(1, right - left);
     const slopeZ =
-      ((surfaceFine(fx, front) - surfaceFine(fx, back)) * SUB) /
+      ((shadedFine(fx, front) - shadedFine(fx, back)) * SUB) /
       Math.max(1, front - back);
     const inverse = 1 / Math.hypot(slopeX, 1, slopeZ);
     out[0] = -slopeX * inverse;
@@ -798,7 +833,8 @@ export function attachTerrainDeformer(
     },
 
     heightAt(x, z) {
-      const pressed = cornerBilinear(press, x, z);
+      const ground = elevation.at(x, z);
+      const pressed = ground + cornerBilinear(press, x, z);
       if (crater === null) return pressed;
       const gx = Math.min(fineWidth - 1 - 1e-6, Math.max(0, x * SUB));
       const gz = Math.min(fineHeight - 1 - 1e-6, Math.max(0, z * SUB));

@@ -138,6 +138,12 @@
       "map": "showcase",
       "form": "setup",
       "entities": 9
+    },
+    {
+      "id": "hills-and-cliffs",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 11
     }
   ]
 }

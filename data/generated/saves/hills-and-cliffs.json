@@ -1,0 +1,167 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "hills-and-cliffs",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "first-line",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 40,
+      "y": 84,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "first-line",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3050,
+          8150
+        ],
+        "order": {
+          "moveCenti": [
+            4450,
+            8350
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3050,
+          8350
+        ],
+        "order": {
+          "moveCenti": [
+            4450,
+            8550
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3050,
+          8550
+        ],
+        "order": {
+          "moveCenti": [
+            4450,
+            8750
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          2850,
+          8250
+        ],
+        "order": {
+          "moveCenti": [
+            4250,
+            8250
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          2850,
+          8450
+        ],
+        "order": {
+          "moveCenti": [
+            4250,
+            8450
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2850,
+          8650
+        ],
+        "order": {
+          "moveCenti": [
+            4250,
+            8650
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2850,
+          8750
+        ],
+        "order": {
+          "moveCenti": [
+            4250,
+            8750
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          5150,
+          8250
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          5150,
+          8550
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          5350,
+          8400
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          5350,
+          8700
+        ]
+      }
+    ]
+  }
+}

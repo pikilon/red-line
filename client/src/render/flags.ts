@@ -18,6 +18,7 @@ import {
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { RULES, typeDef } from "../rules";
 import { ENTITY_FLAGS, type EntityState, hasFlag } from "../sim/matchSnapshot";
+import { footprintGround } from "./elevation";
 import { RU_WHITE, UA_BLUE, UA_YELLOW } from "./liveries";
 
 export const RU_BLUE = 0x0039a6;
@@ -215,7 +216,7 @@ export function createFlagRenderer(capacity: number): FlagRenderer {
         const [w, h, d] = typeDef(entity.kind).render.size.map(
           (size) => size / 100,
         ) as [number, number, number];
-        const top = h + POLE_ABOVE;
+        const top = footprintGround(entity.x, entity.y, w, d) + h + POLE_ABOVE;
         const x = entity.x - w / 2 + POLE_INSET;
         const z = entity.y + d / 2 - POLE_INSET;
         matrix.makeTranslation(x, top, z);

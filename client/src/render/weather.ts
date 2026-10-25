@@ -6,7 +6,6 @@ import {
   Group,
   LinearFilter,
   Mesh,
-  PlaneGeometry,
   Points,
   RedFormat,
   ShaderMaterial,
@@ -14,6 +13,7 @@ import {
   Vector2,
 } from "three";
 import weatherData from "../../../data/weather/weather.json";
+import { drapedGrid, type Elevation, flatElevation } from "./elevation";
 import { createRng, valueNoise } from "./terrainTexture";
 
 /** One climate of `data/weather/weather.json` (spec 22 §3). */
@@ -145,9 +145,12 @@ void main() {
 }`;
 
 const COVER_VERTEX = /* glsl */ `
+attribute float aHold;
 varying vec2 vUv;
+varying float vHold;
 void main() {
   vUv = uv;
+  vHold = aHold;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }`;
 
@@ -158,12 +161,27 @@ uniform float uEdge;
 uniform float uOpacity;
 uniform vec3 uColor;
 varying vec2 vUv;
+varying float vHold;
 void main() {
   float threshold = texture2D(uMask, vUv).r;
-  float a = smoothstep(threshold, threshold + uEdge, uCover) * uOpacity;
+  float a = smoothstep(threshold, threshold + uEdge, uCover) * uOpacity * vHold;
   if (a < 0.01) discard;
   gl_FragColor = vec4(uColor, a);
 }`;
+
+/** Slopes (tiles of rise per tile) where snow starts to slide off, and where
+ *  none holds. */
+const SNOW_SLIDE_LOW = 0.6;
+const SNOW_SLIDE_HIGH = 1.1;
+
+/** Share of the snow cover a corner of `slope` keeps: 1 on flat ground. */
+export function snowHold(slope: number): number {
+  const t = Math.min(
+    1,
+    Math.max(0, (slope - SNOW_SLIDE_LOW) / (SNOW_SLIDE_HIGH - SNOW_SLIDE_LOW)),
+  );
+  return 1 - t * t * (3 - 2 * t);
+}
 
 /** Falling snow and the white ground cover of one match (spec 22). Visual
  *  only: nothing here reaches the simulation. */
@@ -187,6 +205,7 @@ export function createWeather(
   seed: number,
   density = 1,
   startSeconds = 0,
+  elevation: Elevation = flatElevation(width, height),
 ): Weather {
   const group = new Group();
   group.name = "weather";
@@ -234,10 +253,15 @@ export function createWeather(
   mask.magFilter = LinearFilter;
   mask.minFilter = LinearFilter;
   mask.needsUpdate = true;
-  const coverGeometry = new PlaneGeometry(width, height);
-  coverGeometry.rotateX(-Math.PI / 2);
-  const uv = coverGeometry.getAttribute("uv");
-  for (let i = 0; i < uv.count; i++) uv.setY(i, 1 - uv.getY(i));
+  // The cover drapes over hills; snow does not hold on cliffs (spec 30 §4).
+  const coverGeometry = drapedGrid(elevation, COVER_Y);
+  const hold = new Float32Array((width + 1) * (height + 1));
+  for (let z = 0; z <= height; z++) {
+    for (let x = 0; x <= width; x++) {
+      hold[z * (width + 1) + x] = snowHold(elevation.slope(x, z));
+    }
+  }
+  coverGeometry.setAttribute("aHold", new Float32BufferAttribute(hold, 1));
   const coverMaterial = new ShaderMaterial({
     uniforms: {
       uMask: { value: mask },
@@ -252,7 +276,7 @@ export function createWeather(
     depthWrite: false,
   });
   const cover = new Mesh(coverGeometry, coverMaterial);
-  cover.position.set(width / 2, COVER_Y, height / 2);
+
   cover.renderOrder = -1;
   cover.name = "snow-cover";
 

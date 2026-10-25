@@ -20,6 +20,7 @@ import {
 import { typeDef } from "../rules";
 import type { EntityState } from "../sim/matchSnapshot";
 import type { DeathCauses } from "./deaths";
+import { groundY } from "./elevation";
 import { angleToYaw } from "./heading";
 import {
   BURN_OUT_MS,
@@ -68,6 +69,8 @@ interface Particle {
   x: number;
   y: number;
   z: number;
+  /** Ground height where it spawned (spec 30): `z` is relative to it. */
+  base: number;
   vx: number;
   vy: number;
   vz: number;
@@ -280,6 +283,7 @@ export function createVehicleFx(seed = 0x7a11): VehicleFx {
     const pool = pools[kind];
     if (pool.length >= CAPACITY[kind]) pool.shift();
     pool.push({
+      base: groundY(p.x, p.y),
       vx: 0,
       vy: 0,
       vz: 0,
@@ -789,7 +793,7 @@ export function createVehicleFx(seed = 0x7a11): VehicleFx {
           scale.set(s, s, s);
           z = Math.max(0.02, z);
         }
-        position.set(x, z, y);
+        position.set(x, p.base + z, y);
         matrix.compose(position, rotation, scale);
         mesh.setMatrixAt(n, matrix);
         color.setHex(p.color0).lerp(color1.setHex(p.color1), f);
