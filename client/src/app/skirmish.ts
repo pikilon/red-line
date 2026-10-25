@@ -168,6 +168,7 @@ const NO_PROJECTILE_COUNTS = Object.fromEntries(
 
 const NO_EFFECT_COUNTS: Record<EffectKind, number> = {
   muzzle: 0,
+  backblast: 0,
   impact: 0,
   blast: 0,
   explosion: 0,
@@ -177,6 +178,8 @@ const NO_EFFECT_COUNTS: Record<EffectKind, number> = {
   droplet: 0,
   debris: 0,
   dust: 0,
+  launchSmoke: 0,
+  trail: 0,
   clod: 0,
 };
 /** The builtin ruleset type without a committed `.glb` (spec 06 §3). */
@@ -1275,11 +1278,17 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       vehicleFx.update(drawn, effectTime(now), camera.quaternion);
       // Entities are drawn between the previous and the latest tick, so the
       // projectiles fly at the same fractional tick.
-      projectiles?.sync(
-        flying,
-        next.tick - 1 + Math.min(1, Math.max(0, alpha)),
-        next,
-      );
+      const drawnTick = next.tick - 1 + Math.min(1, Math.max(0, alpha));
+      projectiles?.sync(flying, drawnTick, next);
+      if (effects !== null) {
+        projectiles?.spawnEffects(
+          flying,
+          drawnTick,
+          next,
+          effectTime(now),
+          effects,
+        );
+      }
     }
     updatePlacementGhost();
     effects?.update(effectTime(now));
