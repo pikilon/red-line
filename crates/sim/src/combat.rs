@@ -10,10 +10,12 @@
 //! wherever it moved, a ballistic one hits the nearest valid enemy within
 //! `DIRECT_HIT_CENTI` of its scattered impact, and a splash one damages every
 //! player-owned entity inside its radius, friend or foe (owner request
-//! 2026-10-25). Neutral depots are never hit.
+//! 2026-10-25). Neutral depots are never hit. A ground shot with no splash can
+//! also catch a friendly at its impact point; automatic targeting still only
+//! picks enemies.
 
 use crate::angle::{Angle, atan2};
-use crate::entity::{EntityId, GROUND_TARGET, NEUTRAL, Order, PlayerId, Projectile};
+use crate::entity::{EntityId, GROUND_TARGET, NEUTRAL, Order, Projectile};
 use crate::fixed::{Fx, FxVec2};
 use crate::rng::SplitMix64;
 use crate::rules::{Delivery, LocoKind, TypeId, WeaponDef, WeaponId, fx_centi};
@@ -152,7 +154,7 @@ impl World {
             // impact point for splash.
             if weapon.splash_centi > 0 {
                 self.apply_splash(shooter, weapon_id, weapon, aim);
-            } else if let Some(hit) = target.or_else(|| self.direct_hit(owner, weapon, aim)) {
+            } else if let Some(hit) = target.or_else(|| self.direct_hit(shooter, weapon, aim)) {
                 self.apply_hit(shooter, hit, weapon_id, weapon);
             }
         } else {
@@ -383,7 +385,7 @@ impl World {
                 }
                 // A shot at the ground (spec 20) lands like a ballistic one.
                 Delivery::Homing | Delivery::Ballistic => {
-                    let index = self.direct_hit(projectile.owner, &weapon, projectile.impact);
+                    let index = self.direct_hit(projectile.shooter, &weapon, projectile.impact);
                     index.map(|index| {
                         let id = self.entities[index].id;
                         self.apply_hit(projectile.shooter, index, projectile.weapon, &weapon);
@@ -401,17 +403,18 @@ impl World {
         });
     }
 
-    /// Spec 17 §4.3 direct hit: the entity with `hp > 0`, an owner neither the
-    /// shooter's nor `NEUTRAL`, a non-zero modifier and the smallest entity
-    /// distance from `impact`, within `DIRECT_HIT_CENTI`. Ties go to the lowest
-    /// id (the ascending index).
-    fn direct_hit(&self, owner: PlayerId, weapon: &WeaponDef, impact: FxVec2) -> Option<usize> {
+    /// Spec 17 §4.3 direct hit: the entity with `hp > 0`, not the shooter, not
+    /// `NEUTRAL`, a non-zero modifier and the smallest entity distance from
+    /// `impact`, within `DIRECT_HIT_CENTI`. A shell that lands on a friendly
+    /// hurts it too (owner request 2026-10-25); automatic targeting still only
+    /// picks enemies. Ties go to the lowest id (the ascending index).
+    fn direct_hit(&self, shooter: EntityId, weapon: &WeaponDef, impact: FxVec2) -> Option<usize> {
         let radius = fx_centi(DIRECT_HIT_CENTI);
         let mut best: Option<(Fx, usize)> = None;
         for index in 0..self.entities.len() {
             let entity = &self.entities[index];
             if entity.hp == 0
-                || entity.owner == owner
+                || entity.id == shooter
                 || entity.owner == NEUTRAL
                 || self
                     .rules

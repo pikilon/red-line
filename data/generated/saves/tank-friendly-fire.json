@@ -1,0 +1,81 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "tank-friendly-fire",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 47,
+      "y": 19,
+      "zoom": 2.1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-hq",
+        "origin": [
+          4,
+          30
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-hq",
+        "origin": [
+          92,
+          30
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          4400,
+          2000
+        ],
+        "order": {
+          "attackGroundCenti": [
+            4900,
+            1900
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-kozak-scout",
+        "atCenti": [
+          4300,
+          1900
+        ],
+        "order": {
+          "moveCenti": [
+            4900,
+            1900
+          ]
+        }
+      }
+    ]
+  }
+}

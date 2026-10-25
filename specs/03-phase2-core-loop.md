@@ -50,7 +50,7 @@ Out (later phases):
   veterancy, upgrades, special powers, garrisons, transports, repair, selling,
   cancelling a placed construction, power sabotage, radar and minimap.
 * Formations, waypoints, attack-move, guard, control groups, shift-add.
-* Line of sight blocked by terrain, terrain heights, direct friendly fire.
+* Line of sight blocked by terrain, terrain heights.
 * Real models, effects, audio, gore filter (Phase 4). Multiplayer (Phase 5).
 
 ## 3. Constants
@@ -876,6 +876,11 @@ pub fn damage_dealt(base: u32, modifier_percent: u32) -> u32;
    (owner request 2026-10-25); neutral depots are never hit. A friendly victim
    does not retaliate against its own side (spec 23). Instant splash uses the
    target's position as the impact point.
+
+   A ground shot with `splash_centi == 0` can catch any player-owned entity at
+   its impact point, including a friendly one (owner request 2026-10-25);
+   automatic targeting still ignores friendlies, so this is a force fire at
+   the ground.
 
    Zero Hour precedent (`generals-precedent` note 2026-10-25): the blast is a
    plain radius query over the partition (`Weapon.cpp:1307`); the default
@@ -2033,6 +2038,11 @@ points within 1 px, and `selectedIds()` is still `[]`; when the mouse is
 released, then `#selection-box` is hidden and `selectedIds()` contains every
 owner-0 unit whose screen point lies inside the rectangle (the test spawns
 two owner-0 riflemen there with `debugSpawn`).
+
+**AC-03-68 Friendly direct fire.** Given a player 0 tank at `(5.5, 10.5)` and a
+player 0 dozer at `(5.5, 16.0)`, when the tank is ordered to force-fire at the
+dozer's position, then after five steps the dozer has lost the cannon's
+damage; auto-targeting still never picks a friendly.
 
 ### Updated Phase 1 criteria
 

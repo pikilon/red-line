@@ -156,6 +156,12 @@
       "map": "showcase",
       "form": "setup",
       "entities": 7
+    },
+    {
+      "id": "tank-friendly-fire",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
     }
   ]
 }
