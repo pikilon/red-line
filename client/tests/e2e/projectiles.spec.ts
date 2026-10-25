@@ -1,0 +1,187 @@
+import { expect, type Page, test } from "@playwright/test";
+import { ms } from "./timeouts";
+
+const FIXED = 65536;
+
+interface Point {
+  x: number;
+  y: number;
+}
+
+interface EntityView {
+  id: number;
+  owner: number;
+  kind: number;
+  x: number;
+  y: number;
+}
+
+interface SkirmishProjectileDebugView {
+  isReady(): boolean;
+  typeIndex(id: string): number;
+  entities(): EntityView[];
+  selectedIds(): number[];
+  worldToScreen(x: number, y: number): Point;
+  setCameraTarget(x: number, y: number): void;
+  command(command: Record<string, unknown>): void;
+  effectCounts(): Record<string, number>;
+  projectileCounts(): Record<string, number>;
+  projectileSamples(): { model: string; z: number; t: number }[];
+}
+
+type DebugWindow = Window & { __redline?: SkirmishProjectileDebugView };
+
+async function boot(page: Page): Promise<void> {
+  await page.goto("/?debug=1&seed=1");
+  await page.waitForFunction(
+    () => (window as DebugWindow).__redline?.isReady() === true,
+    undefined,
+    { timeout: ms(10_000) },
+  );
+}
+
+function kindOf(page: Page, id: string): Promise<number> {
+  return page.evaluate(
+    (type: string) => (window as DebugWindow).__redline?.typeIndex(type) ?? -1,
+    id,
+  );
+}
+
+/** Sends a `debugSpawn` command at (x, y) tiles (spec §5.8, §5.16). */
+function spawnAt(
+  page: Page,
+  owner: number,
+  kind: number,
+  x: number,
+  y: number,
+): Promise<void> {
+  return page.evaluate(
+    (args: { owner: number; kind: number; xRaw: number; yRaw: number }) => {
+      (window as DebugWindow).__redline?.command({
+        kind: "debugSpawn",
+        player: args.owner,
+        typeIndex: args.kind,
+        xRaw: args.xRaw,
+        yRaw: args.yRaw,
+      });
+    },
+    { owner, kind, xRaw: Math.round(x * FIXED), yRaw: Math.round(y * FIXED) },
+  );
+}
+
+async function clickTiles(
+  page: Page,
+  x: number,
+  y: number,
+  button: "left" | "right" = "left",
+): Promise<void> {
+  const point = await page.evaluate(
+    ([px, py]) =>
+      (window as DebugWindow).__redline?.worldToScreen(px, py) ?? {
+        x: -1,
+        y: -1,
+      },
+    [x, y],
+  );
+  await page.mouse.click(point.x, point.y, { button });
+}
+
+test("AC-17-16: projectiles in the skirmish", async ({ page }) => {
+  test.setTimeout(ms(90_000));
+  await boot(page);
+
+  // An RPG gunner and a tank four tiles apart: the gunner fires, and its
+  // launcher leaves dust on the ground.
+  const rpg = await kindOf(page, "ru-rpg-gunner");
+  const leopard = await kindOf(page, "ua-leopard-2a4");
+  await page.evaluate(() =>
+    (window as DebugWindow).__redline?.setCameraTarget(22.5, 62.5),
+  );
+  await spawnAt(page, 0, rpg, 20.5, 62.5);
+  await spawnAt(page, 1, leopard, 24.5, 62.5);
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const api = (window as DebugWindow).__redline;
+          return (
+            (api?.projectileCounts().rpg ?? 0) > 0 &&
+            (api?.effectCounts().dust ?? 0) > 0
+          );
+        }),
+      { timeout: ms(5000), intervals: [100] },
+    )
+    .toBe(true);
+
+  // A HIMARS over 20 tiles from a building, kept visible by a scout, goes
+  // through its top-attack arc after a real-mouse attack order.
+  const himars = await kindOf(page, "ua-himars");
+  const scout = await kindOf(page, "ua-kozak-scout");
+  const plant = await kindOf(page, "ru-power-plant");
+  await spawnAt(page, 0, himars, 20.5, 53.5);
+  await spawnAt(page, 0, scout, 43.5, 54.5);
+  await spawnAt(page, 1, plant, 38, 53);
+  await expect
+    .poll(
+      () =>
+        page.evaluate((kind: number) => {
+          const api = (window as DebugWindow).__redline;
+          return (
+            api?.entities().filter((entity) => entity.kind === kind).length ?? 0
+          );
+        }, plant),
+      { timeout: ms(5000), intervals: [100] },
+    )
+    .toBe(1);
+
+  const launcher = await page.evaluate((kind: number) => {
+    const api = (window as DebugWindow).__redline;
+    const unit = api?.entities().find((entity) => entity.kind === kind);
+    return unit === undefined ? null : { x: unit.x, y: unit.y };
+  }, himars);
+  const building = await page.evaluate((kind: number) => {
+    const api = (window as DebugWindow).__redline;
+    const unit = api
+      ?.entities()
+      .find((entity) => entity.kind === kind && entity.owner === 1);
+    return unit === undefined ? null : { x: unit.x, y: unit.y };
+  }, plant);
+  if (launcher === null || building === null) {
+    throw new Error("missing HIMARS or target building");
+  }
+
+  await page.evaluate(
+    ([x, y]) => (window as DebugWindow).__redline?.setCameraTarget(x, y),
+    [launcher.x, launcher.y],
+  );
+  await clickTiles(page, launcher.x, launcher.y);
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () => (window as DebugWindow).__redline?.selectedIds().length ?? 0,
+        ),
+      { timeout: ms(5000), intervals: [100] },
+    )
+    .toBeGreaterThan(0);
+
+  await page.evaluate(
+    ([x, y]) => (window as DebugWindow).__redline?.setCameraTarget(x, y),
+    [building.x, building.y],
+  );
+  await page.waitForTimeout(ms(200));
+  await clickTiles(page, building.x, building.y, "right");
+
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const api = (window as DebugWindow).__redline;
+          return (api?.projectileSamples() ?? []).some(
+            (sample) => sample.model === "rocket" && sample.z > 4,
+          );
+        }),
+      { timeout: ms(15_000), intervals: [50] },
+    )
+    .toBe(true);
+});
