@@ -51,7 +51,7 @@ function detonation(
   };
 }
 
-describe("ground impacts per weapon (spec 27)", () => {
+describe("ground impacts per weapon (spec 29)", () => {
   it("gives each damage type its own look, with weapon overrides", () => {
     const rifle = impactProfile(weapon("ru-ak74"));
     expect(rifle?.pock).toBeDefined();

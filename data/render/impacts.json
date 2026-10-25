@@ -1,5 +1,5 @@
 {
-  "_comment": "Ground impacts per weapon (spec 27). Visual only: the simulation never reads this file. Lengths are tiles, times milliseconds, speeds tiles per second. `byDamageType` gives each class its look; `byWeapon` overrides single sections for one weapon id. A missing section means the weapon leaves nothing of that kind.",
+  "_comment": "Ground impacts per weapon (spec 29). Visual only: the simulation never reads this file. Lengths are tiles, times milliseconds, speeds tiles per second. `byDamageType` gives each class its look; `byWeapon` overrides single sections for one weapon id. A missing section means the weapon leaves nothing of that kind.",
   "buildingStandOff": 0.15,
   "dustColors": {
     "soil": "0x8c6c4c",

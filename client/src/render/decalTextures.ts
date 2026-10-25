@@ -11,7 +11,7 @@ import { createRng, valueNoise } from "./terrainTexture";
 export const CELL_SIZE = 64;
 export const ATLAS_CELLS = 8;
 /** Four scorch shapes, like Zero Hour's SCORCH_1..4 picked at random per
- *  blast (spec 27 §2), a small pock for bullet strikes and a ring of ejecta
+ *  blast (spec 29 §2), a small pock for bullet strikes and a ring of ejecta
  *  for crater rims. */
 export const DECAL_CELLS = {
   tread: 0,

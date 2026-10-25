@@ -151,7 +151,7 @@ const EFFECT_STYLES: Readonly<Record<EffectKind, EffectStyle>> = {
     color: 0x4a4038,
     additive: false,
   },
-  // A soft camera-facing puff of soil kicked up by an impact (spec 27 §3).
+  // A soft camera-facing puff of soil kicked up by an impact (spec 29 §3).
   dust: {
     durationMs: 800,
     fadeMs: 800,
@@ -159,7 +159,7 @@ const EFFECT_STYLES: Readonly<Record<EffectKind, EffectStyle>> = {
     color: 0x8a6a48,
     additive: false,
   },
-  // A clod of soil thrown by a blast: flies, lands and shrinks away (spec 27).
+  // A clod of soil thrown by a blast: flies, lands and shrinks away (spec 29).
   clod: {
     durationMs: 5000,
     fadeMs: 1500,

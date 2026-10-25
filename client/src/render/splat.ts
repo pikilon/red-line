@@ -106,7 +106,7 @@ const PUFF_SIZE = 64;
 /** Lumps on the outline of a puff. */
 const PUFF_LOBES = 7;
 
-/** A soft, lumpy puff of dust (spec 27 §3): white with a darker, denser core
+/** A soft, lumpy puff of dust (spec 29 §3): white with a darker, denser core
  *  so the tint per instance gives the soil colour; alpha falls off softly. */
 export function createPuffTexture(): DataTexture {
   const rnd = random(0xd057);

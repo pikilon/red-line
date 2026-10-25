@@ -50,7 +50,7 @@
   "blasts": {
     "lifetimeMs": 3600000,
     "fadeMs": 0,
-    "_comment": "Sizes and opacities per weapon live in impacts.json (spec 27).",
+    "_comment": "Sizes and opacities per weapon live in impacts.json (spec 29).",
     "scorchColor": "0x0c0a08",
     "ejectaColor": "0x2a1c10",
     "ejectaAlpha": 0.7,

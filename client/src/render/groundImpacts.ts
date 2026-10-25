@@ -8,7 +8,7 @@ import type { Effects } from "./effects";
 import type { TerrainDeformer } from "./terrainDeform";
 import { createRng } from "./terrainTexture";
 
-/** Ground impacts per weapon (spec 27): where a shot lands, the ground shows
+/** Ground impacts per weapon (spec 29): where a shot lands, the ground shows
  *  it — dust kicks and pocks for bullets, scorch and thrown clods for shells
  *  and missiles, a real crater with a rim and a dust wave for heavy
  *  ordnance. All of it is cosmetic and comes from `data/render/impacts.json`. */
@@ -247,7 +247,7 @@ export function createGroundImpacts(
     if (profile.scorch !== undefined) {
       const spec = profile.scorch;
       const variants = spec.variants.length > 0 ? spec.variants : ["scorch"];
-      // Zero Hour picks one of four scorch textures at random (spec 27 §2).
+      // Zero Hour picks one of four scorch textures at random (spec 29 §2).
       const cell = variants[Math.floor(rng() * variants.length)] ?? "scorch";
       stampMark(
         cell as DecalCell,

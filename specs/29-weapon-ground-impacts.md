@@ -1,4 +1,4 @@
-# 27 — Weapon ground impacts (visual only)
+# 29 — Weapon ground impacts (visual only)
 
 Status: accepted (owner request 2026-10-25).
 Depends on `07-phase4b-combat-effects.md` §3 (explosion FX),
@@ -109,11 +109,11 @@ uses decals).
 
 ## 7. Acceptance criteria
 
-* AC-27-01: a rifle hit kicks dust and leaves a pock; an HE rocket leaves a
+* AC-29-01: a rifle hit kicks dust and leaves a pock; an HE rocket leaves a
   crater deeper than 0.2 tiles with clods (unit tests).
-* AC-27-02: a shell hitting a building leaves no mark and no crater.
-* AC-27-03: the fine crater patches share every vertex height with the coarse
+* AC-29-02: a shell hitting a building leaves no mark and no crater.
+* AC-29-03: the fine crater patches share every vertex height with the coarse
   ground they touch (unit test), and the profile has no step.
-* AC-27-04: `?load=weapon-impacts` shows every weapon class force-firing at
+* AC-29-04: `?load=weapon-impacts` shows every weapon class force-firing at
   open ground within 300 ticks (example contract). Setups gain the
   `attackGroundCenti` order for this (spec 19 §3.5, spec 20 `AttackGround`).

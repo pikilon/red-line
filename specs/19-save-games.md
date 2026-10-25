@@ -261,7 +261,7 @@ pub enum SetupOrder {                 // externally tagged: { attack: "leo1" }
     Attack(String),                   // label
     MoveCenti([i32; 2]),
     Harvest(String),                  // label of a depot
-    AttackGroundCenti([i32; 2]),      // spec 20 force fire at a point (spec 27)
+    AttackGroundCenti([i32; 2]),      // spec 20 force fire at a point (spec 29)
 }
 ```
 

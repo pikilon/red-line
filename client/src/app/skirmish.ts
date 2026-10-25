@@ -815,7 +815,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       ),
     );
     scene.add(decals.group);
-    // Marks drape over the relief and follow it as craters dig (spec 27 §4).
+    // Marks drape over the relief and follow it as craters dig (spec 29 §4).
     const relief = terrainDeformerOf(terrain);
     if (relief !== null) {
       const marks = decals;

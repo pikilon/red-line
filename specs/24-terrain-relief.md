@@ -36,7 +36,7 @@ shader or a second mesh.
 
 ## 3. Behaviour
 
-1. Superseded by spec 27 §4: craters come from each weapon's impact profile
+1. Superseded by spec 29 §4: craters come from each weapon's impact profile
    at its detonation point, on a fine patched grid with a raised rim. They
    still sink over 350 ms with a smoothstep ease.
 2. Total sink at one point is capped at 0.5 tiles; craters stack.

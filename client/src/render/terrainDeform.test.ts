@@ -32,7 +32,7 @@ describe("terrain relief (spec 24)", () => {
       highest = Math.max(highest, position.getY(i));
     }
     expect(lowest).toBeCloseTo(-0.4, 2);
-    // A raised rim around the bowl (spec 27 §4).
+    // A raised rim around the bowl (spec 29 §4).
     expect(highest).toBeGreaterThan(0.05);
     expect(highest).toBeLessThanOrEqual(MAX_RISE + 1e-6);
     expect(deformer.stats().refined).toBeGreaterThan(0);

@@ -18,7 +18,7 @@ import { createRng, valueNoise } from "./terrainTexture";
 /** Balance values for the ground marks (`data/render/decals.json`, spec 24). */
 export type DecalConfig = typeof decalData;
 export const DECALS: DecalConfig = decalData;
-/** Ground impacts per weapon (`data/render/impacts.json`, spec 27). */
+/** Ground impacts per weapon (`data/render/impacts.json`, spec 29). */
 export type ImpactConfig = typeof impactData;
 export const IMPACTS: ImpactConfig = impactData;
 
@@ -211,7 +211,7 @@ export interface Decals {
   setSnow(snow: SnowSource): void;
   setHeight(height: HeightAt): void;
   /** Re-reads the ground height under the marks overlapping the tile
-   *  rectangle (the relief changed there, spec 27 §4). */
+   *  rectangle (the relief changed there, spec 29 §4). */
   relift(x0: number, y0: number, x1: number, y1: number): void;
   /** Recomputes mark opacities at `nowMs`. */
   update(nowMs: number): void;
