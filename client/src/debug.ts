@@ -72,8 +72,15 @@ export interface SkirmishDebug {
   /** Wheel zoom of the camera, 1 by default (spec 08 §3.4). */
   zoom(): number;
   /** Terrain relief flush counters and a manual crater, for profiling (spec 24). */
-  relief(): { flushes: number; flushMs: number; vertices: number };
+  relief(): {
+    flushes: number;
+    flushMs: number;
+    vertices: number;
+    refined: number;
+  };
   crater(x: number, y: number, radius: number, depth: number): void;
+  /** Lands one ground impact of weapon `weaponId` at tile (x, y) (spec 29). */
+  impact(weaponId: string, x: number, y: number): void;
   /** The `?load` id once applied, or null (spec 19 §5.6). */
   loadedSave(): string | null;
   /** `Sim::save_state` JSON of the running match (spec 19 §5.6). */

@@ -986,6 +986,8 @@ pub enum SetupOrder {
     MoveCenti([i32; 2]),
     /// Label of a depot.
     Harvest(String),
+    /// Spec 20 force fire at a ground point, in centi-tiles.
+    AttackGroundCenti([i32; 2]),
 }
 
 /// World, seed and AIs of a setup (spec 19 §3.5). Errors are the `SimError`
@@ -1151,6 +1153,10 @@ impl World {
                 SetupOrder::Harvest(depot) => Command::Harvest {
                     units,
                     depot: label(depot)?,
+                },
+                SetupOrder::AttackGroundCenti([x, y]) => Command::AttackGround {
+                    units,
+                    target: FxVec2::new(signed_centi(*x), signed_centi(*y)),
                 },
             };
             world.enqueue_as(entry.player, command);

@@ -358,6 +358,26 @@ fn ac_19_14_ai_attack() {
 }
 
 #[test]
+fn ac_19_14_weapon_impacts() {
+    // Spec 27: every armed unit force-fires at the ground within 300 ticks.
+    let (mut world, _, mut ais) = load_example("weapon-impacts");
+    let shooters = world
+        .entities()
+        .iter()
+        .filter(|e| world.rules().ty(e.kind).category == Category::Unit)
+        .count();
+    assert_eq!(shooters, 7);
+    let mut weapons = std::collections::BTreeSet::new();
+    for _ in 0..300 {
+        step_with_ai(&mut world, &mut ais);
+        for projectile in world.projectiles() {
+            weapons.insert(projectile.weapon);
+        }
+    }
+    assert_eq!(weapons.len(), 7, "every weapon fired: {weapons:?}");
+}
+
+#[test]
 fn ac_19_04_examples_round_trip() {
     for id in example_ids() {
         let (mut world, seed, mut ais) = load_example(&id);

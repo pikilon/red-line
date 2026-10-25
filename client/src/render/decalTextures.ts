@@ -9,8 +9,20 @@ import { createRng, valueNoise } from "./terrainTexture";
 
 /** Pixels per atlas cell side; the atlas holds `ATLAS_CELLS` cells in a row. */
 export const CELL_SIZE = 64;
-export const ATLAS_CELLS = 3;
-export const DECAL_CELLS = { tread: 0, scorch: 1, crater: 2 } as const;
+export const ATLAS_CELLS = 8;
+/** Four scorch shapes, like Zero Hour's SCORCH_1..4 picked at random per
+ *  blast (spec 29 §2), a small pock for bullet strikes and a ring of ejecta
+ *  for crater rims. */
+export const DECAL_CELLS = {
+  tread: 0,
+  scorch: 1,
+  crater: 2,
+  scorch2: 3,
+  scorch3: 4,
+  scorch4: 5,
+  pock: 6,
+  ejecta: 7,
+} as const;
 export type DecalCell = keyof typeof DECAL_CELLS;
 
 /** Tread: two soft edges with cross ridges every few pixels (long axis = v). */
@@ -38,6 +50,51 @@ function scorchAlpha(u: number, v: number, seed: number): number {
     0.4 * valueNoise(u * CELL_SIZE, v * CELL_SIZE, 32, seed) +
     0.2 * valueNoise(u * CELL_SIZE, v * CELL_SIZE, 8, seed + 2);
   return Math.max(0, Math.min(1, (1 - radius / ragged) * 1.6));
+}
+
+/** Blast scorch with radial streaks thrown out from the centre; `rays` and
+ *  `seed` make each variant different. */
+function rayScorchAlpha(
+  u: number,
+  v: number,
+  seed: number,
+  rays: number,
+  reach: number,
+): number {
+  const dx = u - 0.5;
+  const dy = v - 0.5;
+  const radius = Math.hypot(dx, dy) * 2;
+  const angle = Math.atan2(dy, dx);
+  const ragged = 0.5 + 0.3 * valueNoise(u * CELL_SIZE, v * CELL_SIZE, 32, seed);
+  // Streaks: a sharp angular pattern reaching past the core disc.
+  const streak =
+    (Math.sin(angle * rays + seed) * 0.5 + 0.5) ** 6 *
+    (0.5 + 0.5 * valueNoise(u * CELL_SIZE, v * CELL_SIZE, 16, seed + 9));
+  const edge = ragged + streak * reach;
+  const core = Math.max(0, Math.min(1, (1 - radius / edge) * 1.8));
+  const speckle = valueNoise(u * CELL_SIZE, v * CELL_SIZE, 8, seed + 5);
+  return core * (0.7 + 0.3 * speckle);
+}
+
+/** Bullet pock: a small dark hole with a few specks of thrown soil. */
+function pockAlpha(u: number, v: number, seed: number): number {
+  const radius = Math.hypot(u - 0.5, v - 0.5) * 2;
+  const hole = Math.max(0, Math.min(1, (0.45 - radius) * 6));
+  const specks =
+    radius < 0.95 &&
+    valueNoise(u * CELL_SIZE, v * CELL_SIZE, 8, seed) > 0.68 + radius * 0.1
+      ? 0.7 * (1 - radius)
+      : 0;
+  return Math.max(hole, specks);
+}
+
+/** Ejecta: a broken ring of loose soil around a crater rim. */
+function ejectaAlpha(u: number, v: number, seed: number): number {
+  const radius = Math.hypot(u - 0.5, v - 0.5) * 2;
+  const lumps = valueNoise(u * CELL_SIZE, v * CELL_SIZE, 16, seed);
+  const ring = Math.exp(-(((radius - 0.6) / 0.22) ** 2));
+  const fall = radius < 1 ? 1 : 0;
+  return Math.max(0, Math.min(1, ring * (lumps * 1.8 - 0.3) * fall));
 }
 
 /** Crater: dark bowl in the middle with a lighter, lumpy rim. */
@@ -75,9 +132,19 @@ export function createDecalAtlas(seed = 1): Texture {
       } else if (cellIndex === DECAL_CELLS.scorch) {
         cell = "scorch";
         alpha = scorchAlpha(u, v, seed);
-      } else {
+      } else if (cellIndex === DECAL_CELLS.crater) {
         cell = "crater";
         alpha = craterAlpha(u, v, seed + 3);
+      } else if (cellIndex === DECAL_CELLS.scorch2) {
+        alpha = rayScorchAlpha(u, v, seed + 11, 7, 0.45);
+      } else if (cellIndex === DECAL_CELLS.scorch3) {
+        alpha = rayScorchAlpha(u, v, seed + 23, 11, 0.3);
+      } else if (cellIndex === DECAL_CELLS.scorch4) {
+        alpha = rayScorchAlpha(u, v, seed + 37, 5, 0.6);
+      } else if (cellIndex === DECAL_CELLS.pock) {
+        alpha = pockAlpha(u, v, seed + 41);
+      } else {
+        alpha = ejectaAlpha(u, v, seed + 53);
       }
       alpha *= 0.9 + 0.1 * rng();
       const shade = cellShade(cell, u, v);

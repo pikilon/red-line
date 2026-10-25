@@ -9,24 +9,23 @@ import {
   Uint32BufferAttribute,
 } from "three";
 import decalData from "../../../data/render/decals.json";
-import { typeDef, WEAPONS } from "../rules";
-import {
-  ENTITY_FLAGS,
-  type EntityState,
-  hasFlag,
-  type MatchSnapshot,
-} from "../sim/matchSnapshot";
+import impactData from "../../../data/render/impacts.json";
+import { typeDef } from "../rules";
+import type { EntityState } from "../sim/matchSnapshot";
 import { ATLAS_CELLS, createDecalAtlas, DECAL_CELLS } from "./decalTextures";
 import { createRng, valueNoise } from "./terrainTexture";
 
 /** Balance values for the ground marks (`data/render/decals.json`, spec 24). */
 export type DecalConfig = typeof decalData;
 export const DECALS: DecalConfig = decalData;
+/** Ground impacts per weapon (`data/render/impacts.json`, spec 29). */
+export type ImpactConfig = typeof impactData;
+export const IMPACTS: ImpactConfig = impactData;
 
-const DAMAGE_TYPES = ruleset.damageTypes as readonly string[];
-const TICKS_PER_SECOND = 15;
 /** Marks sit this far above the ground plane to avoid z-fighting. */
 const GROUND_LIFT = 0.012;
+/** Grid cells per side of a blast mark, so it drapes over craters. */
+const BLAST_SEGMENTS = 8;
 /** Same dirt noise as the terrain overlay (terrain.ts, spec 10 §4). */
 const DIRT_NOISE_PERIOD = 12;
 const DIRT_ALPHA_LOW = 0.55;
@@ -205,12 +204,15 @@ export interface Decals {
   stamp(spec: MarkSpec): void;
   /** Leaves tracks behind the moving wheeled and tracked `entities`. */
   recordMovers(entities: readonly EntityState[], nowMs: number): void;
-  /** Leaves scorches and craters where the shots of `snapshot` land. */
-  recordShots(snapshot: MatchSnapshot, nowMs: number): void;
+  /** The ground surface the marks are tinted and gated by. */
+  surfaceAt(x: number, y: number): SurfaceSample;
   setSurface(surface: SurfaceAt): void;
   /** Makes marks on snow-covered ground shallow-lived while it snows. */
   setSnow(snow: SnowSource): void;
   setHeight(height: HeightAt): void;
+  /** Re-reads the ground height under the marks overlapping the tile
+   *  rectangle (the relief changed there, spec 29 §4). */
+  relift(x0: number, y0: number, x1: number, y1: number): void;
   /** Recomputes mark opacities at `nowMs`. */
   update(nowMs: number): void;
   clear(): void;
@@ -232,12 +234,25 @@ export function createDecals(
   config: DecalConfig = DECALS,
 ): Decals {
   let heightAt: HeightAt = () => 0;
-  const trackLayer = createLayer(config.tracks.maxMarks, () => heightAt);
-  const blastLayer = createLayer(config.blasts.maxMarks, () => heightAt);
+  const height = (): HeightAt => heightAt;
+  const trackLayer = createLayer(config.tracks.maxMarks, height, 1);
+  // Blast marks drape over craters, so they are grids, not single quads.
+  const blastLayer = createLayer(
+    config.blasts.maxMarks,
+    height,
+    BLAST_SEGMENTS,
+  );
+  const pockLayer = createLayer(IMPACTS.maxPocks, height, 1);
+  const layers = [trackLayer, blastLayer, pockLayer] as const;
   const group = new Group();
-  group.add(trackLayer.mesh, blastLayer.mesh);
+  group.add(trackLayer.mesh, blastLayer.mesh, pockLayer.mesh);
   const stamp = (spec: MarkSpec): void =>
-    (spec.cell === "tread" ? trackLayer : blastLayer).stamp(spec);
+    (spec.cell === "tread"
+      ? trackLayer
+      : spec.cell === "pock"
+        ? pockLayer
+        : blastLayer
+    ).stamp(spec);
   let surfaceAt = surface;
   let snow: SnowSource | null = null;
   let lastUpdateMs: number | null = null;
@@ -338,79 +353,11 @@ export function createDecals(
     for (const id of walkers.keys()) if (!seen.has(id)) walkers.delete(id);
   }
 
-  function recordShots(snapshot: MatchSnapshot, nowMs: number): void {
-    const byId = new Map<number, EntityState>();
-    for (const entity of snapshot.entities) byId.set(entity.id, entity);
-    for (const shooter of snapshot.entities) {
-      if (!hasFlag(shooter, ENTITY_FLAGS.fired) || shooter.target === null)
-        continue;
-      const target = byId.get(shooter.target);
-      const weapon = WEAPONS[typeDef(shooter.kind).weapon];
-      if (target === undefined || weapon === undefined) continue;
-      const blast =
-        config.blasts.byDamageType[
-          DAMAGE_TYPES[
-            weapon.damageType
-          ] as keyof typeof config.blasts.byDamageType
-        ];
-      if (blast === undefined) continue;
-      const delayMs = (weapon.projectileTicks / TICKS_PER_SECOND) * 1000;
-      const radius = Math.max(
-        blast.radiusTiles,
-        (weapon.splashCenti / 100) * blast.splashFactor,
-      );
-      stampBlast(target.x, target.y, radius, blast.crater, nowMs + delayMs);
-    }
-  }
-
-  function stampBlast(
-    x: number,
-    y: number,
-    radius: number,
-    crater: boolean,
-    startMs: number,
-  ): void {
-    const sample = surfaceAt(x, y);
-    // Rock shows scorches but no craters.
-    const soil = sample.strength > 0 ? 1 : 0;
-    // A random orientation and uneven axes make each blast different.
-    const angle = rng() * Math.PI * 2;
-    const base = {
-      x,
-      y,
-      dirX: Math.cos(angle),
-      dirY: Math.sin(angle),
-      snowy: sample.snowy,
-      startMs,
-      lifeMs: config.blasts.lifetimeMs,
-      fadeMs: config.blasts.fadeMs,
-    };
-    const scorchHalf = radius * config.blasts.scorchPerCrater;
-    stamp({
-      ...base,
-      halfWidth: scorchHalf * (0.85 + 0.3 * rng()),
-      halfLength: scorchHalf * (0.85 + 0.3 * rng()),
-      cell: "scorch",
-      color: Number(config.blasts.scorchColor),
-      alpha: config.blasts.scorchAlpha * (0.75 + 0.25 * rng()),
-    });
-    if (crater && soil > 0) {
-      stamp({
-        ...base,
-        halfWidth: radius * (0.85 + 0.3 * rng()),
-        halfLength: radius * (0.85 + 0.3 * rng()),
-        cell: "crater",
-        color: Number(config.blasts.craterColor),
-        alpha: config.blasts.craterAlpha * (0.75 + 0.25 * rng()),
-      });
-    }
-  }
-
   return {
     group,
     stamp,
     recordMovers,
-    recordShots,
+    surfaceAt: (x, y) => surfaceAt(x, y),
     setSurface(next) {
       surfaceAt = next;
     },
@@ -419,36 +366,60 @@ export function createDecals(
     },
     setHeight(next) {
       heightAt = next;
+      for (const layer of layers)
+        layer.relift(-Infinity, -Infinity, Infinity, Infinity);
+    },
+    relift(x0, y0, x1, y1) {
+      for (const layer of layers) layer.relift(x0, y0, x1, y1);
     },
     update(nowMs) {
       const dtMs =
         lastUpdateMs === null ? 0 : Math.max(0, nowMs - lastUpdateMs);
       lastUpdateMs = nowMs;
       const snowing = snow?.falling() ?? false;
-      trackLayer.update(nowMs, dtMs, snowing);
-      blastLayer.update(nowMs, dtMs, snowing);
+      for (const layer of layers) layer.update(nowMs, dtMs, snowing);
     },
     clear() {
-      trackLayer.clear();
-      blastLayer.clear();
+      for (const layer of layers) layer.clear();
       lastUpdateMs = null;
       walkers.clear();
     },
-    count: () => trackLayer.count() + blastLayer.count(),
+    count: () => layers.reduce((total, layer) => total + layer.count(), 0),
   };
 }
 
 interface Layer {
   readonly mesh: Mesh;
   stamp(spec: MarkSpec): void;
+  relift(x0: number, y0: number, x1: number, y1: number): void;
   update(nowMs: number, dtMs: number, snowing: boolean): void;
   clear(): void;
   count(): number;
 }
 
+/** Where a mark lies, kept to re-read the ground under it. */
+interface Footprint {
+  x: number;
+  y: number;
+  dirX: number;
+  dirY: number;
+  halfWidth: number;
+  halfLength: number;
+  /** Bounding radius, tiles. */
+  reach: number;
+}
+
 /** One ring of marks drawn as a single transparent mesh; the oldest mark is
- *  recycled when full (Zero Hour evicts FIFO too, spec 24 §2). */
-function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
+ *  recycled when full (Zero Hour evicts FIFO too, spec 24 §2). Each mark is a
+ *  `segments` x `segments` grid so it can drape over relief. */
+function createLayer(
+  capacity: number,
+  heightOf: () => HeightAt,
+  segments: number,
+): Layer {
+  const side = segments + 1;
+  const perMark = side * side;
+  const indicesPerMark = segments * segments * 6;
   const marks: Mark[] = Array.from({ length: capacity }, () => ({
     alive: false,
     snowy: false,
@@ -461,13 +432,31 @@ function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
     g: 0,
     b: 0,
   }));
-  const positions = new Float32Array(capacity * 4 * 3);
-  const uvs = new Float32Array(capacity * 4 * 2);
-  const colors = new Float32Array(capacity * 4 * 4);
-  const indices = new Uint32Array(capacity * 6);
+  const footprints: Footprint[] = Array.from({ length: capacity }, () => ({
+    x: 0,
+    y: 0,
+    dirX: 1,
+    dirY: 0,
+    halfWidth: 0,
+    halfLength: 0,
+    reach: -1,
+  }));
+  const positions = new Float32Array(capacity * perMark * 3);
+  const uvs = new Float32Array(capacity * perMark * 2);
+  const colors = new Float32Array(capacity * perMark * 4);
+  const indices = new Uint32Array(capacity * indicesPerMark);
   for (let slot = 0; slot < capacity; slot++) {
-    const v = slot * 4;
-    indices.set([v, v + 1, v + 2, v, v + 2, v + 3], slot * 6);
+    let offset = slot * indicesPerMark;
+    for (let row = 0; row < segments; row++) {
+      for (let col = 0; col < segments; col++) {
+        const a = slot * perMark + row * side + col;
+        indices.set(
+          [a, a + 1, a + side + 1, a, a + side + 1, a + side],
+          offset,
+        );
+        offset += 6;
+      }
+    }
   }
   const geometry = new BufferGeometry();
   const positionAttribute = new BufferAttribute(positions, 3);
@@ -494,17 +483,45 @@ function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
   mesh.name = "decals";
   mesh.frustumCulled = false;
   mesh.renderOrder = 1;
+  // An empty layer is not drawn at all (spec 10 §3 draw-call budget).
+  mesh.visible = false;
 
   let cursor = 0;
   let highest = 0;
   let alive = 0;
+
+  /** Writes the vertex heights of `slot` from the current ground. */
+  function lift(slot: number): void {
+    const print = footprints[slot];
+    if (print === undefined) return;
+    const heightAt = heightOf();
+    const rightX = -print.dirY;
+    const rightY = print.dirX;
+    for (let row = 0; row < side; row++) {
+      const end = (row / segments) * 2 - 1;
+      for (let col = 0; col < side; col++) {
+        const across = (col / segments) * 2 - 1;
+        const px =
+          print.x +
+          rightX * print.halfWidth * across +
+          print.dirX * print.halfLength * end;
+        const py =
+          print.y +
+          rightY * print.halfWidth * across +
+          print.dirY * print.halfLength * end;
+        const vertex = slot * perMark + row * side + col;
+        positions.set([px, heightAt(px, py) + GROUND_LIFT, py], vertex * 3);
+      }
+    }
+  }
 
   function stamp(spec: MarkSpec): void {
     const slot = cursor;
     cursor = (cursor + 1) % capacity;
     highest = Math.max(highest, slot + 1);
     const mark = marks[slot];
-    if (mark === undefined) return;
+    const print = footprints[slot];
+    if (mark === undefined || print === undefined) return;
     if (!mark.alive) alive++;
     mark.alive = true;
     mark.age = 0;
@@ -517,32 +534,44 @@ function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
     mark.g = ((spec.color >> 8) & 0xff) / 255;
     mark.b = (spec.color & 0xff) / 255;
 
-    const rightX = -spec.dirY;
-    const rightY = spec.dirX;
-    const lift = heightOf()(spec.x, spec.y) + GROUND_LIFT;
-    const corners = [
-      [-1, -1],
-      [1, -1],
-      [1, 1],
-      [-1, 1],
-    ] as const;
-    corners.forEach(([side, end], corner) => {
-      const px =
-        spec.x +
-        rightX * spec.halfWidth * side +
-        spec.dirX * spec.halfLength * end;
-      const py =
-        spec.y +
-        rightY * spec.halfWidth * side +
-        spec.dirY * spec.halfLength * end;
-      const vertex = slot * 4 + corner;
-      positions.set([px, lift, py], vertex * 3);
-      const cellU = (DECAL_CELLS[spec.cell] + (side + 1) / 2) / ATLAS_CELLS;
-      uvs.set([cellU, (end + 1) / 2], vertex * 2);
-    });
+    print.x = spec.x;
+    print.y = spec.y;
+    print.dirX = spec.dirX;
+    print.dirY = spec.dirY;
+    print.halfWidth = spec.halfWidth;
+    print.halfLength = spec.halfLength;
+    print.reach = Math.hypot(spec.halfWidth, spec.halfLength);
+    lift(slot);
+    for (let row = 0; row < side; row++) {
+      for (let col = 0; col < side; col++) {
+        const vertex = slot * perMark + row * side + col;
+        const cellU = (DECAL_CELLS[spec.cell] + col / segments) / ATLAS_CELLS;
+        uvs.set([cellU, row / segments], vertex * 2);
+      }
+    }
     positionAttribute.needsUpdate = true;
     uvAttribute.needsUpdate = true;
-    geometry.setDrawRange(0, highest * 6);
+    geometry.setDrawRange(0, highest * indicesPerMark);
+    mesh.visible = true;
+  }
+
+  function relift(x0: number, y0: number, x1: number, y1: number): void {
+    let changed = false;
+    for (let slot = 0; slot < highest; slot++) {
+      const print = footprints[slot];
+      if (print === undefined || print.reach < 0) continue;
+      if (
+        print.x + print.reach < x0 ||
+        print.x - print.reach > x1 ||
+        print.y + print.reach < y0 ||
+        print.y - print.reach > y1
+      ) {
+        continue;
+      }
+      lift(slot);
+      changed = true;
+    }
+    if (changed) positionAttribute.needsUpdate = true;
   }
 
   function update(nowMs: number, dtMs: number, snowing: boolean): void {
@@ -562,8 +591,11 @@ function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
       const alpha = mark.alive
         ? mark.peak * markFade(age, mark.lifeMs, mark.fadeMs)
         : 0;
-      for (let corner = 0; corner < 4; corner++) {
-        colors.set([mark.r, mark.g, mark.b, alpha], (slot * 4 + corner) * 4);
+      for (let vertex = 0; vertex < perMark; vertex++) {
+        colors.set(
+          [mark.r, mark.g, mark.b, alpha],
+          (slot * perMark + vertex) * 4,
+        );
       }
     }
     alive = live;
@@ -573,6 +605,7 @@ function createLayer(capacity: number, heightOf: () => HeightAt): Layer {
   return {
     mesh,
     stamp,
+    relift,
     update,
     clear() {
       for (const mark of marks) mark.alive = false;

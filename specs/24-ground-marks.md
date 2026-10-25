@@ -10,9 +10,9 @@ saves. Balance lives in `data/render/decals.json`.
   Strips are strong on dirt/mud (and snow once weather exists), faint on
   grass, absent on rock and nearly absent on asphalt.
 * Tracks fade slowly after `tracks.lifetimeMs` (150 s) over `tracks.fadeMs` (150 s); marks are unlit flat sprites (a bump-map relief was tried and dropped: not visible, extra cost).
-* Explosions leave a dark scorch; high-explosive hits also dig a crater on
-  soil. Radius grows with the weapon's splash radius (`blasts.byDamageType`).
-  Anti-tank hits leave a small scorch; thermobaric a wide scorch without crater.
+* Shot marks per weapon (pocks, four random scorch shapes, ejecta rings) are
+  chosen in `data/render/impacts.json` (spec 29); blast marks are grids that
+  drape over crater relief.
 * Marks appear when the shell lands (shot delay is respected), not when fired.
 * Foot units leave nothing.
 

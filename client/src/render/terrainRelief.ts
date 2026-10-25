@@ -5,15 +5,6 @@ import type { PressSource } from "./terrainDeform";
 /** How hard each locomotor presses on soft ground (spec 24 §3). */
 const WEIGHT_BY_LOCOMOTOR = { foot: 0, wheels: 0.5, tracks: 1 } as const;
 
-/** Tiles of crater radius per tile of explosion size, and its floor. */
-const CRATER_RADIUS_PER_SIZE = 0.9;
-const CRATER_MIN_RADIUS = 1.2;
-const CRATER_MAX_RADIUS = 3.5;
-/** Tiles of crater depth per tile of crater radius. */
-const CRATER_DEPTH_PER_RADIUS = 0.18;
-/** Explosions under this size (tiles) leave the ground alone. */
-export const MIN_CRATER_SIZE = 0.5;
-
 /** The vehicles of `entities` that weigh on the ground. */
 export function pressSourcesOf(
   entities: readonly EntityState[],
@@ -29,13 +20,4 @@ export function pressSourcesOf(
     }
   }
   return sources;
-}
-
-/** Radius and depth, in tiles, of the crater a blast of `size` tiles digs. */
-export function craterFor(size: number): { radius: number; depth: number } {
-  const radius = Math.min(
-    CRATER_MAX_RADIUS,
-    Math.max(CRATER_MIN_RADIUS, size * CRATER_RADIUS_PER_SIZE),
-  );
-  return { radius, depth: radius * CRATER_DEPTH_PER_RADIUS };
 }

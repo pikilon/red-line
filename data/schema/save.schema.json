@@ -70,7 +70,8 @@
             "properties": {
               "attack": { "$ref": "#/$defs/id" },
               "moveCenti": { "$ref": "#/$defs/pair" },
-              "harvest": { "$ref": "#/$defs/id" }
+              "harvest": { "$ref": "#/$defs/id" },
+              "attackGroundCenti": { "$ref": "#/$defs/pair" }
             }
           }
         }

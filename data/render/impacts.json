@@ -1,0 +1,171 @@
+{
+  "_comment": "Ground impacts per weapon (spec 29). Visual only: the simulation never reads this file. Lengths are tiles, times milliseconds, speeds tiles per second. `byDamageType` gives each class its look; `byWeapon` overrides single sections for one weapon id. A missing section means the weapon leaves nothing of that kind.",
+  "buildingStandOff": 0.15,
+  "dustColors": {
+    "soil": "0x8c6c4c",
+    "grass": "0x847c60",
+    "snow": "0xe4e8ec",
+    "rock": "0x8c8a84"
+  },
+  "clodColor": "0x2e2014",
+  "byDamageType": {
+    "smallArms": {
+      "scatterTiles": 0.45,
+      "dust": {
+        "count": 3,
+        "sizeTiles": 0.26,
+        "spreadTiles": 0.12,
+        "riseTiles": 0.3,
+        "durationMs": 650,
+        "alpha": 0.85
+      },
+      "pock": { "radiusTiles": 0.11, "alpha": 0.8 }
+    },
+    "autocannon": {
+      "scatterTiles": 0.35,
+      "dust": {
+        "count": 4,
+        "sizeTiles": 0.38,
+        "spreadTiles": 0.2,
+        "riseTiles": 0.45,
+        "durationMs": 850,
+        "alpha": 0.85
+      },
+      "clods": {
+        "count": 2,
+        "sizeTiles": 0.035,
+        "speed": 1.6,
+        "durationMs": 2500
+      },
+      "pock": { "radiusTiles": 0.2, "alpha": 0.85 }
+    },
+    "antiTank": {
+      "dust": {
+        "count": 5,
+        "sizeTiles": 0.6,
+        "spreadTiles": 0.3,
+        "riseTiles": 0.5,
+        "durationMs": 1100,
+        "alpha": 0.7
+      },
+      "clods": {
+        "count": 6,
+        "sizeTiles": 0.05,
+        "speed": 2.4,
+        "durationMs": 5000
+      },
+      "scorch": {
+        "radiusTiles": 0.4,
+        "splashFactor": 0.4,
+        "alpha": 0.5,
+        "variants": ["scorch", "scorch2", "scorch3", "scorch4"]
+      },
+      "crater": {
+        "radiusTiles": 0.65,
+        "splashFactor": 0.4,
+        "depthPerRadius": 0.22,
+        "rim": 0.35,
+        "decal": false
+      }
+    },
+    "highExplosive": {
+      "dust": {
+        "count": 8,
+        "sizeTiles": 1.1,
+        "spreadTiles": 0.6,
+        "riseTiles": 0.9,
+        "durationMs": 1800,
+        "alpha": 0.65
+      },
+      "ring": {
+        "count": 12,
+        "sizeTiles": 0.65,
+        "spreadTiles": 1.6,
+        "riseTiles": 0.1,
+        "durationMs": 1200,
+        "alpha": 0.55
+      },
+      "clods": {
+        "count": 12,
+        "sizeTiles": 0.07,
+        "speed": 3.4,
+        "durationMs": 9000
+      },
+      "scorch": {
+        "radiusTiles": 0.9,
+        "splashFactor": 0.7,
+        "alpha": 0.55,
+        "variants": ["scorch", "scorch2", "scorch3", "scorch4"]
+      },
+      "crater": {
+        "radiusTiles": 1.3,
+        "splashFactor": 0.7,
+        "depthPerRadius": 0.28,
+        "rim": 0.3,
+        "decal": true
+      }
+    },
+    "thermobaric": {
+      "dust": {
+        "count": 10,
+        "sizeTiles": 1.3,
+        "spreadTiles": 0.9,
+        "riseTiles": 1.1,
+        "durationMs": 2200,
+        "alpha": 0.55
+      },
+      "ring": {
+        "count": 18,
+        "sizeTiles": 0.85,
+        "spreadTiles": 3.0,
+        "riseTiles": 0.12,
+        "durationMs": 1500,
+        "alpha": 0.5
+      },
+      "clods": {
+        "count": 6,
+        "sizeTiles": 0.06,
+        "speed": 3.0,
+        "durationMs": 7000
+      },
+      "scorch": {
+        "radiusTiles": 1.2,
+        "splashFactor": 0.9,
+        "alpha": 0.6,
+        "variants": ["scorch2", "scorch3", "scorch4"]
+      },
+      "crater": {
+        "radiusTiles": 2.2,
+        "splashFactor": 0.8,
+        "depthPerRadius": 0.05,
+        "rim": 0.2,
+        "decal": false
+      }
+    }
+  },
+  "byWeapon": {
+    "ua-kozak-hmg": { "pock": { "radiusTiles": 0.14, "alpha": 0.85 } },
+    "ru-kpvt": { "pock": { "radiusTiles": 0.15, "alpha": 0.85 } },
+    "ua-rh120": {
+      "crater": {
+        "radiusTiles": 0.75,
+        "splashFactor": 0,
+        "depthPerRadius": 0.22,
+        "rim": 0.35,
+        "decal": false
+      }
+    },
+    "ru-2a46m": {
+      "crater": {
+        "radiusTiles": 0.75,
+        "splashFactor": 0,
+        "depthPerRadius": 0.22,
+        "rim": 0.35,
+        "decal": false
+      }
+    }
+  },
+  "maxPocks": 800,
+  "pockLifetimeMs": 90000,
+  "pockFadeMs": 30000
+}
