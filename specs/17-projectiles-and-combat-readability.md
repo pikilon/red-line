@@ -123,6 +123,10 @@ the total damage of a salvo stays as it is today.
 `projectileTicks` is removed from the builtin data. It stays in the schema and
 the simulation for the test fixture (§4.2).
 
+The GMLRS has `splashCenti: 150` (1.5 tiles): its impact damages every
+player-owned entity in that radius, friend or foe, like the TOS-1A
+(owner request 2026-10-25; spec 03 §5.11).
+
 `topAttack` is the Javelin profile (owner decision 4). No unit in the roster
 carries a Javelin yet. When one is added, its weapon uses `homing` +
 `topAttack`.
