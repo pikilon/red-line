@@ -141,6 +141,12 @@
   "saves.hills-and-cliffs.description": "Ukrainian armour climbs the ramp of a plateau on First Line; Russian tanks wait under its cliffs.",
   "menu.saveGame": "Save game",
   "menu.loadGame": "Load game",
+  "menu.volumeMaster": "Master volume: {pct}%",
+  "menu.volumeSfx": "Effects volume: {pct}%",
+  "menu.volumeVoice": "Voices volume: {pct}%",
+  "menu.volumeMusic": "Music volume: {pct}%",
+  "saves.audio-fight.name": "Audio fight",
+  "saves.audio-fight.description": "A close-range combined-arms fight between Ukrainian and Russian forces to test weapons, voices, impacts, explosions and EVA.",
   "saves.titleSave": "Save game",
   "saves.titleLoad": "Load game"
 }

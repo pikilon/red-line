@@ -1,5 +1,17 @@
 import { t } from "../i18n";
+import {
+  DEFAULT_AUDIO_MASTER,
+  DEFAULT_AUDIO_MUSIC,
+  DEFAULT_AUDIO_SFX,
+  DEFAULT_AUDIO_VOICE,
+} from "../settings";
 import { appendDiv, setText } from "./dom";
+
+export type VolumeSliderChannel =
+  | "audioMaster"
+  | "audioSfx"
+  | "audioVoice"
+  | "audioMusic";
 
 /** What one game menu render shows (spec 08 §3.1). */
 export interface GameMenuView {
@@ -15,6 +27,14 @@ export interface GameMenuView {
   revealed?: boolean;
   /** Performance panel shown (spec 08 §3.5); absent counts as off. */
   fpsPanel?: boolean;
+  /** Master volume 0..100 (spec 25 §10). */
+  audioMaster?: number;
+  /** Effects volume 0..100 (spec 25 §10). */
+  audioSfx?: number;
+  /** Voices volume 0..100 (spec 25 §10). */
+  audioVoice?: number;
+  /** Music volume 0..100 (spec 25 §10). */
+  audioMusic?: number;
 }
 
 /** Callbacks the game menu buttons invoke (spec 08 §3.1). */
@@ -39,6 +59,8 @@ export interface GameMenuActions {
   toggleReveal?(): void;
   /** Shows or hides the performance panel (spec 08 §3.5); no button when absent. */
   toggleFpsPanel?(): void;
+  /** Adjusts an audio bus volume 0..100 (spec 25 §10); no sliders when absent. */
+  setVolume?(channel: VolumeSliderChannel, value: number): void;
   /** Reloads the page with the same query string. */
   restart(): void;
 }
@@ -49,6 +71,18 @@ export interface GameMenu {
   readonly root: HTMLElement;
   /** Re-renders only when `view` differs from the last rendered view. */
   render(view: GameMenuView): void;
+}
+
+interface VolumeSliderRow {
+  channel: VolumeSliderChannel;
+  labelEl: HTMLElement;
+  inputEl: HTMLInputElement;
+  labelKey:
+    | "menu.volumeMaster"
+    | "menu.volumeSfx"
+    | "menu.volumeVoice"
+    | "menu.volumeMusic";
+  defaultVal: number;
 }
 
 /** The full-screen game menu: a backdrop with a centred panel holding the
@@ -139,6 +173,69 @@ export function createGameMenu(
           toggleFpsPanel.call(actions),
         );
   if (fps !== null) panel.appendChild(fps);
+
+  const sliderRows: VolumeSliderRow[] = [];
+  const setVolume = actions.setVolume;
+  if (setVolume !== undefined) {
+    const defs: Array<{
+      id: string;
+      channel: VolumeSliderChannel;
+      labelKey: VolumeSliderRow["labelKey"];
+      defaultVal: number;
+    }> = [
+      {
+        id: "game-menu-volume-master",
+        channel: "audioMaster",
+        labelKey: "menu.volumeMaster",
+        defaultVal: DEFAULT_AUDIO_MASTER,
+      },
+      {
+        id: "game-menu-volume-sfx",
+        channel: "audioSfx",
+        labelKey: "menu.volumeSfx",
+        defaultVal: DEFAULT_AUDIO_SFX,
+      },
+      {
+        id: "game-menu-volume-voice",
+        channel: "audioVoice",
+        labelKey: "menu.volumeVoice",
+        defaultVal: DEFAULT_AUDIO_VOICE,
+      },
+      {
+        id: "game-menu-volume-music",
+        channel: "audioMusic",
+        labelKey: "menu.volumeMusic",
+        defaultVal: DEFAULT_AUDIO_MUSIC,
+      },
+    ];
+    for (const def of defs) {
+      const row = appendDiv(panel, `${def.id}-row`);
+      const labelEl = document.createElement("label");
+      labelEl.id = `${def.id}-label`;
+      labelEl.textContent = t(def.labelKey, { pct: def.defaultVal });
+      const inputEl = document.createElement("input");
+      inputEl.id = def.id;
+      inputEl.type = "range";
+      inputEl.min = "0";
+      inputEl.max = "100";
+      inputEl.value = String(def.defaultVal);
+      inputEl.addEventListener("input", () => {
+        const val = Math.max(0, Math.min(100, Number(inputEl.value) || 0));
+        setText(labelEl, t(def.labelKey, { pct: val }));
+        setVolume.call(actions, def.channel, val);
+      });
+      row.appendChild(labelEl);
+      row.appendChild(inputEl);
+      sliderRows.push({
+        channel: def.channel,
+        labelEl,
+        inputEl,
+        labelKey: def.labelKey,
+        defaultVal: def.defaultVal,
+      });
+    }
+  }
+
   panel.appendChild(restart);
 
   /** Last rendered view; an equal render mutates nothing. */
@@ -155,7 +252,11 @@ export function createGameMenu(
         last.generatedTextures === view.generatedTextures &&
         last.weather === view.weather &&
         last.revealed === view.revealed &&
-        last.fpsPanel === view.fpsPanel
+        last.fpsPanel === view.fpsPanel &&
+        last.audioMaster === view.audioMaster &&
+        last.audioSfx === view.audioSfx &&
+        last.audioVoice === view.audioVoice &&
+        last.audioMusic === view.audioMusic
       ) {
         return;
       }
@@ -167,6 +268,10 @@ export function createGameMenu(
         weather: view.weather,
         revealed: view.revealed,
         fpsPanel: view.fpsPanel,
+        audioMaster: view.audioMaster,
+        audioSfx: view.audioSfx,
+        audioVoice: view.audioVoice,
+        audioMusic: view.audioMusic,
       };
       if (root.hidden !== !view.open) root.hidden = !view.open;
       setText(gore, t(view.gore ? "menu.goreOn" : "menu.goreOff"));
@@ -198,6 +303,13 @@ export function createGameMenu(
       if (ai.hidden !== (view.ai === null)) ai.hidden = view.ai === null;
       if (view.ai !== null) {
         setText(ai, t(view.ai ? "menu.aiOn" : "menu.aiOff"));
+      }
+      for (const row of sliderRows) {
+        const val = view[row.channel] ?? row.defaultVal;
+        setText(row.labelEl, t(row.labelKey, { pct: val }));
+        if (row.inputEl.value !== String(val)) {
+          row.inputEl.value = String(val);
+        }
       }
     },
   };

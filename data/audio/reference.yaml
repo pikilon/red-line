@@ -1,0 +1,304 @@
+# Mapping from Red Line audio event IDs to Zero Hour event names (specs/25 §4.2, §5.1).
+# Scaffolding only: names only, no EA audio ships in the repository.
+
+# -----------------------------------------------------------------------------
+# Unit Voices: Ukraine (USA audio reference)
+# -----------------------------------------------------------------------------
+voice.ua-rifleman.select: RangerVoiceSelect
+voice.ua-rifleman.move: RangerVoiceMove
+voice.ua-rifleman.attack: RangerVoiceAttack
+voice.ua-rifleman.underFire: RangerVoiceFear
+voice.ua-rifleman.die: RangerVoiceDie
+voice.ua-rifleman.created: RangerVoiceCreate
+
+voice.ua-stugna-team.select: MissileDefenderVoiceSelect
+voice.ua-stugna-team.move: MissileDefenderVoiceMove
+voice.ua-stugna-team.attack: MissileDefenderVoiceAttack
+voice.ua-stugna-team.underFire: MissileDefenderVoiceFear
+voice.ua-stugna-team.die: RangerVoiceDie
+voice.ua-stugna-team.created: MissileDefenderVoiceCreate
+
+voice.ua-kozak-scout.select: HumveeVoiceSelect
+voice.ua-kozak-scout.move: HumveeVoiceMove
+voice.ua-kozak-scout.attack: HumveeVoiceAttack
+voice.ua-kozak-scout.underFire: HumveeVoiceSelect
+voice.ua-kozak-scout.die: Explosion
+voice.ua-kozak-scout.created: HumveeVoiceCreate
+
+voice.ua-bradley.select: PaladinTankVoiceSelect
+voice.ua-bradley.move: PaladinTankVoiceMove
+voice.ua-bradley.attack: PaladinTankVoiceAttack
+voice.ua-bradley.underFire: PaladinTankVoiceSelect
+voice.ua-bradley.die: Explosion
+voice.ua-bradley.created: PaladinTankVoiceCreate
+
+voice.ua-leopard-2a4.select: CrusaderTankVoiceSelect
+voice.ua-leopard-2a4.move: CrusaderTankVoiceMove
+voice.ua-leopard-2a4.attack: CrusaderTankVoiceAttack
+voice.ua-leopard-2a4.underFire: CrusaderTankVoiceSelect
+voice.ua-leopard-2a4.die: Explosion
+voice.ua-leopard-2a4.created: CrusaderTankVoiceCreate
+
+voice.ua-himars.select: TomahawkVoiceSelect
+voice.ua-himars.move: TomahawkVoiceMove
+voice.ua-himars.attack: TomahawkVoiceAttack
+voice.ua-himars.underFire: TomahawkVoiceSelect
+voice.ua-himars.die: Explosion
+voice.ua-himars.created: TomahawkVoiceCreate
+
+voice.ua-dozer.select: DozerUSAVoiceSelect
+voice.ua-dozer.move: DozerUSAVoiceMove
+voice.ua-dozer.attack: DozerUSAVoiceRepair
+voice.ua-dozer.underFire: DozerUSAVoiceBuildNot
+voice.ua-dozer.die: Explosion
+voice.ua-dozer.created: DozerUSAVoiceCreate
+
+voice.ua-supply-truck.select: ChinookVoiceSelect
+voice.ua-supply-truck.move: ChinookVoiceMove
+voice.ua-supply-truck.attack: ChinookVoiceSupply
+voice.ua-supply-truck.underFire: ChinookVoiceSelect
+voice.ua-supply-truck.die: Explosion
+voice.ua-supply-truck.created: ChinookVoiceCreate
+
+# -----------------------------------------------------------------------------
+# Unit Voices: Russia (China audio reference)
+# -----------------------------------------------------------------------------
+voice.ru-rifleman.select: RedGuardVoiceSelect
+voice.ru-rifleman.move: RedGuardVoiceMove
+voice.ru-rifleman.attack: RedGuardVoiceAttack
+voice.ru-rifleman.underFire: RedGuardVoiceFear
+voice.ru-rifleman.die: RangerVoiceDie
+voice.ru-rifleman.created: RedGuardVoiceCreate
+
+voice.ru-rpg-gunner.select: TankHunterVoiceSelect
+voice.ru-rpg-gunner.move: TankHunterVoiceMove
+voice.ru-rpg-gunner.attack: TankHunterVoiceAttack
+voice.ru-rpg-gunner.underFire: TankHunterVoiceFear
+voice.ru-rpg-gunner.die: RangerVoiceDie
+voice.ru-rpg-gunner.created: TankHunterVoiceCreate
+
+voice.ru-brdm-scout.select: GattlingTankVoiceSelect
+voice.ru-brdm-scout.move: GattlingTankVoiceMove
+voice.ru-brdm-scout.attack: GattlingTankVoiceAttack
+voice.ru-brdm-scout.underFire: GattlingTankVoiceRapid
+voice.ru-brdm-scout.die: Explosion
+voice.ru-brdm-scout.created: GattlingTankVoiceCreate
+
+voice.ru-bmp-2.select: TroopCrawlerVoiceSelect
+voice.ru-bmp-2.move: TroopCrawlerVoiceMove
+voice.ru-bmp-2.attack: TroopCrawlerVoiceAttack
+voice.ru-bmp-2.underFire: TroopCrawlerVoiceSelect
+voice.ru-bmp-2.die: Explosion
+voice.ru-bmp-2.created: TroopCrawlerVoiceCreate
+
+voice.ru-t-72b3.select: BattleMasterTankVoiceSelect
+voice.ru-t-72b3.move: BattleMasterTankVoiceMove
+voice.ru-t-72b3.attack: BattleMasterTankVoiceAttack
+voice.ru-t-72b3.underFire: BattleMasterTankVoiceSelect
+voice.ru-t-72b3.die: Explosion
+voice.ru-t-72b3.created: BattleMasterTankVoiceCreate
+
+voice.ru-tos-1a.select: InfernoCannonVoiceSelect
+voice.ru-tos-1a.move: InfernoCannonVoiceMove
+voice.ru-tos-1a.attack: InfernoCannonVoiceAttack
+voice.ru-tos-1a.underFire: InfernoCannonVoiceSelect
+voice.ru-tos-1a.die: Explosion
+voice.ru-tos-1a.created: InfernoCannonVoiceCreate
+
+voice.ru-dozer.select: DozerChinaVoiceSelect
+voice.ru-dozer.move: DozerChinaVoiceMove
+voice.ru-dozer.attack: DozerChinaVoiceBuild
+voice.ru-dozer.underFire: DozerChinaVoiceBuildNot
+voice.ru-dozer.die: Explosion
+voice.ru-dozer.created: DozerChinaVoiceCreate
+
+voice.ru-supply-truck.select: SupplyTruckVoiceSelect
+voice.ru-supply-truck.move: SupplyTruckVoiceMove
+voice.ru-supply-truck.attack: SupplyTruckVoiceSupply
+voice.ru-supply-truck.underFire: SupplyTruckVoiceSelect
+voice.ru-supply-truck.die: Explosion
+voice.ru-supply-truck.created: SupplyTruckVoiceCreate
+
+# -----------------------------------------------------------------------------
+# Unit Voice Fallbacks
+# -----------------------------------------------------------------------------
+voice.foot.select: RangerVoiceSelect
+voice.foot.move: RangerVoiceMove
+voice.foot.attack: RangerVoiceAttack
+voice.foot.underFire: RangerVoiceFear
+voice.foot.die: RangerVoiceDie
+voice.foot.created: RangerVoiceCreate
+
+voice.wheeled.select: HumveeVoiceSelect
+voice.wheeled.move: HumveeVoiceMove
+voice.wheeled.attack: HumveeVoiceAttack
+voice.wheeled.underFire: HumveeVoiceSelect
+voice.wheeled.die: Explosion
+voice.wheeled.created: HumveeVoiceCreate
+
+voice.tracked.select: CrusaderTankVoiceSelect
+voice.tracked.move: CrusaderTankVoiceMove
+voice.tracked.attack: CrusaderTankVoiceAttack
+voice.tracked.underFire: CrusaderTankVoiceSelect
+voice.tracked.die: Explosion
+voice.tracked.created: CrusaderTankVoiceCreate
+
+voice.unit.select: CrusaderTankVoiceSelect
+voice.unit.move: CrusaderTankVoiceMove
+voice.unit.attack: CrusaderTankVoiceAttack
+voice.unit.underFire: CrusaderTankVoiceSelect
+voice.unit.die: Explosion
+voice.unit.created: CrusaderTankVoiceCreate
+
+voice.building.select: CommandCenterUSASelect
+voice.building.move: NoSound
+voice.building.attack: NoSound
+voice.building.underFire: NoSound
+voice.building.die: BuildingDie
+voice.building.created: NoSound
+
+# -----------------------------------------------------------------------------
+# EVA: Ukraine (USA announcer)
+# -----------------------------------------------------------------------------
+eva.ukraine.baseUnderAttack: RangerVoiceBaseAttack
+eva.ukraine.lowPower: EvaUSA_LowPower
+eva.ukraine.insufficientFunds: EvaUSA_InsufficientFunds
+eva.ukraine.unitLost: EvaUSA_UnitLost
+eva.ukraine.buildingLost: EvaUSA_BuildingDisabled
+eva.ukraine.productionComplete: EvaUSA_ReinforcementsHaveArrived
+eva.ukraine.upgradeComplete: EvaUSA_UpgradeComplete
+eva.ukraine.constructionComplete: DozerUSAVoiceBuildComplete
+eva.ukraine.buildingReady: EvaUSA_SelectTarget
+eva.ukraine.victory: EvaUSA_Victory
+eva.ukraine.defeat: EvaUSA_Defeat
+
+# -----------------------------------------------------------------------------
+# EVA: Russia (China announcer)
+# -----------------------------------------------------------------------------
+eva.russia.baseUnderAttack: RedGuardVoiceBaseAttack
+eva.russia.lowPower: EvaChina_LowPower
+eva.russia.insufficientFunds: EvaChina_InsufficientFunds
+eva.russia.unitLost: EvaChina_UnitLost
+eva.russia.buildingLost: EvaChina_BuildingDisabled
+eva.russia.productionComplete: EvaChina_ReinforcementsHaveArrived
+eva.russia.upgradeComplete: EvaChina_UpgradeComplete
+eva.russia.constructionComplete: DozerChinaVoiceBuildComplete
+eva.russia.buildingReady: EvaChina_SelectTarget
+eva.russia.victory: EvaChina_Victory
+eva.russia.defeat: EvaChina_Defeat
+
+# -----------------------------------------------------------------------------
+# Weapons: Ukraine
+# -----------------------------------------------------------------------------
+weapon.ua-rifle.fire: RangerWeapon
+weapon.ua-stugna-p.fire: MissileDefenderWeapon
+weapon.ua-kozak-hmg.fire: HumveeWeapon
+weapon.ua-bushmaster.fire: PaladinTankWeapon
+weapon.ua-rh120.fire: CrusaderTankWeapon
+weapon.ua-gmlrs.fire: TomahawkWeapon
+weapon.ua-stugna-emplacement.fire: PatriotBatteryWeapon
+
+# -----------------------------------------------------------------------------
+# Weapons: Russia
+# -----------------------------------------------------------------------------
+weapon.ru-ak74.fire: RedGuardWeapon
+weapon.ru-rpg7.fire: TankHunterWeapon
+weapon.ru-kpvt.fire: GattlingTankWeapon
+weapon.ru-2a42.fire: GattlingTankWeapon
+weapon.ru-2a46m.fire: BattlemasterTankWeapon
+weapon.ru-tos-thermobaric.fire: InfernoCannonWeapon
+weapon.ru-kornet-emplacement.fire: GattlingCannonWeapon
+
+# -----------------------------------------------------------------------------
+# Weapon Fallbacks
+# -----------------------------------------------------------------------------
+weapon.smallArms.fire: RangerWeapon
+weapon.autocannon.fire: GattlingTankWeapon
+weapon.antiTank.fire: MissileDefenderWeapon
+weapon.highExplosive.fire: TomahawkWeapon
+weapon.thermobaric.fire: InfernoCannonWeapon
+
+weapon.muzzle.fire: RangerWeapon
+weapon.cannon.fire: CrusaderTankWeapon
+weapon.rocketLaunch.fire: TomahawkWeapon
+weapon.backblast.fire: TankHunterWeapon
+weapon.softLaunch.fire: MissileDefenderWeapon
+
+# -----------------------------------------------------------------------------
+# Impacts
+# -----------------------------------------------------------------------------
+impact.smallArms: VehicleImpactLight
+impact.autocannon: VehicleImpactHeavy
+impact.antiTank: VehicleImpactHeavy
+impact.highExplosive: ExplosionDirt
+impact.thermobaric: Explosion
+impact.light: VehicleImpactLight
+impact.heavy: VehicleImpactHeavy
+
+# -----------------------------------------------------------------------------
+# Explosions
+# -----------------------------------------------------------------------------
+explosion.small: Explosion
+explosion.medium: ExplosionGeneric
+explosion.large: ExplosionArtilleryBarrage
+
+# -----------------------------------------------------------------------------
+# Movement
+# -----------------------------------------------------------------------------
+move.foot: NoSound
+move.wheeled: NoSound
+move.tracked: NoSound
+move.tracks: NoSound
+
+move.ua-kozak-scout.start: HumveeMoveStart
+move.ua-bradley.start: PaladinTankMoveStart
+move.ua-leopard-2a4.start: CrusaderTankMoveStart
+move.ua-himars.start: TomahawkMoveStart
+move.ua-dozer.start: DozerUSAMoveStart
+move.ua-supply-truck.start: SupplyTruckMoveStart
+
+move.ru-brdm-scout.start: GattlingTankMoveStart
+move.ru-bmp-2.start: TroopCrawlerMoveStart
+move.ru-t-72b3.start: BattleMasterTankMoveStart
+move.ru-tos-1a.start: InfernoCannonMoveStart
+move.ru-dozer.start: DozerChinaMoveStart
+move.ru-supply-truck.start: SupplyTruckMoveStart
+
+# -----------------------------------------------------------------------------
+# Buildings
+# -----------------------------------------------------------------------------
+building.place: PlaceBuilding
+building.construct: UnderConstructionLoop
+building.complete: DozerUSAVoiceBuildComplete
+building.select.hq.ukraine: CommandCenterUSASelect
+building.select.hq.russia: CommandCenterChinaSelect
+building.select.barracks.ukraine: BarracksUSASelect
+building.select.barracks.russia: BarracksChinaSelect
+building.select.factory.ukraine: WarFactoryUSASelect
+building.select.factory.russia: WarFactoryChinaSelect
+building.die: BuildingDie
+
+# -----------------------------------------------------------------------------
+# UI
+# -----------------------------------------------------------------------------
+ui.click: GUIClick
+ui.disabled: BuildingDisabled
+ui.error: NoCanDoSound
+ui.cashUp: MoneyDeposited
+ui.cashDown: MoneyWithdraw
+ui.radarOn: RadarOn
+ui.radarOff: RadarOff
+ui.warning: RadarNotifyUnderAttack
+
+# -----------------------------------------------------------------------------
+# Music
+# -----------------------------------------------------------------------------
+music.menu: Shell
+music.calm.ukraine: Game_USA_01
+music.combat.ukraine: Game_USA_02
+music.calm.russia: Game_CHI_01
+music.combat.russia: Game_CHI_02
+music.victory.ukraine: End_USA
+music.defeat.ukraine: End_USA_Failure
+music.victory.russia: End_Chi
+music.defeat.russia: End_Chi_Failure

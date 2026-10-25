@@ -14,6 +14,17 @@ import {
   Vector3,
   WebGLRenderer,
 } from "three";
+import { AUDIO_CATALOG } from "../audio/catalog";
+import {
+  createAudioDebugOverlay,
+  isAudioDebugEnabled,
+} from "../audio/debugOverlay";
+import {
+  deriveSnapshotAudio,
+  resolveCommandVoiceEvent,
+  type ScreenProjector,
+} from "../audio/derive";
+import { AudioMixer } from "../audio/mixer";
 import { createIsometricCamera, setCameraTarget } from "../camera";
 import {
   createFrameStats,
@@ -411,6 +422,13 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let fpsPanel = restored?.fpsPanel ?? debug;
   /** Player whose fog the worker snapshots; `OBSERVER` while the map is revealed. */
   let viewer = boot.start.viewer;
+  const audioMixer = new AudioMixer(AUDIO_CATALOG, settings);
+  audioMixer.installGestureUnlock(window);
+  if (isAudioDebugEnabled(pageParams.toString())) {
+    createAudioDebugOverlay(document.body, audioMixer);
+  }
+  let lastOrderVoiceAtMs = -Infinity;
+  let lastEngineSyncAtMs = -Infinity;
 
   const gameMenu = createGameMenu(document.body, {
     resume: () => setMenuOpen(false),
@@ -423,6 +441,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     toggleReveal: () => toggleReveal(),
     toggleFpsPanel: () => toggleFpsPanel(),
     toggleWeather: () => toggleWeather(),
+    setVolume: (channel, value) => {
+      settings = { ...settings, [channel]: value };
+      saveSettings(settings);
+      audioMixer.setVolumes({ [channel]: value });
+      renderMenu();
+    },
     restart: () => window.location.reload(),
   });
   // Joystick and menu button on touch screens only (spec 08 §3.6).
@@ -552,6 +576,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       weather: settings.weather !== false,
       revealed: viewer === OBSERVER,
       fpsPanel,
+      audioMaster: settings.audioMaster,
+      audioSfx: settings.audioSfx,
+      audioVoice: settings.audioVoice,
+      audioMusic: settings.audioMusic,
     });
     touchControls?.render({ menuOpen: paused });
   }
@@ -918,6 +946,35 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       player: () => controlled,
       command: (command) => {
         markAttack(command);
+        if (
+          ready &&
+          (command.kind === "move" ||
+            command.kind === "attack" ||
+            command.kind === "attackGround")
+        ) {
+          const nowMs = performance.now();
+          // Group orders dispatch one command per unit in the same click; only the group leader speaks.
+          if (nowMs - lastOrderVoiceAtMs > 50) {
+            lastOrderVoiceAtMs = nowMs;
+            const voiceAction = command.kind === "move" ? "move" : "attack";
+            const leader = resolveCommandVoiceEvent(
+              [...(controller?.selected ?? [])],
+              next?.entities ?? [],
+              controlled,
+              voiceAction,
+            );
+            if (leader !== null) {
+              audioMixer.play(
+                {
+                  eventId: leader.eventId,
+                  entityId: leader.entityId,
+                  relation: "self",
+                },
+                { fallbackCategory: leader.fallbackCategory },
+              );
+            }
+          }
+        }
         interact.command(command);
       },
       onSelectionChange: (ids) => {
@@ -927,6 +984,24 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
             .filter((entity) => ids.has(entity.id))
             .map((entity) => typeName(entity.kind)),
         );
+        if (ready && ids.size > 0) {
+          const leader = resolveCommandVoiceEvent(
+            [...ids],
+            next?.entities ?? [],
+            controlled,
+            "select",
+          );
+          if (leader !== null) {
+            audioMixer.play(
+              {
+                eventId: leader.eventId,
+                entityId: leader.entityId,
+                relation: "self",
+              },
+              { fallbackCategory: leader.fallbackCategory },
+            );
+          }
+        }
         refreshOverlay();
       },
       debug,
@@ -1141,6 +1216,63 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
           spawnDetonationEffect(effects, event.weapon, event.x, event.y, atMs);
         }
       }
+
+      const focus = controller?.cameraTarget() ?? cameraTarget;
+      audioMixer.updateListener({
+        tileX: focus.x,
+        tileY: focus.y,
+        zoom: camera.zoom,
+      });
+      const projector: ScreenProjector = {
+        projectTile(tileX, tileY) {
+          const ndc = new Vector3(tileX, 0, tileY).project(camera);
+          return {
+            screenX: ndc.x,
+            onScreen:
+              ndc.x >= -1.05 &&
+              ndc.x <= 1.05 &&
+              ndc.y >= -1.05 &&
+              ndc.y <= 1.05,
+          };
+        },
+        isTileVisible(tileX, tileY) {
+          if (viewer === OBSERVER || map === null) return true;
+          const ix = Math.floor(tileX);
+          const iy = Math.floor(tileY);
+          if (ix < 0 || iy < 0 || ix >= map.mapWidth || iy >= map.mapHeight) {
+            return false;
+          }
+          return fog[iy * map.mapWidth + ix] === 2;
+        },
+      };
+      const audioBatch = deriveSnapshotAudio(
+        previous,
+        snapshot,
+        combat,
+        controlled,
+        projector,
+        AUDIO_CATALOG,
+        { tileX: focus.x, tileY: focus.y },
+      );
+      for (const item of audioBatch.requests) {
+        audioMixer.play(item.request, {
+          fallbackCategory: item.fallbackCategory,
+        });
+      }
+      const factionId = RULES.factions[controlled]?.id ?? "ukraine";
+      for (const evaId of audioBatch.evaEvents) {
+        audioMixer.triggerEva(evaId, factionId);
+      }
+      audioMixer.tickEva();
+      if (at - lastEngineSyncAtMs >= AUDIO_CATALOG.mix.limits.drawableRetryMs) {
+        lastEngineSyncAtMs = at;
+        audioMixer.syncEngineLoops(audioBatch.movingUnits);
+      }
+      if (audioBatch.outcomeMusic) {
+        audioMixer.setMusicState(
+          `music.${audioBatch.outcomeMusic}.${factionId}`,
+        );
+      }
     }
     refreshOverlay();
   });
@@ -1224,6 +1356,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         pauseStartMs = null;
       }
       interact.setPaused(paused);
+      audioMixer.setPaused(paused);
     }
     if (!open && savesOpen) {
       savesOpen = false;

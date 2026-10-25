@@ -1,0 +1,14 @@
+recipes:
+  click:     { kind: tone, durationMs: 45, freqStartHz: 1100, freqEndHz: 650, filterType: bandpass, filterHz: 1000, noiseMix: 0.1, attackMs: 2, decayMs: 40, gain: 0.45 }
+  shot:      { kind: burst, durationMs: 110, freqStartHz: 320, freqEndHz: 90, filterType: bandpass, filterHz: 1400, noiseMix: 0.75, attackMs: 2, decayMs: 100, gain: 0.65 }
+  cannon:    { kind: burst, durationMs: 320, freqStartHz: 180, freqEndHz: 42, filterType: lowpass, filterHz: 650, noiseMix: 0.8, attackMs: 3, decayMs: 300, gain: 0.85 }
+  rocket:    { kind: noise, durationMs: 380, freqStartHz: 480, freqEndHz: 180, filterType: bandpass, filterHz: 950, noiseMix: 0.9, attackMs: 15, decayMs: 340, gain: 0.75 }
+  impact:    { kind: burst, durationMs: 160, freqStartHz: 240, freqEndHz: 65, filterType: lowpass, filterHz: 800, noiseMix: 0.85, attackMs: 2, decayMs: 150, gain: 0.7 }
+  explosion: { kind: burst, durationMs: 520, freqStartHz: 140, freqEndHz: 32, filterType: lowpass, filterHz: 480, noiseMix: 0.9, attackMs: 5, decayMs: 500, gain: 0.9 }
+  engine:    { kind: loop, durationMs: 500, freqStartHz: 68, freqEndHz: 68, filterType: lowpass, filterHz: 260, noiseMix: 0.35, attackMs: 20, decayMs: 50, gain: 0.4 }
+  footstep:  { kind: noise, durationMs: 70, freqStartHz: 220, freqEndHz: 110, filterType: bandpass, filterHz: 500, noiseMix: 0.95, attackMs: 4, decayMs: 60, gain: 0.35 }
+  voice:     { kind: tone, durationMs: 220, freqStartHz: 420, freqEndHz: 480, filterType: bandpass, filterHz: 1200, noiseMix: 0.15, attackMs: 8, decayMs: 200, gain: 0.55 }
+  eva:       { kind: tone, durationMs: 300, freqStartHz: 660, freqEndHz: 880, filterType: bandpass, filterHz: 1500, noiseMix: 0.05, attackMs: 10, decayMs: 270, gain: 0.6 }
+  building:  { kind: burst, durationMs: 260, freqStartHz: 150, freqEndHz: 90, filterType: lowpass, filterHz: 520, noiseMix: 0.6, attackMs: 10, decayMs: 240, gain: 0.55 }
+  scream:    { kind: tone, durationMs: 280, freqStartHz: 580, freqEndHz: 260, filterType: bandpass, filterHz: 1100, noiseMix: 0.4, attackMs: 10, decayMs: 260, gain: 0.6 }
+  music:     { kind: tone, durationMs: 1000, freqStartHz: 110, freqEndHz: 110, filterType: lowpass, filterHz: 400, noiseMix: 0.05, attackMs: 50, decayMs: 900, gain: 0.3 }

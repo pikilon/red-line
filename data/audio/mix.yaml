@@ -1,0 +1,49 @@
+# Bus volumes, ducking rules, global limits and camera audio configuration (specs/25 §6, §9, §10).
+
+buses:
+  master:  { volume: 100 }
+  sfx:     { volume: 80 }
+  voice:   { volume: 70 }
+  eva:     { volume: 80 }
+  ui:      { volume: 80 }
+  ambient: { volume: 70 }
+  music:   { volume: 55 }
+
+limits:
+  sampleCountWorld: 32
+  sampleCountUi: 8
+  streamCount: 2
+  minSampleVolume: 2
+  timeBetweenDrawableSoundsMs: 1000
+  timeToFadeAudioMs: 2000
+
+zoom:
+  soundVolumeBonusPercent: 20
+  minDistance: 130
+  maxDistance: 425
+
+pan:
+  clamp: [-0.85, 0.85]
+
+relative2d:
+  volumePercent: -10
+
+ducking:
+  eva:
+    duckMusicDb: -9
+    duckSfxDb: -4
+    holdMs: 300
+    releaseMs: 500
+  voice:
+    duckMusicDb: -4
+    holdMs: 0
+    releaseMs: 500
+
+underFire:
+  perUnitCooldownMs: 12000
+  globalVoiceBudgetMs: 3000
+  onScreenOnly: true
+
+die:
+  limit: 3
+  onScreenOnly: true

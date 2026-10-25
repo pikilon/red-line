@@ -1,0 +1,811 @@
+# Sound effect events (specs/25 §5.1, §5.2).
+# Zero Hour parameters adapted with camelCase field names.
+
+events:
+  # ---------------------------------------------------------------------------
+  # Weapons: Ukraine
+  # ---------------------------------------------------------------------------
+  weapon.ua-rifle.fire:
+    sounds: [synth:shot]
+    volume: 60
+    volumeShift: -15
+    pitchShift: [-2, 2]
+    limit: 3
+    priority: normal
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 40
+
+  weapon.ua-stugna-p.fire:
+    sounds: [synth:rocket]
+    volume: 80
+    volumeShift: -20
+    pitchShift: [-5, 5]
+    limit: 5
+    priority: normal
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 50
+
+  weapon.ua-kozak-hmg.fire:
+    sounds: [synth:shot]
+    volume: 75
+    volumeShift: -10
+    pitchShift: [-5, 5]
+    limit: 3
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 40
+
+  weapon.ua-bushmaster.fire:
+    sounds: [synth:cannon]
+    volume: 115
+    volumeShift: -20
+    pitchShift: [-10, 10]
+    limit: 2
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    minDistance: 6
+    maxDistance: 50
+
+  weapon.ua-rh120.fire:
+    sounds: [synth:cannon]
+    volume: 90
+    volumeShift: -10
+    pitchShift: [-5, 5]
+    limit: 2
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    minDistance: 6
+    maxDistance: 60
+
+  weapon.ua-gmlrs.fire:
+    sounds: [synth:rocket]
+    volume: 80
+    volumeShift: -20
+    pitchShift: [-4, 4]
+    delayMs: [0, 300]
+    limit: 2
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    minDistance: 8
+    maxDistance: 80
+
+  weapon.ua-stugna-emplacement.fire:
+    sounds: [synth:rocket]
+    volume: 100
+    volumeShift: -20
+    pitchShift: [-10, 10]
+    limit: 3
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    minDistance: 6
+    maxDistance: 60
+
+  # ---------------------------------------------------------------------------
+  # Weapons: Russia
+  # ---------------------------------------------------------------------------
+  weapon.ru-ak74.fire:
+    sounds: [synth:shot]
+    volume: 95
+    volumeShift: -15
+    pitchShift: [-10, 10]
+    limit: 2
+    priority: normal
+    control: [random, interrupt]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 40
+
+  weapon.ru-rpg7.fire:
+    sounds: [synth:rocket]
+    volume: 80
+    volumeShift: -20
+    pitchShift: [-4, 4]
+    limit: 2
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 45
+
+  weapon.ru-kpvt.fire:
+    sounds: [synth:shot]
+    volume: 80
+    volumeShift: -10
+    limit: 3
+    priority: normal
+    control: [random, interrupt]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 40
+
+  weapon.ru-2a42.fire:
+    sounds: [synth:cannon]
+    volume: 80
+    volumeShift: -10
+    limit: 3
+    priority: normal
+    control: [random, interrupt]
+    type: [world, shrouded, everyone]
+    minDistance: 5
+    maxDistance: 50
+
+  weapon.ru-2a46m.fire:
+    sounds: [synth:cannon]
+    volume: 85
+    volumeShift: -20
+    pitchShift: [-10, 10]
+    limit: 3
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    minDistance: 6
+    maxDistance: 60
+
+  weapon.ru-tos-thermobaric.fire:
+    sounds: [synth:rocket]
+    volume: 105
+    volumeShift: -10
+    pitchShift: [-10, 10]
+    limit: 2
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    minDistance: 8
+    maxDistance: 70
+
+  weapon.ru-kornet-emplacement.fire:
+    sounds: [synth:rocket]
+    volume: 85
+    volumeShift: -20
+    pitchShift: [-10, 10]
+    limit: 3
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    minDistance: 6
+    maxDistance: 60
+
+  # ---------------------------------------------------------------------------
+  # Weapon Fallbacks: Damage Types
+  # ---------------------------------------------------------------------------
+  weapon.smallArms.fire:
+    sounds: [synth:shot]
+    volume: 60
+    volumeShift: -15
+    pitchShift: [-2, 2]
+    limit: 3
+    priority: normal
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 40
+
+  weapon.autocannon.fire:
+    sounds: [synth:cannon]
+    volume: 80
+    volumeShift: -10
+    limit: 3
+    priority: normal
+    control: [random, interrupt]
+    type: [world, shrouded, everyone]
+    minDistance: 5
+    maxDistance: 50
+
+  weapon.antiTank.fire:
+    sounds: [synth:rocket]
+    volume: 80
+    volumeShift: -20
+    pitchShift: [-5, 5]
+    limit: 5
+    priority: normal
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 50
+
+  weapon.highExplosive.fire:
+    sounds: [synth:rocket]
+    volume: 80
+    volumeShift: -20
+    pitchShift: [-4, 4]
+    delayMs: [0, 300]
+    limit: 2
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    minDistance: 8
+    maxDistance: 80
+
+  weapon.thermobaric.fire:
+    sounds: [synth:rocket]
+    volume: 105
+    volumeShift: -10
+    pitchShift: [-10, 10]
+    limit: 2
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    minDistance: 8
+    maxDistance: 70
+
+  # ---------------------------------------------------------------------------
+  # Weapon Fallbacks: Launch Types
+  # ---------------------------------------------------------------------------
+  weapon.muzzle.fire:
+    sounds: [synth:shot]
+    volume: 60
+    volumeShift: -15
+    pitchShift: [-2, 2]
+    limit: 3
+    priority: normal
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 40
+
+  weapon.cannon.fire:
+    sounds: [synth:cannon]
+    volume: 90
+    volumeShift: -10
+    pitchShift: [-5, 5]
+    limit: 2
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    minDistance: 6
+    maxDistance: 60
+
+  weapon.rocketLaunch.fire:
+    sounds: [synth:rocket]
+    volume: 80
+    volumeShift: -20
+    pitchShift: [-4, 4]
+    delayMs: [0, 300]
+    limit: 2
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    minDistance: 6
+    maxDistance: 70
+
+  weapon.backblast.fire:
+    sounds: [synth:rocket]
+    volume: 80
+    volumeShift: -20
+    pitchShift: [-4, 4]
+    limit: 2
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 45
+
+  weapon.softLaunch.fire:
+    sounds: [synth:rocket]
+    volume: 80
+    volumeShift: -20
+    pitchShift: [-5, 5]
+    limit: 5
+    priority: normal
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 50
+
+  # ---------------------------------------------------------------------------
+  # Impacts
+  # ---------------------------------------------------------------------------
+  impact.smallArms:
+    sounds: [synth:impact]
+    volume: 50
+    volumeShift: -10
+    pitchShift: [-5, 5]
+    limit: 3
+    priority: normal
+    control: [random, interrupt]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 35
+
+  impact.autocannon:
+    sounds: [synth:impact]
+    volume: 65
+    volumeShift: -20
+    pitchShift: [-3, 3]
+    limit: 2
+    priority: low
+    control: [random, interrupt]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 40
+
+  impact.antiTank:
+    sounds: [synth:impact]
+    volume: 70
+    volumeShift: -20
+    pitchShift: [-5, 5]
+    limit: 3
+    priority: normal
+    control: [random, interrupt]
+    type: [world, shrouded, everyone]
+    minDistance: 5
+    maxDistance: 45
+
+  impact.highExplosive:
+    sounds: [synth:explosion]
+    volume: 90
+    volumeShift: -10
+    pitchShift: [-2, 2]
+    limit: 2
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    lowPass: 50
+    minDistance: 6
+    maxDistance: 50
+
+  impact.thermobaric:
+    sounds: [synth:explosion]
+    volume: 100
+    volumeShift: -10
+    pitchShift: [-5, 5]
+    limit: 2
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    lowPass: 50
+    minDistance: 8
+    maxDistance: 60
+
+  impact.light:
+    sounds: [synth:impact]
+    volume: 50
+    volumeShift: -10
+    pitchShift: [-5, 5]
+    limit: 3
+    priority: normal
+    control: [random, interrupt]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 35
+
+  impact.heavy:
+    sounds: [synth:impact]
+    volume: 70
+    volumeShift: -20
+    pitchShift: [-5, 5]
+    limit: 3
+    priority: normal
+    control: [random, interrupt]
+    type: [world, shrouded, everyone]
+    minDistance: 5
+    maxDistance: 45
+
+  # ---------------------------------------------------------------------------
+  # Explosions
+  # ---------------------------------------------------------------------------
+  explosion.small:
+    sounds: [synth:explosion]
+    volume: 90
+    volumeShift: -20
+    pitchShift: [-10, 10]
+    limit: 2
+    priority: low
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    lowPass: 50
+    minDistance: 5
+    maxDistance: 50
+
+  explosion.medium:
+    sounds: [synth:explosion]
+    volume: 90
+    volumeShift: -20
+    pitchShift: [-10, 10]
+    limit: 1
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    lowPass: 50
+    minDistance: 6
+    maxDistance: 60
+
+  explosion.large:
+    sounds: [synth:explosion]
+    volume: 110
+    volumeShift: -10
+    pitchShift: [-10, 0]
+    limit: 3
+    priority: normal
+    control: [interrupt, random]
+    type: [world, shrouded, everyone]
+    minDistance: 8
+    maxDistance: 80
+
+  # ---------------------------------------------------------------------------
+  # Movement
+  # ---------------------------------------------------------------------------
+  move.foot:
+    sounds: [synth:footstep]
+    volume: 35
+    limit: 4
+    priority: lowest
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 2
+    maxDistance: 15
+
+  move.wheeled:
+    sounds: [synth:engine]
+    volume: 40
+    limit: 4
+    priority: lowest
+    control: [loop]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 25
+
+  move.tracked:
+    sounds: [synth:engine]
+    volume: 50
+    limit: 4
+    priority: lowest
+    control: [loop]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 30
+
+  move.tracks:
+    sounds: [synth:engine]
+    volume: 45
+    limit: 4
+    priority: lowest
+    control: [loop]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 30
+
+  move.ua-kozak-scout.start:
+    sounds: [synth:engine]
+    volume: 60
+    volumeShift: -10
+    pitchShift: [-5, 5]
+    delayMs: [0, 500]
+    limit: 3
+    priority: low
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 3
+    maxDistance: 25
+
+  move.ua-bradley.start:
+    sounds: [synth:engine]
+    volume: 65
+    volumeShift: -10
+    pitchShift: [-2, 2]
+    delayMs: [0, 600]
+    priority: low
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 30
+
+  move.ua-leopard-2a4.start:
+    sounds: [synth:engine]
+    volume: 65
+    volumeShift: -10
+    pitchShift: [-2, 2]
+    delayMs: [0, 600]
+    priority: low
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 30
+
+  move.ua-himars.start:
+    sounds: [synth:engine]
+    volume: 60
+    volumeShift: -15
+    pitchShift: [-5, 5]
+    delayMs: [0, 800]
+    priority: low
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 30
+
+  move.ua-dozer.start:
+    sounds: [synth:engine]
+    volume: 60
+    volumeShift: -10
+    pitchShift: [-10, 10]
+    delayMs: [0, 800]
+    priority: low
+    type: [world, shrouded, everyone]
+    minDistance: 3
+    maxDistance: 25
+
+  move.ua-supply-truck.start:
+    sounds: [synth:engine]
+    volume: 50
+    volumeShift: -20
+    pitchShift: [-5, 5]
+    delayMs: [0, 500]
+    limit: 3
+    priority: low
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 3
+    maxDistance: 25
+
+  move.ru-brdm-scout.start:
+    sounds: [synth:engine]
+    volume: 55
+    volumeShift: -10
+    pitchShift: [-2, 2]
+    delayMs: [0, 600]
+    priority: low
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 3
+    maxDistance: 25
+
+  move.ru-bmp-2.start:
+    sounds: [synth:engine]
+    volume: 70
+    volumeShift: -15
+    pitchShift: [-5, 5]
+    delayMs: [0, 800]
+    priority: low
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 30
+
+  move.ru-t-72b3.start:
+    sounds: [synth:engine]
+    volume: 60
+    pitchShift: [-10, 0]
+    delayMs: [0, 800]
+    priority: low
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 30
+
+  move.ru-tos-1a.start:
+    sounds: [synth:engine]
+    volume: 75
+    volumeShift: -10
+    pitchShift: [-5, 5]
+    delayMs: [0, 800]
+    priority: low
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 30
+
+  move.ru-dozer.start:
+    sounds: [synth:engine]
+    volume: 60
+    volumeShift: -10
+    pitchShift: [-5, 5]
+    delayMs: [0, 800]
+    priority: low
+    type: [world, shrouded, everyone]
+    minDistance: 3
+    maxDistance: 25
+
+  move.ru-supply-truck.start:
+    sounds: [synth:engine]
+    volume: 50
+    volumeShift: -20
+    pitchShift: [-5, 5]
+    delayMs: [0, 500]
+    limit: 3
+    priority: low
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 3
+    maxDistance: 25
+
+  # ---------------------------------------------------------------------------
+  # Buildings
+  # ---------------------------------------------------------------------------
+  building.place:
+    sounds: [synth:building]
+    volume: 45
+    priority: low
+    type: [world, player]
+
+  building.construct:
+    sounds: [synth:building]
+    control: [loop, all, random]
+    priority: lowest
+    limit: 2
+    minDistance: 10
+    maxDistance: 100
+    volumeShift: -10
+    volume: 80
+    type: [world, shrouded, everyone]
+
+  building.complete:
+    sounds: [synth:building]
+    control: [random]
+    volume: 120
+    minVolume: 110
+    priority: high
+    type: [world, player, global]
+
+  building.select.hq.ukraine:
+    sounds: [synth:click]
+    limit: 1
+    volume: 40
+    type: [ui, player]
+
+  building.select.hq.russia:
+    sounds: [synth:click]
+    limit: 1
+    volume: 40
+    type: [ui, player]
+
+  building.select.barracks.ukraine:
+    sounds: [synth:click]
+    limit: 1
+    volume: 50
+    type: [ui, player]
+
+  building.select.barracks.russia:
+    sounds: [synth:click]
+    limit: 1
+    volume: 50
+    type: [ui, player]
+
+  building.select.factory.ukraine:
+    sounds: [synth:click]
+    limit: 1
+    volume: 45
+    type: [ui, player]
+
+  building.select.factory.russia:
+    sounds: [synth:click]
+    limit: 1
+    volume: 50
+    type: [ui, player]
+
+  building.die:
+    sounds: [synth:explosion]
+    control: [random, interrupt]
+    volumeShift: -10
+    pitchShift: [-10, 10]
+    limit: 2
+    volume: 110
+    priority: normal
+    type: [world, shrouded, everyone]
+    minDistance: 8
+    maxDistance: 80
+
+  # ---------------------------------------------------------------------------
+  # UI
+  # ---------------------------------------------------------------------------
+  ui.click:
+    sounds: [synth:click]
+    priority: high
+    volume: 30
+    type: [ui, everyone]
+
+  ui.disabled:
+    sounds: [synth:click]
+    volume: 100
+    minDistance: 22
+    limit: 2
+    priority: normal
+    type: [ui, player]
+
+  ui.error:
+    sounds: [synth:click]
+    minVolume: 30
+    priority: high
+    type: [ui, player]
+
+  ui.cashUp:
+    sounds: [synth:click]
+    control: [random]
+    limit: 3
+    volume: 30
+    priority: low
+    type: [ui, player]
+
+  ui.cashDown:
+    sounds: [synth:click]
+    control: [random]
+    limit: 3
+    volume: 30
+    priority: low
+    type: [ui, player]
+
+  ui.radarOn:
+    sounds: [synth:click]
+    limit: 1
+    volume: 45
+    type: [ui, player]
+
+  ui.radarOff:
+    sounds: [synth:click]
+    limit: 1
+    volume: 45
+    type: [ui, player]
+
+  ui.warning:
+    sounds: [synth:click]
+    volume: 35
+    type: [ui, player]
+
+  # ---------------------------------------------------------------------------
+  # Music
+  # ---------------------------------------------------------------------------
+  music.menu:
+    sounds: [synth:music]
+    volume: 55
+    priority: normal
+    control: [loop]
+    type: [ui, everyone]
+
+  music.calm.ukraine:
+    sounds: [synth:music]
+    volume: 55
+    priority: normal
+    control: [loop]
+    type: [ui, everyone]
+
+  music.combat.ukraine:
+    sounds: [synth:music]
+    volume: 55
+    priority: normal
+    control: [loop]
+    type: [ui, everyone]
+
+  music.calm.russia:
+    sounds: [synth:music]
+    volume: 55
+    priority: normal
+    control: [loop]
+    type: [ui, everyone]
+
+  music.combat.russia:
+    sounds: [synth:music]
+    volume: 55
+    priority: normal
+    control: [loop]
+    type: [ui, everyone]
+
+  music.victory.ukraine:
+    sounds: [synth:music]
+    volume: 60
+    priority: high
+    type: [ui, everyone]
+
+  music.defeat.ukraine:
+    sounds: [synth:music]
+    volume: 60
+    priority: high
+    type: [ui, everyone]
+
+  music.victory.russia:
+    sounds: [synth:music]
+    volume: 60
+    priority: high
+    type: [ui, everyone]
+
+  music.defeat.russia:
+    sounds: [synth:music]
+    volume: 60
+    priority: high
+    type: [ui, everyone]

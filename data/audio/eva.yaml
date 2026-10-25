@@ -1,0 +1,69 @@
+# EVA event table and dispatch parameters (specs/25 §5.1, §6.6).
+# Priority (0 never plays, 1 lowest, 10 highest), cooldown between announcements and expiration time while queued.
+
+events:
+  baseUnderAttack:
+    priority: 7
+    cooldownMs: 30000
+    expireMs: 5000
+    sounds: [synth:eva]
+
+  lowPower:
+    priority: 2
+    cooldownMs: 120000
+    expireMs: 5000
+    sounds: [synth:eva]
+
+  insufficientFunds:
+    priority: 3
+    cooldownMs: 5000
+    expireMs: 5000
+    sounds: [synth:eva]
+
+  unitLost:
+    priority: 1
+    cooldownMs: 15000
+    expireMs: 5000
+    sounds: [synth:eva]
+
+  buildingLost:
+    priority: 8
+    cooldownMs: 30000
+    expireMs: 5000
+    sounds: [synth:eva]
+
+  productionComplete:
+    priority: 2
+    cooldownMs: 2000
+    expireMs: 3000
+    sounds: [synth:eva]
+
+  upgradeComplete:
+    priority: 3
+    cooldownMs: 500
+    expireMs: 500
+    sounds: [synth:eva]
+
+  constructionComplete:
+    priority: 3
+    cooldownMs: 2000
+    expireMs: 3000
+    sounds: [synth:eva]
+
+  buildingReady:
+    priority: 3
+    cooldownMs: 2000
+    expireMs: 3000
+    sounds: [synth:eva]
+
+  victory:
+    priority: 10
+    cooldownMs: 60000
+    expireMs: 10000
+    sounds: [synth:eva]
+
+  defeat:
+    priority: 10
+    cooldownMs: 60000
+    expireMs: 10000
+    sounds: [synth:eva]
