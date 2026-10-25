@@ -13,8 +13,10 @@
     "test:e2e": "cd client && node --run test:e2e",
     "test:perf": "cd client && node --run test:perf",
     "build": "cd client && node --run build",
-    "build:data": "node scripts/build-data.mjs",
+    "build:data": "node scripts/build-data.mjs && node scripts/check-audio.mjs --write",
     "check:data": "node scripts/check-data.mjs",
+    "check:audio": "node scripts/check-audio.mjs",
+    "audio:ref": "node scripts/audio/zh-ref.mjs",
     "check:rules": "node scripts/check-rules.mjs",
     "test:scripts": "node --test scripts/ tools/models/",
     "assets:build": "node tools/models/build.mjs",
@@ -30,7 +32,7 @@
     "saves:run": "node scripts/saves.mjs run",
     "saves:import": "node scripts/saves.mjs import",
     "deploy:pages": "node scripts/deploy-pages.mjs",
-    "verify": "node --run check:rust && node --run check:rules && node --run test:scripts && node --run build:wasm && node --run check && node --run typecheck && node --run test:unit && node --run build && node --run test:e2e && node --run check:data && node --run assets:check -- --strict",
+    "verify": "node --run check:rust && node --run check:rules && node --run test:scripts && node --run build:wasm && node --run check && node --run typecheck && node --run test:unit && node --run build && node --run test:e2e && node --run check:data && node --run check:audio && node --run assets:check -- --strict",
     "format": "cargo fmt --all && cd client && npx biome check --write ."
   },
   "devDependencies": {

@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "audio.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["events", "voices", "eva", "mix", "reference", "recipes"],
+  "properties": {
+    "events": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/audioEvent" }
+    },
+    "voices": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": { "$ref": "#/$defs/audioEvent" }
+      }
+    },
+    "eva": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/evaEvent" }
+    },
+    "mix": {
+      "type": "object",
+      "properties": {
+        "buses": { "type": "object" },
+        "ducking": {
+          "anyOf": [{ "type": "object" }, { "type": "array" }]
+        },
+        "limits": { "type": "object" },
+        "music": { "type": "object" }
+      },
+      "additionalProperties": true
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "recipes": {
+      "type": "object",
+      "additionalProperties": { "type": "object" }
+    }
+  },
+  "$defs": {
+    "audioEvent": {
+      "type": "object",
+      "properties": {
+        "sounds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "attackSounds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "decaySounds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "volume": { "type": "number", "minimum": 0 },
+        "volumeShift": { "type": "number" },
+        "minVolume": { "type": "number", "minimum": 0 },
+        "pitchShift": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "number" }
+        },
+        "delay": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "number" }
+        },
+        "delayMs": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "number" }
+        },
+        "limit": { "type": "integer", "minimum": 0 },
+        "loopCount": { "type": "integer", "minimum": 0 },
+        "priority": { "type": "string" },
+        "type": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "control": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "minRange": { "type": "number", "minimum": 0 },
+        "maxRange": { "type": "number", "minimum": 0 },
+        "minDistance": { "type": "number", "minimum": 0 },
+        "maxDistance": { "type": "number", "minimum": 0 },
+        "lowPass": { "type": "number" },
+        "lowPassFreq": { "type": "number" }
+      },
+      "additionalProperties": true
+    },
+    "evaEvent": {
+      "type": "object",
+      "properties": {
+        "priority": { "type": "integer", "minimum": 0 },
+        "cooldownMs": { "type": "number", "minimum": 0 },
+        "expireMs": { "type": "number", "minimum": 0 },
+        "timeBetweenChecksMS": { "type": "number", "minimum": 0 },
+        "expirationTimeMS": { "type": "number", "minimum": 0 },
+        "sounds": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } },
+            { "type": "object" }
+          ]
+        },
+        "sideSounds": { "type": "object" },
+        "lines": { "type": "object" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

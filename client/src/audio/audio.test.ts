@@ -1,0 +1,581 @@
+import { describe, expect, it } from "vitest";
+import { typeIndex } from "../rules";
+import { AUDIO_CATALOG } from "./catalog";
+import { deriveSnapshotAudio, resolveCommandVoiceEvent } from "./derive";
+import { AudioDirector, shouldPlayLocally } from "./director";
+import { EvaQueue } from "./eva";
+import {
+  distanceAttenuation,
+  distanceLowPassHz,
+  pickVariantIndex,
+  relative2dMultiplier,
+  samplePitchRate,
+  sampleVolumeShift,
+  screenStereoPan,
+  zoomVolumeMultiplier,
+} from "./math";
+import { encodeWavPcm16, synthesizePcm } from "./synth";
+import type { AudioCatalog } from "./types";
+
+function makeTestCatalog(): AudioCatalog {
+  return {
+    events: {
+      "weapon.tank.fire": {
+        sounds: ["shot1", "shot2", "shot3"],
+        volume: 90,
+        volumeShift: -10,
+        pitchShift: [-5, 5],
+        limit: 2,
+        priority: "normal",
+        type: ["world", "shrouded", "everyone"],
+        control: ["random", "interrupt"],
+        minDistance: 4,
+        maxDistance: 20,
+      },
+      "move.tank.start": {
+        sounds: ["move1"],
+        volume: 60,
+        limit: 2,
+        priority: "low",
+        type: ["world", "shrouded", "everyone"],
+        control: ["random"],
+        minDistance: 4,
+        maxDistance: 16,
+      },
+      "ui.click": {
+        sounds: ["click1"],
+        volume: 50,
+        limit: 4,
+        priority: "high",
+        type: ["ui", "player"],
+        control: ["random"],
+      },
+      "explosion.critical": {
+        sounds: ["boom1"],
+        volume: 100,
+        limit: 2,
+        priority: "critical",
+        type: ["world", "everyone"],
+        control: ["random"],
+        minDistance: 6,
+        maxDistance: 30,
+      },
+    },
+    voices: {
+      sets: {
+        "ua-rifleman": {
+          select: {
+            sounds: ["sel1", "sel2", "sel3"],
+            volume: 90,
+            limit: 1,
+            priority: "high",
+            type: ["ui", "voice", "player"],
+            control: ["random", "interrupt"],
+          },
+          move: {
+            sounds: ["mov1", "mov2"],
+            volume: 90,
+            limit: 1,
+            priority: "high",
+            type: ["ui", "voice", "player"],
+            control: ["random"],
+          },
+          underFire: {
+            sounds: ["uf1", "uf2"],
+            volume: 100,
+            limit: 1,
+            priority: "normal",
+            type: ["world", "voice", "player"],
+            control: ["random"],
+            minDistance: 4,
+            maxDistance: 20,
+          },
+          die: {
+            sounds: ["die1", "die2"],
+            volume: 100,
+            limit: 3,
+            priority: "low",
+            type: ["world", "voice", "everyone"],
+            control: ["random"],
+            minDistance: 4,
+            maxDistance: 20,
+          },
+        },
+      },
+    },
+    eva: {
+      events: {
+        baseUnderAttack: {
+          priority: 7,
+          cooldownMs: 30000,
+          expireMs: 5000,
+          sounds: {
+            ukraine: "RangerVoiceBaseAttack",
+            russia: "RedGuardVoiceBaseAttack",
+          },
+        },
+        lowPower: {
+          priority: 2,
+          cooldownMs: 120000,
+          expireMs: 5000,
+          sounds: { ukraine: "EvaUSA_LowPower", russia: "EvaChina_LowPower" },
+        },
+        unitLost: {
+          priority: 1,
+          cooldownMs: 15000,
+          expireMs: 5000,
+          sounds: { ukraine: "EvaUSA_UnitLost", russia: "EvaChina_UnitLost" },
+        },
+      },
+    },
+    mix: {
+      buses: {
+        master: 100,
+        sfx: 80,
+        voice: 70,
+        eva: 70,
+        ui: 80,
+        ambient: 60,
+        music: 55,
+      },
+      limits: {
+        worldChannels: 3,
+        uiChannels: 2,
+        streamChannels: 2,
+        minSampleVolume: 0.02,
+        relative2dVolume: -0.1,
+        drawableRetryMs: 1000,
+        fadeMs: 2000,
+      },
+      zoom: { minZoom: 0.6, maxZoom: 3.0, bonus: 0.2 },
+      ducking: {
+        eva: { musicDb: -9, sfxDb: -4, holdMs: 300, releaseMs: 500 },
+        voice: { musicDb: -4, sfxDb: 0, holdMs: 150, releaseMs: 500 },
+      },
+      underFire: { perUnitCooldownMs: 12000, globalCooldownMs: 3000 },
+    },
+    reference: { events: {} },
+    recipes: {},
+  };
+}
+
+describe("audio math curves (Zero Hour formulas)", () => {
+  it("computes inverse distance attenuation MinRange / dist and 0 at MaxRange", () => {
+    expect(distanceAttenuation(2, 4, 20)).toBe(1);
+    expect(distanceAttenuation(4, 4, 20)).toBe(1);
+    expect(distanceAttenuation(8, 4, 20)).toBeCloseTo(0.5, 5);
+    expect(distanceAttenuation(16, 4, 20)).toBeCloseTo(0.25, 5);
+    expect(distanceAttenuation(20, 4, 20)).toBe(0);
+    expect(distanceAttenuation(25, 4, 20)).toBe(0);
+  });
+
+  it("clamps stereo pan to [-0.85, 0.85] and scales linearly within screen", () => {
+    expect(screenStereoPan(0)).toBe(0);
+    expect(screenStereoPan(1)).toBeCloseTo(0.85, 5);
+    expect(screenStereoPan(-1)).toBeCloseTo(-0.85, 5);
+    expect(screenStereoPan(2.5)).toBeCloseTo(0.85, 5);
+    expect(screenStereoPan(-3)).toBeCloseTo(-0.85, 5);
+  });
+
+  it("computes camera zoom volume boost (+20% when zoomed in)", () => {
+    expect(zoomVolumeMultiplier(0.6, 0.6, 3.0, 0.2)).toBeCloseTo(0.8, 5);
+    expect(zoomVolumeMultiplier(1.8, 0.6, 3.0, 0.2)).toBeCloseTo(0.9, 5);
+    expect(zoomVolumeMultiplier(3.0, 0.6, 3.0, 0.2)).toBeCloseTo(1.0, 5);
+  });
+
+  it("applies 2D relative volume and non-repeating random variant selection", () => {
+    expect(relative2dMultiplier(-0.1)).toBeCloseTo(0.9, 5);
+    expect(samplePitchRate([-5, 5], () => 0)).toBeCloseTo(0.95, 5);
+    expect(samplePitchRate([-5, 5], () => 1)).toBeCloseTo(1.05, 5);
+    expect(sampleVolumeShift(-20, () => 0)).toBeCloseTo(0.8, 5);
+    expect(distanceLowPassHz(12, 4, 20, 50)).toBeLessThan(18000);
+
+    // Avoids repeating lastIndex when rng picks the same index
+    const next = pickVariantIndex(4, true, 1, () => 0.3); // floor(0.3 * 4) === 1
+    expect(next).not.toBe(1);
+  });
+});
+
+describe("AudioDirector admission (SoundManager::canPlayNow)", () => {
+  it("filters by audience (shouldPlayLocally) and shroud visibility", () => {
+    expect(shouldPlayLocally(["ui", "player"], "self")).toBe(true);
+    expect(shouldPlayLocally(["ui", "player"], "enemy")).toBe(false);
+    expect(shouldPlayLocally(["world", "everyone"], "enemy")).toBe(true);
+
+    let now = 1000;
+    const director = new AudioDirector({
+      catalog: makeTestCatalog(),
+      nowMs: () => now,
+      rng: () => 0.5,
+    });
+    const listener = { tileX: 10, tileY: 10, zoom: 1.5 };
+
+    // Enemy shot in shroud is culled
+    const shrouded = director.admit(
+      {
+        eventId: "weapon.tank.fire",
+        relation: "enemy",
+        tileX: 12,
+        tileY: 10,
+        tileVisible: false,
+      },
+      listener,
+    );
+    expect(shrouded.decision.admitted).toBe(false);
+    expect(shrouded.decision.reason).toBe("culled_shroud");
+
+    // Own shot even if tileVisible=false is admitted
+    now += 10;
+    const own = director.admit(
+      {
+        eventId: "weapon.tank.fire",
+        relation: "self",
+        tileX: 12,
+        tileY: 10,
+        tileVisible: false,
+      },
+      listener,
+    );
+    expect(own.decision.admitted).toBe(true);
+  });
+
+  it("enforces the voice rule (violatesVoice): blocks non-interrupting voice on same unit, allows interrupt", () => {
+    const director = new AudioDirector({
+      catalog: makeTestCatalog(),
+      nowMs: () => 1000,
+      rng: () => 0.2,
+    });
+    const listener = { tileX: 10, tileY: 10, zoom: 1 };
+
+    // First select voice on entity 42 plays
+    const first = director.admit(
+      { eventId: "voice.ua-rifleman.select", entityId: 42, relation: "self" },
+      listener,
+    );
+    expect(first.decision.admitted).toBe(true);
+
+    // Non-interrupting move voice on same entity 42 is refused while select is active
+    const second = director.admit(
+      { eventId: "voice.ua-rifleman.move", entityId: 42, relation: "self" },
+      listener,
+    );
+    expect(second.decision.admitted).toBe(false);
+    expect(second.decision.reason).toBe("culled_voice_rule");
+
+    // Interrupting select voice on entity 42 kills the previous handle and plays
+    const third = director.admit(
+      { eventId: "voice.ua-rifleman.select", entityId: 42, relation: "self" },
+      listener,
+    );
+    expect(third.decision.admitted).toBe(true);
+    expect(third.decision.killedHandles).toEqual([first.handle]);
+  });
+
+  it("enforces per-event limits and steals lower-priority channels when pool is full", () => {
+    let now = 1000;
+    const director = new AudioDirector({
+      catalog: makeTestCatalog(),
+      nowMs: () => now,
+      rng: () => 0.5,
+    });
+    const listener = { tileX: 10, tileY: 10, zoom: 1 };
+
+    // move.tank.start has limit: 2 and control: [random] (no interrupt)
+    const m1 = director.admit(
+      { eventId: "move.tank.start", tileX: 11, tileY: 10 },
+      listener,
+    );
+    now += 10;
+    const m2 = director.admit(
+      { eventId: "move.tank.start", tileX: 11, tileY: 10 },
+      listener,
+    );
+    now += 10;
+    const m3 = director.admit(
+      { eventId: "move.tank.start", tileX: 11, tileY: 10 },
+      listener,
+    );
+    expect(m1.decision.admitted).toBe(true);
+    expect(m2.decision.admitted).toBe(true);
+    expect(m3.decision.admitted).toBe(false);
+    expect(m3.decision.reason).toBe("culled_limit");
+
+    // Fill the 3rd world channel with weapon.tank.fire (priority: normal)
+    now += 10;
+    const w1 = director.admit(
+      { eventId: "weapon.tank.fire", tileX: 11, tileY: 10 },
+      listener,
+    );
+    expect(w1.decision.admitted).toBe(true);
+    expect(director.getPoolCounts().world).toBe(3);
+
+    // World pool is now full (3/3). A critical explosion steals the oldest low-priority channel (m1)
+    now += 10;
+    const crit = director.admit(
+      { eventId: "explosion.critical", tileX: 12, tileY: 10 },
+      listener,
+    );
+    expect(crit.decision.admitted).toBe(true);
+    expect(crit.decision.killedHandles).toEqual([m1.handle]);
+    expect(director.getPoolCounts().world).toBe(3);
+  });
+
+  it("throttles underFire voices by onScreen, per-unit cooldown (12s) and global budget (3s)", () => {
+    let now = 5000;
+    const director = new AudioDirector({
+      catalog: makeTestCatalog(),
+      nowMs: () => now,
+      rng: () => 0.5,
+    });
+    const listener = { tileX: 10, tileY: 10, zoom: 1 };
+
+    // Off-screen underFire is culled
+    const offscreen = director.admit(
+      {
+        eventId: "voice.ua-rifleman.underFire",
+        entityId: 1,
+        isUnderFire: true,
+        onScreen: false,
+        tileX: 11,
+        tileY: 10,
+      },
+      listener,
+    );
+    expect(offscreen.decision.admitted).toBe(false);
+    expect(offscreen.decision.reason).toBe("culled_offscreen");
+
+    // On-screen underFire for unit 1 plays
+    const uf1 = director.admit(
+      {
+        eventId: "voice.ua-rifleman.underFire",
+        entityId: 1,
+        isUnderFire: true,
+        onScreen: true,
+        tileX: 11,
+        tileY: 10,
+      },
+      listener,
+    );
+    expect(uf1.decision.admitted).toBe(true);
+    if (uf1.handle !== null) director.releaseChannel(uf1.handle);
+
+    // 1 second later, unit 2 is blocked by the 3s global budget
+    now += 1000;
+    const uf2Blocked = director.admit(
+      {
+        eventId: "voice.ua-rifleman.underFire",
+        entityId: 2,
+        isUnderFire: true,
+        onScreen: true,
+        tileX: 11,
+        tileY: 10,
+      },
+      listener,
+    );
+    expect(uf2Blocked.decision.admitted).toBe(false);
+    expect(uf2Blocked.decision.reason).toBe("culled_under_fire_budget");
+
+    // 3.5 seconds after first, unit 1 is still blocked by 12s per-unit cooldown, but unit 2 is allowed
+    now += 2500;
+    const uf1Cooldown = director.admit(
+      {
+        eventId: "voice.ua-rifleman.underFire",
+        entityId: 1,
+        isUnderFire: true,
+        onScreen: true,
+        tileX: 11,
+        tileY: 10,
+      },
+      listener,
+    );
+    expect(uf1Cooldown.decision.admitted).toBe(false);
+    expect(uf1Cooldown.decision.reason).toBe("culled_under_fire_cooldown");
+
+    const uf2Allowed = director.admit(
+      {
+        eventId: "voice.ua-rifleman.underFire",
+        entityId: 2,
+        isUnderFire: true,
+        onScreen: true,
+        tileX: 11,
+        tileY: 10,
+      },
+      listener,
+    );
+    expect(uf2Allowed.decision.admitted).toBe(true);
+  });
+});
+
+describe("EvaQueue (Eva::processPlayingMessages)", () => {
+  it("plays highest priority waiting message, enforces cooldown, and drops expired messages", () => {
+    let now = 1000;
+    const eva = new EvaQueue(makeTestCatalog().eva.events, () => now);
+
+    // Queue unitLost (priority 1) and baseUnderAttack (priority 7) before processing
+    expect(eva.trigger("unitLost", "ukraine")).toBe(true);
+    expect(eva.trigger("baseUnderAttack", "ukraine")).toBe(true);
+    // Duplicate trigger while waiting is ignored
+    expect(eva.trigger("baseUnderAttack", "ukraine")).toBe(false);
+
+    // process() picks baseUnderAttack first (priority 7 > priority 1)
+    const first = eva.process(2000);
+    expect(first?.eventId).toBe("baseUnderAttack");
+    expect(first?.soundRef).toBe("RangerVoiceBaseAttack");
+
+    // While baseUnderAttack is playing (2000ms), process() returns null
+    now += 1000;
+    expect(eva.process()).toBeNull();
+
+    // Re-triggering baseUnderAttack during its 30s cooldown is rejected
+    now += 1500;
+    expect(eva.trigger("baseUnderAttack", "ukraine")).toBe(false);
+
+    // Stream is now free (2500ms elapsed > 2000ms duration), unitLost (still within 5000ms expiry) plays
+    const second = eva.process(1000);
+    expect(second?.eventId).toBe("unitLost");
+
+    // Queue lowPower while unitLost is playing, then advance past lowPower's 5000ms expiry
+    expect(eva.trigger("lowPower", "russia")).toBe(true);
+    now += 6000;
+    expect(eva.process()).toBeNull();
+  });
+});
+
+describe("Procedural synth and WAV encoder", () => {
+  it("synthesizes deterministic non-zero PCM and encodes valid RIFF/WAVE header", () => {
+    const pcm = synthesizePcm({
+      kind: "burst",
+      durationMs: 100,
+      freqStartHz: 300,
+      freqEndHz: 100,
+      filterType: "lowpass",
+      filterHz: 1000,
+      noiseMix: 0.5,
+      attackMs: 5,
+      decayMs: 90,
+      gain: 0.7,
+    });
+    expect(pcm.length).toBeGreaterThan(1000);
+    expect(pcm.some((v) => Math.abs(v) > 0.05)).toBe(true);
+
+    const wav = encodeWavPcm16(pcm);
+    const header = String.fromCharCode(...wav.slice(0, 4));
+    const format = String.fromCharCode(...wav.slice(8, 12));
+    expect(header).toBe("RIFF");
+    expect(format).toBe("WAVE");
+    expect(wav.byteLength).toBe(44 + pcm.length * 2);
+  });
+});
+
+describe("AUDIO_CATALOG and snapshot derivation (Ukraine -> USA, Russia -> China)", () => {
+  it("maps Ukrainian voices/EVA to USA and Russian voices/EVA to China in reference.yaml", () => {
+    expect(AUDIO_CATALOG.reference.events["voice.ua-rifleman.select"]).toBe(
+      "RangerVoiceSelect",
+    );
+    expect(AUDIO_CATALOG.reference.events["voice.ua-leopard-2a4.attack"]).toBe(
+      "CrusaderTankVoiceAttack",
+    );
+    expect(AUDIO_CATALOG.reference.events["voice.ru-rifleman.select"]).toBe(
+      "RedGuardVoiceSelect",
+    );
+    expect(AUDIO_CATALOG.reference.events["voice.ru-t-72b3.attack"]).toBe(
+      "BattleMasterTankVoiceAttack",
+    );
+    expect(AUDIO_CATALOG.eva.events.lowPower?.sounds.ukraine).toBe(
+      "EvaUSA_LowPower",
+    );
+    expect(AUDIO_CATALOG.eva.events.lowPower?.sounds.russia).toBe(
+      "EvaChina_LowPower",
+    );
+  });
+
+  it("derives weapon fire, impact, underFire, death, and command leader voices from snapshots", () => {
+    const unit0 = {
+      id: 1,
+      owner: 0,
+      kind: typeIndex("ua-rifleman"),
+      x: 10,
+      y: 10,
+      hp: 100,
+      flags: 0,
+      progress: 0,
+      target: null,
+      heading: 0,
+      turretAngle: 0,
+    };
+    const prev = {
+      tick: 10,
+      viewer: 0,
+      credits: 1000,
+      powerProduced: 10,
+      powerConsumed: 5,
+      outcome: "ongoing" as const,
+      winner: null,
+      entities: [unit0],
+      queues: [],
+    };
+    const next = {
+      ...prev,
+      tick: 11,
+      powerProduced: 5,
+      powerConsumed: 10, // drops into low power
+      entities: [
+        {
+          ...unit0,
+          hp: 80,
+          flags: 1, // moving
+        },
+      ],
+    };
+    const combat = {
+      projectiles: [
+        {
+          id: 99,
+          owner: 1,
+          weapon: 0,
+          shooter: 2,
+          target: 1,
+          originX: 14,
+          originY: 10,
+          impactX: 10,
+          impactY: 10,
+          launchTick: 11,
+          impactTick: 12,
+        },
+      ],
+      events: [
+        {
+          kind: "detonate" as const,
+          projectile: 98,
+          owner: 1,
+          weapon: 0,
+          hit: 1,
+          x: 10,
+          y: 10,
+        },
+      ],
+    };
+
+    const batch = deriveSnapshotAudio(
+      prev,
+      next,
+      combat,
+      0,
+      {
+        projectTile: () => ({ screenX: 0, onScreen: true }),
+        isTileVisible: () => true,
+      },
+      AUDIO_CATALOG,
+      { tileX: 10, tileY: 10 },
+    );
+
+    const eventIds = batch.requests.map((r) => r.request.eventId);
+    expect(eventIds.some((id) => id.startsWith("weapon."))).toBe(true);
+    expect(eventIds.some((id) => id.startsWith("impact."))).toBe(true);
+    expect(eventIds).toContain("voice.ua-rifleman.underFire");
+    expect(batch.evaEvents).toContain("lowPower");
+
+    const cmdVoice = resolveCommandVoiceEvent([1], next.entities, 0, "select");
+    expect(cmdVoice?.eventId).toContain(".select");
+  });
+});

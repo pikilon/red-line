@@ -75,5 +75,26 @@ describe("settings", () => {
     expect(loadSettings(storage)).toEqual({ gore: false });
     saveSettings({ gore: true }, storage);
     expect(loadSettings(storage)).toEqual({ gore: true });
+
+    // Audio volume sliders round-trip and clamp to 0..100.
+    saveSettings(
+      {
+        gore: true,
+        audioMaster: 90,
+        audioSfx: 75,
+        audioVoice: 65,
+        audioMusic: 40,
+        strongLanguage: false,
+      },
+      storage,
+    );
+    expect(loadSettings(storage)).toEqual({
+      gore: true,
+      audioMaster: 90,
+      audioSfx: 75,
+      audioVoice: 65,
+      audioMusic: 40,
+      strongLanguage: false,
+    });
   });
 });

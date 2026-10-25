@@ -1,7 +1,7 @@
-# 25 — Voices and sound (plan)
+# 25 — Voices and sound
 
-Status: proposed (owner request 2026-10-25; revised 2026-10-25 with the
-reference-pack process). Plan only: no code in this change.
+Status: phase 1 implemented (owner request 2026-10-25; revised 2026-10-25 with the
+reference-pack process; USA reference voices for Ukraine, China reference voices for Russia).
 Depends on `01-architecture.md` (audio lives in the client main thread),
 `07-phase4b-combat-effects.md` (combat events), `17-projectiles-and-combat-readability.md`,
 `19-save-games.md` (example saves).
@@ -52,12 +52,27 @@ and `INIZH.big` (Zero Hour 1.04). Facts unless marked inference.
   (`GameAudio.cpp:1020`) filters by audience against the local player
   (observers use the player they watch); `shrouded` drops the sound when the
   position is not in clear vision (`GameSounds.cpp:~235`).
-* **Admission order** (`SoundManager::canPlayNow`, `GameSounds.cpp:~220-320`):
-  shroud cull, then voice rule, then per-event `Limit`, then free channel
-  (positional vs 2D pools), then steal a lower-priority playing sound, else
-  cull. **Voice rule** (`violatesVoice`): an event with `voice` is refused
-  while the same object is already playing a voice, unless it has `interrupt`.
-  So a unit never talks over itself, and spammed orders do not stack.
+* **Admission order** (`SoundManager::canPlayNow`, `GameSounds.cpp:206-322`,
+  `MilesAudioManager.cpp:1826-2051`):
+  audience check (`AudioManager::shouldPlayLocally`, `GameAudio.cpp:1020`),
+  then distance (`>= MaxRange` for 3D non-global non-critical) and shroud cull
+  (`CELLSHROUD_CLEAR`), then voice rule (`violatesVoice`: an event with `voice`
+  is refused while the same object is already playing a voice unless it has
+  `interrupt`), then per-event `Limit` (`doesViolateLimit`, overridden by
+  `interrupt` killing the oldest handle), then free channel (positional vs 2D
+  pools), then steal a lower-priority playing sound
+  (`isPlayingLowerPriority` / `killLowestPrioritySoundImmediately`), else
+  `interrupt` fallback on identical event, else cull.
+* **Distance attenuation & shifts** (`MilesAudioManager::getEffectiveVolume`,
+  `MilesAudioManager.cpp:2710`; `AudioEventRTS::generatePlayInfo`,
+  `AudioEventRTS.cpp:340-477`): inverse distance dropoff (`1.0` for
+  `dist <= MinRange`, `MinRange / dist` for `MinRange < dist < MaxRange`, `0.0`
+  for `dist >= MaxRange`). `PitchShift` scales playback rate by
+  `[1 + min/100, 1 + max/100]`; `VolumeShift` samples uniformly in
+  `[1 + VolumeShift/100, 1]`; `AC_RANDOM` avoids repeating the immediately
+  preceding variant when `count > 1`. Ground units trigger `SoundMoveStart`
+  (`ThingTemplate.h:111`, `AIStates.cpp:1696-1714`) on acceleration with random
+  delay jitter (`Delay = 0 500..800 ms`).
 * **Unit voice set** (`Voice.ini:241-290`): `<Unit>VoiceSelect`, `VoiceCreate`
   (when built; `Type = world global player`, `Priority = high`), `VoiceMove`,
   `VoiceAttack`, and special ones (`VoiceCrush`, upgrades). 5-6 variants each,
@@ -153,9 +168,16 @@ The procedural recipe stays as the fallback while a file is loading.
     §2) for the debug page.
 * **Mapping.** `data/audio/reference.yaml` (committed) maps our event ids to
   Zero Hour *event names* only (for example `weapon.t72.fire: CrusaderTankWeapon`).
-  It contains names, no audio. Our own event fields (`volume`, `limit`,
-  `pitchShift`...) are written in `events.yaml` using Zero Hour's numbers as
-  the starting point, cited per event.
+  Per owner instruction (2026-10-25), Ukrainian unit voices, EVA and music map
+  to Zero Hour's **USA** set (`RangerVoice*`, `MissileDefenderVoice*`,
+  `HumveeVoice*`, `PaladinTankVoice*`, `CrusaderTankVoice*`, `TomahawkVoice*`,
+  `DozerUSAVoice*`, `ChinookVoice*`, `EvaUSA_*`), while Russian unit voices, EVA
+  and music map to Zero Hour's **China** set (`RedGuardVoice*`,
+  `TankHunterVoice*`, `GattlingTankVoice*`, `TroopCrawlerVoice*`,
+  `BattleMasterTankVoice*`, `InfernoCannonVoice*`, `DozerChinaVoice*`,
+  `SupplyTruckVoice*`, `EvaChina_*`). It contains names, no audio. Our own event
+  fields (`volume`, `limit`, `pitchShift`...) are written in `events.yaml` using
+  Zero Hour's numbers as the starting point, cited per event.
 * **Serving.** The files live outside `client/public/`, so Vite never copies
   them into a build. A dev-server-only middleware serves `/audio-ref/*` from
   `.local/audio-ref/` (`apply: 'serve'`); production builds and

@@ -162,6 +162,12 @@
       "map": "showcase",
       "form": "setup",
       "entities": 4
+    },
+    {
+      "id": "audio-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 26
     }
   ]
 }

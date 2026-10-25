@@ -1,0 +1,335 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "audio-fight",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 48,
+      "y": 20,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-hq",
+        "origin": [
+          34,
+          10
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          34,
+          15
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-barracks",
+        "origin": [
+          34,
+          19
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-vehicle-factory",
+        "origin": [
+          34,
+          23
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-defense",
+        "origin": [
+          42,
+          18
+        ],
+        "label": "uadef",
+        "order": {
+          "attack": "rutank"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          4500,
+          1950
+        ],
+        "label": "uatank",
+        "order": {
+          "attack": "rutank"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          4500,
+          1650
+        ],
+        "label": "uaifv",
+        "order": {
+          "attack": "ruifv"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-kozak-scout",
+        "atCenti": [
+          4550,
+          2250
+        ],
+        "label": "uascout",
+        "order": {
+          "attack": "ruscout"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4650,
+          1800
+        ],
+        "label": "uainf1",
+        "order": {
+          "attack": "ruinf1"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-stugna-team",
+        "atCenti": [
+          4650,
+          2100
+        ],
+        "label": "uainf2",
+        "order": {
+          "attack": "rutank"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-himars",
+        "atCenti": [
+          4250,
+          2600
+        ],
+        "label": "uaarty",
+        "order": {
+          "attackGroundCenti": [
+            5100,
+            1950
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-dozer",
+        "atCenti": [
+          4200,
+          1400
+        ],
+        "label": "uadozer",
+        "order": {
+          "moveCenti": [
+            4600,
+            1500
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-truck",
+        "atCenti": [
+          4100,
+          1600
+        ],
+        "label": "uatruck",
+        "order": {
+          "moveCenti": [
+            4500,
+            1700
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-hq",
+        "origin": [
+          58,
+          10
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          59,
+          15
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-barracks",
+        "origin": [
+          59,
+          19
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-vehicle-factory",
+        "origin": [
+          58,
+          23
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-defense",
+        "origin": [
+          53,
+          18
+        ],
+        "label": "rudef",
+        "order": {
+          "attack": "uatank"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          5100,
+          1950
+        ],
+        "label": "rutank",
+        "order": {
+          "attack": "uatank"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          5100,
+          1650
+        ],
+        "label": "ruifv",
+        "order": {
+          "attack": "uaifv"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-brdm-scout",
+        "atCenti": [
+          5050,
+          2250
+        ],
+        "label": "ruscout",
+        "order": {
+          "attack": "uascout"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4950,
+          1800
+        ],
+        "label": "ruinf1",
+        "order": {
+          "attack": "uainf1"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rpg-gunner",
+        "atCenti": [
+          4950,
+          2100
+        ],
+        "label": "ruinf2",
+        "order": {
+          "attack": "uatank"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-tos-1a",
+        "atCenti": [
+          5250,
+          2400
+        ],
+        "label": "ruarty",
+        "order": {
+          "attackGroundCenti": [
+            4500,
+            1950
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-dozer",
+        "atCenti": [
+          5400,
+          1400
+        ],
+        "label": "rudozer",
+        "order": {
+          "moveCenti": [
+            5000,
+            1500
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-supply-truck",
+        "atCenti": [
+          5500,
+          1600
+        ],
+        "label": "rutruck",
+        "order": {
+          "moveCenti": [
+            5100,
+            1700
+          ]
+        }
+      }
+    ]
+  }
+}
