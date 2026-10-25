@@ -128,6 +128,14 @@ export function createGroundImpacts(
   const rng = createRng(0x1a9ac7);
   /** Launch point of every projectile seen in flight. */
   const origins = new Map<number, [number, number]>();
+  /** Soot footprints still dark enough to reject a duplicate at the same spot
+   *  (the original rejects same-type scorches inside a quarter radius). */
+  const sootMarks: {
+    x: number;
+    y: number;
+    radius: number;
+    expiresMs: number;
+  }[] = [];
   const groundAt = (x: number, y: number): number =>
     relief()?.heightAt(x, y) ?? groundY(x, y);
 
@@ -233,11 +241,29 @@ export function createGroundImpacts(
     nowMs: number,
   ): void {
     const blasts = DECALS.blasts;
+    const sootRadius = radius * blasts.craterSootPerCrater;
+    const expiresMs = nowMs + blasts.lifetimeMs + blasts.fadeMs;
+    for (let i = sootMarks.length - 1; i >= 0; i--) {
+      if ((sootMarks[i]?.expiresMs ?? 0) <= nowMs) sootMarks.splice(i, 1);
+    }
+    // Repeated fire on one spot keeps the first black footprint instead of
+    // stacking it into a bottomless-looking well (spec 29 §4).
+    const duplicate = sootMarks.some((mark) => {
+      const share = Math.max(mark.radius, sootRadius) * 0.25;
+      return (
+        Math.abs(mark.x - x) < share &&
+        Math.abs(mark.y - y) < share &&
+        Math.abs(mark.radius - sootRadius) < share
+      );
+    });
+    if (duplicate) return;
+    sootMarks.push({ x, y, radius: sootRadius, expiresMs });
+    if (sootMarks.length > blasts.maxMarks) sootMarks.shift();
     stampMark(
       "crater",
       x,
       y,
-      radius * blasts.craterSootPerCrater,
+      sootRadius,
       Number(blasts.craterSootColor),
       blasts.craterSootAlpha * Math.min(1, 0.55 + sample.strength * 0.45),
       sample,

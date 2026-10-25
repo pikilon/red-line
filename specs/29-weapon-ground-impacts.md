@@ -35,11 +35,18 @@ Note from `generals-precedent` (EA source `GameClient/FXList.cpp`, data
   `TerrainScorch RANDOM r250`).
 * `TerrainScorch Type = RANDOM` picks one of four scorch textures
   `SCORCH_1..4` per detonation (`FXList.cpp:454-458`).
+* Scorches do not stack freely: `addScorch` rejects a same-type mark whose
+  centre lies within a quarter of its radius of another, so one spot holds at
+  most the four random shapes instead of blackening forever
+  (`BaseHeightMap.cpp:2064-2071`). Weapon impacts never deform the terrain;
+  only the scripted `BLAST_CRATER` footprint sinks it (`TerrainLogic.cpp:2862`,
+  lower-only).
 
 **Adopted:** one data-driven impact profile per damage type with per-weapon
 overrides (the FXList per weapon); bursts sized by the weapon's splash
 (`UseCallersRadius`); four scorch shapes picked at random; debris and dust for
-artillery-class hits; a dust wave for heavy ordnance.
+artillery-class hits; a dust wave for heavy ordnance; one black footprint per
+spot instead of a stack.
 
 **Difference (owner request):** Zero Hour leaves no ground mark for bullets,
 tank shells and missiles; here bullets kick dust and leave small pocks, and
@@ -86,7 +93,17 @@ uses decals).
 * Profile (in crater radii `t`): a round bowl `-(1 - t²)²` plus a rim
   `rim · exp(-((t - 0.92) / 0.24)²)` that fades out by `t = 1.6`; the
   outline wobbles by three low sine lobes so no two craters are circles.
-  Sink is capped at 0.5 tiles, rim build-up at 0.2.
+* Every crater at least 0.6 tiles in radius also gets 3–4 edge mini craters
+  at 0.92–1.17 radii from the centre: smaller bowls (0.16–0.30 of the main
+  radius, at least 0.2 tiles, 35–60 % of its depth) with uneven angular
+  spacing. They bite through the rim so repeated hits make a ragged, shelled
+  patch instead of one clean round hole (owner request, 2026-10-25). A crater
+  still grows from zero to its full shape in `CRATER_RISE_MS`.
+* Sink is capped at 0.2 tiles, well under the 0.5-tile scout/Humvee height
+  even when vehicle press adds its 0.07; the rim is capped at 0.2. Hundreds of
+  hits on one point stop deepening the floor; new hits still add their own
+  rim bites, scorch and ejecta, so the patch keeps changing without becoming
+  a well (owner request, 2026-10-25).
 * Normals come from the fine grid; brightness adds damp-soil darkening and a
   curvature term (hollows darker, crests lighter) so the shape reads from the
   high camera. Torn soil in the bowl and on the rim shows the dirt texture.
@@ -97,7 +114,10 @@ uses decals).
   shaded soot-black in the mesh (`CRATER_SOOT`, so the black follows the
   relief instead of sitting flat on it) and every crater also stamps a small
   near-black soot mark (`craterSoot*` in `decals.json`, crater atlas cell)
-  inside the ejecta ring: the inside reads black instead of grey.
+  inside the ejecta ring: the inside reads black instead of grey. A new soot
+  mark whose centre and radius fall inside a quarter of a live soot mark is
+  dropped (the original's scorch rule), so repeated fire does not blacken
+  the floor into a bottomless-looking hole.
 * Craters fade out next to rock tiles; the base height of the ground mesh is
   read at start-up and the relief adds to it, so a hilly base keeps its shape.
 * Scorch, ejecta and every other mark are grids that drape over the relief
@@ -139,3 +159,8 @@ uses decals).
   deepest profile) and stamps one dark soot mark inside it; shell craters are
   under 0.05 tiles deep and read as burnt dents, not wells (unit tests and
   `?load=weapon-impacts`).
+* AC-29-07: repeated hits on one spot never sink the floor past 0.2 tiles,
+  below the 0.5-tile scout/Humvee height, and never stack a second soot
+  footprint at that spot (unit tests).
+* AC-29-08: a crater at least 0.6 tiles in radius has 3–4 smaller bowls on
+  its rim, and the shared fine-patch outline stays free of seams (unit test).
