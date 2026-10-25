@@ -84,6 +84,7 @@ import type {
 } from "./models";
 import { type LimbPose, limbPose, resetPose } from "./rig";
 import { createSuspension, LEVEL_POSE } from "./suspension";
+import type { VehicleBodies } from "./vehicleFx";
 
 export const OWNER_COLORS = [0x1d5fe0, 0xe01b1b] as const;
 export const NEUTRAL_COLOR = 0x8b5a2b;
@@ -96,6 +97,9 @@ export const HEALTH_COLORS = {
 } as const; // > 50 %, > 25 %, else
 
 const GHOST_OPACITY = 0.4;
+/** Colour a hulk burns down to (spec 27 §4). */
+const CHARRED = new Color(0x857a70);
+const charColor = new Color();
 const BAR_HEIGHT = 0.12;
 const BAR_GAP = 0.3;
 const BAR_MIN_SCALE = 0.05;
@@ -348,6 +352,7 @@ export function createEntityRenderer(
   models?: ModelRegistry,
   animator: Animator = NO_ANIMATOR,
   corpses?: Corpses,
+  vehicles?: VehicleBodies,
 ): EntityRenderer {
   const box = new BoxGeometry(1, 1, 1);
   const units = instanced(box, new MeshBasicMaterial(), capacity);
@@ -484,6 +489,63 @@ export function createEntityRenderer(
 
   /** Falling and lying soldiers (spec 22): every man of the team is a ragdoll
    *  that tips over his own feet; props of the team stay where they were. */
+  /** Burnt-out vehicles (spec 27 §4): the vehicle's own model, charred, in
+   *  the pose of its death; a cook-off throws the turret off the hull. */
+  function drawHulks(nowMs: number): void {
+    if (vehicles === undefined) return;
+    for (const hulk of vehicles.hulks(nowMs)) {
+      const type = typeDef(hulk.kind);
+      const model = models?.get(type.id) ?? null;
+      if (model === null || model.fallback) continue;
+      const pose = vehicles.pose(
+        hulk,
+        nowMs,
+        model.pivot,
+        (type.render.size[1] ?? 50) / 100,
+      );
+      const tint = charColor.setHex(0xffffff).lerp(CHARRED, pose.char).getHex();
+      const hex = ownerColor(hulk.owner);
+      const typeSlots = slotsFor(type.id, model);
+      const composeHull = (out: Matrix4): Matrix4 => {
+        position.set(pose.x, pose.lift, pose.y);
+        rotation.setFromEuler(tilt.set(pose.pitch, pose.yaw, pose.roll, "YXZ"));
+        scale.set(1, 1, 1);
+        return out.compose(position, rotation, scale);
+      };
+      composeHull(matrix);
+      for (const slot of typeSlots.hull) {
+        if (slot.count >= capacity) continue;
+        place(slot, slot.count, hex, null, CLEAN, tint);
+      }
+      const composeTurret = (): Matrix4 => {
+        const flight = pose.turret;
+        if (flight === null) {
+          composeHull(turretMatrix);
+          pivotMatrix.makeTranslation(
+            model.pivot.x,
+            model.pivot.y,
+            model.pivot.z,
+          );
+          turretMatrix.multiply(pivotMatrix);
+          rotationMatrix.makeRotationY(pose.turretYaw - pose.yaw);
+          return turretMatrix.multiply(rotationMatrix);
+        }
+        position.set(flight.x, flight.z, flight.y);
+        tiltAxis.set(flight.axisX, 0, flight.axisZ).normalize();
+        yawQuaternion.setFromAxisAngle(UP, flight.yaw);
+        rotation
+          .setFromAxisAngle(tiltAxis, flight.angle)
+          .multiply(yawQuaternion);
+        scale.set(1, 1, 1);
+        return turretMatrix.compose(position, rotation, scale);
+      };
+      for (const slot of typeSlots.turret) {
+        if (slot.count >= capacity) continue;
+        place(slot, slot.count, hex, composeTurret, CLEAN, tint);
+      }
+    }
+  }
+
   function drawCorpses(nowMs: number): void {
     for (const corpse of corpses?.live(nowMs) ?? []) {
       const type = typeDef(corpse.kind);
@@ -752,8 +814,16 @@ export function createEntityRenderer(
     hex: number,
     composeTurret: (() => Matrix4) | null = null,
     look: Look = CLEAN,
+    tint: number | null = null,
   ): void {
-    if (slot.bandOn !== undefined) {
+    if (tint !== null) {
+      // A burnt hulk: every part the same charred colour, no flag bands.
+      slot.mesh.setColorAt(index, color.setHex(tint));
+      if (slot.bandOn !== undefined) {
+        slot.bandOn.setX(index, 0);
+        slot.bandOn.needsUpdate = true;
+      }
+    } else if (slot.bandOn !== undefined) {
       // Flag bands show unless selected (spec 16 §5).
       const selected = hex === SELECTED_COLOR;
       slot.mesh.setColorAt(index, color.setHex(selected ? hex : 0xffffff));
@@ -851,7 +921,14 @@ export function createEntityRenderer(
                 nowMs,
               )
             : LEVEL_POSE;
-        const lift = pose.lift + body.shake;
+        // A hit rocks the hull on its suspension (spec 27 §2).
+        const rock =
+          vehicles !== undefined && type.category === "unit" && type.armor !== 0
+            ? vehicles.rock(entity.id, heading.yaw, nowMs)
+            : null;
+        const pitch = body.pitch + (rock?.pitch ?? 0);
+        const roll = body.roll + (rock?.roll ?? 0);
+        const lift = pose.lift + body.shake + (rock?.lift ?? 0);
         const working =
           hasFlag(entity, ENTITY_FLAGS.moving) && body.moving < 0.05;
         const articulationPitch = articulationOf(
@@ -916,9 +993,7 @@ export function createEntityRenderer(
           for (const slot of typeSlots.hull) {
             if (slot.count >= capacity) continue;
             position.set(entity.x, lift, entity.y);
-            rotation.setFromEuler(
-              tilt.set(body.pitch, hullYaw, body.roll, "YXZ"),
-            );
+            rotation.setFromEuler(tilt.set(pitch, hullYaw, roll, "YXZ"));
             scale.set(1, f, 1);
             matrix.compose(position, rotation, scale);
             place(slot, slot.count, hex);
@@ -927,9 +1002,7 @@ export function createEntityRenderer(
             if (slot.count >= capacity) continue;
             const composeTurret = (): Matrix4 => {
               position.set(entity.x, lift, entity.y);
-              rotation.setFromEuler(
-                tilt.set(body.pitch, hullYaw, body.roll, "YXZ"),
-              );
+              rotation.setFromEuler(tilt.set(pitch, hullYaw, roll, "YXZ"));
               scale.set(1, f, 1);
               turretMatrix.compose(position, rotation, scale);
               pivotMatrix.makeTranslation(
@@ -990,6 +1063,7 @@ export function createEntityRenderer(
       }
 
       drawCorpses(nowMs);
+      drawHulks(nowMs);
       finish(units, counts.units);
       finish(buildings, counts.buildings);
       finish(ghosts, counts.ghosts);

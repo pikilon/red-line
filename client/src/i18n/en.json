@@ -91,6 +91,8 @@
   "saves.storageUnavailable": "Saved games are unavailable in this browser.",
   "saves.armor-duel.name": "Armor duel",
   "saves.armor-duel.description": "Leopards and Bradleys against T-72s and BMPs at close range.",
+  "saves.vehicle-deaths.name": "Vehicle deaths",
+  "saves.vehicle-deaths.description": "Tanks and scouts trade fire at close range: sparks, smoke, fire and burning wrecks.",
   "saves.infantry-vs-armor.name": "Infantry vs armor",
   "saves.infantry-vs-armor.description": "Riflemen and Stugna teams hold a line; three T-72s drive through it.",
   "saves.rpg-ambush.name": "RPG ambush",

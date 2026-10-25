@@ -126,6 +126,12 @@
       "map": "showcase",
       "form": "setup",
       "entities": 10
+    },
+    {
+      "id": "vehicle-deaths",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 15
     }
   ]
 }

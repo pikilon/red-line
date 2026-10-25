@@ -677,17 +677,19 @@ test("AC-20-03: force-fires with Ctrl, the enemy pick and either button", async 
   await page.keyboard.press("Control+a");
   await page.waitForTimeout(100);
   await clickTiles(page, plant.x, plant.y);
+  // The pulse lasts ATTACK_MARKER_MS (1.3 s): check it before waiting on the
+  // order, which can take longer than that on a slow runner.
+  await expect
+    .poll(() => debugCall(page, (api) => api.attackMarkerCount()), {
+      timeout: ms(2000),
+    })
+    .toBeGreaterThan(0);
   await expect
     .poll(async () => (await savedOrder(page, himars.id))?.kind, {
       timeout: ms(5000),
     })
     .toBe("attack");
   expect((await savedOrder(page, himars.id))?.target).toBe(plant.id);
-  await expect
-    .poll(() => debugCall(page, (api) => api.attackMarkerCount()), {
-      timeout: ms(2000),
-    })
-    .toBeGreaterThan(0);
 
   await page.keyboard.down("Control");
   await clickTiles(page, 40, 58);
@@ -743,6 +745,13 @@ test("AC-20-03: force-fires with Ctrl, the enemy pick and either button", async 
 
   // A plain left click on the enemy is enough to attack it (owner request).
   await clickTiles(page, plant.x, plant.y);
+  // The pulse lasts ATTACK_MARKER_MS (1.3 s): check it before waiting on the
+  // order, which can take longer than that on a slow runner.
+  await expect
+    .poll(() => debugCall(page, (api) => api.attackMarkerCount()), {
+      timeout: ms(2000),
+    })
+    .toBeGreaterThan(0);
   await expect
     .poll(async () => (await savedOrder(page, himars.id))?.kind, {
       timeout: ms(5000),
@@ -756,11 +765,6 @@ test("AC-20-03: force-fires with Ctrl, the enemy pick and either button", async 
       himars.id,
     ),
   ).toBe(true);
-  await expect
-    .poll(() => debugCall(page, (api) => api.attackMarkerCount()), {
-      timeout: ms(2000),
-    })
-    .toBeGreaterThan(0);
   await page.waitForTimeout(1500);
   expect(await debugCall(page, (api) => api.attackMarkerCount())).toBe(0);
 });
