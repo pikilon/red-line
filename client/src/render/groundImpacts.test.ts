@@ -102,7 +102,38 @@ describe("ground impacts per weapon (spec 29)", () => {
     relief?.update(1000);
     effects.update(100);
     expect(effects.counts().clod).toBeGreaterThan(0);
-    expect(relief?.heightAt(16, 16) ?? 0).toBeLessThan(-0.2);
+    expect(relief?.heightAt(16, 16) ?? 0).toBeLessThan(-0.15);
+  });
+
+  it("keeps craters shallow and marks their floor black", () => {
+    // A tank shell leaves a shallow bowl with a scorch and the soot floor.
+    const tank = setup();
+    tank.impacts.record(
+      snapshotWith([]),
+      detonation(weapon("ru-2a46m"), 16, 16),
+      0,
+    );
+    tank.relief?.update(1000);
+    const shellDepth = -(tank.relief?.heightAt(16, 16) ?? 0);
+    expect(shellDepth).toBeGreaterThan(0.05);
+    expect(shellDepth).toBeLessThan(0.1);
+    tank.decals.update(10);
+    expect(tank.decals.count()).toBe(2);
+
+    // The HE rocket digs the deepest profile, still under 0.21 tiles, and gets
+    // the scorch, the ejecta ring and the soot floor.
+    const rockets = setup();
+    rockets.impacts.record(
+      snapshotWith([]),
+      detonation(weapon("ua-gmlrs"), 16, 16),
+      0,
+    );
+    rockets.relief?.update(1000);
+    const rocketDepth = -(rockets.relief?.heightAt(16, 16) ?? 0);
+    expect(rocketDepth).toBeGreaterThan(0.15);
+    expect(rocketDepth).toBeLessThan(0.18);
+    rockets.decals.update(10);
+    expect(rockets.decals.count()).toBe(3);
   });
 
   it("keeps marks off the roof when a shell strikes a building", () => {

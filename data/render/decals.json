@@ -55,6 +55,9 @@
     "ejectaColor": "0x2a1c10",
     "ejectaAlpha": 0.7,
     "ejectaPerCrater": 1.45,
+    "craterSootColor": "0x060504",
+    "craterSootAlpha": 0.35,
+    "craterSootPerCrater": 0.45,
     "pockColor": "0x0e0a06",
     "maxMarks": 500
   },

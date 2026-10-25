@@ -89,6 +89,25 @@ describe("terrain relief (spec 24)", () => {
     expect(deformer.heightAt(12, 12)).toBe(0);
   });
 
+  it("shades the bowl floor soot-black and leaves the outside light", () => {
+    const { group, deformer } = build();
+    deformer.crater(8, 8, 2, 0.2, 0);
+    deformer.update(1000);
+    const patch = group.getObjectByName("grass-relief") as Mesh;
+    const position = patch.geometry.getAttribute("position");
+    const color = patch.geometry.getAttribute("color");
+    let centre = 1;
+    let outside = 0;
+    for (let i = 0; i < position.count; i++) {
+      const distance = Math.hypot(position.getX(i) - 8, position.getZ(i) - 8);
+      if (distance < 0.2) centre = Math.min(centre, color.getX(i));
+      if (distance > 2.4) outside = Math.max(outside, color.getX(i));
+    }
+    expect(centre).toBeLessThan(0.55);
+    expect(outside).toBeGreaterThan(0.85);
+    expect(centre).toBeLessThan(outside * 0.7);
+  });
+
   it("caps stacked craters at MAX_SINK", () => {
     const { deformer } = build();
     for (let i = 0; i < 10; i++) deformer.crater(8, 8, 3, 0.4, 0);

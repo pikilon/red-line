@@ -65,6 +65,10 @@ const RIM_DARKEN = 0.1;
 const CURVATURE_SHADE = 0.12;
 const CURVE_DARK = 0.3;
 const CURVE_LIGHT = 0.25;
+/** Crater floors burn black: brightness lost at `CRATER_SOOT_DEPTH` of bowl,
+ *  so the inside reads black instead of grey (owner request 2026-10-25). */
+const CRATER_SOOT = 0.7;
+const CRATER_SOOT_DEPTH = 0.08;
 
 const VERTICES_PER_TILE = 4;
 /** Grid offset of the four corners of a tile, in `groundGeometry` order. */
@@ -614,8 +618,9 @@ export function attachTerrainDeformer(
   }
 
   /** Brightness of the ground at fine sample (fx, fz): damp sunk soil is
-   *  darker, and crater curvature adds a cheap ambient occlusion (hollows
-   *  darker, crests lighter) so the bowl and rim read from the high camera. */
+   *  darker, crater curvature adds a cheap ambient occlusion (hollows darker,
+   *  crests lighter) and the bowl floor is soot-black (owner request
+   *  2026-10-25) so the shape reads from the high camera. */
   function shadeAt(fx: number, fz: number): number {
     const relief = reliefFine(fx, fz);
     const wet =
@@ -636,7 +641,11 @@ export function attachTerrainDeformer(
       CURVE_LIGHT,
       Math.max(-CURVE_DARK, -CURVATURE_SHADE * laplacian),
     );
-    return wet * (1 + occlusion);
+    const soot =
+      centre < 0
+        ? 1 - CRATER_SOOT * Math.min(1, -centre / CRATER_SOOT_DEPTH)
+        : 1;
+    return wet * (1 + occlusion) * soot;
   }
 
   const normal: [number, number, number] = [0, 1, 0];
