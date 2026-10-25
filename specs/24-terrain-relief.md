@@ -48,8 +48,10 @@ shader or a second mesh.
 5. Sunk ground is darker (up to 45 % at 0.3 tiles), so the relief also reads
    as damp soil from far away.
 6. Grass and dirt use the same heights, so they never separate. Rocks are
-   untouched. Units keep standing at y = 0 (assumption: the sink is at most
-   0.07 under vehicles, and craters are where things just blew up).
+   untouched. Units, hulks and corpses stand on the visual surface: `groundY`
+   reads the elevation (spec 30) plus this relief, and vehicles pitch and roll
+   into a crater with `groundTilt` (owner request 2026-10-25). The simulation
+   still walks them on the flat 2D ground.
 
 ## 4. Interface (for the decal and snow layers)
 
@@ -60,8 +62,11 @@ shader or a second mesh.
 * `press(sources, nowMs)`: weights moving over the ground.
 * `setSoftness(mask | null)`: per-corner softness, `(width+1)×(height+1)`.
 * `heightAt(x, z)`: current surface height, the map elevation (spec 30) plus
-  the sink (≤ 0), so decals can follow the surface.
+  the sink (≤ 0), so decals and units can follow the surface.
 * `update(nowMs)`: called once per frame by the skirmish loop.
+* `setGroundRelief(heightOf | null)` (`elevation.ts`): the renderer-wide hook
+  that makes `groundY` and `groundTilt` read the surface with relief; the
+  skirmish passes `heightAt` (elevation included).
 
 ## 5. Performance
 
@@ -89,3 +94,6 @@ craters and updates its pathfinding map explicitly.
   hash.
 * AC-24-04: with 100+ vehicles moving, relief upkeep stays well under 0.5 ms
   per frame.
+* AC-24-05: a unit standing on a fresh crater is drawn at the crater surface
+  (`groundY` includes `heightAt`) and tilts towards its slope; on a flat map
+  with no relief it still stands at y = 0 (unit test).
