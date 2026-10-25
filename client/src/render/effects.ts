@@ -22,7 +22,11 @@ import {
   type MatchSnapshot,
 } from "../sim/matchSnapshot";
 import { groundY } from "./elevation";
-import { createPuffTexture, createSplatTexture } from "./splat";
+import {
+  createFireballTexture,
+  createPuffTexture,
+  createSplatTexture,
+} from "./splat";
 
 /** Instances kept per effect kind; the oldest is recycled when full (spec 07 §3). */
 export const EFFECT_CAPACITY = 512;
@@ -109,14 +113,16 @@ const EFFECT_STYLES: Readonly<Record<EffectKind, EffectStyle>> = {
     durationMs: 450,
     fadeMs: 450,
     size: [0.5, 0.5, 0.5],
-    color: 0xff7a1a,
+    // The fireball texture carries the heat gradient.
+    color: 0xffffff,
     additive: true,
   },
   explosion: {
     durationMs: 900,
     fadeMs: 900,
     size: [0.6, 0.6, 0.6],
-    color: 0xff8c1a,
+    // The fireball texture carries the heat gradient.
+    color: 0xffffff,
     additive: true,
   },
   wreck: {
@@ -196,9 +202,13 @@ const PUFF_KINDS: ReadonlySet<EffectKind> = new Set([
   "launchSmoke",
   "trail",
 ]);
-/** Camera-facing kinds, including the additive backblast flash. */
+/** Explosions drawn as camera-facing fireballs instead of boxes (owner
+ *  request 2026-10-25). */
+const FIREBALL_KINDS: ReadonlySet<EffectKind> = new Set(["blast", "explosion"]);
+/** Camera-facing kinds, including the additive backblast flash and fireballs. */
 const BILLBOARD_KINDS: ReadonlySet<EffectKind> = new Set([
   ...PUFF_KINDS,
+  ...FIREBALL_KINDS,
   "backblast",
 ]);
 
@@ -349,11 +359,12 @@ export function createEffects(): Effects {
     const style = EFFECT_STYLES[kind];
     const decal = kind === "blood";
     const puff = PUFF_KINDS.has(kind);
+    const fireball = FIREBALL_KINDS.has(kind);
     const material = new MeshBasicMaterial({
       color: 0xffffff,
-      transparent: style.additive || decal || puff,
+      transparent: style.additive || decal || puff || fireball,
       blending: style.additive ? AdditiveBlending : NormalBlending,
-      depthWrite: !style.additive && !decal && !puff,
+      depthWrite: !style.additive && !decal && !puff && !fireball,
       // A blood splat is a flat textured quad lying on the ground.
       ...(decal
         ? {
@@ -363,10 +374,13 @@ export function createEffects(): Effects {
           }
         : {}),
       ...(puff ? { map: createPuffTexture() } : {}),
+      ...(fireball ? { map: createFireballTexture() } : {}),
     });
     let geometry = decal
       ? new PlaneGeometry(1, 1).rotateX(-Math.PI / 2)
-      : new BoxGeometry(1, 1, 1);
+      : fireball
+        ? new PlaneGeometry(1, 1)
+        : new BoxGeometry(1, 1, 1);
     if (puff) {
       // Camera-facing puffs fade out through a per-instance opacity.
       geometry = new PlaneGeometry(1, 1);
@@ -535,6 +549,12 @@ export function createEffects(): Effects {
           if (kind !== "backblast") {
             puffAlpha(kind)?.setX(visible, instance.alpha * fade);
           }
+        } else if (kind === "blast" || kind === "explosion") {
+          // A fireball, not a lit box: the quad faces the camera (owner
+          // request 2026-10-25).
+          position.set(instance.x, instance.base + instance.z, instance.y);
+          rotation.setFromAxisAngle(Z_AXIS, instance.rotationY);
+          rotation.premultiply(FACE_CAMERA);
         } else if (kind === "clod") {
           // Thrown on a ballistic arc; it rests where it lands.
           const flight = Math.min(

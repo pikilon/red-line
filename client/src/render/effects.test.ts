@@ -1,4 +1,11 @@
-import { Color, type InstancedMesh, Matrix4, Vector3 } from "three";
+import {
+  Color,
+  type InstancedMesh,
+  Matrix4,
+  type MeshBasicMaterial,
+  PlaneGeometry,
+  Vector3,
+} from "three";
 import { describe, expect, it } from "vitest";
 import { typeIndex, WEAPONS } from "../rules";
 import {
@@ -297,5 +304,18 @@ describe("AC-17-15: detonations and deaths from combat events", () => {
     expect(counts(effects).impact).toBe(0);
     expect(counts(effects).blast).toBe(0);
     expect(counts(effects).explosion).toBe(0);
+  });
+});
+
+describe("explosion fireballs (AC-07-07)", () => {
+  it("draws blast and explosion as camera-facing textured quads", () => {
+    const effects = createEffects();
+    for (const kind of ["blast", "explosion"] as const) {
+      const mesh = effects.meshes[kind];
+      expect(mesh.geometry).toBeInstanceOf(PlaneGeometry);
+      const material = mesh.material as MeshBasicMaterial;
+      expect(material.map).not.toBeNull();
+      expect(material.transparent).toBe(true);
+    }
   });
 });

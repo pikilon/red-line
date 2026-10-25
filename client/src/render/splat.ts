@@ -151,3 +151,66 @@ export function createPuffTexture(): DataTexture {
   texture.needsUpdate = true;
   return texture;
 }
+
+/** Side of the fireball texture, texels. */
+const FIREBALL_SIZE = 128;
+/** Ragged flame lobes around the fireball. */
+const FIREBALL_LOBES = 9;
+
+/** A camera-facing fireball for explosions (spec 07 §3): a white-hot core,
+ *  orange flames with ragged lobes and a sooty red edge, alpha falling to
+ *  zero well inside the quad so it never reads as a lit box or square. */
+export function createFireballTexture(): DataTexture {
+  const rnd = random(0xf1e8);
+  const lobes = Array.from({ length: FIREBALL_LOBES }, () => ({
+    angle: rnd() * Math.PI * 2,
+    distance: 0.13 + rnd() * 0.16,
+    radius: 0.07 + rnd() * 0.1,
+  }));
+  const wobble = [0, 1, 2].map(() => rnd() * Math.PI * 2);
+  const data = new Uint8Array(FIREBALL_SIZE * FIREBALL_SIZE * 4);
+  for (let py = 0; py < FIREBALL_SIZE; py++) {
+    for (let px = 0; px < FIREBALL_SIZE; px++) {
+      const x = (px + 0.5) / FIREBALL_SIZE - 0.5;
+      const y = (py + 0.5) / FIREBALL_SIZE - 0.5;
+      const r = Math.hypot(x, y);
+      const a = Math.atan2(y, x);
+      const edge =
+        0.3 +
+        0.05 * Math.sin(3 * a + (wobble[0] ?? 0)) +
+        0.04 * Math.sin(5 * a + (wobble[1] ?? 0)) +
+        0.025 * Math.sin(9 * a + (wobble[2] ?? 0));
+      let density = 1 - smoothstep(edge - 0.07, edge + 0.02, r);
+      for (const lobe of lobes) {
+        const d = Math.hypot(
+          x - Math.cos(lobe.angle) * lobe.distance,
+          y - Math.sin(lobe.angle) * lobe.distance,
+        );
+        density = Math.max(density, 1 - smoothstep(0, lobe.radius, d));
+      }
+      const heat = 1 - smoothstep(0.02, 0.44, r);
+      const white = 1 - smoothstep(0.03, 0.2, r);
+      const red = Math.round(120 + 135 * heat);
+      const green = Math.round(20 + 230 * heat ** 1.4);
+      const blue = Math.round(4 + 190 * heat ** 3);
+      const o = (py * FIREBALL_SIZE + px) * 4;
+      data[o] = Math.round(red + (255 - red) * white * 0.85);
+      data[o + 1] = Math.round(green + (248 - green) * white * 0.85);
+      data[o + 2] = Math.round(blue + (210 - blue) * white * 0.85);
+      data[o + 3] = Math.round(255 * density ** 1.15);
+    }
+  }
+  const texture = new DataTexture(
+    data,
+    FIREBALL_SIZE,
+    FIREBALL_SIZE,
+    RGBAFormat,
+    UnsignedByteType,
+  );
+  texture.colorSpace = SRGBColorSpace;
+  texture.magFilter = LinearFilter;
+  texture.minFilter = LinearFilter;
+  texture.generateMipmaps = false;
+  texture.needsUpdate = true;
+  return texture;
+}

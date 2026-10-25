@@ -34,14 +34,16 @@ All effects are camera-facing quads or small boxes drawn with one
 `InstancedMesh` per effect kind (additive blending for flashes and fire),
 pooled with a fixed capacity (`EFFECT_CAPACITY = 512` per kind; the oldest
 instance is recycled when full). Durations are in real milliseconds and scale
-with the simulation speed multiplier.
+with the simulation speed multiplier. Explosions are **camera-facing fireballs
+with a procedural heat gradient**, never lit boxes or squares (owner request
+2026-10-25).
 
 | Kind | Trigger | Look | Duration |
 |---|---|---|---|
 | `muzzle` | entity with `fired` | yellow-white flash at the shooter, 0.15 tiles, offset 0.3 tiles toward the target | 80 ms |
 | `impact` | `fired` with damage type `smallArms` or `autocannon` | small grey-orange puff at the target, 0.2 tiles | 200 ms |
-| `blast` | `fired` with `antiTank` | orange flash + dark puff at the target, 0.5 tiles | 450 ms |
-| `explosion` | `fired` with `highExplosive` or `thermobaric` | orange fireball growing to the weapon `splashCenti` (min 0.6 tiles) then a smoke puff; `thermobaric` is larger (×1.5) and yellower | 900 ms; shown after `projectileTicks / 15` s |
+| `blast` | `fired` with `antiTank` | small camera-facing fireball (white-hot core, ragged orange flames) at the target, 0.5 tiles | 450 ms |
+| `explosion` | `fired` with `highExplosive` or `thermobaric` | camera-facing fireball growing to the weapon `splashCenti` (min 0.6 tiles); `thermobaric` is larger (×1.5) | 900 ms; shown after `projectileTicks / 15` s |
 | `wreck` | a vehicle or building disappears while visible | a `#1a1a1a` box of the type's render size at 60 % height (the model is used instead once P4-05 has landed, in a later issue), with a looping `fire` flicker on top | 12 s, fading out over the last 2 s |
 | `body` | an infantry entity disappears while visible | a dark flat box (0.25 × 0.08 × 0.12 tiles) lying on the ground | 20 s, fading over the last 3 s |
 | `blood` | same as `body`, only when gore is on | a dark red (`#5a0a0a`) flat irregular decal (2–3 overlapping quads, rotation from the entity id) under the body | 30 s, fading over the last 5 s |
@@ -101,3 +103,8 @@ JSON or a throwing storage; `saveSettings` round-trips and never throws.
 two enemy units spawned in range through the debug API, after 3 s the effect
 mesh counts reported by `__redline.effectCounts()` include at least one
 `muzzle`; pressing `G` shows the toast; AC-03-62/63 still pass.
+
+**AC-07-07 Fireball explosions.** `blast` and `explosion` are drawn as a
+camera-facing quad with the procedural fireball texture (alpha reaches zero
+inside the quad), not as a `BoxGeometry`; the fireball grows and fades with
+the effect's life. Verified by the effects unit tests and `weapon-impacts`.
