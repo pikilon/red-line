@@ -1094,6 +1094,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       (previous === null || snapshot.tick > previous.tick)
     ) {
       const atMs = effectTime(at);
+      // Launch effects come from the snapshot, not from the next rendered
+      // frame, so a bullet that is already gone by the next frame still
+      // flashes its muzzle (spec 17 §7.2).
+      projectiles?.spawnEffects(flying, snapshot.tick, snapshot, atMs, effects);
       spawnShotEffects(snapshot, effects, atMs);
       groundImpacts?.record(snapshot, combat, atMs);
       animator.recordShots(snapshot.entities, at);
