@@ -286,7 +286,7 @@ Weapons (`min`, `splash`, `proj` default 0 when blank):
 | `ua-kozak-hmg` | smallArms | 12 | 500 | | 10 | | |
 | `ua-bushmaster` | autocannon | 18 | 600 | | 8 | | |
 | `ua-rh120` | antiTank | 100 | 700 | | 30 | | |
-| `ua-gmlrs` | highExplosive | 250 | 2400 | 600 | 150 | | 30 |
+| `ua-gmlrs` | highExplosive | 125 | 2400 | 600 | 150 | 150 | |
 | `ua-stugna-emplacement` | antiTank | 110 | 1000 | | 60 | | |
 | `ru-ak74` | smallArms | 9 | 420 | | 15 | | |
 | `ru-rpg7` | antiTank | 90 | 450 | | 45 | | |

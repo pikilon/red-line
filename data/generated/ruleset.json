@@ -222,7 +222,7 @@
       "rangeCenti": 2400,
       "minRangeCenti": 600,
       "cooldownTicks": 150,
-      "splashCenti": 0,
+      "splashCenti": 150,
       "projectileTicks": 0,
       "speedCenti": 40,
       "aimToleranceDeg": 2,
