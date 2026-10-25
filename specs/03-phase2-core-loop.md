@@ -50,7 +50,7 @@ Out (later phases):
   veterancy, upgrades, special powers, garrisons, transports, repair, selling,
   cancelling a placed construction, power sabotage, radar and minimap.
 * Formations, waypoints, attack-move, guard, control groups, shift-add.
-* Line of sight blocked by terrain, terrain heights, friendly fire.
+* Line of sight blocked by terrain, terrain heights, direct friendly fire.
 * Real models, effects, audio, gore filter (Phase 4). Multiplayer (Phase 5).
 
 ## 3. Constants
@@ -869,10 +869,22 @@ pub fn damage_dealt(base: u32, modifier_percent: u32) -> u32;
    removed.
 4. **Hit.** `splash_centi == 0`: the target (if it still exists with
    `hp > 0`) loses `damage_dealt(damage, modifier)` (saturating). Else every
-   entity with `hp > 0` whose owner is neither the shooter's owner nor `NEUTRAL`
-   and whose entity distance from the impact point is `<= fx_centi(splash)`
-   loses `damage_dealt(damage, modifier)` (no friendly fire). Instant splash
-   uses the target's position as the impact point.
+   player-owned entity (`owner != NEUTRAL`) with `hp > 0`, except the shooter
+   itself, whose entity distance from the impact point is
+   `<= fx_centi(splash)` loses `damage_dealt(damage, modifier)`. Blasts hit
+   **every** unit and building in the radius, including the shooter's own side
+   (owner request 2026-10-25); neutral depots are never hit. A friendly victim
+   does not retaliate against its own side (spec 23). Instant splash uses the
+   target's position as the impact point.
+
+   Zero Hour precedent (`generals-precedent` note 2026-10-25): the blast is a
+   plain radius query over the partition (`Weapon.cpp:1307`); the default
+   `RadiusDamageAffects` mask is `ALLIES|ENEMIES|NEUTRALS` (`Weapon.cpp:295`)
+   and has no ally penalty, while the shooter and its producer are skipped
+   unless `SELF` is set (`Weapon.cpp:1354-1396`; the projectile's producer is
+   the launcher, so a bomb never hurts the plane). Red Line copies that,
+   except that `NEUTRAL` stays immune: here it only marks supply depots
+   (`entity.rs`), not a civilian player.
 
 ### 5.12 Vision and memory (`vision.rs`)
 
@@ -1739,8 +1751,8 @@ precedent note 2026-10-25).
 player 1 soldiers B1 `(13.5, 10.5)`, B2 `(14.5, 10.5)`, B3 `(13.5, 12.5)` and a
 player 0 dozer at `(13.5, 9.5)`, then after step 1 there is one projectile with
 `impact_tick 4` and impact at B1's position; after step 4 all soldiers have hp
-50; after step 5 B1 and B2 have hp 35, B3 50, the dozer 100, and there is no
-projectile.
+50; after step 5 B1 and B2 have hp 35, B3 50, the friendly dozer has hp 70
+(the blast hits it too), and there is no projectile.
 
 **AC-03-32 Guided projectiles.** Given a player 0 launcher (kind 12) at
 `(5.5, 5.5)` and a player 1 soldier at `(11.5, 5.5)` ordered by player 1 to

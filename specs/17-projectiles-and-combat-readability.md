@@ -220,7 +220,8 @@ Then every projectile with `impact_tick == tick` resolves and is removed:
   `<= fx_centi(DIRECT_HIT_CENTI)`. Ties go to the lowest id. If there is no
   such entity, the projectile misses (`hit = None`).
 * **`splash > 0`** (either delivery): spec 03 splash around `impact`;
-  `hit = None`.
+  every player-owned entity in radius takes it, friend or foe (owner request
+  2026-10-25), while neutral depots are exempt; `hit = None`.
 
 Every resolution emits `Detonate { projectile: id, owner, weapon, pos:
 impact, hit }`.

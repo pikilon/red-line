@@ -1,0 +1,19 @@
+# Spec 03: a TOS-1A salvo falls on a mixed cluster, so the blast damages the
+# shooter's own rifleman and BMP as well as the Ukrainian units around it.
+id: friendly-fire
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 48, y: 19, zoom: 2 }
+entities:
+  - { player: 0, type: ua-hq, origin: [4, 30] }
+  - { player: 1, type: ru-hq, origin: [92, 30] }
+  - { player: 1, type: ru-tos-1a, atCenti: [5700, 1900], order: { attackGroundCenti: [4800, 1900] } }
+  - { player: 1, type: ru-rifleman, atCenti: [4750, 1900] }
+  - { player: 1, type: ru-bmp-2, atCenti: [4850, 1900] }
+  - { player: 0, type: ua-rifleman, atCenti: [4800, 1800] }
+  - { player: 0, type: ua-kozak-scout, atCenti: [4800, 2000] }
