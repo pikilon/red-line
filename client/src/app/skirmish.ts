@@ -14,6 +14,7 @@ import {
   Vector3,
   WebGLRenderer,
 } from "three";
+import { ambientEventFor } from "../audio/ambient";
 import { AUDIO_CATALOG } from "../audio/catalog";
 import {
   createAudioDebugOverlay,
@@ -397,7 +398,6 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   scene.background = new Color(0x101820);
   const camera = createIsometricCamera(1);
   const hud = createHud(hudRoot);
-  const resourceBar = createResourceBar(document.body);
   const outcome = createOutcomeOverlay(document.body);
   hud.setSelectedCount(0);
 
@@ -427,32 +427,87 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   if (isAudioDebugEnabled(pageParams.toString())) {
     createAudioDebugOverlay(document.body, audioMixer);
   }
+  /** The side whose voice/EVA/music set the local player hears. */
+  const localFactionId = (): string =>
+    RULES.factions[controlled]?.id ?? "ukraine";
+  /** Short UI click used by menu and command buttons (spec 25 §11). */
+  const uiClick = (): void => {
+    audioMixer.play({ eventId: "ui.click", relation: "self" });
+  };
+  let lastCashSoundAt = -Infinity;
+  const resourceBar = createResourceBar(document.body, {
+    onCreditsChange(delta) {
+      const now = performance.now();
+      if (now - lastCashSoundAt < 300) return;
+      lastCashSoundAt = now;
+      audioMixer.play({
+        eventId: delta > 0 ? "ui.cashUp" : "ui.cashDown",
+        relation: "self",
+      });
+    },
+  });
   let lastOrderVoiceAtMs = -Infinity;
 
   const gameMenu = createGameMenu(document.body, {
-    resume: () => setMenuOpen(false),
-    openSaveGame: () => openSaves("save"),
-    openLoadGame: () => openSaves("load"),
-    toggleGore: () => toggleGore(),
-    toggleAi: () => toggleAi(),
-    toggleTextures: () => toggleTextures(),
-    switchSide: () => switchSide(),
-    toggleReveal: () => toggleReveal(),
-    toggleFpsPanel: () => toggleFpsPanel(),
-    toggleWeather: () => toggleWeather(),
+    resume: () => {
+      uiClick();
+      setMenuOpen(false);
+    },
+    openSaveGame: () => {
+      uiClick();
+      openSaves("save");
+    },
+    openLoadGame: () => {
+      uiClick();
+      openSaves("load");
+    },
+    toggleGore: () => {
+      uiClick();
+      toggleGore();
+    },
+    toggleAi: () => {
+      uiClick();
+      toggleAi();
+    },
+    toggleTextures: () => {
+      uiClick();
+      toggleTextures();
+    },
+    switchSide: () => {
+      uiClick();
+      switchSide();
+    },
+    toggleReveal: () => {
+      uiClick();
+      toggleReveal();
+    },
+    toggleFpsPanel: () => {
+      uiClick();
+      toggleFpsPanel();
+    },
+    toggleWeather: () => {
+      uiClick();
+      toggleWeather();
+    },
     setVolume: (channel, value) => {
       settings = { ...settings, [channel]: value };
       saveSettings(settings);
       audioMixer.setVolumes({ [channel]: value });
       renderMenu();
     },
-    restart: () => window.location.reload(),
+    restart: () => {
+      uiClick();
+      window.location.reload();
+    },
   });
   // Joystick and menu button on touch screens only (spec 08 §3.6).
   const touchControls = isTouchDevice()
     ? createTouchControls(document.body, {
         pan: (x, y) => controller?.setAnalogPan(x, y),
-        toggleMenu: () => toggleMenuLikeEsc(),
+        toggleMenu: () => {
+          uiClick();
+          toggleMenuLikeEsc();
+        },
       })
     : null;
   if (touchControls !== null) document.body.classList.add("touch");
@@ -620,6 +675,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let ready = false;
   /** Type index being placed, or null; the command panel starts placement. */
   let placementKind: number | null = null;
+  /** Last placement hint, so the error sound plays on the transition only. */
+  let lastPlacementHint: "hidden" | "legal" | "illegal" = "hidden";
   let controller: SkirmishController | null = null;
   /** Shadow-casting sun; its shadow camera follows the camera target (spec 10 §3). */
   let sunLight: DirectionalLight | null = null;
@@ -638,10 +695,14 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let uiRenders = 0;
   const commandPanel = createCommandPanel(document.body, {
     onConstruct: (kind) => {
+      uiClick();
+      // Zero Hour's "building ready / select target" EVA line while placing.
+      audioMixer.triggerEva("buildingReady", localFactionId());
       placementKind = kind;
       refreshOverlay();
     },
     onProduce: (kind) => {
+      uiClick();
       const building = selectedProductionBuilding(kind);
       if (building === null) return;
       interact.command({
@@ -652,6 +713,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       });
     },
     onCancel: () => {
+      uiClick();
       const queue = selectedQueue();
       if (queue === null) return;
       interact.command({
@@ -659,6 +721,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         player: controlled,
         building: queue.building,
       });
+    },
+    onDisabled: (button) => {
+      audioMixer.play({ eventId: "ui.error", relation: "self" });
+      if (next !== null && button.cost > next.credits) {
+        audioMixer.triggerEva("insufficientFunds", localFactionId());
+      }
     },
   });
   let animator: Animator;
@@ -926,6 +994,9 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       decals?.setSurface(withSnow(surface, snow));
       decals?.setSnow(snow);
     }
+    // Ambient bed: opt-in cold wind for `?weather=snow`, meadow otherwise.
+    // `?weather=none` requests silence; the reference pack supplies the loop.
+    audioMixer.setAmbient(ambientEventFor(pageParams));
     scene.add(placementGhost.mesh);
     controller = createSkirmishController({
       canvas: renderer.domElement,
@@ -1129,13 +1200,17 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   function updatePlacementGhost(): void {
     const preview = controller?.placementPreview() ?? null;
     placementGhost.mesh.visible = preview !== null;
-    placementHint.render(
+    const hint =
       placementKind === null
         ? "hidden"
         : preview === null || preview.valid
           ? "legal"
-          : "illegal",
-    );
+          : "illegal";
+    placementHint.render(hint);
+    if (hint === "illegal" && lastPlacementHint !== "illegal") {
+      audioMixer.play({ eventId: "ui.error", relation: "self" });
+    }
+    lastPlacementHint = hint;
     if (preview === null) return;
     const [width, height] = typeDef(preview.kind).footprint;
     const centerX = preview.origin.x + width / 2;
@@ -1257,16 +1332,25 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
           fallbackCategory: item.fallbackCategory,
         });
       }
-      const factionId = RULES.factions[controlled]?.id ?? "ukraine";
+      audioMixer.syncConstructionLoops(audioBatch.constructionLoops);
+      const factionId = localFactionId();
       for (const evaId of audioBatch.evaEvents) {
         audioMixer.triggerEva(evaId, factionId);
+        if (evaId === "baseUnderAttack") {
+          audioMixer.play({ eventId: "ui.warning", relation: "self" });
+        }
       }
       audioMixer.tickEva();
-      if (audioBatch.outcomeMusic) {
-        audioMixer.setMusicState(
-          `music.${audioBatch.outcomeMusic}.${factionId}`,
-        );
-      }
+      // Zero Hour fades between menu/calm/combat tracks and stops at the
+      // result screen. The director remembers the last combat snapshot so
+      // the combat track does not flicker off between bursts.
+      const musicResult =
+        snapshot.outcome === "ongoing"
+          ? "ongoing"
+          : snapshot.winner === controlled
+            ? "victory"
+            : "defeat";
+      audioMixer.updateMusic(factionId, audioBatch.combatActive, musicResult);
     }
     refreshOverlay();
   });

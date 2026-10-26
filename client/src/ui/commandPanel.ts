@@ -182,6 +182,8 @@ export function createCommandPanel(
     onConstruct(kind: number): void;
     onProduce(kind: number): void;
     onCancel(): void;
+    /** A disabled offer was pressed; the caller plays the error sound/EVA. */
+    onDisabled?(button: CommandButton): void;
   },
 ): {
   render(
@@ -194,6 +196,21 @@ export function createCommandPanel(
   const elements: HTMLButtonElement[] = [];
   let rendered: CommandButton[] = [];
   let queueView: QueueView | null = null;
+
+  // Disabled buttons swallow `click`, but a capture-phase `pointerdown` still
+  // reaches the panel. This is how a press on "can't afford" becomes the
+  // Zero Hour error sound and the insufficient-funds EVA line.
+  panel.addEventListener("pointerdown", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const element = target.closest<HTMLButtonElement>(".cmd");
+    if (!element) return;
+    const index = elements.indexOf(element);
+    const button = rendered[index];
+    if (button !== undefined && !button.enabled) {
+      handlers.onDisabled?.(button);
+    }
+  });
 
   function buttonAt(index: number): HTMLButtonElement {
     const existing = elements[index];

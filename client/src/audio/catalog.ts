@@ -1,4 +1,8 @@
-// Adapts the compiled `@data/audio.json` bundle into the runtime `AudioCatalog` structure.
+// Adapts the compiled `@data/audio.json` bundle into the runtime `AudioCatalog`
+// structure. Everything here is data: adding a unit, weapon, event, EVA line or
+// faction only touches data/audio/*.yaml and reference.yaml. This adapter is the
+// place to expose a new *class* of data (a new bus, a new mix knob, a new
+// per-faction EVA shape); see docs/audio-extension.md.
 
 import rawAudio from "@data/audio.json";
 import { ZOOM_MAX, ZOOM_MIN } from "../camera";
@@ -94,6 +98,10 @@ function buildCatalog(): AudioCatalog {
       underFire: {
         perUnitCooldownMs: mix.underFire.perUnitCooldownMs,
         globalCooldownMs: mix.underFire.globalVoiceBudgetMs,
+      },
+      music: {
+        fadeMs: mix.music?.fadeMs ?? 2000,
+        combatHoldMs: mix.music?.combatHoldMs ?? 12000,
       },
     },
     reference: { events: refEvents },

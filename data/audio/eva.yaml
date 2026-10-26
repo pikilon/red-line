@@ -1,5 +1,11 @@
 # EVA event table and dispatch parameters (specs/25 §5.1, §6.6).
 # Priority (0 never plays, 1 lowest, 10 highest), cooldown between announcements and expiration time while queued.
+#
+# Adding an EVA event: define it here, map every faction in reference.yaml
+# (`eva.<faction>.<event>` -> a Zero Hour dialog / Eva side sound), then push
+# the id from derive.ts or the input/UI layer where the condition is known.
+# `upgradeComplete` is defined but has no sim trigger yet; do not invent one
+# until upgrades exist. The queue is shared by all sides.
 
 events:
   baseUnderAttack:

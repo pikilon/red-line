@@ -3,6 +3,14 @@
 // 1. Shipped game audio in `/audio/...` (Phase 3)
 // 2. Local Zero Hour reference pack at `/audio-ref/...` (dev server only, when present)
 // 3. Procedural fallback recipe (`synth:<recipe>`) rendered into an `AudioBuffer`.
+//
+// Entry points:
+// - `resolveEventSounds`: one-shot variants (weapons, voices, UI, EVA, music).
+// - `resolveLoopParts`: loop body + Zero Hour `attackSounds`/`decaySounds` head
+//   and tail for construction/ambient loops.
+// - `getBuffer`: fetch + native IMA ADPCM/PCM decode, or an offline synth buffer.
+// A new event id only needs a `reference.yaml` mapping; a new *format* needs a
+// decoder branch here (see `decodeWavPcmChannels`).
 
 import {
   createRecipeAudioBuffer,
@@ -15,6 +23,10 @@ const MAX_CACHE_BYTES = 64 * 1024 * 1024; // 64 MB LRU decoded budget (spec 25 Â
 
 export interface ZhRefEventInfo {
   sounds?: string[];
+  /** Loop head played when a sample loop starts (Zero Hour `AttackSounds`). */
+  attackSounds?: string[];
+  /** Loop tail played when a sample loop stops (Zero Hour `DecaySounds`). */
+  decaySounds?: string[];
   filename?: string;
   volume?: number;
   volumeShift?: number;
@@ -393,34 +405,73 @@ export class AudioLoader {
    */
   resolveZhUrls(zhEventName: string | undefined): string[] {
     if (!zhEventName || !this.zhIndex) return [];
-    const files = this.zhIndex.files ?? {};
-    const lookupFile = (token: string): string | null => {
-      const lower = token.toLowerCase();
-      const base = lower.replace(/^.*[\\/]/, "");
-      const stem = base.replace(/\.(wav|mp3)$/i, "");
-      const rel = files[lower] ?? files[base] ?? files[stem];
-      return rel ? `/audio-ref/${rel}` : null;
-    };
-
     const ev = this.zhIndex.events?.[zhEventName];
     if (ev?.sounds?.length) {
-      const urls = ev.sounds
-        .map(lookupFile)
-        .filter((u): u is string => u !== null);
+      const urls = this.resolveZhTokens(ev.sounds);
       if (urls.length > 0) return urls;
     }
     const dlg = this.zhIndex.dialogs?.[zhEventName];
     if (dlg?.filename) {
-      const url = lookupFile(dlg.filename);
+      const url = this.lookupReferenceToken(dlg.filename);
       if (url) return [url];
     }
     const mus = this.zhIndex.music?.[zhEventName];
     if (mus?.filename) {
-      const url = lookupFile(mus.filename);
+      const url = this.lookupReferenceToken(mus.filename);
       if (url) return [url];
     }
-    const direct = lookupFile(zhEventName);
+    const direct = this.lookupReferenceToken(zhEventName);
     return direct ? [direct] : [];
+  }
+
+  /**
+   * Resolves the three parts of a Zero Hour sample loop: the loop body, the
+   * attack (head) and the decay (tail). `resolveEventSounds` remains the
+   * one-shot path; this one is used by the mixer's continuous loops.
+   */
+  resolveLoopParts(
+    eventId: string,
+    configuredSounds: readonly string[],
+    forceSynth = false,
+  ): { loop: string[]; attack: string[]; decay: string[] } {
+    const fallback = {
+      loop: [...configuredSounds],
+      attack: [],
+      decay: [],
+    };
+    if (forceSynth || !this.zhIndex) return fallback;
+    const zhName = this.catalog.reference.events[eventId];
+    if (zhName === "NoSound") return { loop: [], attack: [], decay: [] };
+    const ev = zhName ? this.zhIndex.events?.[zhName] : undefined;
+    if (ev?.sounds?.length) {
+      const loop = this.resolveZhTokens(ev.sounds);
+      if (loop.length > 0) {
+        return {
+          loop,
+          attack: this.resolveZhTokens(ev.attackSounds),
+          decay: this.resolveZhTokens(ev.decaySounds),
+        };
+      }
+    }
+    const loop = this.resolveZhUrls(zhName);
+    return loop.length > 0 ? { loop, attack: [], decay: [] } : fallback;
+  }
+
+  private resolveZhTokens(tokens: readonly string[] | undefined): string[] {
+    if (!tokens) return [];
+    return tokens
+      .map((token) => this.lookupReferenceToken(token))
+      .filter((url): url is string => url !== null);
+  }
+
+  private lookupReferenceToken(token: string): string | null {
+    if (!this.zhIndex) return null;
+    const files = this.zhIndex.files ?? {};
+    const lower = token.toLowerCase();
+    const base = lower.replace(/^.*[\\/]/, "");
+    const stem = base.replace(/\.(wav|mp3)$/i, "");
+    const rel = files[lower] ?? files[base] ?? files[stem];
+    return rel ? `/audio-ref/${rel}` : null;
   }
 
   /**
@@ -526,6 +577,9 @@ export class AudioLoader {
 
   private storeInCache(key: string, buffer: AudioBuffer): void {
     const bytes = buffer.length * buffer.numberOfChannels * 4;
+    // A long reference music track can be larger than the whole cache. Play it
+    // from the source node that holds it instead of evicting every short SFX.
+    if (bytes > MAX_CACHE_BYTES) return;
     while (this.cachedBytes + bytes > MAX_CACHE_BYTES && this.cache.size > 0) {
       const oldestKey = this.cache.keys().next().value;
       if (oldestKey === undefined) break;

@@ -1,17 +1,35 @@
 // Web Audio mixer, bus graph, ducking automation, and Zero Hour sample playback
 // (specs/25-audio.md §6, §9, §10). No engine oscillators: vehicles only play the
 // discrete `SoundMoveStart` samples from the reference pack.
+//
+// Three playback paths share the same buses:
+// - `play`: one-shots through the director's admission rules.
+// - `setAmbient` / `syncConstructionLoops`: sample loops with Zero Hour loop
+//   head/tail; they reconcile on snapshots and fade instead of hard-cutting.
+// - `setMusicState` / `updateMusic`: a two-source crossfade driven by the
+//   MusicDirector (calm <-> combat <-> result).
+// To add a new loop, add the data/reference mapping and call one of the loop
+// methods; never build a live oscillator graph (the old engine drone is gone).
 
 import { AudioDirector, type ListenerState, resolveEventDef } from "./director";
 import { EvaQueue } from "./eva";
 import { AudioLoader } from "./loader";
-import { dbToGain, pickVariantIndex } from "./math";
+import {
+  dbToGain,
+  distanceAttenuation,
+  distanceLowPassHz,
+  pickVariantIndex,
+  screenStereoPan,
+  zoomVolumeMultiplier,
+} from "./math";
+import { MusicDirector, type MusicResult, menuMusicEvent } from "./music";
 import type {
   AdmissionDecision,
   AudioBusName,
   AudioCatalog,
   AudioDebugEntry,
   AudioPlayRequest,
+  ConstructionLoopState,
 } from "./types";
 
 export interface VolumeSettings {
@@ -28,6 +46,19 @@ interface PlayingNode {
   gainNode: GainNode;
 }
 
+interface SampleLoopNode {
+  source: AudioBufferSourceNode;
+  gain: GainNode;
+  filter: BiquadFilterNode | null;
+  panner: StereoPannerNode | null;
+  /** Zero Hour `DecaySounds`: the loop tail, played once on stop. */
+  decay: AudioBuffer | null;
+  bus: AudioBusName;
+  volume: number;
+  pan: number;
+  lowPassHz: number;
+}
+
 export class AudioMixer {
   readonly catalog: AudioCatalog;
   readonly director: AudioDirector;
@@ -39,8 +70,16 @@ export class AudioMixer {
   private duckNodes: { music: GainNode; sfx: GainNode } | null = null;
   private readonly playing = new Map<number, PlayingNode>();
   private readonly lastResolvedVariant = new Map<string, number>();
+  private readonly sampleLoops = new Map<string, SampleLoopNode>();
+  /** Pending loop starts, keyed like `sampleLoops`; prevents per-frame restarts. */
+  private readonly loopRequests = new Map<string, number>();
+  private loopGeneration = 0;
+  private ambientEvent: string | null = null;
   private musicSource: AudioBufferSourceNode | null = null;
+  private musicGain: GainNode | null = null;
+  private musicGeneration = 0;
   private currentMusicEvent: string | null = null;
+  private readonly musicDirector: MusicDirector;
   private listener: ListenerState = { tileX: 32, tileY: 32, zoom: 1 };
   private volumes: VolumeSettings;
   private paused = false;
@@ -51,6 +90,7 @@ export class AudioMixer {
     this.director = new AudioDirector({ catalog });
     this.evaQueue = new EvaQueue(catalog.eva.events);
     this.loader = new AudioLoader(catalog);
+    this.musicDirector = new MusicDirector(catalog.mix.music.combatHoldMs);
     this.volumes = {
       audioMaster:
         initialVolumes?.audioMaster ?? catalog.mix.buses.master ?? 100,
@@ -70,6 +110,11 @@ export class AudioMixer {
         void this.ctx.resume();
       }
       this.unlocked = true;
+      // Menu music covers the gap before the first match snapshot; the music
+      // director swaps to calm/combat as soon as the match starts.
+      if (this.currentMusicEvent === null) {
+        this.setMusicState(menuMusicEvent());
+      }
     };
     target.addEventListener("pointerdown", unlock, { passive: true });
     target.addEventListener("keydown", unlock, { passive: true });
@@ -246,54 +291,436 @@ export class AudioMixer {
     })();
   }
 
-  /** Starts or crossfades background music state (`music.calm.<faction>`, `music.combat.<faction>`, etc.). */
+  /**
+   * Advances the calm/combat/victory/defeat music state. Call it once per
+   * snapshot; the director applies the quiet-window hysteresis and the mixer
+   * crossfades over `mix.music.fadeMs` (Zero Hour `TimeToFadeAudio` = 2 s).
+   */
+  updateMusic(
+    faction: string,
+    combatActive: boolean,
+    result: MusicResult,
+    nowMs = performance.now(),
+  ): void {
+    this.musicDirector.setFaction(faction);
+    const eventId = this.musicDirector.update({
+      faction,
+      combatActive,
+      result,
+      nowMs,
+    });
+    this.setMusicState(eventId);
+  }
+
+  /** Starts or crossfades a background music state. */
   setMusicState(eventId: string): void {
     if (this.currentMusicEvent === eventId) return;
-    this.currentMusicEvent = eventId;
     const ctx = this.ensureContext();
     if (!ctx || !this.buses) return;
-
-    if (this.musicSource) {
-      try {
-        this.musicSource.stop();
-        this.musicSource.disconnect();
-      } catch {
-        // ignore
-      }
-      this.musicSource = null;
-    }
-
     const def = resolveEventDef(this.catalog, eventId);
     if (!def) return;
+    const generation = ++this.musicGeneration;
+    this.currentMusicEvent = eventId;
 
     void (async () => {
       if (!this.loader.isProbeDone()) {
         await this.loader.initReferencePack();
       }
+      if (generation !== this.musicGeneration) return;
       const sounds = this.loader.resolveEventSounds(eventId, def.sounds);
       const soundId = sounds[0];
-      if (!soundId) return;
-      if (this.currentMusicEvent !== eventId) return;
+      if (!soundId) {
+        if (generation === this.musicGeneration) this.currentMusicEvent = null;
+        return;
+      }
 
       const buffer = await this.loader.getBuffer(ctx, soundId);
-      if (
-        !buffer ||
-        !this.ctx ||
-        !this.buses ||
-        this.currentMusicEvent !== eventId
-      )
+      if (generation !== this.musicGeneration) return;
+      if (!buffer || !this.ctx || !this.buses) {
+        this.currentMusicEvent = null;
         return;
+      }
+      const now = this.ctx.currentTime;
+      const fadeSec = Math.max(0.05, this.catalog.mix.music.fadeMs / 1000);
       const source = this.ctx.createBufferSource();
       source.buffer = buffer;
       source.loop = true;
-      source.connect(this.buses.music);
-      source.start();
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0, now);
+      source.connect(gain);
+      gain.connect(this.buses.music);
+      source.start(now);
+      gain.gain.linearRampToValueAtTime(1, now + fadeSec);
+
+      const oldSource = this.musicSource;
+      const oldGain = this.musicGain;
       this.musicSource = source;
+      this.musicGain = gain;
+      if (oldSource && oldGain) {
+        oldGain.gain.cancelScheduledValues(now);
+        oldGain.gain.setTargetAtTime(0, now, fadeSec / 3);
+        try {
+          oldSource.stop(now + fadeSec + 0.1);
+        } catch {
+          // already stopped
+        }
+        oldSource.onended = () => {
+          oldSource.disconnect();
+          oldGain.disconnect();
+        };
+      }
     })();
+  }
+
+  /**
+   * Starts, replaces or fades out the ambient bed. Ambient samples are not
+   * positional: they play on the `ambient` bus at a constant level, like Zero
+   * Hour's global weather beds. `null` means silence (`?weather=none`).
+   */
+  setAmbient(eventId: string | null): void {
+    if (this.ambientEvent === eventId) return;
+    this.ambientEvent = eventId;
+    this.stopSampleLoop("ambient");
+    if (eventId === null) return;
+    const def = resolveEventDef(this.catalog, eventId);
+    if (!def) return;
+    this.startSampleLoop({
+      key: "ambient",
+      eventId,
+      bus: "ambient",
+      volume: (def.volume ?? 100) / 100,
+      pan: 0,
+      lowPassHz: 18000,
+    });
+  }
+
+  /**
+   * Reconciles the `UnderConstructionLoop` sample loops for buildings that
+   * are currently under construction. Call once per snapshot, not per frame:
+   * the same call updates distance/pan/gain and starts/stops only the delta.
+   * At most `building.construct.limit` sites run at once, nearest first.
+   */
+  syncConstructionLoops(loops: readonly ConstructionLoopState[]): void {
+    const def = resolveEventDef(this.catalog, "building.construct");
+    if (!def) return;
+    const limit = Math.max(1, def.limit ?? 2);
+    const minDistance = def.minDistance ?? 10;
+    const maxDistance = def.maxDistance ?? 100;
+    const active = loops
+      .filter(
+        (loop) =>
+          loop.onScreen && (loop.relation !== "enemy" || loop.tileVisible),
+      )
+      .map((loop) => ({
+        loop,
+        dist: Math.hypot(
+          loop.tileX - this.listener.tileX,
+          loop.tileY - this.listener.tileY,
+        ),
+      }))
+      .filter(({ dist }) => dist < maxDistance)
+      .sort((a, b) => a.dist - b.dist)
+      .slice(0, limit);
+
+    const keep = new Set(
+      active.map(({ loop }) => `construction:${loop.entityId}`),
+    );
+    for (const key of [...this.sampleLoops.keys()]) {
+      if (key.startsWith("construction:") && !keep.has(key)) {
+        this.stopSampleLoop(key);
+      }
+    }
+    for (const key of [...this.loopRequests.keys()]) {
+      if (key.startsWith("construction:") && !keep.has(key)) {
+        this.stopSampleLoop(key);
+      }
+    }
+
+    const zoom = zoomVolumeMultiplier(
+      this.listener.zoom,
+      this.catalog.mix.zoom.minZoom,
+      this.catalog.mix.zoom.maxZoom,
+      this.catalog.mix.zoom.bonus,
+    );
+    const now = this.ctx?.currentTime ?? 0;
+    for (const { loop, dist } of active) {
+      const key = `construction:${loop.entityId}`;
+      const volume =
+        ((def.volume ?? 100) / 100) *
+        distanceAttenuation(dist, minDistance, maxDistance) *
+        zoom;
+      const pan = screenStereoPan(loop.screenX);
+      const lowPassHz = distanceLowPassHz(
+        dist,
+        minDistance,
+        maxDistance,
+        def.lowPass ?? 0,
+      );
+      const node = this.sampleLoops.get(key);
+      if (node) {
+        node.volume = volume;
+        node.pan = pan;
+        node.lowPassHz = lowPassHz;
+        this.updateSampleLoop(node, now);
+      } else if (!this.loopRequests.has(key)) {
+        this.startSampleLoop({
+          key,
+          eventId: "building.construct",
+          bus: "sfx",
+          volume,
+          pan,
+          lowPassHz,
+        });
+      }
+    }
+  }
+
+  private startSampleLoop(options: {
+    key: string;
+    eventId: string;
+    bus: AudioBusName;
+    volume: number;
+    pan: number;
+    lowPassHz: number;
+  }): void {
+    const ctx = this.ensureContext();
+    if (!ctx || !this.buses) return;
+    const def = resolveEventDef(this.catalog, options.eventId);
+    if (!def) return;
+    const generation = ++this.loopGeneration;
+    this.loopRequests.set(options.key, generation);
+
+    void (async () => {
+      if (!this.loader.isProbeDone()) {
+        await this.loader.initReferencePack();
+      }
+      if (this.loopRequests.get(options.key) !== generation) return;
+      const parts = this.loader.resolveLoopParts(options.eventId, def.sounds);
+      if (parts.loop.length === 0) {
+        this.loopRequests.delete(options.key);
+        return;
+      }
+      const index = pickVariantIndex(
+        parts.loop.length,
+        true,
+        this.lastResolvedVariant.get(`${options.key}:loop`),
+      );
+      this.lastResolvedVariant.set(`${options.key}:loop`, index);
+      // Zero Hour `Control = all` layers every listed sound (construction
+      // machinery, meadow/wind beds); without it one variant is enough.
+      const chosenId = parts.loop[index] ?? parts.loop[0];
+      const loopIds = def.control?.includes("all")
+        ? parts.loop
+        : chosenId !== undefined
+          ? [chosenId]
+          : [];
+      const loopBuffers = (
+        await Promise.all(loopIds.map((id) => this.loader.getBuffer(ctx, id)))
+      ).filter((buffer): buffer is AudioBuffer => buffer !== null);
+      const loopBuffer =
+        loopBuffers.length > 1
+          ? this.mixBuffers(ctx, loopBuffers)
+          : (loopBuffers[0] ?? null);
+      const attackBuffers = (
+        await Promise.all(
+          parts.attack.map((id) => this.loader.getBuffer(ctx, id)),
+        )
+      ).filter((buffer): buffer is AudioBuffer => buffer !== null);
+      const decayBuffers = (
+        await Promise.all(
+          parts.decay.map((id) => this.loader.getBuffer(ctx, id)),
+        )
+      ).filter((buffer): buffer is AudioBuffer => buffer !== null);
+      const attackBuffer =
+        attackBuffers.length > 1
+          ? this.mixBuffers(ctx, attackBuffers)
+          : (attackBuffers[0] ?? null);
+      const decayBuffer =
+        decayBuffers.length > 1
+          ? this.mixBuffers(ctx, decayBuffers)
+          : (decayBuffers[0] ?? null);
+      if (this.loopRequests.get(options.key) !== generation) return;
+      if (!loopBuffer || !this.ctx || !this.buses) {
+        this.loopRequests.delete(options.key);
+        return;
+      }
+
+      const now = this.ctx.currentTime;
+      const source = this.ctx.createBufferSource();
+      source.buffer = loopBuffer;
+      source.loop = true;
+      let lastNode: AudioNode = source;
+      let filter: BiquadFilterNode | null = null;
+      let panner: StereoPannerNode | null = null;
+      if (options.lowPassHz < 17500) {
+        filter = this.ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.value = options.lowPassHz;
+        lastNode.connect(filter);
+        lastNode = filter;
+      }
+      if (
+        options.pan !== 0 &&
+        typeof this.ctx.createStereoPanner === "function"
+      ) {
+        panner = this.ctx.createStereoPanner();
+        panner.pan.value = options.pan;
+        lastNode.connect(panner);
+        lastNode = panner;
+      }
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0, now);
+      lastNode.connect(gain);
+      gain.connect(this.buses[options.bus] ?? this.buses.sfx);
+      source.start(now);
+      const attackSec = attackBuffer ? Math.min(0.5, attackBuffer.duration) : 0;
+      gain.gain.linearRampToValueAtTime(
+        options.volume,
+        now + Math.max(0.05, attackSec || 0.2),
+      );
+
+      this.sampleLoops.set(options.key, {
+        source,
+        gain,
+        filter,
+        panner,
+        decay: decayBuffer,
+        bus: options.bus,
+        volume: options.volume,
+        pan: options.pan,
+        lowPassHz: options.lowPassHz,
+      });
+      this.loopRequests.delete(options.key);
+      if (attackBuffer) this.playLoopOneShot(attackBuffer, options);
+    })();
+  }
+
+  private stopSampleLoop(key: string): void {
+    this.loopRequests.delete(key);
+    const node = this.sampleLoops.get(key);
+    if (!node) return;
+    this.sampleLoops.delete(key);
+    const ctx = this.ctx;
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    node.gain.gain.cancelScheduledValues(now);
+    node.gain.gain.setTargetAtTime(0, now, 0.08);
+    try {
+      node.source.stop(now + 0.4);
+    } catch {
+      // already stopped
+    }
+    node.source.onended = () => {
+      node.source.disconnect();
+      node.gain.disconnect();
+      node.filter?.disconnect();
+      node.panner?.disconnect();
+    };
+    if (node.decay) {
+      this.playLoopOneShot(node.decay, {
+        bus: node.bus,
+        volume: node.volume,
+        pan: node.pan,
+        lowPassHz: node.lowPassHz,
+      });
+    }
+  }
+
+  private updateSampleLoop(node: SampleLoopNode, now: number): void {
+    node.gain.gain.setTargetAtTime(node.volume, now, 0.08);
+    node.panner?.pan.setTargetAtTime(node.pan, now, 0.08);
+    node.filter?.frequency.setTargetAtTime(node.lowPassHz, now, 0.08);
+  }
+
+  /**
+   * Mixes the variants of a Zero Hour `all` loop into one buffer. Scaling by
+   * 1/sqrt(n) keeps layered beds (meadow, construction) from clipping while
+   * staying louder than a single variant.
+   */
+  private mixBuffers(
+    ctx: BaseAudioContext,
+    buffers: readonly AudioBuffer[],
+  ): AudioBuffer {
+    const frames = Math.max(...buffers.map((buffer) => buffer.length));
+    const channels = Math.max(
+      ...buffers.map((buffer) => buffer.numberOfChannels),
+    );
+    const sampleRate = buffers[0]?.sampleRate ?? ctx.sampleRate;
+    const mixed = ctx.createBuffer(channels, frames, sampleRate);
+    const scale = 1 / Math.sqrt(buffers.length);
+    for (let channel = 0; channel < channels; channel += 1) {
+      const out = mixed.getChannelData(channel);
+      for (const buffer of buffers) {
+        const source = buffer.getChannelData(
+          Math.min(channel, buffer.numberOfChannels - 1),
+        );
+        for (let frame = 0; frame < source.length; frame += 1) {
+          out[frame] = (out[frame] ?? 0) + (source[frame] ?? 0) * scale;
+        }
+      }
+    }
+    return mixed;
+  }
+
+  private playLoopOneShot(
+    buffer: AudioBuffer,
+    options: {
+      bus: AudioBusName;
+      volume: number;
+      pan: number;
+      lowPassHz: number;
+    },
+  ): void {
+    const ctx = this.ctx;
+    if (!ctx || !this.buses) return;
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    let lastNode: AudioNode = source;
+    let filter: BiquadFilterNode | null = null;
+    let panner: StereoPannerNode | null = null;
+    if (options.lowPassHz < 17500) {
+      filter = ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = options.lowPassHz;
+      lastNode.connect(filter);
+      lastNode = filter;
+    }
+    if (options.pan !== 0 && typeof ctx.createStereoPanner === "function") {
+      panner = ctx.createStereoPanner();
+      panner.pan.value = options.pan;
+      lastNode.connect(panner);
+      lastNode = panner;
+    }
+    const gain = ctx.createGain();
+    gain.gain.value = options.volume;
+    lastNode.connect(gain);
+    gain.connect(this.buses[options.bus] ?? this.buses.sfx);
+    source.start();
+    source.onended = () => {
+      source.disconnect();
+      gain.disconnect();
+      filter?.disconnect();
+      panner?.disconnect();
+    };
   }
 
   getDebugLog(): readonly AudioDebugEntry[] {
     return this.director.getDebugLog();
+  }
+
+  /** Current music state id, or null before the first menu/calm track. */
+  getMusicEvent(): string | null {
+    return this.currentMusicEvent;
+  }
+
+  /** Current ambient bed id, or null when the map/climate has no bed. */
+  getAmbientEvent(): string | null {
+    return this.ambientEvent;
+  }
+
+  /** Number of live sample loops (construction sites plus the ambient bed). */
+  getActiveLoopCount(): number {
+    return this.sampleLoops.size;
   }
 
   private schedulePlayback(

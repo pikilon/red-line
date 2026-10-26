@@ -1,3 +1,6 @@
+// Resource bar + credit-change hook. The hook is how the client turns a credit
+// delta into Zero Hour's `ui.cashUp` / `ui.cashDown` without the sim knowing
+// anything about audio.
 import { t } from "../i18n";
 import type { MatchSnapshot } from "../sim/matchSnapshot";
 import { appendDiv, setText } from "./dom";
@@ -25,14 +28,27 @@ export function resourceText(snapshot: MatchSnapshot): ResourceText {
 }
 
 /** `<div id="resource-bar">` with `#res-credits` and `#res-power` (spec §6.6). */
-export function createResourceBar(root: HTMLElement): {
+export function createResourceBar(
+  root: HTMLElement,
+  options: {
+    /** Called with the credit delta when it changes; used for `ui.cashUp/Down`. */
+    onCreditsChange?(delta: number): void;
+  } = {},
+): {
   render(snapshot: MatchSnapshot | null): void;
 } {
   const bar = appendDiv(root, "resource-bar");
   const credits = appendDiv(bar, "res-credits");
   const power = appendDiv(bar, "res-power");
+  let lastCredits: number | null = null;
   return {
     render(snapshot) {
+      if (snapshot === null) {
+        lastCredits = null;
+      } else if (lastCredits !== null && snapshot.credits !== lastCredits) {
+        options.onCreditsChange?.(snapshot.credits - lastCredits);
+      }
+      if (snapshot !== null) lastCredits = snapshot.credits;
       const text =
         snapshot === null
           ? { credits: "", power: "", low: false }

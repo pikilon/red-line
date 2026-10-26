@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { typeIndex } from "../rules";
+import { typeDef, typeIndex } from "../rules";
+import { ENTITY_FLAGS } from "../sim/matchSnapshot";
 import { AUDIO_CATALOG } from "./catalog";
 import { deriveSnapshotAudio, resolveCommandVoiceEvent } from "./derive";
 import { AudioDirector, shouldPlayLocally } from "./director";
@@ -154,6 +155,7 @@ function makeTestCatalog(): AudioCatalog {
         voice: { musicDb: -4, sfxDb: 0, holdMs: 150, releaseMs: 500 },
       },
       underFire: { perUnitCooldownMs: 12000, globalCooldownMs: 3000 },
+      music: { fadeMs: 2000, combatHoldMs: 12000 },
     },
     reference: { events: {} },
     recipes: {},
@@ -578,6 +580,117 @@ describe("AUDIO_CATALOG and snapshot derivation (Ukraine -> USA, Russia -> China
     const cmdVoice = resolveCommandVoiceEvent([1], next.entities, 0, "select");
     expect(cmdVoice?.eventId).toContain(".select");
   });
+
+  it("derives construction site loops and heavy building damage", () => {
+    const hq = typeIndex("ua-hq");
+    const def = typeDef(hq);
+    const prevEntity = {
+      id: 10,
+      owner: 0,
+      kind: hq,
+      x: 20,
+      y: 20,
+      hp: def.hp,
+      flags: ENTITY_FLAGS.underConstruction,
+      progress: 500,
+      target: null,
+      heading: 0,
+      turretAngle: 0,
+    };
+    const prev = {
+      tick: 1,
+      viewer: 0,
+      credits: 1000,
+      powerProduced: 0,
+      powerConsumed: 0,
+      outcome: "ongoing" as const,
+      winner: null,
+      entities: [prevEntity],
+      queues: [],
+    };
+    const next = {
+      ...prev,
+      tick: 2,
+      entities: [
+        {
+          ...prevEntity,
+          hp: Math.floor(def.hp * 0.4),
+        },
+      ],
+    };
+    const batch = deriveSnapshotAudio(
+      prev,
+      next,
+      { projectiles: [], events: [] },
+      0,
+      {
+        projectTile: () => ({ screenX: 0, onScreen: true }),
+        isTileVisible: () => true,
+      },
+      AUDIO_CATALOG,
+    );
+
+    expect(batch.constructionLoops.map((loop) => loop.entityId)).toEqual([10]);
+    expect(batch.requests.map((entry) => entry.request.eventId)).toContain(
+      "building.damage.heavy",
+    );
+
+    const critical = deriveSnapshotAudio(
+      prev,
+      {
+        ...next,
+        tick: 3,
+        entities: [
+          {
+            ...prevEntity,
+            hp: Math.floor(def.hp * 0.2),
+          },
+        ],
+      },
+      { projectiles: [], events: [] },
+      0,
+      {
+        projectTile: () => ({ screenX: 0, onScreen: true }),
+        isTileVisible: () => true,
+      },
+      AUDIO_CATALOG,
+    );
+    expect(critical.requests.map((entry) => entry.request.eventId)).toContain(
+      "building.damage.critical",
+    );
+
+    const tank = typeIndex("ua-bradley");
+    const tankDef = typeDef(tank);
+    const tankPrevEntity = {
+      ...prevEntity,
+      kind: tank,
+      hp: tankDef.hp,
+      flags: 0,
+    };
+    const tankPrev = {
+      ...prev,
+      entities: [tankPrevEntity],
+    };
+    const tankNext = {
+      ...tankPrev,
+      tick: 2,
+      entities: [{ ...tankPrevEntity, hp: Math.floor(tankDef.hp * 0.4) }],
+    };
+    const tankBatch = deriveSnapshotAudio(
+      tankPrev,
+      tankNext,
+      { projectiles: [], events: [] },
+      0,
+      {
+        projectTile: () => ({ screenX: 0, onScreen: true }),
+        isTileVisible: () => true,
+      },
+      AUDIO_CATALOG,
+    );
+    expect(tankBatch.requests.map((entry) => entry.request.eventId)).toContain(
+      "vehicle.damage",
+    );
+  });
 });
 
 describe("Zero Hour WAV decoding", () => {
@@ -734,15 +847,32 @@ describe("Zero Hour reference resolution and faction mapping", () => {
     expect(missing).toEqual([]);
   });
 
+  it("maps every event id to a reference name or a deliberate NoSound", () => {
+    const missing = Object.keys(AUDIO_CATALOG.events).filter(
+      (eventId) => AUDIO_CATALOG.reference.events[eventId] === undefined,
+    );
+    expect(missing).toEqual([]);
+  });
+
   it("resolves reference URLs, honours NoSound, and falls back to synth on demand", () => {
     const loader = new AudioLoader(AUDIO_CATALOG);
     (
       loader as unknown as { zhIndex: ZhRefIndex | null; zhProbed: boolean }
     ).zhIndex = {
-      events: { RangerWeapon: { sounds: ["iranweaa"] } },
+      events: {
+        RangerWeapon: { sounds: ["iranweaa"] },
+        UnderConstructionLoop: {
+          sounds: ["gconlo2a"],
+          attackSounds: ["gconlo1a"],
+          decaySounds: ["gconlo3a"],
+        },
+      },
       dialogs: { EvaUSA_LowPower: { filename: "eupower.wav" } },
       files: {
         iranweaa: "files/iranweaa.wav",
+        gconlo2a: "files/gconlo2a.wav",
+        gconlo1a: "files/gconlo1a.wav",
+        gconlo3a: "files/gconlo3a.wav",
         "eupower.wav": "files/eupower.wav",
       },
     };
@@ -762,6 +892,13 @@ describe("Zero Hour reference resolution and faction mapping", () => {
     expect(loader.resolveZhUrls("EvaUSA_LowPower")).toEqual([
       "/audio-ref/files/eupower.wav",
     ]);
+    expect(
+      loader.resolveLoopParts("building.construct", ["synth:construction"]),
+    ).toEqual({
+      loop: ["/audio-ref/files/gconlo2a.wav"],
+      attack: ["/audio-ref/files/gconlo1a.wav"],
+      decay: ["/audio-ref/files/gconlo3a.wav"],
+    });
   });
 
   it("does not muffle events that have no lowPass setting", () => {
