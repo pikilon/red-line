@@ -840,7 +840,7 @@
       "limit": 4,
       "priority": "lowest",
       "control": [
-        "loop"
+        "random"
       ],
       "type": [
         "world",
@@ -858,7 +858,7 @@
       "limit": 4,
       "priority": "lowest",
       "control": [
-        "loop"
+        "random"
       ],
       "type": [
         "world",
@@ -876,7 +876,7 @@
       "limit": 4,
       "priority": "lowest",
       "control": [
-        "loop"
+        "random"
       ],
       "type": [
         "world",
@@ -4224,7 +4224,7 @@
     "impact.light": "VehicleImpactLight",
     "impact.heavy": "VehicleImpactHeavy",
     "explosion.small": "Explosion",
-    "explosion.medium": "ExplosionGeneric",
+    "explosion.medium": "Explosion",
     "explosion.large": "ExplosionArtilleryBarrage",
     "move.foot": "NoSound",
     "move.wheeled": "NoSound",

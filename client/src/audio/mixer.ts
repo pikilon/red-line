@@ -26,12 +26,6 @@ interface PlayingNode {
   gainNode: GainNode;
 }
 
-interface EngineLoopNode {
-  entityId: number;
-  osc: OscillatorNode;
-  gain: GainNode;
-}
-
 export class AudioMixer {
   readonly catalog: AudioCatalog;
   readonly director: AudioDirector;
@@ -42,7 +36,7 @@ export class AudioMixer {
   private buses: Record<AudioBusName, GainNode> | null = null;
   private duckNodes: { music: GainNode; sfx: GainNode } | null = null;
   private readonly playing = new Map<number, PlayingNode>();
-  private readonly engineLoops = new Map<number, EngineLoopNode>();
+  private readonly lastResolvedVariant = new Map<string, number>();
   private musicSource: AudioBufferSourceNode | null = null;
   private currentMusicEvent: string | null = null;
   private listener: ListenerState = { tileX: 32, tileY: 32, zoom: 1 };
@@ -139,17 +133,23 @@ export class AudioMixer {
       def?.sounds ?? [decision.soundId],
       options?.forceSynth ?? false,
     );
-    const chosenSound =
-      resolvedSounds[
-        decision.variantIndex % Math.max(1, resolvedSounds.length)
-      ] ?? decision.soundId;
+    if (resolvedSounds.length === 0) {
+      this.director.releaseChannel(handle);
+      return decision;
+    }
+    const isRandom = def?.control?.includes("random") ?? true;
+    const prevIdx = this.lastResolvedVariant.get(request.eventId);
+    const resolvedIdx = pickVariantIndex(
+      resolvedSounds.length,
+      isRandom,
+      prevIdx,
+    );
+    this.lastResolvedVariant.set(request.eventId, resolvedIdx);
+    const chosenSound = resolvedSounds[resolvedIdx] ?? decision.soundId;
+    decision.variantIndex = resolvedIdx;
     decision.soundId = chosenSound;
 
-    this.schedulePlayback(
-      handle,
-      decision,
-      def?.control?.includes("loop") ?? false,
-    );
+    this.schedulePlayback(handle, decision, false);
     return decision;
   }
 
@@ -210,58 +210,14 @@ export class AudioMixer {
   }
 
   /**
-   * Updates continuous engine/locomotor loops for moving on-screen units (`specs/25-audio.md` §6.7).
-   * Called about once per second (`TimeBetweenDrawableSounds = 1000ms`), never every frame.
+   * Ground units in Zero Hour (`ThingTemplate.h:111`, `AIStates.cpp:1696-1714`) do not run
+   * continuous oscillator/engine loops; movement is strictly the discrete `SoundMoveStart`
+   * event on acceleration. Kept as a no-op hook so callers do not produce a synthetic hum.
    */
   syncEngineLoops(
-    movingUnits: readonly { id: number; speedRatio: number; gain: number }[],
+    _movingUnits: readonly { id: number; speedRatio: number; gain: number }[],
   ): void {
-    const ctx = this.ensureContext();
-    if (!ctx || !this.buses || ctx.state !== "running") return;
-
-    const limit = 4;
-    const topUnits = [...movingUnits]
-      .filter((u) => u.speedRatio > 0.05 && u.gain > 0.02)
-      .sort((a, b) => b.gain - a.gain)
-      .slice(0, limit);
-    const keepIds = new Set(topUnits.map((u) => u.id));
-
-    for (const [id, node] of this.engineLoops) {
-      if (!keepIds.has(id)) {
-        try {
-          node.osc.stop();
-          node.osc.disconnect();
-          node.gain.disconnect();
-        } catch {
-          // ignore already stopped
-        }
-        this.engineLoops.delete(id);
-      }
-    }
-
-    const now = ctx.currentTime;
-    for (const unit of topUnits) {
-      let loop = this.engineLoops.get(unit.id);
-      if (!loop) {
-        const osc = ctx.createOscillator();
-        osc.type = "sawtooth";
-        const filter = ctx.createBiquadFilter();
-        filter.type = "lowpass";
-        filter.frequency.value = 240;
-        const gain = ctx.createGain();
-        gain.gain.value = 0.001;
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.buses.sfx);
-        osc.start();
-        loop = { entityId: unit.id, osc, gain };
-        this.engineLoops.set(unit.id, loop);
-      }
-      const targetFreq = 52 + unit.speedRatio * 48;
-      const targetGain = Math.min(0.22, unit.gain * 0.18);
-      loop.osc.frequency.setTargetAtTime(targetFreq, now, 0.15);
-      loop.gain.gain.setTargetAtTime(targetGain, now, 0.15);
-    }
+    // Intentionally empty: no continuous sawtooth oscillator drone.
   }
 
   /** Starts or crossfades background music state (`music.calm.<faction>`, `music.combat.<faction>`, etc.). */

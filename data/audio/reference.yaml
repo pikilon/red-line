@@ -239,7 +239,7 @@ impact.heavy: VehicleImpactHeavy
 # Explosions
 # -----------------------------------------------------------------------------
 explosion.small: Explosion
-explosion.medium: ExplosionGeneric
+explosion.medium: Explosion
 explosion.large: ExplosionArtilleryBarrage
 
 # -----------------------------------------------------------------------------
