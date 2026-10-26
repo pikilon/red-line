@@ -140,3 +140,15 @@ Owner answers to the Phase 2 design questions; elaborated in
 * Phase 2 entities hold a growable production queue, so `Entity` is `Clone` but
   not `Copy`. When P2-04 lands, the Phase 1 test `ac_02_15_units_route_through_the_gap` in `crates/sim/tests/movement.rs`
   clones the unit instead of copying it; the assertions are unchanged.
+
+## D-13 Audio format and inventory (2026-10-26)
+
+* Ship one audio format: **Opus in WebM** (`.webm`). There is no AAC/M4A
+  fallback. Bitrates and budgets stay in `specs/25-audio.md` §12.
+* The owner's Zero Hour reference pack may be transcoded locally to WebM for
+  listening and A/B (`audio:pack`), but it never ships; D-02 still forbids
+  reproducing EA's sounds.
+* `data/audio/inventory.yaml` is the phase 2 list of what to replace. Its
+  `brief` and `prompt` text is original. Drafts may be produced by a local
+  model from spectrograms; the owner approves each brief by ear before it
+  becomes `approved`.

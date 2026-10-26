@@ -102,7 +102,37 @@ export function checkAudio(rootDir = DEFAULT_ROOT, options = {}) {
     }
   }
 
-  // 2. Git guard: .local/audio-ref must NEVER be committed to git
+  // 2. Inventory matches the reference map (phase 2, spec 25 §5.1)
+  const inventoryPath = join(rootDir, "data", "audio", "inventory.yaml");
+  if (existsSync(inventoryPath)) {
+    const inventory = parse(readFileSync(inventoryPath, "utf8"));
+    const reference = parse(readFileSync(join(rootDir, "data", "audio", "reference.yaml"), "utf8"));
+    const entries = inventory.entries ?? {};
+    const missing = Object.keys(reference).filter((id) => !(id in entries));
+    const extra = Object.keys(entries).filter((id) => !(id in reference));
+    if (missing.length > 0 || extra.length > 0) {
+      throw new Error(
+        `inventory does not match reference.yaml (${missing.length} missing, ${extra.length} extra): ` +
+          "run node scripts/audio/inventory.mjs --write",
+      );
+    }
+    const statuses = new Set(["silent", "needs-script", "todo", "draft", "approved"]);
+    for (const [id, entry] of Object.entries(entries)) {
+      if (entry.reference !== reference[id]) {
+        throw new Error(
+          `inventory ${id}: reference is ${entry.reference}, expected ${reference[id]}`,
+        );
+      }
+      if (!statuses.has(entry.status)) {
+        throw new Error(`inventory ${id}: unknown status ${entry.status}`);
+      }
+      if (entry.category !== id.split(".")[0]) {
+        throw new Error(`inventory ${id}: category ${entry.category} does not match the id`);
+      }
+    }
+  }
+
+  // 3. Git guard: .local/audio-ref must NEVER be committed to git
   try {
     const tracked = execSync("git ls-files .local/audio-ref", {
       cwd: rootDir,
@@ -117,7 +147,7 @@ export function checkAudio(rootDir = DEFAULT_ROOT, options = {}) {
     // If git command fails for other reason (e.g. not a repo in synthetic tests), ignore
   }
 
-  // 3. Dist guard: client/dist must not contain .local/audio-ref
+  // 4. Dist guard: client/dist must not contain .local/audio-ref
   const clientDist = join(rootDir, "client", "dist");
   if (existsSync(clientDist)) {
     const files = getAllFiles(clientDist);
