@@ -338,11 +338,12 @@ scroll or overflow. This section amends §3.4 and §3.6.
   the full-screen game.
 * No page zoom, no overflow. The viewport meta sets `maximum-scale=1,
   user-scalable=no`; `html`, `body` and `#app` fill the viewport with
-  `overflow: hidden` and `overscroll-behavior: none`, and the canvas uses
-  `touch-action: none`. `installMobileShell()` prevents the iOS
-  `gesturestart`/`gesturechange`/`gestureend` events and two-finger
-  `touchmove` over `#app canvas`, so the page never scrolls or zooms while the
-  menus keep `touch-action: pan-y` for their own scrolling. Safe-area insets
+  `overflow: hidden` and `overscroll-behavior: none`, and `#app` and its
+  canvas use `touch-action: none`. `installMobileShell()` prevents the iOS
+  `gesturestart`/`gesturechange`/`gestureend` events and cancels two-finger
+  `touchstart`/`touchmove` over `#app canvas` before the platform can start a
+  native page zoom, so the page never scrolls or zooms while the menus keep
+  `touch-action: pan-y` for their own scrolling. Safe-area insets
   keep the HUD, joystick, hamburger and command panel clear of notches;
   `#game-menu-panel` and `#save-manager-panel` cap their height at the
   viewport and scroll inside, so a landscape phone never overflows. The
@@ -517,10 +518,11 @@ single tap returns false; `cancel` drops the pointers.
 **AC-08-23 Pinch in the skirmish (Playwright).** With touch emulation
 (`hasTouch`, `isMobile`, 844 x 390) in `?debug=1&seed=1&ai=off`, a real
 two-finger spread from 160 to 320 px makes `zoom()` 2 ± 0.01 and keeps
-`cameraTarget()`; spreading to 800 px clamps `zoom()` at 3; pinching from
-600 to 20 px clamps it at 0.6; `visualViewport.scale` stays 1, `scrollX` and
-`scrollY` stay 0, `selectedIds()` stays empty and `#selection-box` hidden; no
-console error.
+`cameraTarget()`; the two-finger `touchstart` arrives with
+`defaultPrevented` true; spreading to 800 px clamps `zoom()` at 3; pinching
+from 600 to 20 px clamps it at 0.6; `visualViewport.scale` stays 1, `scrollX`
+and `scrollY` stay 0, `selectedIds()` stays empty and `#selection-box`
+hidden; no console error.
 
 **AC-08-24 Mobile web app (Playwright).** In the same context the manifest is
 200 with name "Modern Conquest: Red Line", `display: "standalone"`,
