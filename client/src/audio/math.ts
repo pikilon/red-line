@@ -33,16 +33,13 @@ export function distanceLowPassHz(
   maxDistance: number,
   lowPassPercent = 0,
 ): number {
-  if (maxDistance <= minDistance || dist <= minDistance)
+  if (lowPassPercent <= 0 || maxDistance <= minDistance || dist <= minDistance)
     return DEFAULT_LOWPASS_MAX_HZ;
   const t = Math.min(
     1,
     Math.max(0, (dist - minDistance) / (maxDistance - minDistance)),
   );
-  const strength = Math.max(
-    0.25,
-    Math.min(1, lowPassPercent > 0 ? lowPassPercent / 100 : 0.45),
-  );
+  const strength = Math.max(0.25, Math.min(1, lowPassPercent / 100));
   const minHz =
     DEFAULT_LOWPASS_MAX_HZ -
     (DEFAULT_LOWPASS_MAX_HZ - DEFAULT_LOWPASS_MIN_HZ) * strength;

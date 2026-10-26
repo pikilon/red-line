@@ -128,10 +128,11 @@ export class AudioMixer {
       request.eventId,
       options?.fallbackCategory,
     );
+    const forceSynth = options?.forceSynth ?? false;
     const resolvedSounds = this.loader.resolveEventSounds(
       request.eventId,
       def?.sounds ?? [decision.soundId],
-      options?.forceSynth ?? false,
+      forceSynth,
     );
     if (resolvedSounds.length === 0) {
       this.director.releaseChannel(handle);
@@ -149,7 +150,15 @@ export class AudioMixer {
     decision.variantIndex = resolvedIdx;
     decision.soundId = chosenSound;
 
-    this.schedulePlayback(handle, decision, false);
+    this.schedulePlayback(
+      handle,
+      decision,
+      false,
+      request.eventId,
+      def?.sounds ?? [decision.soundId],
+      isRandom,
+      forceSynth,
+    );
     return decision;
   }
 
@@ -181,19 +190,23 @@ export class AudioMixer {
     const next = this.evaQueue.process(2000);
     if (!next) return;
 
-    const zhUrls = this.loader.resolveZhUrls(next.soundRef);
-    const pickedUrl =
-      zhUrls.length > 0
-        ? zhUrls[pickVariantIndex(zhUrls.length, true, undefined)]
-        : undefined;
-    const soundId =
-      pickedUrl ??
-      (next.soundRef.startsWith("synth:") ? next.soundRef : "synth:eva");
-
     const ctx = this.ensureContext();
     if (!ctx || !this.buses) return;
 
-    void this.loader.getBuffer(ctx, soundId).then((buffer) => {
+    void (async () => {
+      if (!this.loader.isProbeDone()) {
+        await this.loader.initReferencePack();
+      }
+      const zhUrls = this.loader.resolveZhUrls(next.soundRef);
+      const pickedUrl =
+        zhUrls.length > 0
+          ? zhUrls[pickVariantIndex(zhUrls.length, true, undefined)]
+          : undefined;
+      const soundId =
+        pickedUrl ??
+        (next.soundRef.startsWith("synth:") ? next.soundRef : "synth:eva");
+
+      const buffer = await this.loader.getBuffer(ctx, soundId);
       if (!buffer || !this.ctx || !this.buses) return;
       const durationMs = buffer.duration * 1000;
       this.evaQueue.notifyPlayingDuration(durationMs);
@@ -206,7 +219,7 @@ export class AudioMixer {
       source.connect(gain);
       gain.connect(this.buses.eva);
       source.start();
-    });
+    })();
   }
 
   /**
@@ -239,11 +252,15 @@ export class AudioMixer {
 
     const def = resolveEventDef(this.catalog, eventId);
     if (!def) return;
-    const sounds = this.loader.resolveEventSounds(eventId, def.sounds);
-    const soundId = sounds[0];
-    if (!soundId) return;
 
-    void this.loader.getBuffer(ctx, soundId).then((buffer) => {
+    void (async () => {
+      if (!this.loader.isProbeDone()) {
+        await this.loader.initReferencePack();
+      }
+      const sounds = this.loader.resolveEventSounds(eventId, def.sounds);
+      const soundId = sounds[0];
+      if (!soundId) return;
+      const buffer = await this.loader.getBuffer(ctx, soundId);
       if (
         !buffer ||
         !this.ctx ||
@@ -257,7 +274,7 @@ export class AudioMixer {
       source.connect(this.buses.music);
       source.start();
       this.musicSource = source;
-    });
+    })();
   }
 
   getDebugLog(): readonly AudioDebugEntry[] {
@@ -268,6 +285,10 @@ export class AudioMixer {
     handle: number,
     decision: AdmissionDecision,
     loop: boolean,
+    eventId: string,
+    configuredSounds: readonly string[],
+    isRandom: boolean,
+    forceSynth: boolean,
   ): void {
     const ctx = this.ensureContext();
     if (!ctx || !this.buses) {
@@ -276,7 +297,30 @@ export class AudioMixer {
       return;
     }
 
-    void this.loader.getBuffer(ctx, decision.soundId).then((buffer) => {
+    void (async () => {
+      let soundId = decision.soundId;
+      if (!forceSynth && !this.loader.isProbeDone()) {
+        await this.loader.initReferencePack();
+        const lateSounds = this.loader.resolveEventSounds(
+          eventId,
+          configuredSounds,
+          false,
+        );
+        if (lateSounds.length === 0) {
+          this.director.releaseChannel(handle);
+          return;
+        }
+        const idx = pickVariantIndex(
+          lateSounds.length,
+          isRandom,
+          this.lastResolvedVariant.get(eventId),
+        );
+        this.lastResolvedVariant.set(eventId, idx);
+        soundId = lateSounds[idx] ?? soundId;
+        decision.soundId = soundId;
+      }
+
+      const buffer = await this.loader.getBuffer(ctx, soundId);
       if (!buffer || !this.ctx || !this.buses) {
         this.director.releaseChannel(handle);
         return;
