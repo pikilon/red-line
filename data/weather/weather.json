@@ -1,5 +1,4 @@
 {
-  "mapClimate": { "showcase": "snow" },
   "climates": {
     "snow": {
       "flakes": 5000,

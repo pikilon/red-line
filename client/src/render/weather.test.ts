@@ -8,21 +8,18 @@ import {
 } from "./weather";
 
 const none = new URLSearchParams();
+const snow = new URLSearchParams("weather=snow");
 
 describe("weather (spec 22)", () => {
-  it("AC-22-01: snow maps get the snow climate, others clear weather", () => {
-    expect(climateFor("showcase", none)).not.toBeNull();
-    expect(climateFor("first-line", none)).toBeNull();
-    expect(
-      climateFor("showcase", new URLSearchParams("weather=none")),
-    ).toBeNull();
-    expect(
-      climateFor("first-line", new URLSearchParams("weather=snow")),
-    ).not.toBeNull();
+  it("AC-22-01: snow is off unless the URL asks for it", () => {
+    expect(climateFor(none)).toBeNull();
+    expect(climateFor(new URLSearchParams("weather=none"))).toBeNull();
+    expect(climateFor(new URLSearchParams("weather=unknown"))).toBeNull();
+    expect(climateFor(snow)).not.toBeNull();
   });
 
   it("AC-22-02: ground cover grows with time up to maxCover", () => {
-    const climate = climateFor("showcase", none);
+    const climate = climateFor(snow);
     if (climate === null) throw new Error("no climate");
     expect(coverAfter(0, climate)).toBe(0);
     expect(coverAfter(climate.coverSeconds / 2, climate)).toBeCloseTo(

@@ -2,21 +2,24 @@
 
 ## 1. Behaviour
 
-* On a snow map, snow falls over the visible part of the map and the ground
+* On a snowy map, snow falls over the visible part of the map and the ground
   turns white in patches over time. Units and buildings are never recoloured.
+  Snow is off everywhere by default and is turned on per URL (see §2).
 * The effect is **visual only**: it lives in `client/src/render/weather.ts`,
   is not part of the simulation, the hash or the saves, and uses no game RNG.
 * The game menu has a **Snow: on / off** button (setting `weather`, absent =
   on) for slow machines; switching it hides the whole effect live. The cover
   keeps its progress while hidden.
 
-## 2. Which maps are snowy
+## 2. Turning snow on
 
-* `data/weather/weather.json` → `mapClimate` maps a map id to a climate. Today
-  `showcase` is snowy; `first-line` stays clear.
-* URL overrides for trying it: `?weather=snow` (any map), `?weather=none`,
-  `?snow=<0..2>` density multiplier, `?cover=<0..1>` start with part of the
-  cover already settled.
+* Snow is **opt-in through the URL**, never tied to a map id: no map is snowy
+  by default, so demo saves and manual tests are clear unless asked otherwise.
+* `?weather=snow` turns it on on any map; no `weather` parameter (or
+  `?weather=none`) leaves the map clear. It combines with `?load=<id>`:
+  `?load=infantry-vs-armor&weather=snow`.
+* `?snow=<0..2>` density multiplier and `?cover=<0..1>` start with part of the
+  cover already settled; both only matter when snow is on.
 
 ## 3. Parameters (`data/weather/weather.json`, `climates.snow`)
 
@@ -58,7 +61,8 @@ maximum), `maxCover`, `coverOpacity`.
 
 ## 7. Acceptance criteria
 
-* AC-22-01..04 in `client/src/render/weather.test.ts`: climate by map and
-  URL override, cover growth, determinism, density clamp.
-* Manual: `?load=infantry-vs-armor` (showcase map) shows falling snow and the
-  ground whitening; menu → Snow: off removes it.
+* AC-22-01..04 in `client/src/render/weather.test.ts`: snow opt-in by URL
+  parameter, cover growth, determinism, density clamp.
+* Manual: `?load=infantry-vs-armor&weather=snow` shows falling snow and the
+  ground whitening; menu → Snow: off removes it, and the same URL without
+  `weather` stays clear.

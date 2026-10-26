@@ -35,22 +35,17 @@ export interface Climate {
 }
 
 const CLIMATES = weatherData.climates as Record<string, Climate>;
-const MAP_CLIMATE = weatherData.mapClimate as Record<string, string>;
 
 /** Ground cover sits under the fog plane (y 0.02) and above the grass. */
 const COVER_Y = 0.012;
 const COVER_NOISE_PERIOD = 48;
 const COVER_EDGE = 0.14;
 
-/** Climate of `mapId`, overridden by the `?weather` URL parameter
- *  (`none` or a climate name); null means clear weather (spec 22 §2). */
-export function climateFor(
-  mapId: string,
-  params: URLSearchParams,
-): Climate | null {
-  const override = params.get("weather");
-  const name = override ?? MAP_CLIMATE[mapId];
-  if (name === undefined || name === "none") return null;
+/** Climate named by the `?weather` URL parameter (`none` or a climate name);
+ *  null means clear weather, the default on every map (spec 22 §2). */
+export function climateFor(params: URLSearchParams): Climate | null {
+  const name = params.get("weather");
+  if (name === null || name === "none") return null;
   return CLIMATES[name] ?? null;
 }
 
