@@ -1,0 +1,2501 @@
+# Audio inventory (spec 25 §5.1, phase 2).
+#
+# One entry per sound event the game can play today, resolved from
+# data/audio/reference.yaml. `reference` is the Zero Hour event name we listen
+# to while tuning (names only, no EA audio). `brief` and `prompt` are written
+# for our own sounds, never copied or generated from the reference audio.
+#
+# status:
+#   silent       Zero Hour has no sound for this event; keep the silence.
+#   needs-script voice/EVA line: write the line in data/audio/lines/ first.
+#   todo         no brief yet.
+#   draft        brief and prompt written, pending listening review.
+#   approved     owner approved the brief by ear.
+#
+# Drafts (status: draft) were written by a local vision model from a
+# spectrogram plus the game context; review them by ear before approving.
+#
+# Regenerate the metadata with `node scripts/audio/inventory.mjs --write`;
+# drafts are added by `node scripts/audio/describe.mjs --write`.
+version: 1
+entries:
+  weapon.antiTank.fire:
+    category: weapon
+    kind: sfx
+    reference: MissileDefenderWeapon
+    variants: 3
+    seconds: 3.53
+    loop: false
+    status: draft
+    brief: A high-energy, explosive projectile launch characterized by a sudden burst of low-end power followed by a sharp, whistling dissipation. The sound should feel heavy and mechanical, conveying the massive force of a single-shot anti-armor discharge.
+    prompt: heavy mechanical missile launch, explosive low-frequency impact, sharp high-frequency projectile whistle, sudden attack with rapid decay, cinematic sound design, high fidelity, 1.2 seconds
+    tags:
+      - explosive
+      - projectile
+      - mechanical
+      - impact
+      - heavy
+  weapon.autocannon.fire:
+    category: weapon
+    kind: sfx
+    reference: GattlingTankWeapon
+    variants: 4
+    seconds: 4.6
+    loop: false
+    status: draft
+    brief: A high-velocity, mechanical burst of rapid-fire kinetic energy characterized by a dense, continuous stream of heavy impacts. The sound should feel aggressive and weighty, with a sharp initial punch followed by a sustained, textured roar of mechanical cycling.
+    prompt: heavy kinetic autocannon burst, rapid high-caliber mechanical firing, dense percussive texture, aggressive metallic impact, sustained energy, cinematic sound design, 1.15 seconds
+    tags:
+      - mechanical
+      - kinetic
+      - rapid-fire
+      - heavy
+      - impact
+  weapon.backblast.fire:
+    category: weapon
+    kind: sfx
+    reference: TankHunterWeapon
+    variants: 4
+    seconds: 4.78
+    loop: false
+    status: draft
+    brief: A powerful, high-energy explosive blast characterized by a sudden, intense burst of low-frequency energy followed by a gritty, textured dissipation. The sound should feel heavy and impactful, conveying the violent release of pressure from a large weapon.
+    prompt: heavy explosive backblast, sudden high-energy impact, low-frequency thud, gritty granular texture, rapid decay, cinematic sound design, 1.2 seconds
+    tags:
+      - explosion
+      - impact
+      - heavy
+      - weapon
+      - mechanical
+  weapon.cannon.fire:
+    category: weapon
+    kind: sfx
+    reference: CrusaderTankWeapon
+    variants: 3
+    seconds: 5.56
+    loop: false
+    status: draft
+    brief: A heavy, high-energy kinetic blast characterized by a massive low-end punch followed by a textured, dissipating mechanical rumble. The sound should feel weighty and impactful with a sharp initial transient.
+    prompt: heavy kinetic cannon blast, massive low-frequency impact, mechanical debris texture, sharp transient attack, long decaying rumble, cinematic sci-fi weapon fire, high energy, 1.85 seconds
+    tags:
+      - cannon
+      - impact
+      - mechanical
+      - heavy
+      - sci-fi
+  weapon.highExplosive.fire:
+    category: weapon
+    kind: sfx
+    reference: TomahawkWeapon
+    variants: 1
+    seconds: 3.19
+    loop: false
+    status: draft
+    brief: A massive, high-energy explosive launch characterized by a sudden, violent burst of low-frequency power followed by a long, dissipating roar. The sound should feel heavy and impactful, conveying the immense force of a large-scale projectile ignition.
+    prompt: massive heavy explosive launch, sudden high-energy burst, deep sub-bass impact, roaring combustion tail, cinematic sound design, high fidelity, 3.2 seconds
+    tags:
+      - explosion
+      - launch
+      - heavy
+      - impact
+      - cinematic
+  weapon.muzzle.fire:
+    category: weapon
+    kind: sfx
+    reference: RangerWeapon
+    variants: 5
+    seconds: 5.17
+    loop: false
+    status: draft
+    brief: A sharp, high-velocity kinetic discharge characterized by a sudden burst of energy and a rapid, percussive decay. The sound should feel punchy and precise, suitable for a single-shot projectile weapon.
+    prompt: high-velocity kinetic impact, sharp transient attack, mechanical discharge, punchy percussive burst, clean high-frequency snap, cinematic sound design, 1 second
+    tags:
+      - kinetic
+      - impact
+      - mechanical
+      - sharp
+      - projectile
+  weapon.rocketLaunch.fire:
+    category: weapon
+    kind: sfx
+    reference: TomahawkWeapon
+    variants: 1
+    seconds: 3.19
+    loop: false
+    status: draft
+    brief: A powerful, high-energy ballistic launch characterized by a massive low-end roar and a sharp, explosive initial transient. The sound should feel heavy and mechanical, transitioning from an intense burst into a sustained, turbulent atmospheric rumble.
+    prompt: heavy ballistic missile launch, explosive ignition transient, massive low-frequency roar, turbulent jet engine combustion, high-pressure air release, cinematic impact, 3.2 seconds
+    tags:
+      - explosive
+      - mechanical
+      - heavy
+      - ballistic
+      - rumble
+  weapon.ru-2a42.fire:
+    category: weapon
+    kind: sfx
+    reference: GattlingTankWeapon
+    variants: 4
+    seconds: 4.6
+    loop: false
+    status: draft
+    brief: A high-intensity, rapid-fire burst of mechanical kinetic energy characterized by a dense wall of sound and heavy low-end impact. The texture should feel gritty and continuous, simulating a high-rate-of-fire heavy rotary cannon.
+    prompt: heavy mechanical rotary cannon burst, rapid kinetic impacts, dense textured machine gun fire, aggressive low-end thud, high-frequency metallic grit, continuous rapid firing, 1.15 seconds
+    tags:
+      - mechanical
+      - kinetic
+      - rapid-fire
+      - heavy
+      - weapon
+  weapon.ru-2a46m.fire:
+    category: weapon
+    kind: sfx
+    reference: BattlemasterTankWeapon
+    variants: 3
+    seconds: 5.25
+    loop: false
+    status: draft
+    brief: A heavy, high-impact kinetic blast characterized by a massive low-end punch and a sharp, aggressive transient. The sound should feel weighty and mechanical, conveying the immense power of a large-caliber tank cannon.
+    prompt: heavy tank cannon blast, massive low-frequency impact, sharp mechanical transient, explosive energy, cinematic warfare sound design, high fidelity, 1.75 seconds
+    tags:
+      - explosive
+      - mechanical
+      - heavy
+      - impact
+      - kinetic
+  weapon.ru-ak74.fire:
+    category: weapon
+    kind: sfx
+    reference: RedGuardWeapon
+    variants: 4
+    seconds: 5.61
+    loop: false
+    status: draft
+    brief: A rapid-fire burst of high-energy mechanical percussion and sharp, percussive transients. The sound should feel punchy and aggressive with a consistent rhythmic texture.
+    prompt: rapid mechanical bursts, sharp percussive transients, high-energy impact, aggressive rhythmic texture, cinematic sound design, 1.4 seconds
+    tags:
+      - percussive
+      - mechanical
+      - rapid
+      - aggressive
+      - impact
+  weapon.ru-kornet-emplacement.fire:
+    category: weapon
+    kind: sfx
+    reference: GattlingCannonWeapon
+    variants: 4
+    seconds: 4.6
+    loop: false
+    status: draft
+    brief: A heavy, high-velocity kinetic discharge characterized by a sudden burst of intense energy followed by a rapid mechanical dissipation. The sound should feel impactful and localized, conveying the power of a large-caliber automated weapon firing.
+    prompt: heavy mechanical kinetic discharge, high-energy explosive burst, rapid transient attack, metallic resonance, short decay, cinematic impact, 1.15 seconds
+    tags:
+      - kinetic
+      - mechanical
+      - impact
+      - heavy
+      - weapon
+  weapon.ru-kpvt.fire:
+    category: weapon
+    kind: sfx
+    reference: GattlingTankWeapon
+    variants: 4
+    seconds: 4.6
+    loop: false
+    status: draft
+    brief: A heavy, high-velocity mechanical barrage characterized by a rapid succession of intense energy bursts. The sound should feel dense and aggressive, featuring a sharp initial impact followed by a sustained, vibrating mechanical roar.
+    prompt: rapid heavy mechanical firing sequence, high-energy kinetic bursts, intense rhythmic vibration, aggressive industrial texture, sharp attack with sustained mechanical decay, 1.15 seconds
+    tags:
+      - mechanical
+      - rapid-fire
+      - heavy
+      - industrial
+      - kinetic
+  weapon.ru-rpg7.fire:
+    category: weapon
+    kind: sfx
+    reference: TankHunterWeapon
+    variants: 4
+    seconds: 4.78
+    loop: false
+    status: draft
+    brief: A heavy, explosive projectile launch characterized by a sudden high-energy burst followed by a rapid, gritty dissipation. The sound should feel impactful and singular, emphasizing a violent release of pressure.
+    prompt: heavy explosive projectile launch, sudden high-energy impact, gritty textured decay, mechanical blast, cinematic punchy transient, 1.2 seconds
+    tags:
+      - explosive
+      - impact
+      - mechanical
+      - projectile
+      - heavy
+  weapon.ru-tos-thermobaric.fire:
+    category: weapon
+    kind: sfx
+    reference: InfernoCannonWeapon
+    variants: 3
+    seconds: 5.05
+    loop: false
+    status: draft
+    brief: A massive, high-energy thermal explosion characterized by a sudden, violent burst of low-end pressure followed by a sustained, roaring dissipation. The sound should feel heavy and devastating, conveying an immense release of heat and pressure.
+    prompt: massive thermal explosion, sudden high-pressure blast, deep sub-bass impact, sustained white noise roar, intense heat dissipation, cinematic sound design, high fidelity, 1.7 seconds
+    tags:
+      - explosion
+      - thermal
+      - impact
+      - heavy
+      - cinematic
+  weapon.smallArms.fire:
+    category: weapon
+    kind: sfx
+    reference: RangerWeapon
+    variants: 5
+    seconds: 5.17
+    loop: false
+    status: draft
+    brief: A sharp, punchy burst of rapid-fire kinetic energy characterized by a high-frequency crack and immediate decay. The sound should feel lightweight yet aggressive, suitable for small-caliber rapid discharge.
+    prompt: mechanical kinetic impact, high-frequency transient crack, rapid small arms burst, sharp attack, short decay, dry production, 1 second
+    tags:
+      - mechanical
+      - impact
+      - kinetic
+      - sharp
+      - rapid
+  weapon.softLaunch.fire:
+    category: weapon
+    kind: sfx
+    reference: MissileDefenderWeapon
+    variants: 3
+    seconds: 3.53
+    loop: false
+    status: draft
+    brief: A heavy, high-energy ignition burst that starts with a sharp, explosive transient and transitions into a dense, roaring thermal wash. The sound should feel powerful and pressurized, conveying the sudden release of massive propellant energy.
+    prompt: heavy missile ignition, explosive transient, high-pressure combustion roar, dense white noise texture, cinematic mechanical launch, 1.2 seconds
+    tags:
+      - explosion
+      - combustion
+      - launch
+      - mechanical
+      - heavy
+  weapon.thermobaric.fire:
+    category: weapon
+    kind: sfx
+    reference: InfernoCannonWeapon
+    variants: 3
+    seconds: 5.05
+    loop: false
+    status: draft
+    brief: A massive, high-energy explosive blast characterized by a sudden, violent pressure wave followed by a sustained, roaring thermal dissipation. The sound should feel heavy and overwhelming, capturing the sensation of an intense atmospheric ignition.
+    prompt: cinematic heavy explosion, sudden high-pressure impact, sustained roaring thermal combustion, low-frequency rumble, intense white noise dissipation, aggressive transient, 1.68 seconds
+    tags:
+      - explosion
+      - thermal
+      - heavy
+      - impact
+      - cinematic
+  weapon.ua-bushmaster.fire:
+    category: weapon
+    kind: sfx
+    reference: PaladinTankWeapon
+    variants: 3
+    seconds: 2.84
+    loop: false
+    status: draft
+    brief: A heavy, high-velocity kinetic discharge characterized by a sharp initial crack followed by a resonant mechanical thud. The sound should feel powerful and impactful, conveying the weight of a large-caliber autocannon.
+    prompt: heavy kinetic cannon blast, sharp metallic impact, high-velocity projectile discharge, mechanical recoil, punchy transient, cinematic low-end thump, 0.95 seconds
+    tags:
+      - cannon
+      - impact
+      - mechanical
+      - kinetic
+      - weapon
+  weapon.ua-gmlrs.fire:
+    category: weapon
+    kind: sfx
+    reference: TomahawkWeapon
+    variants: 1
+    seconds: 3.19
+    loop: false
+    status: draft
+    brief: A massive, high-energy explosive launch characterized by a violent low-frequency burst followed by a sustained, roaring thermal dissipation. The sound should feel heavy and impactful, conveying the sudden release of immense propulsion energy.
+    prompt: massive rocket engine ignition, heavy low-end thud, intense white noise roar, high-energy combustion, cinematic explosion, long tail decay, 3.2 seconds
+    tags:
+      - explosion
+      - rocket
+      - launch
+      - heavy
+      - cinematic
+  weapon.ua-kozak-hmg.fire:
+    category: weapon
+    kind: sfx
+    reference: HumveeWeapon
+    variants: 4
+    seconds: 4.37
+    loop: false
+    status: draft
+    brief: A heavy, mechanical rapid-fire sequence featuring high-energy percussive bursts and a dense mid-range texture. The sound should feel punchy and aggressive with sharp, rhythmic transients.
+    prompt: heavy mechanical rapid fire, high energy percussive bursts, dense mid-range texture, sharp rhythmic transients, cinematic weapon foley, 1.09 seconds
+    tags:
+      - mechanical
+      - percussive
+      - rapid-fire
+      - aggressive
+      - weapon
+  weapon.ua-rh120.fire:
+    category: weapon
+    kind: sfx
+    reference: CrusaderTankWeapon
+    variants: 3
+    seconds: 5.56
+    loop: false
+    status: draft
+    brief: A heavy, high-velocity kinetic discharge with a sharp initial impact followed by a resonant, mechanical rumble. The sound should feel massive and impactful, conveying the power of a large-caliber tank cannon.
+    prompt: heavy kinetic artillery blast, massive mechanical thud, high-velocity projectile discharge, sharp transient attack, deep low-frequency resonance, cinematic impact, industrial texture, 1.85 seconds
+    tags:
+      - cannon
+      - impact
+      - mechanical
+      - heavy
+      - kinetic
+  weapon.ua-rifle.fire:
+    category: weapon
+    kind: sfx
+    reference: RangerWeapon
+    variants: 5
+    seconds: 5.17
+    loop: false
+    status: draft
+    brief: A sharp, high-energy kinetic discharge featuring a punchy transient followed by a rapid mechanical decay. The sound should feel precise and impactful, suitable for a single-shot projectile weapon.
+    prompt: high-velocity kinetic impact, sharp mechanical transient, rapid energy decay, punchy percussive burst, clean cinematic foley, 1 second
+    tags:
+      - kinetic
+      - impact
+      - mechanical
+      - sharp
+      - projectile
+  weapon.ua-stugna-emplacement.fire:
+    category: weapon
+    kind: sfx
+    reference: PatriotBatteryWeapon
+    variants: 4
+    seconds: 4.92
+    loop: false
+    status: draft
+    brief: A heavy, high-energy kinetic discharge characterized by a massive low-end thump followed by a sharp, aggressive mid-range crack and a lingering mechanical resonance. The sound should feel powerful and impactful, conveying the scale of a large-scale stationary artillery strike.
+    prompt: heavy kinetic artillery blast, massive low-frequency impact, sharp metallic crack, explosive transient, mechanical debris tail, cinematic high-fidelity, 1.2 seconds
+    tags:
+      - explosion
+      - artillery
+      - impact
+      - mechanical
+      - heavy
+  weapon.ua-stugna-p.fire:
+    category: weapon
+    kind: sfx
+    reference: MissileDefenderWeapon
+    variants: 3
+    seconds: 3.53
+    loop: false
+    status: draft
+    brief: A high-energy, explosive missile launch characterized by a sudden burst of low-end power followed by a sharp, whistling projectile streak. The sound should feel heavy and mechanical with a rapid decay.
+    prompt: heavy missile launch, explosive ignition, sudden high-energy burst, low-frequency thump, sharp whistling projectile trail, cinematic impact, clean production, 1.2 seconds
+    tags:
+      - explosion
+      - missile
+      - launch
+      - impact
+      - mechanical
+  impact.antiTank:
+    category: impact
+    kind: sfx
+    reference: VehicleImpactHeavy
+    variants: 9
+    seconds: 11.97
+    loop: false
+    status: draft
+    brief: A massive, high-energy kinetic impact featuring a sudden burst of low-frequency power followed by a gritty, metallic resonance. The sound should convey the crushing weight of heavy armor being struck by a high-velocity projectile.
+    prompt: heavy metal impact, massive kinetic energy, deep sub-bass thud, sharp transient attack, gritty mechanical debris, resonant steel ringing, high-fidelity, cinematic impact, 1.3 seconds
+    tags:
+      - impact
+      - heavy
+      - metallic
+      - kinetic
+      - explosion
+  impact.autocannon:
+    category: impact
+    kind: sfx
+    reference: VehicleImpactHeavy
+    variants: 9
+    seconds: 11.97
+    loop: false
+    status: draft
+    brief: A massive, high-energy kinetic impact characterized by a sudden burst of low-end power followed by a gritty, mechanical resonance. The sound should feel heavy and punishing, conveying the weight of large-caliber projectiles striking armored plating.
+    prompt: heavy metal impact, massive kinetic strike, explosive low-end transient, mechanical debris scattering, gritty texture, high energy, cinematic impact, 1.3 seconds
+    tags:
+      - impact
+      - heavy
+      - mechanical
+      - kinetic
+      - explosion
+  impact.heavy:
+    category: impact
+    kind: sfx
+    reference: VehicleImpactHeavy
+    variants: 9
+    seconds: 11.97
+    loop: false
+    status: draft
+    brief: A massive, crushing collision of heavy metal and debris with a violent initial transient followed by a dense, low-frequency rumble. The sound should convey immense weight and structural destruction through thick, textured layers of grinding metal.
+    prompt: heavy metallic collision, massive crushing impact, deep sub-bass thud, debris scattering, violent transient, gritty mechanical texture, cinematic destruction, 1.33 seconds
+    tags:
+      - impact
+      - metallic
+      - heavy
+      - destruction
+      - mechanical
+  impact.highExplosive:
+    category: impact
+    kind: sfx
+    reference: ExplosionDirt
+    variants: 3
+    seconds: 5.88
+    loop: false
+    status: draft
+    brief: A heavy, earth-shattering detonation that emphasizes a massive low-end thump followed by the gritty, granular scattering of debris and dirt. The sound should feel visceral and localized, conveying a sudden release of immense pressure into the ground.
+    prompt: heavy explosive impact, deep sub-bass thud, gritty soil and dirt debris scattering, high-energy transient, organic earth textures, cinematic impact, 2 seconds
+    tags:
+      - explosion
+      - impact
+      - dirt
+      - debris
+      - heavy
+  impact.light:
+    category: impact
+    kind: sfx
+    reference: VehicleImpactLight
+    variants: 9
+    seconds: 8.6
+    loop: false
+    status: draft
+    brief: A sharp, high-energy metallic crack followed by a brief, resonant ringing that dissipates quickly. It should feel like a small kinetic object striking a hollow metal surface with high velocity.
+    prompt: high-velocity metallic impact, sharp transient, resonant steel ping, short decay, cinematic foley, high frequency energy, 1 second
+    tags:
+      - impact
+      - metallic
+      - sharp
+      - kinetic
+      - foley
+  impact.smallArms:
+    category: impact
+    kind: sfx
+    reference: VehicleImpactLight
+    variants: 9
+    seconds: 8.6
+    loop: false
+    status: draft
+    brief: A sharp, high-energy kinetic impact featuring a sudden burst of metallic debris and low-end thud. The sound should feel lightweight but punchy, conveying a projectile striking a thin metal surface.
+    prompt: sharp metallic impact, high-frequency debris scatter, sudden transient attack, short decay, mechanical clatter, cinematic foley, 0.96s
+    tags:
+      - impact
+      - metallic
+      - kinetic
+      - debris
+      - short
+  impact.thermobaric:
+    category: impact
+    kind: sfx
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: draft
+    brief: A massive, high-pressure atmospheric blast characterized by an instantaneous peak followed by a heavy, rolling pressure wave. The sound should feel suffocating and dense, emphasizing the sudden displacement of air rather than a metallic ringing.
+    prompt: massive thermobaric explosion, sudden high-pressure air blast, heavy low-end thud, intense vacuum suction effect, rolling pressure wave, cinematic impact, high fidelity, 2.13 seconds
+    tags:
+      - explosion
+      - impact
+      - pressure
+      - cinematic
+      - heavy
+  explosion.large:
+    category: explosion
+    kind: sfx
+    reference: ExplosionArtilleryBarrage
+    variants: 7
+    seconds: 37.78
+    loop: false
+    status: draft
+    brief: A massive, sustained artillery impact characterized by a violent low-frequency burst followed by a long, rumbling decay of debris and earth shifting. The sound should feel heavy and cinematic, emphasizing the sheer scale of a large-scale bombardment.
+    prompt: massive artillery impact, heavy low-end thud, sustained earth rumbling, debris scattering, cinematic explosion, high energy transient, long decay, 5.4 seconds
+    tags:
+      - explosion
+      - heavy
+      - rumble
+      - impact
+      - cinematic
+  explosion.medium:
+    category: explosion
+    kind: sfx
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: draft
+    brief: A heavy, impactful mid-sized blast characterized by a sharp initial crack followed by a dense, rumbling debris fall. The sound should feel weighty and localized, providing clear feedback for medium-scale destruction.
+    prompt: medium explosive blast, sharp transient impact, heavy low-end rumble, crumbling debris texture, cinematic impact, high fidelity, 2.13 seconds
+    tags:
+      - explosion
+      - impact
+      - debris
+      - rumble
+      - cinematic
+  explosion.small:
+    category: explosion
+    kind: sfx
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: draft
+    brief: A sharp, punchy burst of energy that transitions into a gritty, crackling dissipation. It should feel compact and impactful without being overwhelming.
+    prompt: small high-energy burst, sharp transient attack, gritty granular texture, low-end thump followed by crackling debris, cinematic foley, 2.13 seconds
+    tags:
+      - impact
+      - crackling
+      - debris
+      - short
+      - explosive
+  move.foot:
+    category: move
+    kind: sfx
+    reference: NoSound
+    variants: 0
+    seconds: 0
+    loop: false
+    status: silent
+  move.ru-bmp-2.start:
+    category: move
+    kind: sfx
+    reference: TroopCrawlerMoveStart
+    variants: 4
+    seconds: 13.78
+    loop: false
+    status: draft
+    brief: A heavy mechanical surge featuring a deep, low-frequency engine roar that builds in intensity as a large armored vehicle begins to move. The sound should capture the grinding of heavy treads and the sudden increase in mechanical torque.
+    prompt: heavy armored vehicle engine ignition, low-frequency mechanical rumble, grinding metal treads, accelerating diesel roar, industrial grit, cinematic sound design, 3.5 seconds
+    tags:
+      - mechanical
+      - engine
+      - heavy
+      - acceleration
+      - industrial
+  move.ru-brdm-scout.start:
+    category: move
+    kind: sfx
+    reference: GattlingTankMoveStart
+    variants: 4
+    seconds: 12.53
+    loop: false
+    status: draft
+    brief: A heavy mechanical startup featuring a low-frequency engine rumble that builds into a gritty, high-energy diesel roar. The sound should convey the sudden surge of power as a heavy armored vehicle begins to accelerate.
+    prompt: heavy diesel engine ignition, mechanical gear engagement, low-end rumble transitioning to aggressive mid-range roar, gritty industrial texture, sudden attack with sustained power, 3 seconds
+    tags:
+      - mechanical
+      - engine
+      - diesel
+      - industrial
+      - acceleration
+  move.ru-dozer.start:
+    category: move
+    kind: sfx
+    reference: DozerChinaMoveStart
+    variants: 4
+    seconds: 13.78
+    loop: false
+    status: draft
+    brief: A heavy industrial engine ignition and initial acceleration sequence for a large construction-style vehicle. The sound should feature a low-frequency rumble that builds in intensity with mechanical grinding and heavy diesel combustion textures.
+    prompt: heavy industrial diesel engine startup, low-frequency mechanical rumble, grinding gears, increasing engine RPM, gritty texture, cinematic sound design, 3.5 seconds
+    tags:
+      - industrial
+      - engine
+      - mechanical
+      - heavy
+      - acceleration
+  move.ru-supply-truck.start:
+    category: move
+    kind: sfx
+    reference: SupplyTruckMoveStart
+    variants: 3
+    seconds: 6.91
+    loop: false
+    status: draft
+    brief: A heavy diesel engine ignition followed by a low-frequency rumble as a large transport vehicle begins to accelerate. The sound should feature a gritty, mechanical buildup with increasing engine strain and rhythmic vibration.
+    prompt: heavy diesel truck engine startup, low-frequency mechanical rumble, accelerating combustion engine, gritty industrial texture, increasing pitch and intensity, 2.3 seconds
+    tags:
+      - diesel
+      - engine
+      - acceleration
+      - mechanical
+      - industrial
+  move.ru-t-72b3.start:
+    category: move
+    kind: sfx
+    reference: BattleMasterTankMoveStart
+    variants: 4
+    seconds: 12.53
+    loop: false
+    status: draft
+    brief: A heavy, mechanical ignition sequence featuring a deep engine roar that builds in intensity. The sound should capture the sudden surge of power and grinding gears as a massive armored vehicle begins to move.
+    prompt: heavy diesel engine startup, mechanical gear grinding, low-frequency rumble, sudden power surge, industrial machinery, cinematic impact, 3 seconds
+    tags:
+      - mechanical
+      - engine
+      - heavy
+      - industrial
+      - acceleration
+  move.ru-tos-1a.start:
+    category: move
+    kind: sfx
+    reference: InfernoCannonMoveStart
+    variants: 4
+    seconds: 12.76
+    loop: false
+    status: draft
+    brief: A heavy, mechanical ignition sequence featuring a low-frequency power surge and high-energy combustion roar. The sound should convey the massive weight of a heavy vehicle straining to overcome inertia.
+    prompt: heavy industrial engine ignition, deep mechanical rumble, high-energy combustion roar, sudden power surge, gritty metallic textures, cinematic low-end impact, 3.2 seconds
+    tags:
+      - mechanical
+      - engine
+      - heavy
+      - industrial
+      - ignition
+  move.tracked:
+    category: move
+    kind: sfx
+    reference: NoSound
+    variants: 0
+    seconds: 0
+    loop: false
+    status: silent
+  move.tracks:
+    category: move
+    kind: sfx
+    reference: NoSound
+    variants: 0
+    seconds: 0
+    loop: false
+    status: silent
+  move.ua-bradley.start:
+    category: move
+    kind: sfx
+    reference: PaladinTankMoveStart
+    variants: 7
+    seconds: 26.07
+    loop: false
+    status: draft
+    brief: A heavy mechanical ignition followed by a powerful, low-frequency engine roar that builds in intensity. The sound should convey the massive weight and sudden torque of a heavy armored vehicle accelerating.
+    prompt: heavy diesel engine startup, low-frequency mechanical rumble, hydraulic hiss, increasing engine RPM, cinematic industrial texture, high energy, 3.7 seconds
+    tags:
+      - mechanical
+      - engine
+      - heavy
+      - acceleration
+      - industrial
+  move.ua-dozer.start:
+    category: move
+    kind: sfx
+    reference: DozerUSAMoveStart
+    variants: 4
+    seconds: 13.78
+    loop: false
+    status: draft
+    brief: A heavy industrial diesel engine ignition and initial torque surge, characterized by low-frequency rumble and mechanical grinding. The sound should convey the massive weight of a construction vehicle straining to move from a standstill.
+    prompt: heavy diesel engine startup, low-frequency mechanical rumble, grinding metal gears, high torque acceleration, industrial machinery, gritty texture, 3.5 seconds
+    tags:
+      - diesel
+      - engine
+      - mechanical
+      - heavy
+      - industrial
+  move.ua-himars.start:
+    category: move
+    kind: sfx
+    reference: TomahawkMoveStart
+    variants: 3
+    seconds: 8.42
+    loop: false
+    status: draft
+    brief: A heavy, mechanical surge of power characterized by a low-frequency rumble that builds into a gritty, high-energy roar. The sound should capture the intense moment of heavy machinery engaging and accelerating.
+    prompt: heavy diesel engine ignition, mechanical torque surge, low-end rumble transitioning to high-frequency grit, rhythmic combustion pulses, cinematic industrial texture, 2.8 seconds
+    tags:
+      - mechanical
+      - engine
+      - acceleration
+      - industrial
+      - heavy
+  move.ua-kozak-scout.start:
+    category: move
+    kind: sfx
+    reference: HumveeMoveStart
+    variants: 5
+    seconds: 16.41
+    loop: false
+    status: draft
+    brief: A heavy diesel engine ignition and rapid acceleration sequence for a light tactical vehicle. The sound should feature a low-frequency rumble that builds in intensity and mechanical grit as the engine revs up.
+    prompt: heavy diesel engine startup, rapid RPM increase, mechanical grinding and low-end rumble, aggressive acceleration, cinematic foley, high fidelity, 3.28 seconds
+    tags:
+      - engine
+      - acceleration
+      - diesel
+      - mechanical
+      - vehicle
+  move.ua-leopard-2a4.start:
+    category: move
+    kind: sfx
+    reference: CrusaderTankMoveStart
+    variants: 4
+    seconds: 15.2
+    loop: false
+    status: draft
+    brief: A heavy diesel engine ignition followed by a sudden surge of mechanical torque and low-frequency rumble. The sound should capture the visceral power of a large armored vehicle straining to move from a standstill.
+    prompt: heavy diesel engine startup, mechanical torque surge, low-frequency rumble, gritty industrial texture, sudden attack with sustained power, high fidelity, 3.8 seconds
+    tags:
+      - diesel
+      - engine
+      - mechanical
+      - heavy
+      - vehicle
+  move.ua-supply-truck.start:
+    category: move
+    kind: sfx
+    reference: SupplyTruckMoveStart
+    variants: 3
+    seconds: 6.91
+    loop: false
+    status: draft
+    brief: A heavy diesel engine ignition followed by a low-frequency rumble that builds in intensity as the vehicle begins to roll. The sound should capture the mechanical strain and guttural vibration of a large transport truck accelerating from a standstill.
+    prompt: heavy diesel engine startup, low-end mechanical rumble, increasing RPM, guttural combustion, gritty industrial texture, cinematic vehicle acceleration, 2.3 seconds
+    tags:
+      - diesel
+      - engine
+      - acceleration
+      - mechanical
+      - industrial
+  move.wheeled:
+    category: move
+    kind: sfx
+    reference: NoSound
+    variants: 0
+    seconds: 0
+    loop: false
+    status: silent
+  vehicle.damage:
+    category: vehicle
+    kind: sfx
+    reference: VehicleDamagedState
+    variants: 7
+    seconds: 13.33
+    loop: false
+    status: draft
+    brief: A heavy, metallic impact followed by the chaotic grinding of twisted steel and internal mechanical failure. The sound should convey significant structural damage with a gritty, high-energy texture.
+    prompt: heavy metallic impact, screeching twisted metal, mechanical grinding, debris scattering, harsh industrial textures, high energy, cinematic sound design, 1.9 seconds
+    tags:
+      - impact
+      - metal
+      - mechanical
+      - destruction
+      - crunchy
+  building.complete:
+    category: building
+    kind: sfx
+    reference: DozerUSAVoiceBuildComplete
+    variants: 3
+    seconds: 3.74
+    loop: false
+    status: draft
+    brief: A heavy mechanical sequence featuring a deep hydraulic hiss followed by a resonant metallic clunk and a low-frequency power hum. The sound should convey the satisfying conclusion of a large industrial construction process.
+    prompt: heavy industrial machinery, hydraulic release, deep metallic impact, low-frequency power surge, mechanical completion, cinematic foley, 1.25 seconds
+    tags:
+      - mechanical
+      - industrial
+      - impact
+      - hydraulic
+      - heavy
+  building.construct:
+    category: building
+    kind: sfx
+    reference: UnderConstructionLoop
+    variants: 8
+    seconds: 18.5
+    loop: true
+    status: draft
+    brief: A rhythmic industrial loop featuring heavy mechanical clanking, metallic grinding, and high-frequency sparks to signify ongoing structural assembly.
+    prompt: heavy industrial machinery, rhythmic metallic clanking and grinding, mechanical construction sounds, high-frequency electrical sparks, repetitive loop, cinematic foley, 2.31s
+    tags:
+      - mechanical
+      - industrial
+      - construction
+      - metallic
+      - rhythmic
+  building.damage:
+    category: building
+    kind: sfx
+    reference: BuildingDamage
+    variants: 8
+    seconds: 10.07
+    loop: false
+    status: draft
+    brief: A heavy, structural impact sound featuring crumbling masonry and deep metallic groans. It should convey the sensation of a large concrete edifice fracturing under intense pressure.
+    prompt: heavy structural collapse, crumbling concrete debris, deep metallic groaning, low-frequency impact, gritty texture, cinematic destruction, 1.26 seconds
+    tags:
+      - destruction
+      - impact
+      - debris
+      - mechanical
+      - heavy
+  building.damage.critical:
+    category: building
+    kind: sfx
+    reference: BuildingDestroy
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: draft
+    brief: A massive structural collapse featuring heavy, low-frequency impacts followed by the cascading sound of falling debris and settling dust. The sequence should feel catastrophic, ending with a lingering metallic groan.
+    prompt: heavy industrial structural collapse, massive concrete impact, cascading metal debris, deep sub-bass thuds, gritty mechanical grinding, cinematic destruction, high fidelity, 2.13 seconds
+    tags:
+      - destruction
+      - impact
+      - industrial
+      - debris
+      - collapse
+  building.damage.heavy:
+    category: building
+    kind: sfx
+    reference: BuildingDamagedStateLight
+    variants: 7
+    seconds: 13.33
+    loop: false
+    status: draft
+    brief: A sequence of heavy, structural collapses featuring deep low-end thuds followed by the gritty crunch of crumbling masonry and falling debris. The sound should convey massive weight and the catastrophic failure of a large reinforced structure.
+    prompt: heavy structural collapse, deep bass impacts, crumbling concrete and stone debris, gritty mechanical crunching, cinematic destruction, high energy, 1.9 seconds
+    tags:
+      - destruction
+      - impact
+      - debris
+      - structural
+      - heavy
+  building.die:
+    category: building
+    kind: sfx
+    reference: BuildingDie
+    variants: 7
+    seconds: 18.31
+    loop: false
+    status: draft
+    brief: A heavy structural collapse featuring the grinding of twisted metal and the deep, resonant thud of massive debris hitting the ground. The sound should convey a sense of catastrophic mechanical failure and crumbling masonry.
+    prompt: heavy industrial structural collapse, grinding metal screeching, deep bass impact thuds, crumbling concrete debris, cinematic destruction, high energy, 2.6 seconds
+    tags:
+      - destruction
+      - mechanical
+      - impact
+      - debris
+      - industrial
+  building.place:
+    category: building
+    kind: sfx
+    reference: PlaceBuilding
+    variants: 1
+    seconds: 3.51
+    loop: false
+    status: draft
+    brief: A heavy mechanical sequence involving deep structural thuds, grinding metal gears, and a resonant hydraulic hiss to signify the deployment of a large structure.
+    prompt: heavy industrial construction, deep mechanical thuds, grinding metal textures, hydraulic pressure release, rhythmic structural assembly, cinematic low-end impact, high fidelity, 3.5 seconds
+    tags:
+      - mechanical
+      - industrial
+      - construction
+      - heavy
+      - impact
+  building.select.barracks.russia:
+    category: building
+    kind: sfx
+    reference: BarracksChinaSelect
+    variants: 1
+    seconds: 4.11
+    loop: false
+    status: draft
+    brief: A heavy industrial mechanical activation sound featuring deep low-end thuds and rhythmic metallic clanking. It should convey the sense of large structural components locking into place or heavy machinery powering up.
+    prompt: heavy industrial mechanical activation, deep low-frequency hydraulic thuds, rhythmic metallic clanking and grinding, heavy structural locking mechanism, cinematic sound design, high impact, 4 seconds
+    tags:
+      - industrial
+      - mechanical
+      - heavy
+      - metallic
+      - construction
+  building.select.barracks.ukraine:
+    category: building
+    kind: sfx
+    reference: BarracksUSASelect
+    variants: 1
+    seconds: 1.99
+    loop: false
+    status: draft
+    brief: A heavy mechanical activation sound featuring a low-frequency thud followed by rising electrical hums and metallic clanking. It should convey the sense of a large structure powering up or being engaged.
+    prompt: heavy industrial machinery power-up, deep mechanical thud, rising electrical hum, metallic clanking, cinematic impact, high fidelity, 2 seconds
+    tags:
+      - mechanical
+      - industrial
+      - power-up
+      - heavy
+      - metallic
+  building.select.factory.russia:
+    category: building
+    kind: sfx
+    reference: WarFactoryChinaSelect
+    variants: 1
+    seconds: 3.65
+    loop: false
+    status: draft
+    brief: A heavy industrial mechanical activation sound featuring deep hydraulic hisses and the grinding of massive steel gears. The sound should convey a sense of large-scale machinery powering up and locking into place.
+    prompt: heavy industrial machinery power-up, deep hydraulic hiss, grinding metal gears, mechanical clunks, low-frequency rumble, cinematic sound design, high fidelity, 3.65 seconds
+    tags:
+      - industrial
+      - mechanical
+      - heavy
+      - machinery
+      - metallic
+  building.select.factory.ukraine:
+    category: building
+    kind: sfx
+    reference: WarFactoryUSASelect
+    variants: 1
+    seconds: 3.42
+    loop: false
+    status: draft
+    brief: A heavy industrial mechanical sequence featuring deep metallic clangs and the whirring of large gears engaging. The sound should convey a sense of massive machinery powering up and locking into place.
+    prompt: heavy industrial machinery, deep metallic clanks, hydraulic hisses, rotating heavy gears, mechanical locking mechanism, cinematic impact, high fidelity, 3.42 seconds
+    tags:
+      - industrial
+      - mechanical
+      - metallic
+      - heavy
+      - machinery
+  building.select.hq.russia:
+    category: building
+    kind: sfx
+    reference: CommandCenterChinaSelect
+    variants: 1
+    seconds: 4.39
+    loop: false
+    status: draft
+    brief: A heavy, mechanical activation sequence featuring deep low-end hums and rhythmic hydraulic pressurized releases. The sound should convey the massive scale of a central command structure powering up or being engaged.
+    prompt: heavy industrial machinery activation, deep sub-bass drone, rhythmic hydraulic steam hisses, mechanical clunks, cinematic sci-fi tech, high fidelity, 4.4 seconds
+    tags:
+      - mechanical
+      - industrial
+      - sci-fi
+      - heavy
+      - tech
+  building.select.hq.ukraine:
+    category: building
+    kind: sfx
+    reference: CommandCenterUSASelect
+    variants: 1
+    seconds: 2.73
+    loop: false
+    status: draft
+    brief: A high-tech digital interface confirmation sound featuring sharp electronic chirps and a low-frequency mechanical hum. It should convey the activation of a major strategic hub through layered synthesized pulses.
+    prompt: high-tech digital UI confirmation, sharp electronic chirps, rhythmic synthetic pulses, low frequency mechanical hum, clean production, sci-fi interface, 2.7 seconds
+    tags:
+      - ui
+      - sci-fi
+      - digital
+      - electronic
+      - interface
+  ui.cashDown:
+    category: ui
+    kind: ui
+    reference: MoneyWithdraw
+    variants: 1
+    seconds: 0.15
+    loop: false
+    status: draft
+    brief: A high-frequency digital chirp with a sharp, percussive onset and a rapid, shimmering decay. It should feel like a clean, high-tech data confirmation or a quick electronic pulse.
+    prompt: digital UI notification, sharp transient, high-pitched sine sweep, electronic blip, clean futuristic texture, fast decay, 0.15s
+    tags:
+      - ui
+      - digital
+      - blip
+      - high-pitched
+      - short
+  ui.cashUp:
+    category: ui
+    kind: ui
+    reference: MoneyDeposited
+    variants: 1
+    seconds: 0.12
+    loop: false
+    status: draft
+    brief: A sharp, high-frequency digital chime that conveys a sense of rapid accumulation and success. It should feel clean, electronic, and instantaneous.
+    prompt: high-pitched digital UI notification, bright synthetic chime, rapid attack, shimmering electronic texture, clean production, 0.12s
+    tags:
+      - ui
+      - digital
+      - chime
+      - success
+      - short
+  ui.click:
+    category: ui
+    kind: ui
+    reference: GUIClick
+    variants: 1
+    seconds: 0.19
+    loop: false
+    status: draft
+    brief: A sharp, high-frequency digital transient with a clean, percussive snap. It should feel like a crisp electronic confirmation for a user interface interaction.
+    prompt: high-pitched digital click, sharp transient, electronic UI feedback, clean percussion, short decay, 0.2 seconds
+    tags:
+      - ui
+      - click
+      - digital
+      - sharp
+      - interface
+  ui.disabled:
+    category: ui
+    kind: ui
+    reference: BuildingDisabled
+    variants: 1
+    seconds: 2.96
+    loop: false
+    status: draft
+    brief: A low-frequency, digital error notification characterized by a heavy, rhythmic pulsing of static and descending electronic tones. It should convey a sense of system failure or an invalid command through a gritty, textured sonic decay.
+    prompt: low-frequency digital glitch, rhythmic pulsing static, descending electronic hum, heavy texture, dark cinematic UI feedback, 3 seconds
+    tags:
+      - glitch
+      - ui
+      - error
+      - digital
+      - low-frequency
+  ui.error:
+    category: ui
+    kind: ui
+    reference: NoCanDoSound
+    variants: 1
+    seconds: 0.19
+    loop: false
+    status: draft
+    brief: A sharp, digital glitch with a high-energy burst that quickly dissipates. It should feel like a sudden electronic error or a failed system command.
+    prompt: digital glitch, high-frequency burst, sharp attack, rapid decay, electronic error, short staccato, 0.2s
+    tags:
+      - ui
+      - glitch
+      - digital
+      - error
+      - staccato
+  ui.radarOff:
+    category: ui
+    kind: ui
+    reference: RadarOff
+    variants: 1
+    seconds: 1.36
+    loop: false
+    status: draft
+    brief: A high-tech electronic power-down sequence featuring a descending frequency sweep and a sudden loss of electrical hum. The sound should feel like a digital system shutting down or losing signal.
+    prompt: digital UI power-down, descending electronic pitch sweep, low-frequency hum fading into silence, high-tech glitchy texture, clean production, 1.4 seconds
+    tags:
+      - ui
+      - electronic
+      - descending
+      - digital
+      - shutdown
+  ui.radarOn:
+    category: ui
+    kind: ui
+    reference: RadarOn
+    variants: 1
+    seconds: 1.85
+    loop: false
+    status: draft
+    brief: A high-tech digital sweep that begins with a sharp, ascending frequency chirp followed by a sustained, low-energy electronic hum. The sound should feel like an interface powering up and stabilizing.
+    prompt: digital UI sweep, high-pitched ascending sine chirp transitioning into a steady low-frequency electronic drone, clean futuristic texture, sharp attack, 1.85 seconds
+    tags:
+      - ui
+      - digital
+      - sweep
+      - tech
+      - interface
+  ui.warning:
+    category: ui
+    kind: ui
+    reference: RadarNotifyUnderAttack
+    variants: 1
+    seconds: 0.63
+    loop: false
+    status: draft
+    brief: A high-priority digital alert featuring a rapid, ascending series of sharp electronic pulses that cut through the mix. The sound should feel urgent and synthetic, conveying an immediate tactical warning.
+    prompt: digital UI alert, rapid ascending sequence of sharp electronic staccato pulses, high-frequency synthetic chirps, urgent rhythmic pattern, clean production, 0.63 seconds
+    tags:
+      - ui
+      - alert
+      - digital
+      - synthetic
+      - urgent
+  ambient.snow:
+    category: ambient
+    kind: ambient
+    reference: AmbientWindCold
+    variants: 2
+    seconds: 10.85
+    loop: true
+    status: draft
+    brief: A continuous, low-frequency atmospheric drone representing a heavy snowstorm. It should feature a thick, textured layer of white noise with subtle, shifting granular movements to simulate wind gusts.
+    prompt: heavy blizzard atmosphere, thick white noise texture, low-frequency rumble, granular wind gusts, seamless loop, cinematic ambient, 11 seconds
+    tags:
+      - ambient
+      - weather
+      - snow
+      - wind
+      - texture
+  ambient.temperate:
+    category: ambient
+    kind: ambient
+    reference: Amb_TemperateMeadowAmbientLoop
+    variants: 3
+    seconds: 5.92
+    loop: true
+    status: draft
+    brief: A continuous, low-frequency environmental drone layered with rhythmic, textured wind gusts and distant atmospheric rustling. The sound should provide a steady, non-intrusive background layer for temperate outdoor environments.
+    prompt: ambient environmental drone, low frequency hum, rhythmic wind gusts, textured rustling, continuous loop, cinematic atmosphere, high fidelity, 6 seconds
+    tags:
+      - ambient
+      - wind
+      - drone
+      - nature
+      - atmospheric
+  music.calm.russia:
+    category: music
+    kind: music
+    reference: Game_CHI_01
+    variants: 1
+    seconds: 192.09
+    loop: true
+    status: draft
+    brief: A somber and atmospheric Russian-inspired ambient piece featuring low-frequency drones and melancholic, sparse melodic textures. The sound should evoke a sense of stillness and quiet tension through slow-evolving pads and subtle rhythmic pulses.
+    prompt: ambient Russian folk atmosphere, melancholic low drones, sparse minor key melodic textures, slow tempo, cinematic pads, lo-fi warmth, 192 seconds
+    tags:
+      - ambient
+      - russian
+      - melancholic
+      - cinematic
+      - drone
+  music.calm.ukraine:
+    category: music
+    kind: music
+    reference: Game_USA_01
+    variants: 1
+    seconds: 197.7
+    loop: true
+    status: draft
+    brief: A somber and atmospheric Ukrainian-inspired ambient piece featuring melancholic string textures and subtle, rhythmic pulses. The sound should evoke a sense of quiet resilience through low-frequency drones and sparse, high-register melodic fragments.
+    prompt: melancholic Ukrainian ambient music, cinematic strings and soft drones, slow tempo, atmospheric texture with periodic rhythmic pulses, high fidelity, 197 seconds
+    tags:
+      - ambient
+      - melancholic
+      - cinematic
+      - ukrainian
+      - atmospheric
+  music.combat.russia:
+    category: music
+    kind: music
+    reference: Game_CHI_02
+    variants: 1
+    seconds: 185.29
+    loop: true
+    status: draft
+    brief: A high-intensity, driving orchestral combat theme featuring heavy rhythmic percussion and aggressive low-end brass stabs. The track should maintain a relentless, militaristic momentum suitable for large-scale battlefield engagement.
+    prompt: Aggressive orchestral combat music, heavy cinematic percussion, rhythmic low brass stabs, driving militaristic tempo, intense and dark atmosphere, high energy, 185 seconds
+    tags:
+      - orchestral
+      - combat
+      - militaristic
+      - percussive
+      - intense
+  music.combat.ukraine:
+    category: music
+    kind: music
+    reference: Game_USA_02
+    variants: 1
+    seconds: 187.7
+    loop: true
+    status: draft
+    brief: A high-intensity, driving cinematic combat theme featuring aggressive rhythmic percussion and dark, swelling orchestral textures. The sound should convey a sense of urgent, large-scale warfare through heavy low-end energy and sharp rhythmic pulses.
+    prompt: cinematic orchestral combat music, aggressive percussion ensemble, dark driving strings, fast tempo, intense rhythmic stabs, epic war atmosphere, high energy, 187 seconds
+    tags:
+      - cinematic
+      - orchestral
+      - combat
+      - percussive
+      - intense
+  music.defeat.russia:
+    category: music
+    kind: music
+    reference: End_Chi_Failure
+    variants: 1
+    seconds: 32.61
+    loop: false
+    status: draft
+    brief: A somber, cinematic orchestral piece conveying a sense of tragic loss and fallen grandeur. It should feature heavy low-end drones transitioning into mournful, sweeping string arrangements with a slow, funeral tempo.
+    prompt: cinematic orchestral tragedy, mournful strings and deep brass drones, slow funeral tempo, dramatic swells and heavy low-end energy, melancholic atmosphere, high fidelity, 33 seconds
+    tags:
+      - orchestral
+      - melancholic
+      - cinematic
+      - defeat
+      - dark
+  music.defeat.ukraine:
+    category: music
+    kind: music
+    reference: End_USA_Failure
+    variants: 1
+    seconds: 52.51
+    loop: false
+    status: draft
+    brief: A somber, cinematic orchestral piece conveying profound loss and heavy mourning through low-frequency drones and tragic string swells. The sound should feel desolate, slow-moving, and emotionally crushing.
+    prompt: cinematic dark orchestral, mourning strings, low frequency drone, slow tempo, tragic atmosphere, heavy reverb, melancholic swells, 52 seconds
+    tags:
+      - orchestral
+      - melancholic
+      - cinematic
+      - dark
+      - mournful
+  music.menu:
+    category: music
+    kind: music
+    reference: Shell
+    variants: 1
+    seconds: 190.86
+    loop: true
+    status: draft
+    brief: A high-tension, cinematic electronic theme featuring driving rhythmic pulses and dark, sweeping textures. It should build a sense of impending conflict through layered industrial drones and sharp percussive accents.
+    prompt: dark cinematic industrial techno, driving rhythmic synth pulses, heavy low-end drones, aggressive electronic percussion, tension-building structure, high production value, 190 seconds
+    tags:
+      - cinematic
+      - industrial
+      - electronic
+      - tension
+      - rhythmic
+  music.victory.russia:
+    category: music
+    kind: music
+    reference: End_Chi
+    variants: 1
+    seconds: 33.55
+    loop: false
+    status: draft
+    brief: A triumphant and imposing orchestral stinger featuring heavy brass, driving percussion, and a sense of grand imperial scale. The sound should build with rhythmic intensity to celebrate a decisive victory.
+    prompt: cinematic orchestral victory theme, powerful brass sections, heavy rhythmic percussion, epic staccato strings, triumphant and grand, high energy, 34 seconds
+    tags:
+      - orchestral
+      - triumphant
+      - cinematic
+      - brass
+      - percussive
+  music.victory.ukraine:
+    category: music
+    kind: music
+    reference: End_USA
+    variants: 1
+    seconds: 41.33
+    loop: false
+    status: draft
+    brief: A triumphant and swelling orchestral anthem that builds from a low, rhythmic foundation into a grand, heroic crescendo. It should evoke a sense of hard-won victory and national pride through rising melodic energy.
+    prompt: cinematic orchestral anthem, heroic brass and swelling strings, driving rhythmic percussion, crescendo structure, epic production, high fidelity, 41 seconds
+    tags:
+      - orchestral
+      - triumphant
+      - cinematic
+      - victory
+      - heroic
+  voice.building.attack:
+    category: voice
+    kind: voice
+    reference: NoSound
+    variants: 0
+    seconds: 0
+    loop: false
+    status: silent
+  voice.building.created:
+    category: voice
+    kind: voice
+    reference: NoSound
+    variants: 0
+    seconds: 0
+    loop: false
+    status: silent
+  voice.building.die:
+    category: voice
+    kind: voice
+    reference: BuildingDie
+    variants: 7
+    seconds: 18.31
+    loop: false
+    status: needs-script
+  voice.building.move:
+    category: voice
+    kind: voice
+    reference: NoSound
+    variants: 0
+    seconds: 0
+    loop: false
+    status: silent
+  voice.building.select:
+    category: voice
+    kind: voice
+    reference: CommandCenterUSASelect
+    variants: 1
+    seconds: 2.73
+    loop: false
+    status: needs-script
+  voice.building.underFire:
+    category: voice
+    kind: voice
+    reference: NoSound
+    variants: 0
+    seconds: 0
+    loop: false
+    status: silent
+  voice.foot.attack:
+    category: voice
+    kind: voice
+    reference: RangerVoiceAttack
+    variants: 7
+    seconds: 7.72
+    loop: false
+    status: needs-script
+  voice.foot.created:
+    category: voice
+    kind: voice
+    reference: RangerVoiceCreate
+    variants: 1
+    seconds: 1.06
+    loop: false
+    status: needs-script
+  voice.foot.die:
+    category: voice
+    kind: voice
+    reference: RangerVoiceDie
+    variants: 12
+    seconds: 6.29
+    loop: false
+    status: needs-script
+  voice.foot.move:
+    category: voice
+    kind: voice
+    reference: RangerVoiceMove
+    variants: 5
+    seconds: 4.83
+    loop: false
+    status: needs-script
+  voice.foot.select:
+    category: voice
+    kind: voice
+    reference: RangerVoiceSelect
+    variants: 5
+    seconds: 4.74
+    loop: false
+    status: needs-script
+  voice.foot.underFire:
+    category: voice
+    kind: voice
+    reference: RangerVoiceFear
+    variants: 7
+    seconds: 7.33
+    loop: false
+    status: needs-script
+  voice.ru-bmp-2.attack:
+    category: voice
+    kind: voice
+    reference: TroopCrawlerVoiceAttack
+    variants: 5
+    seconds: 8.12
+    loop: false
+    status: needs-script
+  voice.ru-bmp-2.created:
+    category: voice
+    kind: voice
+    reference: TroopCrawlerVoiceCreate
+    variants: 1
+    seconds: 1.84
+    loop: false
+    status: needs-script
+  voice.ru-bmp-2.die:
+    category: voice
+    kind: voice
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: needs-script
+  voice.ru-bmp-2.move:
+    category: voice
+    kind: voice
+    reference: TroopCrawlerVoiceMove
+    variants: 5
+    seconds: 6.39
+    loop: false
+    status: needs-script
+  voice.ru-bmp-2.select:
+    category: voice
+    kind: voice
+    reference: TroopCrawlerVoiceSelect
+    variants: 5
+    seconds: 9.02
+    loop: false
+    status: needs-script
+  voice.ru-bmp-2.underFire:
+    category: voice
+    kind: voice
+    reference: TroopCrawlerVoiceSelect
+    variants: 5
+    seconds: 9.02
+    loop: false
+    status: needs-script
+  voice.ru-brdm-scout.attack:
+    category: voice
+    kind: voice
+    reference: GattlingTankVoiceAttack
+    variants: 5
+    seconds: 5.24
+    loop: false
+    status: needs-script
+  voice.ru-brdm-scout.created:
+    category: voice
+    kind: voice
+    reference: GattlingTankVoiceCreate
+    variants: 1
+    seconds: 1.52
+    loop: false
+    status: needs-script
+  voice.ru-brdm-scout.die:
+    category: voice
+    kind: voice
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: needs-script
+  voice.ru-brdm-scout.move:
+    category: voice
+    kind: voice
+    reference: GattlingTankVoiceMove
+    variants: 4
+    seconds: 3.56
+    loop: false
+    status: needs-script
+  voice.ru-brdm-scout.select:
+    category: voice
+    kind: voice
+    reference: GattlingTankVoiceSelect
+    variants: 4
+    seconds: 5.36
+    loop: false
+    status: needs-script
+  voice.ru-brdm-scout.underFire:
+    category: voice
+    kind: voice
+    reference: GattlingTankVoiceRapid
+    variants: 3
+    seconds: 3.23
+    loop: false
+    status: needs-script
+  voice.ru-dozer.attack:
+    category: voice
+    kind: voice
+    reference: DozerChinaVoiceBuild
+    variants: 5
+    seconds: 9.72
+    loop: false
+    status: needs-script
+  voice.ru-dozer.created:
+    category: voice
+    kind: voice
+    reference: DozerChinaVoiceCreate
+    variants: 1
+    seconds: 1.72
+    loop: false
+    status: needs-script
+  voice.ru-dozer.die:
+    category: voice
+    kind: voice
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: needs-script
+  voice.ru-dozer.move:
+    category: voice
+    kind: voice
+    reference: DozerChinaVoiceMove
+    variants: 5
+    seconds: 6.02
+    loop: false
+    status: needs-script
+  voice.ru-dozer.select:
+    category: voice
+    kind: voice
+    reference: DozerChinaVoiceSelect
+    variants: 5
+    seconds: 7.96
+    loop: false
+    status: needs-script
+  voice.ru-dozer.underFire:
+    category: voice
+    kind: voice
+    reference: DozerChinaVoiceBuildNot
+    variants: 4
+    seconds: 8.01
+    loop: false
+    status: needs-script
+  voice.ru-rifleman.attack:
+    category: voice
+    kind: voice
+    reference: RedGuardVoiceAttack
+    variants: 7
+    seconds: 7.25
+    loop: false
+    status: needs-script
+  voice.ru-rifleman.created:
+    category: voice
+    kind: voice
+    reference: RedGuardVoiceCreate
+    variants: 1
+    seconds: 1.21
+    loop: false
+    status: needs-script
+  voice.ru-rifleman.die:
+    category: voice
+    kind: voice
+    reference: RedGuardVoiceDie
+    variants: 12
+    seconds: 9.95
+    loop: false
+    status: needs-script
+  voice.ru-rifleman.move:
+    category: voice
+    kind: voice
+    reference: RedGuardVoiceMove
+    variants: 5
+    seconds: 3.47
+    loop: false
+    status: needs-script
+  voice.ru-rifleman.select:
+    category: voice
+    kind: voice
+    reference: RedGuardVoiceSelect
+    variants: 6
+    seconds: 5.57
+    loop: false
+    status: needs-script
+  voice.ru-rifleman.underFire:
+    category: voice
+    kind: voice
+    reference: RedGuardVoiceFear
+    variants: 5
+    seconds: 8
+    loop: false
+    status: needs-script
+  voice.ru-rpg-gunner.attack:
+    category: voice
+    kind: voice
+    reference: TankHunterVoiceAttack
+    variants: 5
+    seconds: 4.39
+    loop: false
+    status: needs-script
+  voice.ru-rpg-gunner.created:
+    category: voice
+    kind: voice
+    reference: TankHunterVoiceCreate
+    variants: 1
+    seconds: 1.38
+    loop: false
+    status: needs-script
+  voice.ru-rpg-gunner.die:
+    category: voice
+    kind: voice
+    reference: TankHunterVoiceDie
+    variants: 5
+    seconds: 2.32
+    loop: false
+    status: needs-script
+  voice.ru-rpg-gunner.move:
+    category: voice
+    kind: voice
+    reference: TankHunterVoiceMove
+    variants: 5
+    seconds: 4.72
+    loop: false
+    status: needs-script
+  voice.ru-rpg-gunner.select:
+    category: voice
+    kind: voice
+    reference: TankHunterVoiceSelect
+    variants: 5
+    seconds: 5.87
+    loop: false
+    status: needs-script
+  voice.ru-rpg-gunner.underFire:
+    category: voice
+    kind: voice
+    reference: TankHunterVoiceFear
+    variants: 5
+    seconds: 7.2
+    loop: false
+    status: needs-script
+  voice.ru-supply-truck.attack:
+    category: voice
+    kind: voice
+    reference: SupplyTruckVoiceSupply
+    variants: 4
+    seconds: 6.07
+    loop: false
+    status: needs-script
+  voice.ru-supply-truck.created:
+    category: voice
+    kind: voice
+    reference: SupplyTruckVoiceCreate
+    variants: 1
+    seconds: 1.29
+    loop: false
+    status: needs-script
+  voice.ru-supply-truck.die:
+    category: voice
+    kind: voice
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: needs-script
+  voice.ru-supply-truck.move:
+    category: voice
+    kind: voice
+    reference: SupplyTruckVoiceMove
+    variants: 5
+    seconds: 6.66
+    loop: false
+    status: needs-script
+  voice.ru-supply-truck.select:
+    category: voice
+    kind: voice
+    reference: SupplyTruckVoiceSelect
+    variants: 5
+    seconds: 6
+    loop: false
+    status: needs-script
+  voice.ru-supply-truck.underFire:
+    category: voice
+    kind: voice
+    reference: SupplyTruckVoiceSelect
+    variants: 5
+    seconds: 6
+    loop: false
+    status: needs-script
+  voice.ru-t-72b3.attack:
+    category: voice
+    kind: voice
+    reference: BattleMasterTankVoiceAttack
+    variants: 8
+    seconds: 8.29
+    loop: false
+    status: needs-script
+  voice.ru-t-72b3.created:
+    category: voice
+    kind: voice
+    reference: BattleMasterTankVoiceCreate
+    variants: 1
+    seconds: 1.09
+    loop: false
+    status: needs-script
+  voice.ru-t-72b3.die:
+    category: voice
+    kind: voice
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: needs-script
+  voice.ru-t-72b3.move:
+    category: voice
+    kind: voice
+    reference: BattleMasterTankVoiceMove
+    variants: 6
+    seconds: 6.62
+    loop: false
+    status: needs-script
+  voice.ru-t-72b3.select:
+    category: voice
+    kind: voice
+    reference: BattleMasterTankVoiceSelect
+    variants: 5
+    seconds: 5.86
+    loop: false
+    status: needs-script
+  voice.ru-t-72b3.underFire:
+    category: voice
+    kind: voice
+    reference: BattleMasterTankVoiceSelect
+    variants: 5
+    seconds: 5.86
+    loop: false
+    status: needs-script
+  voice.ru-tos-1a.attack:
+    category: voice
+    kind: voice
+    reference: InfernoCannonVoiceAttack
+    variants: 5
+    seconds: 8.26
+    loop: false
+    status: needs-script
+  voice.ru-tos-1a.created:
+    category: voice
+    kind: voice
+    reference: InfernoCannonVoiceCreate
+    variants: 1
+    seconds: 1.58
+    loop: false
+    status: needs-script
+  voice.ru-tos-1a.die:
+    category: voice
+    kind: voice
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: needs-script
+  voice.ru-tos-1a.move:
+    category: voice
+    kind: voice
+    reference: InfernoCannonVoiceMove
+    variants: 6
+    seconds: 8.15
+    loop: false
+    status: needs-script
+  voice.ru-tos-1a.select:
+    category: voice
+    kind: voice
+    reference: InfernoCannonVoiceSelect
+    variants: 5
+    seconds: 8.94
+    loop: false
+    status: needs-script
+  voice.ru-tos-1a.underFire:
+    category: voice
+    kind: voice
+    reference: InfernoCannonVoiceSelect
+    variants: 5
+    seconds: 8.94
+    loop: false
+    status: needs-script
+  voice.tracked.attack:
+    category: voice
+    kind: voice
+    reference: CrusaderTankVoiceAttack
+    variants: 6
+    seconds: 6.49
+    loop: false
+    status: needs-script
+  voice.tracked.created:
+    category: voice
+    kind: voice
+    reference: CrusaderTankVoiceCreate
+    variants: 1
+    seconds: 1.31
+    loop: false
+    status: needs-script
+  voice.tracked.die:
+    category: voice
+    kind: voice
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: needs-script
+  voice.tracked.move:
+    category: voice
+    kind: voice
+    reference: CrusaderTankVoiceMove
+    variants: 5
+    seconds: 5.21
+    loop: false
+    status: needs-script
+  voice.tracked.select:
+    category: voice
+    kind: voice
+    reference: CrusaderTankVoiceSelect
+    variants: 5
+    seconds: 5.67
+    loop: false
+    status: needs-script
+  voice.tracked.underFire:
+    category: voice
+    kind: voice
+    reference: CrusaderTankVoiceSelect
+    variants: 5
+    seconds: 5.67
+    loop: false
+    status: needs-script
+  voice.ua-bradley.attack:
+    category: voice
+    kind: voice
+    reference: PaladinTankVoiceAttack
+    variants: 5
+    seconds: 7
+    loop: false
+    status: needs-script
+  voice.ua-bradley.created:
+    category: voice
+    kind: voice
+    reference: PaladinTankVoiceCreate
+    variants: 1
+    seconds: 1.4
+    loop: false
+    status: needs-script
+  voice.ua-bradley.die:
+    category: voice
+    kind: voice
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: needs-script
+  voice.ua-bradley.move:
+    category: voice
+    kind: voice
+    reference: PaladinTankVoiceMove
+    variants: 5
+    seconds: 4.69
+    loop: false
+    status: needs-script
+  voice.ua-bradley.select:
+    category: voice
+    kind: voice
+    reference: PaladinTankVoiceSelect
+    variants: 6
+    seconds: 7.13
+    loop: false
+    status: needs-script
+  voice.ua-bradley.underFire:
+    category: voice
+    kind: voice
+    reference: PaladinTankVoiceSelect
+    variants: 6
+    seconds: 7.13
+    loop: false
+    status: needs-script
+  voice.ua-dozer.attack:
+    category: voice
+    kind: voice
+    reference: DozerUSAVoiceRepair
+    variants: 5
+    seconds: 7.8
+    loop: false
+    status: needs-script
+  voice.ua-dozer.created:
+    category: voice
+    kind: voice
+    reference: DozerUSAVoiceCreate
+    variants: 1
+    seconds: 1.28
+    loop: false
+    status: needs-script
+  voice.ua-dozer.die:
+    category: voice
+    kind: voice
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: needs-script
+  voice.ua-dozer.move:
+    category: voice
+    kind: voice
+    reference: DozerUSAVoiceMove
+    variants: 6
+    seconds: 7.31
+    loop: false
+    status: needs-script
+  voice.ua-dozer.select:
+    category: voice
+    kind: voice
+    reference: DozerUSAVoiceSelect
+    variants: 9
+    seconds: 10.2
+    loop: false
+    status: needs-script
+  voice.ua-dozer.underFire:
+    category: voice
+    kind: voice
+    reference: DozerUSAVoiceBuildNot
+    variants: 4
+    seconds: 6.42
+    loop: false
+    status: needs-script
+  voice.ua-himars.attack:
+    category: voice
+    kind: voice
+    reference: TomahawkVoiceAttack
+    variants: 6
+    seconds: 7.07
+    loop: false
+    status: needs-script
+  voice.ua-himars.created:
+    category: voice
+    kind: voice
+    reference: TomahawkVoiceCreate
+    variants: 1
+    seconds: 1.19
+    loop: false
+    status: needs-script
+  voice.ua-himars.die:
+    category: voice
+    kind: voice
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: needs-script
+  voice.ua-himars.move:
+    category: voice
+    kind: voice
+    reference: TomahawkVoiceMove
+    variants: 5
+    seconds: 5.66
+    loop: false
+    status: needs-script
+  voice.ua-himars.select:
+    category: voice
+    kind: voice
+    reference: TomahawkVoiceSelect
+    variants: 5
+    seconds: 6.48
+    loop: false
+    status: needs-script
+  voice.ua-himars.underFire:
+    category: voice
+    kind: voice
+    reference: TomahawkVoiceSelect
+    variants: 5
+    seconds: 6.48
+    loop: false
+    status: needs-script
+  voice.ua-kozak-scout.attack:
+    category: voice
+    kind: voice
+    reference: HumveeVoiceAttack
+    variants: 6
+    seconds: 6.28
+    loop: false
+    status: needs-script
+  voice.ua-kozak-scout.created:
+    category: voice
+    kind: voice
+    reference: HumveeVoiceCreate
+    variants: 1
+    seconds: 0.5
+    loop: false
+    status: needs-script
+  voice.ua-kozak-scout.die:
+    category: voice
+    kind: voice
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: needs-script
+  voice.ua-kozak-scout.move:
+    category: voice
+    kind: voice
+    reference: HumveeVoiceMove
+    variants: 7
+    seconds: 6.75
+    loop: false
+    status: needs-script
+  voice.ua-kozak-scout.select:
+    category: voice
+    kind: voice
+    reference: HumveeVoiceSelect
+    variants: 4
+    seconds: 3.29
+    loop: false
+    status: needs-script
+  voice.ua-kozak-scout.underFire:
+    category: voice
+    kind: voice
+    reference: HumveeVoiceSelect
+    variants: 4
+    seconds: 3.29
+    loop: false
+    status: needs-script
+  voice.ua-leopard-2a4.attack:
+    category: voice
+    kind: voice
+    reference: CrusaderTankVoiceAttack
+    variants: 6
+    seconds: 6.49
+    loop: false
+    status: needs-script
+  voice.ua-leopard-2a4.created:
+    category: voice
+    kind: voice
+    reference: CrusaderTankVoiceCreate
+    variants: 1
+    seconds: 1.31
+    loop: false
+    status: needs-script
+  voice.ua-leopard-2a4.die:
+    category: voice
+    kind: voice
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: needs-script
+  voice.ua-leopard-2a4.move:
+    category: voice
+    kind: voice
+    reference: CrusaderTankVoiceMove
+    variants: 5
+    seconds: 5.21
+    loop: false
+    status: needs-script
+  voice.ua-leopard-2a4.select:
+    category: voice
+    kind: voice
+    reference: CrusaderTankVoiceSelect
+    variants: 5
+    seconds: 5.67
+    loop: false
+    status: needs-script
+  voice.ua-leopard-2a4.underFire:
+    category: voice
+    kind: voice
+    reference: CrusaderTankVoiceSelect
+    variants: 5
+    seconds: 5.67
+    loop: false
+    status: needs-script
+  voice.ua-rifleman.attack:
+    category: voice
+    kind: voice
+    reference: RangerVoiceAttack
+    variants: 7
+    seconds: 7.72
+    loop: false
+    status: needs-script
+  voice.ua-rifleman.created:
+    category: voice
+    kind: voice
+    reference: RangerVoiceCreate
+    variants: 1
+    seconds: 1.06
+    loop: false
+    status: needs-script
+  voice.ua-rifleman.die:
+    category: voice
+    kind: voice
+    reference: RangerVoiceDie
+    variants: 12
+    seconds: 6.29
+    loop: false
+    status: needs-script
+  voice.ua-rifleman.move:
+    category: voice
+    kind: voice
+    reference: RangerVoiceMove
+    variants: 5
+    seconds: 4.83
+    loop: false
+    status: needs-script
+  voice.ua-rifleman.select:
+    category: voice
+    kind: voice
+    reference: RangerVoiceSelect
+    variants: 5
+    seconds: 4.74
+    loop: false
+    status: needs-script
+  voice.ua-rifleman.underFire:
+    category: voice
+    kind: voice
+    reference: RangerVoiceFear
+    variants: 7
+    seconds: 7.33
+    loop: false
+    status: needs-script
+  voice.ua-stugna-team.attack:
+    category: voice
+    kind: voice
+    reference: MissileDefenderVoiceAttack
+    variants: 8
+    seconds: 8.83
+    loop: false
+    status: needs-script
+  voice.ua-stugna-team.created:
+    category: voice
+    kind: voice
+    reference: MissileDefenderVoiceCreate
+    variants: 1
+    seconds: 1.84
+    loop: false
+    status: needs-script
+  voice.ua-stugna-team.die:
+    category: voice
+    kind: voice
+    reference: RangerVoiceDie
+    variants: 12
+    seconds: 6.29
+    loop: false
+    status: needs-script
+  voice.ua-stugna-team.move:
+    category: voice
+    kind: voice
+    reference: MissileDefenderVoiceMove
+    variants: 6
+    seconds: 4.88
+    loop: false
+    status: needs-script
+  voice.ua-stugna-team.select:
+    category: voice
+    kind: voice
+    reference: MissileDefenderVoiceSelect
+    variants: 5
+    seconds: 5.86
+    loop: false
+    status: needs-script
+  voice.ua-stugna-team.underFire:
+    category: voice
+    kind: voice
+    reference: MissileDefenderVoiceFear
+    variants: 3
+    seconds: 2.81
+    loop: false
+    status: needs-script
+  voice.ua-supply-truck.attack:
+    category: voice
+    kind: voice
+    reference: ChinookVoiceSupply
+    variants: 14
+    seconds: 6.39
+    loop: true
+    status: needs-script
+  voice.ua-supply-truck.created:
+    category: voice
+    kind: voice
+    reference: ChinookVoiceCreate
+    variants: 12
+    seconds: 3.29
+    loop: true
+    status: needs-script
+  voice.ua-supply-truck.die:
+    category: voice
+    kind: voice
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: needs-script
+  voice.ua-supply-truck.move:
+    category: voice
+    kind: voice
+    reference: ChinookVoiceMove
+    variants: 17
+    seconds: 9.39
+    loop: true
+    status: needs-script
+  voice.ua-supply-truck.select:
+    category: voice
+    kind: voice
+    reference: ChinookVoiceSelect
+    variants: 17
+    seconds: 9.61
+    loop: true
+    status: needs-script
+  voice.ua-supply-truck.underFire:
+    category: voice
+    kind: voice
+    reference: ChinookVoiceSelect
+    variants: 17
+    seconds: 9.61
+    loop: true
+    status: needs-script
+  voice.unit.attack:
+    category: voice
+    kind: voice
+    reference: CrusaderTankVoiceAttack
+    variants: 6
+    seconds: 6.49
+    loop: false
+    status: needs-script
+  voice.unit.created:
+    category: voice
+    kind: voice
+    reference: CrusaderTankVoiceCreate
+    variants: 1
+    seconds: 1.31
+    loop: false
+    status: needs-script
+  voice.unit.die:
+    category: voice
+    kind: voice
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: needs-script
+  voice.unit.move:
+    category: voice
+    kind: voice
+    reference: CrusaderTankVoiceMove
+    variants: 5
+    seconds: 5.21
+    loop: false
+    status: needs-script
+  voice.unit.select:
+    category: voice
+    kind: voice
+    reference: CrusaderTankVoiceSelect
+    variants: 5
+    seconds: 5.67
+    loop: false
+    status: needs-script
+  voice.unit.underFire:
+    category: voice
+    kind: voice
+    reference: CrusaderTankVoiceSelect
+    variants: 5
+    seconds: 5.67
+    loop: false
+    status: needs-script
+  voice.wheeled.attack:
+    category: voice
+    kind: voice
+    reference: HumveeVoiceAttack
+    variants: 6
+    seconds: 6.28
+    loop: false
+    status: needs-script
+  voice.wheeled.created:
+    category: voice
+    kind: voice
+    reference: HumveeVoiceCreate
+    variants: 1
+    seconds: 0.5
+    loop: false
+    status: needs-script
+  voice.wheeled.die:
+    category: voice
+    kind: voice
+    reference: Explosion
+    variants: 6
+    seconds: 12.79
+    loop: false
+    status: needs-script
+  voice.wheeled.move:
+    category: voice
+    kind: voice
+    reference: HumveeVoiceMove
+    variants: 7
+    seconds: 6.75
+    loop: false
+    status: needs-script
+  voice.wheeled.select:
+    category: voice
+    kind: voice
+    reference: HumveeVoiceSelect
+    variants: 4
+    seconds: 3.29
+    loop: false
+    status: needs-script
+  voice.wheeled.underFire:
+    category: voice
+    kind: voice
+    reference: HumveeVoiceSelect
+    variants: 4
+    seconds: 3.29
+    loop: false
+    status: needs-script
+  eva.russia.baseUnderAttack:
+    category: eva
+    kind: eva
+    reference: RedGuardVoiceBaseAttack
+    variants: 4
+    seconds: 6.34
+    loop: false
+    status: needs-script
+  eva.russia.buildingLost:
+    category: eva
+    kind: eva
+    reference: EvaChina_BuildingDisabled
+    variants: 1
+    seconds: 1.62
+    loop: false
+    status: needs-script
+  eva.russia.buildingReady:
+    category: eva
+    kind: eva
+    reference: EvaChina_SelectTarget
+    variants: 1
+    seconds: 1.27
+    loop: false
+    status: needs-script
+  eva.russia.constructionComplete:
+    category: eva
+    kind: eva
+    reference: DozerChinaVoiceBuildComplete
+    variants: 4
+    seconds: 6.85
+    loop: false
+    status: needs-script
+  eva.russia.defeat:
+    category: eva
+    kind: eva
+    reference: EvaChina_Defeat
+    variants: 1
+    seconds: 1.48
+    loop: false
+    status: needs-script
+  eva.russia.insufficientFunds:
+    category: eva
+    kind: eva
+    reference: EvaChina_InsufficientFunds
+    variants: 1
+    seconds: 1.48
+    loop: false
+    status: needs-script
+  eva.russia.lowPower:
+    category: eva
+    kind: eva
+    reference: EvaChina_LowPower
+    variants: 1
+    seconds: 1.31
+    loop: false
+    status: needs-script
+  eva.russia.productionComplete:
+    category: eva
+    kind: eva
+    reference: EvaChina_ReinforcementsHaveArrived
+    variants: 1
+    seconds: 1.64
+    loop: false
+    status: needs-script
+  eva.russia.unitLost:
+    category: eva
+    kind: eva
+    reference: EvaChina_UnitLost
+    variants: 1
+    seconds: 1.18
+    loop: false
+    status: needs-script
+  eva.russia.upgradeComplete:
+    category: eva
+    kind: eva
+    reference: EvaChina_UpgradeComplete
+    variants: 1
+    seconds: 1.09
+    loop: false
+    status: needs-script
+  eva.russia.victory:
+    category: eva
+    kind: eva
+    reference: EvaChina_Victory
+    variants: 1
+    seconds: 1.56
+    loop: false
+    status: needs-script
+  eva.ukraine.baseUnderAttack:
+    category: eva
+    kind: eva
+    reference: RangerVoiceBaseAttack
+    variants: 4
+    seconds: 6.08
+    loop: false
+    status: needs-script
+  eva.ukraine.buildingLost:
+    category: eva
+    kind: eva
+    reference: EvaUSA_BuildingDisabled
+    variants: 1
+    seconds: 1.22
+    loop: false
+    status: needs-script
+  eva.ukraine.buildingReady:
+    category: eva
+    kind: eva
+    reference: EvaUSA_SelectTarget
+    variants: 1
+    seconds: 1.05
+    loop: false
+    status: needs-script
+  eva.ukraine.constructionComplete:
+    category: eva
+    kind: eva
+    reference: DozerUSAVoiceBuildComplete
+    variants: 3
+    seconds: 3.74
+    loop: false
+    status: needs-script
+  eva.ukraine.defeat:
+    category: eva
+    kind: eva
+    reference: EvaUSA_Defeat
+    variants: 1
+    seconds: 1.34
+    loop: false
+    status: needs-script
+  eva.ukraine.insufficientFunds:
+    category: eva
+    kind: eva
+    reference: EvaUSA_InsufficientFunds
+    variants: 1
+    seconds: 1.24
+    loop: false
+    status: needs-script
+  eva.ukraine.lowPower:
+    category: eva
+    kind: eva
+    reference: EvaUSA_LowPower
+    variants: 1
+    seconds: 0.77
+    loop: false
+    status: needs-script
+  eva.ukraine.productionComplete:
+    category: eva
+    kind: eva
+    reference: EvaUSA_ReinforcementsHaveArrived
+    variants: 1
+    seconds: 1.69
+    loop: false
+    status: needs-script
+  eva.ukraine.unitLost:
+    category: eva
+    kind: eva
+    reference: EvaUSA_UnitLost
+    variants: 1
+    seconds: 0.98
+    loop: false
+    status: needs-script
+  eva.ukraine.upgradeComplete:
+    category: eva
+    kind: eva
+    reference: EvaUSA_UpgradeComplete
+    variants: 1
+    seconds: 1.32
+    loop: false
+    status: needs-script
+  eva.ukraine.victory:
+    category: eva
+    kind: eva
+    reference: EvaUSA_Victory
+    variants: 1
+    seconds: 1.31
+    loop: false
+    status: needs-script

@@ -7,6 +7,14 @@ const AUDIO_REF_DIR = fileURLToPath(
   new URL("../.local/audio-ref", import.meta.url),
 );
 
+// `node --run audio:pack` writes the same reference files as Opus/WebM at the
+// shipping bitrates (spec 25 §12). The dev middleware prefers those files so
+// the game exercises the shipping format; `.local/audio-ref/` remains the
+// fallback and the only source the extractor writes to.
+const AUDIO_REF_WEBM_DIR = fileURLToPath(
+  new URL("../.local/audio-ref-webm", import.meta.url),
+);
+
 const MIME_BY_EXT: Record<string, string> = {
   ".json": "application/json; charset=utf-8",
   ".wav": "audio/wav",
@@ -32,14 +40,28 @@ function zhAudioRefServePlugin(): Plugin {
         const cleanUrl = decodeURIComponent(
           req.url.split("?")[0] ?? "",
         ).replace(/^\/+/, "");
-        const candidate = resolve(AUDIO_REF_DIR, cleanUrl);
+        const original = resolve(AUDIO_REF_DIR, cleanUrl);
         if (
-          !candidate.startsWith(AUDIO_REF_DIR + sep) &&
-          candidate !== AUDIO_REF_DIR
+          !original.startsWith(AUDIO_REF_DIR + sep) &&
+          original !== AUDIO_REF_DIR
         ) {
           res.statusCode = 403;
           res.end("Forbidden");
           return;
+        }
+        let candidate = original;
+        if (/\.(wav|mp3)$/i.test(cleanUrl)) {
+          const webm = resolve(
+            AUDIO_REF_WEBM_DIR,
+            cleanUrl.replace(/\.(wav|mp3)$/i, ".webm"),
+          );
+          if (
+            webm.startsWith(AUDIO_REF_WEBM_DIR + sep) &&
+            existsSync(webm) &&
+            statSync(webm).isFile()
+          ) {
+            candidate = webm;
+          }
         }
         if (!existsSync(candidate) || !statSync(candidate).isFile()) {
           res.statusCode = 404;

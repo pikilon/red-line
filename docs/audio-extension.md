@@ -38,6 +38,21 @@ input, and never commit anything under `.local/audio-ref/` (D-02, spec 25 §4.2)
 | `data/audio/mix.yaml` | buses, ducking, limits, zoom, music fade/combat hold |
 | `data/audio/reference.yaml` | our event id -> Zero Hour event name; names only |
 | `data/audio/synth/recipes.yaml` | offline-rendered fallback recipes |
+| `data/audio/inventory.yaml` | phase 2: one entry per event with its brief, generation prompt, tags and status |
+
+Local-only helpers (they need the pack extracted by `audio:ref` and ffmpeg with
+libopus; nothing they write is committed except the inventory):
+
+* `node --run audio:pack` encodes the files the game actually uses as Opus/WebM
+  under `.local/audio-ref-webm/` at the shipping bitrates. `pack.json` maps
+  every output to its source, duration and event ids. It is still reference
+  scaffolding: never commit it, build it or serve it.
+* `node --run audio:inventory -- --write` rebuilds `data/audio/inventory.yaml`
+  from `reference.yaml` and keeps any text already written.
+* `node --run audio:describe -- --only music,ambient --write` drafts `brief`
+  and `prompt` with the local Gemma vision model, reading a spectrogram plus
+  the game context. The model never hears the audio: drafts stay `draft` until
+  someone listens and marks them `approved`.
 
 Event id conventions (the derive layer relies on them):
 
@@ -175,6 +190,9 @@ original content, not a missing clone.
 * `?load=audio-fight` exercises weapons, impacts, explosions and voices;
   `?load=construction` exercises the under-construction loop, head and tail.
 * Unit tests: `cd client && node --run test:unit -- src/audio`.
+* Reference format and inventory: `node --run audio:pack`,
+  `node --run audio:inventory -- --write`, `node --run audio:describe -- --write`
+  (needs the local pack and LM Studio at `http://127.0.0.1:1234`).
 * Full gate: `node --run check:audio` and `node --run verify`.
 
 ## 12. Prompt template for a future AI contributor
