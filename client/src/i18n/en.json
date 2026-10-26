@@ -145,6 +145,7 @@
   "menu.loadGame": "Load game",
   "menu.volumeMaster": "Master volume: {pct}%",
   "menu.volumeSfx": "Effects volume: {pct}%",
+  "menu.volumeAmbient": "Ambient volume: {pct}%",
   "menu.volumeVoice": "Voices volume: {pct}%",
   "menu.volumeMusic": "Music volume: {pct}%",
   "saves.audio-fight.name": "Audio fight",

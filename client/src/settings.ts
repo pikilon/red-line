@@ -4,6 +4,7 @@ export const SETTINGS_KEY = "redline.settings.v1";
 
 export const DEFAULT_AUDIO_MASTER = 100;
 export const DEFAULT_AUDIO_SFX = 80;
+export const DEFAULT_AUDIO_AMBIENT = 50;
 export const DEFAULT_AUDIO_VOICE = 70;
 export const DEFAULT_AUDIO_MUSIC = 55;
 
@@ -17,6 +18,8 @@ export interface Settings {
   audioMaster?: number;
   /** Effects/UI volume 0..100 (default 80, spec 25 §10). */
   audioSfx?: number;
+  /** Ambient beds volume 0..100 (default 50, spec 25 §10). */
+  audioAmbient?: number;
   /** Voices/EVA volume 0..100 (default 70, spec 25 §10). */
   audioVoice?: number;
   /** Music volume 0..100 (default 55, spec 25 §10). */
@@ -62,6 +65,7 @@ export function loadSettings(storage?: Storage): Settings {
     const weather = obj.weather;
     const audioMaster = parseVolume(obj.audioMaster);
     const audioSfx = parseVolume(obj.audioSfx);
+    const audioAmbient = parseVolume(obj.audioAmbient);
     const audioVoice = parseVolume(obj.audioVoice);
     const audioMusic = parseVolume(obj.audioMusic);
     const strongLanguage = obj.strongLanguage;
@@ -71,6 +75,7 @@ export function loadSettings(storage?: Storage): Settings {
       ...(weather === false ? { weather } : {}),
       ...(audioMaster !== undefined ? { audioMaster } : {}),
       ...(audioSfx !== undefined ? { audioSfx } : {}),
+      ...(audioAmbient !== undefined ? { audioAmbient } : {}),
       ...(audioVoice !== undefined ? { audioVoice } : {}),
       ...(audioMusic !== undefined ? { audioMusic } : {}),
       ...(strongLanguage === false ? { strongLanguage } : {}),
@@ -98,6 +103,9 @@ export function saveSettings(settings: Settings, storage?: Storage): void {
           : {}),
         ...(settings.audioSfx !== undefined
           ? { audioSfx: parseVolume(settings.audioSfx) }
+          : {}),
+        ...(settings.audioAmbient !== undefined
+          ? { audioAmbient: parseVolume(settings.audioAmbient) }
           : {}),
         ...(settings.audioVoice !== undefined
           ? { audioVoice: parseVolume(settings.audioVoice) }

@@ -445,8 +445,10 @@ fall back through a chain so every weapon sounds like something:
 
 * Buses: `master` (compressor/limiter at the end) <- `sfx`, `voice`, `eva`,
   `ui`, `ambient`, `music`. Settings sliders per bus in `client/src/settings.ts`
-  (master, effects, voices, music) with Zero Hour's defaults as starting point:
-  effects 80, voices 70, music 55; persisted like the other settings.
+  (master, effects, ambient, voices, music) with Zero Hour's defaults as the
+  starting point: effects 80, ambient 50, voices 70, music 55; persisted like
+  the other settings. Ambient has its own slider because birds/wind are not
+  combat effects and are the first thing players want to turn down.
 * Ducking (gain automation, not a sidechain compressor): `eva` critical lines
   duck `music` by 9 dB and `sfx` by 4 dB for the line's length plus 300 ms;
   unit voices duck `music` by 4 dB; release 500 ms. Rules live in `mix.yaml`.

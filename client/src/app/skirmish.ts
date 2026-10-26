@@ -632,6 +632,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       fpsPanel,
       audioMaster: settings.audioMaster,
       audioSfx: settings.audioSfx,
+      audioAmbient: settings.audioAmbient,
       audioVoice: settings.audioVoice,
       audioMusic: settings.audioMusic,
     });

@@ -129,6 +129,8 @@ reference event only if a future source has one.
 3. Add `ambient.<name>` to `events.yaml` (control `loop`) and map it in
    `reference.yaml` to a Zero Hour `Ambient*` / `Amb_*` event.
 4. The mixer starts/fades it with `setAmbient`; `?weather=none` silences it.
+   The ambient bus has its own **Ambient volume** slider (`audioAmbient`,
+   default 50); event volumes are relative to that slider.
 
 ## 8. Add an EVA/UI event
 

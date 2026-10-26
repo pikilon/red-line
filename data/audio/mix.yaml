@@ -9,7 +9,7 @@ buses:
   voice:   { volume: 70 }
   eva:     { volume: 80 }
   ui:      { volume: 80 }
-  ambient: { volume: 70 }
+  ambient: { volume: 50 }
   music:   { volume: 55 }
 
 limits:
