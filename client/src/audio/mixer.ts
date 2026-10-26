@@ -35,6 +35,8 @@ import type {
 export interface VolumeSettings {
   audioMaster: number; // 0..100
   audioSfx: number; // 0..100
+  /** Ambient beds get their own slider: birds/wind are not combat effects. */
+  audioAmbient: number; // 0..100
   audioVoice: number; // 0..100
   audioMusic: number; // 0..100
   strongLanguage?: boolean;
@@ -95,6 +97,8 @@ export class AudioMixer {
       audioMaster:
         initialVolumes?.audioMaster ?? catalog.mix.buses.master ?? 100,
       audioSfx: initialVolumes?.audioSfx ?? catalog.mix.buses.sfx ?? 80,
+      audioAmbient:
+        initialVolumes?.audioAmbient ?? catalog.mix.buses.ambient ?? 50,
       audioVoice: initialVolumes?.audioVoice ?? catalog.mix.buses.voice ?? 70,
       audioMusic: initialVolumes?.audioMusic ?? catalog.mix.buses.music ?? 55,
       strongLanguage: initialVolumes?.strongLanguage ?? true,
@@ -929,7 +933,7 @@ export class AudioMixer {
     );
     this.buses.ambient.gain.value = Math.max(
       0,
-      Math.min(1.5, (this.volumes.audioSfx / 100) * 0.75),
+      Math.min(1.5, this.volumes.audioAmbient / 100),
     );
     this.buses.voice.gain.value = Math.max(
       0,

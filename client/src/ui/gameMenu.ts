@@ -1,5 +1,6 @@
 import { t } from "../i18n";
 import {
+  DEFAULT_AUDIO_AMBIENT,
   DEFAULT_AUDIO_MASTER,
   DEFAULT_AUDIO_MUSIC,
   DEFAULT_AUDIO_SFX,
@@ -10,6 +11,7 @@ import { appendDiv, setText } from "./dom";
 export type VolumeSliderChannel =
   | "audioMaster"
   | "audioSfx"
+  | "audioAmbient"
   | "audioVoice"
   | "audioMusic";
 
@@ -31,6 +33,8 @@ export interface GameMenuView {
   audioMaster?: number;
   /** Effects volume 0..100 (spec 25 §10). */
   audioSfx?: number;
+  /** Ambient beds volume 0..100 (spec 25 §10). */
+  audioAmbient?: number;
   /** Voices volume 0..100 (spec 25 §10). */
   audioVoice?: number;
   /** Music volume 0..100 (spec 25 §10). */
@@ -80,6 +84,7 @@ interface VolumeSliderRow {
   labelKey:
     | "menu.volumeMaster"
     | "menu.volumeSfx"
+    | "menu.volumeAmbient"
     | "menu.volumeVoice"
     | "menu.volumeMusic";
   defaultVal: number;
@@ -196,6 +201,12 @@ export function createGameMenu(
         defaultVal: DEFAULT_AUDIO_SFX,
       },
       {
+        id: "game-menu-volume-ambient",
+        channel: "audioAmbient",
+        labelKey: "menu.volumeAmbient",
+        defaultVal: DEFAULT_AUDIO_AMBIENT,
+      },
+      {
         id: "game-menu-volume-voice",
         channel: "audioVoice",
         labelKey: "menu.volumeVoice",
@@ -255,6 +266,7 @@ export function createGameMenu(
         last.fpsPanel === view.fpsPanel &&
         last.audioMaster === view.audioMaster &&
         last.audioSfx === view.audioSfx &&
+        last.audioAmbient === view.audioAmbient &&
         last.audioVoice === view.audioVoice &&
         last.audioMusic === view.audioMusic
       ) {
@@ -270,6 +282,7 @@ export function createGameMenu(
         fpsPanel: view.fpsPanel,
         audioMaster: view.audioMaster,
         audioSfx: view.audioSfx,
+        audioAmbient: view.audioAmbient,
         audioVoice: view.audioVoice,
         audioMusic: view.audioMusic,
       };
