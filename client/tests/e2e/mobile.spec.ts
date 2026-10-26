@@ -102,6 +102,18 @@ test.describe("mobile web app", () => {
     );
     const target = await cameraTarget(page);
     expect(await zoom(page)).toBe(1);
+    // A later listener verifies that the two-finger touchstart was cancelled
+    // before the browser could zoom the page natively.
+    await page.evaluate(() => {
+      const state = { seen: 0, prevented: false };
+      (window as unknown as { __touchGuard: typeof state }).__touchGuard =
+        state;
+      document.addEventListener("touchstart", (event) => {
+        if (event.touches.length < 2) return;
+        state.seen += 1;
+        state.prevented = event.defaultPrevented;
+      });
+    });
 
     const client = await page.context().newCDPSession(page);
     try {
@@ -138,6 +150,16 @@ test.describe("mobile web app", () => {
       ),
     ).toEqual([]);
     await expect(page.locator("#selection-box")).toBeHidden();
+    const guard = await page.evaluate(() => {
+      const state = (
+        window as unknown as {
+          __touchGuard?: { seen: number; prevented: boolean };
+        }
+      ).__touchGuard;
+      return state ?? { seen: 0, prevented: false };
+    });
+    expect(guard.seen).toBeGreaterThan(0);
+    expect(guard.prevented).toBe(true);
     expect(errors).toEqual([]);
   });
 

@@ -27,9 +27,11 @@ export function createRotateOverlay(parent: HTMLElement): HTMLElement {
 }
 
 /**
- * iOS Safari ignores `user-scalable=no`, so its non-standard gesture events
- * and two-finger moves over the canvas are the only way to stop the page from
- * zooming (and looking blurry) instead of the camera (spec 08 §3.8).
+ * iOS Safari ignores `user-scalable=no` and some Android browsers still honour
+ * a native pinch over the canvas, so two-finger touches on the map are
+ * cancelled before the platform can zoom the page instead of the camera (spec
+ * 08 §3.8). Single-finger taps and drags are left alone, and the menus keep
+ * their own one-finger scrolling.
  */
 function preventPageZoom(): void {
   for (const type of ["gesturestart", "gesturechange", "gestureend"]) {
@@ -37,16 +39,14 @@ function preventPageZoom(): void {
       passive: false,
     });
   }
-  document.addEventListener(
-    "touchmove",
-    (event) => {
-      if (event.touches.length < 2) return;
-      if (!(event.target instanceof Element)) return;
-      if (event.target.closest("#app canvas") === null) return;
-      event.preventDefault();
-    },
-    { passive: false },
-  );
+  const stopMultiTouch = (event: TouchEvent): void => {
+    if (event.touches.length < 2) return;
+    if (!(event.target instanceof Element)) return;
+    if (event.target.closest("#app canvas") === null) return;
+    event.preventDefault();
+  };
+  document.addEventListener("touchstart", stopMultiTouch, { passive: false });
+  document.addEventListener("touchmove", stopMultiTouch, { passive: false });
 }
 
 /** Installed apps ask the platform to hold landscape. Browsers without the
