@@ -127,7 +127,7 @@ and `INIZH.big` (Zero Hour 1.04). Facts unless marked inference.
 | Phase | Deliverable | Player-visible result |
 |---|---|---|
 | 1. Engine clone with reference pack | Local extractor for the owner's Zero Hour `.big` files (§4.2), event table loader, admission rules, voice rule, limits and priorities, buses and ducking, stereo pan, distance and zoom volume, fog cull, discrete move-start samples, weapon fire/impact/explosion events, construction/ambient loops, music states, EVA queue, settings sliders, minimal procedural fallback, `?audio=debug` overlay, example saves `audio-fight` and `construction` | On the owner's machine a fight sounds and mixes like Zero Hour; elsewhere the game starts muted so the placeholder synth sounds never reach the public web; volume sliders work |
-| 2. Inventory and briefs | Listening review of every event on the debug page; `data/audio/inventory.yaml` with one written brief per event (what our sound should be, in our own words), variant counts, voice line scripts in Ukrainian and Russian. Briefs may start as machine drafts from spectrograms (`audio:describe`) and the local WebM pack (`audio:pack`) gives A/B in the shipping format | A complete, owner-approved list of what to make; nothing new to hear yet |
+| 2. Inventory and briefs | Listening review of every event on the debug page; `data/audio/inventory.yaml` mapping each event to its WebM target (`_<n>.webm`) with a written brief (what our sound should be, in our own words), variant counts and voice line scripts in Ukrainian and Russian. Briefs may start as machine drafts from spectrograms (`audio:describe`) and the local WebM pack (`audio:pack`) gives A/B in the shipping format | A complete, owner-approved list of WebM files to make; nothing new to hear yet |
 | 3. Automated generation | `scripts/audio/gen.mjs` pipeline (§4.5): SFX (libraries + local model), voices (uk/ru TTS, radio filter, strong language), EVA per faction, music; each generated sound replaces its reference entry | The game ships with its own sounds; the reference pack is no longer needed |
 | 4. Polish | Mix retune with the final sounds, ambient per map, subtitles, bundle budget check, strong-language toggle | Mix is tuned; subtitles and the language filter work |
 
@@ -192,17 +192,14 @@ The procedural recipe stays as the fallback while a file is loading.
   fields (`volume`, `limit`, `pitchShift`...) are written in `events.yaml` using
   Zero Hour's numbers as the starting point, cited per event.
 * **Serving.** The files live outside `client/public/`, so Vite never copies
-  them into a build. A dev-server-only middleware serves `/audio-ref/*` from
-  `.local/audio-ref/` (`apply: 'serve'`); when `audio:pack` has produced the
-  matching WebM, the middleware serves that file instead, so the dev build
-  exercises the shipping format (§12). Production builds and `deploy:pages`
-  cannot contain either directory. The loader resolves an event: our file
-  (phase 3) -> reference file (dev, pack present) -> procedural fallback.
-  Many Zero Hour combat WAVs are 4-bit IMA ADPCM (`0x0011`), which browser
-  `decodeAudioData` rejects; the loader decodes them itself (§12) so a shot or
-  explosion never silently becomes a synth recipe. The faction mapping is
-  literal: Ukrainian unit voices and EVA use Zero Hour's USA set, Russian ones
-  use the China set.
+  them into a build. A dev-server-only middleware serves the parsed index from
+  `.local/audio-ref/` and every audio file from `.local/audio-ref-webm/`
+  (`apply: 'serve'`, written by `audio:pack`). The client requests only
+  `.webm`; the extracted originals are input to the packer and are never
+  served. Production builds and `deploy:pages` cannot contain either directory.
+  The loader resolves an event: our file (phase 3) -> WebM dev pack ->
+  procedural fallback. The faction mapping is literal: Ukrainian unit voices
+  and EVA use Zero Hour's USA set, Russian ones use the China set.
 * **Guards.** `.local/` is gitignored; `check:audio` fails if any tracked file
   sits under `.local/audio-ref/` or if the client build output contains an
   `audio-ref` path.
@@ -292,15 +289,18 @@ stays accurate; CC-BY sources are credited there.
 * `reference.yaml`: our event id -> Zero Hour event name, for the local
   reference pack (§4.2); names only, no audio.
 * `inventory.yaml` (phase 2): one entry per event in `reference.yaml` with
-  `category`, `kind`, `reference` (name only), `variants`, `seconds`, `loop`,
-  `status` and, once written, `brief` (one or two sentences: what our sound
-  should be, in our own words), `prompt` (a text-to-audio prompt) and `tags`.
+  `category`, `kind`, `target` (the WebM template, `<n>` is the variant),
+  `variants`, `seconds`, `loop`, `status` and, once written, `brief` (one or
+  two sentences: what our sound should be, in our own words), `prompt` (a
+  text-to-audio prompt) and `tags`. It is the worklist we transform: no entry
+  names a source recording or points at anything but a `.webm` target.
   Statuses: `silent`, `needs-script`, `todo`, `draft`, `approved`.
   `node --run audio:inventory -- --write` rebuilds the metadata and keeps the
   text; `node --run audio:describe -- --write` drafts `brief` and `prompt` from
   a spectrogram plus the game context with the local Gemma vision model. Drafts
   are committed as `draft` and only become `approved` after the owner listens;
-  the reference audio never enters a generator.
+  the reference audio never enters a generator. `node --run audio:inventory --
+  --list` prints every expanded target `.webm` path for a batch generator.
 * `manifest.json`: generated, lists files and provenance (§4.5).
 * Schema in `data/schema/` (same validator as the rules), checked by
   `check:audio`.
@@ -343,8 +343,12 @@ fall back through a chain so every weapon sounds like something:
   and `eva.<faction>.<event>.<id>`; a missing translation falls back to `en`,
   then to no subtitle.
 * Audio files: `audio/voice/<faction>/<set>/<event>_<id>.webm`,
-  `audio/eva/<faction>/<event>_<id>.webm`. Variant counts come from the
-  manifest, not code.
+  `audio/eva/<faction>/<event>_<id>.webm`. The rest of the worklist uses
+  `audio/sfx/<eventId>_<n>.webm` (weapons, impacts, explosions, movement,
+  vehicles, buildings), `audio/music/<state>_<n>.webm`,
+  `audio/ambient/<climate>_<n>.webm` and `audio/ui/<action>_<n>.webm`, where
+  `<n>` is the 1-based variant. Variant counts come from the manifest, not
+  code.
 
 ## 6. Runtime behaviour (copied from Zero Hour)
 
@@ -539,11 +543,13 @@ fall back through a chain so every weapon sounds like something:
   of samples cached; our decoded budget is 64 MB, LRU, and the encoded budget is
   below). Phase 1 decodes music into an `AudioBuffer` too; phase 4 may switch to
   a `MediaElementAudioSourceNode` if the streaming budget needs it.
-* Reference WAVs can be 4-bit IMA ADPCM (`WAVE_FORMAT_IMA_ADPCM`, `0x0011`).
-  `client/src/audio/loader.ts` parses RIFF/WAVE and decodes IMA ADPCM mono and
-  stereo blocks itself, honouring the `fact` sample count, plus 8/16-bit PCM;
-  its tests cover both block layouts. Unsupported formats still go through
-  `decodeAudioData`, and a failed decode falls back to the procedural recipe.
+* The packer reads reference WAVs, many of them 4-bit IMA ADPCM
+  (`WAVE_FORMAT_IMA_ADPCM`, `0x0011`), and writes WebM. The loader still parses
+  RIFF/WAVE and decodes IMA ADPCM mono and stereo blocks itself, honouring the
+  `fact` sample count, plus 8/16-bit PCM (its tests cover both block layouts),
+  but the dev server only serves the WebM pack. Unsupported formats still go
+  through `decodeAudioData`, and a failed decode falls back to the procedural
+  recipe.
 * Download budget (gzip is useless on Opus): core pack (UI, combat SFX,
   shared) at most 4 MB; faction voices at most 3 MB per faction,
   lazy-loaded when a faction is picked; music at most 20 MB, streamed in the

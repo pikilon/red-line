@@ -1,6 +1,7 @@
 // Local-only: writes `data/audio/inventory.yaml` (spec 25 §5.1, phase 2),
-// one entry per reference event id: what the sound is for, how many variants
-// it has, how long it lasts and the brief/prompt that will replace it.
+// one entry per game sound event: the WebM file we will ship, how many
+// variants it needs and the brief/prompt that will produce it. The committed
+// file never points at a source recording.
 //
 // Descriptions are generated in our own words by `describe.mjs`; this script
 // only builds the metadata and preserves any description already written.
@@ -13,13 +14,18 @@ import { readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { parse, stringify } from "yaml";
-import { buildEntries, loadReference, webmRel } from "./reference.mjs";
+import { buildEntries, loadReference, targetTemplate } from "./reference.mjs";
 
 const ROOT = resolve(import.meta.dirname, "../..");
 const INVENTORY = join(ROOT, "data", "audio", "inventory.yaml");
 const PACK_MANIFEST = join(ROOT, ".local", "audio-ref-webm", "pack.json");
 
-const { values: flags } = parseArgs({ options: { write: { type: "boolean", default: false } } });
+const { values: flags } = parseArgs({
+  options: {
+    write: { type: "boolean", default: false },
+    list: { type: "boolean", default: false },
+  },
+});
 
 const pack = loadReference(ROOT);
 if (!pack) {
@@ -70,7 +76,7 @@ for (const entry of buildEntries(pack)) {
   const record = {
     category: entry.category,
     kind: entry.kind,
-    reference: entry.name,
+    ...(entry.silence ? {} : { target: targetTemplate(entry.id) }),
     variants: entry.files.length,
     seconds: Number(seconds.toFixed(2)),
     loop: entry.loop || Boolean(eventDefs[entry.id]?.control?.includes("loop")),
@@ -85,13 +91,12 @@ for (const entry of buildEntries(pack)) {
 
 const header = `# Audio inventory (spec 25 §5.1, phase 2).
 #
-# One entry per sound event the game can play today, resolved from
-# data/audio/reference.yaml. \`reference\` is the Zero Hour event name we listen
-# to while tuning (names only, no EA audio). \`brief\` and \`prompt\` are written
-# for our own sounds, never copied or generated from the reference audio.
+# One entry per game sound event. \`target\` is the WebM file we will ship,
+# with \`<n>\` replaced by the variant number (1..variants). No entry points at a
+# source recording: this is the worklist we transform.
 #
 # status:
-#   silent       Zero Hour has no sound for this event; keep the silence.
+#   silent       keep the silence, no target.
 #   needs-script voice/EVA line: write the line in data/audio/lines/ first.
 #   todo         no brief yet.
 #   draft        brief and prompt written, pending listening review.
@@ -103,6 +108,16 @@ const header = `# Audio inventory (spec 25 §5.1, phase 2).
 # Regenerate the metadata with \`node scripts/audio/inventory.mjs --write\`;
 # drafts are added by \`node scripts/audio/describe.mjs --write\`.
 `;
+
+if (flags.list) {
+  for (const record of Object.values(entries)) {
+    if (record.status === "silent") continue;
+    for (let n = 1; n <= record.variants; n += 1) {
+      console.log(record.target.replace("<n>", String(n)));
+    }
+  }
+  process.exit(0);
+}
 
 const document = `${header}${stringify({ version: 1, entries }, { lineWidth: 0 })}`;
 

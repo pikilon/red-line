@@ -1,12 +1,11 @@
 # Audio inventory (spec 25 §5.1, phase 2).
 #
-# One entry per sound event the game can play today, resolved from
-# data/audio/reference.yaml. `reference` is the Zero Hour event name we listen
-# to while tuning (names only, no EA audio). `brief` and `prompt` are written
-# for our own sounds, never copied or generated from the reference audio.
+# One entry per game sound event. `target` is the WebM file we will ship,
+# with `<n>` replaced by the variant number (1..variants). No entry points at a
+# source recording: this is the worklist we transform.
 #
 # status:
-#   silent       Zero Hour has no sound for this event; keep the silence.
+#   silent       keep the silence, no target.
 #   needs-script voice/EVA line: write the line in data/audio/lines/ first.
 #   todo         no brief yet.
 #   draft        brief and prompt written, pending listening review.
@@ -22,7 +21,7 @@ entries:
   weapon.antiTank.fire:
     category: weapon
     kind: sfx
-    reference: MissileDefenderWeapon
+    target: audio/sfx/weapon.antiTank.fire_<n>.webm
     variants: 3
     seconds: 3.53
     loop: false
@@ -38,7 +37,7 @@ entries:
   weapon.autocannon.fire:
     category: weapon
     kind: sfx
-    reference: GattlingTankWeapon
+    target: audio/sfx/weapon.autocannon.fire_<n>.webm
     variants: 4
     seconds: 4.6
     loop: false
@@ -54,7 +53,7 @@ entries:
   weapon.backblast.fire:
     category: weapon
     kind: sfx
-    reference: TankHunterWeapon
+    target: audio/sfx/weapon.backblast.fire_<n>.webm
     variants: 4
     seconds: 4.78
     loop: false
@@ -70,7 +69,7 @@ entries:
   weapon.cannon.fire:
     category: weapon
     kind: sfx
-    reference: CrusaderTankWeapon
+    target: audio/sfx/weapon.cannon.fire_<n>.webm
     variants: 3
     seconds: 5.56
     loop: false
@@ -86,7 +85,7 @@ entries:
   weapon.highExplosive.fire:
     category: weapon
     kind: sfx
-    reference: TomahawkWeapon
+    target: audio/sfx/weapon.highExplosive.fire_<n>.webm
     variants: 1
     seconds: 3.19
     loop: false
@@ -102,7 +101,7 @@ entries:
   weapon.muzzle.fire:
     category: weapon
     kind: sfx
-    reference: RangerWeapon
+    target: audio/sfx/weapon.muzzle.fire_<n>.webm
     variants: 5
     seconds: 5.17
     loop: false
@@ -118,7 +117,7 @@ entries:
   weapon.rocketLaunch.fire:
     category: weapon
     kind: sfx
-    reference: TomahawkWeapon
+    target: audio/sfx/weapon.rocketLaunch.fire_<n>.webm
     variants: 1
     seconds: 3.19
     loop: false
@@ -134,7 +133,7 @@ entries:
   weapon.ru-2a42.fire:
     category: weapon
     kind: sfx
-    reference: GattlingTankWeapon
+    target: audio/sfx/weapon.ru-2a42.fire_<n>.webm
     variants: 4
     seconds: 4.6
     loop: false
@@ -150,7 +149,7 @@ entries:
   weapon.ru-2a46m.fire:
     category: weapon
     kind: sfx
-    reference: BattlemasterTankWeapon
+    target: audio/sfx/weapon.ru-2a46m.fire_<n>.webm
     variants: 3
     seconds: 5.25
     loop: false
@@ -166,7 +165,7 @@ entries:
   weapon.ru-ak74.fire:
     category: weapon
     kind: sfx
-    reference: RedGuardWeapon
+    target: audio/sfx/weapon.ru-ak74.fire_<n>.webm
     variants: 4
     seconds: 5.61
     loop: false
@@ -182,7 +181,7 @@ entries:
   weapon.ru-kornet-emplacement.fire:
     category: weapon
     kind: sfx
-    reference: GattlingCannonWeapon
+    target: audio/sfx/weapon.ru-kornet-emplacement.fire_<n>.webm
     variants: 4
     seconds: 4.6
     loop: false
@@ -198,7 +197,7 @@ entries:
   weapon.ru-kpvt.fire:
     category: weapon
     kind: sfx
-    reference: GattlingTankWeapon
+    target: audio/sfx/weapon.ru-kpvt.fire_<n>.webm
     variants: 4
     seconds: 4.6
     loop: false
@@ -214,7 +213,7 @@ entries:
   weapon.ru-rpg7.fire:
     category: weapon
     kind: sfx
-    reference: TankHunterWeapon
+    target: audio/sfx/weapon.ru-rpg7.fire_<n>.webm
     variants: 4
     seconds: 4.78
     loop: false
@@ -230,7 +229,7 @@ entries:
   weapon.ru-tos-thermobaric.fire:
     category: weapon
     kind: sfx
-    reference: InfernoCannonWeapon
+    target: audio/sfx/weapon.ru-tos-thermobaric.fire_<n>.webm
     variants: 3
     seconds: 5.05
     loop: false
@@ -246,7 +245,7 @@ entries:
   weapon.smallArms.fire:
     category: weapon
     kind: sfx
-    reference: RangerWeapon
+    target: audio/sfx/weapon.smallArms.fire_<n>.webm
     variants: 5
     seconds: 5.17
     loop: false
@@ -262,7 +261,7 @@ entries:
   weapon.softLaunch.fire:
     category: weapon
     kind: sfx
-    reference: MissileDefenderWeapon
+    target: audio/sfx/weapon.softLaunch.fire_<n>.webm
     variants: 3
     seconds: 3.53
     loop: false
@@ -278,7 +277,7 @@ entries:
   weapon.thermobaric.fire:
     category: weapon
     kind: sfx
-    reference: InfernoCannonWeapon
+    target: audio/sfx/weapon.thermobaric.fire_<n>.webm
     variants: 3
     seconds: 5.05
     loop: false
@@ -294,7 +293,7 @@ entries:
   weapon.ua-bushmaster.fire:
     category: weapon
     kind: sfx
-    reference: PaladinTankWeapon
+    target: audio/sfx/weapon.ua-bushmaster.fire_<n>.webm
     variants: 3
     seconds: 2.84
     loop: false
@@ -310,7 +309,7 @@ entries:
   weapon.ua-gmlrs.fire:
     category: weapon
     kind: sfx
-    reference: TomahawkWeapon
+    target: audio/sfx/weapon.ua-gmlrs.fire_<n>.webm
     variants: 1
     seconds: 3.19
     loop: false
@@ -326,7 +325,7 @@ entries:
   weapon.ua-kozak-hmg.fire:
     category: weapon
     kind: sfx
-    reference: HumveeWeapon
+    target: audio/sfx/weapon.ua-kozak-hmg.fire_<n>.webm
     variants: 4
     seconds: 4.37
     loop: false
@@ -342,7 +341,7 @@ entries:
   weapon.ua-rh120.fire:
     category: weapon
     kind: sfx
-    reference: CrusaderTankWeapon
+    target: audio/sfx/weapon.ua-rh120.fire_<n>.webm
     variants: 3
     seconds: 5.56
     loop: false
@@ -358,7 +357,7 @@ entries:
   weapon.ua-rifle.fire:
     category: weapon
     kind: sfx
-    reference: RangerWeapon
+    target: audio/sfx/weapon.ua-rifle.fire_<n>.webm
     variants: 5
     seconds: 5.17
     loop: false
@@ -374,7 +373,7 @@ entries:
   weapon.ua-stugna-emplacement.fire:
     category: weapon
     kind: sfx
-    reference: PatriotBatteryWeapon
+    target: audio/sfx/weapon.ua-stugna-emplacement.fire_<n>.webm
     variants: 4
     seconds: 4.92
     loop: false
@@ -390,7 +389,7 @@ entries:
   weapon.ua-stugna-p.fire:
     category: weapon
     kind: sfx
-    reference: MissileDefenderWeapon
+    target: audio/sfx/weapon.ua-stugna-p.fire_<n>.webm
     variants: 3
     seconds: 3.53
     loop: false
@@ -406,7 +405,7 @@ entries:
   impact.antiTank:
     category: impact
     kind: sfx
-    reference: VehicleImpactHeavy
+    target: audio/sfx/impact.antiTank_<n>.webm
     variants: 9
     seconds: 11.97
     loop: false
@@ -422,7 +421,7 @@ entries:
   impact.autocannon:
     category: impact
     kind: sfx
-    reference: VehicleImpactHeavy
+    target: audio/sfx/impact.autocannon_<n>.webm
     variants: 9
     seconds: 11.97
     loop: false
@@ -438,7 +437,7 @@ entries:
   impact.heavy:
     category: impact
     kind: sfx
-    reference: VehicleImpactHeavy
+    target: audio/sfx/impact.heavy_<n>.webm
     variants: 9
     seconds: 11.97
     loop: false
@@ -454,7 +453,7 @@ entries:
   impact.highExplosive:
     category: impact
     kind: sfx
-    reference: ExplosionDirt
+    target: audio/sfx/impact.highExplosive_<n>.webm
     variants: 3
     seconds: 5.88
     loop: false
@@ -470,7 +469,7 @@ entries:
   impact.light:
     category: impact
     kind: sfx
-    reference: VehicleImpactLight
+    target: audio/sfx/impact.light_<n>.webm
     variants: 9
     seconds: 8.6
     loop: false
@@ -486,7 +485,7 @@ entries:
   impact.smallArms:
     category: impact
     kind: sfx
-    reference: VehicleImpactLight
+    target: audio/sfx/impact.smallArms_<n>.webm
     variants: 9
     seconds: 8.6
     loop: false
@@ -502,7 +501,7 @@ entries:
   impact.thermobaric:
     category: impact
     kind: sfx
-    reference: Explosion
+    target: audio/sfx/impact.thermobaric_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -518,7 +517,7 @@ entries:
   explosion.large:
     category: explosion
     kind: sfx
-    reference: ExplosionArtilleryBarrage
+    target: audio/sfx/explosion.large_<n>.webm
     variants: 7
     seconds: 37.78
     loop: false
@@ -534,7 +533,7 @@ entries:
   explosion.medium:
     category: explosion
     kind: sfx
-    reference: Explosion
+    target: audio/sfx/explosion.medium_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -550,7 +549,7 @@ entries:
   explosion.small:
     category: explosion
     kind: sfx
-    reference: Explosion
+    target: audio/sfx/explosion.small_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -566,7 +565,6 @@ entries:
   move.foot:
     category: move
     kind: sfx
-    reference: NoSound
     variants: 0
     seconds: 0
     loop: false
@@ -574,7 +572,7 @@ entries:
   move.ru-bmp-2.start:
     category: move
     kind: sfx
-    reference: TroopCrawlerMoveStart
+    target: audio/sfx/move.ru-bmp-2.start_<n>.webm
     variants: 4
     seconds: 13.78
     loop: false
@@ -590,7 +588,7 @@ entries:
   move.ru-brdm-scout.start:
     category: move
     kind: sfx
-    reference: GattlingTankMoveStart
+    target: audio/sfx/move.ru-brdm-scout.start_<n>.webm
     variants: 4
     seconds: 12.53
     loop: false
@@ -606,7 +604,7 @@ entries:
   move.ru-dozer.start:
     category: move
     kind: sfx
-    reference: DozerChinaMoveStart
+    target: audio/sfx/move.ru-dozer.start_<n>.webm
     variants: 4
     seconds: 13.78
     loop: false
@@ -622,7 +620,7 @@ entries:
   move.ru-supply-truck.start:
     category: move
     kind: sfx
-    reference: SupplyTruckMoveStart
+    target: audio/sfx/move.ru-supply-truck.start_<n>.webm
     variants: 3
     seconds: 6.91
     loop: false
@@ -638,7 +636,7 @@ entries:
   move.ru-t-72b3.start:
     category: move
     kind: sfx
-    reference: BattleMasterTankMoveStart
+    target: audio/sfx/move.ru-t-72b3.start_<n>.webm
     variants: 4
     seconds: 12.53
     loop: false
@@ -654,7 +652,7 @@ entries:
   move.ru-tos-1a.start:
     category: move
     kind: sfx
-    reference: InfernoCannonMoveStart
+    target: audio/sfx/move.ru-tos-1a.start_<n>.webm
     variants: 4
     seconds: 12.76
     loop: false
@@ -670,7 +668,6 @@ entries:
   move.tracked:
     category: move
     kind: sfx
-    reference: NoSound
     variants: 0
     seconds: 0
     loop: false
@@ -678,7 +675,6 @@ entries:
   move.tracks:
     category: move
     kind: sfx
-    reference: NoSound
     variants: 0
     seconds: 0
     loop: false
@@ -686,7 +682,7 @@ entries:
   move.ua-bradley.start:
     category: move
     kind: sfx
-    reference: PaladinTankMoveStart
+    target: audio/sfx/move.ua-bradley.start_<n>.webm
     variants: 7
     seconds: 26.07
     loop: false
@@ -702,7 +698,7 @@ entries:
   move.ua-dozer.start:
     category: move
     kind: sfx
-    reference: DozerUSAMoveStart
+    target: audio/sfx/move.ua-dozer.start_<n>.webm
     variants: 4
     seconds: 13.78
     loop: false
@@ -718,7 +714,7 @@ entries:
   move.ua-himars.start:
     category: move
     kind: sfx
-    reference: TomahawkMoveStart
+    target: audio/sfx/move.ua-himars.start_<n>.webm
     variants: 3
     seconds: 8.42
     loop: false
@@ -734,7 +730,7 @@ entries:
   move.ua-kozak-scout.start:
     category: move
     kind: sfx
-    reference: HumveeMoveStart
+    target: audio/sfx/move.ua-kozak-scout.start_<n>.webm
     variants: 5
     seconds: 16.41
     loop: false
@@ -750,7 +746,7 @@ entries:
   move.ua-leopard-2a4.start:
     category: move
     kind: sfx
-    reference: CrusaderTankMoveStart
+    target: audio/sfx/move.ua-leopard-2a4.start_<n>.webm
     variants: 4
     seconds: 15.2
     loop: false
@@ -766,7 +762,7 @@ entries:
   move.ua-supply-truck.start:
     category: move
     kind: sfx
-    reference: SupplyTruckMoveStart
+    target: audio/sfx/move.ua-supply-truck.start_<n>.webm
     variants: 3
     seconds: 6.91
     loop: false
@@ -782,7 +778,6 @@ entries:
   move.wheeled:
     category: move
     kind: sfx
-    reference: NoSound
     variants: 0
     seconds: 0
     loop: false
@@ -790,7 +785,7 @@ entries:
   vehicle.damage:
     category: vehicle
     kind: sfx
-    reference: VehicleDamagedState
+    target: audio/sfx/vehicle.damage_<n>.webm
     variants: 7
     seconds: 13.33
     loop: false
@@ -806,7 +801,7 @@ entries:
   building.complete:
     category: building
     kind: sfx
-    reference: DozerUSAVoiceBuildComplete
+    target: audio/sfx/building.complete_<n>.webm
     variants: 3
     seconds: 3.74
     loop: false
@@ -822,7 +817,7 @@ entries:
   building.construct:
     category: building
     kind: sfx
-    reference: UnderConstructionLoop
+    target: audio/sfx/building.construct_<n>.webm
     variants: 8
     seconds: 18.5
     loop: true
@@ -838,7 +833,7 @@ entries:
   building.damage:
     category: building
     kind: sfx
-    reference: BuildingDamage
+    target: audio/sfx/building.damage_<n>.webm
     variants: 8
     seconds: 10.07
     loop: false
@@ -854,7 +849,7 @@ entries:
   building.damage.critical:
     category: building
     kind: sfx
-    reference: BuildingDestroy
+    target: audio/sfx/building.damage.critical_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -870,7 +865,7 @@ entries:
   building.damage.heavy:
     category: building
     kind: sfx
-    reference: BuildingDamagedStateLight
+    target: audio/sfx/building.damage.heavy_<n>.webm
     variants: 7
     seconds: 13.33
     loop: false
@@ -886,7 +881,7 @@ entries:
   building.die:
     category: building
     kind: sfx
-    reference: BuildingDie
+    target: audio/sfx/building.die_<n>.webm
     variants: 7
     seconds: 18.31
     loop: false
@@ -902,7 +897,7 @@ entries:
   building.place:
     category: building
     kind: sfx
-    reference: PlaceBuilding
+    target: audio/sfx/building.place_<n>.webm
     variants: 1
     seconds: 3.51
     loop: false
@@ -918,7 +913,7 @@ entries:
   building.select.barracks.russia:
     category: building
     kind: sfx
-    reference: BarracksChinaSelect
+    target: audio/sfx/building.select.barracks.russia_<n>.webm
     variants: 1
     seconds: 4.11
     loop: false
@@ -934,7 +929,7 @@ entries:
   building.select.barracks.ukraine:
     category: building
     kind: sfx
-    reference: BarracksUSASelect
+    target: audio/sfx/building.select.barracks.ukraine_<n>.webm
     variants: 1
     seconds: 1.99
     loop: false
@@ -950,7 +945,7 @@ entries:
   building.select.factory.russia:
     category: building
     kind: sfx
-    reference: WarFactoryChinaSelect
+    target: audio/sfx/building.select.factory.russia_<n>.webm
     variants: 1
     seconds: 3.65
     loop: false
@@ -966,7 +961,7 @@ entries:
   building.select.factory.ukraine:
     category: building
     kind: sfx
-    reference: WarFactoryUSASelect
+    target: audio/sfx/building.select.factory.ukraine_<n>.webm
     variants: 1
     seconds: 3.42
     loop: false
@@ -982,7 +977,7 @@ entries:
   building.select.hq.russia:
     category: building
     kind: sfx
-    reference: CommandCenterChinaSelect
+    target: audio/sfx/building.select.hq.russia_<n>.webm
     variants: 1
     seconds: 4.39
     loop: false
@@ -998,7 +993,7 @@ entries:
   building.select.hq.ukraine:
     category: building
     kind: sfx
-    reference: CommandCenterUSASelect
+    target: audio/sfx/building.select.hq.ukraine_<n>.webm
     variants: 1
     seconds: 2.73
     loop: false
@@ -1014,7 +1009,7 @@ entries:
   ui.cashDown:
     category: ui
     kind: ui
-    reference: MoneyWithdraw
+    target: audio/ui/cashDown_<n>.webm
     variants: 1
     seconds: 0.15
     loop: false
@@ -1030,7 +1025,7 @@ entries:
   ui.cashUp:
     category: ui
     kind: ui
-    reference: MoneyDeposited
+    target: audio/ui/cashUp_<n>.webm
     variants: 1
     seconds: 0.12
     loop: false
@@ -1046,7 +1041,7 @@ entries:
   ui.click:
     category: ui
     kind: ui
-    reference: GUIClick
+    target: audio/ui/click_<n>.webm
     variants: 1
     seconds: 0.19
     loop: false
@@ -1062,7 +1057,7 @@ entries:
   ui.disabled:
     category: ui
     kind: ui
-    reference: BuildingDisabled
+    target: audio/ui/disabled_<n>.webm
     variants: 1
     seconds: 2.96
     loop: false
@@ -1078,7 +1073,7 @@ entries:
   ui.error:
     category: ui
     kind: ui
-    reference: NoCanDoSound
+    target: audio/ui/error_<n>.webm
     variants: 1
     seconds: 0.19
     loop: false
@@ -1094,7 +1089,7 @@ entries:
   ui.radarOff:
     category: ui
     kind: ui
-    reference: RadarOff
+    target: audio/ui/radarOff_<n>.webm
     variants: 1
     seconds: 1.36
     loop: false
@@ -1110,7 +1105,7 @@ entries:
   ui.radarOn:
     category: ui
     kind: ui
-    reference: RadarOn
+    target: audio/ui/radarOn_<n>.webm
     variants: 1
     seconds: 1.85
     loop: false
@@ -1126,7 +1121,7 @@ entries:
   ui.warning:
     category: ui
     kind: ui
-    reference: RadarNotifyUnderAttack
+    target: audio/ui/warning_<n>.webm
     variants: 1
     seconds: 0.63
     loop: false
@@ -1142,7 +1137,7 @@ entries:
   ambient.snow:
     category: ambient
     kind: ambient
-    reference: AmbientWindCold
+    target: audio/ambient/snow_<n>.webm
     variants: 2
     seconds: 10.85
     loop: true
@@ -1158,7 +1153,7 @@ entries:
   ambient.temperate:
     category: ambient
     kind: ambient
-    reference: Amb_TemperateMeadowAmbientLoop
+    target: audio/ambient/temperate_<n>.webm
     variants: 3
     seconds: 5.92
     loop: true
@@ -1174,7 +1169,7 @@ entries:
   music.calm.russia:
     category: music
     kind: music
-    reference: Game_CHI_01
+    target: audio/music/calm.russia_<n>.webm
     variants: 1
     seconds: 192.09
     loop: true
@@ -1190,7 +1185,7 @@ entries:
   music.calm.ukraine:
     category: music
     kind: music
-    reference: Game_USA_01
+    target: audio/music/calm.ukraine_<n>.webm
     variants: 1
     seconds: 197.7
     loop: true
@@ -1206,7 +1201,7 @@ entries:
   music.combat.russia:
     category: music
     kind: music
-    reference: Game_CHI_02
+    target: audio/music/combat.russia_<n>.webm
     variants: 1
     seconds: 185.29
     loop: true
@@ -1222,7 +1217,7 @@ entries:
   music.combat.ukraine:
     category: music
     kind: music
-    reference: Game_USA_02
+    target: audio/music/combat.ukraine_<n>.webm
     variants: 1
     seconds: 187.7
     loop: true
@@ -1238,7 +1233,7 @@ entries:
   music.defeat.russia:
     category: music
     kind: music
-    reference: End_Chi_Failure
+    target: audio/music/defeat.russia_<n>.webm
     variants: 1
     seconds: 32.61
     loop: false
@@ -1254,7 +1249,7 @@ entries:
   music.defeat.ukraine:
     category: music
     kind: music
-    reference: End_USA_Failure
+    target: audio/music/defeat.ukraine_<n>.webm
     variants: 1
     seconds: 52.51
     loop: false
@@ -1270,7 +1265,7 @@ entries:
   music.menu:
     category: music
     kind: music
-    reference: Shell
+    target: audio/music/menu_<n>.webm
     variants: 1
     seconds: 190.86
     loop: true
@@ -1286,7 +1281,7 @@ entries:
   music.victory.russia:
     category: music
     kind: music
-    reference: End_Chi
+    target: audio/music/victory.russia_<n>.webm
     variants: 1
     seconds: 33.55
     loop: false
@@ -1302,7 +1297,7 @@ entries:
   music.victory.ukraine:
     category: music
     kind: music
-    reference: End_USA
+    target: audio/music/victory.ukraine_<n>.webm
     variants: 1
     seconds: 41.33
     loop: false
@@ -1318,7 +1313,6 @@ entries:
   voice.building.attack:
     category: voice
     kind: voice
-    reference: NoSound
     variants: 0
     seconds: 0
     loop: false
@@ -1326,7 +1320,6 @@ entries:
   voice.building.created:
     category: voice
     kind: voice
-    reference: NoSound
     variants: 0
     seconds: 0
     loop: false
@@ -1334,7 +1327,7 @@ entries:
   voice.building.die:
     category: voice
     kind: voice
-    reference: BuildingDie
+    target: audio/voice/common/building/die_<n>.webm
     variants: 7
     seconds: 18.31
     loop: false
@@ -1342,7 +1335,6 @@ entries:
   voice.building.move:
     category: voice
     kind: voice
-    reference: NoSound
     variants: 0
     seconds: 0
     loop: false
@@ -1350,7 +1342,7 @@ entries:
   voice.building.select:
     category: voice
     kind: voice
-    reference: CommandCenterUSASelect
+    target: audio/voice/common/building/select_<n>.webm
     variants: 1
     seconds: 2.73
     loop: false
@@ -1358,7 +1350,6 @@ entries:
   voice.building.underFire:
     category: voice
     kind: voice
-    reference: NoSound
     variants: 0
     seconds: 0
     loop: false
@@ -1366,7 +1357,7 @@ entries:
   voice.foot.attack:
     category: voice
     kind: voice
-    reference: RangerVoiceAttack
+    target: audio/voice/common/foot/attack_<n>.webm
     variants: 7
     seconds: 7.72
     loop: false
@@ -1374,7 +1365,7 @@ entries:
   voice.foot.created:
     category: voice
     kind: voice
-    reference: RangerVoiceCreate
+    target: audio/voice/common/foot/created_<n>.webm
     variants: 1
     seconds: 1.06
     loop: false
@@ -1382,7 +1373,7 @@ entries:
   voice.foot.die:
     category: voice
     kind: voice
-    reference: RangerVoiceDie
+    target: audio/voice/common/foot/die_<n>.webm
     variants: 12
     seconds: 6.29
     loop: false
@@ -1390,7 +1381,7 @@ entries:
   voice.foot.move:
     category: voice
     kind: voice
-    reference: RangerVoiceMove
+    target: audio/voice/common/foot/move_<n>.webm
     variants: 5
     seconds: 4.83
     loop: false
@@ -1398,7 +1389,7 @@ entries:
   voice.foot.select:
     category: voice
     kind: voice
-    reference: RangerVoiceSelect
+    target: audio/voice/common/foot/select_<n>.webm
     variants: 5
     seconds: 4.74
     loop: false
@@ -1406,7 +1397,7 @@ entries:
   voice.foot.underFire:
     category: voice
     kind: voice
-    reference: RangerVoiceFear
+    target: audio/voice/common/foot/underFire_<n>.webm
     variants: 7
     seconds: 7.33
     loop: false
@@ -1414,7 +1405,7 @@ entries:
   voice.ru-bmp-2.attack:
     category: voice
     kind: voice
-    reference: TroopCrawlerVoiceAttack
+    target: audio/voice/russia/ru-bmp-2/attack_<n>.webm
     variants: 5
     seconds: 8.12
     loop: false
@@ -1422,7 +1413,7 @@ entries:
   voice.ru-bmp-2.created:
     category: voice
     kind: voice
-    reference: TroopCrawlerVoiceCreate
+    target: audio/voice/russia/ru-bmp-2/created_<n>.webm
     variants: 1
     seconds: 1.84
     loop: false
@@ -1430,7 +1421,7 @@ entries:
   voice.ru-bmp-2.die:
     category: voice
     kind: voice
-    reference: Explosion
+    target: audio/voice/russia/ru-bmp-2/die_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -1438,7 +1429,7 @@ entries:
   voice.ru-bmp-2.move:
     category: voice
     kind: voice
-    reference: TroopCrawlerVoiceMove
+    target: audio/voice/russia/ru-bmp-2/move_<n>.webm
     variants: 5
     seconds: 6.39
     loop: false
@@ -1446,7 +1437,7 @@ entries:
   voice.ru-bmp-2.select:
     category: voice
     kind: voice
-    reference: TroopCrawlerVoiceSelect
+    target: audio/voice/russia/ru-bmp-2/select_<n>.webm
     variants: 5
     seconds: 9.02
     loop: false
@@ -1454,7 +1445,7 @@ entries:
   voice.ru-bmp-2.underFire:
     category: voice
     kind: voice
-    reference: TroopCrawlerVoiceSelect
+    target: audio/voice/russia/ru-bmp-2/underFire_<n>.webm
     variants: 5
     seconds: 9.02
     loop: false
@@ -1462,7 +1453,7 @@ entries:
   voice.ru-brdm-scout.attack:
     category: voice
     kind: voice
-    reference: GattlingTankVoiceAttack
+    target: audio/voice/russia/ru-brdm-scout/attack_<n>.webm
     variants: 5
     seconds: 5.24
     loop: false
@@ -1470,7 +1461,7 @@ entries:
   voice.ru-brdm-scout.created:
     category: voice
     kind: voice
-    reference: GattlingTankVoiceCreate
+    target: audio/voice/russia/ru-brdm-scout/created_<n>.webm
     variants: 1
     seconds: 1.52
     loop: false
@@ -1478,7 +1469,7 @@ entries:
   voice.ru-brdm-scout.die:
     category: voice
     kind: voice
-    reference: Explosion
+    target: audio/voice/russia/ru-brdm-scout/die_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -1486,7 +1477,7 @@ entries:
   voice.ru-brdm-scout.move:
     category: voice
     kind: voice
-    reference: GattlingTankVoiceMove
+    target: audio/voice/russia/ru-brdm-scout/move_<n>.webm
     variants: 4
     seconds: 3.56
     loop: false
@@ -1494,7 +1485,7 @@ entries:
   voice.ru-brdm-scout.select:
     category: voice
     kind: voice
-    reference: GattlingTankVoiceSelect
+    target: audio/voice/russia/ru-brdm-scout/select_<n>.webm
     variants: 4
     seconds: 5.36
     loop: false
@@ -1502,7 +1493,7 @@ entries:
   voice.ru-brdm-scout.underFire:
     category: voice
     kind: voice
-    reference: GattlingTankVoiceRapid
+    target: audio/voice/russia/ru-brdm-scout/underFire_<n>.webm
     variants: 3
     seconds: 3.23
     loop: false
@@ -1510,7 +1501,7 @@ entries:
   voice.ru-dozer.attack:
     category: voice
     kind: voice
-    reference: DozerChinaVoiceBuild
+    target: audio/voice/russia/ru-dozer/attack_<n>.webm
     variants: 5
     seconds: 9.72
     loop: false
@@ -1518,7 +1509,7 @@ entries:
   voice.ru-dozer.created:
     category: voice
     kind: voice
-    reference: DozerChinaVoiceCreate
+    target: audio/voice/russia/ru-dozer/created_<n>.webm
     variants: 1
     seconds: 1.72
     loop: false
@@ -1526,7 +1517,7 @@ entries:
   voice.ru-dozer.die:
     category: voice
     kind: voice
-    reference: Explosion
+    target: audio/voice/russia/ru-dozer/die_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -1534,7 +1525,7 @@ entries:
   voice.ru-dozer.move:
     category: voice
     kind: voice
-    reference: DozerChinaVoiceMove
+    target: audio/voice/russia/ru-dozer/move_<n>.webm
     variants: 5
     seconds: 6.02
     loop: false
@@ -1542,7 +1533,7 @@ entries:
   voice.ru-dozer.select:
     category: voice
     kind: voice
-    reference: DozerChinaVoiceSelect
+    target: audio/voice/russia/ru-dozer/select_<n>.webm
     variants: 5
     seconds: 7.96
     loop: false
@@ -1550,7 +1541,7 @@ entries:
   voice.ru-dozer.underFire:
     category: voice
     kind: voice
-    reference: DozerChinaVoiceBuildNot
+    target: audio/voice/russia/ru-dozer/underFire_<n>.webm
     variants: 4
     seconds: 8.01
     loop: false
@@ -1558,7 +1549,7 @@ entries:
   voice.ru-rifleman.attack:
     category: voice
     kind: voice
-    reference: RedGuardVoiceAttack
+    target: audio/voice/russia/ru-rifleman/attack_<n>.webm
     variants: 7
     seconds: 7.25
     loop: false
@@ -1566,7 +1557,7 @@ entries:
   voice.ru-rifleman.created:
     category: voice
     kind: voice
-    reference: RedGuardVoiceCreate
+    target: audio/voice/russia/ru-rifleman/created_<n>.webm
     variants: 1
     seconds: 1.21
     loop: false
@@ -1574,7 +1565,7 @@ entries:
   voice.ru-rifleman.die:
     category: voice
     kind: voice
-    reference: RedGuardVoiceDie
+    target: audio/voice/russia/ru-rifleman/die_<n>.webm
     variants: 12
     seconds: 9.95
     loop: false
@@ -1582,7 +1573,7 @@ entries:
   voice.ru-rifleman.move:
     category: voice
     kind: voice
-    reference: RedGuardVoiceMove
+    target: audio/voice/russia/ru-rifleman/move_<n>.webm
     variants: 5
     seconds: 3.47
     loop: false
@@ -1590,7 +1581,7 @@ entries:
   voice.ru-rifleman.select:
     category: voice
     kind: voice
-    reference: RedGuardVoiceSelect
+    target: audio/voice/russia/ru-rifleman/select_<n>.webm
     variants: 6
     seconds: 5.57
     loop: false
@@ -1598,7 +1589,7 @@ entries:
   voice.ru-rifleman.underFire:
     category: voice
     kind: voice
-    reference: RedGuardVoiceFear
+    target: audio/voice/russia/ru-rifleman/underFire_<n>.webm
     variants: 5
     seconds: 8
     loop: false
@@ -1606,7 +1597,7 @@ entries:
   voice.ru-rpg-gunner.attack:
     category: voice
     kind: voice
-    reference: TankHunterVoiceAttack
+    target: audio/voice/russia/ru-rpg-gunner/attack_<n>.webm
     variants: 5
     seconds: 4.39
     loop: false
@@ -1614,7 +1605,7 @@ entries:
   voice.ru-rpg-gunner.created:
     category: voice
     kind: voice
-    reference: TankHunterVoiceCreate
+    target: audio/voice/russia/ru-rpg-gunner/created_<n>.webm
     variants: 1
     seconds: 1.38
     loop: false
@@ -1622,7 +1613,7 @@ entries:
   voice.ru-rpg-gunner.die:
     category: voice
     kind: voice
-    reference: TankHunterVoiceDie
+    target: audio/voice/russia/ru-rpg-gunner/die_<n>.webm
     variants: 5
     seconds: 2.32
     loop: false
@@ -1630,7 +1621,7 @@ entries:
   voice.ru-rpg-gunner.move:
     category: voice
     kind: voice
-    reference: TankHunterVoiceMove
+    target: audio/voice/russia/ru-rpg-gunner/move_<n>.webm
     variants: 5
     seconds: 4.72
     loop: false
@@ -1638,7 +1629,7 @@ entries:
   voice.ru-rpg-gunner.select:
     category: voice
     kind: voice
-    reference: TankHunterVoiceSelect
+    target: audio/voice/russia/ru-rpg-gunner/select_<n>.webm
     variants: 5
     seconds: 5.87
     loop: false
@@ -1646,7 +1637,7 @@ entries:
   voice.ru-rpg-gunner.underFire:
     category: voice
     kind: voice
-    reference: TankHunterVoiceFear
+    target: audio/voice/russia/ru-rpg-gunner/underFire_<n>.webm
     variants: 5
     seconds: 7.2
     loop: false
@@ -1654,7 +1645,7 @@ entries:
   voice.ru-supply-truck.attack:
     category: voice
     kind: voice
-    reference: SupplyTruckVoiceSupply
+    target: audio/voice/russia/ru-supply-truck/attack_<n>.webm
     variants: 4
     seconds: 6.07
     loop: false
@@ -1662,7 +1653,7 @@ entries:
   voice.ru-supply-truck.created:
     category: voice
     kind: voice
-    reference: SupplyTruckVoiceCreate
+    target: audio/voice/russia/ru-supply-truck/created_<n>.webm
     variants: 1
     seconds: 1.29
     loop: false
@@ -1670,7 +1661,7 @@ entries:
   voice.ru-supply-truck.die:
     category: voice
     kind: voice
-    reference: Explosion
+    target: audio/voice/russia/ru-supply-truck/die_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -1678,7 +1669,7 @@ entries:
   voice.ru-supply-truck.move:
     category: voice
     kind: voice
-    reference: SupplyTruckVoiceMove
+    target: audio/voice/russia/ru-supply-truck/move_<n>.webm
     variants: 5
     seconds: 6.66
     loop: false
@@ -1686,7 +1677,7 @@ entries:
   voice.ru-supply-truck.select:
     category: voice
     kind: voice
-    reference: SupplyTruckVoiceSelect
+    target: audio/voice/russia/ru-supply-truck/select_<n>.webm
     variants: 5
     seconds: 6
     loop: false
@@ -1694,7 +1685,7 @@ entries:
   voice.ru-supply-truck.underFire:
     category: voice
     kind: voice
-    reference: SupplyTruckVoiceSelect
+    target: audio/voice/russia/ru-supply-truck/underFire_<n>.webm
     variants: 5
     seconds: 6
     loop: false
@@ -1702,7 +1693,7 @@ entries:
   voice.ru-t-72b3.attack:
     category: voice
     kind: voice
-    reference: BattleMasterTankVoiceAttack
+    target: audio/voice/russia/ru-t-72b3/attack_<n>.webm
     variants: 8
     seconds: 8.29
     loop: false
@@ -1710,7 +1701,7 @@ entries:
   voice.ru-t-72b3.created:
     category: voice
     kind: voice
-    reference: BattleMasterTankVoiceCreate
+    target: audio/voice/russia/ru-t-72b3/created_<n>.webm
     variants: 1
     seconds: 1.09
     loop: false
@@ -1718,7 +1709,7 @@ entries:
   voice.ru-t-72b3.die:
     category: voice
     kind: voice
-    reference: Explosion
+    target: audio/voice/russia/ru-t-72b3/die_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -1726,7 +1717,7 @@ entries:
   voice.ru-t-72b3.move:
     category: voice
     kind: voice
-    reference: BattleMasterTankVoiceMove
+    target: audio/voice/russia/ru-t-72b3/move_<n>.webm
     variants: 6
     seconds: 6.62
     loop: false
@@ -1734,7 +1725,7 @@ entries:
   voice.ru-t-72b3.select:
     category: voice
     kind: voice
-    reference: BattleMasterTankVoiceSelect
+    target: audio/voice/russia/ru-t-72b3/select_<n>.webm
     variants: 5
     seconds: 5.86
     loop: false
@@ -1742,7 +1733,7 @@ entries:
   voice.ru-t-72b3.underFire:
     category: voice
     kind: voice
-    reference: BattleMasterTankVoiceSelect
+    target: audio/voice/russia/ru-t-72b3/underFire_<n>.webm
     variants: 5
     seconds: 5.86
     loop: false
@@ -1750,7 +1741,7 @@ entries:
   voice.ru-tos-1a.attack:
     category: voice
     kind: voice
-    reference: InfernoCannonVoiceAttack
+    target: audio/voice/russia/ru-tos-1a/attack_<n>.webm
     variants: 5
     seconds: 8.26
     loop: false
@@ -1758,7 +1749,7 @@ entries:
   voice.ru-tos-1a.created:
     category: voice
     kind: voice
-    reference: InfernoCannonVoiceCreate
+    target: audio/voice/russia/ru-tos-1a/created_<n>.webm
     variants: 1
     seconds: 1.58
     loop: false
@@ -1766,7 +1757,7 @@ entries:
   voice.ru-tos-1a.die:
     category: voice
     kind: voice
-    reference: Explosion
+    target: audio/voice/russia/ru-tos-1a/die_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -1774,7 +1765,7 @@ entries:
   voice.ru-tos-1a.move:
     category: voice
     kind: voice
-    reference: InfernoCannonVoiceMove
+    target: audio/voice/russia/ru-tos-1a/move_<n>.webm
     variants: 6
     seconds: 8.15
     loop: false
@@ -1782,7 +1773,7 @@ entries:
   voice.ru-tos-1a.select:
     category: voice
     kind: voice
-    reference: InfernoCannonVoiceSelect
+    target: audio/voice/russia/ru-tos-1a/select_<n>.webm
     variants: 5
     seconds: 8.94
     loop: false
@@ -1790,7 +1781,7 @@ entries:
   voice.ru-tos-1a.underFire:
     category: voice
     kind: voice
-    reference: InfernoCannonVoiceSelect
+    target: audio/voice/russia/ru-tos-1a/underFire_<n>.webm
     variants: 5
     seconds: 8.94
     loop: false
@@ -1798,7 +1789,7 @@ entries:
   voice.tracked.attack:
     category: voice
     kind: voice
-    reference: CrusaderTankVoiceAttack
+    target: audio/voice/common/tracked/attack_<n>.webm
     variants: 6
     seconds: 6.49
     loop: false
@@ -1806,7 +1797,7 @@ entries:
   voice.tracked.created:
     category: voice
     kind: voice
-    reference: CrusaderTankVoiceCreate
+    target: audio/voice/common/tracked/created_<n>.webm
     variants: 1
     seconds: 1.31
     loop: false
@@ -1814,7 +1805,7 @@ entries:
   voice.tracked.die:
     category: voice
     kind: voice
-    reference: Explosion
+    target: audio/voice/common/tracked/die_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -1822,7 +1813,7 @@ entries:
   voice.tracked.move:
     category: voice
     kind: voice
-    reference: CrusaderTankVoiceMove
+    target: audio/voice/common/tracked/move_<n>.webm
     variants: 5
     seconds: 5.21
     loop: false
@@ -1830,7 +1821,7 @@ entries:
   voice.tracked.select:
     category: voice
     kind: voice
-    reference: CrusaderTankVoiceSelect
+    target: audio/voice/common/tracked/select_<n>.webm
     variants: 5
     seconds: 5.67
     loop: false
@@ -1838,7 +1829,7 @@ entries:
   voice.tracked.underFire:
     category: voice
     kind: voice
-    reference: CrusaderTankVoiceSelect
+    target: audio/voice/common/tracked/underFire_<n>.webm
     variants: 5
     seconds: 5.67
     loop: false
@@ -1846,7 +1837,7 @@ entries:
   voice.ua-bradley.attack:
     category: voice
     kind: voice
-    reference: PaladinTankVoiceAttack
+    target: audio/voice/ukraine/ua-bradley/attack_<n>.webm
     variants: 5
     seconds: 7
     loop: false
@@ -1854,7 +1845,7 @@ entries:
   voice.ua-bradley.created:
     category: voice
     kind: voice
-    reference: PaladinTankVoiceCreate
+    target: audio/voice/ukraine/ua-bradley/created_<n>.webm
     variants: 1
     seconds: 1.4
     loop: false
@@ -1862,7 +1853,7 @@ entries:
   voice.ua-bradley.die:
     category: voice
     kind: voice
-    reference: Explosion
+    target: audio/voice/ukraine/ua-bradley/die_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -1870,7 +1861,7 @@ entries:
   voice.ua-bradley.move:
     category: voice
     kind: voice
-    reference: PaladinTankVoiceMove
+    target: audio/voice/ukraine/ua-bradley/move_<n>.webm
     variants: 5
     seconds: 4.69
     loop: false
@@ -1878,7 +1869,7 @@ entries:
   voice.ua-bradley.select:
     category: voice
     kind: voice
-    reference: PaladinTankVoiceSelect
+    target: audio/voice/ukraine/ua-bradley/select_<n>.webm
     variants: 6
     seconds: 7.13
     loop: false
@@ -1886,7 +1877,7 @@ entries:
   voice.ua-bradley.underFire:
     category: voice
     kind: voice
-    reference: PaladinTankVoiceSelect
+    target: audio/voice/ukraine/ua-bradley/underFire_<n>.webm
     variants: 6
     seconds: 7.13
     loop: false
@@ -1894,7 +1885,7 @@ entries:
   voice.ua-dozer.attack:
     category: voice
     kind: voice
-    reference: DozerUSAVoiceRepair
+    target: audio/voice/ukraine/ua-dozer/attack_<n>.webm
     variants: 5
     seconds: 7.8
     loop: false
@@ -1902,7 +1893,7 @@ entries:
   voice.ua-dozer.created:
     category: voice
     kind: voice
-    reference: DozerUSAVoiceCreate
+    target: audio/voice/ukraine/ua-dozer/created_<n>.webm
     variants: 1
     seconds: 1.28
     loop: false
@@ -1910,7 +1901,7 @@ entries:
   voice.ua-dozer.die:
     category: voice
     kind: voice
-    reference: Explosion
+    target: audio/voice/ukraine/ua-dozer/die_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -1918,7 +1909,7 @@ entries:
   voice.ua-dozer.move:
     category: voice
     kind: voice
-    reference: DozerUSAVoiceMove
+    target: audio/voice/ukraine/ua-dozer/move_<n>.webm
     variants: 6
     seconds: 7.31
     loop: false
@@ -1926,7 +1917,7 @@ entries:
   voice.ua-dozer.select:
     category: voice
     kind: voice
-    reference: DozerUSAVoiceSelect
+    target: audio/voice/ukraine/ua-dozer/select_<n>.webm
     variants: 9
     seconds: 10.2
     loop: false
@@ -1934,7 +1925,7 @@ entries:
   voice.ua-dozer.underFire:
     category: voice
     kind: voice
-    reference: DozerUSAVoiceBuildNot
+    target: audio/voice/ukraine/ua-dozer/underFire_<n>.webm
     variants: 4
     seconds: 6.42
     loop: false
@@ -1942,7 +1933,7 @@ entries:
   voice.ua-himars.attack:
     category: voice
     kind: voice
-    reference: TomahawkVoiceAttack
+    target: audio/voice/ukraine/ua-himars/attack_<n>.webm
     variants: 6
     seconds: 7.07
     loop: false
@@ -1950,7 +1941,7 @@ entries:
   voice.ua-himars.created:
     category: voice
     kind: voice
-    reference: TomahawkVoiceCreate
+    target: audio/voice/ukraine/ua-himars/created_<n>.webm
     variants: 1
     seconds: 1.19
     loop: false
@@ -1958,7 +1949,7 @@ entries:
   voice.ua-himars.die:
     category: voice
     kind: voice
-    reference: Explosion
+    target: audio/voice/ukraine/ua-himars/die_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -1966,7 +1957,7 @@ entries:
   voice.ua-himars.move:
     category: voice
     kind: voice
-    reference: TomahawkVoiceMove
+    target: audio/voice/ukraine/ua-himars/move_<n>.webm
     variants: 5
     seconds: 5.66
     loop: false
@@ -1974,7 +1965,7 @@ entries:
   voice.ua-himars.select:
     category: voice
     kind: voice
-    reference: TomahawkVoiceSelect
+    target: audio/voice/ukraine/ua-himars/select_<n>.webm
     variants: 5
     seconds: 6.48
     loop: false
@@ -1982,7 +1973,7 @@ entries:
   voice.ua-himars.underFire:
     category: voice
     kind: voice
-    reference: TomahawkVoiceSelect
+    target: audio/voice/ukraine/ua-himars/underFire_<n>.webm
     variants: 5
     seconds: 6.48
     loop: false
@@ -1990,7 +1981,7 @@ entries:
   voice.ua-kozak-scout.attack:
     category: voice
     kind: voice
-    reference: HumveeVoiceAttack
+    target: audio/voice/ukraine/ua-kozak-scout/attack_<n>.webm
     variants: 6
     seconds: 6.28
     loop: false
@@ -1998,7 +1989,7 @@ entries:
   voice.ua-kozak-scout.created:
     category: voice
     kind: voice
-    reference: HumveeVoiceCreate
+    target: audio/voice/ukraine/ua-kozak-scout/created_<n>.webm
     variants: 1
     seconds: 0.5
     loop: false
@@ -2006,7 +1997,7 @@ entries:
   voice.ua-kozak-scout.die:
     category: voice
     kind: voice
-    reference: Explosion
+    target: audio/voice/ukraine/ua-kozak-scout/die_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -2014,7 +2005,7 @@ entries:
   voice.ua-kozak-scout.move:
     category: voice
     kind: voice
-    reference: HumveeVoiceMove
+    target: audio/voice/ukraine/ua-kozak-scout/move_<n>.webm
     variants: 7
     seconds: 6.75
     loop: false
@@ -2022,7 +2013,7 @@ entries:
   voice.ua-kozak-scout.select:
     category: voice
     kind: voice
-    reference: HumveeVoiceSelect
+    target: audio/voice/ukraine/ua-kozak-scout/select_<n>.webm
     variants: 4
     seconds: 3.29
     loop: false
@@ -2030,7 +2021,7 @@ entries:
   voice.ua-kozak-scout.underFire:
     category: voice
     kind: voice
-    reference: HumveeVoiceSelect
+    target: audio/voice/ukraine/ua-kozak-scout/underFire_<n>.webm
     variants: 4
     seconds: 3.29
     loop: false
@@ -2038,7 +2029,7 @@ entries:
   voice.ua-leopard-2a4.attack:
     category: voice
     kind: voice
-    reference: CrusaderTankVoiceAttack
+    target: audio/voice/ukraine/ua-leopard-2a4/attack_<n>.webm
     variants: 6
     seconds: 6.49
     loop: false
@@ -2046,7 +2037,7 @@ entries:
   voice.ua-leopard-2a4.created:
     category: voice
     kind: voice
-    reference: CrusaderTankVoiceCreate
+    target: audio/voice/ukraine/ua-leopard-2a4/created_<n>.webm
     variants: 1
     seconds: 1.31
     loop: false
@@ -2054,7 +2045,7 @@ entries:
   voice.ua-leopard-2a4.die:
     category: voice
     kind: voice
-    reference: Explosion
+    target: audio/voice/ukraine/ua-leopard-2a4/die_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -2062,7 +2053,7 @@ entries:
   voice.ua-leopard-2a4.move:
     category: voice
     kind: voice
-    reference: CrusaderTankVoiceMove
+    target: audio/voice/ukraine/ua-leopard-2a4/move_<n>.webm
     variants: 5
     seconds: 5.21
     loop: false
@@ -2070,7 +2061,7 @@ entries:
   voice.ua-leopard-2a4.select:
     category: voice
     kind: voice
-    reference: CrusaderTankVoiceSelect
+    target: audio/voice/ukraine/ua-leopard-2a4/select_<n>.webm
     variants: 5
     seconds: 5.67
     loop: false
@@ -2078,7 +2069,7 @@ entries:
   voice.ua-leopard-2a4.underFire:
     category: voice
     kind: voice
-    reference: CrusaderTankVoiceSelect
+    target: audio/voice/ukraine/ua-leopard-2a4/underFire_<n>.webm
     variants: 5
     seconds: 5.67
     loop: false
@@ -2086,7 +2077,7 @@ entries:
   voice.ua-rifleman.attack:
     category: voice
     kind: voice
-    reference: RangerVoiceAttack
+    target: audio/voice/ukraine/ua-rifleman/attack_<n>.webm
     variants: 7
     seconds: 7.72
     loop: false
@@ -2094,7 +2085,7 @@ entries:
   voice.ua-rifleman.created:
     category: voice
     kind: voice
-    reference: RangerVoiceCreate
+    target: audio/voice/ukraine/ua-rifleman/created_<n>.webm
     variants: 1
     seconds: 1.06
     loop: false
@@ -2102,7 +2093,7 @@ entries:
   voice.ua-rifleman.die:
     category: voice
     kind: voice
-    reference: RangerVoiceDie
+    target: audio/voice/ukraine/ua-rifleman/die_<n>.webm
     variants: 12
     seconds: 6.29
     loop: false
@@ -2110,7 +2101,7 @@ entries:
   voice.ua-rifleman.move:
     category: voice
     kind: voice
-    reference: RangerVoiceMove
+    target: audio/voice/ukraine/ua-rifleman/move_<n>.webm
     variants: 5
     seconds: 4.83
     loop: false
@@ -2118,7 +2109,7 @@ entries:
   voice.ua-rifleman.select:
     category: voice
     kind: voice
-    reference: RangerVoiceSelect
+    target: audio/voice/ukraine/ua-rifleman/select_<n>.webm
     variants: 5
     seconds: 4.74
     loop: false
@@ -2126,7 +2117,7 @@ entries:
   voice.ua-rifleman.underFire:
     category: voice
     kind: voice
-    reference: RangerVoiceFear
+    target: audio/voice/ukraine/ua-rifleman/underFire_<n>.webm
     variants: 7
     seconds: 7.33
     loop: false
@@ -2134,7 +2125,7 @@ entries:
   voice.ua-stugna-team.attack:
     category: voice
     kind: voice
-    reference: MissileDefenderVoiceAttack
+    target: audio/voice/ukraine/ua-stugna-team/attack_<n>.webm
     variants: 8
     seconds: 8.83
     loop: false
@@ -2142,7 +2133,7 @@ entries:
   voice.ua-stugna-team.created:
     category: voice
     kind: voice
-    reference: MissileDefenderVoiceCreate
+    target: audio/voice/ukraine/ua-stugna-team/created_<n>.webm
     variants: 1
     seconds: 1.84
     loop: false
@@ -2150,7 +2141,7 @@ entries:
   voice.ua-stugna-team.die:
     category: voice
     kind: voice
-    reference: RangerVoiceDie
+    target: audio/voice/ukraine/ua-stugna-team/die_<n>.webm
     variants: 12
     seconds: 6.29
     loop: false
@@ -2158,7 +2149,7 @@ entries:
   voice.ua-stugna-team.move:
     category: voice
     kind: voice
-    reference: MissileDefenderVoiceMove
+    target: audio/voice/ukraine/ua-stugna-team/move_<n>.webm
     variants: 6
     seconds: 4.88
     loop: false
@@ -2166,7 +2157,7 @@ entries:
   voice.ua-stugna-team.select:
     category: voice
     kind: voice
-    reference: MissileDefenderVoiceSelect
+    target: audio/voice/ukraine/ua-stugna-team/select_<n>.webm
     variants: 5
     seconds: 5.86
     loop: false
@@ -2174,7 +2165,7 @@ entries:
   voice.ua-stugna-team.underFire:
     category: voice
     kind: voice
-    reference: MissileDefenderVoiceFear
+    target: audio/voice/ukraine/ua-stugna-team/underFire_<n>.webm
     variants: 3
     seconds: 2.81
     loop: false
@@ -2182,7 +2173,7 @@ entries:
   voice.ua-supply-truck.attack:
     category: voice
     kind: voice
-    reference: ChinookVoiceSupply
+    target: audio/voice/ukraine/ua-supply-truck/attack_<n>.webm
     variants: 14
     seconds: 6.39
     loop: true
@@ -2190,7 +2181,7 @@ entries:
   voice.ua-supply-truck.created:
     category: voice
     kind: voice
-    reference: ChinookVoiceCreate
+    target: audio/voice/ukraine/ua-supply-truck/created_<n>.webm
     variants: 12
     seconds: 3.29
     loop: true
@@ -2198,7 +2189,7 @@ entries:
   voice.ua-supply-truck.die:
     category: voice
     kind: voice
-    reference: Explosion
+    target: audio/voice/ukraine/ua-supply-truck/die_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -2206,7 +2197,7 @@ entries:
   voice.ua-supply-truck.move:
     category: voice
     kind: voice
-    reference: ChinookVoiceMove
+    target: audio/voice/ukraine/ua-supply-truck/move_<n>.webm
     variants: 17
     seconds: 9.39
     loop: true
@@ -2214,7 +2205,7 @@ entries:
   voice.ua-supply-truck.select:
     category: voice
     kind: voice
-    reference: ChinookVoiceSelect
+    target: audio/voice/ukraine/ua-supply-truck/select_<n>.webm
     variants: 17
     seconds: 9.61
     loop: true
@@ -2222,7 +2213,7 @@ entries:
   voice.ua-supply-truck.underFire:
     category: voice
     kind: voice
-    reference: ChinookVoiceSelect
+    target: audio/voice/ukraine/ua-supply-truck/underFire_<n>.webm
     variants: 17
     seconds: 9.61
     loop: true
@@ -2230,7 +2221,7 @@ entries:
   voice.unit.attack:
     category: voice
     kind: voice
-    reference: CrusaderTankVoiceAttack
+    target: audio/voice/common/unit/attack_<n>.webm
     variants: 6
     seconds: 6.49
     loop: false
@@ -2238,7 +2229,7 @@ entries:
   voice.unit.created:
     category: voice
     kind: voice
-    reference: CrusaderTankVoiceCreate
+    target: audio/voice/common/unit/created_<n>.webm
     variants: 1
     seconds: 1.31
     loop: false
@@ -2246,7 +2237,7 @@ entries:
   voice.unit.die:
     category: voice
     kind: voice
-    reference: Explosion
+    target: audio/voice/common/unit/die_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -2254,7 +2245,7 @@ entries:
   voice.unit.move:
     category: voice
     kind: voice
-    reference: CrusaderTankVoiceMove
+    target: audio/voice/common/unit/move_<n>.webm
     variants: 5
     seconds: 5.21
     loop: false
@@ -2262,7 +2253,7 @@ entries:
   voice.unit.select:
     category: voice
     kind: voice
-    reference: CrusaderTankVoiceSelect
+    target: audio/voice/common/unit/select_<n>.webm
     variants: 5
     seconds: 5.67
     loop: false
@@ -2270,7 +2261,7 @@ entries:
   voice.unit.underFire:
     category: voice
     kind: voice
-    reference: CrusaderTankVoiceSelect
+    target: audio/voice/common/unit/underFire_<n>.webm
     variants: 5
     seconds: 5.67
     loop: false
@@ -2278,7 +2269,7 @@ entries:
   voice.wheeled.attack:
     category: voice
     kind: voice
-    reference: HumveeVoiceAttack
+    target: audio/voice/common/wheeled/attack_<n>.webm
     variants: 6
     seconds: 6.28
     loop: false
@@ -2286,7 +2277,7 @@ entries:
   voice.wheeled.created:
     category: voice
     kind: voice
-    reference: HumveeVoiceCreate
+    target: audio/voice/common/wheeled/created_<n>.webm
     variants: 1
     seconds: 0.5
     loop: false
@@ -2294,7 +2285,7 @@ entries:
   voice.wheeled.die:
     category: voice
     kind: voice
-    reference: Explosion
+    target: audio/voice/common/wheeled/die_<n>.webm
     variants: 6
     seconds: 12.79
     loop: false
@@ -2302,7 +2293,7 @@ entries:
   voice.wheeled.move:
     category: voice
     kind: voice
-    reference: HumveeVoiceMove
+    target: audio/voice/common/wheeled/move_<n>.webm
     variants: 7
     seconds: 6.75
     loop: false
@@ -2310,7 +2301,7 @@ entries:
   voice.wheeled.select:
     category: voice
     kind: voice
-    reference: HumveeVoiceSelect
+    target: audio/voice/common/wheeled/select_<n>.webm
     variants: 4
     seconds: 3.29
     loop: false
@@ -2318,7 +2309,7 @@ entries:
   voice.wheeled.underFire:
     category: voice
     kind: voice
-    reference: HumveeVoiceSelect
+    target: audio/voice/common/wheeled/underFire_<n>.webm
     variants: 4
     seconds: 3.29
     loop: false
@@ -2326,7 +2317,7 @@ entries:
   eva.russia.baseUnderAttack:
     category: eva
     kind: eva
-    reference: RedGuardVoiceBaseAttack
+    target: audio/eva/russia/baseUnderAttack_<n>.webm
     variants: 4
     seconds: 6.34
     loop: false
@@ -2334,7 +2325,7 @@ entries:
   eva.russia.buildingLost:
     category: eva
     kind: eva
-    reference: EvaChina_BuildingDisabled
+    target: audio/eva/russia/buildingLost_<n>.webm
     variants: 1
     seconds: 1.62
     loop: false
@@ -2342,7 +2333,7 @@ entries:
   eva.russia.buildingReady:
     category: eva
     kind: eva
-    reference: EvaChina_SelectTarget
+    target: audio/eva/russia/buildingReady_<n>.webm
     variants: 1
     seconds: 1.27
     loop: false
@@ -2350,7 +2341,7 @@ entries:
   eva.russia.constructionComplete:
     category: eva
     kind: eva
-    reference: DozerChinaVoiceBuildComplete
+    target: audio/eva/russia/constructionComplete_<n>.webm
     variants: 4
     seconds: 6.85
     loop: false
@@ -2358,7 +2349,7 @@ entries:
   eva.russia.defeat:
     category: eva
     kind: eva
-    reference: EvaChina_Defeat
+    target: audio/eva/russia/defeat_<n>.webm
     variants: 1
     seconds: 1.48
     loop: false
@@ -2366,7 +2357,7 @@ entries:
   eva.russia.insufficientFunds:
     category: eva
     kind: eva
-    reference: EvaChina_InsufficientFunds
+    target: audio/eva/russia/insufficientFunds_<n>.webm
     variants: 1
     seconds: 1.48
     loop: false
@@ -2374,7 +2365,7 @@ entries:
   eva.russia.lowPower:
     category: eva
     kind: eva
-    reference: EvaChina_LowPower
+    target: audio/eva/russia/lowPower_<n>.webm
     variants: 1
     seconds: 1.31
     loop: false
@@ -2382,7 +2373,7 @@ entries:
   eva.russia.productionComplete:
     category: eva
     kind: eva
-    reference: EvaChina_ReinforcementsHaveArrived
+    target: audio/eva/russia/productionComplete_<n>.webm
     variants: 1
     seconds: 1.64
     loop: false
@@ -2390,7 +2381,7 @@ entries:
   eva.russia.unitLost:
     category: eva
     kind: eva
-    reference: EvaChina_UnitLost
+    target: audio/eva/russia/unitLost_<n>.webm
     variants: 1
     seconds: 1.18
     loop: false
@@ -2398,7 +2389,7 @@ entries:
   eva.russia.upgradeComplete:
     category: eva
     kind: eva
-    reference: EvaChina_UpgradeComplete
+    target: audio/eva/russia/upgradeComplete_<n>.webm
     variants: 1
     seconds: 1.09
     loop: false
@@ -2406,7 +2397,7 @@ entries:
   eva.russia.victory:
     category: eva
     kind: eva
-    reference: EvaChina_Victory
+    target: audio/eva/russia/victory_<n>.webm
     variants: 1
     seconds: 1.56
     loop: false
@@ -2414,7 +2405,7 @@ entries:
   eva.ukraine.baseUnderAttack:
     category: eva
     kind: eva
-    reference: RangerVoiceBaseAttack
+    target: audio/eva/ukraine/baseUnderAttack_<n>.webm
     variants: 4
     seconds: 6.08
     loop: false
@@ -2422,7 +2413,7 @@ entries:
   eva.ukraine.buildingLost:
     category: eva
     kind: eva
-    reference: EvaUSA_BuildingDisabled
+    target: audio/eva/ukraine/buildingLost_<n>.webm
     variants: 1
     seconds: 1.22
     loop: false
@@ -2430,7 +2421,7 @@ entries:
   eva.ukraine.buildingReady:
     category: eva
     kind: eva
-    reference: EvaUSA_SelectTarget
+    target: audio/eva/ukraine/buildingReady_<n>.webm
     variants: 1
     seconds: 1.05
     loop: false
@@ -2438,7 +2429,7 @@ entries:
   eva.ukraine.constructionComplete:
     category: eva
     kind: eva
-    reference: DozerUSAVoiceBuildComplete
+    target: audio/eva/ukraine/constructionComplete_<n>.webm
     variants: 3
     seconds: 3.74
     loop: false
@@ -2446,7 +2437,7 @@ entries:
   eva.ukraine.defeat:
     category: eva
     kind: eva
-    reference: EvaUSA_Defeat
+    target: audio/eva/ukraine/defeat_<n>.webm
     variants: 1
     seconds: 1.34
     loop: false
@@ -2454,7 +2445,7 @@ entries:
   eva.ukraine.insufficientFunds:
     category: eva
     kind: eva
-    reference: EvaUSA_InsufficientFunds
+    target: audio/eva/ukraine/insufficientFunds_<n>.webm
     variants: 1
     seconds: 1.24
     loop: false
@@ -2462,7 +2453,7 @@ entries:
   eva.ukraine.lowPower:
     category: eva
     kind: eva
-    reference: EvaUSA_LowPower
+    target: audio/eva/ukraine/lowPower_<n>.webm
     variants: 1
     seconds: 0.77
     loop: false
@@ -2470,7 +2461,7 @@ entries:
   eva.ukraine.productionComplete:
     category: eva
     kind: eva
-    reference: EvaUSA_ReinforcementsHaveArrived
+    target: audio/eva/ukraine/productionComplete_<n>.webm
     variants: 1
     seconds: 1.69
     loop: false
@@ -2478,7 +2469,7 @@ entries:
   eva.ukraine.unitLost:
     category: eva
     kind: eva
-    reference: EvaUSA_UnitLost
+    target: audio/eva/ukraine/unitLost_<n>.webm
     variants: 1
     seconds: 0.98
     loop: false
@@ -2486,7 +2477,7 @@ entries:
   eva.ukraine.upgradeComplete:
     category: eva
     kind: eva
-    reference: EvaUSA_UpgradeComplete
+    target: audio/eva/ukraine/upgradeComplete_<n>.webm
     variants: 1
     seconds: 1.32
     loop: false
@@ -2494,7 +2485,7 @@ entries:
   eva.ukraine.victory:
     category: eva
     kind: eva
-    reference: EvaUSA_Victory
+    target: audio/eva/ukraine/victory_<n>.webm
     variants: 1
     seconds: 1.31
     loop: false

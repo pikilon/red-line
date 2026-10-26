@@ -148,7 +148,8 @@ Owner answers to the Phase 2 design questions; elaborated in
 * The owner's Zero Hour reference pack may be transcoded locally to WebM for
   listening and A/B (`audio:pack`), but it never ships; D-02 still forbids
   reproducing EA's sounds.
-* `data/audio/inventory.yaml` is the phase 2 list of what to replace. Its
-  `brief` and `prompt` text is original. Drafts may be produced by a local
-  model from spectrograms; the owner approves each brief by ear before it
-  becomes `approved`.
+* `data/audio/inventory.yaml` is the phase 2 list of what to replace. Every
+  entry names a `.webm` target (the path we will ship) and never a source
+  recording. Its `brief` and `prompt` text is original. Drafts may be produced
+  by a local model from spectrograms; the owner approves each brief by ear
+  before it becomes `approved`.

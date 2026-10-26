@@ -140,19 +140,18 @@ async function spectrogram(id, file, seconds) {
 }
 
 function promptFor(id, record) {
-  return `You are writing audio briefs for "Modern Conquest: Red Line", an original free browser RTS. The attached image is a log-frequency spectrogram of an existing reference sound (time left to right, frequency bottom to top, energy as colour). Read its density, brightness, attack/decay shape and rhythmic pattern.
+  return `You are writing audio briefs for "Modern Conquest: Red Line", an original free browser RTS. The attached image is a log-frequency spectrogram of the current sound (time left to right, frequency bottom to top, energy as colour). Read its density, brightness, attack/decay shape and rhythmic pattern.
 
 Context:
 - Event id: ${id}
 - Category: ${record.category}
-- Reference event name (broad clue only, never repeat it): ${record.reference}
 - Role in the game: ${roleOf(id, record)}
 - Length: ${(record.seconds / Math.max(1, record.variants)).toFixed(2)} s per variant, ${record.variants} variant(s)${record.loop ? ", loops" : ""}
 
-Write original sound design text for OUR OWN replacement asset. Return strict JSON with exactly these keys:
+Write original sound design text for OUR OWN asset. Return strict JSON with exactly these keys:
 {"brief": "1-2 sentences: what the sound should be, in our own words", "prompt": "a compact prompt for a text-to-audio model: source, character, tempo if music, structure, production, duration", "tags": ["3 to 6 lowercase English tags"]}
 
-Rules: never mention Command & Conquer, Zero Hour, EA, the reference, or any real weapon trademark; do not claim instruments the spectrogram cannot support (if unsure, describe energy and texture); no markdown, no code fence.`;
+Rules: never mention Command & Conquer, Zero Hour, EA, or any real weapon trademark; do not claim instruments the spectrogram cannot support (if unsure, describe energy and texture); no markdown, no code fence.`;
 }
 
 async function ask(model, url, id, record, imagePath) {

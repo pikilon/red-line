@@ -3,29 +3,28 @@ import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
 
+// The index (`zh-events.json`) still lives with the extracted originals.
 const AUDIO_REF_DIR = fileURLToPath(
   new URL("../.local/audio-ref", import.meta.url),
 );
 
-// `node --run audio:pack` writes the same reference files as Opus/WebM at the
-// shipping bitrates (spec 25 §12). The dev middleware prefers those files so
-// the game exercises the shipping format; `.local/audio-ref/` remains the
-// fallback and the only source the extractor writes to.
+// `node --run audio:pack` writes the WebM files the dev build plays (spec 25
+// §4.2, §12). Audio is served only from here: `.local/audio-ref/` is input to
+// the packer and is never served as audio, so the game exercises one format.
 const AUDIO_REF_WEBM_DIR = fileURLToPath(
   new URL("../.local/audio-ref-webm", import.meta.url),
 );
 
 const MIME_BY_EXT: Record<string, string> = {
   ".json": "application/json; charset=utf-8",
-  ".wav": "audio/wav",
-  ".mp3": "audio/mpeg",
   ".webm": "audio/webm",
-  ".ogg": "audio/ogg",
 };
 
 /**
- * Dev-server-only middleware (`apply: 'serve'`) serving `/audio-ref/*` from `.local/audio-ref/`
- * (`specs/25-audio.md` §4.2). Never runs during production builds (`vite build` / `deploy:pages`).
+ * Dev-server-only middleware (`apply: 'serve'`) serving the parsed index from
+ * `.local/audio-ref/` and every audio file from `.local/audio-ref-webm/`
+ * (`specs/25-audio.md` §4.2). Never runs during production builds (`vite build`
+ * / `deploy:pages`).
  */
 function zhAudioRefServePlugin(): Plugin {
   return {
@@ -40,28 +39,16 @@ function zhAudioRefServePlugin(): Plugin {
         const cleanUrl = decodeURIComponent(
           req.url.split("?")[0] ?? "",
         ).replace(/^\/+/, "");
-        const original = resolve(AUDIO_REF_DIR, cleanUrl);
-        if (
-          !original.startsWith(AUDIO_REF_DIR + sep) &&
-          original !== AUDIO_REF_DIR
-        ) {
+        const isIndex = cleanUrl.toLowerCase().endsWith(".json");
+        const baseDir = isIndex ? AUDIO_REF_DIR : AUDIO_REF_WEBM_DIR;
+        const relative = isIndex
+          ? cleanUrl
+          : cleanUrl.replace(/\.(wav|mp3)$/i, ".webm");
+        const candidate = resolve(baseDir, relative);
+        if (!candidate.startsWith(baseDir + sep)) {
           res.statusCode = 403;
           res.end("Forbidden");
           return;
-        }
-        let candidate = original;
-        if (/\.(wav|mp3)$/i.test(cleanUrl)) {
-          const webm = resolve(
-            AUDIO_REF_WEBM_DIR,
-            cleanUrl.replace(/\.(wav|mp3)$/i, ".webm"),
-          );
-          if (
-            webm.startsWith(AUDIO_REF_WEBM_DIR + sep) &&
-            existsSync(webm) &&
-            statSync(webm).isFile()
-          ) {
-            candidate = webm;
-          }
         }
         if (!existsSync(candidate) || !statSync(candidate).isFile()) {
           res.statusCode = 404;
