@@ -26,6 +26,12 @@ interface PlayingNode {
   gainNode: GainNode;
 }
 
+interface EngineLoopNode {
+  entityId: number;
+  osc: OscillatorNode;
+  gain: GainNode;
+}
+
 export class AudioMixer {
   readonly catalog: AudioCatalog;
   readonly director: AudioDirector;
@@ -36,7 +42,7 @@ export class AudioMixer {
   private buses: Record<AudioBusName, GainNode> | null = null;
   private duckNodes: { music: GainNode; sfx: GainNode } | null = null;
   private readonly playing = new Map<number, PlayingNode>();
-  private readonly lastResolvedVariant = new Map<string, number>();
+  private readonly engineLoops = new Map<number, EngineLoopNode>();
   private musicSource: AudioBufferSourceNode | null = null;
   private currentMusicEvent: string | null = null;
   private listener: ListenerState = { tileX: 32, tileY: 32, zoom: 1 };
@@ -128,36 +134,21 @@ export class AudioMixer {
       request.eventId,
       options?.fallbackCategory,
     );
-    const forceSynth = options?.forceSynth ?? false;
     const resolvedSounds = this.loader.resolveEventSounds(
       request.eventId,
       def?.sounds ?? [decision.soundId],
-      forceSynth,
+      options?.forceSynth ?? false,
     );
-    if (resolvedSounds.length === 0) {
-      this.director.releaseChannel(handle);
-      return decision;
-    }
-    const isRandom = def?.control?.includes("random") ?? true;
-    const prevIdx = this.lastResolvedVariant.get(request.eventId);
-    const resolvedIdx = pickVariantIndex(
-      resolvedSounds.length,
-      isRandom,
-      prevIdx,
-    );
-    this.lastResolvedVariant.set(request.eventId, resolvedIdx);
-    const chosenSound = resolvedSounds[resolvedIdx] ?? decision.soundId;
-    decision.variantIndex = resolvedIdx;
+    const chosenSound =
+      resolvedSounds[
+        decision.variantIndex % Math.max(1, resolvedSounds.length)
+      ] ?? decision.soundId;
     decision.soundId = chosenSound;
 
     this.schedulePlayback(
       handle,
       decision,
-      false,
-      request.eventId,
-      def?.sounds ?? [decision.soundId],
-      isRandom,
-      forceSynth,
+      def?.control?.includes("loop") ?? false,
     );
     return decision;
   }
@@ -190,23 +181,19 @@ export class AudioMixer {
     const next = this.evaQueue.process(2000);
     if (!next) return;
 
+    const zhUrls = this.loader.resolveZhUrls(next.soundRef);
+    const pickedUrl =
+      zhUrls.length > 0
+        ? zhUrls[pickVariantIndex(zhUrls.length, true, undefined)]
+        : undefined;
+    const soundId =
+      pickedUrl ??
+      (next.soundRef.startsWith("synth:") ? next.soundRef : "synth:eva");
+
     const ctx = this.ensureContext();
     if (!ctx || !this.buses) return;
 
-    void (async () => {
-      if (!this.loader.isProbeDone()) {
-        await this.loader.initReferencePack();
-      }
-      const zhUrls = this.loader.resolveZhUrls(next.soundRef);
-      const pickedUrl =
-        zhUrls.length > 0
-          ? zhUrls[pickVariantIndex(zhUrls.length, true, undefined)]
-          : undefined;
-      const soundId =
-        pickedUrl ??
-        (next.soundRef.startsWith("synth:") ? next.soundRef : "synth:eva");
-
-      const buffer = await this.loader.getBuffer(ctx, soundId);
+    void this.loader.getBuffer(ctx, soundId).then((buffer) => {
       if (!buffer || !this.ctx || !this.buses) return;
       const durationMs = buffer.duration * 1000;
       this.evaQueue.notifyPlayingDuration(durationMs);
@@ -219,18 +206,62 @@ export class AudioMixer {
       source.connect(gain);
       gain.connect(this.buses.eva);
       source.start();
-    })();
+    });
   }
 
   /**
-   * Ground units in Zero Hour (`ThingTemplate.h:111`, `AIStates.cpp:1696-1714`) do not run
-   * continuous oscillator/engine loops; movement is strictly the discrete `SoundMoveStart`
-   * event on acceleration. Kept as a no-op hook so callers do not produce a synthetic hum.
+   * Updates continuous engine/locomotor loops for moving on-screen units (`specs/25-audio.md` §6.7).
+   * Called about once per second (`TimeBetweenDrawableSounds = 1000ms`), never every frame.
    */
   syncEngineLoops(
-    _movingUnits: readonly { id: number; speedRatio: number; gain: number }[],
+    movingUnits: readonly { id: number; speedRatio: number; gain: number }[],
   ): void {
-    // Intentionally empty: no continuous sawtooth oscillator drone.
+    const ctx = this.ensureContext();
+    if (!ctx || !this.buses || ctx.state !== "running") return;
+
+    const limit = 4;
+    const topUnits = [...movingUnits]
+      .filter((u) => u.speedRatio > 0.05 && u.gain > 0.02)
+      .sort((a, b) => b.gain - a.gain)
+      .slice(0, limit);
+    const keepIds = new Set(topUnits.map((u) => u.id));
+
+    for (const [id, node] of this.engineLoops) {
+      if (!keepIds.has(id)) {
+        try {
+          node.osc.stop();
+          node.osc.disconnect();
+          node.gain.disconnect();
+        } catch {
+          // ignore already stopped
+        }
+        this.engineLoops.delete(id);
+      }
+    }
+
+    const now = ctx.currentTime;
+    for (const unit of topUnits) {
+      let loop = this.engineLoops.get(unit.id);
+      if (!loop) {
+        const osc = ctx.createOscillator();
+        osc.type = "sawtooth";
+        const filter = ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.value = 240;
+        const gain = ctx.createGain();
+        gain.gain.value = 0.001;
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.buses.sfx);
+        osc.start();
+        loop = { entityId: unit.id, osc, gain };
+        this.engineLoops.set(unit.id, loop);
+      }
+      const targetFreq = 52 + unit.speedRatio * 48;
+      const targetGain = Math.min(0.22, unit.gain * 0.18);
+      loop.osc.frequency.setTargetAtTime(targetFreq, now, 0.15);
+      loop.gain.gain.setTargetAtTime(targetGain, now, 0.15);
+    }
   }
 
   /** Starts or crossfades background music state (`music.calm.<faction>`, `music.combat.<faction>`, etc.). */
@@ -252,15 +283,11 @@ export class AudioMixer {
 
     const def = resolveEventDef(this.catalog, eventId);
     if (!def) return;
+    const sounds = this.loader.resolveEventSounds(eventId, def.sounds);
+    const soundId = sounds[0];
+    if (!soundId) return;
 
-    void (async () => {
-      if (!this.loader.isProbeDone()) {
-        await this.loader.initReferencePack();
-      }
-      const sounds = this.loader.resolveEventSounds(eventId, def.sounds);
-      const soundId = sounds[0];
-      if (!soundId) return;
-      const buffer = await this.loader.getBuffer(ctx, soundId);
+    void this.loader.getBuffer(ctx, soundId).then((buffer) => {
       if (
         !buffer ||
         !this.ctx ||
@@ -274,7 +301,7 @@ export class AudioMixer {
       source.connect(this.buses.music);
       source.start();
       this.musicSource = source;
-    })();
+    });
   }
 
   getDebugLog(): readonly AudioDebugEntry[] {
@@ -285,10 +312,6 @@ export class AudioMixer {
     handle: number,
     decision: AdmissionDecision,
     loop: boolean,
-    eventId: string,
-    configuredSounds: readonly string[],
-    isRandom: boolean,
-    forceSynth: boolean,
   ): void {
     const ctx = this.ensureContext();
     if (!ctx || !this.buses) {
@@ -297,30 +320,7 @@ export class AudioMixer {
       return;
     }
 
-    void (async () => {
-      let soundId = decision.soundId;
-      if (!forceSynth && !this.loader.isProbeDone()) {
-        await this.loader.initReferencePack();
-        const lateSounds = this.loader.resolveEventSounds(
-          eventId,
-          configuredSounds,
-          false,
-        );
-        if (lateSounds.length === 0) {
-          this.director.releaseChannel(handle);
-          return;
-        }
-        const idx = pickVariantIndex(
-          lateSounds.length,
-          isRandom,
-          this.lastResolvedVariant.get(eventId),
-        );
-        this.lastResolvedVariant.set(eventId, idx);
-        soundId = lateSounds[idx] ?? soundId;
-        decision.soundId = soundId;
-      }
-
-      const buffer = await this.loader.getBuffer(ctx, soundId);
+    void this.loader.getBuffer(ctx, decision.soundId).then((buffer) => {
       if (!buffer || !this.ctx || !this.buses) {
         this.director.releaseChannel(handle);
         return;
