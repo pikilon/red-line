@@ -151,8 +151,11 @@ export class AudioLoader {
     configuredSounds: readonly string[],
     forceSynth = false,
   ): string[] {
+    const zhName = this.catalog.reference.events[eventId];
+    if (zhName === "NoSound" && !forceSynth) {
+      return [];
+    }
     if (!forceSynth && this.zhIndex) {
-      const zhName = this.catalog.reference.events[eventId];
       const zhUrls = this.resolveZhUrls(zhName);
       if (zhUrls.length > 0) return zhUrls;
     }
