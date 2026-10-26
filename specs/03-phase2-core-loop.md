@@ -107,7 +107,7 @@ maps: [first-line]                   # required; file order of data/maps/<id>.ya
 damageTypes: [smallArms, autocannon, antiTank, highExplosive, thermobaric]   # required, ids
 armorClasses: [infantry, light, armored, structure]                           # required, ids
 damageModifiers:                     # required: one entry per damage type, one key per armour class, 0..1000
-  smallArms: { infantry: 100, light: 30, armored: 0, structure: 10 }
+  smallArms: { infantry: 100, light: 30, armored: 25, structure: 10 }
   # ...
 startingCredits: 5000                # required, >= 0
 lowPowerMinSpeedPercent: 25          # required, 1..100
@@ -264,11 +264,21 @@ Damage modifiers (percent):
 
 | damage \ armour | infantry | light | armored | structure |
 |---|---|---|---|---|
-| smallArms | 100 | 30 | 0 | 10 |
+| smallArms | 100 | 30 | 25 | 10 |
 | autocannon | 75 | 100 | 20 | 40 |
 | antiTank | 30 | 100 | 100 | 60 |
 | highExplosive | 100 | 80 | 60 | 100 |
 | thermobaric | 150 | 70 | 20 | 120 |
+
+Small arms hurt armour a little (owner request 2026-10-26): Zero Hour's
+`TankArmor` gives `SMALL_ARMS` 25 % (`Armor.ini:126`, `generals-precedent`
+note 2026-10-26 on `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`), so
+rifle fire chips a tank (2 hp with `ua-rifle`) instead of doing nothing. This
+replaces the earlier 0 %, which made rifle infantry ignore tanks entirely: in
+Zero Hour a weapon is a valid target only when the computed damage against
+that armour is nonzero (`WeaponSet.cpp:726`). The `max(1, …)` floor of
+`damage_dealt` makes any nonzero modifier do at least 1, and the numbers live
+in `data/`, not in the code.
 
 Common types (in this order):
 
@@ -2043,6 +2053,14 @@ two owner-0 riflemen there with `debugSpawn`).
 player 0 dozer at `(5.5, 16.0)`, when the tank is ordered to force-fire at the
 dozer's position, then after five steps the dozer has lost the cannon's
 damage; auto-targeting still never picks a friendly.
+
+**AC-03-69 Small arms chip armour (owner request 2026-10-26).** Given the
+builtin rules and a player 0 rifleman at `(10.5, 10.5)` next to a player 1
+T-72B3 at `(13.5, 10.5)`, when the simulation runs, then the rifleman picks the
+tank as its target, the tank loses 2 hp per hit (10 × 25 %), and the rifleman
+survives the first volley. Zero Hour precedent: `TankArmor` gives `SMALL_ARMS`
+25 % and a zero-damage weapon is never a valid target (`Armor.ini:126`,
+`WeaponSet.cpp:726`, `generals-precedent` note 2026-10-26).
 
 ### Updated Phase 1 criteria
 

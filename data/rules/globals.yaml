@@ -5,7 +5,7 @@ saves: [showcase, showcase-units, armor-duel, infantry-vs-armor, rpg-ambush, art
 damageTypes: [smallArms, autocannon, antiTank, highExplosive, thermobaric]   # required, ids
 armorClasses: [infantry, light, armored, structure]                           # required, ids
 damageModifiers:                     # required: one entry per damage type, one key per armour class, 0..1000
-  smallArms: { infantry: 100, light: 30, armored: 0, structure: 10 }
+  smallArms: { infantry: 100, light: 30, armored: 25, structure: 10 }
   autocannon: { infantry: 75, light: 100, armored: 20, structure: 40 }
   antiTank: { infantry: 30, light: 100, armored: 100, structure: 60 }
   highExplosive: { infantry: 100, light: 80, armored: 60, structure: 100 }

@@ -70,6 +70,39 @@ fn ac_03_27_auto_targeting_cooldown_and_id_order() {
     assert_eq!(world.entity(a).unwrap().last_target, None);
 }
 
+/// AC-03-69: the live data gives small arms 25 % against armour, so a rifleman
+/// acquires a tank and chips it instead of ignoring it (owner request
+/// 2026-10-26).
+#[test]
+fn ac_03_69_small_arms_chip_armored_vehicles() {
+    let mut world = builtin_sandbox();
+    let rifleman = world
+        .rules()
+        .type_index("ua-rifleman")
+        .expect("ua-rifleman exists");
+    let tank = world
+        .rules()
+        .type_index("ru-t-72b3")
+        .expect("ru-t-72b3 exists");
+    let soldier = world.spawn(0, rifleman, at(1050, 1050));
+    let victim = world.spawn(1, tank, at(1350, 1050));
+    let hp = world.entity(victim).unwrap().hp;
+
+    let mut fired = false;
+    for _ in 0..20 {
+        world.step();
+        fired |= world.entity(soldier).unwrap().last_target == Some(victim);
+        if world.entity(victim).unwrap().hp < hp {
+            break;
+        }
+    }
+
+    assert!(fired, "the rifleman targets the armoured tank");
+    let taken = hp - world.entity(victim).unwrap().hp;
+    assert_eq!(taken, 2, "a rifle round chips 2 hp (10 × 25 %)");
+    assert!(world.entity(soldier).is_some(), "the rifleman survives");
+}
+
 #[test]
 fn ac_03_28_zero_modifiers_are_never_targeted() {
     let mut world = sandbox();
