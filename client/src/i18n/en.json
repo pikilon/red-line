@@ -29,6 +29,8 @@
   "menu.fpsOff": "FPS panel: off",
   "touch.joystick": "Joystick",
   "touch.menu": "Menu",
+  "rotate.title": "Rotate your device",
+  "rotate.body": "Red Line plays in landscape.",
   "menu.restart": "Restart match",
   "error.simInit": "The simulation failed to start: {detail}",
   "settings.goreOn": "Gore on",

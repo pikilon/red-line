@@ -2,28 +2,49 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0b0f14" />
+    <meta
+      name="description"
+      content="Modern Conquest: Red Line — a browser 2.5D real-time strategy game."
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Red Line" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <title>Modern Conquest: Red Line</title>
     <style>
-      html, body, #app { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
-      #hud { position: fixed; top: 8px; left: 8px; pointer-events: none; color: #fff; font: 14px/1.4 system-ui, sans-serif; text-shadow: 0 1px 2px #000; }
-      #perf-panel { position: fixed; top: 8px; right: 8px; pointer-events: none; color: #fff; font: 14px/1.4 system-ui, sans-serif; text-shadow: 0 1px 2px #000; }
+      html, body { position: fixed; inset: 0; margin: 0; overflow: hidden; overscroll-behavior: none; background: #000; }
+      body { color: #fff; font: 14px/1.4 system-ui, sans-serif; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+      #app { position: fixed; inset: 0; overflow: hidden; background: #000; }
+      #app canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+      #hud { position: fixed; top: calc(8px + env(safe-area-inset-top)); left: calc(8px + env(safe-area-inset-left)); pointer-events: none; color: #fff; font: 14px/1.4 system-ui, sans-serif; text-shadow: 0 1px 2px #000; }
+      #perf-panel { position: fixed; top: calc(8px + env(safe-area-inset-top)); right: calc(8px + env(safe-area-inset-right)); pointer-events: none; color: #fff; font: 14px/1.4 system-ui, sans-serif; text-shadow: 0 1px 2px #000; }
       #perf-panel.perf-bad { color: #ff4d4d; }
-      #resource-bar { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 16px; padding: 4px 12px; border-radius: 4px; background: rgba(0, 0, 0, 0.5); pointer-events: none; color: #fff; font: 14px/1.4 system-ui, sans-serif; text-shadow: 0 1px 2px #000; }
+      #resource-bar { position: fixed; top: calc(8px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); display: flex; gap: 16px; max-width: calc(100vw - 140px); padding: 4px 12px; border-radius: 4px; background: rgba(0, 0, 0, 0.5); pointer-events: none; color: #fff; font: 14px/1.4 system-ui, sans-serif; text-shadow: 0 1px 2px #000; }
       #res-power.power-low { color: #ff4d4d; }
-      #command-panel { position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 4px; background: rgba(0, 0, 0, 0.5); color: #fff; font: 14px/1.4 system-ui, sans-serif; }
+      #command-panel { position: fixed; bottom: calc(8px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 4px; background: rgba(0, 0, 0, 0.5); color: #fff; font: 14px/1.4 system-ui, sans-serif; }
       #command-panel:empty { display: none; }
       #command-panel .cmd { min-width: 120px; cursor: pointer; }
       #command-panel .cmd[disabled] { opacity: 0.4; }
       #command-panel .cmd.active { outline: 2px solid #facc15; background: #facc15; color: #000; }
-      #placement-hint { position: fixed; top: 44px; left: 50%; transform: translateX(-50%); white-space: nowrap; padding: 4px 12px; border-radius: 4px; background: rgba(0, 0, 0, 0.7); pointer-events: none; color: #fff; font: 14px/1.4 system-ui, sans-serif; }
+      #placement-hint { position: fixed; top: calc(44px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); max-width: calc(100vw - 32px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 4px 12px; border-radius: 4px; background: rgba(0, 0, 0, 0.7); pointer-events: none; color: #fff; font: 14px/1.4 system-ui, sans-serif; }
       #queue { display: flex; gap: 4px; }
       #outcome { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; color: #fff; font: 48px/1.2 system-ui, sans-serif; text-shadow: 0 2px 6px #000; }
-      #toast { position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%); padding: 6px 14px; border-radius: 4px; background: rgba(0, 0, 0, 0.7); pointer-events: none; color: #fff; font: 16px/1.4 system-ui, sans-serif; opacity: 0; transition: opacity 0.15s; }
+      #toast { position: fixed; bottom: calc(96px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); max-width: calc(100vw - 32px); padding: 6px 14px; border-radius: 4px; background: rgba(0, 0, 0, 0.7); pointer-events: none; color: #fff; font: 16px/1.4 system-ui, sans-serif; opacity: 0; transition: opacity 0.15s; }
       #toast.visible { opacity: 1; }
-      #save-manager { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.75); color: #fff; font: 14px/1.4 system-ui, sans-serif; z-index: 20; pointer-events: auto; }
+      #save-manager { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.75); color: #fff; font: 14px/1.4 system-ui, sans-serif; z-index: 50; pointer-events: auto; }
       #save-manager[hidden] { display: none; }
-      #save-manager-panel { display: flex; flex-direction: column; gap: 6px; width: min(560px, 92vw); max-height: 86vh; overflow-y: auto; padding: 18px 22px; border-radius: 6px; background: #10151c; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6); }
+      #save-manager-panel { display: flex; flex-direction: column; gap: 6px; width: min(560px, 92vw); max-height: calc(100vh - 24px); overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; padding: 18px 22px; border-radius: 6px; background: #10151c; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6); }
       #save-manager-panel h2 { margin: 0; font-size: 20px; }
       #save-manager-panel h3 { margin: 10px 0 2px; font-size: 15px; }
       #save-manager-close { align-self: flex-end; margin-top: -26px; }
@@ -34,24 +55,38 @@
       .save-slot button, .save-example button { grid-row: 1 / span 2; cursor: pointer; padding: 3px 8px; }
       .save-slot, .save-example { grid-auto-flow: column; }
       .save-slot button[hidden] { display: none; }
-      #save-dialog { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; gap: 8px; min-width: 300px; padding: 16px 20px; border-radius: 6px; background: #1c2430; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.8); z-index: 21; }
+      #save-dialog { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; gap: 8px; min-width: 300px; max-width: calc(100vw - 32px); padding: 16px 20px; border-radius: 6px; background: #1c2430; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.8); z-index: 51; }
       #save-dialog[hidden], #save-dialog-name[hidden] { display: none; }
       #save-dialog button { cursor: pointer; padding: 4px 12px; }
-      #load-error { position: fixed; top: 48px; left: 50%; transform: translateX(-50%); max-width: 80vw; padding: 8px 14px; border-radius: 4px; background: rgba(127, 29, 29, 0.9); color: #fff; font: 14px/1.4 system-ui, sans-serif; z-index: 10; }
-      #game-menu { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.55); pointer-events: auto; color: #fff; font: 14px/1.4 system-ui, sans-serif; }
+      #load-error { position: fixed; top: calc(48px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); max-width: min(80vw, 480px); padding: 8px 14px; border-radius: 4px; background: rgba(127, 29, 29, 0.9); color: #fff; font: 14px/1.4 system-ui, sans-serif; z-index: 10; }
+      #game-menu { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 12px; box-sizing: border-box; background: rgba(0, 0, 0, 0.55); pointer-events: auto; color: #fff; font: 14px/1.4 system-ui, sans-serif; z-index: 30; }
       #game-menu[hidden] { display: none; }
-      #game-menu-panel { display: flex; flex-direction: column; gap: 8px; min-width: 220px; padding: 20px 24px; border-radius: 6px; background: rgba(0, 0, 0, 0.85); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6); }
+      #game-menu-panel { display: flex; flex-direction: column; gap: 8px; width: min(420px, calc(100vw - 32px)); max-height: calc(100vh - 24px); overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; box-sizing: border-box; padding: 20px 24px; border-radius: 6px; background: rgba(0, 0, 0, 0.85); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6); }
+      @supports (height: 100dvh) {
+        #save-manager-panel, #game-menu-panel { max-height: calc(100dvh - 24px); }
+      }
       #game-menu-panel h2 { margin: 0 0 8px; font-size: 22px; text-align: center; }
       #game-menu-panel button { cursor: pointer; padding: 6px 10px; }
-      #touch-joystick { position: fixed; right: 16px; bottom: 16px; width: 120px; height: 120px; border-radius: 50%; background: rgba(0, 0, 0, 0.4); border: 2px solid rgba(255, 255, 255, 0.35); box-sizing: border-box; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; z-index: 5; }
+      #touch-joystick { position: fixed; right: calc(16px + env(safe-area-inset-right)); bottom: calc(16px + env(safe-area-inset-bottom)); width: 120px; height: 120px; border-radius: 50%; background: rgba(0, 0, 0, 0.4); border: 2px solid rgba(255, 255, 255, 0.35); box-sizing: border-box; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; z-index: 5; }
       #touch-joystick[hidden] { display: none; }
       #touch-joystick-knob { position: absolute; left: 38px; top: 38px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.75); pointer-events: none; transition: scale 0.1s ease-out; }
       #touch-joystick-knob.pressed { scale: 1.25; background: rgba(250, 204, 21, 0.9); }
-      #touch-menu { min-width: 48px; min-height: 48px; border: 0; border-radius: 8px; background: rgba(0, 0, 0, 0.55); color: #fff; font: 22px/1 system-ui, sans-serif; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+      #touch-menu { position: fixed; top: calc(8px + env(safe-area-inset-top)); right: calc(8px + env(safe-area-inset-right)); display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; padding: 0; border: 0; border-radius: 8px; background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 0; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; z-index: 40; }
+      #touch-menu::before { content: ""; display: block; width: 24px; height: 2px; border-radius: 1px; background: currentColor; box-shadow: 0 -7px 0 currentColor, 0 7px 0 currentColor; }
       #touch-menu:active { background: rgba(250, 204, 21, 0.8); color: #000; }
-      #touch-menu { position: fixed; top: 8px; right: 8px; width: 56px; height: 56px; z-index: 20; }
-      body.touch #perf-panel { top: 68px; }
-      body.touch #command-panel { left: 8px; transform: none; max-width: calc(100vw - 168px); box-sizing: border-box; }
+      body.touch #perf-panel { top: calc(72px + env(safe-area-inset-top)); }
+      body.touch #command-panel { left: calc(8px + env(safe-area-inset-left)); transform: none; max-width: calc(100vw - 168px); box-sizing: border-box; }
+      #rotate-device { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; box-sizing: border-box; padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom)); background: radial-gradient(circle at 50% 40%, #16202b, #05080c 70%); color: #fff; text-align: center; z-index: 100; touch-action: none; }
+      #rotate-device h2 { margin: 0; font-size: 24px; line-height: 1.2; }
+      #rotate-device p { margin: 0; opacity: 0.75; font-size: 15px; }
+      #rotate-device-icon { position: relative; width: 52px; height: 88px; border: 3px solid #fff; border-radius: 10px; transform: rotate(-90deg); opacity: 0.9; }
+      #rotate-device-icon::after { content: ""; position: absolute; left: 50%; bottom: 6px; width: 18px; height: 2px; border-radius: 1px; background: #fff; transform: translateX(-50%); }
+      @media (orientation: portrait) and (pointer: coarse) {
+        #rotate-device { display: flex; }
+      }
+      @media (orientation: portrait) {
+        body.touch #rotate-device { display: flex; }
+      }
     </style>
   </head>
   <body>

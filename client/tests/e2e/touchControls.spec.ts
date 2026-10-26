@@ -73,7 +73,7 @@ test.describe("touch device", () => {
   test.use({
     hasTouch: true,
     isMobile: true,
-    viewport: { width: 390, height: 844 },
+    viewport: { width: 844, height: 390 },
   });
 
   test("AC-08-19: touch joystick in the skirmish", async ({ page }) => {
@@ -85,6 +85,8 @@ test.describe("touch device", () => {
     await boot(page);
     const viewport = page.viewportSize();
     if (viewport === null) throw new Error("no viewport");
+    // Landscape is the only playable orientation (spec 08 §3.8).
+    await expect(page.locator("#rotate-device")).toBeHidden();
 
     // Select the dozer so the command panel shows.
     const dozer = await page.evaluate(() => {
@@ -183,10 +185,18 @@ test.describe("touch device", () => {
     await page.locator("#touch-menu").tap();
     await expect(page.locator("#game-menu")).toBeVisible();
     expect(await paused(page)).toBe(true);
+    await expect(page.locator("#touch-menu")).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
     await expect(page.locator("#touch-joystick")).toBeHidden();
     await page.locator("#touch-menu").tap();
     await expect(page.locator("#game-menu")).toBeHidden();
     expect(await paused(page)).toBe(false);
+    await expect(page.locator("#touch-menu")).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
     await expect(page.locator("#touch-joystick")).toBeVisible();
     expect(errors).toEqual([]);
   });

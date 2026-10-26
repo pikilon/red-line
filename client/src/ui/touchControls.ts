@@ -116,6 +116,9 @@ export function createTouchControls(
   menu.textContent = "☰";
   menu.setAttribute("type", "button");
   menu.setAttribute("aria-label", t("touch.menu"));
+  menu.setAttribute("aria-haspopup", "dialog");
+  menu.setAttribute("aria-controls", "game-menu");
+  menu.setAttribute("aria-expanded", "false");
   root.appendChild(menu);
   isolate(menu);
   menu.addEventListener("click", () => actions.toggleMenu());
@@ -128,6 +131,7 @@ export function createTouchControls(
       last = { menuOpen: view.menuOpen };
       if (view.menuOpen) release();
       if (base.hidden !== view.menuOpen) base.hidden = view.menuOpen;
+      menu.setAttribute("aria-expanded", view.menuOpen ? "true" : "false");
     },
   };
 }
