@@ -4,6 +4,7 @@ import { AUDIO_CATALOG } from "./catalog";
 import { deriveSnapshotAudio, resolveCommandVoiceEvent } from "./derive";
 import { AudioDirector, shouldPlayLocally } from "./director";
 import { EvaQueue } from "./eva";
+import { decodeWavPcmChannels } from "./loader";
 import {
   distanceAttenuation,
   distanceLowPassHz,
@@ -577,5 +578,44 @@ describe("AUDIO_CATALOG and snapshot derivation (Ukraine -> USA, Russia -> China
 
     const cmdVoice = resolveCommandVoiceEvent([1], next.entities, 0, "select");
     expect(cmdVoice?.eventId).toContain(".select");
+  });
+
+  it("decodes both PCM (0x0001) and Zero Hour 4-bit IMA ADPCM (0x0011) WAV buffers", () => {
+    const pcmWav = encodeWavPcm16(
+      new Float32Array([0, 0.5, -0.5, 0.25]),
+      22050,
+    );
+    const pcmRes = decodeWavPcmChannels(pcmWav.buffer as ArrayBuffer);
+    expect(pcmRes).not.toBeNull();
+    expect(pcmRes?.frames).toBe(4);
+    expect(pcmRes?.sampleRate).toBe(22050);
+
+    // Construct a minimal 1-block mono 4-bit IMA ADPCM WAV (fmtTag = 0x0011, blockAlign = 8 -> 1 header + 8 nibbles = 9 samples)
+    const adpcm = new ArrayBuffer(60);
+    const view = new DataView(adpcm);
+    const bytes = new Uint8Array(adpcm);
+    bytes.set([0x52, 0x49, 0x46, 0x46], 0); // RIFF
+    view.setUint32(4, 52, true);
+    bytes.set([0x57, 0x41, 0x56, 0x45], 8); // WAVE
+    bytes.set([0x66, 0x6d, 0x74, 0x20], 12); // fmt
+    view.setUint32(16, 20, true);
+    view.setUint16(20, 0x0011, true); // IMA ADPCM
+    view.setUint16(22, 1, true); // mono
+    view.setUint32(24, 22050, true);
+    view.setUint32(28, 11100, true);
+    view.setUint16(32, 8, true); // blockAlign = 8
+    view.setUint16(34, 4, true); // 4-bit
+    view.setUint16(36, 2, true); // extraSize = 2
+    view.setUint16(38, 9, true); // samplesPerBlock = 9
+    bytes.set([0x64, 0x61, 0x74, 0x61], 40); // data
+    view.setUint32(44, 8, true);
+    view.setInt16(48, 4096, true); // initial predictor
+    view.setInt8(50, 20); // step index
+    bytes.set([0x74, 0x12, 0xf5, 0x83], 52); // 8 4-bit nibbles
+
+    const adpcmRes = decodeWavPcmChannels(adpcm);
+    expect(adpcmRes).not.toBeNull();
+    expect(adpcmRes?.frames).toBe(9);
+    expect(adpcmRes?.channels[0]?.[0]).toBeCloseTo(4096 / 32768, 4);
   });
 });
