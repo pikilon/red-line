@@ -4,6 +4,7 @@ import { AUDIO_CATALOG } from "./catalog";
 import { deriveSnapshotAudio, resolveCommandVoiceEvent } from "./derive";
 import { AudioDirector, shouldPlayLocally } from "./director";
 import { EvaQueue } from "./eva";
+import { AudioLoader, decodeWavPcmChannels, type ZhRefIndex } from "./loader";
 import {
   distanceAttenuation,
   distanceLowPassHz,
@@ -566,7 +567,6 @@ describe("AUDIO_CATALOG and snapshot derivation (Ukraine -> USA, Russia -> China
         isTileVisible: () => true,
       },
       AUDIO_CATALOG,
-      { tileX: 10, tileY: 10 },
     );
 
     const eventIds = batch.requests.map((r) => r.request.eventId);
@@ -577,5 +577,220 @@ describe("AUDIO_CATALOG and snapshot derivation (Ukraine -> USA, Russia -> China
 
     const cmdVoice = resolveCommandVoiceEvent([1], next.entities, 0, "select");
     expect(cmdVoice?.eventId).toContain(".select");
+  });
+});
+
+describe("Zero Hour WAV decoding", () => {
+  function makeMonoImaWav(): ArrayBuffer {
+    const buffer = new ArrayBuffer(60);
+    const view = new DataView(buffer);
+    const bytes = new Uint8Array(buffer);
+    bytes.set([0x52, 0x49, 0x46, 0x46], 0); // RIFF
+    view.setUint32(4, 52, true);
+    bytes.set([0x57, 0x41, 0x56, 0x45], 8); // WAVE
+    bytes.set([0x66, 0x6d, 0x74, 0x20], 12); // fmt
+    view.setUint32(16, 20, true);
+    view.setUint16(20, 0x0011, true); // IMA ADPCM
+    view.setUint16(22, 1, true); // mono
+    view.setUint32(24, 22050, true);
+    view.setUint32(28, 11100, true);
+    view.setUint16(32, 8, true); // blockAlign
+    view.setUint16(34, 4, true);
+    view.setUint16(36, 2, true);
+    view.setUint16(38, 9, true); // samplesPerBlock
+    bytes.set([0x64, 0x61, 0x74, 0x61], 40); // data
+    view.setUint32(44, 8, true);
+    view.setInt16(48, 4096, true); // initial predictor
+    view.setInt8(50, 20); // step index
+    bytes.set([0x74, 0x12, 0xf5, 0x83], 52);
+    return buffer;
+  }
+
+  function makeStereoImaWav(): ArrayBuffer {
+    const buffer = new ArrayBuffer(76);
+    const view = new DataView(buffer);
+    const bytes = new Uint8Array(buffer);
+    bytes.set([0x52, 0x49, 0x46, 0x46], 0);
+    view.setUint32(4, 68, true);
+    bytes.set([0x57, 0x41, 0x56, 0x45], 8);
+    bytes.set([0x66, 0x6d, 0x74, 0x20], 12);
+    view.setUint32(16, 20, true);
+    view.setUint16(20, 0x0011, true);
+    view.setUint16(22, 2, true);
+    view.setUint32(24, 22050, true);
+    view.setUint32(28, 39200, true);
+    view.setUint16(32, 16, true); // blockAlign: 8 header + 8 data
+    view.setUint16(34, 4, true);
+    view.setUint16(36, 2, true);
+    view.setUint16(38, 9, true);
+    bytes.set([0x66, 0x61, 0x63, 0x74], 40); // fact
+    view.setUint32(44, 4, true);
+    view.setUint32(48, 9, true); // frames
+    bytes.set([0x64, 0x61, 0x74, 0x61], 52); // data
+    view.setUint32(56, 16, true);
+    view.setInt16(60, 1000, true); // ch0 predictor
+    view.setInt8(62, 0);
+    view.setInt16(64, -1000, true); // ch1 predictor
+    view.setInt8(66, 0);
+    // Eight nibbles of zero for each channel: the predictor stays constant.
+    bytes.set(new Uint8Array(8), 68);
+    return buffer;
+  }
+
+  it("decodes Zero Hour 4-bit IMA ADPCM mono and stereo blocks", () => {
+    const mono = decodeWavPcmChannels(makeMonoImaWav());
+    expect(mono?.sampleRate).toBe(22050);
+    expect(mono?.frames).toBe(9);
+    expect(mono?.channels).toHaveLength(1);
+    expect(mono?.channels[0]?.[0]).toBeCloseTo(4096 / 32768, 4);
+
+    const stereo = decodeWavPcmChannels(makeStereoImaWav());
+    expect(stereo?.frames).toBe(9);
+    expect(stereo?.channels).toHaveLength(2);
+    expect(stereo?.channels[0]?.[8]).toBeCloseTo(1000 / 32768, 4);
+    expect(stereo?.channels[1]?.[8]).toBeCloseTo(-1000 / 32768, 4);
+  });
+
+  it("decodes 16-bit PCM WAV through the same path", () => {
+    const pcm = encodeWavPcm16(new Float32Array([0, 0.5, -0.5, 0.25]), 22050);
+    const decoded = decodeWavPcmChannels(pcm.buffer as ArrayBuffer);
+    expect(decoded?.frames).toBe(4);
+    expect(decoded?.sampleRate).toBe(22050);
+    expect(decoded?.channels[0]?.[1]).toBeCloseTo(0.5, 2);
+  });
+
+  it("returns null for unsupported or malformed data", () => {
+    expect(decodeWavPcmChannels(new ArrayBuffer(4))).toBeNull();
+    expect(decodeWavPcmChannels(new ArrayBuffer(44))).toBeNull();
+  });
+});
+
+describe("Zero Hour reference resolution and faction mapping", () => {
+  const USA_PREFIXES = [
+    "Ranger",
+    "MissileDefender",
+    "Humvee",
+    "PaladinTank",
+    "CrusaderTank",
+    "Tomahawk",
+    "DozerUSA",
+    "Chinook",
+    "CommandCenterUSA",
+    "BarracksUSA",
+    "WarFactoryUSA",
+    "EvaUSA_",
+  ];
+  const CHINA_PREFIXES = [
+    "RedGuard",
+    "TankHunter",
+    "GattlingTank",
+    "TroopCrawler",
+    "BattleMasterTank",
+    "InfernoCannon",
+    "DozerChina",
+    "SupplyTruck",
+    "CommandCenterChina",
+    "BarracksChina",
+    "WarFactoryChina",
+    "EvaChina_",
+  ];
+
+  const usesPrefix = (target: string, prefixes: readonly string[]): boolean =>
+    target === "Explosion" ||
+    prefixes.some((prefix) => target.startsWith(prefix));
+
+  it("assigns USA voices to Ukraine and China voices to Russia", () => {
+    const violations: string[] = [];
+    for (const [eventId, target] of Object.entries(
+      AUDIO_CATALOG.reference.events,
+    )) {
+      if (
+        (eventId.startsWith("voice.ua-") ||
+          eventId.startsWith("eva.ukraine.")) &&
+        !usesPrefix(target, USA_PREFIXES)
+      ) {
+        violations.push(`${eventId} -> ${target}`);
+      }
+      if (
+        (eventId.startsWith("voice.ru-") ||
+          eventId.startsWith("eva.russia.")) &&
+        !usesPrefix(target, CHINA_PREFIXES)
+      ) {
+        violations.push(`${eventId} -> ${target}`);
+      }
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it("maps every voice set action to a reference event", () => {
+    const missing: string[] = [];
+    for (const [setId, set] of Object.entries(AUDIO_CATALOG.voices.sets)) {
+      for (const action of Object.keys(set)) {
+        if (!AUDIO_CATALOG.reference.events[`voice.${setId}.${action}`]) {
+          missing.push(`voice.${setId}.${action}`);
+        }
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it("resolves reference URLs, honours NoSound, and falls back to synth on demand", () => {
+    const loader = new AudioLoader(AUDIO_CATALOG);
+    (
+      loader as unknown as { zhIndex: ZhRefIndex | null; zhProbed: boolean }
+    ).zhIndex = {
+      events: { RangerWeapon: { sounds: ["iranweaa"] } },
+      dialogs: { EvaUSA_LowPower: { filename: "eupower.wav" } },
+      files: {
+        iranweaa: "files/iranweaa.wav",
+        "eupower.wav": "files/eupower.wav",
+      },
+    };
+    (
+      loader as unknown as { zhIndex: ZhRefIndex | null; zhProbed: boolean }
+    ).zhProbed = true;
+
+    expect(
+      loader.resolveEventSounds("weapon.ua-rifle.fire", ["synth:muzzle"]),
+    ).toEqual(["/audio-ref/files/iranweaa.wav"]);
+    expect(loader.resolveEventSounds("move.foot", ["synth:footstep"])).toEqual(
+      [],
+    );
+    expect(
+      loader.resolveEventSounds("weapon.ua-rifle.fire", ["synth:muzzle"], true),
+    ).toEqual(["synth:muzzle"]);
+    expect(loader.resolveZhUrls("EvaUSA_LowPower")).toEqual([
+      "/audio-ref/files/eupower.wav",
+    ]);
+  });
+
+  it("does not muffle events that have no lowPass setting", () => {
+    expect(distanceLowPassHz(20, 4, 20)).toBe(18000);
+    expect(distanceLowPassHz(20, 4, 20, 50)).toBeLessThan(12000);
+  });
+
+  it("shares one reference probe across concurrent callers", async () => {
+    const loader = new AudioLoader(AUDIO_CATALOG);
+    const originalFetch = globalThis.fetch;
+    let requests = 0;
+    globalThis.fetch = (async () => {
+      requests += 1;
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      return new Response(JSON.stringify({ files: {} }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    }) as typeof fetch;
+    try {
+      const results = await Promise.all([
+        loader.initReferencePack(),
+        loader.initReferencePack(),
+      ]);
+      expect(results).toEqual([true, true]);
+      expect(requests).toBe(1);
+      expect(loader.isProbeDone()).toBe(true);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 });

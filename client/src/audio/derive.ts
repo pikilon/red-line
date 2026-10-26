@@ -28,7 +28,6 @@ export interface ScreenProjector {
 export interface DerivedAudioBatch {
   requests: { request: AudioPlayRequest; fallbackCategory?: string }[];
   evaEvents: string[];
-  movingUnits: { id: number; speedRatio: number; gain: number }[];
   combatActive: boolean;
   outcomeMusic?: "victory" | "defeat";
 }
@@ -82,8 +81,8 @@ function locomotorKindOf(typeIdx: number): "foot" | "wheels" | "tracks" | null {
 }
 
 /**
- * Derives audio play requests, EVA triggers, and moving engine loop states from
- * the transition `prev -> next` and `combat`.
+ * Derives audio play requests and EVA triggers from the transition
+ * `prev -> next` and `combat`.
  */
 export function deriveSnapshotAudio(
   prev: MatchSnapshot | null,
@@ -92,12 +91,10 @@ export function deriveSnapshotAudio(
   localPlayer: number,
   projector: ScreenProjector,
   catalog: AudioCatalog,
-  listenerTile: { tileX: number; tileY: number },
 ): DerivedAudioBatch {
   const requests: { request: AudioPlayRequest; fallbackCategory?: string }[] =
     [];
   const evaEvents: string[] = [];
-  const movingUnits: { id: number; speedRatio: number; gain: number }[] = [];
   let combatActive = false;
   let outcomeMusic: "victory" | "defeat" | undefined;
 
@@ -290,7 +287,7 @@ export function deriveSnapshotAudio(
     }
   }
 
-  // 3. Entity state transitions & movement loops
+  // 3. Entity state transitions and discrete movement-start sounds
   for (const entity of next.entities) {
     const def = typeDef(entity.kind);
     const prevEntity = prevById.get(entity.id);
@@ -390,25 +387,6 @@ export function deriveSnapshotAudio(
         });
       }
     }
-
-    // Collect moving vehicle speed/distance for periodic engine loop updates
-    if (
-      def.category === "unit" &&
-      hasFlag(entity, ENTITY_FLAGS.moving) &&
-      locomotorKindOf(entity.kind) !== "foot" &&
-      onScreen &&
-      (rel === "self" || tileVisible)
-    ) {
-      const dist = Math.hypot(
-        entity.x - listenerTile.tileX,
-        entity.y - listenerTile.tileY,
-      );
-      if (dist < 20) {
-        const gain = Math.max(0, 1 - dist / 20);
-        const speedRatio = Math.min(1, Math.max(0.3, def.speedCenti / 120));
-        movingUnits.push({ id: entity.id, speedRatio, gain });
-      }
-    }
   }
 
   // 4. Economy / Power / Outcome EVA alerts
@@ -429,7 +407,7 @@ export function deriveSnapshotAudio(
     }
   }
 
-  return { requests, evaEvents, movingUnits, combatActive, outcomeMusic };
+  return { requests, evaEvents, combatActive, outcomeMusic };
 }
 
 /**

@@ -67,14 +67,14 @@ voice.ru-rifleman.select: RedGuardVoiceSelect
 voice.ru-rifleman.move: RedGuardVoiceMove
 voice.ru-rifleman.attack: RedGuardVoiceAttack
 voice.ru-rifleman.underFire: RedGuardVoiceFear
-voice.ru-rifleman.die: RangerVoiceDie
+voice.ru-rifleman.die: RedGuardVoiceDie
 voice.ru-rifleman.created: RedGuardVoiceCreate
 
 voice.ru-rpg-gunner.select: TankHunterVoiceSelect
 voice.ru-rpg-gunner.move: TankHunterVoiceMove
 voice.ru-rpg-gunner.attack: TankHunterVoiceAttack
 voice.ru-rpg-gunner.underFire: TankHunterVoiceFear
-voice.ru-rpg-gunner.die: RangerVoiceDie
+voice.ru-rpg-gunner.die: TankHunterVoiceDie
 voice.ru-rpg-gunner.created: TankHunterVoiceCreate
 
 voice.ru-brdm-scout.select: GattlingTankVoiceSelect
@@ -239,7 +239,7 @@ impact.heavy: VehicleImpactHeavy
 # Explosions
 # -----------------------------------------------------------------------------
 explosion.small: Explosion
-explosion.medium: ExplosionGeneric
+explosion.medium: Explosion
 explosion.large: ExplosionArtilleryBarrage
 
 # -----------------------------------------------------------------------------

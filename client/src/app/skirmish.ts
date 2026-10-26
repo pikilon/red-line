@@ -428,7 +428,6 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     createAudioDebugOverlay(document.body, audioMixer);
   }
   let lastOrderVoiceAtMs = -Infinity;
-  let lastEngineSyncAtMs = -Infinity;
 
   const gameMenu = createGameMenu(document.body, {
     resume: () => setMenuOpen(false),
@@ -1252,7 +1251,6 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         controlled,
         projector,
         AUDIO_CATALOG,
-        { tileX: focus.x, tileY: focus.y },
       );
       for (const item of audioBatch.requests) {
         audioMixer.play(item.request, {
@@ -1264,10 +1262,6 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         audioMixer.triggerEva(evaId, factionId);
       }
       audioMixer.tickEva();
-      if (at - lastEngineSyncAtMs >= AUDIO_CATALOG.mix.limits.drawableRetryMs) {
-        lastEngineSyncAtMs = at;
-        audioMixer.syncEngineLoops(audioBatch.movingUnits);
-      }
       if (audioBatch.outcomeMusic) {
         audioMixer.setMusicState(
           `music.${audioBatch.outcomeMusic}.${factionId}`,

@@ -1,7 +1,8 @@
 # 25 — Voices and sound
 
 Status: phase 1 implemented (owner request 2026-10-25; revised 2026-10-25 with the
-reference-pack process; USA reference voices for Ukraine, China reference voices for Russia).
+reference-pack process; revised 2026-10-26 with native IMA ADPCM decoding, no
+synthetic engine drone, and verified USA voices for Ukraine / China voices for Russia).
 Depends on `01-architecture.md` (audio lives in the client main thread),
 `07-phase4b-combat-effects.md` (combat events), `17-projectiles-and-combat-readability.md`,
 `19-save-games.md` (example saves).
@@ -121,7 +122,7 @@ and `INIZH.big` (Zero Hour 1.04). Facts unless marked inference.
 
 | Phase | Deliverable | Player-visible result |
 |---|---|---|
-| 1. Engine clone with reference pack | Local extractor for the owner's Zero Hour `.big` files (§4.2), event table loader, admission rules, voice rule, limits and priorities, buses and ducking, stereo pan, distance and zoom volume, fog cull, engine/track/footstep loops from unit speed, weapon fire/impact/explosion events, EVA queue, settings sliders, minimal procedural fallback, `?audio=debug` overlay, example save `audio-fight` | On the owner's machine a fight sounds and mixes like Zero Hour; elsewhere every action makes a simple placeholder sound; volume sliders work |
+| 1. Engine clone with reference pack | Local extractor for the owner's Zero Hour `.big` files (§4.2), event table loader, admission rules, voice rule, limits and priorities, buses and ducking, stereo pan, distance and zoom volume, fog cull, discrete move-start samples and footsteps, weapon fire/impact/explosion events, EVA queue, settings sliders, minimal procedural fallback, `?audio=debug` overlay, example save `audio-fight` | On the owner's machine a fight sounds and mixes like Zero Hour; elsewhere every action makes a simple placeholder sound; volume sliders work |
 | 2. Inventory and briefs | Listening review of every event on the debug page; `data/audio/inventory.yaml` with one written brief per event (what our sound should be, in our own words), variant counts, voice line scripts in Ukrainian and Russian | A complete, owner-approved list of what to make; nothing new to hear yet |
 | 3. Automated generation | `scripts/audio/gen.mjs` pipeline (§4.5): SFX (libraries + local model), voices (uk/ru TTS, radio filter, strong language), EVA per faction, music; each generated sound replaces its reference entry | The game ships with its own sounds; the reference pack is no longer needed |
 | 4. Polish | Mix retune with the final sounds, ambient per map, subtitles, bundle budget check, strong-language toggle | Mix is tuned; subtitles and the language filter work |
@@ -138,7 +139,7 @@ content exists, so phase 3 only swaps files and never re-tunes rules.
 | Content | Procedural Web Audio | Free libraries (CC0 / CC-BY) | AI generation (offline, baked to files) |
 |---|---|---|---|
 | UI beeps, clicks, EVA tones | Best: exact, tiny, themeable | Good (Kenney) | Not needed |
-| Footsteps, tracks squeal, engine loops | Good: noise + oscillators + filters, pitch from speed | Good (Freesound) | OK as a texture layer |
+| Footsteps, tracks squeal, engine textures | Good: noise + filters; one-shot acceleration | Good (Freesound) | OK as a texture layer |
 | Weapon shots, impacts, explosions | Fair | Best: real recordings (Freesound) | Good for gaps; needs curation |
 | Voices (select/move/attack/...) | Not possible | Not possible | Required: TTS |
 | Music | Poor | Limited (OpenGameArt) | Required: music model |
@@ -183,6 +184,11 @@ The procedural recipe stays as the fallback while a file is loading.
   `.local/audio-ref/` (`apply: 'serve'`); production builds and
   `deploy:pages` cannot contain them. The loader resolves an event: our file
   (phase 3) -> reference file (dev, pack present) -> procedural fallback.
+  Many Zero Hour combat WAVs are 4-bit IMA ADPCM (`0x0011`), which browser
+  `decodeAudioData` rejects; the loader decodes them itself (§12) so a shot or
+  explosion never silently becomes a synth recipe. The faction mapping is
+  literal: Ukrainian unit voices and EVA use Zero Hour's USA set, Russian ones
+  use the China set.
 * **Guards.** `.local/` is gitignored; `check:audio` fails if any tracked file
   sits under `.local/audio-ref/` or if the client build output contains an
   `audio-ref` path.
@@ -287,7 +293,8 @@ fall back through a chain so every weapon sounds like something:
   the terrain, e.g. `snow`, `mud`, `building`, `armor`, `flesh`).
   Explosion: `explosion.<size>` from the shot effect size (spec 07 §3).
 * Unit: `voice.<typeId>.<event>` -> `voice.<category>.<event>`.
-  Movement: `move.<locomotor>` (engine loop, tracks, footsteps).
+  Movement: `move.<typeId>.start` -> `move.<locomotor>` (one-shot
+  acceleration sample, footsteps).
 * Building: `building.<typeId>.<place|complete|working|die>` -> by category.
 
 ### 5.3 Voice language, strong language and subtitles
@@ -336,9 +343,15 @@ fall back through a chain so every weapon sounds like something:
    2 min, 5 s), insufficient funds, unit lost, building lost, production
    complete, upgrade complete, construction complete, building under
    construction ready to place, victory, defeat.
-7. **Loops** (engines, building hum, ambient): started/stopped from snapshot
-   state; at most `limit` per event; pitch and gain follow speed; retried about
-   once per second like `TimeBetweenDrawableSounds`, never every frame.
+7. **Movement and loops.** There are no continuous engine loops. Zero Hour's
+   ground units fire a discrete `SoundMoveStart` when acceleration begins
+   (`ThingTemplate.h:111`, `AIStates.cpp:1696-1714`); Zero Hour's `Object.ini`
+   defaults `SoundMoveLoop = NoSound` and only civilian transports override it,
+   so our ground units likewise have no continuous engine loop. We play the
+   `SoundMoveStart` sample once and never open an oscillator on the effects
+   bus. Music, construction and ambient loops are sample buffers
+   started/stopped from snapshot state, at most `limit` per event, retried
+   about once per second like `TimeBetweenDrawableSounds`, never every frame.
 8. **Variation:** `random` picks a variant not equal to the last one;
    `pitchShift`, `volumeShift` and `delayMs` are drawn per instance. These use a
    client-side RNG (`Math.random` is allowed in the client; it never touches
@@ -355,8 +368,10 @@ fall back through a chain so every weapon sounds like something:
   client turns into an `AudioBuffer` once at load (offline render with
   `OfflineAudioContext`) and caches. Rendering offline keeps playback as cheap
   as a file and makes procedural and baked sounds the same thing at runtime.
-* Engine loops are the exception: they are live nodes (oscillator + filtered
-  noise) whose pitch and gain follow the unit's speed.
+* The `synth:engine` recipe is a one-shot fallback only. A moving vehicle never
+  opens an oscillator: the old live sawtooth drone was the synthetic hum the
+  owner reported on the effects bus, and it is gone (the reference
+  `SoundMoveStart` WAVs replace it when the pack is present).
 * The same recipes are the offline-render source of the "placeholder pack", so
   the debug page can export them to wav for comparison with generated takes.
 
@@ -437,9 +452,10 @@ fall back through a chain so every weapon sounds like something:
 * **Weapons:** the 7 current weapon ids per faction (rifle, RPG, heavy MG,
   autocannon, tank gun, thermobaric, ATGM, ...) get a `fire` event; shared
   `impact` and `explosion` families by size, material and damage type.
-* **Movement:** engine loops by locomotor (wheeled, tracked, light, heavy),
-  track/clank layer for tracked, footsteps by surface (grass, mud, snow, road)
-  for infantry, tied to the existing walk animation phase.
+* **Movement:** one discrete acceleration sound per unit
+  (`move.<typeId>.start`, locomotor fallback), not a continuous engine loop;
+  footsteps by surface (grass, mud, snow, road) for infantry, tied to the
+  existing walk animation phase.
 * **Buildings:** place, construction loop, complete, production started/ready,
   working loops (power plant hum, factory machinery), damage/collapse.
 * **Ambient:** per weather/map (wind, snow wind, distant artillery bed, birds
@@ -457,6 +473,11 @@ fall back through a chain so every weapon sounds like something:
 * Short SFX are decoded once into `AudioBuffer`s (Zero Hour kept 4 MB of
   samples cached; our decoded budget is 64 MB, LRU, and the encoded budget is
   below). Music streams through a `MediaElementAudioSourceNode`.
+* Reference WAVs can be 4-bit IMA ADPCM (`WAVE_FORMAT_IMA_ADPCM`, `0x0011`).
+  `client/src/audio/loader.ts` parses RIFF/WAVE and decodes IMA ADPCM mono and
+  stereo blocks itself, honouring the `fact` sample count, plus 8/16-bit PCM;
+  its tests cover both block layouts. Unsupported formats still go through
+  `decodeAudioData`, and a failed decode falls back to the procedural recipe.
 * Download budget (gzip is useless on Opus): core pack (UI, combat SFX,
   shared) at most 4 MB; faction voices at most 3 MB per faction,
   lazy-loaded when a faction is picked; music at most 20 MB, streamed in the
@@ -472,7 +493,10 @@ fall back through a chain so every weapon sounds like something:
   loader chain once phase 3 covers every event.
 * Voices speak the faction's language (Ukrainian, Russian) with strong
   language; a "Strong language" setting, on by default, switches to clean
-  variants. Subtitles are optional and translated through i18n.
+  variants. Subtitles are optional and translated through i18n. While the local
+  reference pack is active, the same events play Zero Hour's English USA set
+  for Ukraine and China set for Russia; phase 3 swaps in our Ukrainian/Russian
+  recordings without changing the event mapping or the rules.
 * `underFire` and `die` voices are positional world sounds heard by their
   owner only, on screen only; `select/move/attack` as in Zero Hour (UI,
   owner only, group leader speaks).
@@ -487,12 +511,15 @@ fall back through a chain so every weapon sounds like something:
 ## 14. Verification plan (per phase)
 
 * Phase 1: unit tests of admission rules (limit, voice rule, priority stealing,
-  EVA queue cooldown/expiry), pan/distance/zoom gain curves, and the BIG
-  reader (on a tiny synthetic archive, not EA data) with a fake clock;
-  `check:audio` guard that nothing under `.local/audio-ref/` is tracked or
-  built; example save `audio-fight` (a skirmish with both factions, mixed
-  units); owner listens with the reference pack on `?audio=debug` (event list
-  with play buttons, live voice count, rejected/culled sounds).
+  EVA queue cooldown/expiry), pan/distance/zoom gain curves, `distanceLowPassHz`
+  leaving events without `lowPass` open, native IMA ADPCM/PCM WAV decoding
+  (mono, stereo, `fact`), reference/`NoSound` resolution, faction mapping
+  (Ukraine -> USA, Russia -> China, unit and EVA), and the BIG reader (on a
+  tiny synthetic archive, not EA data) with a fake clock; `check:audio` guard
+  that nothing under `.local/audio-ref/` is tracked or built; example save
+  `audio-fight` (a skirmish with both factions, mixed units); owner listens
+  with the reference pack on `?audio=debug` (event list with play buttons, live
+  voice count, rejected/culled sounds).
 * Phase 2: `check:audio` validates that every event in `events.yaml` has an
   inventory entry with a brief and that every line has an `explicit` flag and
   each event a clean variant.

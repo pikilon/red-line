@@ -1,4 +1,6 @@
-// Web Audio mixer, bus graph, ducking automation, and live engine loops (specs/25-audio.md §6, §9, §10).
+// Web Audio mixer, bus graph, ducking automation, and Zero Hour sample playback
+// (specs/25-audio.md §6, §9, §10). No engine oscillators: vehicles only play the
+// discrete `SoundMoveStart` samples from the reference pack.
 
 import { AudioDirector, type ListenerState, resolveEventDef } from "./director";
 import { EvaQueue } from "./eva";
@@ -26,12 +28,6 @@ interface PlayingNode {
   gainNode: GainNode;
 }
 
-interface EngineLoopNode {
-  entityId: number;
-  osc: OscillatorNode;
-  gain: GainNode;
-}
-
 export class AudioMixer {
   readonly catalog: AudioCatalog;
   readonly director: AudioDirector;
@@ -42,7 +38,7 @@ export class AudioMixer {
   private buses: Record<AudioBusName, GainNode> | null = null;
   private duckNodes: { music: GainNode; sfx: GainNode } | null = null;
   private readonly playing = new Map<number, PlayingNode>();
-  private readonly engineLoops = new Map<number, EngineLoopNode>();
+  private readonly lastResolvedVariant = new Map<string, number>();
   private musicSource: AudioBufferSourceNode | null = null;
   private currentMusicEvent: string | null = null;
   private listener: ListenerState = { tileX: 32, tileY: 32, zoom: 1 };
@@ -134,23 +130,60 @@ export class AudioMixer {
       request.eventId,
       options?.fallbackCategory,
     );
-    const resolvedSounds = this.loader.resolveEventSounds(
+    const configuredSounds = def?.sounds ?? [decision.soundId];
+    const forceSynth = options?.forceSynth ?? false;
+    const isRandom = def?.control?.includes("random") ?? true;
+    const resolved = this.resolvePlaybackVariant(
       request.eventId,
-      def?.sounds ?? [decision.soundId],
-      options?.forceSynth ?? false,
+      configuredSounds,
+      isRandom,
+      forceSynth,
     );
-    const chosenSound =
-      resolvedSounds[
-        decision.variantIndex % Math.max(1, resolvedSounds.length)
-      ] ?? decision.soundId;
-    decision.soundId = chosenSound;
+    if (!resolved) {
+      this.director.releaseChannel(handle);
+      return decision;
+    }
+    decision.variantIndex = resolved.index;
+    decision.soundId = resolved.soundId;
 
     this.schedulePlayback(
       handle,
       decision,
-      def?.control?.includes("loop") ?? false,
+      request.eventId,
+      configuredSounds,
+      isRandom,
+      forceSynth,
     );
     return decision;
+  }
+
+  /**
+   * Resolves the samples for an event and picks a variant that respects `random`.
+   * Reference events have more variants than the single `synth:` fallback in our data,
+   * so the pick must happen after the reference pack has been resolved.
+   */
+  private resolvePlaybackVariant(
+    eventId: string,
+    configuredSounds: readonly string[],
+    isRandom: boolean,
+    forceSynth: boolean,
+  ): { soundId: string; index: number } | null {
+    const sounds = this.loader.resolveEventSounds(
+      eventId,
+      configuredSounds,
+      forceSynth,
+    );
+    if (sounds.length === 0) return null;
+    const index = pickVariantIndex(
+      sounds.length,
+      isRandom,
+      this.lastResolvedVariant.get(eventId),
+    );
+    this.lastResolvedVariant.set(eventId, index);
+    return {
+      soundId: sounds[index] ?? sounds[0] ?? "",
+      index,
+    };
   }
 
   /** Directly auditions an event ID on the debug overlay (bypassing fog/distance cull). */
@@ -181,19 +214,23 @@ export class AudioMixer {
     const next = this.evaQueue.process(2000);
     if (!next) return;
 
-    const zhUrls = this.loader.resolveZhUrls(next.soundRef);
-    const pickedUrl =
-      zhUrls.length > 0
-        ? zhUrls[pickVariantIndex(zhUrls.length, true, undefined)]
-        : undefined;
-    const soundId =
-      pickedUrl ??
-      (next.soundRef.startsWith("synth:") ? next.soundRef : "synth:eva");
-
     const ctx = this.ensureContext();
     if (!ctx || !this.buses) return;
 
-    void this.loader.getBuffer(ctx, soundId).then((buffer) => {
+    void (async () => {
+      if (!this.loader.isProbeDone()) {
+        await this.loader.initReferencePack();
+      }
+      const zhUrls = this.loader.resolveZhUrls(next.soundRef);
+      const pickedUrl =
+        zhUrls.length > 0
+          ? zhUrls[pickVariantIndex(zhUrls.length, true, undefined)]
+          : undefined;
+      const soundId =
+        pickedUrl ??
+        (next.soundRef.startsWith("synth:") ? next.soundRef : "synth:eva");
+
+      const buffer = await this.loader.getBuffer(ctx, soundId);
       if (!buffer || !this.ctx || !this.buses) return;
       const durationMs = buffer.duration * 1000;
       this.evaQueue.notifyPlayingDuration(durationMs);
@@ -206,62 +243,7 @@ export class AudioMixer {
       source.connect(gain);
       gain.connect(this.buses.eva);
       source.start();
-    });
-  }
-
-  /**
-   * Updates continuous engine/locomotor loops for moving on-screen units (`specs/25-audio.md` §6.7).
-   * Called about once per second (`TimeBetweenDrawableSounds = 1000ms`), never every frame.
-   */
-  syncEngineLoops(
-    movingUnits: readonly { id: number; speedRatio: number; gain: number }[],
-  ): void {
-    const ctx = this.ensureContext();
-    if (!ctx || !this.buses || ctx.state !== "running") return;
-
-    const limit = 4;
-    const topUnits = [...movingUnits]
-      .filter((u) => u.speedRatio > 0.05 && u.gain > 0.02)
-      .sort((a, b) => b.gain - a.gain)
-      .slice(0, limit);
-    const keepIds = new Set(topUnits.map((u) => u.id));
-
-    for (const [id, node] of this.engineLoops) {
-      if (!keepIds.has(id)) {
-        try {
-          node.osc.stop();
-          node.osc.disconnect();
-          node.gain.disconnect();
-        } catch {
-          // ignore already stopped
-        }
-        this.engineLoops.delete(id);
-      }
-    }
-
-    const now = ctx.currentTime;
-    for (const unit of topUnits) {
-      let loop = this.engineLoops.get(unit.id);
-      if (!loop) {
-        const osc = ctx.createOscillator();
-        osc.type = "sawtooth";
-        const filter = ctx.createBiquadFilter();
-        filter.type = "lowpass";
-        filter.frequency.value = 240;
-        const gain = ctx.createGain();
-        gain.gain.value = 0.001;
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.buses.sfx);
-        osc.start();
-        loop = { entityId: unit.id, osc, gain };
-        this.engineLoops.set(unit.id, loop);
-      }
-      const targetFreq = 52 + unit.speedRatio * 48;
-      const targetGain = Math.min(0.22, unit.gain * 0.18);
-      loop.osc.frequency.setTargetAtTime(targetFreq, now, 0.15);
-      loop.gain.gain.setTargetAtTime(targetGain, now, 0.15);
-    }
+    })();
   }
 
   /** Starts or crossfades background music state (`music.calm.<faction>`, `music.combat.<faction>`, etc.). */
@@ -283,11 +265,17 @@ export class AudioMixer {
 
     const def = resolveEventDef(this.catalog, eventId);
     if (!def) return;
-    const sounds = this.loader.resolveEventSounds(eventId, def.sounds);
-    const soundId = sounds[0];
-    if (!soundId) return;
 
-    void this.loader.getBuffer(ctx, soundId).then((buffer) => {
+    void (async () => {
+      if (!this.loader.isProbeDone()) {
+        await this.loader.initReferencePack();
+      }
+      const sounds = this.loader.resolveEventSounds(eventId, def.sounds);
+      const soundId = sounds[0];
+      if (!soundId) return;
+      if (this.currentMusicEvent !== eventId) return;
+
+      const buffer = await this.loader.getBuffer(ctx, soundId);
       if (
         !buffer ||
         !this.ctx ||
@@ -301,7 +289,7 @@ export class AudioMixer {
       source.connect(this.buses.music);
       source.start();
       this.musicSource = source;
-    });
+    })();
   }
 
   getDebugLog(): readonly AudioDebugEntry[] {
@@ -311,7 +299,10 @@ export class AudioMixer {
   private schedulePlayback(
     handle: number,
     decision: AdmissionDecision,
-    loop: boolean,
+    eventId: string,
+    configuredSounds: readonly string[],
+    isRandom: boolean,
+    forceSynth: boolean,
   ): void {
     const ctx = this.ensureContext();
     if (!ctx || !this.buses) {
@@ -320,12 +311,34 @@ export class AudioMixer {
       return;
     }
 
-    void this.loader.getBuffer(ctx, decision.soundId).then((buffer) => {
+    void (async () => {
+      let soundId = decision.soundId;
+      // The first sounds of a match can arrive while the reference probe is in
+      // flight. Wait for it and re-resolve so they use the real Zero Hour sample
+      // instead of the synth fallback.
+      if (!forceSynth && !this.loader.isProbeDone()) {
+        await this.loader.initReferencePack();
+        const resolved = this.resolvePlaybackVariant(
+          eventId,
+          configuredSounds,
+          isRandom,
+          false,
+        );
+        if (!resolved) {
+          this.director.releaseChannel(handle);
+          return;
+        }
+        soundId = resolved.soundId;
+        decision.variantIndex = resolved.index;
+        decision.soundId = soundId;
+      }
+
+      const buffer = await this.loader.getBuffer(ctx, soundId);
       if (!buffer || !this.ctx || !this.buses) {
         this.director.releaseChannel(handle);
         return;
       }
-      // Check if handle was already stolen/killed while decoding
+      // Check if handle was already stolen/killed while probing/decoding
       if (
         !this.director.getActiveChannels().some((ch) => ch.handle === handle)
       ) {
@@ -334,7 +347,6 @@ export class AudioMixer {
 
       const source = this.ctx.createBufferSource();
       source.buffer = buffer;
-      source.loop = loop;
       source.playbackRate.value = decision.playbackRate;
 
       const gainNode = this.ctx.createGain();
@@ -380,7 +392,7 @@ export class AudioMixer {
 
       const startAt = this.ctx.currentTime + decision.delayMs / 1000;
       source.start(startAt);
-    });
+    })();
   }
 
   private stopHandle(handle: number): void {
