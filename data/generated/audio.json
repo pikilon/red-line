@@ -1198,7 +1198,7 @@
     },
     "building.construct": {
       "sounds": [
-        "synth:building"
+        "synth:construction"
       ],
       "control": [
         "loop",
@@ -1232,6 +1232,82 @@
         "player",
         "global"
       ]
+    },
+    "building.damage": {
+      "sounds": [
+        "synth:impact"
+      ],
+      "volume": 65,
+      "limit": 2,
+      "priority": "normal",
+      "control": [
+        "random",
+        "interrupt"
+      ],
+      "type": [
+        "world",
+        "shrouded",
+        "everyone"
+      ],
+      "minDistance": 8,
+      "maxDistance": 80
+    },
+    "building.damage.heavy": {
+      "sounds": [
+        "synth:explosion"
+      ],
+      "volume": 110,
+      "limit": 2,
+      "priority": "normal",
+      "control": [
+        "random",
+        "interrupt"
+      ],
+      "type": [
+        "world",
+        "shrouded",
+        "everyone"
+      ],
+      "minDistance": 8,
+      "maxDistance": 80
+    },
+    "building.damage.critical": {
+      "sounds": [
+        "synth:explosion"
+      ],
+      "volume": 100,
+      "limit": 2,
+      "priority": "normal",
+      "control": [
+        "random",
+        "interrupt"
+      ],
+      "type": [
+        "world",
+        "shrouded",
+        "everyone"
+      ],
+      "minDistance": 8,
+      "maxDistance": 80
+    },
+    "vehicle.damage": {
+      "sounds": [
+        "synth:impact"
+      ],
+      "volume": 80,
+      "limit": 2,
+      "priority": "normal",
+      "control": [
+        "random",
+        "interrupt"
+      ],
+      "type": [
+        "world",
+        "shrouded",
+        "everyone"
+      ],
+      "minDistance": 5,
+      "maxDistance": 50
     },
     "building.select.hq.ukraine": {
       "sounds": [
@@ -1418,6 +1494,38 @@
       "type": [
         "ui",
         "player"
+      ]
+    },
+    "ambient.snow": {
+      "sounds": [
+        "synth:wind"
+      ],
+      "volume": 60,
+      "priority": "lowest",
+      "control": [
+        "loop",
+        "random"
+      ],
+      "limit": 2,
+      "type": [
+        "ui",
+        "everyone"
+      ]
+    },
+    "ambient.temperate": {
+      "sounds": [
+        "synth:wind"
+      ],
+      "volume": 45,
+      "priority": "lowest",
+      "control": [
+        "loop",
+        "random"
+      ],
+      "limit": 2,
+      "type": [
+        "ui",
+        "everyone"
       ]
     },
     "music.menu": {
@@ -4041,6 +4149,10 @@
     "die": {
       "limit": 3,
       "onScreenOnly": true
+    },
+    "music": {
+      "fadeMs": 2000,
+      "combatHoldMs": 12000
     }
   },
   "reference": {
@@ -4251,7 +4363,11 @@
     "building.select.barracks.russia": "BarracksChinaSelect",
     "building.select.factory.ukraine": "WarFactoryUSASelect",
     "building.select.factory.russia": "WarFactoryChinaSelect",
+    "building.damage": "BuildingDamage",
+    "building.damage.heavy": "BuildingDamagedStateLight",
+    "building.damage.critical": "BuildingDestroy",
     "building.die": "BuildingDie",
+    "vehicle.damage": "VehicleDamagedState",
     "ui.click": "GUIClick",
     "ui.disabled": "BuildingDisabled",
     "ui.error": "NoCanDoSound",
@@ -4260,6 +4376,8 @@
     "ui.radarOn": "RadarOn",
     "ui.radarOff": "RadarOff",
     "ui.warning": "RadarNotifyUnderAttack",
+    "ambient.snow": "AmbientWindCold",
+    "ambient.temperate": "Amb_TemperateMeadowAmbientLoop",
     "music.menu": "Shell",
     "music.calm.ukraine": "Game_USA_01",
     "music.combat.ukraine": "Game_USA_02",
@@ -4403,6 +4521,18 @@
       "decayMs": 240,
       "gain": 0.55
     },
+    "construction": {
+      "kind": "loop",
+      "durationMs": 600,
+      "freqStartHz": 95,
+      "freqEndHz": 95,
+      "filterType": "lowpass",
+      "filterHz": 380,
+      "noiseMix": 0.6,
+      "attackMs": 40,
+      "decayMs": 120,
+      "gain": 0.4
+    },
     "scream": {
       "kind": "tone",
       "durationMs": 280,
@@ -4414,6 +4544,18 @@
       "attackMs": 10,
       "decayMs": 260,
       "gain": 0.6
+    },
+    "wind": {
+      "kind": "loop",
+      "durationMs": 2000,
+      "freqStartHz": 280,
+      "freqEndHz": 280,
+      "filterType": "lowpass",
+      "filterHz": 620,
+      "noiseMix": 1,
+      "attackMs": 600,
+      "decayMs": 600,
+      "gain": 0.28
     },
     "music": {
       "kind": "tone",

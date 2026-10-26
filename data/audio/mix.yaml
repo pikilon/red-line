@@ -1,4 +1,7 @@
 # Bus volumes, ducking rules, global limits and camera audio configuration (specs/25 §6, §9, §10).
+# `music.fadeMs` is Zero Hour's TimeToFadeAudio; `combatHoldMs` is how long the
+# combat track survives a quiet stretch before calm returns (behavior, not
+# content). Ambient volume lives on the ambient bus.
 
 buses:
   master:  { volume: 100 }
@@ -47,3 +50,7 @@ underFire:
 die:
   limit: 3
   onScreenOnly: true
+
+music:
+  fadeMs: 2000
+  combatHoldMs: 12000

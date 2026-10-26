@@ -1,5 +1,12 @@
 // Read-only snapshot diff & combat event consumer for client audio (specs/25-audio.md §5.2, §6, §8).
-// Never mutates sim state; derives `AudioPlayRequest` and EVA triggers purely from snapshots.
+// Never mutates sim state; derives `AudioPlayRequest`, EVA triggers, construction loops and
+// building damage purely from snapshots.
+//
+// Adding a trigger: add the event id to data/audio/events.yaml (or eva.yaml),
+// map it in reference.yaml, then push the request from the loop below. The
+// client never needs sim changes for a new sound; if a fact is missing (a
+// production-ready flag, a surface type...), add an output-only snapshot field
+// and document it in the phase PR (spec 25 §8).
 
 import ruleset from "@data/ruleset.json";
 import { RULES, typeDef, WEAPONS } from "../rules";
@@ -11,7 +18,12 @@ import {
   type MatchSnapshot,
   OBSERVER,
 } from "../sim/matchSnapshot";
-import type { AudioCatalog, AudioPlayRequest, PlayerRelation } from "./types";
+import type {
+  AudioCatalog,
+  AudioPlayRequest,
+  ConstructionLoopState,
+  PlayerRelation,
+} from "./types";
 
 const DAMAGE_TYPES: readonly string[] = ruleset.damageTypes;
 
@@ -28,8 +40,9 @@ export interface ScreenProjector {
 export interface DerivedAudioBatch {
   requests: { request: AudioPlayRequest; fallbackCategory?: string }[];
   evaEvents: string[];
+  /** Buildings that need an `UnderConstructionLoop` this snapshot. */
+  constructionLoops: ConstructionLoopState[];
   combatActive: boolean;
-  outcomeMusic?: "victory" | "defeat";
 }
 
 function relationOf(owner: number, localPlayer: number): PlayerRelation {
@@ -95,8 +108,8 @@ export function deriveSnapshotAudio(
   const requests: { request: AudioPlayRequest; fallbackCategory?: string }[] =
     [];
   const evaEvents: string[] = [];
+  const constructionLoops: ConstructionLoopState[] = [];
   let combatActive = false;
-  let outcomeMusic: "victory" | "defeat" | undefined;
 
   const isFirstSnapshot = prev === null || prev.tick === 0;
   const prevTick = prev?.tick ?? next.tick;
@@ -295,6 +308,83 @@ export function deriveSnapshotAudio(
     const { screenX, onScreen } = projector.projectTile(entity.x, entity.y);
     const tileVisible = projector.isTileVisible(entity.x, entity.y);
 
+    // A damaged building gets an impact sound. Crossing the half-health line
+    // uses the heavier `BuildingDamagedStateLight` variant; a building that
+    // dies on this tick plays its death sound instead.
+    if (
+      prevEntity &&
+      def.category === "building" &&
+      entity.hp < prevEntity.hp &&
+      !killedIds.has(entity.id)
+    ) {
+      const before = def.hp > 0 ? prevEntity.hp / def.hp : 1;
+      const after = def.hp > 0 ? entity.hp / def.hp : 1;
+      // Zero Hour `SoundOnDamaged` fires when crossing the light-damage line
+      // and `SoundOnReallyDamaged` at the heavy one. Other hits are impacts.
+      const eventId =
+        before > 0.25 && after <= 0.25
+          ? "building.damage.critical"
+          : before > 0.5 && after <= 0.5
+            ? "building.damage.heavy"
+            : "building.damage";
+      requests.push({
+        request: {
+          eventId,
+          entityId: entity.id,
+          ownerPlayer: entity.owner,
+          relation: rel,
+          tileX: entity.x,
+          tileY: entity.y,
+          screenX,
+          onScreen,
+          tileVisible,
+        },
+      });
+    }
+
+    // Vehicles have their own `SoundOnDamaged` state sound (the same sample
+    // family as the building state, at a different volume).
+    if (
+      prevEntity &&
+      def.category === "unit" &&
+      locomotorKindOf(entity.kind) !== "foot" &&
+      prevEntity.hp > def.hp * 0.5 &&
+      entity.hp <= def.hp * 0.5 &&
+      entity.hp > 0 &&
+      !killedIds.has(entity.id)
+    ) {
+      requests.push({
+        request: {
+          eventId: "vehicle.damage",
+          entityId: entity.id,
+          ownerPlayer: entity.owner,
+          relation: rel,
+          tileX: entity.x,
+          tileY: entity.y,
+          screenX,
+          onScreen,
+          tileVisible,
+        },
+      });
+    }
+
+    // Zero Hour runs `UnderConstructionLoop` while a structure is being built.
+    if (
+      def.category === "building" &&
+      hasFlag(entity, ENTITY_FLAGS.underConstruction) &&
+      !hasFlag(entity, ENTITY_FLAGS.ghost)
+    ) {
+      constructionLoops.push({
+        entityId: entity.id,
+        tileX: entity.x,
+        tileY: entity.y,
+        screenX,
+        onScreen,
+        tileVisible,
+        relation: rel,
+      });
+    }
+
     if (!isFirstSnapshot && !prevEntity) {
       // Newly spawned/placed entity
       if (rel === "self") {
@@ -399,15 +489,13 @@ export function deriveSnapshotAudio(
     if (prev.outcome === "ongoing" && next.outcome !== "ongoing") {
       if (next.winner === localPlayer) {
         evaEvents.push("victory");
-        outcomeMusic = "victory";
       } else {
         evaEvents.push("defeat");
-        outcomeMusic = "defeat";
       }
     }
   }
 
-  return { requests, evaEvents, combatActive, outcomeMusic };
+  return { requests, evaEvents, constructionLoops, combatActive };
 }
 
 /**

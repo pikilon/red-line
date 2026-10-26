@@ -1,6 +1,12 @@
 # Unit voice sets and fallback categories (specs/25 §5.1, §6.2-6.5).
 # Copies Zero Hour's voice parameters for order acknowledgements (UI, owner-only),
 # under-fire calls (world positional, owner-only, throttled) and death sounds.
+#
+# Adding a unit: create a set whose key is exactly the unit type id from
+# data/factions/<faction>.yaml, copy the closest role set, then map each action
+# in reference.yaml to the faction's Zero Hour set (USA for Ukraine, China for
+# Russia). A missing set falls through to `foot`/`wheeled`/`tracked`/`unit`;
+# those fallbacks are safety nets, not the intended voice.
 
 sets:
   ua-rifleman:

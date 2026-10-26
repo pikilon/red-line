@@ -2,7 +2,9 @@
 
 Status: phase 1 implemented (owner request 2026-10-25; revised 2026-10-25 with the
 reference-pack process; revised 2026-10-26 with native IMA ADPCM decoding, no
-synthetic engine drone, and verified USA voices for Ukraine / China voices for Russia).
+synthetic engine drone, verified USA voices for Ukraine / China voices for Russia,
+and full behavior wiring for music, ambient beds, construction loops, building
+damage and UI/EVA triggers). `docs/audio-extension.md` is the contributor guide.
 Depends on `01-architecture.md` (audio lives in the client main thread),
 `07-phase4b-combat-effects.md` (combat events), `17-projectiles-and-combat-readability.md`,
 `19-save-games.md` (example saves).
@@ -16,6 +18,8 @@ The game is silent today (`00-vision.md` lists "Art and audio" as future,
 lines (select, move, attack, under fire, dying) per faction and unit type,
 EVA/announcer lines, a sound for every weapon, impacts, explosions, vehicle
 engines and tracks, infantry footsteps, buildings, ambient, UI and music.
+Footsteps are not a Zero Hour audio event, so they belong to our own content
+(phase 3), not to the behavior clone.
 
 **Process (owner, 2026-10-25).** First clone how Zero Hour's audio *behaves*
 (overlap, limits, mix, volume with camera zoom, stereo panning, unit movement,
@@ -122,7 +126,7 @@ and `INIZH.big` (Zero Hour 1.04). Facts unless marked inference.
 
 | Phase | Deliverable | Player-visible result |
 |---|---|---|
-| 1. Engine clone with reference pack | Local extractor for the owner's Zero Hour `.big` files (§4.2), event table loader, admission rules, voice rule, limits and priorities, buses and ducking, stereo pan, distance and zoom volume, fog cull, discrete move-start samples and footsteps, weapon fire/impact/explosion events, EVA queue, settings sliders, minimal procedural fallback, `?audio=debug` overlay, example save `audio-fight` | On the owner's machine a fight sounds and mixes like Zero Hour; elsewhere every action makes a simple placeholder sound; volume sliders work |
+| 1. Engine clone with reference pack | Local extractor for the owner's Zero Hour `.big` files (§4.2), event table loader, admission rules, voice rule, limits and priorities, buses and ducking, stereo pan, distance and zoom volume, fog cull, discrete move-start samples, weapon fire/impact/explosion events, construction/ambient loops, music states, EVA queue, settings sliders, minimal procedural fallback, `?audio=debug` overlay, example saves `audio-fight` and `construction` | On the owner's machine a fight sounds and mixes like Zero Hour; elsewhere every action makes a simple placeholder sound; volume sliders work |
 | 2. Inventory and briefs | Listening review of every event on the debug page; `data/audio/inventory.yaml` with one written brief per event (what our sound should be, in our own words), variant counts, voice line scripts in Ukrainian and Russian | A complete, owner-approved list of what to make; nothing new to hear yet |
 | 3. Automated generation | `scripts/audio/gen.mjs` pipeline (§4.5): SFX (libraries + local model), voices (uk/ru TTS, radio filter, strong language), EVA per faction, music; each generated sound replaces its reference entry | The game ships with its own sounds; the reference pack is no longer needed |
 | 4. Polish | Mix retune with the final sounds, ambient per map, subtitles, bundle budget check, strong-language toggle | Mix is tuned; subtitles and the language filter work |
@@ -294,8 +298,14 @@ fall back through a chain so every weapon sounds like something:
   Explosion: `explosion.<size>` from the shot effect size (spec 07 §3).
 * Unit: `voice.<typeId>.<event>` -> `voice.<category>.<event>`.
   Movement: `move.<typeId>.start` -> `move.<locomotor>` (one-shot
-  acceleration sample, footsteps).
-* Building: `building.<typeId>.<place|complete|working|die>` -> by category.
+  acceleration sample). Damage state: `vehicle.damage` on the 50 % crossing.
+  Footsteps are not a Zero Hour event; they are future original content.
+* Building: `building.<typeId>.<place|complete|working|die>` -> by category;
+  runtime damage events are `building.damage`, `building.damage.heavy` and
+  `building.damage.critical`.
+* Ambient: `ambient.<climate>` (snow, temperate; see `ambientEventFor`).
+  UI: `ui.<action>` from the menu/command/placement layer. EVA:
+  `eva.<faction>.<event>` resolved by the queue's faction.
 
 ### 5.3 Voice language, strong language and subtitles
 
@@ -349,9 +359,14 @@ fall back through a chain so every weapon sounds like something:
    defaults `SoundMoveLoop = NoSound` and only civilian transports override it,
    so our ground units likewise have no continuous engine loop. We play the
    `SoundMoveStart` sample once and never open an oscillator on the effects
-   bus. Music, construction and ambient loops are sample buffers
-   started/stopped from snapshot state, at most `limit` per event, retried
-   about once per second like `TimeBetweenDrawableSounds`, never every frame.
+   bus. Construction and ambient loops are **sample** loops started/stopped from
+   snapshot state, at most `limit` per event, with the Zero Hour
+   `AttackSounds`/`DecaySounds` head and tail. Positional loop gain, pan and
+   low-pass follow the listener; the mixer updates them on each snapshot, not
+   every frame. Music has its own crossfade and is not admitted through the
+   effects pools. Zero Hour ships no footstep `AudioEvent` (`Object.ini` has no
+   footstep field), so footsteps are future original content, not a missing
+   clone.
 8. **Variation:** `random` picks a variant not equal to the last one;
    `pitchShift`, `volumeShift` and `delayMs` are drawn per instance. These use a
    client-side RNG (`Math.random` is allowed in the client; it never touches
@@ -360,9 +375,10 @@ fall back through a chain so every weapon sounds like something:
 ## 7. Procedural recipes (fallback, phase 1; tuned where used, phase 3)
 
 * Phase 1 ships one minimal recipe per sound class (click, shot, impact,
-  explosion, engine, footstep, voice blip) so builds without the reference
-  pack are never silent. Recipes for events that end up procedural in phase 3
-  are tuned then.
+  explosion, engine, construction, wind, voice blip) so builds without the
+  reference pack are never silent. `footstep` stays as a future original-content
+  recipe (Zero Hour has no footstep event). Recipes for events that end up
+  procedural in phase 3 are tuned then.
 * A recipe is data in `data/audio/synth/*.yaml`: a small graph (oscillator or
   noise source, filter, envelope, optional layers and a convolver tail) that the
   client turns into an `AudioBuffer` once at load (offline render with
@@ -371,7 +387,9 @@ fall back through a chain so every weapon sounds like something:
 * The `synth:engine` recipe is a one-shot fallback only. A moving vehicle never
   opens an oscillator: the old live sawtooth drone was the synthetic hum the
   owner reported on the effects bus, and it is gone (the reference
-  `SoundMoveStart` WAVs replace it when the pack is present).
+  `SoundMoveStart` WAVs replace it when the pack is present). `synth:construction`
+  and `synth:wind` are offline-rendered loop buffers for the same paths, never
+  live oscillator graphs.
 * The same recipes are the offline-render source of the "placeholder pack", so
   the debug page can export them to wav for comparison with generated takes.
 
@@ -413,7 +431,8 @@ fall back through a chain so every weapon sounds like something:
 * **Distance** gain curve with the event's `minDistance`/`maxDistance` in tiles
   from the listener: full at or below min, silent beyond max (dropped, not
   played). `lowPass` closes a low-pass filter with distance. Weapons use
-  generous `maxDistance` (a big gun is heard across the map), footsteps small.
+  generous `maxDistance` (a big gun is heard across the map), move-start
+  samples small.
 * **Zoom bonus** as in `AudioSettings.ini`: up to +20% of world volume when the
   camera is close; none when zoomed out.
 * **Fog:** `shrouded` events are dropped unless the tile is currently visible
@@ -447,22 +466,35 @@ fall back through a chain so every weapon sounds like something:
   engineer, truck), flavoured per faction: 8 sets x 2 factions x ~22 lines,
   in Ukrainian or Russian with strong language (§5.3). Vehicles use a shorter
   radio-style line.
-* **EVA**: ~20 events per faction voice (the EVA voice differs per faction and
-  speaks its language).
+* **EVA**: 11 events defined (the EVA voice differs per faction and speaks its
+  language). Wired triggers: base under attack, low power, insufficient funds,
+  unit lost, building lost, production complete, construction complete,
+  building placement ready, victory and defeat. `upgradeComplete` stays defined
+  but unqueued until the sim has upgrades; superweapon EVA lines are out of
+  scope until superweapons exist.
 * **Weapons:** the 7 current weapon ids per faction (rifle, RPG, heavy MG,
   autocannon, tank gun, thermobaric, ATGM, ...) get a `fire` event; shared
   `impact` and `explosion` families by size, material and damage type.
 * **Movement:** one discrete acceleration sound per unit
-  (`move.<typeId>.start`, locomotor fallback), not a continuous engine loop;
-  footsteps by surface (grass, mud, snow, road) for infantry, tied to the
-  existing walk animation phase.
-* **Buildings:** place, construction loop, complete, production started/ready,
-  working loops (power plant hum, factory machinery), damage/collapse.
-* **Ambient:** per weather/map (wind, snow wind, distant artillery bed, birds
-  on summer maps); `ambient` bus, 2 loops max.
-* **UI:** click, hover, error ("can't do that"), cash tick, build menu, minimap
-  ping, selection box. **Music:** menu, calm build-up, combat, victory,
-  defeat; combat state switches by recent damage events; crossfade 2 s.
+  (`move.<typeId>.start`, locomotor fallback), not a continuous engine loop.
+  Zero Hour has no footstep events; surface footsteps are original phase-3
+  content.
+* **Buildings:** place, under-construction loop (with head/tail), complete,
+  damage on every hit, heavy damage on the 50 % crossing, critical damage on the
+  25 % crossing, death. Vehicles get their damaged-state sound on the 50 %
+  crossing. Production-ready/EVA lines carry the production state; military
+  buildings stay silent in Zero Hour (`SoundAmbient = NoSound`), so there is no
+  invented factory hum.
+* **Ambient:** climate beds, `ambient` bus, one loop at a time (Zero Hour
+  allowed up to two): cold wind with `?weather=snow`, temperate meadow
+  otherwise; `?weather=none` silences it. New climates extend
+  `ambientEventFor`.
+* **UI:** click on menu/command buttons, error on illegal placement or a
+  disabled/underfunded offer, cash tick on credit changes, and the radar
+  warning on a base attack. Hover/minimap ping need UI surfaces this client
+  does not have yet. **Music:** menu, calm, combat, victory and defeat;
+  combat switches by recent damage and holds for `combatHoldMs`; crossfade
+  `fadeMs` (2 s default).
 
 ## 12. File formats and budget
 
@@ -470,9 +502,10 @@ fall back through a chain so every weapon sounds like something:
   for SFX, stereo 96 kbps for music and long ambient loops. Browser support
   for Opus-WebM (Chrome, Firefox, Safari) is verified in phase 1; the fallback
   if Safari fails is AAC `.m4a` of the same files, chosen by the loader.
-* Short SFX are decoded once into `AudioBuffer`s (Zero Hour kept 4 MB of
-  samples cached; our decoded budget is 64 MB, LRU, and the encoded budget is
-  below). Music streams through a `MediaElementAudioSourceNode`.
+* Short SFX and loops are decoded once into `AudioBuffer`s (Zero Hour kept 4 MB
+  of samples cached; our decoded budget is 64 MB, LRU, and the encoded budget is
+  below). Phase 1 decodes music into an `AudioBuffer` too; phase 4 may switch to
+  a `MediaElementAudioSourceNode` if the streaming budget needs it.
 * Reference WAVs can be 4-bit IMA ADPCM (`WAVE_FORMAT_IMA_ADPCM`, `0x0011`).
   `client/src/audio/loader.ts` parses RIFF/WAVE and decodes IMA ADPCM mono and
   stereo blocks itself, honouring the `fact` sample count, plus 8/16-bit PCM;
@@ -513,13 +546,15 @@ fall back through a chain so every weapon sounds like something:
 * Phase 1: unit tests of admission rules (limit, voice rule, priority stealing,
   EVA queue cooldown/expiry), pan/distance/zoom gain curves, `distanceLowPassHz`
   leaving events without `lowPass` open, native IMA ADPCM/PCM WAV decoding
-  (mono, stereo, `fact`), reference/`NoSound` resolution, faction mapping
-  (Ukraine -> USA, Russia -> China, unit and EVA), and the BIG reader (on a
-  tiny synthetic archive, not EA data) with a fake clock; `check:audio` guard
-  that nothing under `.local/audio-ref/` is tracked or built; example save
-  `audio-fight` (a skirmish with both factions, mixed units); owner listens
-  with the reference pack on `?audio=debug` (event list with play buttons, live
-  voice count, rejected/culled sounds).
+  (mono, stereo, `fact`), reference/`NoSound` resolution, loop head/tail
+  resolution, faction mapping (Ukraine -> USA, Russia -> China, unit and EVA),
+  music calm/combat/victory hysteresis, ambient selection, construction-loop
+  derivation and building damage, and the BIG reader (on a tiny synthetic
+  archive, not EA data) with a fake clock; `check:audio` guard that nothing
+  under `.local/audio-ref/` is tracked or built; example saves `audio-fight`
+  and `construction` (mixed units/combat and an under-construction site); owner
+  listens with the reference pack on `?audio=debug` (event list with play
+  buttons, live voice count, rejected/culled sounds).
 * Phase 2: `check:audio` validates that every event in `events.yaml` has an
   inventory entry with a brief and that every line has an `explicit` flag and
   each event a clean variant.
@@ -528,3 +563,18 @@ fall back through a chain so every weapon sounds like something:
   rule: tests after approval).
 * Phase 4: subtitle smoke test (a translated line resolves, falls back to
   `en`); strong-language toggle excludes explicit variants.
+
+## 15. Extending the clone
+
+The behavior is data-driven and documented for future contributors:
+
+* Source comments next to every trigger (`derive.ts`, `mixer.ts`, `loader.ts`,
+  `catalog.ts`, `skirmish.ts`) state what the hook does and which file owns the
+  new content.
+* `docs/audio-extension.md` is the checklist for adding a weapon, unit,
+  building, faction, EVA/UI event, ambient bed or sample loop, including a
+  prompt template for an AI contributor.
+* Rules that must not be broken: ids follow §5.2; the reference mapping stays
+  names-only and local; a new side gets unit voices, EVA and music mappings;
+  loops are samples with `attackSounds`/`decaySounds`, never live oscillators;
+  content is original under D-02, behavior is cloned.

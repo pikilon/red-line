@@ -1,5 +1,13 @@
 # Mapping from Red Line audio event IDs to Zero Hour event names (specs/25 §4.2, §5.1).
 # Scaffolding only: names only, no EA audio ships in the repository.
+#
+# This is the extension point for a new unit, weapon, building, faction or
+# ambient bed. Add ids here, never file paths: the loader resolves the Zero
+# Hour name to a local `/audio-ref/` URL and reads loop attack/decay parts from
+# the extracted index. `NoSound` is a deliberate silence. For a new side keep
+# the owner mapping (Ukraine -> USA set, Russia -> China set) for unit voices,
+# EVA and music; mixing sets across sides is a bug. The faction guard test in
+# client/src/audio/audio.test.ts fails if a side uses the other side's set.
 
 # -----------------------------------------------------------------------------
 # Unit Voices: Ukraine (USA audio reference)
@@ -276,7 +284,11 @@ building.select.barracks.ukraine: BarracksUSASelect
 building.select.barracks.russia: BarracksChinaSelect
 building.select.factory.ukraine: WarFactoryUSASelect
 building.select.factory.russia: WarFactoryChinaSelect
+building.damage: BuildingDamage
+building.damage.heavy: BuildingDamagedStateLight
+building.damage.critical: BuildingDestroy
 building.die: BuildingDie
+vehicle.damage: VehicleDamagedState
 
 # -----------------------------------------------------------------------------
 # UI
@@ -289,6 +301,12 @@ ui.cashDown: MoneyWithdraw
 ui.radarOn: RadarOn
 ui.radarOff: RadarOff
 ui.warning: RadarNotifyUnderAttack
+
+# -----------------------------------------------------------------------------
+# Ambient beds (map weather; zero-hour names)
+# -----------------------------------------------------------------------------
+ambient.snow: AmbientWindCold
+ambient.temperate: Amb_TemperateMeadowAmbientLoop
 
 # -----------------------------------------------------------------------------
 # Music

@@ -230,7 +230,7 @@ export function createAudioDebugOverlay(
     const limits = mixer.catalog.mix.limits;
     const evaActive = mixer.evaQueue.isPlaying() ? 1 : 0;
     const cacheKb = Math.round(mixer.loader.getCachedBytes() / 1024);
-    counters.textContent = `Voices: world ${pools.world}/${limits.worldChannels} | ui ${pools.ui}/${limits.uiChannels} | eva ${evaActive}/1 (q:${mixer.evaQueue.getWaitingCount()}) | cache ${cacheKb} KB`;
+    counters.textContent = `Voices: world ${pools.world}/${limits.worldChannels} | ui ${pools.ui}/${limits.uiChannels} | eva ${evaActive}/1 (q:${mixer.evaQueue.getWaitingCount()}) | loops ${mixer.getActiveLoopCount()} | music ${mixer.getMusicEvent() ?? "none"} | ambient ${mixer.getAmbientEvent() ?? "none"} | cache ${cacheKb} KB`;
 
     const log = mixer.getDebugLog();
     logBox.replaceChildren();

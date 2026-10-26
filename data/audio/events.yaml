@@ -1,5 +1,17 @@
 # Sound effect events (specs/25 §5.1, §5.2).
 # Zero Hour parameters adapted with camelCase field names.
+#
+# Extension rules (see docs/audio-extension.md):
+# - Ids follow the convention: weapon.<weaponId|damageType|launch>.fire,
+#   impact.<weaponId|damageType>, explosion.<size>, move.<unitTypeId>.start,
+#   building.<place|construct|complete|damage|damage.heavy|damage.critical|die>,
+#   vehicle.damage, ambient.<climate>, ui.<action>, music.<state>.<faction>.
+# - `sounds` are shipped files (phase 3) or `synth:<recipe>` fallbacks; the
+#   local Zero Hour reference is selected through `reference.yaml`, not here.
+# - A loop is a normal event with `control: [loop]` plus an `attackSounds` /
+#   `decaySounds` mapping in the reference index; never add a live oscillator.
+# - Copy Zero Hour's Volume/VolumeShift/PitchShift/Delay/Limit/Priority/Control
+#   as the starting point, then retune by ear.
 
 events:
   # ---------------------------------------------------------------------------
@@ -626,7 +638,7 @@ events:
     type: [world, player]
 
   building.construct:
-    sounds: [synth:building]
+    sounds: [synth:construction]
     control: [loop, all, random]
     priority: lowest
     limit: 2
@@ -643,6 +655,46 @@ events:
     minVolume: 110
     priority: high
     type: [world, player, global]
+
+  building.damage:
+    sounds: [synth:impact]
+    volume: 65
+    limit: 2
+    priority: normal
+    control: [random, interrupt]
+    type: [world, shrouded, everyone]
+    minDistance: 8
+    maxDistance: 80
+
+  building.damage.heavy:
+    sounds: [synth:explosion]
+    volume: 110
+    limit: 2
+    priority: normal
+    control: [random, interrupt]
+    type: [world, shrouded, everyone]
+    minDistance: 8
+    maxDistance: 80
+
+  building.damage.critical:
+    sounds: [synth:explosion]
+    volume: 100
+    limit: 2
+    priority: normal
+    control: [random, interrupt]
+    type: [world, shrouded, everyone]
+    minDistance: 8
+    maxDistance: 80
+
+  vehicle.damage:
+    sounds: [synth:impact]
+    volume: 80
+    limit: 2
+    priority: normal
+    control: [random, interrupt]
+    type: [world, shrouded, everyone]
+    minDistance: 5
+    maxDistance: 50
 
   building.select.hq.ukraine:
     sounds: [synth:click]
@@ -747,6 +799,25 @@ events:
     sounds: [synth:click]
     volume: 35
     type: [ui, player]
+
+  # ---------------------------------------------------------------------------
+  # Ambient beds
+  # ---------------------------------------------------------------------------
+  ambient.snow:
+    sounds: [synth:wind]
+    volume: 60
+    priority: lowest
+    control: [loop, random]
+    limit: 2
+    type: [ui, everyone]
+
+  ambient.temperate:
+    sounds: [synth:wind]
+    volume: 45
+    priority: lowest
+    control: [loop, random]
+    limit: 2
+    type: [ui, everyone]
 
   # ---------------------------------------------------------------------------
   # Music

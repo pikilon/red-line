@@ -112,6 +112,11 @@ export interface AudioMixConfig {
     perUnitCooldownMs: number;
     globalCooldownMs: number;
   };
+  /** Music crossfade and combat-to-calm hysteresis (spec 25 §10). */
+  music: {
+    fadeMs: number;
+    combatHoldMs: number;
+  };
 }
 
 export interface SynthRecipeDef {
@@ -137,6 +142,17 @@ export interface AudioCatalog {
 }
 
 export type PlayerRelation = "self" | "ally" | "enemy" | "neutral";
+
+/** One under-construction building the mixer should keep a site loop for. */
+export interface ConstructionLoopState {
+  entityId: number;
+  tileX: number;
+  tileY: number;
+  screenX: number;
+  onScreen: boolean;
+  tileVisible: boolean;
+  relation: PlayerRelation;
+}
 
 export interface AudioPlayRequest {
   eventId: string;

@@ -1,3 +1,7 @@
+# Offline-rendered fallbacks for builds without the reference pack (spec 25 §7).
+# These are content placeholders only; `kind: loop` is rendered once into an
+# AudioBuffer and looped by the mixer, never a live oscillator. Add a recipe
+# only when a new event class needs a placeholder, then tune it in phase 3.
 recipes:
   click:     { kind: tone, durationMs: 45, freqStartHz: 1100, freqEndHz: 650, filterType: bandpass, filterHz: 1000, noiseMix: 0.1, attackMs: 2, decayMs: 40, gain: 0.45 }
   shot:      { kind: burst, durationMs: 110, freqStartHz: 320, freqEndHz: 90, filterType: bandpass, filterHz: 1400, noiseMix: 0.75, attackMs: 2, decayMs: 100, gain: 0.65 }
@@ -10,5 +14,7 @@ recipes:
   voice:     { kind: tone, durationMs: 220, freqStartHz: 420, freqEndHz: 480, filterType: bandpass, filterHz: 1200, noiseMix: 0.15, attackMs: 8, decayMs: 200, gain: 0.55 }
   eva:       { kind: tone, durationMs: 300, freqStartHz: 660, freqEndHz: 880, filterType: bandpass, filterHz: 1500, noiseMix: 0.05, attackMs: 10, decayMs: 270, gain: 0.6 }
   building:  { kind: burst, durationMs: 260, freqStartHz: 150, freqEndHz: 90, filterType: lowpass, filterHz: 520, noiseMix: 0.6, attackMs: 10, decayMs: 240, gain: 0.55 }
+  construction: { kind: loop, durationMs: 600, freqStartHz: 95, freqEndHz: 95, filterType: lowpass, filterHz: 380, noiseMix: 0.6, attackMs: 40, decayMs: 120, gain: 0.4 }
   scream:    { kind: tone, durationMs: 280, freqStartHz: 580, freqEndHz: 260, filterType: bandpass, filterHz: 1100, noiseMix: 0.4, attackMs: 10, decayMs: 260, gain: 0.6 }
+  wind:      { kind: loop, durationMs: 2000, freqStartHz: 280, freqEndHz: 280, filterType: lowpass, filterHz: 620, noiseMix: 1, attackMs: 600, decayMs: 600, gain: 0.28 }
   music:     { kind: tone, durationMs: 1000, freqStartHz: 110, freqEndHz: 110, filterType: lowpass, filterHz: 400, noiseMix: 0.05, attackMs: 50, decayMs: 900, gain: 0.3 }
