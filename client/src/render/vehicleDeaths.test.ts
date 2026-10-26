@@ -111,7 +111,7 @@ describe("vehicle deaths", () => {
     expect(hits).toHaveLength(1);
     expect(hits[0]?.kind).toBe("shot");
     expect(hits[0]?.loss).toBeCloseTo(10 / 850);
-    // A rifle fired at a tank sparks even though it cannot hurt it.
+    // A rifle fired at a tank sparks off its armour.
     const rifleman = {
       ...entity(5, typeIndex("ua-rifleman"), 100),
       x: 5,

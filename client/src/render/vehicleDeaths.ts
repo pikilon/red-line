@@ -137,7 +137,7 @@ const DAMAGE_TYPE_NAMES = ruleset.damageTypes as readonly string[];
 const RICOCHET = new Set(["smallArms", "autocannon"]);
 
 /** Bullets and cannon rounds fired at a vehicle in `snapshot` (spec 27 §2):
- *  they spark on the armour even when they cannot hurt it, as Zero Hour's
+ *  they spark on the armour even when they barely hurt it, as Zero Hour's
  *  `FX_DamageTankStruckSmallArms`. */
 export function detectRicochets(snapshot: MatchSnapshot): VehicleImpact[] {
   const byId = new Map<number, EntityState>();

@@ -47,8 +47,9 @@ spec 22 §2 tells a bullet or cannon round (`smallArms`, `autocannon`: a
 the shooter or the blast).
 
 * **Sparks** (`detectRicochets`) come from every bullet or cannon round fired
-  at a vehicle in a snapshot, whether or not it hurts (small arms do 0 damage
-  to `armored` in `data/`, yet they still ricochet, as in Zero Hour): a shot
+  at a vehicle in a snapshot, whether or not it hurts (small arms do 25 % to
+  `armored` in `data/`, so a rifle chips a tank and still ricochets, as in
+  Zero Hour): a shot
   throws 3–6 sparks (thin bright streaks, 120–320 ms, on a
   ballistic arc) from the side of the hull facing the shooter, back toward
   the shooter's side, with a tiny flash and a small grey ricochet puff. An
@@ -135,7 +136,7 @@ nothing comes from `Math.random`.
 * AC-27-03: `detectVehicleHits` reports vehicles that lost hp and lived with
   the kind of the cause and the share lost, and skips infantry;
   `detectRicochets` reports a rifle fired at a tank, pushed away from the
-  shooter, though it does no damage.
+  shooter, whether or not that round hurts it.
 * AC-27-04: an explosion kicks harder than a bullet; a push along the hull
   pitches it (nose down when pushed from behind) without rolling, a push from
   the side rolls it, and the rock is gone after 1.2 s.
