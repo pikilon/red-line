@@ -126,7 +126,7 @@ and `INIZH.big` (Zero Hour 1.04). Facts unless marked inference.
 
 | Phase | Deliverable | Player-visible result |
 |---|---|---|
-| 1. Engine clone with reference pack | Local extractor for the owner's Zero Hour `.big` files (§4.2), event table loader, admission rules, voice rule, limits and priorities, buses and ducking, stereo pan, distance and zoom volume, fog cull, discrete move-start samples, weapon fire/impact/explosion events, construction/ambient loops, music states, EVA queue, settings sliders, minimal procedural fallback, `?audio=debug` overlay, example saves `audio-fight` and `construction` | On the owner's machine a fight sounds and mixes like Zero Hour; elsewhere every action makes a simple placeholder sound; volume sliders work |
+| 1. Engine clone with reference pack | Local extractor for the owner's Zero Hour `.big` files (§4.2), event table loader, admission rules, voice rule, limits and priorities, buses and ducking, stereo pan, distance and zoom volume, fog cull, discrete move-start samples, weapon fire/impact/explosion events, construction/ambient loops, music states, EVA queue, settings sliders, minimal procedural fallback, `?audio=debug` overlay, example saves `audio-fight` and `construction` | On the owner's machine a fight sounds and mixes like Zero Hour; elsewhere the game starts muted so the placeholder synth sounds never reach the public web; volume sliders work |
 | 2. Inventory and briefs | Listening review of every event on the debug page; `data/audio/inventory.yaml` with one written brief per event (what our sound should be, in our own words), variant counts, voice line scripts in Ukrainian and Russian | A complete, owner-approved list of what to make; nothing new to hear yet |
 | 3. Automated generation | `scripts/audio/gen.mjs` pipeline (§4.5): SFX (libraries + local model), voices (uk/ru TTS, radio filter, strong language), EVA per faction, music; each generated sound replaces its reference entry | The game ships with its own sounds; the reference pack is no longer needed |
 | 4. Polish | Mix retune with the final sounds, ambient per map, subtitles, bundle budget check, strong-language toggle | Mix is tuned; subtitles and the language filter work |
@@ -449,6 +449,12 @@ fall back through a chain so every weapon sounds like something:
   starting point: effects 80, ambient 50, voices 70, music 55; persisted like
   the other settings. Ambient has its own slider because birds/wind are not
   combat effects and are the first thing players want to turn down.
+* **Muted by default (owner, 2026-10-26).** The master slider starts at 0 in
+  every build, including the public web: the placeholder procedural fallback is
+  not fit for players, so nothing plays until someone raises the slider. This
+  is temporary; restore Zero Hour's master 100 when phase 3 ships generated
+  assets, and keep an eye on `?audio=debug` auditions while it lasts (raise the
+  master slider once; the value persists).
 * Ducking (gain automation, not a sidechain compressor): `eva` critical lines
   duck `music` by 9 dB and `sfx` by 4 dB for the line's length plus 300 ms;
   unit voices duck `music` by 4 dB; release 500 ms. Rules live in `mix.yaml`.

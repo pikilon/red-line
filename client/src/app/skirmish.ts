@@ -122,7 +122,12 @@ import {
   type SlotId,
 } from "../saves/saveFile";
 import { createIndexedDbSaveStore, type SaveStore } from "../saves/store";
-import { loadSettings, type Settings, saveSettings } from "../settings";
+import {
+  loadSettings,
+  resolveAudioVolumes,
+  type Settings,
+  saveSettings,
+} from "../settings";
 import type { ProjectileState } from "../sim/combatSnapshot";
 import { fromRaw } from "../sim/fixed";
 import {
@@ -422,7 +427,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let fpsPanel = restored?.fpsPanel ?? debug;
   /** Player whose fog the worker snapshots; `OBSERVER` while the map is revealed. */
   let viewer = boot.start.viewer;
-  const audioMixer = new AudioMixer(AUDIO_CATALOG, settings);
+  const audioMixer = new AudioMixer(AUDIO_CATALOG, {
+    ...resolveAudioVolumes(settings),
+    strongLanguage: settings.strongLanguage,
+  });
   audioMixer.installGestureUnlock(window);
   if (isAudioDebugEnabled(pageParams.toString())) {
     createAudioDebugOverlay(document.body, audioMixer);
