@@ -7,6 +7,7 @@ import type { SimCommand } from "../sim/protocol";
 import { PAN_SPEED_TILES_PER_SECOND, panDelta } from "./cameraPan";
 import { boxSelect, clickSelect, selectAllOwnUnits } from "./entitySelection";
 import { resolveForceFire, resolveRightClick } from "./intent";
+import { createPinchGesture } from "./pinch";
 import { canPlace, footprintOrigin } from "./placement";
 import {
   isDrag,
@@ -219,13 +220,31 @@ export function createSkirmishController(
     return true;
   }
 
+  // Pinch zoom (spec 08 §3.8): scales the orthographic camera around the fixed
+  // target with the wheel's limits, never the page. The first two fingers
+  // cancel a drag selection so a pinch cannot select or order.
+  const pinch = createPinchGesture({
+    zoom: () => camera.zoom,
+    setZoom(zoom) {
+      camera.zoom = zoom;
+      camera.updateProjectionMatrix();
+    },
+    begin() {
+      dragStart = null;
+      forceFireArmed = false;
+      options.selectionBox.show(null);
+    },
+  });
+
   canvas.addEventListener("pointermove", (event) => {
+    if (pinch.move(event)) return;
     lastPointer = { x: event.clientX, y: event.clientY };
     if (dragStart !== null && isDrag(dragStart, lastPointer)) {
       options.selectionBox.show(rectFromDrag(dragStart, lastPointer));
     }
   });
   canvas.addEventListener("pointercancel", () => {
+    pinch.cancel();
     dragStart = null;
     forceFireArmed = false;
     options.selectionBox.show(null);
@@ -233,6 +252,7 @@ export function createSkirmishController(
   // A release outside the canvas, or a focus change, must not leave force fire
   // armed and turn the next right click into a ground shot.
   window.addEventListener("blur", () => {
+    pinch.cancel();
     dragStart = null;
     forceFireArmed = false;
     forceFireIssued = false;
@@ -243,6 +263,11 @@ export function createSkirmishController(
   canvas.addEventListener("pointerdown", (event) => {
     lastPointer = { x: event.clientX, y: event.clientY };
     forceFireIssued = false;
+    if (pinch.down(event)) {
+      dragStart = null;
+      options.selectionBox.show(null);
+      return;
+    }
     // Ctrl + click is Zero Hour's force-attack mode (spec 20 §3): it fires,
     // never starts a selection box.
     forceFireArmed =
@@ -254,6 +279,7 @@ export function createSkirmishController(
   });
 
   canvas.addEventListener("pointerup", (event) => {
+    if (pinch.up(event)) return;
     if (event.button !== LEFT_BUTTON) return;
     if (forceFireArmed) {
       forceFireArmed = false;

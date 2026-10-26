@@ -6,6 +6,7 @@ import {
   setCameraTarget,
   ZOOM_MAX,
   ZOOM_MIN,
+  zoomAfterPinch,
   zoomAfterWheel,
 } from "./camera";
 
@@ -48,5 +49,16 @@ describe("wheel zoom", () => {
     }
     expect(zoomIn).toBe(ZOOM_MAX);
     expect(zoomOut).toBe(ZOOM_MIN);
+  });
+});
+
+describe("pinch zoom", () => {
+  it("AC-08-22: pinch scales the camera within the wheel limits", () => {
+    expect(zoomAfterPinch(1, 100, 200)).toBe(2);
+    expect(zoomAfterPinch(1, 200, 100)).toBe(ZOOM_MIN);
+    expect(zoomAfterPinch(1, 100, 1000)).toBe(ZOOM_MAX);
+    expect(zoomAfterPinch(1.5, 100, 100)).toBe(1.5);
+    expect(zoomAfterPinch(1.5, 0, 100)).toBe(1.5);
+    expect(zoomAfterPinch(1.5, 100, 0)).toBe(1.5);
   });
 });

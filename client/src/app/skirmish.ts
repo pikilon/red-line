@@ -652,6 +652,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   function resize(): void {
     const { clientWidth: width, clientHeight: height } =
       container as HTMLElement;
+    // Up to 2x device pixels keep camera zoom sharp on phones and Retina
+    // screens without quadrupling the fill rate of every 3x screen (spec 08
+    // §3.8).
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(width, height);
     const aspect = width / Math.max(height, 1);
     const halfHeight = (camera.top - camera.bottom) / 2;

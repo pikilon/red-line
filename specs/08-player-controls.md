@@ -276,10 +276,12 @@ AC-08-16 are superseded by AC-08-18 and AC-08-19).
   order on the map; the controls are DOM siblings of the canvas, never inside
   the HUD, the command panel or the game menu. On touch the command panel
   stays at the bottom left (the joystick is at the bottom right); neither
-  covers the HUD, the FPS panel or the menu button, on 375 x 812 and 812 x 375.
+  covers the HUD, the FPS panel or the menu button on 844 x 390, the only
+  playable orientation (§3.8).
 * `render({ menuOpen })` sets `hidden` on `#touch-joystick` while the menu is
   open (releasing a held drag) and leaves `#touch-menu` visible above the menu
-  so it can close it; an equal view writes nothing.
+  so it can close it; an equal view writes nothing. `#touch-menu` also mirrors
+  the menu state in `aria-expanded` ("true" while open, "false" otherwise).
 
 ## 3.7 Attack orders (owner request 2026-10-15, issue #296)
 
@@ -305,6 +307,67 @@ route (`AIPathfind.cpp:10606-10740`). Units without a weapon issue no order
   order does not move while the target is within its weapon range
   (`entity_distance`, the footprint edge for buildings). Out of range it steps
   toward the attack goal only until the target is in range.
+
+## 3.8 Mobile web app: landscape, pinch zoom and install (owner request 2026-10-26)
+
+Playing on a phone exposed four gaps: the browser pinch zoomed the page 2D
+instead of the camera (the stretched canvas looked blurry), the game could be
+played in portrait, there was no installable app shell, and the page could
+scroll or overflow. This section amends §3.4 and §3.6.
+
+* Landscape only. `client/index.html` uses `viewport-fit=cover`; the manifest
+  (`client/public/manifest.webmanifest`) declares
+  `"orientation": "landscape"` and `"display": "standalone"`, with 192, 512
+  and maskable icons plus `icon.svg`. `installMobileShell()`
+  (`client/src/app/mobileShell.ts`, called from `client/src/main.ts` in every
+  mode) adds `#rotate-device` to the body and tries
+  `screen.orientation.lock("landscape")` when running installed
+  (`display-mode: standalone`). The stylesheet shows the overlay — "Rotate
+  your device" / "Red Line plays in landscape." from i18n — for touch devices
+  in portrait (`(orientation: portrait) and (pointer: coarse)`, plus
+  `body.touch`). It sits above everything (z-index 100), so a portrait touch
+  window cannot be played by accident. In a browser tab without an
+  orientation lock the player rotates the device; the installed app holds
+  landscape. A desktop portrait window is not blocked.
+* Installable shell. A production build registers `/sw.js`
+  (`client/public/sw.js`) after load: navigations are network-first with the
+  cached shell as the offline fallback, and `/assets/`, `/icons/`,
+  `/models/`, `/textures/` and `/data/` are stale-while-revalidate. The
+  service worker is not registered in dev builds. `theme-color`,
+  apple-touch-icon and standalone meta tags make iOS Add to Home Screen show
+  the full-screen game.
+* No page zoom, no overflow. The viewport meta sets `maximum-scale=1,
+  user-scalable=no`; `html`, `body` and `#app` fill the viewport with
+  `overflow: hidden` and `overscroll-behavior: none`, and the canvas uses
+  `touch-action: none`. `installMobileShell()` prevents the iOS
+  `gesturestart`/`gesturechange`/`gestureend` events and two-finger
+  `touchmove` over `#app canvas`, so the page never scrolls or zooms while the
+  menus keep `touch-action: pan-y` for their own scrolling. Safe-area insets
+  keep the HUD, joystick, hamburger and command panel clear of notches;
+  `#game-menu-panel` and `#save-manager-panel` cap their height at the
+  viewport and scroll inside, so a landscape phone never overflows. The
+  skirmish renderer caps its pixel ratio at 2, so camera zoom stays sharp on
+  high-DPI screens without always quadrupling the fill rate at 3x.
+* Pinch (amends §3.4). The camera stays orthographic and isometric (D-05):
+  the pinch only changes `camera.zoom`, exactly like the wheel, and the target
+  does not move. `client/src/camera.ts` exports `clampZoom(zoom)` and
+  `zoomAfterPinch(zoom, fromDistance, toDistance)` =
+  `clampZoom(zoom × toDistance / fromDistance)`; a degenerate distance
+  leaves the zoom unchanged. `client/src/input/pinch.ts` tracks touch
+  pointers for `SkirmishController`: on the second `pointerdown` it starts a
+  pinch, calls `begin()` (cancels a drag selection and hides
+  `#selection-box`) and records `startZoom` and the two-finger distance.
+  Every move applies `zoomAfterPinch(startZoom, startDistance, distance)` and
+  updates the projection matrix, so the wheel's [ZOOM_MIN, ZOOM_MAX] clamp
+  applies to the whole gesture (spread = zoom in). Each finger's release is
+  swallowed (no click, selection or order) until every finger is up; a third
+  finger ends the current pinch and the remaining two start a fresh one;
+  mouse pointers never pinch; `pointercancel` and window blur drop the
+  gesture.
+* Hamburger menu. `#touch-menu` (§3.6) stays the touch entry to the game menu:
+  it draws three bars, is 56 x 56 CSS px in the top-right safe area, opens
+  and closes the same menu as `Esc`, stays above the menu backdrop, and
+  mirrors the state in `aria-expanded`/`aria-controls` (`#game-menu`).
 
 ## 4. Acceptance criteria
 
@@ -415,15 +478,16 @@ control events call `stopPropagation`; `render({ menuOpen: true })` hides
 view writes nothing.
 
 **AC-08-19 Touch joystick in the skirmish (Playwright).** With touch emulation
-(`hasTouch`, 390 x 844) in `?debug=1&seed=1&ai=off`, `#touch-joystick` is in
-the bottom right quadrant and `#command-panel` (with a unit selected) in the
-bottom left, neither overlaps `#hud` or `#touch-menu`; pointer events on the
-knob (down, then move up by half and by the full radius) move `cameraTarget()`
-in the ArrowUp direction (-x, -y), the full push about twice as fast as the
-half push, the knob has the class `pressed`; after `pointerup` the camera stays
-put and the knob is back at the centre; a tap on `#touch-menu` opens
-`#game-menu` with `paused()` true, hides `#touch-joystick` and a second tap
-closes it; no console error.
+(`hasTouch`, 844 x 390) in `?debug=1&seed=1&ai=off`, `#rotate-device` is
+hidden, `#touch-joystick` is in the bottom right quadrant and
+`#command-panel` (with a unit selected) in the bottom left, neither overlaps
+`#hud` or `#touch-menu`; pointer events on the knob (down, then move up by
+half and by the full radius) move `cameraTarget()` in the ArrowUp direction
+(-x, -y), the full push about twice as fast as the half push, the knob has the
+class `pressed`; after `pointerup` the camera stays put and the knob is back at
+the centre; a tap on `#touch-menu` opens `#game-menu` with `paused()` true,
+hides `#touch-joystick`, sets `aria-expanded="true"` and a second tap closes
+it and sets `aria-expanded="false"`; no console error.
 
 **AC-08-17 No touch controls without touch (Playwright).** In a default desktop
 context `#touch-controls` is not in the DOM and `ArrowRight` still pans.
@@ -441,6 +505,32 @@ or an enemy truck 8 tiles away has the same position after 30 ticks, and the
 plant has lost hit points. A mortar ordered to attack a spotted truck 28 tiles
 away stops more than 9.8 tiles from it once within 10 tiles, and stays there
 30 more ticks.
+
+**AC-08-22 Pinch zoom math and gesture.** `zoomAfterPinch(1, 100, 200)` is 2,
+`zoomAfterPinch(1, 200, 100)` is `ZOOM_MIN`, `zoomAfterPinch(1, 100, 1000)`
+is `ZOOM_MAX`, and a zero distance leaves the zoom unchanged.
+`createPinchGesture` ignores a single touch and mouse pointers, starts at the
+second touch, applies `zoom(2)` when the distance doubles from 100 to 200 px,
+clamps at `ZOOM_MAX` and `ZOOM_MIN`, swallows both releases, and a later
+single tap returns false; `cancel` drops the pointers.
+
+**AC-08-23 Pinch in the skirmish (Playwright).** With touch emulation
+(`hasTouch`, `isMobile`, 844 x 390) in `?debug=1&seed=1&ai=off`, a real
+two-finger spread from 160 to 320 px makes `zoom()` 2 ± 0.01 and keeps
+`cameraTarget()`; spreading to 800 px clamps `zoom()` at 3; pinching from
+600 to 20 px clamps it at 0.6; `visualViewport.scale` stays 1, `scrollX` and
+`scrollY` stay 0, `selectedIds()` stays empty and `#selection-box` hidden; no
+console error.
+
+**AC-08-24 Mobile web app (Playwright).** In the same context the manifest is
+200 with name "Modern Conquest: Red Line", `display: "standalone"`,
+`orientation: "landscape"` and 192/512 icons (the icons fetch as
+`image/png`); a service worker registration exists; the viewport meta
+contains `user-scalable=no` and `viewport-fit=cover`; landscape shows no
+`#rotate-device` and no page overflow, the hamburger opens `#game-menu` with
+its panel inside the viewport and no overflow, and a 390 x 844 portrait
+viewport shows `#rotate-device` ("Rotate your device") with no overflow and
+`scrollY` 0; no console error.
 
 ## 5. Queued requests (to be specified)
 

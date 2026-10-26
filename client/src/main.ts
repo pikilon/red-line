@@ -1,3 +1,4 @@
+import { installMobileShell } from "./app/mobileShell";
 import { startSkirmish } from "./app/skirmish";
 import { startTechSlice } from "./app/techSlice";
 
@@ -11,6 +12,7 @@ const params = new URLSearchParams(location.search);
 
 /** Runs the app of `?mode`, defaulting to skirmish. */
 function main(): void {
+  installMobileShell();
   const requested = params.get("mode") ?? "skirmish";
   const start = modes[requested as keyof typeof modes] ?? modes.skirmish;
   start(params);
