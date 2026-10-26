@@ -652,7 +652,7 @@
         -2,
         2
       ],
-      "limit": 3,
+      "limit": 2,
       "priority": "normal",
       "control": [
         "interrupt",
@@ -663,6 +663,7 @@
         "shrouded",
         "everyone"
       ],
+      "lowPass": 50,
       "minDistance": 6,
       "maxDistance": 50
     },
@@ -676,7 +677,7 @@
         -5,
         5
       ],
-      "limit": 3,
+      "limit": 2,
       "priority": "normal",
       "control": [
         "interrupt",
@@ -687,6 +688,7 @@
         "shrouded",
         "everyone"
       ],
+      "lowPass": 50,
       "minDistance": 8,
       "maxDistance": 60
     },
@@ -748,7 +750,7 @@
         -10,
         10
       ],
-      "limit": 3,
+      "limit": 2,
       "priority": "low",
       "control": [
         "interrupt",
@@ -759,6 +761,7 @@
         "shrouded",
         "everyone"
       ],
+      "lowPass": 50,
       "minDistance": 5,
       "maxDistance": 50
     },
@@ -766,13 +769,13 @@
       "sounds": [
         "synth:explosion"
       ],
-      "volume": 95,
+      "volume": 90,
       "volumeShift": -20,
       "pitchShift": [
         -10,
         10
       ],
-      "limit": 3,
+      "limit": 1,
       "priority": "normal",
       "control": [
         "interrupt",
@@ -783,6 +786,7 @@
         "shrouded",
         "everyone"
       ],
+      "lowPass": 50,
       "minDistance": 6,
       "maxDistance": 60
     },
@@ -836,7 +840,7 @@
       "limit": 4,
       "priority": "lowest",
       "control": [
-        "random"
+        "loop"
       ],
       "type": [
         "world",
@@ -854,7 +858,7 @@
       "limit": 4,
       "priority": "lowest",
       "control": [
-        "random"
+        "loop"
       ],
       "type": [
         "world",
@@ -872,7 +876,7 @@
       "limit": 4,
       "priority": "lowest",
       "control": [
-        "random"
+        "loop"
       ],
       "type": [
         "world",
@@ -4220,7 +4224,7 @@
     "impact.light": "VehicleImpactLight",
     "impact.heavy": "VehicleImpactHeavy",
     "explosion.small": "Explosion",
-    "explosion.medium": "Explosion",
+    "explosion.medium": "ExplosionGeneric",
     "explosion.large": "ExplosionArtilleryBarrage",
     "move.foot": "NoSound",
     "move.wheeled": "NoSound",

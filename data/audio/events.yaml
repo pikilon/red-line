@@ -346,10 +346,11 @@ events:
     volume: 90
     volumeShift: -10
     pitchShift: [-2, 2]
-    limit: 3
+    limit: 2
     priority: normal
     control: [interrupt, random]
     type: [world, shrouded, everyone]
+    lowPass: 50
     minDistance: 6
     maxDistance: 50
 
@@ -358,10 +359,11 @@ events:
     volume: 100
     volumeShift: -10
     pitchShift: [-5, 5]
-    limit: 3
+    limit: 2
     priority: normal
     control: [interrupt, random]
     type: [world, shrouded, everyone]
+    lowPass: 50
     minDistance: 8
     maxDistance: 60
 
@@ -397,22 +399,24 @@ events:
     volume: 90
     volumeShift: -20
     pitchShift: [-10, 10]
-    limit: 3
+    limit: 2
     priority: low
     control: [interrupt, random]
     type: [world, shrouded, everyone]
+    lowPass: 50
     minDistance: 5
     maxDistance: 50
 
   explosion.medium:
     sounds: [synth:explosion]
-    volume: 95
+    volume: 90
     volumeShift: -20
     pitchShift: [-10, 10]
-    limit: 3
+    limit: 1
     priority: normal
     control: [interrupt, random]
     type: [world, shrouded, everyone]
+    lowPass: 50
     minDistance: 6
     maxDistance: 60
 
@@ -446,7 +450,7 @@ events:
     volume: 40
     limit: 4
     priority: lowest
-    control: [random]
+    control: [loop]
     type: [world, shrouded, everyone]
     minDistance: 4
     maxDistance: 25
@@ -456,7 +460,7 @@ events:
     volume: 50
     limit: 4
     priority: lowest
-    control: [random]
+    control: [loop]
     type: [world, shrouded, everyone]
     minDistance: 4
     maxDistance: 30
@@ -466,7 +470,7 @@ events:
     volume: 45
     limit: 4
     priority: lowest
-    control: [random]
+    control: [loop]
     type: [world, shrouded, everyone]
     minDistance: 4
     maxDistance: 30
