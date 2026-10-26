@@ -2,7 +2,13 @@
 
 export const SETTINGS_KEY = "redline.settings.v1";
 
-export const DEFAULT_AUDIO_MASTER = 100;
+/**
+ * Master volume 0..100. Starts muted (owner, 2026-10-26): the shipped sounds
+ * are procedural placeholders, so the public build must stay silent until
+ * generated assets replace them (spec 25 §10). Players opt in with the menu
+ * slider; restore 100 when phase 3 lands.
+ */
+export const DEFAULT_AUDIO_MASTER = 0;
 export const DEFAULT_AUDIO_SFX = 80;
 export const DEFAULT_AUDIO_AMBIENT = 50;
 export const DEFAULT_AUDIO_VOICE = 70;
@@ -14,7 +20,7 @@ export interface Settings {
   generatedTextures?: boolean;
   /** Absent means true: snow shows on snow maps (spec 22 §4). */
   weather?: boolean;
-  /** Master volume 0..100 (default 100, spec 25 §10). */
+  /** Master volume 0..100 (default 0 = muted, spec 25 §10). */
   audioMaster?: number;
   /** Effects/UI volume 0..100 (default 80, spec 25 §10). */
   audioSfx?: number;
@@ -29,6 +35,24 @@ export interface Settings {
 }
 
 export const DEFAULT_SETTINGS: Settings = { gore: true };
+
+/** The mixer's starting volumes: saved slider values, with defaults for the
+ *  channels the player never touched (spec 25 §10). */
+export function resolveAudioVolumes(settings: Settings): {
+  audioMaster: number;
+  audioSfx: number;
+  audioAmbient: number;
+  audioVoice: number;
+  audioMusic: number;
+} {
+  return {
+    audioMaster: settings.audioMaster ?? DEFAULT_AUDIO_MASTER,
+    audioSfx: settings.audioSfx ?? DEFAULT_AUDIO_SFX,
+    audioAmbient: settings.audioAmbient ?? DEFAULT_AUDIO_AMBIENT,
+    audioVoice: settings.audioVoice ?? DEFAULT_AUDIO_VOICE,
+    audioMusic: settings.audioMusic ?? DEFAULT_AUDIO_MUSIC,
+  };
+}
 
 /** The requested storage, the browser's `localStorage`, or null when neither is
  *  reachable (private mode may throw on the property access itself). */

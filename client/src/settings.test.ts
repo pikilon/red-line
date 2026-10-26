@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  DEFAULT_AUDIO_MASTER,
   DEFAULT_SETTINGS,
   loadSettings,
+  resolveAudioVolumes,
   SETTINGS_KEY,
   saveSettings,
 } from "./settings";
@@ -98,5 +100,19 @@ describe("settings", () => {
       audioMusic: 40,
       strongLanguage: false,
     });
+  });
+
+  it("starts the mixer muted until a volume is saved (spec 25 §10)", () => {
+    expect(DEFAULT_AUDIO_MASTER).toBe(0);
+    expect(resolveAudioVolumes({ gore: true })).toEqual({
+      audioMaster: 0,
+      audioSfx: 80,
+      audioAmbient: 50,
+      audioVoice: 70,
+      audioMusic: 55,
+    });
+    expect(
+      resolveAudioVolumes({ gore: true, audioMaster: 45, audioMusic: 0 }),
+    ).toMatchObject({ audioMaster: 45, audioMusic: 0 });
   });
 });
