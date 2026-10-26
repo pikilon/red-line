@@ -882,7 +882,7 @@ describe("Zero Hour reference resolution and faction mapping", () => {
 
     expect(
       loader.resolveEventSounds("weapon.ua-rifle.fire", ["synth:muzzle"]),
-    ).toEqual(["/audio-ref/files/iranweaa.wav"]);
+    ).toEqual(["/audio-ref/files/iranweaa.webm"]);
     expect(loader.resolveEventSounds("move.foot", ["synth:footstep"])).toEqual(
       [],
     );
@@ -890,14 +890,14 @@ describe("Zero Hour reference resolution and faction mapping", () => {
       loader.resolveEventSounds("weapon.ua-rifle.fire", ["synth:muzzle"], true),
     ).toEqual(["synth:muzzle"]);
     expect(loader.resolveZhUrls("EvaUSA_LowPower")).toEqual([
-      "/audio-ref/files/eupower.wav",
+      "/audio-ref/files/eupower.webm",
     ]);
     expect(
       loader.resolveLoopParts("building.construct", ["synth:construction"]),
     ).toEqual({
-      loop: ["/audio-ref/files/gconlo2a.wav"],
-      attack: ["/audio-ref/files/gconlo1a.wav"],
-      decay: ["/audio-ref/files/gconlo3a.wav"],
+      loop: ["/audio-ref/files/gconlo2a.webm"],
+      attack: ["/audio-ref/files/gconlo1a.webm"],
+      decay: ["/audio-ref/files/gconlo3a.webm"],
     });
   });
 

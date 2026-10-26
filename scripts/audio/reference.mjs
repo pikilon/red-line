@@ -142,6 +142,39 @@ export function webmRel(sourceRel) {
 }
 
 /**
+ * Target file we will ship for one game event, as a WebM template where `<n>`
+ * is the variant number (1..variants). Voice and EVA follow the §5.3 layout;
+ * the other kinds sit under their own directory. Nothing here points at a
+ * source recording: this is the list we transform.
+ */
+export function targetTemplate(eventId) {
+  const parts = String(eventId).split(".");
+  switch (parts[0]) {
+    case "voice": {
+      const [, typeId, event] = parts;
+      const faction = typeId?.startsWith("ua-")
+        ? "ukraine"
+        : typeId?.startsWith("ru-")
+          ? "russia"
+          : "common";
+      return `audio/voice/${faction}/${typeId}/${event}_<n>.webm`;
+    }
+    case "eva": {
+      const [, faction, event] = parts;
+      return `audio/eva/${faction}/${event}_<n>.webm`;
+    }
+    case "music":
+      return `audio/music/${parts.slice(1).join(".")}_<n>.webm`;
+    case "ambient":
+      return `audio/ambient/${parts.slice(1).join(".")}_<n>.webm`;
+    case "ui":
+      return `audio/ui/${parts.slice(1).join(".")}_<n>.webm`;
+    default:
+      return `audio/sfx/${eventId}_<n>.webm`;
+  }
+}
+
+/**
  * Encoding rule per category (spec 25 §12): voices 32 kbps mono, SFX 64 kbps
  * mono, music 96 kbps stereo, ambient 96 kbps stereo or 64 kbps mono.
  */

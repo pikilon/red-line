@@ -102,7 +102,7 @@ export function checkAudio(rootDir = DEFAULT_ROOT, options = {}) {
     }
   }
 
-  // 2. Inventory matches the reference map (phase 2, spec 25 §5.1)
+  // 2. Inventory is a WebM worklist with one entry per event (phase 2, spec 25 §5.1)
   const inventoryPath = join(rootDir, "data", "audio", "inventory.yaml");
   if (existsSync(inventoryPath)) {
     const inventory = parse(readFileSync(inventoryPath, "utf8"));
@@ -112,16 +112,15 @@ export function checkAudio(rootDir = DEFAULT_ROOT, options = {}) {
     const extra = Object.keys(entries).filter((id) => !(id in reference));
     if (missing.length > 0 || extra.length > 0) {
       throw new Error(
-        `inventory does not match reference.yaml (${missing.length} missing, ${extra.length} extra): ` +
+        `inventory does not match the event ids in reference.yaml (${missing.length} missing, ${extra.length} extra): ` +
           "run node scripts/audio/inventory.mjs --write",
       );
     }
     const statuses = new Set(["silent", "needs-script", "todo", "draft", "approved"]);
+    const targets = new Set();
     for (const [id, entry] of Object.entries(entries)) {
-      if (entry.reference !== reference[id]) {
-        throw new Error(
-          `inventory ${id}: reference is ${entry.reference}, expected ${reference[id]}`,
-        );
+      if ("reference" in entry) {
+        throw new Error(`inventory ${id}: must not point at a source recording`);
       }
       if (!statuses.has(entry.status)) {
         throw new Error(`inventory ${id}: unknown status ${entry.status}`);
@@ -129,6 +128,26 @@ export function checkAudio(rootDir = DEFAULT_ROOT, options = {}) {
       if (entry.category !== id.split(".")[0]) {
         throw new Error(`inventory ${id}: category ${entry.category} does not match the id`);
       }
+      if (entry.status === "silent") {
+        if (entry.target !== undefined) {
+          throw new Error(`inventory ${id}: silence must not have a target`);
+        }
+        continue;
+      }
+      if (
+        typeof entry.target !== "string" ||
+        !entry.target.endsWith("_<n>.webm") ||
+        !entry.target.startsWith("audio/")
+      ) {
+        throw new Error(`inventory ${id}: target must be an audio/..._<n>.webm template`);
+      }
+      if (!Number.isInteger(entry.variants) || entry.variants < 1) {
+        throw new Error(`inventory ${id}: variants must be a positive integer`);
+      }
+      if (targets.has(entry.target)) {
+        throw new Error(`inventory ${id}: duplicate target ${entry.target}`);
+      }
+      targets.add(entry.target);
     }
   }
 

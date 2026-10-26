@@ -21,12 +21,14 @@ sim snapshot + combat events
 Sound resolution has three levels, tried in order:
 
 1. **Shipped file** under `client/public/audio/` (phase 3; not produced yet).
-2. **Local reference WAV/MP3** from the owner's Zero Hour install, served by the
-   Vite dev server at `/audio-ref/` and never committed or built.
+2. **Local reference pack, WebM only**, built by `audio:pack` from the owner's
+   Zero Hour install and served by the Vite dev server at `/audio-ref/`. The
+   extracted WAV/MP3 files are input to the packer and are never served.
 3. **Procedural fallback** `synth:<recipe>` from `data/audio/synth/recipes.yaml`.
 
 The reference is scaffolding only: never ship it, never use it as generator
-input, and never commit anything under `.local/audio-ref/` (D-02, spec 25 §4.2).
+input, and never commit anything under `.local/audio-ref/` or
+`.local/audio-ref-webm/` (D-02, spec 25 §4.2).
 
 ## 2. Data files
 
@@ -38,17 +40,18 @@ input, and never commit anything under `.local/audio-ref/` (D-02, spec 25 §4.2)
 | `data/audio/mix.yaml` | buses, ducking, limits, zoom, music fade/combat hold |
 | `data/audio/reference.yaml` | our event id -> Zero Hour event name; names only |
 | `data/audio/synth/recipes.yaml` | offline-rendered fallback recipes |
-| `data/audio/inventory.yaml` | phase 2: one entry per event with its brief, generation prompt, tags and status |
+| `data/audio/inventory.yaml` | phase 2: the WebM worklist, one entry per event with its target, brief, generation prompt, tags and status |
 
 Local-only helpers (they need the pack extracted by `audio:ref` and ffmpeg with
 libopus; nothing they write is committed except the inventory):
 
 * `node --run audio:pack` encodes the files the game actually uses as Opus/WebM
   under `.local/audio-ref-webm/` at the shipping bitrates. `pack.json` maps
-  every output to its source, duration and event ids. It is still reference
-  scaffolding: never commit it, build it or serve it.
+  every output to its source, duration and event ids. It never ships: the dev
+  server serves it locally, and production builds cannot contain it.
 * `node --run audio:inventory -- --write` rebuilds `data/audio/inventory.yaml`
-  from `reference.yaml` and keeps any text already written.
+  (the WebM targets) and keeps any text already written. `-- --list` prints
+  every expanded target path, one per line, for a batch generator.
 * `node --run audio:describe -- --only music,ambient --write` drafts `brief`
   and `prompt` with the local Gemma vision model, reading a spectrogram plus
   the game context. The model never hears the audio: drafts stay `draft` until

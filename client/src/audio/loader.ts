@@ -1,7 +1,7 @@
 // Audio buffer loader & Zero Hour reference pack resolver (specs/25-audio.md §4.2, §7, §12).
 // Resolution chain:
 // 1. Shipped game audio in `/audio/...` (Phase 3)
-// 2. Local Zero Hour reference pack at `/audio-ref/...` (dev server only, when present)
+// 2. Local reference pack, WebM only, at `/audio-ref/...` (dev server only, when present)
 // 3. Procedural fallback recipe (`synth:<recipe>`) rendered into an `AudioBuffer`.
 //
 // Entry points:
@@ -471,7 +471,9 @@ export class AudioLoader {
     const base = lower.replace(/^.*[\\/]/, "");
     const stem = base.replace(/\.(wav|mp3)$/i, "");
     const rel = files[lower] ?? files[base] ?? files[stem];
-    return rel ? `/audio-ref/${rel}` : null;
+    // The dev pack is WebM-only (`audio:pack`); the parsed index keeps the
+    // container names it came from, so the request is always rewritten here.
+    return rel ? `/audio-ref/${rel.replace(/\.(wav|mp3)$/i, ".webm")}` : null;
   }
 
   /**

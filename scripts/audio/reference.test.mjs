@@ -7,6 +7,7 @@ import {
   lookupToken,
   mergeRule,
   resolveZhEvent,
+  targetTemplate,
   webmRel,
 } from "./reference.mjs";
 
@@ -101,4 +102,23 @@ test("mergeRule takes the widest bitrate and channel count", () => {
     ]),
     { bitrate: 96_000, channels: 2 },
   );
+});
+
+test("targetTemplate points only at shipping WebM files", () => {
+  assert.equal(
+    targetTemplate("voice.ua-rifleman.select"),
+    "audio/voice/ukraine/ua-rifleman/select_<n>.webm",
+  );
+  assert.equal(
+    targetTemplate("voice.building.die"),
+    "audio/voice/common/building/die_<n>.webm",
+  );
+  assert.equal(
+    targetTemplate("eva.russia.lowPower"),
+    "audio/eva/russia/lowPower_<n>.webm",
+  );
+  assert.equal(targetTemplate("weapon.ua-rifle.fire"), "audio/sfx/weapon.ua-rifle.fire_<n>.webm");
+  assert.equal(targetTemplate("music.calm.ukraine"), "audio/music/calm.ukraine_<n>.webm");
+  assert.equal(targetTemplate("ambient.snow"), "audio/ambient/snow_<n>.webm");
+  assert.equal(targetTemplate("ui.click"), "audio/ui/click_<n>.webm");
 });
