@@ -881,7 +881,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       elevation,
     );
     scene.add(fogOverlay.mesh);
-    const climate = climateFor(mapId, pageParams);
+    const climate = climateFor(pageParams);
     if (climate !== null) {
       weather = createWeather(
         climate,
