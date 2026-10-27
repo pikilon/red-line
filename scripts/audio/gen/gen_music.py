@@ -35,8 +35,8 @@ for ev, e in inventory().items():
     secs = max(30, min(180, round(e.get("seconds") or 90)))
     for t in targets(e):
         out = raw_path(t)
-        if out.exists():
-            continue
+        if any(p.suffix != ".json" for p in out.parent.glob(out.stem + ".*")):
+            continue  # ComfyUI saves .flac, so any container counts
         s, prefix = seed(t), "redline_" + uuid.uuid4().hex[:8]
         g = {
             "1": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": "ace_step_v1_3.5b.safetensors"}},
