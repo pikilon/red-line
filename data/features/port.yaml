@@ -1,0 +1,58 @@
+# Spec 26 phase 4: harbour props (family port). Piers, boats and buoys are decoration (`blocks: none`), so
+# they may sit on water cells (deep water is already blocked by the sim); the solid structures stand on land.
+# `render.kind` picks the procedural model of client/src/render/features/renderers/port.ts.
+types:
+  - id: pier
+    family: port
+    footprint: [2, 6]
+    blocks: none
+    variants: 2
+    render: { kind: pier }
+  - id: quay
+    family: port
+    footprint: [4, 2]
+    blocks: none
+    variants: 2
+    render: { kind: quay }
+  - id: dock-crane
+    family: port
+    footprint: [3, 3]
+    blocks: all
+    variants: 2
+    render: { kind: dock-crane }
+  - id: warehouse
+    family: port
+    footprint: [4, 3]
+    blocks: all
+    variants: 3
+    render: { kind: warehouse }
+  - id: container-stack
+    family: port
+    footprint: [3, 2]
+    blocks: all
+    variants: 3
+    render: { kind: container-stack }
+  - id: fishing-boat
+    family: port
+    footprint: [2, 4]
+    blocks: none
+    variants: 2
+    render: { kind: fishing-boat }
+  - id: cargo-ship
+    family: port
+    footprint: [3, 9]
+    blocks: none
+    variants: 2
+    render: { kind: cargo-ship }
+  - id: buoy
+    family: port
+    footprint: [1, 1]
+    blocks: none
+    variants: 2
+    render: { kind: buoy }
+  - id: lighthouse
+    family: port
+    footprint: [2, 2]
+    blocks: all
+    variants: 2
+    render: { kind: lighthouse }

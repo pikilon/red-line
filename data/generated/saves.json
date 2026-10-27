@@ -192,6 +192,12 @@
       "map": "demo-ground",
       "form": "setup",
       "entities": 4
+    },
+    {
+      "id": "demo-coast",
+      "map": "demo-coast",
+      "form": "setup",
+      "entities": 4
     }
   ]
 }
