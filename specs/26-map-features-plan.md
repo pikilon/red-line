@@ -511,3 +511,38 @@ the hash and saves because maps are static; runtime changes (destroyed bridge,
 felled tree) will be deltas added by the phase that needs them. `rot` turns the
 footprint in 90 degree steps; its visual direction is up to the family renderer.
 Demo: map and save `landscape-lab` (`/?load=landscape-lab`).
+
+## 12. Phase 2: civilian buildings and towns (as built)
+
+Visuals of sections 5.1-5.2 only: no garrison, hit points or destruction.
+Renderer file `client/src/render/features/renderers/civil.ts` registers the
+`building`, `prop` and `wall` families; the builders live in
+`client/src/render/features/civil/` (outside `renderers/`, whose files are all
+auto-imported). Each family is one merged flat-shaded mesh plus one unlit mesh
+(lit windows, lamps, signs), with vertex colours and a small canvas grain
+texture, so a town costs a few draw calls.
+
+**Types** (`data/features/buildings.yaml`, `render.model` = builder id; every
+type has `variants`, building footprints at rot 0, front = south at rot 0):
+`house-small` 2x2, `townhouse-row` 4x2, `apartment-block` 3x3, `shop` 2x2
+(awning, sign), `gas-station` 4x3, `office-tower` 3x3, `factory` 4x3 (sawtooth
+roof, chimney), `church` 3x4 (tower and spire; variant 1 is a white chapel),
+`warehouse-barn` 4x3 (variants 0 and 2 warehouses, 1 a red barn), `farmhouse`
+3x2 (shed, silo); walls `fence` and `stone-wall` 1x1 (long side along x at rot
+0); props `lamp-post`, `parked-car` (blocks all), `bus-stop` 2x1, `rubble-pile`.
+`crate-stack` (phase 1) is drawn by the same prop renderer.
+
+**State** (`state` of the placed instance): intact (random lit windows),
+damaged (darker, cracks, soot, broken windows, missing tiles), wrecked
+(charred, holes, roofs and upper corners missing, rubble), abandoned (faded,
+boarded windows and doors, creeping green, no lights, gaps in fences).
+
+**Assumptions.** Fences, walls, lamps, bus stops and rubble are `blocks: none`
+(decoration) until the prop mechanics of 6.6 exist. Facade textures are a
+generated canvas grain, not the spec 16 images (the feature layer has no access
+to the loaded textures). Smoke and snow tinting are not done. Roads are in the
+map data but drawn by the road renderer of the ground task. Demo: map and save
+`demo-town` (`/?load=demo-town`): main street, church square, gas station,
+factory district, south rows of the same apartment block, house, shop, church,
+office tower, factory and gas station in the four states, and an abandoned
+quarter.

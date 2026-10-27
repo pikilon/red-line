@@ -143,6 +143,8 @@
   "saves.hills-and-cliffs.description": "Ukrainian armour climbs the ramp of a plateau on First Line; Russian tanks wait under its cliffs.",
   "saves.landscape-lab.name": "Landscape lab",
   "saves.landscape-lab.description": "A map with ground patches, a road, a river with a ford, a lake, a sea strip, pines and houses; two tanks per side.",
+  "saves.demo-town.name": "Demo town",
+  "saves.demo-town.description": "A small town: main street of shops and houses, apartment blocks, church square, gas station, factory district, the same buildings intact, damaged, wrecked and abandoned, and an abandoned quarter.",
   "menu.saveGame": "Save game",
   "menu.loadGame": "Load game",
   "menu.volumeMaster": "Master volume: {pct}%",
