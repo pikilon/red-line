@@ -601,3 +601,32 @@ are transparent, so the terrain's grass, dirt noise and cliff mix stay underneat
 * Demo: map and save `demo-ground` (`/?load=demo-ground`): every material in its
   own patch, a concrete plaza next to an asphalt apron, a muddy field running into
   sand, a rocky area with gravel, an asphalt crossroads, two dirt tracks.
+
+## 12. Phase 4: water, sea and ports (as built)
+
+Files: `client/src/render/features/renderers/water.ts` (water renderer),
+`renderers/port.ts` (family `port`), `data/features/port.yaml`, demo map and save
+`demo-coast` (`/?load=demo-coast`). No bridges, no naval units.
+
+* **Water.** One mesh, one draw call, one `ShaderMaterial`. The water layer is turned
+  into a blurred coverage field (4 texels per cell; R coverage, G depth, B kind), so shores
+  are smooth curves. The shader draws the shallow-to-deep ramp, sand-tinted shallows and
+  fords (shallow cells are visibly lighter), two scrolling generated normal layers (sea
+  swells stronger than lake, rivers drift toward +z), whitecaps on the sea, animated foam
+  where water meets land and a dark wet bank on the land side so banks read clearly. Frozen
+  edges (ice from the shore inwards) switch on when the `?weather=` climate of spec 22 is
+  active. Time runs from `onBeforeRender`; nothing in the sim changes.
+* **Assumption: no terrain lowering.** The terrain mesh is not touched; the wet bank and
+  foam give the bank its edge instead of a real depression. A depressed river bed needs a
+  terrain hook (a per-corner height offset in `groundGeometry`) and is left for later.
+* **Ports.** Types `pier`, `quay`, `dock-crane`, `warehouse`, `container-stack`,
+  `fishing-boat`, `cargo-ship`, `buoy`, `lighthouse` (all family `port`; `render.kind` picks the
+  model). Procedural boxes, cylinders and extruded hulls merged into two meshes per map (one
+  lit with vertex colours, one unlit for lamps and the lantern). Models are built for the
+  rot 0 footprint and turned about its centre by `rot`; piers, boats and buoys sit on the
+  water surface, the rest on the lowest ground corner.
+* **Docks on water need no new flag.** Features with `blocks: none` are not checked
+  against solid cells, and deep water is already blocked by the sim, so pier, quay, boats and
+  buoys use `blocks: none`; crane, warehouse, containers and lighthouse are `blocks: all` on land.
+  Boats in shallow water stay walkable (decoration): keep them on deep water.
+* Snow whitening of port props is not done (cheap hook not available yet).
