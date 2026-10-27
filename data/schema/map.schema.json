@@ -82,6 +82,120 @@
         }
       }
     },
+    "terrain": {
+      "description": "Optional ground, road and water layers (spec 26, Phase 1 contract). Cells are inclusive rects or paths with a width in cells.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ground": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "default": { "$ref": "#/$defs/groundMaterial" },
+            "patches": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["material", "rect"],
+                    "properties": { "material": { "$ref": "#/$defs/groundMaterial" }, "rect": { "$ref": "#/$defs/cells4" } }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["material", "path", "width"],
+                    "properties": {
+                      "material": { "$ref": "#/$defs/groundMaterial" },
+                      "path": { "$ref": "#/$defs/path" },
+                      "width": { "$ref": "#/$defs/width" }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "roads": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "path", "width"],
+            "properties": {
+              "type": { "enum": ["asphalt", "dirt"] },
+              "path": { "$ref": "#/$defs/path" },
+              "width": { "$ref": "#/$defs/width" }
+            }
+          }
+        },
+        "water": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["kind", "depth", "rect"],
+                "properties": {
+                  "kind": { "enum": ["river", "lake", "sea"] },
+                  "depth": { "enum": ["deep", "shallow"] },
+                  "rect": { "$ref": "#/$defs/cells4" }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["kind", "depth", "path", "width"],
+                "properties": {
+                  "kind": { "enum": ["river", "lake", "sea"] },
+                  "depth": { "enum": ["deep", "shallow"] },
+                  "path": { "$ref": "#/$defs/path" },
+                  "width": { "$ref": "#/$defs/width" },
+                  "fords": {
+                    "description": "[x, y, radius] in cells: the water inside is shallow.",
+                    "type": "array",
+                    "items": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "integer", "minimum": 0 } }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "features": {
+      "description": "Optional placed feature instances (data/features); an area entry is expanded into explicit instances at data-compile time.",
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "at"],
+            "properties": {
+              "type": { "$ref": "faction.schema.json#/$defs/id" },
+              "at": { "$ref": "#/$defs/pair" },
+              "rot": { "type": "integer", "minimum": 0, "maximum": 3 },
+              "variant": { "type": "integer", "minimum": 0 },
+              "state": { "enum": ["intact", "damaged", "wrecked", "abandoned"] }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "area", "density", "seed"],
+            "properties": {
+              "type": { "$ref": "faction.schema.json#/$defs/id" },
+              "area": { "$ref": "#/$defs/cells4" },
+              "density": { "type": "integer", "minimum": 0, "maximum": 100 },
+              "seed": { "type": "integer", "minimum": 0 }
+            }
+          }
+        ]
+      }
+    },
     "starts": {
       "type": "array",
       "minItems": 2,
@@ -99,6 +213,9 @@
     }
   },
   "$defs": {
+    "path": { "type": "array", "minItems": 2, "maxItems": 64, "items": { "$ref": "#/$defs/pair" } },
+    "width": { "type": "integer", "minimum": 1, "maximum": 64 },
+    "groundMaterial": { "enum": ["grass", "dirt", "sand", "rock", "mud", "gravel", "asphalt", "concrete", "snow-field"] },
     "pair": {
       "type": "array",
       "minItems": 2,

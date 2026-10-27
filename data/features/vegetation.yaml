@@ -1,0 +1,8 @@
+# Spec 26 Phase 1: vegetation feature types. One file per family; listed in globals.yaml `features`.
+types:
+  - id: pine
+    family: vegetation
+    footprint: [1, 1]
+    blocks: all
+    variants: 3
+    render: { model: pine, color: "#2f5d34", height: 2.2, scale: 1 }

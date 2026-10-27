@@ -1,0 +1,34 @@
+id: landscape-lab                    # required, equals the file name
+width: 64                            # required, 16..256
+height: 64                           # required, 16..256
+blocked: []                          # open ground; the water and the features below block cells
+depots:                              # required; origin = top-left cell
+  - { origin: [8, 38], amount: 10000 }
+  - { origin: [54, 38], amount: 10000 }
+# Spec 26 Phase 1 demo: every new key a little. Water is a river with a ford, a lake and a sea strip.
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: dirt, rect: [4, 26, 16, 42] }
+      - { material: sand, rect: [0, 3, 63, 6] }
+      - { material: mud, path: [[30, 7], [31, 63]], width: 8 }
+      - { material: rock, rect: [36, 10, 40, 14] }
+      - { material: gravel, path: [[44, 28], [58, 24]], width: 3 }
+  roads:
+    - { type: asphalt, path: [[12, 35], [31, 35], [52, 35]], width: 2 }
+  water:
+    - { kind: sea, depth: deep, rect: [0, 0, 63, 2] }
+    - { kind: sea, depth: shallow, rect: [0, 3, 63, 3] }
+    - { kind: river, depth: deep, path: [[30, 4], [31, 63]], width: 4, fords: [[31, 35, 3]] }
+    - { kind: lake, depth: deep, rect: [43, 47, 49, 53] }
+features:
+  - { type: pine, area: [34, 8, 56, 20], density: 35, seed: 7 }
+  - { type: pine, area: [4, 8, 20, 18], density: 25, seed: 3 }
+  - { type: house-small, at: [38, 38], rot: 0, variant: 0 }
+  - { type: house-small, at: [42, 38], rot: 0, variant: 1, state: damaged }
+  - { type: crate-stack, at: [20, 40] }
+  - { type: crate-stack, at: [21, 40], variant: 1 }
+starts:                              # required, exactly 2 entries; start i is player i
+  - { faction: ukraine, hq: [8, 28], dozerCenti: [1350, 3300] }
+  - { faction: russia, hq: [52, 28], dozerCenti: [5100, 3300] }

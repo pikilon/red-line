@@ -4,9 +4,21 @@ import { basename, dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import { parse } from "yaml";
+import {
+  FEATURE_STATES,
+  GROUND_MATERIALS,
+  ROAD_TYPES,
+  WATER_DEPTHS,
+  WATER_KINDS,
+  checkTerrainShapes,
+  expandFeatures,
+  isDeepWater,
+  layerHex,
+  rasterizeTerrain,
+} from "./map-layers.mjs";
 
 /** @typedef {{ file: string, text: string }} SourceFile */
-/** @typedef {{ globals: SourceFile, factions: SourceFile[], maps: SourceFile[], ai: SourceFile[], saves?: SourceFile[] }} Sources */
+/** @typedef {{ globals: SourceFile, factions: SourceFile[], maps: SourceFile[], ai: SourceFile[], features?: SourceFile[], saves?: SourceFile[] }} Sources */
 /** @typedef {"parse"|"schema"|"duplicate-id"|"unknown-reference"|"invalid-value"} DataErrorCode */
 /** @typedef {{ file: string, pointer: string, code: DataErrorCode, message: string }} DataError */
 
@@ -24,6 +36,7 @@ const createValidators = () => {
     globals: ajv.compile(readSchema("globals")),
     faction: ajv.getSchema("faction.schema.json"),
     map: ajv.compile(readSchema("map")),
+    features: ajv.compile(readSchema("features")),
     ai: ajv.compile(readSchema("ai")),
   };
 };
@@ -49,6 +62,7 @@ export function readSources(rootDir) {
   return {
     globals,
     factions: listedIds(globals.text, "factions").map((id) => read(`data/factions/${id}.yaml`)),
+    features: listedIds(globals.text, "features").map((id) => read(`data/features/${id}.yaml`)),
     maps: listedIds(globals.text, "maps").map((id) => read(`data/maps/${id}.yaml`)),
     ai: listedIds(globals.text, "ai").map((id) => read(`data/ai/${id}.yaml`)),
     saves: listedIds(globals.text, "saves").map((id) => read(saveFile(id))),
@@ -83,17 +97,33 @@ export function buildRuleset(sources) {
   const globals = load(sources.globals, validators.globals);
   const factions = sources.factions.map((source) => load(source, validators.faction));
   const maps = sources.maps.map((source) => load(source, validators.map));
+  const featureFiles = (sources.features ?? []).map((source) => load(source, validators.features));
   const ai = (sources.ai ?? []).map((source) => load(source, validators.ai));
   if (errors.length > 0) return { ruleset: null, errors };
 
   checkGlobals(sources.globals.file, globals, fail);
   const index = checkReferences(sources, globals, factions, fail);
   sources.factions.forEach((source, i) => checkFaction(source.file, factions[i], fail));
-  sources.maps.forEach((source, i) => checkMap(source.file, maps[i], globals, factions, index, fail));
+  const featureTypes = checkFeatureTypes(sources.features ?? [], featureFiles, fail);
+  const layers = sources.maps.map((source, i) => checkMap(source.file, maps[i], globals, factions, featureTypes, fail));
   (sources.ai ?? []).forEach((source, i) => checkAi(source.file, ai[i], factions, fail));
   if (errors.length > 0) return { ruleset: null, errors };
 
-  return { ruleset: assemble(globals, factions, maps, ai), errors };
+  return { ruleset: assemble(globals, factions, maps, ai, featureTypes, layers), errors };
+}
+
+/** Spec 26: the feature types of every data/features file, with `variants` defaulted; duplicate ids fail. */
+function checkFeatureTypes(sources, files, fail) {
+  const seen = new Set();
+  const types = [];
+  files.forEach((file, i) => {
+    (file?.types ?? []).forEach((t, j) => {
+      if (seen.has(t.id)) fail(sources[i].file, `/types/${j}/id`, "duplicate-id", `duplicate id ${t.id}`);
+      seen.add(t.id);
+      types.push({ ...t, variants: t.variants ?? 1, render: t.render ?? {} });
+    });
+  });
+  return types;
 }
 
 /**
@@ -317,7 +347,11 @@ export function cliffCells(map, heights) {
 /** Two lowercase hex digits per corner; "" for a flat map. */
 export const heightsHex = (heights) => (heights ? Buffer.from(heights).toString("hex") : "");
 
-function checkMap(file, map, globals, factions, index, fail) {
+/**
+ * Semantic checks for one map. Returns what the compiled map needs besides its own keys: the rasterised
+ * `terrain` layers (or null) and the expanded feature `instances` (spec 26 Phase 1).
+ */
+function checkMap(file, map, globals, factions, featureTypes, fail) {
   const blocked = new Set();
   const occupied = new Set();
   const inBounds = (x, y) => x >= 0 && y >= 0 && x < map.width && y < map.height;
@@ -330,6 +364,20 @@ function checkMap(file, map, globals, factions, index, fail) {
   });
   // Footprints may not stand on cliffs either (spec 30 §3).
   for (const cell of cliffCells(map, rasterizeElevation(map))) blocked.add(cell);
+
+  // Spec 26: deep water blocks like rock; roads may not cross it (bridges come with the water phase).
+  const shapeProblems = checkTerrainShapes(map);
+  shapeProblems.forEach((p) => fail(file, p.pointer, "invalid-value", p.message));
+  const terrain = shapeProblems.length === 0 ? rasterizeTerrain(map) : null;
+  if (terrain) {
+    for (let y = 0; y < map.height; y++) {
+      for (let x = 0; x < map.width; x++) {
+        if (!isDeepWater(terrain.water[y * map.width + x])) continue;
+        blocked.add(`${x},${y}`);
+        if (terrain.roads[y * map.width + x] !== 0) fail(file, "/terrain/roads", "invalid-value", `road on deep water at ${x},${y}`);
+      }
+    }
+  }
 
   const place = (pointer, [ox, oy], [w, h], what) => {
     if (!inBounds(ox, oy) || !inBounds(ox + w - 1, oy + h - 1)) {
@@ -358,6 +406,21 @@ function checkMap(file, map, globals, factions, index, fail) {
       fail(file, `/starts/${i}/dozerCenti`, "invalid-value", "dozer position out of bounds");
     }
   });
+
+  // Features go last: explicit ones may not touch anything above, area ones fill what is left.
+  const solid = new Set([...blocked, ...occupied]);
+  const { instances, problems } = expandFeatures(map, featureTypes, solid);
+  problems.forEach((p) => fail(file, p.pointer, p.code, p.message));
+  // Maps that use the new keys must not start a dozer on a solid cell (legacy maps are left as they are).
+  if (terrain || instances.length > 0) {
+    map.starts.forEach((start, i) => {
+      const [x, y] = start.dozerCenti;
+      if (solid.has(`${Math.floor(x / 100)},${Math.floor(y / 100)}`)) {
+        fail(file, `/starts/${i}/dozerCenti`, "invalid-value", "dozer starts on a blocked cell or a footprint");
+      }
+    });
+  }
+  return { terrain, instances };
 }
 
 /** Semantic checks for one AI personality file (specs/05 §4.1). */
@@ -397,7 +460,7 @@ function checkAi(file, ai, factions, fail) {
   });
 }
 
-const assemble = (globals, factions, maps, ai) => {
+const assemble = (globals, factions, maps, ai, featureTypes, layers) => {
   const weaponList = factions.flatMap((f) => f.weapons);
   const typeList = [
     ...globals.commonTypes.map((t) => ({ t, faction: -1 })),
@@ -494,13 +557,38 @@ const assemble = (globals, factions, maps, ai) => {
       render: { size: renderSize(t) },
     })),
     factions: factions.map((f) => ({ id: f.id, hq: typeIndex.get(f.hq), dozer: typeIndex.get(f.dozer) })),
-    maps: maps.map((m) => ({
+    // Spec 26: names of the byte values of the map layers below, in index order.
+    layerNames: {
+      ground: GROUND_MATERIALS,
+      roads: ROAD_TYPES,
+      waterDepths: WATER_DEPTHS,
+      waterKinds: WATER_KINDS,
+      featureStates: FEATURE_STATES,
+    },
+    featureTypes: featureTypes.map((t) => ({
+      id: t.id,
+      family: t.family,
+      footprint: t.footprint,
+      blocks: t.blocks,
+      variants: t.variants,
+      render: t.render,
+    })),
+    maps: maps.map((m, mi) => ({
       id: m.id,
       width: m.width,
       height: m.height,
       blocked: m.blocked,
       depots: m.depots,
       heights: heightsHex(rasterizeElevation(m)),
+      // Only maps that use `terrain:` / `features:` carry these keys (legacy maps compile unchanged).
+      ...(layers[mi].terrain === null
+        ? {}
+        : {
+            ground: layerHex(layers[mi].terrain.ground),
+            roads: layerHex(layers[mi].terrain.roads),
+            water: layerHex(layers[mi].terrain.water),
+          }),
+      ...(layers[mi].instances.length === 0 ? {} : { features: layers[mi].instances }),
       starts: m.starts.map((s) => ({
         faction: factions.findIndex((f) => f.id === s.faction),
         hq: s.hq,
