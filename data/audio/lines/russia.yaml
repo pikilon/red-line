@@ -3,23 +3,23 @@ eva.baseUnderAttack:
 - explicit: false
   id: 1
   text: Внимание, база под обстрелом!
-- explicit: false
+- explicit: true
   id: 2
-  text: Обнаружена вражеская атака на объект!
-- explicit: false
+  text: Обнаружена атака на объект! Сука, по нам палят!
+- explicit: true
   id: 3
-  text: Зафиксировано проникновение, активируйте защиту!
-- explicit: false
+  text: Проникновение на базу! Блять, активируйте защиту, живо!
+- explicit: true
   id: 4
-  text: Критическая ситуация, база подверглась нападению!
+  text: Пиздец, по базе работают! Всем занять позиции!
 eva.buildingLost:
 - explicit: false
   id: 1
-  text: Объект выведен из строя.
+  text: Объект потерян
 eva.buildingReady:
 - explicit: false
   id: 1
-  text: Объект готов к эксплуатации.
+  text: Объект готов. К эксплуатации приступаем.
 eva.constructionComplete:
 - explicit: false
   id: 1
@@ -32,37 +32,37 @@ eva.constructionComplete:
   text: Новый сектор полностью функционирует.
 - explicit: false
   id: 4
-  text: Завершение строительных работ подтверждено.
+  text: Работы по строительству завершены.
 eva.defeat:
 - explicit: false
   id: 1
-  text: Критический сбой. Мы потерпели поражение.
+  text: Критический сбой. Мы
 eva.insufficientFunds:
 - explicit: false
   id: 1
-  text: Недостаточно ресурсов для выполнения операции.
+  text: Ресурсов не хватает,. Операция невозможна
 eva.lowPower:
 - explicit: false
   id: 1
-  text: Внимание, критический уровень энергоснабжения.
+  text: Внимание, критический уровень заряда., мы сейчас сдохнем
 eva.productionComplete:
 - explicit: false
   id: 1
-  text: Подкрепление готово к развертыванию.
+  text: Подкрепление готово к выходу.
 eva.unitLost:
 - explicit: false
   id: 1
-  text: Потери в личном составе зафиксированы.
+  text: Потери в личном составе
 eva.upgradeComplete:
 - explicit: false
   id: 1
-  text: Модернизация оборудования завершена.
+  text: Оборудование модернизировано. Работаем дальше.
 eva.victory:
 - explicit: false
   id: 1
   text: Цель достигнута. Победа за нами.
 ru-bmp-2.attack:
-- explicit: false
+- explicit: true
   id: 1
   text: Приехали, сука. Погнали!
 - explicit: false
@@ -74,15 +74,15 @@ ru-bmp-2.attack:
 - explicit: true
   id: 4
   text: Зайдём в гости, нахуй.
-- explicit: true
+- explicit: false
   id: 5
   text: Они мешают, надо снести их к ебеням.
 ru-bmp-2.created:
 - explicit: false
   id: 1
-  text: По машинам, блять! В бой!
+  text: По машинам,! В бой!
 ru-bmp-2.die:
-- explicit: false
+- explicit: true
   id: 1
   text: Сука!
 - explicit: true
@@ -94,7 +94,7 @@ ru-bmp-2.die:
 - explicit: true
   id: 4
   text: А-а-а, нахуй!
-- explicit: true
+- explicit: false
   id: 5
   text: Твою мать!
 - explicit: true
@@ -103,7 +103,7 @@ ru-bmp-2.die:
 ru-bmp-2.move:
 - explicit: false
   id: 1
-  text: Понял, едем.
+  text: Понял, выдвигаемся.
 - explicit: true
   id: 2
   text: Куда ещё тащиться, блять?
@@ -115,7 +115,7 @@ ru-bmp-2.move:
   text: Эй, там все живы, сука?
 - explicit: false
   id: 5
-  text: Пристегнулись, погнали.
+  text: Пристегнулись! Погнали!
 ru-bmp-2.select:
 - explicit: false
   id: 1
@@ -125,7 +125,7 @@ ru-bmp-2.select:
   text: От них не спрятаться, блять.
 - explicit: false
   id: 3
-  text: Дальше — на передовую.
+  text: Двигаем на передний край.
 - explicit: true
   id: 4
   text: Броня готова, нахуй.
@@ -144,8 +144,8 @@ ru-bmp-2.underFire:
   text: Сука, прикрой! Снаряд рядом!
 - explicit: true
   id: 4
-  text: Пиздец, они нас видят!
-- explicit: true
+  text: Пиздец, они нас засекли!
+- explicit: false
   id: 5
   text: Твою мать, уходим!
 ru-brdm-scout.attack:
@@ -169,7 +169,7 @@ ru-brdm-scout.created:
   id: 1
   text: Патронов завались, погнали!
 ru-brdm-scout.die:
-- explicit: false
+- explicit: true
   id: 1
   text: Сука!
 - explicit: true
@@ -181,7 +181,7 @@ ru-brdm-scout.die:
 - explicit: true
   id: 4
   text: А-а-а, нахуй!
-- explicit: true
+- explicit: false
   id: 5
   text: Твою мать!
 - explicit: true
@@ -212,21 +212,21 @@ ru-brdm-scout.select:
   text: Жду приказа, нахуй.
 - explicit: false
   id: 4
-  text: Всё смазано, работаем.
+  text: Всё готово, работаем.
 ru-brdm-scout.underFire:
 - explicit: false
   id: 1
-  text: Нас обстреливают!
+  text: По нам работают!, прижмись!
 - explicit: true
   id: 2
-  text: Давай, стреляй, сука!
+  text: Давай, стреляй, блять, по ним!
 - explicit: true
   id: 3
-  text: Быстрее, блять, быстрее!
+  text: Быстрее, нахуй, быстрее!
 ru-dozer.attack:
-- explicit: false
+- explicit: true
   id: 1
-  text: Всё разнесём к хуям.
+  text: Всё к хуям разнесём.
 - explicit: true
   id: 2
   text: Отличная позиция, сука.
@@ -242,9 +242,9 @@ ru-dozer.attack:
 ru-dozer.created:
 - explicit: false
   id: 1
-  text: Новая машина готова, блять.
+  text: Новая машина готова
 ru-dozer.die:
-- explicit: false
+- explicit: true
   id: 1
   text: Сука!
 - explicit: true
@@ -287,21 +287,21 @@ ru-dozer.select:
   text: Ждём приказа, блять.
 - explicit: false
   id: 3
-  text: Мы на связи.
+  text: На связи.
 - explicit: true
   id: 4
-  text: Что там, сука?
+  text: Ну что там, сука?
 - explicit: false
   id: 5
-  text: Готовы строить.
+  text: К строительству готовы.
 ru-dozer.underFire:
-- explicit: false
+- explicit: true
   id: 1
   text: Нас обстреливают, блять!
 - explicit: true
   id: 2
   text: Тут нельзя строить, сука!
-- explicit: true
+- explicit: false
   id: 3
   text: Хуево прилетело!
 - explicit: true
@@ -332,7 +332,7 @@ ru-rifleman.attack:
 ru-rifleman.created:
 - explicit: false
   id: 1
-  text: Мы вместе, сука!
+  text: Мы вместе,!
 ru-rifleman.die:
 - explicit: false
   id: 1
@@ -346,7 +346,7 @@ ru-rifleman.die:
 - explicit: true
   id: 4
   text: Пиздец...
-- explicit: true
+- explicit: false
   id: 5
   text: Мать твою!
 - explicit: false
@@ -367,7 +367,7 @@ ru-rifleman.die:
 - explicit: true
   id: 11
   text: Сука-а!
-- explicit: true
+- explicit: false
   id: 12
   text: Твою мать!
 ru-rifleman.move:
@@ -389,19 +389,19 @@ ru-rifleman.move:
 ru-rifleman.select:
 - explicit: false
   id: 1
-  text: Да!
+  text: Есть!
 - explicit: false
   id: 2
-  text: Защитим рубежи.
+  text: Держим рубеж.
 - explicit: false
   id: 3
-  text: Слушаю!
+  text: На связи!
 - explicit: true
   id: 4
   text: Готовы к бою, блять.
 - explicit: false
   id: 5
-  text: Мы на связи.
+  text: Слышим вас.
 - explicit: true
   id: 6
   text: Приказывайте, сука.
@@ -433,14 +433,14 @@ ru-rpg-gunner.attack:
   text: Цель вижу! Нахуй их!
 - explicit: true
   id: 4
-  text: В лоб им, блять!
+  text: В лоб пошли, блять!
 - explicit: false
   id: 5
   text: Разнести эту тварь в щепки!
 ru-rpg-gunner.created:
 - explicit: false
   id: 1
-  text: Прошьём их броню к хуям.
+  text: Прошьём их броню к
 ru-rpg-gunner.die:
 - explicit: false
   id: 1
@@ -456,17 +456,17 @@ ru-rpg-gunner.die:
   text: Пиздец...
 - explicit: true
   id: 5
-  text: Мать твою!
+  text: Ёб твою мать!
 ru-rpg-gunner.move:
 - explicit: false
   id: 1
   text: Выдвигаюсь на позицию.
 - explicit: true
   id: 2
-  text: Пошли, сука, искать танки.
+  text: Пошли, сука, танки искать.
 - explicit: false
   id: 3
-  text: Принял, меняем точку.
+  text: Принял, меняю точку.
 - explicit: true
   id: 4
   text: На охоту, блять!
@@ -477,9 +477,9 @@ ru-rpg-gunner.select:
 - explicit: false
   id: 1
   text: РПГ наготове.
-- explicit: false
+- explicit: true
   id: 2
-  text: Я тут главный по броне.
+  text: Я тут по броне, сука.
 - explicit: true
   id: 3
   text: Вижу жирные цели, блять.
@@ -490,40 +490,40 @@ ru-rpg-gunner.select:
   id: 5
   text: Слушаю, командир.
 ru-rpg-gunner.underFire:
-- explicit: false
+- explicit: true
   id: 1
   text: Ой, блять!
 - explicit: true
   id: 2
-  text: Нас обстреливают! Сука!
-- explicit: false
+  text: Сука, по нам работают!
+- explicit: true
   id: 3
-  text: По нам попали!
+  text: Попали, блять!
 - explicit: true
   id: 4
   text: Пиздец, нас сейчас разнесут!
-- explicit: true
+- explicit: false
   id: 5
   text: Твою мать, прикрой меня!
 ru-supply-truck.attack:
 - explicit: false
   id: 1
-  text: Погнали, везем боеприпасы!
+  text: Погнали, везём снарягу!
 - explicit: true
   id: 2
-  text: Доставим всё, блять, до конца!
+  text: Доставим всё, блять, в лучшем виде!
 - explicit: true
   id: 3
   text: Пусть жрут свинец, сука!
 - explicit: true
   id: 4
-  text: Маршрут открыт, нахуй их всех!
+  text: Маршрут чист, нахуй их всех!
 ru-supply-truck.created:
 - explicit: false
   id: 1
   text: Грузим хабар и в путь.
 ru-supply-truck.die:
-- explicit: false
+- explicit: true
   id: 1
   text: Сука!
 - explicit: true
@@ -540,7 +540,7 @@ ru-supply-truck.die:
   text: Ёб твою мать!
 - explicit: false
   id: 6
-  text: Твою же...!
+  text: Твою же мать...!
 ru-supply-truck.move:
 - explicit: false
   id: 1
@@ -585,12 +585,12 @@ ru-supply-truck.underFire:
   text: Сука, прикрывайте нас!
 - explicit: true
   id: 4
-  text: Пиздец, мы под огнём!
+  text: Пиздец, по нам работают!
 - explicit: true
   id: 5
-  text: Твою мать, уходим!
+  text: Ёб твою мать, уходим!
 ru-t-72b3.attack:
-- explicit: false
+- explicit: true
   id: 1
   text: В атаку, блять!
 - explicit: true
@@ -617,9 +617,9 @@ ru-t-72b3.attack:
 ru-t-72b3.created:
 - explicit: false
   id: 1
-  text: Т-72 готов к работе, блять.
+  text: Т-72 готов к работе
 ru-t-72b3.die:
-- explicit: false
+- explicit: true
   id: 1
   text: Сука!
 - explicit: true
@@ -633,7 +633,7 @@ ru-t-72b3.die:
   text: Блять!
 - explicit: true
   id: 5
-  text: Твою мать!
+  text: Ёб твою мать!
 - explicit: false
   id: 6
   text: Ах!
@@ -649,13 +649,13 @@ ru-t-72b3.move:
   text: В машину, блять, погнали!
 - explicit: false
   id: 4
-  text: Двигаюсь к цели.
+  text: Иду к цели.
 - explicit: true
   id: 5
-  text: Всё, сука, едем.
+  text: Всё, сука, погнали.
 - explicit: false
   id: 6
-  text: Будем там через минуту.
+  text: Будем на месте через минуту.
 ru-t-72b3.select:
 - explicit: false
   id: 1
@@ -663,15 +663,15 @@ ru-t-72b3.select:
 - explicit: true
   id: 2
   text: Готов к бою, блять.
-- explicit: false
+- explicit: true
   id: 3
-  text: Танк готов, чего надо?
+  text: Танк готов, какого хуя вы молчите?
 - explicit: true
   id: 4
   text: Жду приказа, сука.
 - explicit: false
   id: 5
-  text: Я здесь.
+  text: Я на позиции.
 ru-t-72b3.underFire:
 - explicit: false
   id: 1
@@ -682,7 +682,7 @@ ru-t-72b3.underFire:
 - explicit: true
   id: 3
   text: Сука, прикрой нас!
-- explicit: true
+- explicit: false
   id: 4
   text: Твою мать, они повсюду!
 - explicit: true
@@ -691,7 +691,7 @@ ru-t-72b3.underFire:
 ru-tos-1a.attack:
 - explicit: false
   id: 1
-  text: Всё в огне! Пошли!
+  text: Всё в огне! Пошли,!
 - explicit: true
   id: 2
   text: Сейчас мы их нахуй сожжём!
@@ -707,9 +707,9 @@ ru-tos-1a.attack:
 ru-tos-1a.created:
 - explicit: false
   id: 1
-  text: Пора устроить здесь настоящий ад.
+  text: Сейчас мы здесь настоящий ад устроим.
 ru-tos-1a.die:
-- explicit: false
+- explicit: true
   id: 1
   text: Сука!
 - explicit: true
@@ -717,7 +717,7 @@ ru-tos-1a.die:
   text: Блять!
 - explicit: true
   id: 3
-  text: А-а-а, твою мать!
+  text: А-а-а, ёб твою мать!
 - explicit: true
   id: 4
   text: Пиздец...
@@ -752,13 +752,13 @@ ru-tos-1a.select:
   text: Орудия готовы.
 - explicit: true
   id: 2
-  text: Ха-ха-ха, блять, отлично!
+  text: Ха-ха-ха, блять, заебись!
 - explicit: true
   id: 3
   text: Ждём приказа, сука.
 - explicit: true
   id: 4
-  text: Всё сгорит нахуй!
+  text: Всё нахуй сгорит!
 - explicit: false
   id: 5
   text: Ну, когда начинаем?
@@ -775,6 +775,6 @@ ru-tos-1a.underFire:
 - explicit: true
   id: 4
   text: Пиздец, они повсюду!
-- explicit: true
+- explicit: false
   id: 5
   text: Твою мать, уходим!

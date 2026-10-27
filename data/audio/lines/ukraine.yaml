@@ -3,19 +3,19 @@ eva.baseUnderAttack:
 - explicit: false
   id: 1
   text: Увага, базу атакують!
-- explicit: false
+- explicit: true
   id: 2
-  text: Командире, зафіксовано ворожий напад!
-- explicit: false
+  text: Командире, сука, нас атакують! Ворог на підході!
+- explicit: true
   id: 3
-  text: 'Попередження: ворог проривається до бази!'
-- explicit: false
+  text: Бля, ворог проривається до бази! Тривога!
+- explicit: true
   id: 4
-  text: Об'єкт під вогнем, загроза критична!
+  text: Об'єкт під вогнем, пиздець, загроза критична!
 eva.buildingLost:
 - explicit: false
   id: 1
-  text: Об'єкт виведено з ладу.
+  text: Об'єкт втрачено
 eva.buildingReady:
 - explicit: false
   id: 1
@@ -23,25 +23,25 @@ eva.buildingReady:
 eva.constructionComplete:
 - explicit: false
   id: 1
-  text: Будівництво завершено.
+  text: Об'єкт готовий. Можна працювати.
 - explicit: false
   id: 2
-  text: Об'єкт готовий до експлуатації.
+  text: Будівництво закінчено, все стоїть.
 - explicit: false
   id: 3
-  text: Очікую на наступні вказівки.
+  text: Готово. Чекаю на накази.
 eva.defeat:
 - explicit: false
   id: 1
-  text: Місію провалено. База втрачена.
+  text: Місія провалена. Базу втрачено
 eva.insufficientFunds:
 - explicit: false
   id: 1
-  text: Недостатньо ресурсів для виконання операції.
+  text: ресурсів не вистачає на цю операцію
 eva.lowPower:
 - explicit: false
   id: 1
-  text: Увага, критичний рівень енергопостачання.
+  text: Увага! Критичний рівень енергопостачання!
 eva.productionComplete:
 - explicit: false
   id: 1
@@ -49,7 +49,7 @@ eva.productionComplete:
 eva.unitLost:
 - explicit: false
   id: 1
-  text: Втрата одиниці підрозділу.
+  text: Втрата одиниці підрозділу
 eva.upgradeComplete:
 - explicit: false
   id: 1
@@ -57,29 +57,29 @@ eva.upgradeComplete:
 eva.victory:
 - explicit: false
   id: 1
-  text: Перемога здобута. Сектор під контролем.
+  text: Перемога за нами. Сектор під контролем.
 ua-bradley.attack:
-- explicit: false
+- explicit: true
   id: 1
-  text: За ворогів вільного світу!
+  text: За волю, блять!
 - explicit: true
   id: 2
-  text: Можеш на нас покладатися, бля!
+  text: Покладися на нас, сука!
 - explicit: true
   id: 3
-  text: Ми б'ємося за мир, сука!
+  text: Ми їх рознесемо нахуй!
 - explicit: false
   id: 4
-  text: Це буде честь для нас.
+  text: Працюємо, пішли!
 - explicit: true
   id: 5
-  text: Ми робимо правильну справу, нахуй!
+  text: Ми робимо правильну справу, йобаний в рот!
 ua-bradley.created:
 - explicit: false
   id: 1
-  text: Захищаємо свободу, йобаний в рот!
+  text: Захищаємо свободу, в рот!
 ua-bradley.die:
-- explicit: false
+- explicit: true
   id: 1
   text: Сука!
 - explicit: true
@@ -88,15 +88,15 @@ ua-bradley.die:
 - explicit: true
   id: 3
   text: Блядь!
-- explicit: true
+- explicit: false
   id: 4
   text: Твою мать!
 - explicit: true
   id: 5
   text: А-а-а, нахуй!
-- explicit: false
+- explicit: true
   id: 6
-  text: Всюди смерть...
+  text: Пиздець, тут усе...
 ua-bradley.move:
 - explicit: false
   id: 1
@@ -106,10 +106,10 @@ ua-bradley.move:
   text: Підтверджую, бля.
 - explicit: false
   id: 3
-  text: Так, командире!
+  text: Є, командире!
 - explicit: true
   id: 4
-  text: Заводимо її, сука.
+  text: Заводи її, сука.
 - explicit: true
   id: 5
   text: Рухаємось, нахуй!
@@ -117,15 +117,15 @@ ua-bradley.select:
 - explicit: false
   id: 1
   text: Бредлі на позиції.
-- explicit: false
+- explicit: true
   id: 2
-  text: Захищаємо наш народ!
+  text: За народ, блять!
 - explicit: true
   id: 3
-  text: Є загроза, бля?
+  text: Є загроза, сука?
 - explicit: false
   id: 4
-  text: Чисто і готово.
+  text: Чисто, готово.
 - explicit: true
   id: 5
   text: Тримаємо дистанцію, сука.
@@ -148,7 +148,7 @@ ua-bradley.underFire:
 - explicit: true
   id: 5
   text: Нас затискають, блядь!
-- explicit: true
+- explicit: false
   id: 6
   text: Твою мать, ховайся!
 ua-dozer.attack:
@@ -170,9 +170,9 @@ ua-dozer.attack:
 ua-dozer.created:
 - explicit: false
   id: 1
-  text: Погнали працювати, нахуй.
+  text: Погнали працювати
 ua-dozer.die:
-- explicit: false
+- explicit: true
   id: 1
   text: Пиздець...
 - explicit: true
@@ -186,7 +186,7 @@ ua-dozer.die:
   text: Йобаний рот!
 - explicit: false
   id: 5
-  text: Мамочки...
+  text: Твою мать...
 - explicit: false
   id: 6
   text: А-а-а-а!
@@ -199,26 +199,26 @@ ua-dozer.move:
   text: Прийнято, блядь.
 - explicit: false
   id: 3
-  text: Прокладу собі дорогу сам.
+  text: Сам прокладу собі шлях.
 - explicit: true
   id: 4
   text: Буду де скажеш, сука.
 - explicit: false
   id: 5
-  text: Вже працюємо по дорозі.
+  text: Вже працюємо по маршруту.
 - explicit: true
   id: 6
   text: Погнали, йобаний краний.
 ua-dozer.select:
 - explicit: false
   id: 1
-  text: Так, я тут.
+  text: Так, я на зв'язку.
 - explicit: true
   id: 2
   text: Фундамент закладено, бля.
 - explicit: false
   id: 3
-  text: Щось покращити хочеш?
+  text: Хочеш щось змінити?
 - explicit: true
   id: 4
   text: Давай будувати, нахуй.
@@ -240,16 +240,16 @@ ua-dozer.select:
 ua-dozer.underFire:
 - explicit: false
   id: 1
-  text: Їбаний прилет!
+  text: прилет!
 - explicit: true
   id: 2
   text: Тут не побудуєш, блядь!
 - explicit: true
   id: 3
-  text: Нас під обстрілом, сука!
+  text: Під обстрілом, сука!
 - explicit: true
   id: 4
-  text: Треба відтягнутися, пиздець.
+  text: Треба відходити, пиздець!
 ua-himars.attack:
 - explicit: false
   id: 1
@@ -272,11 +272,11 @@ ua-himars.attack:
 ua-himars.created:
 - explicit: false
   id: 1
-  text: Дальня балістика на зв'язку.
+  text: Дальня артилерія на зв'язку.
 ua-himars.die:
 - explicit: false
   id: 1
-  text: Блять!
+  text: Так точно!
 - explicit: true
   id: 2
   text: Сука!
@@ -289,9 +289,9 @@ ua-himars.die:
 - explicit: true
   id: 5
   text: Аааа, нахуй!
-- explicit: false
+- explicit: true
   id: 6
-  text: Мамочки...
+  text: Пиздец нам...
 ua-himars.move:
 - explicit: false
   id: 1
@@ -301,17 +301,17 @@ ua-himars.move:
   text: Там зможемо шмальнути, бля.
 - explicit: true
   id: 3
-  text: Транспортуємо ракету, сука.
+  text: Ракета в русі, сука.
 - explicit: false
   id: 4
   text: Координати прийняв.
 - explicit: false
   id: 5
-  text: Боєголовки в полі, погнали.
+  text: Боєприпаси в полі, погнали.
 ua-himars.select:
 - explicit: false
   id: 1
-  text: Система HIMARS онлайн.
+  text: HIMARS у мережі.
 - explicit: true
   id: 2
   text: Ракети готові, блядь.
@@ -323,11 +323,11 @@ ua-himars.select:
   text: Наведення підтягнуто, сука.
 - explicit: false
   id: 5
-  text: Пускова готова до роботи.
+  text: Пускова готова до пуску.
 ua-himars.underFire:
 - explicit: false
   id: 1
-  text: Нас обстрілюють, блять!
+  text: Нас обстрілюють,!
 - explicit: true
   id: 2
   text: Сука, по нам працюють!
@@ -362,9 +362,9 @@ ua-kozak-scout.attack:
 ua-kozak-scout.created:
 - explicit: false
   id: 1
-  text: Погнали, заводимо цей хрін!
+  text: Погнали, заводи цей хрін!
 ua-kozak-scout.die:
-- explicit: false
+- explicit: true
   id: 1
   text: Сука!
 - explicit: true
@@ -375,7 +375,7 @@ ua-kozak-scout.die:
   text: Блядь!
 - explicit: false
   id: 4
-  text: Мамочки...
+  text: Твою мать...
 - explicit: true
   id: 5
   text: Йобаний рот!
@@ -400,7 +400,7 @@ ua-kozak-scout.move:
   text: Нормальний маршрут, бля.
 - explicit: false
   id: 6
-  text: Вперед!
+  text: Вперёд!
 - explicit: false
   id: 7
   text: Йдемо потихеньку.
@@ -413,14 +413,14 @@ ua-kozak-scout.select:
   text: Козак готовий, бля.
 - explicit: false
   id: 3
-  text: Що там треба?
+  text: Що там по ситуації?
 - explicit: false
   id: 4
-  text: Кажи, куди їхати.
+  text: Кажи, куди підігнати.
 ua-kozak-scout.underFire:
 - explicit: false
   id: 1
-  text: Нас обстрілюють, сука!
+  text: Нас обстрілюють,!
 - explicit: true
   id: 2
   text: Бля, по нам стріляють!
@@ -454,7 +454,7 @@ ua-leopard-2a4.created:
   id: 1
   text: Леопард на зв'язку, прийом!
 ua-leopard-2a4.die:
-- explicit: false
+- explicit: true
   id: 1
   text: Сука!
 - explicit: true
@@ -471,7 +471,7 @@ ua-leopard-2a4.die:
   text: А-а-а, нахуй!
 - explicit: false
   id: 6
-  text: Мамочки...
+  text: Твою мать...
 ua-leopard-2a4.move:
 - explicit: false
   id: 1
@@ -494,32 +494,32 @@ ua-leopard-2a4.select:
   text: Леопард готовий.
 - explicit: true
   id: 2
-  text: Броня на зв'язку, бля.
+  text: Зв'язок є, бля.
 - explicit: true
   id: 3
   text: Покажемо їм силу, нахуй!
 - explicit: false
   id: 4
-  text: Чекаємо на наказ.
+  text: Чекаємо на команду.
 - explicit: false
   id: 5
   text: Ваш наказ, командире.
 ua-leopard-2a4.underFire:
 - explicit: false
   id: 1
-  text: Нас обстрілюють, блять!
+  text: Нас обстрілюють,!
 - explicit: true
   id: 2
   text: Броня тримається, сука!
 - explicit: true
   id: 3
   text: Нас підбивають, пиздець!
-- explicit: false
+- explicit: true
   id: 4
-  text: Вогонь по ворогу, швидко!
+  text: Вогонь по ворогу, швидше, сука!
 - explicit: true
   id: 5
-  text: Йобаний приліт, матершина!
+  text: Йобаний приліт, блядь!
 ua-rifleman.attack:
 - explicit: false
   id: 1
@@ -535,7 +535,7 @@ ua-rifleman.attack:
   text: Всіх нахуй рознесемо!
 - explicit: false
   id: 5
-  text: Виявили ворога, йдемо в бій!
+  text: Ворог на виду, йдемо в бій!
 - explicit: true
   id: 6
   text: Давай, пиздуй на них!
@@ -573,8 +573,8 @@ ua-rifleman.die:
   text: Нахуй все!
 - explicit: false
   id: 9
-  text: Аргх!
-- explicit: true
+  text: Арх!
+- explicit: false
   id: 10
   text: Твою мать!
 - explicit: true
@@ -592,7 +592,7 @@ ua-rifleman.move:
   text: Змінюємо позицію, бля!
 - explicit: false
   id: 3
-  text: Рухаємось до точки!
+  text: До точки, руш!
 - explicit: true
   id: 4
   text: Йдемо вперед, сука!
@@ -602,7 +602,7 @@ ua-rifleman.move:
 ua-rifleman.select:
 - explicit: false
   id: 1
-  text: Слухаю!
+  text: На зв'язку!
 - explicit: true
   id: 2
   text: Я готовий, бля!
@@ -618,13 +618,13 @@ ua-rifleman.select:
 ua-rifleman.underFire:
 - explicit: false
   id: 1
-  text: Нас обстрілюють!
+  text: По нам працюють!
 - explicit: true
   id: 2
-  text: Блять, де прикриття?!
+  text: Блядь, де прикриття?!
 - explicit: true
   id: 3
-  text: По нам стріляють, сука!
+  text: По нас стріляють, сука!
 - explicit: true
   id: 4
   text: Допоможіть, блядь!
@@ -665,9 +665,9 @@ ua-stugna-team.attack:
 ua-stugna-team.created:
 - explicit: false
   id: 1
-  text: Стугна на місці, готова до розносу!
+  text: Стугна на позиції, готова до розносу!
 ua-stugna-team.die:
-- explicit: false
+- explicit: true
   id: 1
   text: Бля!
 - explicit: true
@@ -684,22 +684,22 @@ ua-stugna-team.die:
   text: Йобаний рот!
 - explicit: false
   id: 6
-  text: Мамочки...
-- explicit: true
-  id: 7
   text: Твою мать!
 - explicit: true
-  id: 8
+  id: 7
   text: Ой, бля!
 - explicit: false
-  id: 9
+  id: 8
   text: А-ах!
 - explicit: true
-  id: 10
+  id: 9
   text: Нахуй все!
 - explicit: false
-  id: 11
+  id: 10
   text: Грххх!
+- explicit: true
+  id: 11
+  text: Курва!
 - explicit: true
   id: 12
   text: Курва!
@@ -725,29 +725,29 @@ ua-stugna-team.move:
 ua-stugna-team.select:
 - explicit: false
   id: 1
-  text: Я чекаю на ціль.
+  text: Ціль у полі зору, чекаю команди.
 - explicit: false
   id: 2
-  text: Що там, давай бахнемо?
-- explicit: false
+  text: Ну що там, давай бахнемо вже?
+- explicit: true
   id: 3
-  text: Дайте мені щось підірвати!
+  text: Дайте мені хоч щось підірвати, сука!
 - explicit: true
   id: 4
-  text: Готовий шматувати їх, бля.
+  text: Готовий шматувати їх нахуй.
 - explicit: false
   id: 5
   text: Кажи, куди стріляти?
 ua-stugna-team.underFire:
 - explicit: false
   id: 1
-  text: Нас обстрілюють, блядь!
+  text: Нас обстрілюють,!
 - explicit: true
   id: 2
   text: Ми під вогнем, сука!
-- explicit: false
+- explicit: true
   id: 3
-  text: Треба підмогу, швидше!
+  text: Підмога потрібна, швидше, блядь!
 ua-supply-truck.attack:
 - explicit: false
   id: 1
@@ -760,10 +760,10 @@ ua-supply-truck.attack:
   text: Зараз ми їм покажемо.
 - explicit: true
   id: 4
-  text: Врубай швидкість, бля!
+  text: Давай швидше, бля!
 - explicit: false
   id: 5
-  text: Прийнято, йдемо на штурм.
+  text: Прийнято, висуваємось.
 - explicit: true
   id: 6
   text: Повний вперед, йобаний рот!
@@ -781,23 +781,23 @@ ua-supply-truck.attack:
   text: Пиздець їм зараз.
 - explicit: false
   id: 11
-  text: На ціль виходимо.
+  text: Виходимо на ціль.
 - explicit: true
   id: 12
   text: Тисни на газ, блядь!
 - explicit: false
   id: 13
-  text: Будемо воювати.
+  text: Погнали в бій.
 - explicit: false
   id: 14
   text: До зустрічі в пеклі!
 ua-supply-truck.created:
 - explicit: false
   id: 1
-  text: Машина готова до роботи.
+  text: Машина готова.
 - explicit: false
   id: 2
-  text: Заправили, перевірили, поїхали.
+  text: Заправили, перевірили, виїжджаємо.
 - explicit: true
   id: 3
   text: В строю, сука!
@@ -809,10 +809,10 @@ ua-supply-truck.created:
   text: Все працює, бля.
 - explicit: false
   id: 6
-  text: Виїжджаємо на маршрут.
+  text: Виходимо на маршрут.
 - explicit: false
   id: 7
-  text: Нова машина, нова робота.
+  text: Нова тачка, нова робота.
 - explicit: true
   id: 8
   text: Ну що, погнали, нахуй!
@@ -824,12 +824,12 @@ ua-supply-truck.created:
   text: Всі на місці, блядь.
 - explicit: false
   id: 11
-  text: Готові до виконання завдань.
+  text: Готові до роботи.
 - explicit: false
   id: 12
-  text: Починаємо рух.
+  text: Рушаємо.
 ua-supply-truck.die:
-- explicit: false
+- explicit: true
   id: 1
   text: Блядь!
 - explicit: true
@@ -865,7 +865,7 @@ ua-supply-truck.move:
   text: Йдемо далі, сука.
 - explicit: false
   id: 6
-  text: Рухаємось по точці.
+  text: Рухаємось на точку.
 - explicit: false
   id: 7
   text: Вже в дорозі.
@@ -883,10 +883,10 @@ ua-supply-truck.move:
   text: Повний вперед.
 - explicit: true
   id: 12
-  text: Я під контролем, бля.
+  text: Все під контролем, бля.
 - explicit: false
   id: 13
-  text: Змінюємо локацію.
+  text: Змінюємо позицію.
 - explicit: true
   id: 14
   text: По коням, сука!
@@ -987,7 +987,7 @@ ua-supply-truck.underFire:
   text: Машина під вогнем, нахуй!
 - explicit: true
   id: 12
-  text: Швидше, блядь, їдемо!
+  text: Швидше, блядь, газуй!
 - explicit: false
   id: 13
   text: Вони нас бачать!
@@ -999,7 +999,7 @@ ua-supply-truck.underFire:
   text: Занадто багато вогню!
 - explicit: true
   id: 16
-  text: Бля, забагато куль!
+  text: Бля, забагато пуль!
 - explicit: true
   id: 17
   text: Сховайте нас, сука!
