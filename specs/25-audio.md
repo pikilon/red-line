@@ -251,6 +251,22 @@ stays accurate; CC-BY sources are credited there.
 
 ### 4.5 Generation workflow (phase 3; offline from the game's point of view)
 
+**Implemented (2026-10-27)** in `scripts/audio/gen/` (local only):
+`run_all.sh` runs `setup.sh` (installs into `AUDIO_GEN_ROOT`, default the
+owner's external SSD), `transcribe.py` (Whisper large-v3-turbo on the
+reference voice/EVA lines: text only, to know each situation),
+`write_lines.py` (local LM Studio Gemma drafts `data/audio/lines/*.yaml`),
+`gen_voice.py` (Piper: Ukrainian `ukrainian_tts` speaker mykyta, EVA tetiana;
+Russian denis/dmitri/ruslan by unit set, EVA irina), `gen_sfx.py` (TangoFlux
+for SFX, UI and ambient, CPU), `gen_music.py` (ACE-Step v1 3.5B through the
+local ComfyUI, Red Alert 2 style industrial metal/electronic, per state and
+faction) and `process.py`. Raw takes and their prompt/seed sidecars stay
+untouched under `AUDIO_GEN_ROOT/raw/`; `process.py` re-applies every effect,
+so a filter can be changed or undone without regenerating. It writes
+`client/public/audio/manifest.json` (event -> files, plus the `explicit`
+list), which the loader resolves before the reference pack. Assumption: the
+`common` fallback voice sets speak Ukrainian.
+
 1. **Brief and script.** `data/audio/inventory.yaml` (phase 2) holds the brief
    per event; voice and EVA lines live in `data/audio/lines/<faction>.yaml`
    in the faction's language (§5.3).
@@ -473,12 +489,9 @@ fall back through a chain so every weapon sounds like something:
   starting point: effects 80, ambient 50, voices 70, music 55; persisted like
   the other settings. Ambient has its own slider because birds/wind are not
   combat effects and are the first thing players want to turn down.
-* **Muted by default (owner, 2026-10-26).** The master slider starts at 0 in
-  every build, including the public web: the placeholder procedural fallback is
-  not fit for players, so nothing plays until someone raises the slider. This
-  is temporary; restore Zero Hour's master 100 when phase 3 ships generated
-  assets, and keep an eye on `?audio=debug` auditions while it lasts (raise the
-  master slider once; the value persists).
+* **Master volume 100 by default.** From 2026-10-26 the master started at 0
+  while only placeholder synth sounds existed; phase 3 (2026-10-27) ships our
+  own generated files, so the default is Zero Hour's 100 again (owner).
 * Ducking (gain automation, not a sidechain compressor): `eva` critical lines
   duck `music` by 9 dB and `sfx` by 4 dB for the line's length plus 300 ms;
   unit voices duck `music` by 4 dB; release 500 ms. Rules live in `mix.yaml`.

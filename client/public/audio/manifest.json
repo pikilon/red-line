@@ -1,0 +1,1719 @@
+{
+  "version": 1,
+  "events": {
+    "ambient.snow": [
+      "/audio/ambient/snow_1.webm",
+      "/audio/ambient/snow_2.webm"
+    ],
+    "ambient.temperate": [
+      "/audio/ambient/temperate_1.webm",
+      "/audio/ambient/temperate_2.webm",
+      "/audio/ambient/temperate_3.webm"
+    ],
+    "building.complete": [
+      "/audio/sfx/building.complete_1.webm",
+      "/audio/sfx/building.complete_2.webm",
+      "/audio/sfx/building.complete_3.webm"
+    ],
+    "building.construct": [
+      "/audio/sfx/building.construct_1.webm",
+      "/audio/sfx/building.construct_2.webm",
+      "/audio/sfx/building.construct_3.webm",
+      "/audio/sfx/building.construct_4.webm",
+      "/audio/sfx/building.construct_5.webm",
+      "/audio/sfx/building.construct_6.webm",
+      "/audio/sfx/building.construct_7.webm",
+      "/audio/sfx/building.construct_8.webm"
+    ],
+    "building.damage": [
+      "/audio/sfx/building.damage_1.webm",
+      "/audio/sfx/building.damage_2.webm",
+      "/audio/sfx/building.damage_3.webm",
+      "/audio/sfx/building.damage_4.webm",
+      "/audio/sfx/building.damage_5.webm",
+      "/audio/sfx/building.damage_6.webm",
+      "/audio/sfx/building.damage_7.webm",
+      "/audio/sfx/building.damage_8.webm"
+    ],
+    "building.damage.critical": [
+      "/audio/sfx/building.damage.critical_1.webm",
+      "/audio/sfx/building.damage.critical_2.webm",
+      "/audio/sfx/building.damage.critical_3.webm",
+      "/audio/sfx/building.damage.critical_4.webm",
+      "/audio/sfx/building.damage.critical_5.webm",
+      "/audio/sfx/building.damage.critical_6.webm"
+    ],
+    "building.damage.heavy": [
+      "/audio/sfx/building.damage.heavy_1.webm",
+      "/audio/sfx/building.damage.heavy_2.webm",
+      "/audio/sfx/building.damage.heavy_3.webm",
+      "/audio/sfx/building.damage.heavy_4.webm",
+      "/audio/sfx/building.damage.heavy_5.webm",
+      "/audio/sfx/building.damage.heavy_6.webm",
+      "/audio/sfx/building.damage.heavy_7.webm"
+    ],
+    "building.die": [
+      "/audio/sfx/building.die_1.webm",
+      "/audio/sfx/building.die_2.webm",
+      "/audio/sfx/building.die_3.webm",
+      "/audio/sfx/building.die_4.webm",
+      "/audio/sfx/building.die_5.webm",
+      "/audio/sfx/building.die_6.webm",
+      "/audio/sfx/building.die_7.webm"
+    ],
+    "building.place": ["/audio/sfx/building.place_1.webm"],
+    "building.select.barracks.russia": [
+      "/audio/sfx/building.select.barracks.russia_1.webm"
+    ],
+    "building.select.barracks.ukraine": [
+      "/audio/sfx/building.select.barracks.ukraine_1.webm"
+    ],
+    "building.select.factory.russia": [
+      "/audio/sfx/building.select.factory.russia_1.webm"
+    ],
+    "building.select.factory.ukraine": [
+      "/audio/sfx/building.select.factory.ukraine_1.webm"
+    ],
+    "building.select.hq.russia": [
+      "/audio/sfx/building.select.hq.russia_1.webm"
+    ],
+    "building.select.hq.ukraine": [
+      "/audio/sfx/building.select.hq.ukraine_1.webm"
+    ],
+    "eva.russia.baseUnderAttack": [
+      "/audio/eva/russia/baseUnderAttack_1.webm",
+      "/audio/eva/russia/baseUnderAttack_2.webm",
+      "/audio/eva/russia/baseUnderAttack_3.webm",
+      "/audio/eva/russia/baseUnderAttack_4.webm"
+    ],
+    "eva.russia.buildingLost": ["/audio/eva/russia/buildingLost_1.webm"],
+    "eva.russia.buildingReady": ["/audio/eva/russia/buildingReady_1.webm"],
+    "eva.russia.constructionComplete": [
+      "/audio/eva/russia/constructionComplete_1.webm",
+      "/audio/eva/russia/constructionComplete_2.webm",
+      "/audio/eva/russia/constructionComplete_3.webm",
+      "/audio/eva/russia/constructionComplete_4.webm"
+    ],
+    "eva.russia.defeat": ["/audio/eva/russia/defeat_1.webm"],
+    "eva.russia.insufficientFunds": [
+      "/audio/eva/russia/insufficientFunds_1.webm"
+    ],
+    "eva.russia.lowPower": ["/audio/eva/russia/lowPower_1.webm"],
+    "eva.russia.productionComplete": [
+      "/audio/eva/russia/productionComplete_1.webm"
+    ],
+    "eva.russia.unitLost": ["/audio/eva/russia/unitLost_1.webm"],
+    "eva.russia.upgradeComplete": ["/audio/eva/russia/upgradeComplete_1.webm"],
+    "eva.russia.victory": ["/audio/eva/russia/victory_1.webm"],
+    "eva.ukraine.baseUnderAttack": [
+      "/audio/eva/ukraine/baseUnderAttack_1.webm",
+      "/audio/eva/ukraine/baseUnderAttack_2.webm",
+      "/audio/eva/ukraine/baseUnderAttack_3.webm",
+      "/audio/eva/ukraine/baseUnderAttack_4.webm"
+    ],
+    "eva.ukraine.buildingLost": ["/audio/eva/ukraine/buildingLost_1.webm"],
+    "eva.ukraine.buildingReady": ["/audio/eva/ukraine/buildingReady_1.webm"],
+    "eva.ukraine.constructionComplete": [
+      "/audio/eva/ukraine/constructionComplete_1.webm",
+      "/audio/eva/ukraine/constructionComplete_2.webm",
+      "/audio/eva/ukraine/constructionComplete_3.webm"
+    ],
+    "eva.ukraine.defeat": ["/audio/eva/ukraine/defeat_1.webm"],
+    "eva.ukraine.insufficientFunds": [
+      "/audio/eva/ukraine/insufficientFunds_1.webm"
+    ],
+    "eva.ukraine.lowPower": ["/audio/eva/ukraine/lowPower_1.webm"],
+    "eva.ukraine.productionComplete": [
+      "/audio/eva/ukraine/productionComplete_1.webm"
+    ],
+    "eva.ukraine.unitLost": ["/audio/eva/ukraine/unitLost_1.webm"],
+    "eva.ukraine.upgradeComplete": [
+      "/audio/eva/ukraine/upgradeComplete_1.webm"
+    ],
+    "eva.ukraine.victory": ["/audio/eva/ukraine/victory_1.webm"],
+    "explosion.large": [
+      "/audio/sfx/explosion.large_1.webm",
+      "/audio/sfx/explosion.large_2.webm",
+      "/audio/sfx/explosion.large_3.webm",
+      "/audio/sfx/explosion.large_4.webm",
+      "/audio/sfx/explosion.large_5.webm",
+      "/audio/sfx/explosion.large_6.webm",
+      "/audio/sfx/explosion.large_7.webm"
+    ],
+    "explosion.medium": [
+      "/audio/sfx/explosion.medium_1.webm",
+      "/audio/sfx/explosion.medium_2.webm",
+      "/audio/sfx/explosion.medium_3.webm",
+      "/audio/sfx/explosion.medium_4.webm",
+      "/audio/sfx/explosion.medium_5.webm",
+      "/audio/sfx/explosion.medium_6.webm"
+    ],
+    "explosion.small": [
+      "/audio/sfx/explosion.small_1.webm",
+      "/audio/sfx/explosion.small_2.webm",
+      "/audio/sfx/explosion.small_3.webm",
+      "/audio/sfx/explosion.small_4.webm",
+      "/audio/sfx/explosion.small_5.webm",
+      "/audio/sfx/explosion.small_6.webm"
+    ],
+    "impact.antiTank": [
+      "/audio/sfx/impact.antiTank_1.webm",
+      "/audio/sfx/impact.antiTank_2.webm",
+      "/audio/sfx/impact.antiTank_3.webm",
+      "/audio/sfx/impact.antiTank_4.webm",
+      "/audio/sfx/impact.antiTank_5.webm",
+      "/audio/sfx/impact.antiTank_6.webm",
+      "/audio/sfx/impact.antiTank_7.webm",
+      "/audio/sfx/impact.antiTank_8.webm",
+      "/audio/sfx/impact.antiTank_9.webm"
+    ],
+    "impact.autocannon": [
+      "/audio/sfx/impact.autocannon_1.webm",
+      "/audio/sfx/impact.autocannon_2.webm",
+      "/audio/sfx/impact.autocannon_3.webm",
+      "/audio/sfx/impact.autocannon_4.webm",
+      "/audio/sfx/impact.autocannon_5.webm",
+      "/audio/sfx/impact.autocannon_6.webm",
+      "/audio/sfx/impact.autocannon_7.webm",
+      "/audio/sfx/impact.autocannon_8.webm",
+      "/audio/sfx/impact.autocannon_9.webm"
+    ],
+    "impact.heavy": [
+      "/audio/sfx/impact.heavy_1.webm",
+      "/audio/sfx/impact.heavy_2.webm",
+      "/audio/sfx/impact.heavy_3.webm",
+      "/audio/sfx/impact.heavy_4.webm",
+      "/audio/sfx/impact.heavy_5.webm",
+      "/audio/sfx/impact.heavy_6.webm",
+      "/audio/sfx/impact.heavy_7.webm",
+      "/audio/sfx/impact.heavy_8.webm",
+      "/audio/sfx/impact.heavy_9.webm"
+    ],
+    "impact.highExplosive": [
+      "/audio/sfx/impact.highExplosive_1.webm",
+      "/audio/sfx/impact.highExplosive_2.webm",
+      "/audio/sfx/impact.highExplosive_3.webm"
+    ],
+    "impact.light": [
+      "/audio/sfx/impact.light_1.webm",
+      "/audio/sfx/impact.light_2.webm",
+      "/audio/sfx/impact.light_3.webm",
+      "/audio/sfx/impact.light_4.webm",
+      "/audio/sfx/impact.light_5.webm",
+      "/audio/sfx/impact.light_6.webm",
+      "/audio/sfx/impact.light_7.webm",
+      "/audio/sfx/impact.light_8.webm",
+      "/audio/sfx/impact.light_9.webm"
+    ],
+    "impact.smallArms": [
+      "/audio/sfx/impact.smallArms_1.webm",
+      "/audio/sfx/impact.smallArms_2.webm",
+      "/audio/sfx/impact.smallArms_3.webm",
+      "/audio/sfx/impact.smallArms_4.webm",
+      "/audio/sfx/impact.smallArms_5.webm",
+      "/audio/sfx/impact.smallArms_6.webm",
+      "/audio/sfx/impact.smallArms_7.webm",
+      "/audio/sfx/impact.smallArms_8.webm",
+      "/audio/sfx/impact.smallArms_9.webm"
+    ],
+    "impact.thermobaric": [
+      "/audio/sfx/impact.thermobaric_1.webm",
+      "/audio/sfx/impact.thermobaric_2.webm",
+      "/audio/sfx/impact.thermobaric_3.webm",
+      "/audio/sfx/impact.thermobaric_4.webm",
+      "/audio/sfx/impact.thermobaric_5.webm",
+      "/audio/sfx/impact.thermobaric_6.webm"
+    ],
+    "move.ru-bmp-2.start": [
+      "/audio/sfx/move.ru-bmp-2.start_1.webm",
+      "/audio/sfx/move.ru-bmp-2.start_2.webm",
+      "/audio/sfx/move.ru-bmp-2.start_3.webm",
+      "/audio/sfx/move.ru-bmp-2.start_4.webm"
+    ],
+    "move.ru-brdm-scout.start": [
+      "/audio/sfx/move.ru-brdm-scout.start_1.webm",
+      "/audio/sfx/move.ru-brdm-scout.start_2.webm",
+      "/audio/sfx/move.ru-brdm-scout.start_3.webm",
+      "/audio/sfx/move.ru-brdm-scout.start_4.webm"
+    ],
+    "move.ru-dozer.start": [
+      "/audio/sfx/move.ru-dozer.start_1.webm",
+      "/audio/sfx/move.ru-dozer.start_2.webm",
+      "/audio/sfx/move.ru-dozer.start_3.webm",
+      "/audio/sfx/move.ru-dozer.start_4.webm"
+    ],
+    "move.ru-supply-truck.start": [
+      "/audio/sfx/move.ru-supply-truck.start_1.webm",
+      "/audio/sfx/move.ru-supply-truck.start_2.webm",
+      "/audio/sfx/move.ru-supply-truck.start_3.webm"
+    ],
+    "move.ru-t-72b3.start": [
+      "/audio/sfx/move.ru-t-72b3.start_1.webm",
+      "/audio/sfx/move.ru-t-72b3.start_2.webm",
+      "/audio/sfx/move.ru-t-72b3.start_3.webm",
+      "/audio/sfx/move.ru-t-72b3.start_4.webm"
+    ],
+    "move.ru-tos-1a.start": [
+      "/audio/sfx/move.ru-tos-1a.start_1.webm",
+      "/audio/sfx/move.ru-tos-1a.start_2.webm",
+      "/audio/sfx/move.ru-tos-1a.start_3.webm",
+      "/audio/sfx/move.ru-tos-1a.start_4.webm"
+    ],
+    "move.ua-bradley.start": [
+      "/audio/sfx/move.ua-bradley.start_1.webm",
+      "/audio/sfx/move.ua-bradley.start_2.webm",
+      "/audio/sfx/move.ua-bradley.start_3.webm",
+      "/audio/sfx/move.ua-bradley.start_4.webm",
+      "/audio/sfx/move.ua-bradley.start_5.webm",
+      "/audio/sfx/move.ua-bradley.start_6.webm",
+      "/audio/sfx/move.ua-bradley.start_7.webm"
+    ],
+    "move.ua-dozer.start": [
+      "/audio/sfx/move.ua-dozer.start_1.webm",
+      "/audio/sfx/move.ua-dozer.start_2.webm",
+      "/audio/sfx/move.ua-dozer.start_3.webm",
+      "/audio/sfx/move.ua-dozer.start_4.webm"
+    ],
+    "move.ua-himars.start": [
+      "/audio/sfx/move.ua-himars.start_1.webm",
+      "/audio/sfx/move.ua-himars.start_2.webm",
+      "/audio/sfx/move.ua-himars.start_3.webm"
+    ],
+    "move.ua-kozak-scout.start": [
+      "/audio/sfx/move.ua-kozak-scout.start_1.webm",
+      "/audio/sfx/move.ua-kozak-scout.start_2.webm",
+      "/audio/sfx/move.ua-kozak-scout.start_3.webm",
+      "/audio/sfx/move.ua-kozak-scout.start_4.webm",
+      "/audio/sfx/move.ua-kozak-scout.start_5.webm"
+    ],
+    "move.ua-leopard-2a4.start": [
+      "/audio/sfx/move.ua-leopard-2a4.start_1.webm",
+      "/audio/sfx/move.ua-leopard-2a4.start_2.webm",
+      "/audio/sfx/move.ua-leopard-2a4.start_3.webm",
+      "/audio/sfx/move.ua-leopard-2a4.start_4.webm"
+    ],
+    "move.ua-supply-truck.start": [
+      "/audio/sfx/move.ua-supply-truck.start_1.webm",
+      "/audio/sfx/move.ua-supply-truck.start_2.webm",
+      "/audio/sfx/move.ua-supply-truck.start_3.webm"
+    ],
+    "music.calm.russia": ["/audio/music/calm.russia_1.webm"],
+    "music.calm.ukraine": ["/audio/music/calm.ukraine_1.webm"],
+    "music.combat.russia": ["/audio/music/combat.russia_1.webm"],
+    "music.combat.ukraine": ["/audio/music/combat.ukraine_1.webm"],
+    "music.defeat.russia": ["/audio/music/defeat.russia_1.webm"],
+    "music.defeat.ukraine": ["/audio/music/defeat.ukraine_1.webm"],
+    "music.menu": ["/audio/music/menu_1.webm"],
+    "music.victory.russia": ["/audio/music/victory.russia_1.webm"],
+    "music.victory.ukraine": ["/audio/music/victory.ukraine_1.webm"],
+    "ui.cashDown": ["/audio/ui/cashDown_1.webm"],
+    "ui.cashUp": ["/audio/ui/cashUp_1.webm"],
+    "ui.click": ["/audio/ui/click_1.webm"],
+    "ui.disabled": ["/audio/ui/disabled_1.webm"],
+    "ui.error": ["/audio/ui/error_1.webm"],
+    "ui.radarOff": ["/audio/ui/radarOff_1.webm"],
+    "ui.radarOn": ["/audio/ui/radarOn_1.webm"],
+    "ui.warning": ["/audio/ui/warning_1.webm"],
+    "vehicle.damage": [
+      "/audio/sfx/vehicle.damage_1.webm",
+      "/audio/sfx/vehicle.damage_2.webm",
+      "/audio/sfx/vehicle.damage_3.webm",
+      "/audio/sfx/vehicle.damage_4.webm",
+      "/audio/sfx/vehicle.damage_5.webm",
+      "/audio/sfx/vehicle.damage_6.webm",
+      "/audio/sfx/vehicle.damage_7.webm"
+    ],
+    "voice.building.die": [
+      "/audio/voice/common/building/die_1.webm",
+      "/audio/voice/common/building/die_2.webm",
+      "/audio/voice/common/building/die_3.webm",
+      "/audio/voice/common/building/die_4.webm",
+      "/audio/voice/common/building/die_5.webm",
+      "/audio/voice/common/building/die_6.webm",
+      "/audio/voice/common/building/die_7.webm"
+    ],
+    "voice.building.select": ["/audio/voice/common/building/select_1.webm"],
+    "voice.foot.attack": [
+      "/audio/voice/common/foot/attack_1.webm",
+      "/audio/voice/common/foot/attack_2.webm",
+      "/audio/voice/common/foot/attack_3.webm",
+      "/audio/voice/common/foot/attack_4.webm",
+      "/audio/voice/common/foot/attack_5.webm",
+      "/audio/voice/common/foot/attack_6.webm",
+      "/audio/voice/common/foot/attack_7.webm"
+    ],
+    "voice.foot.created": ["/audio/voice/common/foot/created_1.webm"],
+    "voice.foot.die": [
+      "/audio/voice/common/foot/die_1.webm",
+      "/audio/voice/common/foot/die_2.webm",
+      "/audio/voice/common/foot/die_3.webm",
+      "/audio/voice/common/foot/die_4.webm",
+      "/audio/voice/common/foot/die_5.webm",
+      "/audio/voice/common/foot/die_6.webm",
+      "/audio/voice/common/foot/die_7.webm",
+      "/audio/voice/common/foot/die_8.webm",
+      "/audio/voice/common/foot/die_9.webm",
+      "/audio/voice/common/foot/die_10.webm",
+      "/audio/voice/common/foot/die_11.webm",
+      "/audio/voice/common/foot/die_12.webm"
+    ],
+    "voice.foot.move": [
+      "/audio/voice/common/foot/move_1.webm",
+      "/audio/voice/common/foot/move_2.webm",
+      "/audio/voice/common/foot/move_3.webm",
+      "/audio/voice/common/foot/move_4.webm",
+      "/audio/voice/common/foot/move_5.webm"
+    ],
+    "voice.foot.select": [
+      "/audio/voice/common/foot/select_1.webm",
+      "/audio/voice/common/foot/select_2.webm",
+      "/audio/voice/common/foot/select_3.webm",
+      "/audio/voice/common/foot/select_4.webm",
+      "/audio/voice/common/foot/select_5.webm"
+    ],
+    "voice.foot.underFire": [
+      "/audio/voice/common/foot/underFire_1.webm",
+      "/audio/voice/common/foot/underFire_2.webm",
+      "/audio/voice/common/foot/underFire_3.webm",
+      "/audio/voice/common/foot/underFire_4.webm",
+      "/audio/voice/common/foot/underFire_5.webm",
+      "/audio/voice/common/foot/underFire_6.webm",
+      "/audio/voice/common/foot/underFire_7.webm"
+    ],
+    "voice.ru-bmp-2.attack": [
+      "/audio/voice/russia/ru-bmp-2/attack_1.webm",
+      "/audio/voice/russia/ru-bmp-2/attack_2.webm",
+      "/audio/voice/russia/ru-bmp-2/attack_3.webm",
+      "/audio/voice/russia/ru-bmp-2/attack_4.webm",
+      "/audio/voice/russia/ru-bmp-2/attack_5.webm"
+    ],
+    "voice.ru-bmp-2.created": ["/audio/voice/russia/ru-bmp-2/created_1.webm"],
+    "voice.ru-bmp-2.die": [
+      "/audio/voice/russia/ru-bmp-2/die_1.webm",
+      "/audio/voice/russia/ru-bmp-2/die_2.webm",
+      "/audio/voice/russia/ru-bmp-2/die_3.webm",
+      "/audio/voice/russia/ru-bmp-2/die_4.webm",
+      "/audio/voice/russia/ru-bmp-2/die_5.webm",
+      "/audio/voice/russia/ru-bmp-2/die_6.webm"
+    ],
+    "voice.ru-bmp-2.move": [
+      "/audio/voice/russia/ru-bmp-2/move_1.webm",
+      "/audio/voice/russia/ru-bmp-2/move_2.webm",
+      "/audio/voice/russia/ru-bmp-2/move_3.webm",
+      "/audio/voice/russia/ru-bmp-2/move_4.webm",
+      "/audio/voice/russia/ru-bmp-2/move_5.webm"
+    ],
+    "voice.ru-bmp-2.select": [
+      "/audio/voice/russia/ru-bmp-2/select_1.webm",
+      "/audio/voice/russia/ru-bmp-2/select_2.webm",
+      "/audio/voice/russia/ru-bmp-2/select_3.webm",
+      "/audio/voice/russia/ru-bmp-2/select_4.webm",
+      "/audio/voice/russia/ru-bmp-2/select_5.webm"
+    ],
+    "voice.ru-bmp-2.underFire": [
+      "/audio/voice/russia/ru-bmp-2/underFire_1.webm",
+      "/audio/voice/russia/ru-bmp-2/underFire_2.webm",
+      "/audio/voice/russia/ru-bmp-2/underFire_3.webm",
+      "/audio/voice/russia/ru-bmp-2/underFire_4.webm",
+      "/audio/voice/russia/ru-bmp-2/underFire_5.webm"
+    ],
+    "voice.ru-brdm-scout.attack": [
+      "/audio/voice/russia/ru-brdm-scout/attack_1.webm",
+      "/audio/voice/russia/ru-brdm-scout/attack_2.webm",
+      "/audio/voice/russia/ru-brdm-scout/attack_3.webm",
+      "/audio/voice/russia/ru-brdm-scout/attack_4.webm",
+      "/audio/voice/russia/ru-brdm-scout/attack_5.webm"
+    ],
+    "voice.ru-brdm-scout.created": [
+      "/audio/voice/russia/ru-brdm-scout/created_1.webm"
+    ],
+    "voice.ru-brdm-scout.die": [
+      "/audio/voice/russia/ru-brdm-scout/die_1.webm",
+      "/audio/voice/russia/ru-brdm-scout/die_2.webm",
+      "/audio/voice/russia/ru-brdm-scout/die_3.webm",
+      "/audio/voice/russia/ru-brdm-scout/die_4.webm",
+      "/audio/voice/russia/ru-brdm-scout/die_5.webm",
+      "/audio/voice/russia/ru-brdm-scout/die_6.webm"
+    ],
+    "voice.ru-brdm-scout.move": [
+      "/audio/voice/russia/ru-brdm-scout/move_1.webm",
+      "/audio/voice/russia/ru-brdm-scout/move_2.webm",
+      "/audio/voice/russia/ru-brdm-scout/move_3.webm",
+      "/audio/voice/russia/ru-brdm-scout/move_4.webm"
+    ],
+    "voice.ru-brdm-scout.select": [
+      "/audio/voice/russia/ru-brdm-scout/select_1.webm",
+      "/audio/voice/russia/ru-brdm-scout/select_2.webm",
+      "/audio/voice/russia/ru-brdm-scout/select_3.webm",
+      "/audio/voice/russia/ru-brdm-scout/select_4.webm"
+    ],
+    "voice.ru-brdm-scout.underFire": [
+      "/audio/voice/russia/ru-brdm-scout/underFire_1.webm",
+      "/audio/voice/russia/ru-brdm-scout/underFire_2.webm",
+      "/audio/voice/russia/ru-brdm-scout/underFire_3.webm"
+    ],
+    "voice.ru-dozer.attack": [
+      "/audio/voice/russia/ru-dozer/attack_1.webm",
+      "/audio/voice/russia/ru-dozer/attack_2.webm",
+      "/audio/voice/russia/ru-dozer/attack_3.webm",
+      "/audio/voice/russia/ru-dozer/attack_4.webm",
+      "/audio/voice/russia/ru-dozer/attack_5.webm"
+    ],
+    "voice.ru-dozer.created": ["/audio/voice/russia/ru-dozer/created_1.webm"],
+    "voice.ru-dozer.die": [
+      "/audio/voice/russia/ru-dozer/die_1.webm",
+      "/audio/voice/russia/ru-dozer/die_2.webm",
+      "/audio/voice/russia/ru-dozer/die_3.webm",
+      "/audio/voice/russia/ru-dozer/die_4.webm",
+      "/audio/voice/russia/ru-dozer/die_5.webm",
+      "/audio/voice/russia/ru-dozer/die_6.webm"
+    ],
+    "voice.ru-dozer.move": [
+      "/audio/voice/russia/ru-dozer/move_1.webm",
+      "/audio/voice/russia/ru-dozer/move_2.webm",
+      "/audio/voice/russia/ru-dozer/move_3.webm",
+      "/audio/voice/russia/ru-dozer/move_4.webm",
+      "/audio/voice/russia/ru-dozer/move_5.webm"
+    ],
+    "voice.ru-dozer.select": [
+      "/audio/voice/russia/ru-dozer/select_1.webm",
+      "/audio/voice/russia/ru-dozer/select_2.webm",
+      "/audio/voice/russia/ru-dozer/select_3.webm",
+      "/audio/voice/russia/ru-dozer/select_4.webm",
+      "/audio/voice/russia/ru-dozer/select_5.webm"
+    ],
+    "voice.ru-dozer.underFire": [
+      "/audio/voice/russia/ru-dozer/underFire_1.webm",
+      "/audio/voice/russia/ru-dozer/underFire_2.webm",
+      "/audio/voice/russia/ru-dozer/underFire_3.webm",
+      "/audio/voice/russia/ru-dozer/underFire_4.webm"
+    ],
+    "voice.ru-rifleman.attack": [
+      "/audio/voice/russia/ru-rifleman/attack_1.webm",
+      "/audio/voice/russia/ru-rifleman/attack_2.webm",
+      "/audio/voice/russia/ru-rifleman/attack_3.webm",
+      "/audio/voice/russia/ru-rifleman/attack_4.webm",
+      "/audio/voice/russia/ru-rifleman/attack_5.webm",
+      "/audio/voice/russia/ru-rifleman/attack_6.webm",
+      "/audio/voice/russia/ru-rifleman/attack_7.webm"
+    ],
+    "voice.ru-rifleman.created": [
+      "/audio/voice/russia/ru-rifleman/created_1.webm"
+    ],
+    "voice.ru-rifleman.die": [
+      "/audio/voice/russia/ru-rifleman/die_1.webm",
+      "/audio/voice/russia/ru-rifleman/die_2.webm",
+      "/audio/voice/russia/ru-rifleman/die_3.webm",
+      "/audio/voice/russia/ru-rifleman/die_4.webm",
+      "/audio/voice/russia/ru-rifleman/die_5.webm",
+      "/audio/voice/russia/ru-rifleman/die_6.webm",
+      "/audio/voice/russia/ru-rifleman/die_7.webm",
+      "/audio/voice/russia/ru-rifleman/die_8.webm",
+      "/audio/voice/russia/ru-rifleman/die_9.webm",
+      "/audio/voice/russia/ru-rifleman/die_10.webm",
+      "/audio/voice/russia/ru-rifleman/die_11.webm",
+      "/audio/voice/russia/ru-rifleman/die_12.webm"
+    ],
+    "voice.ru-rifleman.move": [
+      "/audio/voice/russia/ru-rifleman/move_1.webm",
+      "/audio/voice/russia/ru-rifleman/move_2.webm",
+      "/audio/voice/russia/ru-rifleman/move_3.webm",
+      "/audio/voice/russia/ru-rifleman/move_4.webm",
+      "/audio/voice/russia/ru-rifleman/move_5.webm"
+    ],
+    "voice.ru-rifleman.select": [
+      "/audio/voice/russia/ru-rifleman/select_1.webm",
+      "/audio/voice/russia/ru-rifleman/select_2.webm",
+      "/audio/voice/russia/ru-rifleman/select_3.webm",
+      "/audio/voice/russia/ru-rifleman/select_4.webm",
+      "/audio/voice/russia/ru-rifleman/select_5.webm",
+      "/audio/voice/russia/ru-rifleman/select_6.webm"
+    ],
+    "voice.ru-rifleman.underFire": [
+      "/audio/voice/russia/ru-rifleman/underFire_1.webm",
+      "/audio/voice/russia/ru-rifleman/underFire_2.webm",
+      "/audio/voice/russia/ru-rifleman/underFire_3.webm",
+      "/audio/voice/russia/ru-rifleman/underFire_4.webm",
+      "/audio/voice/russia/ru-rifleman/underFire_5.webm"
+    ],
+    "voice.ru-rpg-gunner.attack": [
+      "/audio/voice/russia/ru-rpg-gunner/attack_1.webm",
+      "/audio/voice/russia/ru-rpg-gunner/attack_2.webm",
+      "/audio/voice/russia/ru-rpg-gunner/attack_3.webm",
+      "/audio/voice/russia/ru-rpg-gunner/attack_4.webm",
+      "/audio/voice/russia/ru-rpg-gunner/attack_5.webm"
+    ],
+    "voice.ru-rpg-gunner.created": [
+      "/audio/voice/russia/ru-rpg-gunner/created_1.webm"
+    ],
+    "voice.ru-rpg-gunner.die": [
+      "/audio/voice/russia/ru-rpg-gunner/die_1.webm",
+      "/audio/voice/russia/ru-rpg-gunner/die_2.webm",
+      "/audio/voice/russia/ru-rpg-gunner/die_3.webm",
+      "/audio/voice/russia/ru-rpg-gunner/die_4.webm",
+      "/audio/voice/russia/ru-rpg-gunner/die_5.webm"
+    ],
+    "voice.ru-rpg-gunner.move": [
+      "/audio/voice/russia/ru-rpg-gunner/move_1.webm",
+      "/audio/voice/russia/ru-rpg-gunner/move_2.webm",
+      "/audio/voice/russia/ru-rpg-gunner/move_3.webm",
+      "/audio/voice/russia/ru-rpg-gunner/move_4.webm",
+      "/audio/voice/russia/ru-rpg-gunner/move_5.webm"
+    ],
+    "voice.ru-rpg-gunner.select": [
+      "/audio/voice/russia/ru-rpg-gunner/select_1.webm",
+      "/audio/voice/russia/ru-rpg-gunner/select_2.webm",
+      "/audio/voice/russia/ru-rpg-gunner/select_3.webm",
+      "/audio/voice/russia/ru-rpg-gunner/select_4.webm",
+      "/audio/voice/russia/ru-rpg-gunner/select_5.webm"
+    ],
+    "voice.ru-rpg-gunner.underFire": [
+      "/audio/voice/russia/ru-rpg-gunner/underFire_1.webm",
+      "/audio/voice/russia/ru-rpg-gunner/underFire_2.webm",
+      "/audio/voice/russia/ru-rpg-gunner/underFire_3.webm",
+      "/audio/voice/russia/ru-rpg-gunner/underFire_4.webm",
+      "/audio/voice/russia/ru-rpg-gunner/underFire_5.webm"
+    ],
+    "voice.ru-supply-truck.attack": [
+      "/audio/voice/russia/ru-supply-truck/attack_1.webm",
+      "/audio/voice/russia/ru-supply-truck/attack_2.webm",
+      "/audio/voice/russia/ru-supply-truck/attack_3.webm",
+      "/audio/voice/russia/ru-supply-truck/attack_4.webm"
+    ],
+    "voice.ru-supply-truck.created": [
+      "/audio/voice/russia/ru-supply-truck/created_1.webm"
+    ],
+    "voice.ru-supply-truck.die": [
+      "/audio/voice/russia/ru-supply-truck/die_1.webm",
+      "/audio/voice/russia/ru-supply-truck/die_2.webm",
+      "/audio/voice/russia/ru-supply-truck/die_3.webm",
+      "/audio/voice/russia/ru-supply-truck/die_4.webm",
+      "/audio/voice/russia/ru-supply-truck/die_5.webm",
+      "/audio/voice/russia/ru-supply-truck/die_6.webm"
+    ],
+    "voice.ru-supply-truck.move": [
+      "/audio/voice/russia/ru-supply-truck/move_1.webm",
+      "/audio/voice/russia/ru-supply-truck/move_2.webm",
+      "/audio/voice/russia/ru-supply-truck/move_3.webm",
+      "/audio/voice/russia/ru-supply-truck/move_4.webm",
+      "/audio/voice/russia/ru-supply-truck/move_5.webm"
+    ],
+    "voice.ru-supply-truck.select": [
+      "/audio/voice/russia/ru-supply-truck/select_1.webm",
+      "/audio/voice/russia/ru-supply-truck/select_2.webm",
+      "/audio/voice/russia/ru-supply-truck/select_3.webm",
+      "/audio/voice/russia/ru-supply-truck/select_4.webm",
+      "/audio/voice/russia/ru-supply-truck/select_5.webm"
+    ],
+    "voice.ru-supply-truck.underFire": [
+      "/audio/voice/russia/ru-supply-truck/underFire_1.webm",
+      "/audio/voice/russia/ru-supply-truck/underFire_2.webm",
+      "/audio/voice/russia/ru-supply-truck/underFire_3.webm",
+      "/audio/voice/russia/ru-supply-truck/underFire_4.webm",
+      "/audio/voice/russia/ru-supply-truck/underFire_5.webm"
+    ],
+    "voice.ru-t-72b3.attack": [
+      "/audio/voice/russia/ru-t-72b3/attack_1.webm",
+      "/audio/voice/russia/ru-t-72b3/attack_2.webm",
+      "/audio/voice/russia/ru-t-72b3/attack_3.webm",
+      "/audio/voice/russia/ru-t-72b3/attack_4.webm",
+      "/audio/voice/russia/ru-t-72b3/attack_5.webm",
+      "/audio/voice/russia/ru-t-72b3/attack_6.webm",
+      "/audio/voice/russia/ru-t-72b3/attack_7.webm",
+      "/audio/voice/russia/ru-t-72b3/attack_8.webm"
+    ],
+    "voice.ru-t-72b3.created": ["/audio/voice/russia/ru-t-72b3/created_1.webm"],
+    "voice.ru-t-72b3.die": [
+      "/audio/voice/russia/ru-t-72b3/die_1.webm",
+      "/audio/voice/russia/ru-t-72b3/die_2.webm",
+      "/audio/voice/russia/ru-t-72b3/die_3.webm",
+      "/audio/voice/russia/ru-t-72b3/die_4.webm",
+      "/audio/voice/russia/ru-t-72b3/die_5.webm",
+      "/audio/voice/russia/ru-t-72b3/die_6.webm"
+    ],
+    "voice.ru-t-72b3.move": [
+      "/audio/voice/russia/ru-t-72b3/move_1.webm",
+      "/audio/voice/russia/ru-t-72b3/move_2.webm",
+      "/audio/voice/russia/ru-t-72b3/move_3.webm",
+      "/audio/voice/russia/ru-t-72b3/move_4.webm",
+      "/audio/voice/russia/ru-t-72b3/move_5.webm",
+      "/audio/voice/russia/ru-t-72b3/move_6.webm"
+    ],
+    "voice.ru-t-72b3.select": [
+      "/audio/voice/russia/ru-t-72b3/select_1.webm",
+      "/audio/voice/russia/ru-t-72b3/select_2.webm",
+      "/audio/voice/russia/ru-t-72b3/select_3.webm",
+      "/audio/voice/russia/ru-t-72b3/select_4.webm",
+      "/audio/voice/russia/ru-t-72b3/select_5.webm"
+    ],
+    "voice.ru-t-72b3.underFire": [
+      "/audio/voice/russia/ru-t-72b3/underFire_1.webm",
+      "/audio/voice/russia/ru-t-72b3/underFire_2.webm",
+      "/audio/voice/russia/ru-t-72b3/underFire_3.webm",
+      "/audio/voice/russia/ru-t-72b3/underFire_4.webm",
+      "/audio/voice/russia/ru-t-72b3/underFire_5.webm"
+    ],
+    "voice.ru-tos-1a.attack": [
+      "/audio/voice/russia/ru-tos-1a/attack_1.webm",
+      "/audio/voice/russia/ru-tos-1a/attack_2.webm",
+      "/audio/voice/russia/ru-tos-1a/attack_3.webm",
+      "/audio/voice/russia/ru-tos-1a/attack_4.webm",
+      "/audio/voice/russia/ru-tos-1a/attack_5.webm"
+    ],
+    "voice.ru-tos-1a.created": ["/audio/voice/russia/ru-tos-1a/created_1.webm"],
+    "voice.ru-tos-1a.die": [
+      "/audio/voice/russia/ru-tos-1a/die_1.webm",
+      "/audio/voice/russia/ru-tos-1a/die_2.webm",
+      "/audio/voice/russia/ru-tos-1a/die_3.webm",
+      "/audio/voice/russia/ru-tos-1a/die_4.webm",
+      "/audio/voice/russia/ru-tos-1a/die_5.webm",
+      "/audio/voice/russia/ru-tos-1a/die_6.webm"
+    ],
+    "voice.ru-tos-1a.move": [
+      "/audio/voice/russia/ru-tos-1a/move_1.webm",
+      "/audio/voice/russia/ru-tos-1a/move_2.webm",
+      "/audio/voice/russia/ru-tos-1a/move_3.webm",
+      "/audio/voice/russia/ru-tos-1a/move_4.webm",
+      "/audio/voice/russia/ru-tos-1a/move_5.webm",
+      "/audio/voice/russia/ru-tos-1a/move_6.webm"
+    ],
+    "voice.ru-tos-1a.select": [
+      "/audio/voice/russia/ru-tos-1a/select_1.webm",
+      "/audio/voice/russia/ru-tos-1a/select_2.webm",
+      "/audio/voice/russia/ru-tos-1a/select_3.webm",
+      "/audio/voice/russia/ru-tos-1a/select_4.webm",
+      "/audio/voice/russia/ru-tos-1a/select_5.webm"
+    ],
+    "voice.ru-tos-1a.underFire": [
+      "/audio/voice/russia/ru-tos-1a/underFire_1.webm",
+      "/audio/voice/russia/ru-tos-1a/underFire_2.webm",
+      "/audio/voice/russia/ru-tos-1a/underFire_3.webm",
+      "/audio/voice/russia/ru-tos-1a/underFire_4.webm",
+      "/audio/voice/russia/ru-tos-1a/underFire_5.webm"
+    ],
+    "voice.tracked.attack": [
+      "/audio/voice/common/tracked/attack_1.webm",
+      "/audio/voice/common/tracked/attack_2.webm",
+      "/audio/voice/common/tracked/attack_3.webm",
+      "/audio/voice/common/tracked/attack_4.webm",
+      "/audio/voice/common/tracked/attack_5.webm",
+      "/audio/voice/common/tracked/attack_6.webm"
+    ],
+    "voice.tracked.created": ["/audio/voice/common/tracked/created_1.webm"],
+    "voice.tracked.die": [
+      "/audio/voice/common/tracked/die_1.webm",
+      "/audio/voice/common/tracked/die_2.webm",
+      "/audio/voice/common/tracked/die_3.webm",
+      "/audio/voice/common/tracked/die_4.webm",
+      "/audio/voice/common/tracked/die_5.webm",
+      "/audio/voice/common/tracked/die_6.webm"
+    ],
+    "voice.tracked.move": [
+      "/audio/voice/common/tracked/move_1.webm",
+      "/audio/voice/common/tracked/move_2.webm",
+      "/audio/voice/common/tracked/move_3.webm",
+      "/audio/voice/common/tracked/move_4.webm",
+      "/audio/voice/common/tracked/move_5.webm"
+    ],
+    "voice.tracked.select": [
+      "/audio/voice/common/tracked/select_1.webm",
+      "/audio/voice/common/tracked/select_2.webm",
+      "/audio/voice/common/tracked/select_3.webm",
+      "/audio/voice/common/tracked/select_4.webm",
+      "/audio/voice/common/tracked/select_5.webm"
+    ],
+    "voice.tracked.underFire": [
+      "/audio/voice/common/tracked/underFire_1.webm",
+      "/audio/voice/common/tracked/underFire_2.webm",
+      "/audio/voice/common/tracked/underFire_3.webm",
+      "/audio/voice/common/tracked/underFire_4.webm",
+      "/audio/voice/common/tracked/underFire_5.webm"
+    ],
+    "voice.ua-bradley.attack": [
+      "/audio/voice/ukraine/ua-bradley/attack_1.webm",
+      "/audio/voice/ukraine/ua-bradley/attack_2.webm",
+      "/audio/voice/ukraine/ua-bradley/attack_3.webm",
+      "/audio/voice/ukraine/ua-bradley/attack_4.webm",
+      "/audio/voice/ukraine/ua-bradley/attack_5.webm"
+    ],
+    "voice.ua-bradley.created": [
+      "/audio/voice/ukraine/ua-bradley/created_1.webm"
+    ],
+    "voice.ua-bradley.die": [
+      "/audio/voice/ukraine/ua-bradley/die_1.webm",
+      "/audio/voice/ukraine/ua-bradley/die_2.webm",
+      "/audio/voice/ukraine/ua-bradley/die_3.webm",
+      "/audio/voice/ukraine/ua-bradley/die_4.webm",
+      "/audio/voice/ukraine/ua-bradley/die_5.webm",
+      "/audio/voice/ukraine/ua-bradley/die_6.webm"
+    ],
+    "voice.ua-bradley.move": [
+      "/audio/voice/ukraine/ua-bradley/move_1.webm",
+      "/audio/voice/ukraine/ua-bradley/move_2.webm",
+      "/audio/voice/ukraine/ua-bradley/move_3.webm",
+      "/audio/voice/ukraine/ua-bradley/move_4.webm",
+      "/audio/voice/ukraine/ua-bradley/move_5.webm"
+    ],
+    "voice.ua-bradley.select": [
+      "/audio/voice/ukraine/ua-bradley/select_1.webm",
+      "/audio/voice/ukraine/ua-bradley/select_2.webm",
+      "/audio/voice/ukraine/ua-bradley/select_3.webm",
+      "/audio/voice/ukraine/ua-bradley/select_4.webm",
+      "/audio/voice/ukraine/ua-bradley/select_5.webm",
+      "/audio/voice/ukraine/ua-bradley/select_6.webm"
+    ],
+    "voice.ua-bradley.underFire": [
+      "/audio/voice/ukraine/ua-bradley/underFire_1.webm",
+      "/audio/voice/ukraine/ua-bradley/underFire_2.webm",
+      "/audio/voice/ukraine/ua-bradley/underFire_3.webm",
+      "/audio/voice/ukraine/ua-bradley/underFire_4.webm",
+      "/audio/voice/ukraine/ua-bradley/underFire_5.webm",
+      "/audio/voice/ukraine/ua-bradley/underFire_6.webm"
+    ],
+    "voice.ua-dozer.attack": [
+      "/audio/voice/ukraine/ua-dozer/attack_1.webm",
+      "/audio/voice/ukraine/ua-dozer/attack_2.webm",
+      "/audio/voice/ukraine/ua-dozer/attack_3.webm",
+      "/audio/voice/ukraine/ua-dozer/attack_4.webm",
+      "/audio/voice/ukraine/ua-dozer/attack_5.webm"
+    ],
+    "voice.ua-dozer.created": ["/audio/voice/ukraine/ua-dozer/created_1.webm"],
+    "voice.ua-dozer.die": [
+      "/audio/voice/ukraine/ua-dozer/die_1.webm",
+      "/audio/voice/ukraine/ua-dozer/die_2.webm",
+      "/audio/voice/ukraine/ua-dozer/die_3.webm",
+      "/audio/voice/ukraine/ua-dozer/die_4.webm",
+      "/audio/voice/ukraine/ua-dozer/die_5.webm",
+      "/audio/voice/ukraine/ua-dozer/die_6.webm"
+    ],
+    "voice.ua-dozer.move": [
+      "/audio/voice/ukraine/ua-dozer/move_1.webm",
+      "/audio/voice/ukraine/ua-dozer/move_2.webm",
+      "/audio/voice/ukraine/ua-dozer/move_3.webm",
+      "/audio/voice/ukraine/ua-dozer/move_4.webm",
+      "/audio/voice/ukraine/ua-dozer/move_5.webm",
+      "/audio/voice/ukraine/ua-dozer/move_6.webm"
+    ],
+    "voice.ua-dozer.select": [
+      "/audio/voice/ukraine/ua-dozer/select_1.webm",
+      "/audio/voice/ukraine/ua-dozer/select_2.webm",
+      "/audio/voice/ukraine/ua-dozer/select_3.webm",
+      "/audio/voice/ukraine/ua-dozer/select_4.webm",
+      "/audio/voice/ukraine/ua-dozer/select_5.webm",
+      "/audio/voice/ukraine/ua-dozer/select_6.webm",
+      "/audio/voice/ukraine/ua-dozer/select_7.webm",
+      "/audio/voice/ukraine/ua-dozer/select_8.webm",
+      "/audio/voice/ukraine/ua-dozer/select_9.webm"
+    ],
+    "voice.ua-dozer.underFire": [
+      "/audio/voice/ukraine/ua-dozer/underFire_1.webm",
+      "/audio/voice/ukraine/ua-dozer/underFire_2.webm",
+      "/audio/voice/ukraine/ua-dozer/underFire_3.webm",
+      "/audio/voice/ukraine/ua-dozer/underFire_4.webm"
+    ],
+    "voice.ua-himars.attack": [
+      "/audio/voice/ukraine/ua-himars/attack_1.webm",
+      "/audio/voice/ukraine/ua-himars/attack_2.webm",
+      "/audio/voice/ukraine/ua-himars/attack_3.webm",
+      "/audio/voice/ukraine/ua-himars/attack_4.webm",
+      "/audio/voice/ukraine/ua-himars/attack_5.webm",
+      "/audio/voice/ukraine/ua-himars/attack_6.webm"
+    ],
+    "voice.ua-himars.created": [
+      "/audio/voice/ukraine/ua-himars/created_1.webm"
+    ],
+    "voice.ua-himars.die": [
+      "/audio/voice/ukraine/ua-himars/die_1.webm",
+      "/audio/voice/ukraine/ua-himars/die_2.webm",
+      "/audio/voice/ukraine/ua-himars/die_3.webm",
+      "/audio/voice/ukraine/ua-himars/die_4.webm",
+      "/audio/voice/ukraine/ua-himars/die_5.webm",
+      "/audio/voice/ukraine/ua-himars/die_6.webm"
+    ],
+    "voice.ua-himars.move": [
+      "/audio/voice/ukraine/ua-himars/move_1.webm",
+      "/audio/voice/ukraine/ua-himars/move_2.webm",
+      "/audio/voice/ukraine/ua-himars/move_3.webm",
+      "/audio/voice/ukraine/ua-himars/move_4.webm",
+      "/audio/voice/ukraine/ua-himars/move_5.webm"
+    ],
+    "voice.ua-himars.select": [
+      "/audio/voice/ukraine/ua-himars/select_1.webm",
+      "/audio/voice/ukraine/ua-himars/select_2.webm",
+      "/audio/voice/ukraine/ua-himars/select_3.webm",
+      "/audio/voice/ukraine/ua-himars/select_4.webm",
+      "/audio/voice/ukraine/ua-himars/select_5.webm"
+    ],
+    "voice.ua-himars.underFire": [
+      "/audio/voice/ukraine/ua-himars/underFire_1.webm",
+      "/audio/voice/ukraine/ua-himars/underFire_2.webm",
+      "/audio/voice/ukraine/ua-himars/underFire_3.webm",
+      "/audio/voice/ukraine/ua-himars/underFire_4.webm",
+      "/audio/voice/ukraine/ua-himars/underFire_5.webm"
+    ],
+    "voice.ua-kozak-scout.attack": [
+      "/audio/voice/ukraine/ua-kozak-scout/attack_1.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/attack_2.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/attack_3.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/attack_4.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/attack_5.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/attack_6.webm"
+    ],
+    "voice.ua-kozak-scout.created": [
+      "/audio/voice/ukraine/ua-kozak-scout/created_1.webm"
+    ],
+    "voice.ua-kozak-scout.die": [
+      "/audio/voice/ukraine/ua-kozak-scout/die_1.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/die_2.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/die_3.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/die_4.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/die_5.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/die_6.webm"
+    ],
+    "voice.ua-kozak-scout.move": [
+      "/audio/voice/ukraine/ua-kozak-scout/move_1.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/move_2.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/move_3.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/move_4.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/move_5.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/move_6.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/move_7.webm"
+    ],
+    "voice.ua-kozak-scout.select": [
+      "/audio/voice/ukraine/ua-kozak-scout/select_1.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/select_2.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/select_3.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/select_4.webm"
+    ],
+    "voice.ua-kozak-scout.underFire": [
+      "/audio/voice/ukraine/ua-kozak-scout/underFire_1.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/underFire_2.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/underFire_3.webm",
+      "/audio/voice/ukraine/ua-kozak-scout/underFire_4.webm"
+    ],
+    "voice.ua-leopard-2a4.attack": [
+      "/audio/voice/ukraine/ua-leopard-2a4/attack_1.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/attack_2.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/attack_3.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/attack_4.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/attack_5.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/attack_6.webm"
+    ],
+    "voice.ua-leopard-2a4.created": [
+      "/audio/voice/ukraine/ua-leopard-2a4/created_1.webm"
+    ],
+    "voice.ua-leopard-2a4.die": [
+      "/audio/voice/ukraine/ua-leopard-2a4/die_1.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/die_2.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/die_3.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/die_4.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/die_5.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/die_6.webm"
+    ],
+    "voice.ua-leopard-2a4.move": [
+      "/audio/voice/ukraine/ua-leopard-2a4/move_1.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/move_2.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/move_3.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/move_4.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/move_5.webm"
+    ],
+    "voice.ua-leopard-2a4.select": [
+      "/audio/voice/ukraine/ua-leopard-2a4/select_1.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/select_2.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/select_3.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/select_4.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/select_5.webm"
+    ],
+    "voice.ua-leopard-2a4.underFire": [
+      "/audio/voice/ukraine/ua-leopard-2a4/underFire_1.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/underFire_2.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/underFire_3.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/underFire_4.webm",
+      "/audio/voice/ukraine/ua-leopard-2a4/underFire_5.webm"
+    ],
+    "voice.ua-rifleman.attack": [
+      "/audio/voice/ukraine/ua-rifleman/attack_1.webm",
+      "/audio/voice/ukraine/ua-rifleman/attack_2.webm",
+      "/audio/voice/ukraine/ua-rifleman/attack_3.webm",
+      "/audio/voice/ukraine/ua-rifleman/attack_4.webm",
+      "/audio/voice/ukraine/ua-rifleman/attack_5.webm",
+      "/audio/voice/ukraine/ua-rifleman/attack_6.webm",
+      "/audio/voice/ukraine/ua-rifleman/attack_7.webm"
+    ],
+    "voice.ua-rifleman.created": [
+      "/audio/voice/ukraine/ua-rifleman/created_1.webm"
+    ],
+    "voice.ua-rifleman.die": [
+      "/audio/voice/ukraine/ua-rifleman/die_1.webm",
+      "/audio/voice/ukraine/ua-rifleman/die_2.webm",
+      "/audio/voice/ukraine/ua-rifleman/die_3.webm",
+      "/audio/voice/ukraine/ua-rifleman/die_4.webm",
+      "/audio/voice/ukraine/ua-rifleman/die_5.webm",
+      "/audio/voice/ukraine/ua-rifleman/die_6.webm",
+      "/audio/voice/ukraine/ua-rifleman/die_7.webm",
+      "/audio/voice/ukraine/ua-rifleman/die_8.webm",
+      "/audio/voice/ukraine/ua-rifleman/die_9.webm",
+      "/audio/voice/ukraine/ua-rifleman/die_10.webm",
+      "/audio/voice/ukraine/ua-rifleman/die_11.webm",
+      "/audio/voice/ukraine/ua-rifleman/die_12.webm"
+    ],
+    "voice.ua-rifleman.move": [
+      "/audio/voice/ukraine/ua-rifleman/move_1.webm",
+      "/audio/voice/ukraine/ua-rifleman/move_2.webm",
+      "/audio/voice/ukraine/ua-rifleman/move_3.webm",
+      "/audio/voice/ukraine/ua-rifleman/move_4.webm",
+      "/audio/voice/ukraine/ua-rifleman/move_5.webm"
+    ],
+    "voice.ua-rifleman.select": [
+      "/audio/voice/ukraine/ua-rifleman/select_1.webm",
+      "/audio/voice/ukraine/ua-rifleman/select_2.webm",
+      "/audio/voice/ukraine/ua-rifleman/select_3.webm",
+      "/audio/voice/ukraine/ua-rifleman/select_4.webm",
+      "/audio/voice/ukraine/ua-rifleman/select_5.webm"
+    ],
+    "voice.ua-rifleman.underFire": [
+      "/audio/voice/ukraine/ua-rifleman/underFire_1.webm",
+      "/audio/voice/ukraine/ua-rifleman/underFire_2.webm",
+      "/audio/voice/ukraine/ua-rifleman/underFire_3.webm",
+      "/audio/voice/ukraine/ua-rifleman/underFire_4.webm",
+      "/audio/voice/ukraine/ua-rifleman/underFire_5.webm",
+      "/audio/voice/ukraine/ua-rifleman/underFire_6.webm",
+      "/audio/voice/ukraine/ua-rifleman/underFire_7.webm"
+    ],
+    "voice.ua-stugna-team.attack": [
+      "/audio/voice/ukraine/ua-stugna-team/attack_1.webm",
+      "/audio/voice/ukraine/ua-stugna-team/attack_2.webm",
+      "/audio/voice/ukraine/ua-stugna-team/attack_3.webm",
+      "/audio/voice/ukraine/ua-stugna-team/attack_4.webm",
+      "/audio/voice/ukraine/ua-stugna-team/attack_5.webm",
+      "/audio/voice/ukraine/ua-stugna-team/attack_6.webm",
+      "/audio/voice/ukraine/ua-stugna-team/attack_7.webm",
+      "/audio/voice/ukraine/ua-stugna-team/attack_8.webm"
+    ],
+    "voice.ua-stugna-team.created": [
+      "/audio/voice/ukraine/ua-stugna-team/created_1.webm"
+    ],
+    "voice.ua-stugna-team.die": [
+      "/audio/voice/ukraine/ua-stugna-team/die_1.webm",
+      "/audio/voice/ukraine/ua-stugna-team/die_2.webm",
+      "/audio/voice/ukraine/ua-stugna-team/die_3.webm",
+      "/audio/voice/ukraine/ua-stugna-team/die_4.webm",
+      "/audio/voice/ukraine/ua-stugna-team/die_5.webm",
+      "/audio/voice/ukraine/ua-stugna-team/die_6.webm",
+      "/audio/voice/ukraine/ua-stugna-team/die_7.webm",
+      "/audio/voice/ukraine/ua-stugna-team/die_8.webm",
+      "/audio/voice/ukraine/ua-stugna-team/die_9.webm",
+      "/audio/voice/ukraine/ua-stugna-team/die_10.webm",
+      "/audio/voice/ukraine/ua-stugna-team/die_11.webm",
+      "/audio/voice/ukraine/ua-stugna-team/die_12.webm"
+    ],
+    "voice.ua-stugna-team.move": [
+      "/audio/voice/ukraine/ua-stugna-team/move_1.webm",
+      "/audio/voice/ukraine/ua-stugna-team/move_2.webm",
+      "/audio/voice/ukraine/ua-stugna-team/move_3.webm",
+      "/audio/voice/ukraine/ua-stugna-team/move_4.webm",
+      "/audio/voice/ukraine/ua-stugna-team/move_5.webm",
+      "/audio/voice/ukraine/ua-stugna-team/move_6.webm"
+    ],
+    "voice.ua-stugna-team.select": [
+      "/audio/voice/ukraine/ua-stugna-team/select_1.webm",
+      "/audio/voice/ukraine/ua-stugna-team/select_2.webm",
+      "/audio/voice/ukraine/ua-stugna-team/select_3.webm",
+      "/audio/voice/ukraine/ua-stugna-team/select_4.webm",
+      "/audio/voice/ukraine/ua-stugna-team/select_5.webm"
+    ],
+    "voice.ua-stugna-team.underFire": [
+      "/audio/voice/ukraine/ua-stugna-team/underFire_1.webm",
+      "/audio/voice/ukraine/ua-stugna-team/underFire_2.webm",
+      "/audio/voice/ukraine/ua-stugna-team/underFire_3.webm"
+    ],
+    "voice.ua-supply-truck.attack": [
+      "/audio/voice/ukraine/ua-supply-truck/attack_1.webm",
+      "/audio/voice/ukraine/ua-supply-truck/attack_2.webm",
+      "/audio/voice/ukraine/ua-supply-truck/attack_3.webm",
+      "/audio/voice/ukraine/ua-supply-truck/attack_4.webm",
+      "/audio/voice/ukraine/ua-supply-truck/attack_5.webm",
+      "/audio/voice/ukraine/ua-supply-truck/attack_6.webm",
+      "/audio/voice/ukraine/ua-supply-truck/attack_7.webm",
+      "/audio/voice/ukraine/ua-supply-truck/attack_8.webm",
+      "/audio/voice/ukraine/ua-supply-truck/attack_9.webm",
+      "/audio/voice/ukraine/ua-supply-truck/attack_10.webm",
+      "/audio/voice/ukraine/ua-supply-truck/attack_11.webm",
+      "/audio/voice/ukraine/ua-supply-truck/attack_12.webm",
+      "/audio/voice/ukraine/ua-supply-truck/attack_13.webm",
+      "/audio/voice/ukraine/ua-supply-truck/attack_14.webm"
+    ],
+    "voice.ua-supply-truck.created": [
+      "/audio/voice/ukraine/ua-supply-truck/created_1.webm",
+      "/audio/voice/ukraine/ua-supply-truck/created_2.webm",
+      "/audio/voice/ukraine/ua-supply-truck/created_3.webm",
+      "/audio/voice/ukraine/ua-supply-truck/created_4.webm",
+      "/audio/voice/ukraine/ua-supply-truck/created_5.webm",
+      "/audio/voice/ukraine/ua-supply-truck/created_6.webm",
+      "/audio/voice/ukraine/ua-supply-truck/created_7.webm",
+      "/audio/voice/ukraine/ua-supply-truck/created_8.webm",
+      "/audio/voice/ukraine/ua-supply-truck/created_9.webm",
+      "/audio/voice/ukraine/ua-supply-truck/created_10.webm",
+      "/audio/voice/ukraine/ua-supply-truck/created_11.webm",
+      "/audio/voice/ukraine/ua-supply-truck/created_12.webm"
+    ],
+    "voice.ua-supply-truck.die": [
+      "/audio/voice/ukraine/ua-supply-truck/die_1.webm",
+      "/audio/voice/ukraine/ua-supply-truck/die_2.webm",
+      "/audio/voice/ukraine/ua-supply-truck/die_3.webm",
+      "/audio/voice/ukraine/ua-supply-truck/die_4.webm",
+      "/audio/voice/ukraine/ua-supply-truck/die_5.webm",
+      "/audio/voice/ukraine/ua-supply-truck/die_6.webm"
+    ],
+    "voice.ua-supply-truck.move": [
+      "/audio/voice/ukraine/ua-supply-truck/move_1.webm",
+      "/audio/voice/ukraine/ua-supply-truck/move_2.webm",
+      "/audio/voice/ukraine/ua-supply-truck/move_3.webm",
+      "/audio/voice/ukraine/ua-supply-truck/move_4.webm",
+      "/audio/voice/ukraine/ua-supply-truck/move_5.webm",
+      "/audio/voice/ukraine/ua-supply-truck/move_6.webm",
+      "/audio/voice/ukraine/ua-supply-truck/move_7.webm",
+      "/audio/voice/ukraine/ua-supply-truck/move_8.webm",
+      "/audio/voice/ukraine/ua-supply-truck/move_9.webm",
+      "/audio/voice/ukraine/ua-supply-truck/move_10.webm",
+      "/audio/voice/ukraine/ua-supply-truck/move_11.webm",
+      "/audio/voice/ukraine/ua-supply-truck/move_12.webm",
+      "/audio/voice/ukraine/ua-supply-truck/move_13.webm",
+      "/audio/voice/ukraine/ua-supply-truck/move_14.webm",
+      "/audio/voice/ukraine/ua-supply-truck/move_15.webm",
+      "/audio/voice/ukraine/ua-supply-truck/move_16.webm",
+      "/audio/voice/ukraine/ua-supply-truck/move_17.webm"
+    ],
+    "voice.ua-supply-truck.select": [
+      "/audio/voice/ukraine/ua-supply-truck/select_1.webm",
+      "/audio/voice/ukraine/ua-supply-truck/select_2.webm",
+      "/audio/voice/ukraine/ua-supply-truck/select_3.webm",
+      "/audio/voice/ukraine/ua-supply-truck/select_4.webm",
+      "/audio/voice/ukraine/ua-supply-truck/select_5.webm",
+      "/audio/voice/ukraine/ua-supply-truck/select_6.webm",
+      "/audio/voice/ukraine/ua-supply-truck/select_7.webm",
+      "/audio/voice/ukraine/ua-supply-truck/select_8.webm",
+      "/audio/voice/ukraine/ua-supply-truck/select_9.webm",
+      "/audio/voice/ukraine/ua-supply-truck/select_10.webm",
+      "/audio/voice/ukraine/ua-supply-truck/select_11.webm",
+      "/audio/voice/ukraine/ua-supply-truck/select_12.webm",
+      "/audio/voice/ukraine/ua-supply-truck/select_13.webm",
+      "/audio/voice/ukraine/ua-supply-truck/select_14.webm",
+      "/audio/voice/ukraine/ua-supply-truck/select_15.webm",
+      "/audio/voice/ukraine/ua-supply-truck/select_16.webm",
+      "/audio/voice/ukraine/ua-supply-truck/select_17.webm"
+    ],
+    "voice.ua-supply-truck.underFire": [
+      "/audio/voice/ukraine/ua-supply-truck/underFire_1.webm",
+      "/audio/voice/ukraine/ua-supply-truck/underFire_2.webm",
+      "/audio/voice/ukraine/ua-supply-truck/underFire_3.webm",
+      "/audio/voice/ukraine/ua-supply-truck/underFire_4.webm",
+      "/audio/voice/ukraine/ua-supply-truck/underFire_5.webm",
+      "/audio/voice/ukraine/ua-supply-truck/underFire_6.webm",
+      "/audio/voice/ukraine/ua-supply-truck/underFire_7.webm",
+      "/audio/voice/ukraine/ua-supply-truck/underFire_8.webm",
+      "/audio/voice/ukraine/ua-supply-truck/underFire_9.webm",
+      "/audio/voice/ukraine/ua-supply-truck/underFire_10.webm",
+      "/audio/voice/ukraine/ua-supply-truck/underFire_11.webm",
+      "/audio/voice/ukraine/ua-supply-truck/underFire_12.webm",
+      "/audio/voice/ukraine/ua-supply-truck/underFire_13.webm",
+      "/audio/voice/ukraine/ua-supply-truck/underFire_14.webm",
+      "/audio/voice/ukraine/ua-supply-truck/underFire_15.webm",
+      "/audio/voice/ukraine/ua-supply-truck/underFire_16.webm",
+      "/audio/voice/ukraine/ua-supply-truck/underFire_17.webm"
+    ],
+    "voice.unit.attack": [
+      "/audio/voice/common/unit/attack_1.webm",
+      "/audio/voice/common/unit/attack_2.webm",
+      "/audio/voice/common/unit/attack_3.webm",
+      "/audio/voice/common/unit/attack_4.webm",
+      "/audio/voice/common/unit/attack_5.webm",
+      "/audio/voice/common/unit/attack_6.webm"
+    ],
+    "voice.unit.created": ["/audio/voice/common/unit/created_1.webm"],
+    "voice.unit.die": [
+      "/audio/voice/common/unit/die_1.webm",
+      "/audio/voice/common/unit/die_2.webm",
+      "/audio/voice/common/unit/die_3.webm",
+      "/audio/voice/common/unit/die_4.webm",
+      "/audio/voice/common/unit/die_5.webm",
+      "/audio/voice/common/unit/die_6.webm"
+    ],
+    "voice.unit.move": [
+      "/audio/voice/common/unit/move_1.webm",
+      "/audio/voice/common/unit/move_2.webm",
+      "/audio/voice/common/unit/move_3.webm",
+      "/audio/voice/common/unit/move_4.webm",
+      "/audio/voice/common/unit/move_5.webm"
+    ],
+    "voice.unit.select": [
+      "/audio/voice/common/unit/select_1.webm",
+      "/audio/voice/common/unit/select_2.webm",
+      "/audio/voice/common/unit/select_3.webm",
+      "/audio/voice/common/unit/select_4.webm",
+      "/audio/voice/common/unit/select_5.webm"
+    ],
+    "voice.unit.underFire": [
+      "/audio/voice/common/unit/underFire_1.webm",
+      "/audio/voice/common/unit/underFire_2.webm",
+      "/audio/voice/common/unit/underFire_3.webm",
+      "/audio/voice/common/unit/underFire_4.webm",
+      "/audio/voice/common/unit/underFire_5.webm"
+    ],
+    "voice.wheeled.attack": [
+      "/audio/voice/common/wheeled/attack_1.webm",
+      "/audio/voice/common/wheeled/attack_2.webm",
+      "/audio/voice/common/wheeled/attack_3.webm",
+      "/audio/voice/common/wheeled/attack_4.webm",
+      "/audio/voice/common/wheeled/attack_5.webm",
+      "/audio/voice/common/wheeled/attack_6.webm"
+    ],
+    "voice.wheeled.created": ["/audio/voice/common/wheeled/created_1.webm"],
+    "voice.wheeled.die": [
+      "/audio/voice/common/wheeled/die_1.webm",
+      "/audio/voice/common/wheeled/die_2.webm",
+      "/audio/voice/common/wheeled/die_3.webm",
+      "/audio/voice/common/wheeled/die_4.webm",
+      "/audio/voice/common/wheeled/die_5.webm",
+      "/audio/voice/common/wheeled/die_6.webm"
+    ],
+    "voice.wheeled.move": [
+      "/audio/voice/common/wheeled/move_1.webm",
+      "/audio/voice/common/wheeled/move_2.webm",
+      "/audio/voice/common/wheeled/move_3.webm",
+      "/audio/voice/common/wheeled/move_4.webm",
+      "/audio/voice/common/wheeled/move_5.webm",
+      "/audio/voice/common/wheeled/move_6.webm",
+      "/audio/voice/common/wheeled/move_7.webm"
+    ],
+    "voice.wheeled.select": [
+      "/audio/voice/common/wheeled/select_1.webm",
+      "/audio/voice/common/wheeled/select_2.webm",
+      "/audio/voice/common/wheeled/select_3.webm",
+      "/audio/voice/common/wheeled/select_4.webm"
+    ],
+    "voice.wheeled.underFire": [
+      "/audio/voice/common/wheeled/underFire_1.webm",
+      "/audio/voice/common/wheeled/underFire_2.webm",
+      "/audio/voice/common/wheeled/underFire_3.webm",
+      "/audio/voice/common/wheeled/underFire_4.webm"
+    ],
+    "weapon.antiTank.fire": [
+      "/audio/sfx/weapon.antiTank.fire_1.webm",
+      "/audio/sfx/weapon.antiTank.fire_2.webm",
+      "/audio/sfx/weapon.antiTank.fire_3.webm"
+    ],
+    "weapon.autocannon.fire": [
+      "/audio/sfx/weapon.autocannon.fire_1.webm",
+      "/audio/sfx/weapon.autocannon.fire_2.webm",
+      "/audio/sfx/weapon.autocannon.fire_3.webm",
+      "/audio/sfx/weapon.autocannon.fire_4.webm"
+    ],
+    "weapon.backblast.fire": [
+      "/audio/sfx/weapon.backblast.fire_1.webm",
+      "/audio/sfx/weapon.backblast.fire_2.webm",
+      "/audio/sfx/weapon.backblast.fire_3.webm",
+      "/audio/sfx/weapon.backblast.fire_4.webm"
+    ],
+    "weapon.cannon.fire": [
+      "/audio/sfx/weapon.cannon.fire_1.webm",
+      "/audio/sfx/weapon.cannon.fire_2.webm",
+      "/audio/sfx/weapon.cannon.fire_3.webm"
+    ],
+    "weapon.highExplosive.fire": [
+      "/audio/sfx/weapon.highExplosive.fire_1.webm"
+    ],
+    "weapon.muzzle.fire": [
+      "/audio/sfx/weapon.muzzle.fire_1.webm",
+      "/audio/sfx/weapon.muzzle.fire_2.webm",
+      "/audio/sfx/weapon.muzzle.fire_3.webm",
+      "/audio/sfx/weapon.muzzle.fire_4.webm",
+      "/audio/sfx/weapon.muzzle.fire_5.webm"
+    ],
+    "weapon.rocketLaunch.fire": ["/audio/sfx/weapon.rocketLaunch.fire_1.webm"],
+    "weapon.ru-2a42.fire": [
+      "/audio/sfx/weapon.ru-2a42.fire_1.webm",
+      "/audio/sfx/weapon.ru-2a42.fire_2.webm",
+      "/audio/sfx/weapon.ru-2a42.fire_3.webm",
+      "/audio/sfx/weapon.ru-2a42.fire_4.webm"
+    ],
+    "weapon.ru-2a46m.fire": [
+      "/audio/sfx/weapon.ru-2a46m.fire_1.webm",
+      "/audio/sfx/weapon.ru-2a46m.fire_2.webm",
+      "/audio/sfx/weapon.ru-2a46m.fire_3.webm"
+    ],
+    "weapon.ru-ak74.fire": [
+      "/audio/sfx/weapon.ru-ak74.fire_1.webm",
+      "/audio/sfx/weapon.ru-ak74.fire_2.webm",
+      "/audio/sfx/weapon.ru-ak74.fire_3.webm",
+      "/audio/sfx/weapon.ru-ak74.fire_4.webm"
+    ],
+    "weapon.ru-kornet-emplacement.fire": [
+      "/audio/sfx/weapon.ru-kornet-emplacement.fire_1.webm",
+      "/audio/sfx/weapon.ru-kornet-emplacement.fire_2.webm",
+      "/audio/sfx/weapon.ru-kornet-emplacement.fire_3.webm",
+      "/audio/sfx/weapon.ru-kornet-emplacement.fire_4.webm"
+    ],
+    "weapon.ru-kpvt.fire": [
+      "/audio/sfx/weapon.ru-kpvt.fire_1.webm",
+      "/audio/sfx/weapon.ru-kpvt.fire_2.webm",
+      "/audio/sfx/weapon.ru-kpvt.fire_3.webm",
+      "/audio/sfx/weapon.ru-kpvt.fire_4.webm"
+    ],
+    "weapon.ru-rpg7.fire": [
+      "/audio/sfx/weapon.ru-rpg7.fire_1.webm",
+      "/audio/sfx/weapon.ru-rpg7.fire_2.webm",
+      "/audio/sfx/weapon.ru-rpg7.fire_3.webm",
+      "/audio/sfx/weapon.ru-rpg7.fire_4.webm"
+    ],
+    "weapon.ru-tos-thermobaric.fire": [
+      "/audio/sfx/weapon.ru-tos-thermobaric.fire_1.webm",
+      "/audio/sfx/weapon.ru-tos-thermobaric.fire_2.webm",
+      "/audio/sfx/weapon.ru-tos-thermobaric.fire_3.webm"
+    ],
+    "weapon.smallArms.fire": [
+      "/audio/sfx/weapon.smallArms.fire_1.webm",
+      "/audio/sfx/weapon.smallArms.fire_2.webm",
+      "/audio/sfx/weapon.smallArms.fire_3.webm",
+      "/audio/sfx/weapon.smallArms.fire_4.webm",
+      "/audio/sfx/weapon.smallArms.fire_5.webm"
+    ],
+    "weapon.softLaunch.fire": [
+      "/audio/sfx/weapon.softLaunch.fire_1.webm",
+      "/audio/sfx/weapon.softLaunch.fire_2.webm",
+      "/audio/sfx/weapon.softLaunch.fire_3.webm"
+    ],
+    "weapon.thermobaric.fire": [
+      "/audio/sfx/weapon.thermobaric.fire_1.webm",
+      "/audio/sfx/weapon.thermobaric.fire_2.webm",
+      "/audio/sfx/weapon.thermobaric.fire_3.webm"
+    ],
+    "weapon.ua-bushmaster.fire": [
+      "/audio/sfx/weapon.ua-bushmaster.fire_1.webm",
+      "/audio/sfx/weapon.ua-bushmaster.fire_2.webm",
+      "/audio/sfx/weapon.ua-bushmaster.fire_3.webm"
+    ],
+    "weapon.ua-gmlrs.fire": ["/audio/sfx/weapon.ua-gmlrs.fire_1.webm"],
+    "weapon.ua-kozak-hmg.fire": [
+      "/audio/sfx/weapon.ua-kozak-hmg.fire_1.webm",
+      "/audio/sfx/weapon.ua-kozak-hmg.fire_2.webm",
+      "/audio/sfx/weapon.ua-kozak-hmg.fire_3.webm",
+      "/audio/sfx/weapon.ua-kozak-hmg.fire_4.webm"
+    ],
+    "weapon.ua-rh120.fire": [
+      "/audio/sfx/weapon.ua-rh120.fire_1.webm",
+      "/audio/sfx/weapon.ua-rh120.fire_2.webm",
+      "/audio/sfx/weapon.ua-rh120.fire_3.webm"
+    ],
+    "weapon.ua-rifle.fire": [
+      "/audio/sfx/weapon.ua-rifle.fire_1.webm",
+      "/audio/sfx/weapon.ua-rifle.fire_2.webm",
+      "/audio/sfx/weapon.ua-rifle.fire_3.webm",
+      "/audio/sfx/weapon.ua-rifle.fire_4.webm",
+      "/audio/sfx/weapon.ua-rifle.fire_5.webm"
+    ],
+    "weapon.ua-stugna-emplacement.fire": [
+      "/audio/sfx/weapon.ua-stugna-emplacement.fire_1.webm",
+      "/audio/sfx/weapon.ua-stugna-emplacement.fire_2.webm",
+      "/audio/sfx/weapon.ua-stugna-emplacement.fire_3.webm",
+      "/audio/sfx/weapon.ua-stugna-emplacement.fire_4.webm"
+    ],
+    "weapon.ua-stugna-p.fire": [
+      "/audio/sfx/weapon.ua-stugna-p.fire_1.webm",
+      "/audio/sfx/weapon.ua-stugna-p.fire_2.webm",
+      "/audio/sfx/weapon.ua-stugna-p.fire_3.webm"
+    ]
+  },
+  "explicit": [
+    "/audio/eva/russia/baseUnderAttack_2.webm",
+    "/audio/eva/russia/baseUnderAttack_3.webm",
+    "/audio/eva/russia/baseUnderAttack_4.webm",
+    "/audio/eva/ukraine/baseUnderAttack_2.webm",
+    "/audio/eva/ukraine/baseUnderAttack_3.webm",
+    "/audio/eva/ukraine/baseUnderAttack_4.webm",
+    "/audio/voice/common/building/die_1.webm",
+    "/audio/voice/common/building/die_2.webm",
+    "/audio/voice/common/building/die_3.webm",
+    "/audio/voice/common/building/die_4.webm",
+    "/audio/voice/common/building/die_5.webm",
+    "/audio/voice/common/building/die_6.webm",
+    "/audio/voice/common/foot/attack_2.webm",
+    "/audio/voice/common/foot/attack_4.webm",
+    "/audio/voice/common/foot/attack_6.webm",
+    "/audio/voice/common/foot/die_12.webm",
+    "/audio/voice/common/foot/die_2.webm",
+    "/audio/voice/common/foot/die_3.webm",
+    "/audio/voice/common/foot/die_4.webm",
+    "/audio/voice/common/foot/die_5.webm",
+    "/audio/voice/common/foot/die_6.webm",
+    "/audio/voice/common/foot/die_9.webm",
+    "/audio/voice/common/foot/move_2.webm",
+    "/audio/voice/common/foot/move_4.webm",
+    "/audio/voice/common/foot/select_2.webm",
+    "/audio/voice/common/foot/select_4.webm",
+    "/audio/voice/common/foot/underFire_2.webm",
+    "/audio/voice/common/foot/underFire_3.webm",
+    "/audio/voice/common/foot/underFire_4.webm",
+    "/audio/voice/common/foot/underFire_6.webm",
+    "/audio/voice/common/foot/underFire_7.webm",
+    "/audio/voice/common/tracked/attack_2.webm",
+    "/audio/voice/common/tracked/attack_3.webm",
+    "/audio/voice/common/tracked/attack_4.webm",
+    "/audio/voice/common/tracked/attack_6.webm",
+    "/audio/voice/common/tracked/die_2.webm",
+    "/audio/voice/common/tracked/die_3.webm",
+    "/audio/voice/common/tracked/die_4.webm",
+    "/audio/voice/common/tracked/die_5.webm",
+    "/audio/voice/common/tracked/die_6.webm",
+    "/audio/voice/common/tracked/move_2.webm",
+    "/audio/voice/common/tracked/move_3.webm",
+    "/audio/voice/common/tracked/move_5.webm",
+    "/audio/voice/common/tracked/select_2.webm",
+    "/audio/voice/common/tracked/select_3.webm",
+    "/audio/voice/common/tracked/select_5.webm",
+    "/audio/voice/common/tracked/underFire_2.webm",
+    "/audio/voice/common/tracked/underFire_3.webm",
+    "/audio/voice/common/tracked/underFire_4.webm",
+    "/audio/voice/common/tracked/underFire_5.webm",
+    "/audio/voice/common/unit/attack_2.webm",
+    "/audio/voice/common/unit/attack_3.webm",
+    "/audio/voice/common/unit/attack_6.webm",
+    "/audio/voice/common/unit/die_1.webm",
+    "/audio/voice/common/unit/die_2.webm",
+    "/audio/voice/common/unit/die_3.webm",
+    "/audio/voice/common/unit/die_4.webm",
+    "/audio/voice/common/unit/die_5.webm",
+    "/audio/voice/common/unit/move_2.webm",
+    "/audio/voice/common/unit/move_3.webm",
+    "/audio/voice/common/unit/move_5.webm",
+    "/audio/voice/common/unit/select_2.webm",
+    "/audio/voice/common/unit/select_5.webm",
+    "/audio/voice/common/unit/underFire_2.webm",
+    "/audio/voice/common/unit/underFire_3.webm",
+    "/audio/voice/common/unit/underFire_4.webm",
+    "/audio/voice/common/unit/underFire_5.webm",
+    "/audio/voice/common/wheeled/attack_1.webm",
+    "/audio/voice/common/wheeled/attack_2.webm",
+    "/audio/voice/common/wheeled/attack_4.webm",
+    "/audio/voice/common/wheeled/attack_5.webm",
+    "/audio/voice/common/wheeled/die_1.webm",
+    "/audio/voice/common/wheeled/die_2.webm",
+    "/audio/voice/common/wheeled/die_3.webm",
+    "/audio/voice/common/wheeled/die_4.webm",
+    "/audio/voice/common/wheeled/die_5.webm",
+    "/audio/voice/common/wheeled/move_2.webm",
+    "/audio/voice/common/wheeled/move_3.webm",
+    "/audio/voice/common/wheeled/move_4.webm",
+    "/audio/voice/common/wheeled/move_5.webm",
+    "/audio/voice/common/wheeled/move_7.webm",
+    "/audio/voice/common/wheeled/select_2.webm",
+    "/audio/voice/common/wheeled/select_4.webm",
+    "/audio/voice/common/wheeled/underFire_2.webm",
+    "/audio/voice/common/wheeled/underFire_3.webm",
+    "/audio/voice/common/wheeled/underFire_4.webm",
+    "/audio/voice/russia/ru-bmp-2/attack_1.webm",
+    "/audio/voice/russia/ru-bmp-2/attack_3.webm",
+    "/audio/voice/russia/ru-bmp-2/attack_4.webm",
+    "/audio/voice/russia/ru-bmp-2/die_1.webm",
+    "/audio/voice/russia/ru-bmp-2/die_2.webm",
+    "/audio/voice/russia/ru-bmp-2/die_3.webm",
+    "/audio/voice/russia/ru-bmp-2/die_4.webm",
+    "/audio/voice/russia/ru-bmp-2/die_6.webm",
+    "/audio/voice/russia/ru-bmp-2/move_2.webm",
+    "/audio/voice/russia/ru-bmp-2/move_4.webm",
+    "/audio/voice/russia/ru-bmp-2/select_2.webm",
+    "/audio/voice/russia/ru-bmp-2/select_4.webm",
+    "/audio/voice/russia/ru-bmp-2/select_5.webm",
+    "/audio/voice/russia/ru-bmp-2/underFire_2.webm",
+    "/audio/voice/russia/ru-bmp-2/underFire_3.webm",
+    "/audio/voice/russia/ru-bmp-2/underFire_4.webm",
+    "/audio/voice/russia/ru-brdm-scout/attack_2.webm",
+    "/audio/voice/russia/ru-brdm-scout/attack_3.webm",
+    "/audio/voice/russia/ru-brdm-scout/attack_4.webm",
+    "/audio/voice/russia/ru-brdm-scout/die_1.webm",
+    "/audio/voice/russia/ru-brdm-scout/die_2.webm",
+    "/audio/voice/russia/ru-brdm-scout/die_3.webm",
+    "/audio/voice/russia/ru-brdm-scout/die_4.webm",
+    "/audio/voice/russia/ru-brdm-scout/die_6.webm",
+    "/audio/voice/russia/ru-brdm-scout/move_2.webm",
+    "/audio/voice/russia/ru-brdm-scout/move_4.webm",
+    "/audio/voice/russia/ru-brdm-scout/select_2.webm",
+    "/audio/voice/russia/ru-brdm-scout/select_3.webm",
+    "/audio/voice/russia/ru-brdm-scout/underFire_2.webm",
+    "/audio/voice/russia/ru-brdm-scout/underFire_3.webm",
+    "/audio/voice/russia/ru-dozer/attack_1.webm",
+    "/audio/voice/russia/ru-dozer/attack_2.webm",
+    "/audio/voice/russia/ru-dozer/attack_3.webm",
+    "/audio/voice/russia/ru-dozer/attack_5.webm",
+    "/audio/voice/russia/ru-dozer/die_1.webm",
+    "/audio/voice/russia/ru-dozer/die_2.webm",
+    "/audio/voice/russia/ru-dozer/die_3.webm",
+    "/audio/voice/russia/ru-dozer/die_5.webm",
+    "/audio/voice/russia/ru-dozer/die_6.webm",
+    "/audio/voice/russia/ru-dozer/move_2.webm",
+    "/audio/voice/russia/ru-dozer/move_3.webm",
+    "/audio/voice/russia/ru-dozer/move_5.webm",
+    "/audio/voice/russia/ru-dozer/select_2.webm",
+    "/audio/voice/russia/ru-dozer/select_4.webm",
+    "/audio/voice/russia/ru-dozer/underFire_1.webm",
+    "/audio/voice/russia/ru-dozer/underFire_2.webm",
+    "/audio/voice/russia/ru-dozer/underFire_4.webm",
+    "/audio/voice/russia/ru-rifleman/attack_2.webm",
+    "/audio/voice/russia/ru-rifleman/attack_3.webm",
+    "/audio/voice/russia/ru-rifleman/attack_5.webm",
+    "/audio/voice/russia/ru-rifleman/attack_7.webm",
+    "/audio/voice/russia/ru-rifleman/die_11.webm",
+    "/audio/voice/russia/ru-rifleman/die_2.webm",
+    "/audio/voice/russia/ru-rifleman/die_3.webm",
+    "/audio/voice/russia/ru-rifleman/die_4.webm",
+    "/audio/voice/russia/ru-rifleman/die_7.webm",
+    "/audio/voice/russia/ru-rifleman/die_9.webm",
+    "/audio/voice/russia/ru-rifleman/move_4.webm",
+    "/audio/voice/russia/ru-rifleman/move_5.webm",
+    "/audio/voice/russia/ru-rifleman/select_4.webm",
+    "/audio/voice/russia/ru-rifleman/select_6.webm",
+    "/audio/voice/russia/ru-rifleman/underFire_2.webm",
+    "/audio/voice/russia/ru-rifleman/underFire_3.webm",
+    "/audio/voice/russia/ru-rifleman/underFire_4.webm",
+    "/audio/voice/russia/ru-rifleman/underFire_5.webm",
+    "/audio/voice/russia/ru-rpg-gunner/attack_2.webm",
+    "/audio/voice/russia/ru-rpg-gunner/attack_3.webm",
+    "/audio/voice/russia/ru-rpg-gunner/attack_4.webm",
+    "/audio/voice/russia/ru-rpg-gunner/die_2.webm",
+    "/audio/voice/russia/ru-rpg-gunner/die_3.webm",
+    "/audio/voice/russia/ru-rpg-gunner/die_4.webm",
+    "/audio/voice/russia/ru-rpg-gunner/die_5.webm",
+    "/audio/voice/russia/ru-rpg-gunner/move_2.webm",
+    "/audio/voice/russia/ru-rpg-gunner/move_4.webm",
+    "/audio/voice/russia/ru-rpg-gunner/select_2.webm",
+    "/audio/voice/russia/ru-rpg-gunner/select_3.webm",
+    "/audio/voice/russia/ru-rpg-gunner/select_4.webm",
+    "/audio/voice/russia/ru-rpg-gunner/underFire_1.webm",
+    "/audio/voice/russia/ru-rpg-gunner/underFire_2.webm",
+    "/audio/voice/russia/ru-rpg-gunner/underFire_3.webm",
+    "/audio/voice/russia/ru-rpg-gunner/underFire_4.webm",
+    "/audio/voice/russia/ru-supply-truck/attack_2.webm",
+    "/audio/voice/russia/ru-supply-truck/attack_3.webm",
+    "/audio/voice/russia/ru-supply-truck/attack_4.webm",
+    "/audio/voice/russia/ru-supply-truck/die_1.webm",
+    "/audio/voice/russia/ru-supply-truck/die_2.webm",
+    "/audio/voice/russia/ru-supply-truck/die_3.webm",
+    "/audio/voice/russia/ru-supply-truck/die_4.webm",
+    "/audio/voice/russia/ru-supply-truck/die_5.webm",
+    "/audio/voice/russia/ru-supply-truck/move_2.webm",
+    "/audio/voice/russia/ru-supply-truck/move_3.webm",
+    "/audio/voice/russia/ru-supply-truck/move_4.webm",
+    "/audio/voice/russia/ru-supply-truck/select_3.webm",
+    "/audio/voice/russia/ru-supply-truck/select_4.webm",
+    "/audio/voice/russia/ru-supply-truck/select_5.webm",
+    "/audio/voice/russia/ru-supply-truck/underFire_2.webm",
+    "/audio/voice/russia/ru-supply-truck/underFire_3.webm",
+    "/audio/voice/russia/ru-supply-truck/underFire_4.webm",
+    "/audio/voice/russia/ru-supply-truck/underFire_5.webm",
+    "/audio/voice/russia/ru-t-72b3/attack_1.webm",
+    "/audio/voice/russia/ru-t-72b3/attack_2.webm",
+    "/audio/voice/russia/ru-t-72b3/attack_3.webm",
+    "/audio/voice/russia/ru-t-72b3/attack_5.webm",
+    "/audio/voice/russia/ru-t-72b3/attack_7.webm",
+    "/audio/voice/russia/ru-t-72b3/die_1.webm",
+    "/audio/voice/russia/ru-t-72b3/die_2.webm",
+    "/audio/voice/russia/ru-t-72b3/die_3.webm",
+    "/audio/voice/russia/ru-t-72b3/die_4.webm",
+    "/audio/voice/russia/ru-t-72b3/die_5.webm",
+    "/audio/voice/russia/ru-t-72b3/move_3.webm",
+    "/audio/voice/russia/ru-t-72b3/move_5.webm",
+    "/audio/voice/russia/ru-t-72b3/select_2.webm",
+    "/audio/voice/russia/ru-t-72b3/select_3.webm",
+    "/audio/voice/russia/ru-t-72b3/select_4.webm",
+    "/audio/voice/russia/ru-t-72b3/underFire_2.webm",
+    "/audio/voice/russia/ru-t-72b3/underFire_3.webm",
+    "/audio/voice/russia/ru-t-72b3/underFire_5.webm",
+    "/audio/voice/russia/ru-tos-1a/attack_2.webm",
+    "/audio/voice/russia/ru-tos-1a/attack_3.webm",
+    "/audio/voice/russia/ru-tos-1a/attack_4.webm",
+    "/audio/voice/russia/ru-tos-1a/attack_5.webm",
+    "/audio/voice/russia/ru-tos-1a/die_1.webm",
+    "/audio/voice/russia/ru-tos-1a/die_2.webm",
+    "/audio/voice/russia/ru-tos-1a/die_3.webm",
+    "/audio/voice/russia/ru-tos-1a/die_4.webm",
+    "/audio/voice/russia/ru-tos-1a/die_5.webm",
+    "/audio/voice/russia/ru-tos-1a/move_3.webm",
+    "/audio/voice/russia/ru-tos-1a/move_5.webm",
+    "/audio/voice/russia/ru-tos-1a/select_2.webm",
+    "/audio/voice/russia/ru-tos-1a/select_3.webm",
+    "/audio/voice/russia/ru-tos-1a/select_4.webm",
+    "/audio/voice/russia/ru-tos-1a/underFire_2.webm",
+    "/audio/voice/russia/ru-tos-1a/underFire_3.webm",
+    "/audio/voice/russia/ru-tos-1a/underFire_4.webm",
+    "/audio/voice/ukraine/ua-bradley/attack_1.webm",
+    "/audio/voice/ukraine/ua-bradley/attack_2.webm",
+    "/audio/voice/ukraine/ua-bradley/attack_3.webm",
+    "/audio/voice/ukraine/ua-bradley/attack_5.webm",
+    "/audio/voice/ukraine/ua-bradley/die_1.webm",
+    "/audio/voice/ukraine/ua-bradley/die_2.webm",
+    "/audio/voice/ukraine/ua-bradley/die_3.webm",
+    "/audio/voice/ukraine/ua-bradley/die_5.webm",
+    "/audio/voice/ukraine/ua-bradley/die_6.webm",
+    "/audio/voice/ukraine/ua-bradley/move_2.webm",
+    "/audio/voice/ukraine/ua-bradley/move_4.webm",
+    "/audio/voice/ukraine/ua-bradley/move_5.webm",
+    "/audio/voice/ukraine/ua-bradley/select_2.webm",
+    "/audio/voice/ukraine/ua-bradley/select_3.webm",
+    "/audio/voice/ukraine/ua-bradley/select_5.webm",
+    "/audio/voice/ukraine/ua-bradley/select_6.webm",
+    "/audio/voice/ukraine/ua-bradley/underFire_2.webm",
+    "/audio/voice/ukraine/ua-bradley/underFire_3.webm",
+    "/audio/voice/ukraine/ua-bradley/underFire_4.webm",
+    "/audio/voice/ukraine/ua-bradley/underFire_5.webm",
+    "/audio/voice/ukraine/ua-dozer/attack_2.webm",
+    "/audio/voice/ukraine/ua-dozer/attack_4.webm",
+    "/audio/voice/ukraine/ua-dozer/die_1.webm",
+    "/audio/voice/ukraine/ua-dozer/die_2.webm",
+    "/audio/voice/ukraine/ua-dozer/die_3.webm",
+    "/audio/voice/ukraine/ua-dozer/die_4.webm",
+    "/audio/voice/ukraine/ua-dozer/move_2.webm",
+    "/audio/voice/ukraine/ua-dozer/move_4.webm",
+    "/audio/voice/ukraine/ua-dozer/move_6.webm",
+    "/audio/voice/ukraine/ua-dozer/select_2.webm",
+    "/audio/voice/ukraine/ua-dozer/select_4.webm",
+    "/audio/voice/ukraine/ua-dozer/select_6.webm",
+    "/audio/voice/ukraine/ua-dozer/select_8.webm",
+    "/audio/voice/ukraine/ua-dozer/underFire_2.webm",
+    "/audio/voice/ukraine/ua-dozer/underFire_3.webm",
+    "/audio/voice/ukraine/ua-dozer/underFire_4.webm",
+    "/audio/voice/ukraine/ua-himars/attack_2.webm",
+    "/audio/voice/ukraine/ua-himars/attack_3.webm",
+    "/audio/voice/ukraine/ua-himars/attack_4.webm",
+    "/audio/voice/ukraine/ua-himars/attack_5.webm",
+    "/audio/voice/ukraine/ua-himars/attack_6.webm",
+    "/audio/voice/ukraine/ua-himars/die_2.webm",
+    "/audio/voice/ukraine/ua-himars/die_3.webm",
+    "/audio/voice/ukraine/ua-himars/die_4.webm",
+    "/audio/voice/ukraine/ua-himars/die_5.webm",
+    "/audio/voice/ukraine/ua-himars/die_6.webm",
+    "/audio/voice/ukraine/ua-himars/move_2.webm",
+    "/audio/voice/ukraine/ua-himars/move_3.webm",
+    "/audio/voice/ukraine/ua-himars/select_2.webm",
+    "/audio/voice/ukraine/ua-himars/select_4.webm",
+    "/audio/voice/ukraine/ua-himars/underFire_2.webm",
+    "/audio/voice/ukraine/ua-himars/underFire_3.webm",
+    "/audio/voice/ukraine/ua-himars/underFire_4.webm",
+    "/audio/voice/ukraine/ua-himars/underFire_5.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/attack_2.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/attack_3.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/attack_4.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/attack_5.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/die_1.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/die_2.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/die_3.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/die_5.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/die_6.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/move_2.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/move_3.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/move_4.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/move_5.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/select_2.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/underFire_2.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/underFire_3.webm",
+    "/audio/voice/ukraine/ua-kozak-scout/underFire_4.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/attack_2.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/attack_3.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/attack_4.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/attack_6.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/die_1.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/die_2.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/die_3.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/die_4.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/die_5.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/move_3.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/move_5.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/select_2.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/select_3.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/underFire_2.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/underFire_3.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/underFire_4.webm",
+    "/audio/voice/ukraine/ua-leopard-2a4/underFire_5.webm",
+    "/audio/voice/ukraine/ua-rifleman/attack_2.webm",
+    "/audio/voice/ukraine/ua-rifleman/attack_4.webm",
+    "/audio/voice/ukraine/ua-rifleman/attack_6.webm",
+    "/audio/voice/ukraine/ua-rifleman/attack_7.webm",
+    "/audio/voice/ukraine/ua-rifleman/die_11.webm",
+    "/audio/voice/ukraine/ua-rifleman/die_12.webm",
+    "/audio/voice/ukraine/ua-rifleman/die_2.webm",
+    "/audio/voice/ukraine/ua-rifleman/die_3.webm",
+    "/audio/voice/ukraine/ua-rifleman/die_4.webm",
+    "/audio/voice/ukraine/ua-rifleman/die_5.webm",
+    "/audio/voice/ukraine/ua-rifleman/die_6.webm",
+    "/audio/voice/ukraine/ua-rifleman/die_8.webm",
+    "/audio/voice/ukraine/ua-rifleman/move_2.webm",
+    "/audio/voice/ukraine/ua-rifleman/move_4.webm",
+    "/audio/voice/ukraine/ua-rifleman/select_2.webm",
+    "/audio/voice/ukraine/ua-rifleman/select_5.webm",
+    "/audio/voice/ukraine/ua-rifleman/underFire_2.webm",
+    "/audio/voice/ukraine/ua-rifleman/underFire_3.webm",
+    "/audio/voice/ukraine/ua-rifleman/underFire_4.webm",
+    "/audio/voice/ukraine/ua-rifleman/underFire_5.webm",
+    "/audio/voice/ukraine/ua-rifleman/underFire_6.webm",
+    "/audio/voice/ukraine/ua-rifleman/underFire_7.webm",
+    "/audio/voice/ukraine/ua-stugna-team/attack_2.webm",
+    "/audio/voice/ukraine/ua-stugna-team/attack_3.webm",
+    "/audio/voice/ukraine/ua-stugna-team/attack_5.webm",
+    "/audio/voice/ukraine/ua-stugna-team/attack_7.webm",
+    "/audio/voice/ukraine/ua-stugna-team/die_1.webm",
+    "/audio/voice/ukraine/ua-stugna-team/die_11.webm",
+    "/audio/voice/ukraine/ua-stugna-team/die_12.webm",
+    "/audio/voice/ukraine/ua-stugna-team/die_2.webm",
+    "/audio/voice/ukraine/ua-stugna-team/die_3.webm",
+    "/audio/voice/ukraine/ua-stugna-team/die_5.webm",
+    "/audio/voice/ukraine/ua-stugna-team/die_7.webm",
+    "/audio/voice/ukraine/ua-stugna-team/die_9.webm",
+    "/audio/voice/ukraine/ua-stugna-team/move_2.webm",
+    "/audio/voice/ukraine/ua-stugna-team/move_5.webm",
+    "/audio/voice/ukraine/ua-stugna-team/select_3.webm",
+    "/audio/voice/ukraine/ua-stugna-team/select_4.webm",
+    "/audio/voice/ukraine/ua-stugna-team/underFire_2.webm",
+    "/audio/voice/ukraine/ua-stugna-team/underFire_3.webm",
+    "/audio/voice/ukraine/ua-supply-truck/attack_10.webm",
+    "/audio/voice/ukraine/ua-supply-truck/attack_12.webm",
+    "/audio/voice/ukraine/ua-supply-truck/attack_2.webm",
+    "/audio/voice/ukraine/ua-supply-truck/attack_4.webm",
+    "/audio/voice/ukraine/ua-supply-truck/attack_6.webm",
+    "/audio/voice/ukraine/ua-supply-truck/attack_8.webm",
+    "/audio/voice/ukraine/ua-supply-truck/created_10.webm",
+    "/audio/voice/ukraine/ua-supply-truck/created_3.webm",
+    "/audio/voice/ukraine/ua-supply-truck/created_5.webm",
+    "/audio/voice/ukraine/ua-supply-truck/created_8.webm",
+    "/audio/voice/ukraine/ua-supply-truck/die_1.webm",
+    "/audio/voice/ukraine/ua-supply-truck/die_2.webm",
+    "/audio/voice/ukraine/ua-supply-truck/die_3.webm",
+    "/audio/voice/ukraine/ua-supply-truck/die_4.webm",
+    "/audio/voice/ukraine/ua-supply-truck/die_6.webm",
+    "/audio/voice/ukraine/ua-supply-truck/move_10.webm",
+    "/audio/voice/ukraine/ua-supply-truck/move_12.webm",
+    "/audio/voice/ukraine/ua-supply-truck/move_14.webm",
+    "/audio/voice/ukraine/ua-supply-truck/move_16.webm",
+    "/audio/voice/ukraine/ua-supply-truck/move_3.webm",
+    "/audio/voice/ukraine/ua-supply-truck/move_5.webm",
+    "/audio/voice/ukraine/ua-supply-truck/move_8.webm",
+    "/audio/voice/ukraine/ua-supply-truck/select_11.webm",
+    "/audio/voice/ukraine/ua-supply-truck/select_13.webm",
+    "/audio/voice/ukraine/ua-supply-truck/select_15.webm",
+    "/audio/voice/ukraine/ua-supply-truck/select_17.webm",
+    "/audio/voice/ukraine/ua-supply-truck/select_3.webm",
+    "/audio/voice/ukraine/ua-supply-truck/select_5.webm",
+    "/audio/voice/ukraine/ua-supply-truck/select_7.webm",
+    "/audio/voice/ukraine/ua-supply-truck/select_9.webm",
+    "/audio/voice/ukraine/ua-supply-truck/underFire_10.webm",
+    "/audio/voice/ukraine/ua-supply-truck/underFire_11.webm",
+    "/audio/voice/ukraine/ua-supply-truck/underFire_12.webm",
+    "/audio/voice/ukraine/ua-supply-truck/underFire_14.webm",
+    "/audio/voice/ukraine/ua-supply-truck/underFire_16.webm",
+    "/audio/voice/ukraine/ua-supply-truck/underFire_17.webm",
+    "/audio/voice/ukraine/ua-supply-truck/underFire_2.webm",
+    "/audio/voice/ukraine/ua-supply-truck/underFire_3.webm",
+    "/audio/voice/ukraine/ua-supply-truck/underFire_5.webm",
+    "/audio/voice/ukraine/ua-supply-truck/underFire_6.webm",
+    "/audio/voice/ukraine/ua-supply-truck/underFire_7.webm",
+    "/audio/voice/ukraine/ua-supply-truck/underFire_8.webm"
+  ]
+}

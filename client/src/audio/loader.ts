@@ -342,8 +342,19 @@ export function decodeWavPcmChannels(buffer: ArrayBuffer): DecodedWav | null {
   }
 }
 
+/** `/audio/manifest.json`, written by `scripts/audio/gen/process.py` (spec 25 §4.5). */
+export interface ShippedManifest {
+  events: Record<string, string[]>;
+  /** Voice/EVA files with strong language, skipped when the setting is off (§5.3). */
+  explicit?: string[];
+}
+
 export class AudioLoader {
   private readonly catalog: AudioCatalog;
+  private shipped: ShippedManifest | null = null;
+  private explicitFiles = new Set<string>();
+  /** Mirrors the "Strong language" setting; the mixer keeps it in sync. */
+  strongLanguage = true;
   private zhIndex: ZhRefIndex | null = null;
   private zhProbed = false;
   private zhProbePromise: Promise<boolean> | null = null;
@@ -366,6 +377,7 @@ export class AudioLoader {
     this.zhProbePromise = (async () => {
       try {
         if (typeof fetch === "undefined") return false;
+        await this.loadShippedManifest();
         const res = await fetch("/audio-ref/zh-events.json", {
           cache: "no-store",
         });
@@ -381,6 +393,26 @@ export class AudioLoader {
       }
     })();
     return this.zhProbePromise;
+  }
+
+  private async loadShippedManifest(): Promise<void> {
+    try {
+      const res = await fetch("/audio/manifest.json");
+      const contentType = res.headers.get("content-type") ?? "";
+      if (!res.ok || !contentType.includes("json")) return;
+      this.shipped = (await res.json()) as ShippedManifest;
+      this.explicitFiles = new Set(this.shipped.explicit ?? []);
+    } catch {
+      // No shipped audio yet: the reference pack or the synth fallback applies.
+    }
+  }
+
+  /** Our own generated files for `eventId`, minus strong language when it is off. */
+  shippedSounds(eventId: string): string[] {
+    const files = this.shipped?.events[eventId] ?? [];
+    if (this.strongLanguage) return [...files];
+    const clean = files.filter((url) => !this.explicitFiles.has(url));
+    return clean.length > 0 ? clean : [...files];
   }
 
   isProbeDone(): boolean {
@@ -439,7 +471,10 @@ export class AudioLoader {
       attack: [],
       decay: [],
     };
-    if (forceSynth || !this.zhIndex) return fallback;
+    if (forceSynth) return fallback;
+    const own = this.shippedSounds(eventId);
+    if (own.length > 0) return { loop: own, attack: [], decay: [] };
+    if (!this.zhIndex) return fallback;
     const zhName = this.catalog.reference.events[eventId];
     if (zhName === "NoSound") return { loop: [], attack: [], decay: [] };
     const ev = zhName ? this.zhIndex.events?.[zhName] : undefined;
@@ -485,6 +520,10 @@ export class AudioLoader {
     configuredSounds: readonly string[],
     forceSynth = false,
   ): string[] {
+    if (!forceSynth) {
+      const own = this.shippedSounds(eventId);
+      if (own.length > 0) return own;
+    }
     if (!forceSynth && this.zhIndex) {
       const zhName = this.catalog.reference.events[eventId];
       // A referenced `NoSound` is a deliberate Zero Hour silence, not a reason to

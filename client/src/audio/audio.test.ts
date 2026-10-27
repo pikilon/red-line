@@ -910,10 +910,10 @@ describe("Zero Hour reference resolution and faction mapping", () => {
     const loader = new AudioLoader(AUDIO_CATALOG);
     const originalFetch = globalThis.fetch;
     let requests = 0;
-    globalThis.fetch = (async () => {
-      requests += 1;
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      if (String(input).includes("audio-ref")) requests += 1;
       await new Promise((resolve) => setTimeout(resolve, 5));
-      return new Response(JSON.stringify({ files: {} }), {
+      return new Response(JSON.stringify({ files: {}, events: {} }), {
         status: 200,
         headers: { "content-type": "application/json" },
       });
@@ -926,6 +926,39 @@ describe("Zero Hour reference resolution and faction mapping", () => {
       expect(results).toEqual([true, true]);
       expect(requests).toBe(1);
       expect(loader.isProbeDone()).toBe(true);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+});
+
+describe("shipped audio manifest (spec 25 §4.5)", () => {
+  it("prefers our own files and drops strong language when it is off", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (input: RequestInfo | URL) =>
+      String(input) === "/audio/manifest.json"
+        ? new Response(
+            JSON.stringify({
+              events: { "voice.x.select": ["/a/1.webm", "/a/2.webm"] },
+              explicit: ["/a/2.webm"],
+            }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          )
+        : new Response("", { status: 404 })) as typeof fetch;
+    try {
+      const loader = new AudioLoader(AUDIO_CATALOG);
+      await loader.initReferencePack();
+      expect(loader.resolveEventSounds("voice.x.select", ["synth:x"])).toEqual([
+        "/a/1.webm",
+        "/a/2.webm",
+      ]);
+      loader.strongLanguage = false;
+      expect(loader.resolveEventSounds("voice.x.select", [])).toEqual([
+        "/a/1.webm",
+      ]);
+      expect(loader.resolveEventSounds("voice.y.select", ["synth:y"])).toEqual([
+        "synth:y",
+      ]);
     } finally {
       globalThis.fetch = originalFetch;
     }
