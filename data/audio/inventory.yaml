@@ -575,7 +575,7 @@ entries:
     loop: false
     status: draft
     brief: A squad of soldiers breaking into a jog, boots on dirt and the rattle of rifles, webbing and gear.
-    prompt: field recording of a few soldiers starting to jog on a dirt road, boots footsteps, rifles and gear rattling, no music
+    prompt: field recording of a few soldiers starting to jog on a dirt road, boots footsteps, rifles and gear rattling
     tags:
       - footsteps
       - infantry
@@ -589,7 +589,7 @@ entries:
     seconds: 20
     loop: true
     status: draft
-    prompt: field recording, continuous steel tank tracks clanking and squeaking while driving over gravel and dirt, diesel engine rumble underneath, steady, no music
+    prompt: field recording of a main battle tank driving past on gravel, steel tracks clanking and squeaking, track links rattling, heavy diesel engine rumble
     tags:
       - tracks
   move.loop.wheels:
@@ -601,7 +601,7 @@ entries:
     seconds: 20
     loop: true
     status: draft
-    prompt: field recording, continuous heavy military truck driving on a dirt road, tires rolling over gravel, suspension rattles, steady diesel engine, no music
+    prompt: field recording of a heavy military truck driving on a dirt road, tires crunching gravel, suspension rattling, diesel engine
     tags:
       - wheels
   move.ru-bmp-2.start:
@@ -613,7 +613,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy mechanical surge featuring a deep, low-frequency engine roar that builds in intensity as a large armored vehicle begins to move. The sound should capture the grinding of heavy treads and the sudden increase in mechanical torque.
-    prompt: field recording of a real tracked infantry fighting vehicle starting to drive, diesel engine revving, metal tracks clattering on dirt road, no music
+    prompt: field recording of a real tracked infantry fighting vehicle starting to drive, diesel engine revving, metal tracks clattering on dirt road
     tags:
       - mechanical
       - engine
@@ -629,7 +629,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy mechanical startup featuring a low-frequency engine rumble that builds into a gritty, high-energy diesel roar. The sound should convey the sudden surge of power as a heavy armored vehicle begins to accelerate.
-    prompt: field recording of a real four-wheel armored car accelerating away, turbo diesel engine revving, tires rolling on gravel, no music
+    prompt: field recording of a real four-wheel armored car accelerating away, turbo diesel engine revving, tires rolling on gravel
     tags:
       - mechanical
       - engine
@@ -645,7 +645,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy industrial engine ignition and initial acceleration sequence for a large construction-style vehicle. The sound should feature a low-frequency rumble that builds in intensity with mechanical grinding and heavy diesel combustion textures.
-    prompt: field recording of a real bulldozer starting to move, rough diesel engine revving, steel tracks squeaking and clanking, no music
+    prompt: field recording of a real bulldozer starting to move, rough diesel engine revving, steel tracks squeaking and clanking
     tags:
       - industrial
       - engine
@@ -661,7 +661,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy diesel engine ignition followed by a low-frequency rumble as a large transport vehicle begins to accelerate. The sound should feature a gritty, mechanical buildup with increasing engine strain and rhythmic vibration.
-    prompt: field recording of a real heavy military truck pulling away, big diesel engine revving, gearbox shifting, tires on dirt road, no music
+    prompt: field recording of a real heavy military truck pulling away, big diesel engine revving, gearbox shifting, tires on dirt road
     tags:
       - diesel
       - engine
@@ -677,7 +677,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy, mechanical ignition sequence featuring a deep engine roar that builds in intensity. The sound should capture the sudden surge of power and grinding gears as a massive armored vehicle begins to move.
-    prompt: field recording of a real main battle tank pulling away, diesel engine revving up, steel tracks clanking and squeaking over gravel, no music
+    prompt: field recording of a real main battle tank pulling away, diesel engine revving up, steel tracks clanking and squeaking over gravel
     tags:
       - mechanical
       - engine
@@ -693,7 +693,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy, mechanical ignition sequence featuring a low-frequency power surge and high-energy combustion roar. The sound should convey the massive weight of a heavy vehicle straining to overcome inertia.
-    prompt: field recording of a real main battle tank pulling away, diesel engine revving up, steel tracks clanking and squeaking over gravel, no music
+    prompt: field recording of a real main battle tank pulling away, diesel engine revving up, steel tracks clanking and squeaking over gravel
     tags:
       - mechanical
       - engine
@@ -709,7 +709,7 @@ entries:
     seconds: 3
     loop: false
     status: draft
-    prompt: field recording of a real tracked armored vehicle braking to a halt, diesel engine revving down to idle and shutting off, tracks squeaking to a stop, no music
+    prompt: field recording of a real tracked armored vehicle braking to a halt, diesel engine revving down to idle and shutting off, tracks squeaking to a stop
   move.stop.wheels:
     category: move
     kind: sfx
@@ -719,7 +719,7 @@ entries:
     seconds: 3
     loop: false
     status: draft
-    prompt: field recording of a real military truck braking to a halt, air brakes hiss, diesel engine revving down to idle and shutting off, no music
+    prompt: field recording of a real military truck braking to a halt, air brakes hiss, diesel engine revving down to idle and shutting off
   move.tracked:
     category: move
     kind: sfx
@@ -729,7 +729,7 @@ entries:
     seconds: 3.5
     loop: false
     status: draft
-    prompt: field recording of a real tracked armored vehicle diesel engine starting and revving up as it pulls away, tracks clanking, no music
+    prompt: field recording of a real tracked armored vehicle diesel engine starting and revving up as it pulls away, tracks clanking
   move.tracks:
     category: move
     kind: sfx
@@ -746,7 +746,7 @@ entries:
     seconds: 20
     loop: true
     status: draft
-    prompt: close recording of a tank turret hydraulic servo motor rotating, electric servo whine and hydraulic hum, steady mechanical, no music
+    prompt: close field recording of a tank turret traversing, hydraulic pump hiss and mechanical gear grinding, metal creaking
     tags:
       - servo
   move.ua-bradley.start:
@@ -758,7 +758,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy mechanical ignition followed by a powerful, low-frequency engine roar that builds in intensity. The sound should convey the massive weight and sudden torque of a heavy armored vehicle accelerating.
-    prompt: field recording of a real tracked infantry fighting vehicle starting to drive, diesel engine revving, metal tracks clattering on dirt road, no music
+    prompt: field recording of a real tracked infantry fighting vehicle starting to drive, diesel engine revving, metal tracks clattering on dirt road
     tags:
       - mechanical
       - engine
@@ -774,7 +774,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy industrial diesel engine ignition and initial torque surge, characterized by low-frequency rumble and mechanical grinding. The sound should convey the massive weight of a construction vehicle straining to move from a standstill.
-    prompt: field recording of a real bulldozer starting to move, rough diesel engine revving, steel tracks squeaking and clanking, no music
+    prompt: field recording of a real bulldozer starting to move, rough diesel engine revving, steel tracks squeaking and clanking
     tags:
       - diesel
       - engine
@@ -790,7 +790,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy, mechanical surge of power characterized by a low-frequency rumble that builds into a gritty, high-energy roar. The sound should capture the intense moment of heavy machinery engaging and accelerating.
-    prompt: field recording of a real heavy military truck pulling away, big diesel engine revving, gearbox shifting, tires on dirt road, no music
+    prompt: field recording of a real heavy military truck pulling away, big diesel engine revving, gearbox shifting, tires on dirt road
     tags:
       - mechanical
       - engine
@@ -806,7 +806,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy diesel engine ignition and rapid acceleration sequence for a light tactical vehicle. The sound should feature a low-frequency rumble that builds in intensity and mechanical grit as the engine revs up.
-    prompt: field recording of a real four-wheel armored car accelerating away, turbo diesel engine revving, tires rolling on gravel, no music
+    prompt: field recording of a real four-wheel armored car accelerating away, turbo diesel engine revving, tires rolling on gravel
     tags:
       - engine
       - acceleration
@@ -822,7 +822,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy diesel engine ignition followed by a sudden surge of mechanical torque and low-frequency rumble. The sound should capture the visceral power of a large armored vehicle straining to move from a standstill.
-    prompt: field recording of a real main battle tank pulling away, diesel engine revving up, steel tracks clanking and squeaking over gravel, no music
+    prompt: field recording of a real main battle tank pulling away, diesel engine revving up, steel tracks clanking and squeaking over gravel
     tags:
       - diesel
       - engine
@@ -838,7 +838,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy diesel engine ignition followed by a low-frequency rumble that builds in intensity as the vehicle begins to roll. The sound should capture the mechanical strain and guttural vibration of a large transport truck accelerating from a standstill.
-    prompt: field recording of a real heavy military truck pulling away, big diesel engine revving, gearbox shifting, tires on dirt road, no music
+    prompt: field recording of a real heavy military truck pulling away, big diesel engine revving, gearbox shifting, tires on dirt road
     tags:
       - diesel
       - engine
@@ -854,7 +854,7 @@ entries:
     seconds: 3
     loop: false
     status: draft
-    prompt: field recording of a real military truck diesel engine starting and revving up as it pulls away, tires on gravel, no music
+    prompt: field recording of a real military truck diesel engine starting and revving up as it pulls away, tires on gravel
   vehicle.damage:
     category: vehicle
     kind: sfx
