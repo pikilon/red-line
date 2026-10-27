@@ -59,4 +59,7 @@ for ev, t in done:
         explicit.append("/" + t)
 (PUB / "manifest.json").write_text(json.dumps({"version": 1, "events": dict(sorted(manifest.items())),
                                                "explicit": sorted(explicit)}, indent=1) + "\n")
+# Same formatting as the repo check, so CI does not reject the generated file.
+subprocess.run(["npx", "biome", "format", "--write", "public/audio/manifest.json"], cwd=REPO / "client", check=False,
+               capture_output=True)
 print("processed", len(done), "files,", len(manifest), "events")
