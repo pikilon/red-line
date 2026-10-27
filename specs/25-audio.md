@@ -257,7 +257,8 @@ owner's external SSD), `transcribe.py` (Whisper large-v3-turbo on the
 reference voice/EVA lines: text only, to know each situation),
 `write_lines.py` (local LM Studio Gemma drafts `data/audio/lines/*.yaml`),
 `gen_voice.py` (Piper: Ukrainian `ukrainian_tts` speaker mykyta, EVA tetiana;
-Russian denis/dmitri/ruslan by unit set, EVA irina), `gen_sfx.py` (TangoFlux
+Russian denis/dmitri/ruslan by unit set, EVA dmitri: a man, per owner). EVA
+never swears in any language (owner, 2026-10-27), `gen_sfx.py` (TangoFlux
 for SFX, UI and ambient, CPU), `gen_music.py` (ACE-Step v1 3.5B through the
 local ComfyUI, Red Alert 2 style industrial metal/electronic, per state and
 faction) and `process.py`. Raw takes and their prompt/seed sidecars stay

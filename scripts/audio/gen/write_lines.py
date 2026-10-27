@@ -46,7 +46,7 @@ for (faction, unit), events in sorted(groups.items()):
     spec = []
     for name, (ev, n) in todo.items():
         ref = "; ".join(transcripts.get(ev, [])[:5])
-        what = (f"EVA (calm female base computer voice, formal military, no profanity) announcing: {name}"
+        what = (f"EVA (calm base computer voice, formal military, NEVER any profanity) announcing: {name}"
                 if unit == "eva" else SITUATION.get(name, name))
         spec.append(f'- "{name}": {n} lines. Situation: {what}. Original English lines for the same '
                     f"situation (adapt the idea, do not translate literally): {ref or 'none'}")
@@ -60,7 +60,7 @@ for (faction, unit), events in sorted(groups.items()):
         lines = (res.get(name) or [])[:n]
         while len(lines) < n:
             lines.append(lines[-1] if lines else {"text": "Так точно!" if faction != "russia" else "Есть!", "explicit": False})
-        data[f"{unit}.{name}"] = [{"id": i + 1, "text": l["text"].strip(), "explicit": bool(l.get("explicit")) and i > 0}
+        data[f"{unit}.{name}"] = [{"id": i + 1, "text": l["text"].strip(), "explicit": bool(l.get("explicit")) and i > 0 and unit != "eva"}
                                   for i, l in enumerate(lines)]
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(f"# {LANG[faction]} voice/EVA script (spec 25 §5.3); drafted by a local model, "

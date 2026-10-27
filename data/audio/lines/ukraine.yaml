@@ -3,15 +3,15 @@ eva.baseUnderAttack:
 - explicit: false
   id: 1
   text: Увага, базу атакують!
-- explicit: true
+- explicit: false
   id: 2
-  text: Командире, сука, нас атакують! Ворог на підході!
-- explicit: true
+  text: Командире, нас атакують! Ворог на підході!
+- explicit: false
   id: 3
-  text: Бля, ворог проривається до бази! Тривога!
-- explicit: true
+  text: Ворог проривається до бази! Тривога!
+- explicit: false
   id: 4
-  text: Об'єкт під вогнем, пиздець, загроза критична!
+  text: Об'єкт під вогнем, загроза критична!
 eva.buildingLost:
 - explicit: false
   id: 1

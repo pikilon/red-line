@@ -3,15 +3,15 @@ eva.baseUnderAttack:
 - explicit: false
   id: 1
   text: Внимание, база под обстрелом!
-- explicit: true
+- explicit: false
   id: 2
-  text: Обнаружена атака на объект! Сука, по нам палят!
-- explicit: true
+  text: Обнаружена атака на объект! По базе ведут огонь!
+- explicit: false
   id: 3
-  text: Проникновение на базу! Блять, активируйте защиту, живо!
-- explicit: true
+  text: Проникновение на базу! Активируйте защиту!
+- explicit: false
   id: 4
-  text: Пиздец, по базе работают! Всем занять позиции!
+  text: База под обстрелом! Всем занять позиции!
 eva.buildingLost:
 - explicit: false
   id: 1

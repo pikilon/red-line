@@ -45,8 +45,8 @@ for ev, e in inventory().items():
         if not line or out.exists():
             continue
         length = {"underFire": 0.8, "die": 0.85, "attack": 0.88}.get(name, 0.92)
-        if faction == "russia":
-            pick = "irina" if unit == "eva" else ("denis", "dmitri", "ruslan")[seed(unit) % 3]
+        if faction == "russia":  # owner: the Russian EVA is a man (dmitri)
+            pick = "dmitri" if unit == "eva" else ("denis", "dmitri", "ruslan")[seed(unit) % 3]
             model, spk = RU[pick], None
         else:
             model, spk = UK, uk_speaker("tetiana" if unit == "eva" else "mykyta")
