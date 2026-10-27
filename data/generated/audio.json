@@ -850,6 +850,42 @@
       "minDistance": 4,
       "maxDistance": 25
     },
+    "move.stop.tracks": {
+      "sounds": [
+        "synth:engine"
+      ],
+      "volume": 50,
+      "limit": 4,
+      "priority": "lowest",
+      "control": [
+        "random"
+      ],
+      "type": [
+        "world",
+        "shrouded",
+        "everyone"
+      ],
+      "minDistance": 4,
+      "maxDistance": 30
+    },
+    "move.stop.wheels": {
+      "sounds": [
+        "synth:engine"
+      ],
+      "volume": 45,
+      "limit": 4,
+      "priority": "lowest",
+      "control": [
+        "random"
+      ],
+      "type": [
+        "world",
+        "shrouded",
+        "everyone"
+      ],
+      "minDistance": 4,
+      "maxDistance": 25
+    },
     "move.tracked": {
       "sounds": [
         "synth:engine"
@@ -1211,6 +1247,60 @@
       "maxDistance": 100,
       "volumeShift": -10,
       "volume": 80,
+      "type": [
+        "world",
+        "shrouded",
+        "everyone"
+      ]
+    },
+    "move.loop.tracks": {
+      "sounds": [
+        "synth:construction"
+      ],
+      "control": [
+        "loop"
+      ],
+      "priority": "lowest",
+      "limit": 3,
+      "minDistance": 10,
+      "maxDistance": 90,
+      "volume": 55,
+      "type": [
+        "world",
+        "shrouded",
+        "everyone"
+      ]
+    },
+    "move.loop.wheels": {
+      "sounds": [
+        "synth:construction"
+      ],
+      "control": [
+        "loop"
+      ],
+      "priority": "lowest",
+      "limit": 3,
+      "minDistance": 10,
+      "maxDistance": 90,
+      "volume": 50,
+      "type": [
+        "world",
+        "shrouded",
+        "everyone"
+      ]
+    },
+    "move.turret": {
+      "sounds": [
+        "synth:construction"
+      ],
+      "control": [
+        "loop"
+      ],
+      "priority": "low",
+      "limit": 2,
+      "minDistance": 8,
+      "maxDistance": 70,
+      "volume": 60,
       "type": [
         "world",
         "shrouded",
@@ -4342,6 +4432,8 @@
     "move.wheeled": "NoSound",
     "move.tracked": "NoSound",
     "move.tracks": "NoSound",
+    "move.stop.tracks": "NoSound",
+    "move.stop.wheels": "NoSound",
     "move.ua-kozak-scout.start": "HumveeMoveStart",
     "move.ua-bradley.start": "PaladinTankMoveStart",
     "move.ua-leopard-2a4.start": "CrusaderTankMoveStart",
@@ -4386,7 +4478,10 @@
     "music.victory.ukraine": "End_USA",
     "music.defeat.ukraine": "End_USA_Failure",
     "music.victory.russia": "End_Chi",
-    "music.defeat.russia": "End_Chi_Failure"
+    "music.defeat.russia": "End_Chi_Failure",
+    "move.loop.tracks": "GenericTankMoveLoop",
+    "move.loop.wheels": "ConvoyTruckMoveLoop",
+    "move.turret": "TurretMoveLoop"
   },
   "recipes": {
     "click": {

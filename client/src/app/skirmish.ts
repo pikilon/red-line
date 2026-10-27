@@ -1346,6 +1346,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         });
       }
       audioMixer.syncConstructionLoops(audioBatch.constructionLoops);
+      audioMixer.syncUnitLoops(audioBatch.unitLoops);
       const factionId = localFactionId();
       for (const evaId of audioBatch.evaEvents) {
         audioMixer.triggerEva(evaId, factionId);

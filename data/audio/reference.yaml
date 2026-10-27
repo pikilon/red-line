@@ -257,6 +257,8 @@ move.foot: NoSound
 move.wheeled: NoSound
 move.tracked: NoSound
 move.tracks: NoSound
+move.stop.tracks: NoSound
+move.stop.wheels: NoSound
 
 move.ua-kozak-scout.start: HumveeMoveStart
 move.ua-bradley.start: PaladinTankMoveStart
@@ -320,3 +322,6 @@ music.victory.ukraine: End_USA
 music.defeat.ukraine: End_USA_Failure
 music.victory.russia: End_Chi
 music.defeat.russia: End_Chi_Failure
+move.loop.tracks: GenericTankMoveLoop
+move.loop.wheels: ConvoyTruckMoveLoop
+move.turret: TurretMoveLoop

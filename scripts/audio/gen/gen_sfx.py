@@ -11,7 +11,7 @@ except TypeError:
 for ev, e in inventory().items():
     if e["kind"] not in ("sfx", "ui", "ambient") or not e.get("prompt"):
         continue
-    dur = 30 if e.get("loop") else max(1, min(30, round((e.get("seconds") or 2) + 0.5)))
+    dur = min(30, max(8, round(e.get("seconds") or 30))) if e.get("loop") else max(1, min(30, round((e.get("seconds") or 2) + 0.5)))
     prompt = e["prompt"] + ", realistic, clean recording, no music, no speech"
     for t in targets(e):
         out = raw_path(t)
