@@ -1,15 +1,15 @@
 import ruleset from "@data/ruleset.json";
 import { type Group, Mesh } from "three";
 import { describe, expect, it } from "vitest";
-import { elevationOf } from "../../elevation";
+import { elevationOf } from "../elevation";
 import {
   createMapFeatures,
   type FeatureMap,
   type FeatureRules,
   featureInstancesOf,
   terrainLayersOf,
-} from "../index";
-import { waterFieldOf } from "./water";
+} from "./index";
+import { waterFieldOf } from "./renderers/water";
 
 const rules = ruleset as unknown as FeatureRules;
 const coast = ruleset.maps.find((m) => m.id === "demo-coast") as FeatureMap;
