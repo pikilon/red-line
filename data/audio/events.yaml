@@ -467,6 +467,26 @@ events:
     minDistance: 4
     maxDistance: 25
 
+  move.stop.tracks:
+    sounds: [synth:engine]
+    volume: 50
+    limit: 4
+    priority: lowest
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 30
+
+  move.stop.wheels:
+    sounds: [synth:engine]
+    volume: 45
+    limit: 4
+    priority: lowest
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 25
+
   move.tracked:
     sounds: [synth:engine]
     volume: 50
@@ -646,6 +666,39 @@ events:
     maxDistance: 100
     volumeShift: -10
     volume: 80
+    type: [world, shrouded, everyone]
+
+  # Our own positional loops (owner, 2026-10-27), modelled on Zero Hour's
+  # `GenericTankMoveLoop` and `TurretMoveLoop`: tracks/wheels while a vehicle
+  # drives, hydraulic servos while a turret or launcher slews.
+  move.loop.tracks:
+    sounds: [synth:construction]
+    control: [loop]
+    priority: lowest
+    limit: 3
+    minDistance: 10
+    maxDistance: 90
+    volume: 55
+    type: [world, shrouded, everyone]
+
+  move.loop.wheels:
+    sounds: [synth:construction]
+    control: [loop]
+    priority: lowest
+    limit: 3
+    minDistance: 10
+    maxDistance: 90
+    volume: 50
+    type: [world, shrouded, everyone]
+
+  move.turret:
+    sounds: [synth:construction]
+    control: [loop]
+    priority: low
+    limit: 2
+    minDistance: 8
+    maxDistance: 70
+    volume: 60
     type: [world, shrouded, everyone]
 
   building.complete:

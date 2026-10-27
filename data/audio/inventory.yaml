@@ -1,5 +1,8 @@
 # Audio inventory (spec 25 §5.1, phase 2).
 #
+# `original: true` entries are our own additions where Zero Hour has no sound;
+# the rebuild keeps them as written.
+#
 # One entry per game sound event. `target` is the WebM file we will ship,
 # with `<n>` replaced by the variant number (1..variants). No entry points at a
 # source recording: this is the worklist we transform.
@@ -565,10 +568,42 @@ entries:
   move.foot:
     category: move
     kind: sfx
-    variants: 0
-    seconds: 0
+    original: true
+    target: audio/sfx/move.foot_<n>.webm
+    variants: 4
+    seconds: 1.2
     loop: false
-    status: silent
+    status: draft
+    brief: A squad of soldiers breaking into a jog, boots on dirt and the rattle of rifles, webbing and gear.
+    prompt: field recording of a few soldiers starting to jog on a dirt road, boots footsteps, rifles and gear rattling
+    tags:
+      - footsteps
+      - infantry
+      - gear
+  move.loop.tracks:
+    category: move
+    kind: sfx
+    original: true
+    target: audio/sfx/move.loop.tracks_<n>.webm
+    variants: 1
+    seconds: 20
+    loop: true
+    status: draft
+    prompt: field recording of a main battle tank driving past on gravel, steel tracks clanking and squeaking, track links rattling, heavy diesel engine rumble
+    tags:
+      - tracks
+  move.loop.wheels:
+    category: move
+    kind: sfx
+    original: true
+    target: audio/sfx/move.loop.wheels_<n>.webm
+    variants: 1
+    seconds: 20
+    loop: true
+    status: draft
+    prompt: field recording of a heavy military truck driving on a dirt road, tires crunching gravel, suspension rattling, diesel engine
+    tags:
+      - wheels
   move.ru-bmp-2.start:
     category: move
     kind: sfx
@@ -578,7 +613,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy mechanical surge featuring a deep, low-frequency engine roar that builds in intensity as a large armored vehicle begins to move. The sound should capture the grinding of heavy treads and the sudden increase in mechanical torque.
-    prompt: heavy armored vehicle engine ignition, low-frequency mechanical rumble, grinding metal treads, accelerating diesel roar, industrial grit, cinematic sound design, 3.5 seconds
+    prompt: field recording of a real tracked infantry fighting vehicle starting to drive, diesel engine revving, metal tracks clattering on dirt road
     tags:
       - mechanical
       - engine
@@ -594,7 +629,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy mechanical startup featuring a low-frequency engine rumble that builds into a gritty, high-energy diesel roar. The sound should convey the sudden surge of power as a heavy armored vehicle begins to accelerate.
-    prompt: heavy diesel engine ignition, mechanical gear engagement, low-end rumble transitioning to aggressive mid-range roar, gritty industrial texture, sudden attack with sustained power, 3 seconds
+    prompt: field recording of a real four-wheel armored car accelerating away, turbo diesel engine revving, tires rolling on gravel
     tags:
       - mechanical
       - engine
@@ -610,7 +645,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy industrial engine ignition and initial acceleration sequence for a large construction-style vehicle. The sound should feature a low-frequency rumble that builds in intensity with mechanical grinding and heavy diesel combustion textures.
-    prompt: heavy industrial diesel engine startup, low-frequency mechanical rumble, grinding gears, increasing engine RPM, gritty texture, cinematic sound design, 3.5 seconds
+    prompt: field recording of a real bulldozer starting to move, rough diesel engine revving, steel tracks squeaking and clanking
     tags:
       - industrial
       - engine
@@ -626,7 +661,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy diesel engine ignition followed by a low-frequency rumble as a large transport vehicle begins to accelerate. The sound should feature a gritty, mechanical buildup with increasing engine strain and rhythmic vibration.
-    prompt: heavy diesel truck engine startup, low-frequency mechanical rumble, accelerating combustion engine, gritty industrial texture, increasing pitch and intensity, 2.3 seconds
+    prompt: field recording of a real heavy military truck pulling away, big diesel engine revving, gearbox shifting, tires on dirt road
     tags:
       - diesel
       - engine
@@ -642,7 +677,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy, mechanical ignition sequence featuring a deep engine roar that builds in intensity. The sound should capture the sudden surge of power and grinding gears as a massive armored vehicle begins to move.
-    prompt: heavy diesel engine startup, mechanical gear grinding, low-frequency rumble, sudden power surge, industrial machinery, cinematic impact, 3 seconds
+    prompt: field recording of a real main battle tank pulling away, diesel engine revving up, steel tracks clanking and squeaking over gravel
     tags:
       - mechanical
       - engine
@@ -658,20 +693,43 @@ entries:
     loop: false
     status: draft
     brief: A heavy, mechanical ignition sequence featuring a low-frequency power surge and high-energy combustion roar. The sound should convey the massive weight of a heavy vehicle straining to overcome inertia.
-    prompt: heavy industrial engine ignition, deep mechanical rumble, high-energy combustion roar, sudden power surge, gritty metallic textures, cinematic low-end impact, 3.2 seconds
+    prompt: field recording of a real main battle tank pulling away, diesel engine revving up, steel tracks clanking and squeaking over gravel
     tags:
       - mechanical
       - engine
       - heavy
       - industrial
       - ignition
+  move.stop.tracks:
+    category: move
+    kind: sfx
+    original: true
+    target: audio/sfx/move.stop.tracks_<n>.webm
+    variants: 3
+    seconds: 3
+    loop: false
+    status: draft
+    prompt: field recording of a real tracked armored vehicle braking to a halt, diesel engine revving down to idle and shutting off, tracks squeaking to a stop
+  move.stop.wheels:
+    category: move
+    kind: sfx
+    original: true
+    target: audio/sfx/move.stop.wheels_<n>.webm
+    variants: 3
+    seconds: 3
+    loop: false
+    status: draft
+    prompt: field recording of a real military truck braking to a halt, air brakes hiss, diesel engine revving down to idle and shutting off
   move.tracked:
     category: move
     kind: sfx
-    variants: 0
-    seconds: 0
+    original: true
+    target: audio/sfx/move.tracked_<n>.webm
+    variants: 3
+    seconds: 3.5
     loop: false
-    status: silent
+    status: draft
+    prompt: field recording of a real tracked armored vehicle diesel engine starting and revving up as it pulls away, tracks clanking
   move.tracks:
     category: move
     kind: sfx
@@ -679,6 +737,18 @@ entries:
     seconds: 0
     loop: false
     status: silent
+  move.turret:
+    category: move
+    kind: sfx
+    original: true
+    target: audio/sfx/move.turret_<n>.webm
+    variants: 1
+    seconds: 20
+    loop: true
+    status: draft
+    prompt: close field recording of a tank turret traversing, hydraulic pump hiss and mechanical gear grinding, metal creaking
+    tags:
+      - servo
   move.ua-bradley.start:
     category: move
     kind: sfx
@@ -688,7 +758,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy mechanical ignition followed by a powerful, low-frequency engine roar that builds in intensity. The sound should convey the massive weight and sudden torque of a heavy armored vehicle accelerating.
-    prompt: heavy diesel engine startup, low-frequency mechanical rumble, hydraulic hiss, increasing engine RPM, cinematic industrial texture, high energy, 3.7 seconds
+    prompt: field recording of a real tracked infantry fighting vehicle starting to drive, diesel engine revving, metal tracks clattering on dirt road
     tags:
       - mechanical
       - engine
@@ -704,7 +774,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy industrial diesel engine ignition and initial torque surge, characterized by low-frequency rumble and mechanical grinding. The sound should convey the massive weight of a construction vehicle straining to move from a standstill.
-    prompt: heavy diesel engine startup, low-frequency mechanical rumble, grinding metal gears, high torque acceleration, industrial machinery, gritty texture, 3.5 seconds
+    prompt: field recording of a real bulldozer starting to move, rough diesel engine revving, steel tracks squeaking and clanking
     tags:
       - diesel
       - engine
@@ -720,7 +790,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy, mechanical surge of power characterized by a low-frequency rumble that builds into a gritty, high-energy roar. The sound should capture the intense moment of heavy machinery engaging and accelerating.
-    prompt: heavy diesel engine ignition, mechanical torque surge, low-end rumble transitioning to high-frequency grit, rhythmic combustion pulses, cinematic industrial texture, 2.8 seconds
+    prompt: field recording of a real heavy military truck pulling away, big diesel engine revving, gearbox shifting, tires on dirt road
     tags:
       - mechanical
       - engine
@@ -736,7 +806,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy diesel engine ignition and rapid acceleration sequence for a light tactical vehicle. The sound should feature a low-frequency rumble that builds in intensity and mechanical grit as the engine revs up.
-    prompt: heavy diesel engine startup, rapid RPM increase, mechanical grinding and low-end rumble, aggressive acceleration, cinematic foley, high fidelity, 3.28 seconds
+    prompt: field recording of a real four-wheel armored car accelerating away, turbo diesel engine revving, tires rolling on gravel
     tags:
       - engine
       - acceleration
@@ -752,7 +822,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy diesel engine ignition followed by a sudden surge of mechanical torque and low-frequency rumble. The sound should capture the visceral power of a large armored vehicle straining to move from a standstill.
-    prompt: heavy diesel engine startup, mechanical torque surge, low-frequency rumble, gritty industrial texture, sudden attack with sustained power, high fidelity, 3.8 seconds
+    prompt: field recording of a real main battle tank pulling away, diesel engine revving up, steel tracks clanking and squeaking over gravel
     tags:
       - diesel
       - engine
@@ -768,7 +838,7 @@ entries:
     loop: false
     status: draft
     brief: A heavy diesel engine ignition followed by a low-frequency rumble that builds in intensity as the vehicle begins to roll. The sound should capture the mechanical strain and guttural vibration of a large transport truck accelerating from a standstill.
-    prompt: heavy diesel engine startup, low-end mechanical rumble, increasing RPM, guttural combustion, gritty industrial texture, cinematic vehicle acceleration, 2.3 seconds
+    prompt: field recording of a real heavy military truck pulling away, big diesel engine revving, gearbox shifting, tires on dirt road
     tags:
       - diesel
       - engine
@@ -778,10 +848,13 @@ entries:
   move.wheeled:
     category: move
     kind: sfx
-    variants: 0
-    seconds: 0
+    original: true
+    target: audio/sfx/move.wheeled_<n>.webm
+    variants: 3
+    seconds: 3
     loop: false
-    status: silent
+    status: draft
+    prompt: field recording of a real military truck diesel engine starting and revving up as it pulls away, tires on gravel
   vehicle.damage:
     category: vehicle
     kind: sfx
@@ -789,15 +862,7 @@ entries:
     variants: 7
     seconds: 13.33
     loop: false
-    status: draft
-    brief: A heavy, metallic impact followed by the chaotic grinding of twisted steel and internal mechanical failure. The sound should convey significant structural damage with a gritty, high-energy texture.
-    prompt: heavy metallic impact, screeching twisted metal, mechanical grinding, debris scattering, harsh industrial textures, high energy, cinematic sound design, 1.9 seconds
-    tags:
-      - impact
-      - metal
-      - mechanical
-      - destruction
-      - crunchy
+    status: todo
   building.complete:
     category: building
     kind: sfx
@@ -805,15 +870,7 @@ entries:
     variants: 3
     seconds: 3.74
     loop: false
-    status: draft
-    brief: A heavy mechanical sequence featuring a deep hydraulic hiss followed by a resonant metallic clunk and a low-frequency power hum. The sound should convey the satisfying conclusion of a large industrial construction process.
-    prompt: heavy industrial machinery, hydraulic release, deep metallic impact, low-frequency power surge, mechanical completion, cinematic foley, 1.25 seconds
-    tags:
-      - mechanical
-      - industrial
-      - impact
-      - hydraulic
-      - heavy
+    status: todo
   building.construct:
     category: building
     kind: sfx
@@ -821,15 +878,7 @@ entries:
     variants: 8
     seconds: 18.5
     loop: true
-    status: draft
-    brief: A rhythmic industrial loop featuring heavy mechanical clanking, metallic grinding, and high-frequency sparks to signify ongoing structural assembly.
-    prompt: heavy industrial machinery, rhythmic metallic clanking and grinding, mechanical construction sounds, high-frequency electrical sparks, repetitive loop, cinematic foley, 2.31s
-    tags:
-      - mechanical
-      - industrial
-      - construction
-      - metallic
-      - rhythmic
+    status: todo
   building.damage:
     category: building
     kind: sfx
@@ -837,15 +886,7 @@ entries:
     variants: 8
     seconds: 10.07
     loop: false
-    status: draft
-    brief: A heavy, structural impact sound featuring crumbling masonry and deep metallic groans. It should convey the sensation of a large concrete edifice fracturing under intense pressure.
-    prompt: heavy structural collapse, crumbling concrete debris, deep metallic groaning, low-frequency impact, gritty texture, cinematic destruction, 1.26 seconds
-    tags:
-      - destruction
-      - impact
-      - debris
-      - mechanical
-      - heavy
+    status: todo
   building.damage.critical:
     category: building
     kind: sfx
@@ -853,15 +894,7 @@ entries:
     variants: 6
     seconds: 12.79
     loop: false
-    status: draft
-    brief: A massive structural collapse featuring heavy, low-frequency impacts followed by the cascading sound of falling debris and settling dust. The sequence should feel catastrophic, ending with a lingering metallic groan.
-    prompt: heavy industrial structural collapse, massive concrete impact, cascading metal debris, deep sub-bass thuds, gritty mechanical grinding, cinematic destruction, high fidelity, 2.13 seconds
-    tags:
-      - destruction
-      - impact
-      - industrial
-      - debris
-      - collapse
+    status: todo
   building.damage.heavy:
     category: building
     kind: sfx
@@ -869,15 +902,7 @@ entries:
     variants: 7
     seconds: 13.33
     loop: false
-    status: draft
-    brief: A sequence of heavy, structural collapses featuring deep low-end thuds followed by the gritty crunch of crumbling masonry and falling debris. The sound should convey massive weight and the catastrophic failure of a large reinforced structure.
-    prompt: heavy structural collapse, deep bass impacts, crumbling concrete and stone debris, gritty mechanical crunching, cinematic destruction, high energy, 1.9 seconds
-    tags:
-      - destruction
-      - impact
-      - debris
-      - structural
-      - heavy
+    status: todo
   building.die:
     category: building
     kind: sfx
@@ -885,15 +910,7 @@ entries:
     variants: 7
     seconds: 18.31
     loop: false
-    status: draft
-    brief: A heavy structural collapse featuring the grinding of twisted metal and the deep, resonant thud of massive debris hitting the ground. The sound should convey a sense of catastrophic mechanical failure and crumbling masonry.
-    prompt: heavy industrial structural collapse, grinding metal screeching, deep bass impact thuds, crumbling concrete debris, cinematic destruction, high energy, 2.6 seconds
-    tags:
-      - destruction
-      - mechanical
-      - impact
-      - debris
-      - industrial
+    status: todo
   building.place:
     category: building
     kind: sfx
@@ -901,15 +918,7 @@ entries:
     variants: 1
     seconds: 3.51
     loop: false
-    status: draft
-    brief: A heavy mechanical sequence involving deep structural thuds, grinding metal gears, and a resonant hydraulic hiss to signify the deployment of a large structure.
-    prompt: heavy industrial construction, deep mechanical thuds, grinding metal textures, hydraulic pressure release, rhythmic structural assembly, cinematic low-end impact, high fidelity, 3.5 seconds
-    tags:
-      - mechanical
-      - industrial
-      - construction
-      - heavy
-      - impact
+    status: todo
   building.select.barracks.russia:
     category: building
     kind: sfx
@@ -917,15 +926,7 @@ entries:
     variants: 1
     seconds: 4.11
     loop: false
-    status: draft
-    brief: A heavy industrial mechanical activation sound featuring deep low-end thuds and rhythmic metallic clanking. It should convey the sense of large structural components locking into place or heavy machinery powering up.
-    prompt: heavy industrial mechanical activation, deep low-frequency hydraulic thuds, rhythmic metallic clanking and grinding, heavy structural locking mechanism, cinematic sound design, high impact, 4 seconds
-    tags:
-      - industrial
-      - mechanical
-      - heavy
-      - metallic
-      - construction
+    status: todo
   building.select.barracks.ukraine:
     category: building
     kind: sfx
@@ -933,15 +934,7 @@ entries:
     variants: 1
     seconds: 1.99
     loop: false
-    status: draft
-    brief: A heavy mechanical activation sound featuring a low-frequency thud followed by rising electrical hums and metallic clanking. It should convey the sense of a large structure powering up or being engaged.
-    prompt: heavy industrial machinery power-up, deep mechanical thud, rising electrical hum, metallic clanking, cinematic impact, high fidelity, 2 seconds
-    tags:
-      - mechanical
-      - industrial
-      - power-up
-      - heavy
-      - metallic
+    status: todo
   building.select.factory.russia:
     category: building
     kind: sfx
@@ -949,15 +942,7 @@ entries:
     variants: 1
     seconds: 3.65
     loop: false
-    status: draft
-    brief: A heavy industrial mechanical activation sound featuring deep hydraulic hisses and the grinding of massive steel gears. The sound should convey a sense of large-scale machinery powering up and locking into place.
-    prompt: heavy industrial machinery power-up, deep hydraulic hiss, grinding metal gears, mechanical clunks, low-frequency rumble, cinematic sound design, high fidelity, 3.65 seconds
-    tags:
-      - industrial
-      - mechanical
-      - heavy
-      - machinery
-      - metallic
+    status: todo
   building.select.factory.ukraine:
     category: building
     kind: sfx
@@ -965,15 +950,7 @@ entries:
     variants: 1
     seconds: 3.42
     loop: false
-    status: draft
-    brief: A heavy industrial mechanical sequence featuring deep metallic clangs and the whirring of large gears engaging. The sound should convey a sense of massive machinery powering up and locking into place.
-    prompt: heavy industrial machinery, deep metallic clanks, hydraulic hisses, rotating heavy gears, mechanical locking mechanism, cinematic impact, high fidelity, 3.42 seconds
-    tags:
-      - industrial
-      - mechanical
-      - metallic
-      - heavy
-      - machinery
+    status: todo
   building.select.hq.russia:
     category: building
     kind: sfx
@@ -981,15 +958,7 @@ entries:
     variants: 1
     seconds: 4.39
     loop: false
-    status: draft
-    brief: A heavy, mechanical activation sequence featuring deep low-end hums and rhythmic hydraulic pressurized releases. The sound should convey the massive scale of a central command structure powering up or being engaged.
-    prompt: heavy industrial machinery activation, deep sub-bass drone, rhythmic hydraulic steam hisses, mechanical clunks, cinematic sci-fi tech, high fidelity, 4.4 seconds
-    tags:
-      - mechanical
-      - industrial
-      - sci-fi
-      - heavy
-      - tech
+    status: todo
   building.select.hq.ukraine:
     category: building
     kind: sfx
@@ -997,15 +966,7 @@ entries:
     variants: 1
     seconds: 2.73
     loop: false
-    status: draft
-    brief: A high-tech digital interface confirmation sound featuring sharp electronic chirps and a low-frequency mechanical hum. It should convey the activation of a major strategic hub through layered synthesized pulses.
-    prompt: high-tech digital UI confirmation, sharp electronic chirps, rhythmic synthetic pulses, low frequency mechanical hum, clean production, sci-fi interface, 2.7 seconds
-    tags:
-      - ui
-      - sci-fi
-      - digital
-      - electronic
-      - interface
+    status: todo
   ui.cashDown:
     category: ui
     kind: ui
@@ -1013,15 +974,7 @@ entries:
     variants: 1
     seconds: 0.15
     loop: false
-    status: draft
-    brief: A high-frequency digital chirp with a sharp, percussive onset and a rapid, shimmering decay. It should feel like a clean, high-tech data confirmation or a quick electronic pulse.
-    prompt: digital UI notification, sharp transient, high-pitched sine sweep, electronic blip, clean futuristic texture, fast decay, 0.15s
-    tags:
-      - ui
-      - digital
-      - blip
-      - high-pitched
-      - short
+    status: todo
   ui.cashUp:
     category: ui
     kind: ui
@@ -1029,15 +982,7 @@ entries:
     variants: 1
     seconds: 0.12
     loop: false
-    status: draft
-    brief: A sharp, high-frequency digital chime that conveys a sense of rapid accumulation and success. It should feel clean, electronic, and instantaneous.
-    prompt: high-pitched digital UI notification, bright synthetic chime, rapid attack, shimmering electronic texture, clean production, 0.12s
-    tags:
-      - ui
-      - digital
-      - chime
-      - success
-      - short
+    status: todo
   ui.click:
     category: ui
     kind: ui
@@ -1045,15 +990,7 @@ entries:
     variants: 1
     seconds: 0.19
     loop: false
-    status: draft
-    brief: A sharp, high-frequency digital transient with a clean, percussive snap. It should feel like a crisp electronic confirmation for a user interface interaction.
-    prompt: high-pitched digital click, sharp transient, electronic UI feedback, clean percussion, short decay, 0.2 seconds
-    tags:
-      - ui
-      - click
-      - digital
-      - sharp
-      - interface
+    status: todo
   ui.disabled:
     category: ui
     kind: ui
@@ -1061,15 +998,7 @@ entries:
     variants: 1
     seconds: 2.96
     loop: false
-    status: draft
-    brief: A low-frequency, digital error notification characterized by a heavy, rhythmic pulsing of static and descending electronic tones. It should convey a sense of system failure or an invalid command through a gritty, textured sonic decay.
-    prompt: low-frequency digital glitch, rhythmic pulsing static, descending electronic hum, heavy texture, dark cinematic UI feedback, 3 seconds
-    tags:
-      - glitch
-      - ui
-      - error
-      - digital
-      - low-frequency
+    status: todo
   ui.error:
     category: ui
     kind: ui
@@ -1077,15 +1006,7 @@ entries:
     variants: 1
     seconds: 0.19
     loop: false
-    status: draft
-    brief: A sharp, digital glitch with a high-energy burst that quickly dissipates. It should feel like a sudden electronic error or a failed system command.
-    prompt: digital glitch, high-frequency burst, sharp attack, rapid decay, electronic error, short staccato, 0.2s
-    tags:
-      - ui
-      - glitch
-      - digital
-      - error
-      - staccato
+    status: todo
   ui.radarOff:
     category: ui
     kind: ui
@@ -1093,15 +1014,7 @@ entries:
     variants: 1
     seconds: 1.36
     loop: false
-    status: draft
-    brief: A high-tech electronic power-down sequence featuring a descending frequency sweep and a sudden loss of electrical hum. The sound should feel like a digital system shutting down or losing signal.
-    prompt: digital UI power-down, descending electronic pitch sweep, low-frequency hum fading into silence, high-tech glitchy texture, clean production, 1.4 seconds
-    tags:
-      - ui
-      - electronic
-      - descending
-      - digital
-      - shutdown
+    status: todo
   ui.radarOn:
     category: ui
     kind: ui
@@ -1109,15 +1022,7 @@ entries:
     variants: 1
     seconds: 1.85
     loop: false
-    status: draft
-    brief: A high-tech digital sweep that begins with a sharp, ascending frequency chirp followed by a sustained, low-energy electronic hum. The sound should feel like an interface powering up and stabilizing.
-    prompt: digital UI sweep, high-pitched ascending sine chirp transitioning into a steady low-frequency electronic drone, clean futuristic texture, sharp attack, 1.85 seconds
-    tags:
-      - ui
-      - digital
-      - sweep
-      - tech
-      - interface
+    status: todo
   ui.warning:
     category: ui
     kind: ui
@@ -1125,15 +1030,7 @@ entries:
     variants: 1
     seconds: 0.63
     loop: false
-    status: draft
-    brief: A high-priority digital alert featuring a rapid, ascending series of sharp electronic pulses that cut through the mix. The sound should feel urgent and synthetic, conveying an immediate tactical warning.
-    prompt: digital UI alert, rapid ascending sequence of sharp electronic staccato pulses, high-frequency synthetic chirps, urgent rhythmic pattern, clean production, 0.63 seconds
-    tags:
-      - ui
-      - alert
-      - digital
-      - synthetic
-      - urgent
+    status: todo
   ambient.snow:
     category: ambient
     kind: ambient
@@ -1141,15 +1038,7 @@ entries:
     variants: 2
     seconds: 10.85
     loop: true
-    status: draft
-    brief: A continuous, low-frequency atmospheric drone representing a heavy snowstorm. It should feature a thick, textured layer of white noise with subtle, shifting granular movements to simulate wind gusts.
-    prompt: heavy blizzard atmosphere, thick white noise texture, low-frequency rumble, granular wind gusts, seamless loop, cinematic ambient, 11 seconds
-    tags:
-      - ambient
-      - weather
-      - snow
-      - wind
-      - texture
+    status: todo
   ambient.temperate:
     category: ambient
     kind: ambient
@@ -1157,15 +1046,7 @@ entries:
     variants: 3
     seconds: 5.92
     loop: true
-    status: draft
-    brief: A continuous, low-frequency environmental drone layered with rhythmic, textured wind gusts and distant atmospheric rustling. The sound should provide a steady, non-intrusive background layer for temperate outdoor environments.
-    prompt: ambient environmental drone, low frequency hum, rhythmic wind gusts, textured rustling, continuous loop, cinematic atmosphere, high fidelity, 6 seconds
-    tags:
-      - ambient
-      - wind
-      - drone
-      - nature
-      - atmospheric
+    status: todo
   music.calm.russia:
     category: music
     kind: music
@@ -1173,15 +1054,7 @@ entries:
     variants: 1
     seconds: 192.09
     loop: true
-    status: draft
-    brief: A somber and atmospheric Russian-inspired ambient piece featuring low-frequency drones and melancholic, sparse melodic textures. The sound should evoke a sense of stillness and quiet tension through slow-evolving pads and subtle rhythmic pulses.
-    prompt: ambient Russian folk atmosphere, melancholic low drones, sparse minor key melodic textures, slow tempo, cinematic pads, lo-fi warmth, 192 seconds
-    tags:
-      - ambient
-      - russian
-      - melancholic
-      - cinematic
-      - drone
+    status: todo
   music.calm.ukraine:
     category: music
     kind: music
@@ -1189,15 +1062,7 @@ entries:
     variants: 1
     seconds: 197.7
     loop: true
-    status: draft
-    brief: A somber and atmospheric Ukrainian-inspired ambient piece featuring melancholic string textures and subtle, rhythmic pulses. The sound should evoke a sense of quiet resilience through low-frequency drones and sparse, high-register melodic fragments.
-    prompt: melancholic Ukrainian ambient music, cinematic strings and soft drones, slow tempo, atmospheric texture with periodic rhythmic pulses, high fidelity, 197 seconds
-    tags:
-      - ambient
-      - melancholic
-      - cinematic
-      - ukrainian
-      - atmospheric
+    status: todo
   music.combat.russia:
     category: music
     kind: music
@@ -1205,15 +1070,7 @@ entries:
     variants: 1
     seconds: 185.29
     loop: true
-    status: draft
-    brief: A high-intensity, driving orchestral combat theme featuring heavy rhythmic percussion and aggressive low-end brass stabs. The track should maintain a relentless, militaristic momentum suitable for large-scale battlefield engagement.
-    prompt: Aggressive orchestral combat music, heavy cinematic percussion, rhythmic low brass stabs, driving militaristic tempo, intense and dark atmosphere, high energy, 185 seconds
-    tags:
-      - orchestral
-      - combat
-      - militaristic
-      - percussive
-      - intense
+    status: todo
   music.combat.ukraine:
     category: music
     kind: music
@@ -1221,15 +1078,7 @@ entries:
     variants: 1
     seconds: 187.7
     loop: true
-    status: draft
-    brief: A high-intensity, driving cinematic combat theme featuring aggressive rhythmic percussion and dark, swelling orchestral textures. The sound should convey a sense of urgent, large-scale warfare through heavy low-end energy and sharp rhythmic pulses.
-    prompt: cinematic orchestral combat music, aggressive percussion ensemble, dark driving strings, fast tempo, intense rhythmic stabs, epic war atmosphere, high energy, 187 seconds
-    tags:
-      - cinematic
-      - orchestral
-      - combat
-      - percussive
-      - intense
+    status: todo
   music.defeat.russia:
     category: music
     kind: music
@@ -1237,15 +1086,7 @@ entries:
     variants: 1
     seconds: 32.61
     loop: false
-    status: draft
-    brief: A somber, cinematic orchestral piece conveying a sense of tragic loss and fallen grandeur. It should feature heavy low-end drones transitioning into mournful, sweeping string arrangements with a slow, funeral tempo.
-    prompt: cinematic orchestral tragedy, mournful strings and deep brass drones, slow funeral tempo, dramatic swells and heavy low-end energy, melancholic atmosphere, high fidelity, 33 seconds
-    tags:
-      - orchestral
-      - melancholic
-      - cinematic
-      - defeat
-      - dark
+    status: todo
   music.defeat.ukraine:
     category: music
     kind: music
@@ -1253,15 +1094,7 @@ entries:
     variants: 1
     seconds: 52.51
     loop: false
-    status: draft
-    brief: A somber, cinematic orchestral piece conveying profound loss and heavy mourning through low-frequency drones and tragic string swells. The sound should feel desolate, slow-moving, and emotionally crushing.
-    prompt: cinematic dark orchestral, mourning strings, low frequency drone, slow tempo, tragic atmosphere, heavy reverb, melancholic swells, 52 seconds
-    tags:
-      - orchestral
-      - melancholic
-      - cinematic
-      - dark
-      - mournful
+    status: todo
   music.menu:
     category: music
     kind: music
@@ -1269,15 +1102,7 @@ entries:
     variants: 1
     seconds: 190.86
     loop: true
-    status: draft
-    brief: A high-tension, cinematic electronic theme featuring driving rhythmic pulses and dark, sweeping textures. It should build a sense of impending conflict through layered industrial drones and sharp percussive accents.
-    prompt: dark cinematic industrial techno, driving rhythmic synth pulses, heavy low-end drones, aggressive electronic percussion, tension-building structure, high production value, 190 seconds
-    tags:
-      - cinematic
-      - industrial
-      - electronic
-      - tension
-      - rhythmic
+    status: todo
   music.victory.russia:
     category: music
     kind: music
@@ -1285,15 +1110,7 @@ entries:
     variants: 1
     seconds: 33.55
     loop: false
-    status: draft
-    brief: A triumphant and imposing orchestral stinger featuring heavy brass, driving percussion, and a sense of grand imperial scale. The sound should build with rhythmic intensity to celebrate a decisive victory.
-    prompt: cinematic orchestral victory theme, powerful brass sections, heavy rhythmic percussion, epic staccato strings, triumphant and grand, high energy, 34 seconds
-    tags:
-      - orchestral
-      - triumphant
-      - cinematic
-      - brass
-      - percussive
+    status: todo
   music.victory.ukraine:
     category: music
     kind: music
@@ -1301,15 +1118,7 @@ entries:
     variants: 1
     seconds: 41.33
     loop: false
-    status: draft
-    brief: A triumphant and swelling orchestral anthem that builds from a low, rhythmic foundation into a grand, heroic crescendo. It should evoke a sense of hard-won victory and national pride through rising melodic energy.
-    prompt: cinematic orchestral anthem, heroic brass and swelling strings, driving rhythmic percussion, crescendo structure, epic production, high fidelity, 41 seconds
-    tags:
-      - orchestral
-      - triumphant
-      - cinematic
-      - victory
-      - heroic
+    status: todo
   voice.building.attack:
     category: voice
     kind: voice

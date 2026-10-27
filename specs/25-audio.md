@@ -336,7 +336,8 @@ fall back through a chain so every weapon sounds like something:
 * Unit: `voice.<typeId>.<event>` -> `voice.<category>.<event>`.
   Movement: `move.<typeId>.start` -> `move.<locomotor>` (one-shot
   acceleration sample). Damage state: `vehicle.damage` on the 50 % crossing.
-  Footsteps are not a Zero Hour event; they are future original content.
+  Footsteps are not a Zero Hour event; `move.foot` is our original content
+  (owner, 2026-10-27): a short squad jog-off on move start.
 * Building: `building.<typeId>.<place|complete|working|die>` -> by category;
   runtime damage events are `building.damage`, `building.damage.heavy` and
   `building.damage.critical`.
@@ -398,7 +399,13 @@ fall back through a chain so every weapon sounds like something:
    ground units fire a discrete `SoundMoveStart` when acceleration begins
    (`ThingTemplate.h:111`, `AIStates.cpp:1696-1714`); Zero Hour's `Object.ini`
    defaults `SoundMoveLoop = NoSound` and only civilian transports override it,
-   so our ground units likewise have no continuous engine loop. We play the
+   so our ground units likewise have no continuous engine loop. **Owner change (2026-10-27):** vehicles
+   also run our own positional sample loops, modelled on Zero Hour's
+   `GenericTankMoveLoop` and `TurretMoveLoop`: `move.loop.tracks` /
+   `move.loop.wheels` while moving, and `move.turret` (hydraulic servos) while
+   the turret or launcher slews relative to the hull; infantry play
+   `move.foot` on move start. All are samples reconciled per snapshot by
+   `syncUnitLoops`, never oscillators. We play the
    `SoundMoveStart` sample once and never open an oscillator on the effects
    bus. Construction and ambient loops are **sample** loops started/stopped from
    snapshot state, at most `limit` per event, with the Zero Hour

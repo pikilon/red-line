@@ -224,6 +224,14 @@
       "/audio/sfx/impact.thermobaric_5.webm",
       "/audio/sfx/impact.thermobaric_6.webm"
     ],
+    "move.foot": [
+      "/audio/sfx/move.foot_1.webm",
+      "/audio/sfx/move.foot_2.webm",
+      "/audio/sfx/move.foot_3.webm",
+      "/audio/sfx/move.foot_4.webm"
+    ],
+    "move.loop.tracks": ["/audio/sfx/move.loop.tracks_1.webm"],
+    "move.loop.wheels": ["/audio/sfx/move.loop.wheels_1.webm"],
     "move.ru-bmp-2.start": [
       "/audio/sfx/move.ru-bmp-2.start_1.webm",
       "/audio/sfx/move.ru-bmp-2.start_2.webm",
@@ -259,6 +267,22 @@
       "/audio/sfx/move.ru-tos-1a.start_3.webm",
       "/audio/sfx/move.ru-tos-1a.start_4.webm"
     ],
+    "move.stop.tracks": [
+      "/audio/sfx/move.stop.tracks_1.webm",
+      "/audio/sfx/move.stop.tracks_2.webm",
+      "/audio/sfx/move.stop.tracks_3.webm"
+    ],
+    "move.stop.wheels": [
+      "/audio/sfx/move.stop.wheels_1.webm",
+      "/audio/sfx/move.stop.wheels_2.webm",
+      "/audio/sfx/move.stop.wheels_3.webm"
+    ],
+    "move.tracked": [
+      "/audio/sfx/move.tracked_1.webm",
+      "/audio/sfx/move.tracked_2.webm",
+      "/audio/sfx/move.tracked_3.webm"
+    ],
+    "move.turret": ["/audio/sfx/move.turret_1.webm"],
     "move.ua-bradley.start": [
       "/audio/sfx/move.ua-bradley.start_1.webm",
       "/audio/sfx/move.ua-bradley.start_2.webm",
@@ -296,6 +320,11 @@
       "/audio/sfx/move.ua-supply-truck.start_1.webm",
       "/audio/sfx/move.ua-supply-truck.start_2.webm",
       "/audio/sfx/move.ua-supply-truck.start_3.webm"
+    ],
+    "move.wheeled": [
+      "/audio/sfx/move.wheeled_1.webm",
+      "/audio/sfx/move.wheeled_2.webm",
+      "/audio/sfx/move.wheeled_3.webm"
     ],
     "music.calm.russia": ["/audio/music/calm.russia_1.webm"],
     "music.calm.ukraine": ["/audio/music/calm.ukraine_1.webm"],

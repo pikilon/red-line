@@ -23,7 +23,7 @@ TRIM = "silenceremove=start_periods=1:start_threshold=-50dB,areverse,silenceremo
 # Longest one-shot per event family (seconds). Zero Hour's samples are short; long
 # generated tails overlap in a fight and read as a noise bed.
 CAPS = [("weapon.", 1.4), ("impact.", 0.9), ("explosion.small", 1.8), ("explosion.medium", 2.6),
-        ("explosion.large", 3.5), ("explosion.", 2.5), ("move.", 1.8), ("vehicle.", 1.8),
+        ("explosion.large", 3.5), ("explosion.", 2.5), ("move.", 4.0), ("vehicle.", 1.8),
         ("building.", 3.0), ("ui.", 0.5)]
 
 
@@ -49,6 +49,8 @@ for ev, e in inventory().items():
             chain, br, ch = TRIM + "highpass=f=180,lowpass=f=6000,acompressor=threshold=-18dB:ratio=3,loudnorm=I=-20:TP=-2,", "32k", 1
         elif k == "music":
             chain, br, ch = (loop_chain(src, 4) if e.get("loop") else "") + "loudnorm=I=-16:TP=-1.5,", "96k", 2
+        elif k == "sfx" and e.get("loop"):  # positional loops: seamless, never capped
+            chain, br, ch = "afftdn=nf=-35," + loop_chain(src, 2) + "loudnorm=I=-20:TP=-3,", "64k", 1
         elif k == "ambient":
             chain, br, ch = loop_chain(src, 2) + "loudnorm=I=-24:TP=-3,", "96k", 2
         else:

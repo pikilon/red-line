@@ -30,6 +30,7 @@ import type {
   AudioDebugEntry,
   AudioPlayRequest,
   ConstructionLoopState,
+  UnitLoopState,
 } from "./types";
 
 export interface VolumeSettings {
@@ -413,7 +414,30 @@ export class AudioMixer {
    * At most `building.construct.limit` sites run at once, nearest first.
    */
   syncConstructionLoops(loops: readonly ConstructionLoopState[]): void {
-    const def = resolveEventDef(this.catalog, "building.construct");
+    this.syncLoopGroup("construction:", "building.construct", loops);
+  }
+
+  /** Same reconcile for unit loops (tracks, wheels, turret servos), per event. */
+  syncUnitLoops(loops: readonly UnitLoopState[]): void {
+    for (const eventId of [
+      "move.loop.tracks",
+      "move.loop.wheels",
+      "move.turret",
+    ] as const) {
+      this.syncLoopGroup(
+        `${eventId}:`,
+        eventId,
+        loops.filter((loop) => loop.eventId === eventId),
+      );
+    }
+  }
+
+  private syncLoopGroup(
+    prefix: string,
+    eventId: string,
+    loops: readonly ConstructionLoopState[],
+  ): void {
+    const def = resolveEventDef(this.catalog, eventId);
     if (!def) return;
     const limit = Math.max(1, def.limit ?? 2);
     const minDistance = def.minDistance ?? 10;
@@ -434,16 +458,14 @@ export class AudioMixer {
       .sort((a, b) => a.dist - b.dist)
       .slice(0, limit);
 
-    const keep = new Set(
-      active.map(({ loop }) => `construction:${loop.entityId}`),
-    );
+    const keep = new Set(active.map(({ loop }) => `${prefix}${loop.entityId}`));
     for (const key of [...this.sampleLoops.keys()]) {
-      if (key.startsWith("construction:") && !keep.has(key)) {
+      if (key.startsWith(prefix) && !keep.has(key)) {
         this.stopSampleLoop(key);
       }
     }
     for (const key of [...this.loopRequests.keys()]) {
-      if (key.startsWith("construction:") && !keep.has(key)) {
+      if (key.startsWith(prefix) && !keep.has(key)) {
         this.stopSampleLoop(key);
       }
     }
@@ -456,7 +478,7 @@ export class AudioMixer {
     );
     const now = this.ctx?.currentTime ?? 0;
     for (const { loop, dist } of active) {
-      const key = `construction:${loop.entityId}`;
+      const key = `${prefix}${loop.entityId}`;
       const volume =
         ((def.volume ?? 100) / 100) *
         distanceAttenuation(dist, minDistance, maxDistance) *
@@ -477,7 +499,7 @@ export class AudioMixer {
       } else if (!this.loopRequests.has(key)) {
         this.startSampleLoop({
           key,
-          eventId: "building.construct",
+          eventId,
           bus: "sfx",
           volume,
           pan,
