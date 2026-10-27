@@ -273,7 +273,12 @@ export class AudioMixer {
       if (!this.loader.isProbeDone()) {
         await this.loader.initReferencePack();
       }
-      const zhUrls = this.loader.resolveZhUrls(next.soundRef);
+      // Our own EVA take (`eva.<faction>.<event>`) wins over the reference pack.
+      const own = this.loader.shippedSounds(
+        `eva.${next.faction}.${next.eventId}`,
+      );
+      const zhUrls =
+        own.length > 0 ? own : this.loader.resolveZhUrls(next.soundRef);
       const pickedUrl =
         zhUrls.length > 0
           ? zhUrls[pickVariantIndex(zhUrls.length, true, undefined)]
