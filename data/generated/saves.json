@@ -168,6 +168,12 @@
       "map": "showcase",
       "form": "setup",
       "entities": 26
+    },
+    {
+      "id": "landscape-lab",
+      "map": "landscape-lab",
+      "form": "setup",
+      "entities": 4
     }
   ]
 }

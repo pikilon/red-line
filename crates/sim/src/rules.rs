@@ -312,9 +312,74 @@ pub struct MapDef {
     /// `(width + 1) x (height + 1)`; empty for a flat map (spec 30 §3).
     #[serde(default)]
     pub heights: String,
+    /// Spec 26 Phase 1 per-cell layers, two hex digits per cell, row-major
+    /// `width x height`; empty when the map has no `terrain:` section. Ground
+    /// material and road type ids are the indices of `layerNames` in the
+    /// ruleset JSON (client side), a water byte is `depth | kind << 2`
+    /// (`WATER_*` in `map.rs`).
+    #[serde(default)]
+    pub ground: String,
+    #[serde(default)]
+    pub roads: String,
+    #[serde(default)]
+    pub water: String,
+    /// Feature instances, already expanded by the data compiler (spec 26).
+    #[serde(default)]
+    pub features: Vec<FeatureInstanceDef>,
+}
+
+/// Which movers a feature footprint stops (spec 26).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum FeatureBlocks {
+    All,
+    /// Accepted by the data; the nav grid has one layer, so it blocks like `All`
+    /// until a later phase splits it.
+    Vehicles,
+    None,
+}
+
+/// A placeable map feature type (`data/features/*.yaml`). The client-only
+/// `render` object is not read here.
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+pub struct FeatureTypeDef {
+    pub id: String,
+    pub family: String,
+    pub footprint: [i32; 2],
+    pub blocks: FeatureBlocks,
+    pub variants: u32,
+}
+
+/// One placed feature: `kind` indexes `Ruleset::feature_types`, `(x, y)` is the
+/// top-left cell of the footprint after `rot` quarter turns (odd turns swap
+/// width and height), `state` is 0 intact, 1 damaged, 2 wrecked, 3 abandoned.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+pub struct FeatureInstanceDef {
+    #[serde(rename = "type")]
+    pub kind: u32,
+    pub x: i32,
+    pub y: i32,
+    pub rot: u8,
+    pub variant: u32,
+    pub state: u8,
 }
 
 impl MapDef {
+    /// The decoded ground layer; empty without a `terrain:` section.
+    pub fn ground_cells(&self) -> Vec<u8> {
+        decode_hex(&self.ground).unwrap_or_default()
+    }
+
+    /// The decoded road layer; empty without a `terrain:` section.
+    pub fn road_cells(&self) -> Vec<u8> {
+        decode_hex(&self.roads).unwrap_or_default()
+    }
+
+    /// The decoded water layer; empty without a `terrain:` section.
+    pub fn water_cells(&self) -> Vec<u8> {
+        decode_hex(&self.water).unwrap_or_default()
+    }
+
     /// The decoded corner heights; empty when the map is flat or `heights`
     /// is not valid hex.
     pub fn corner_heights(&self) -> Vec<u8> {
@@ -382,6 +447,9 @@ pub struct Ruleset {
     pub types: Vec<TypeDef>,
     pub factions: Vec<FactionDef>,
     pub maps: Vec<MapDef>,
+    /// Placeable feature types of the maps' `features` (spec 26).
+    #[serde(default)]
+    pub feature_types: Vec<FeatureTypeDef>,
     #[serde(default)]
     pub ai: Vec<AiDef>,
     #[serde(default)]
@@ -591,6 +659,35 @@ impl Ruleset {
                             "maps[{mi}].heights is not {corners} hex-encoded corners"
                         ));
                     }
+                }
+            }
+            let cells = usize::from(m.width) * usize::from(m.height);
+            for (name, layer) in [
+                ("ground", &m.ground),
+                ("roads", &m.roads),
+                ("water", &m.water),
+            ] {
+                if !layer.is_empty() && decode_hex(layer).map(|b| b.len()) != Some(cells) {
+                    return Err(format!(
+                        "maps[{mi}].{name} is not {cells} hex-encoded cells"
+                    ));
+                }
+            }
+            for (fi, f) in m.features.iter().enumerate() {
+                let Some(t) = self.feature_types.get(f.kind as usize) else {
+                    return Err(format!("maps[{mi}].features[{fi}].type is out of range"));
+                };
+                let (w, h) = if f.rot % 2 == 1 {
+                    (t.footprint[1], t.footprint[0])
+                } else {
+                    (t.footprint[0], t.footprint[1])
+                };
+                if f.x < 0
+                    || f.y < 0
+                    || f.x + w > i32::from(m.width)
+                    || f.y + h > i32::from(m.height)
+                {
+                    return Err(format!("maps[{mi}].features[{fi}] is out of the map"));
                 }
             }
             for (si, s) in m.starts.iter().enumerate() {

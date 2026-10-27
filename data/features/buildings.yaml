@@ -1,0 +1,8 @@
+# Spec 26 Phase 1: building feature types (placeholders until the civilian buildings phase).
+types:
+  - id: house-small
+    family: building
+    footprint: [2, 2]
+    blocks: all
+    variants: 2
+    render: { model: house-small, color: "#b9a58b", height: 1.4 }

@@ -12,7 +12,9 @@ use crate::map::{Cell, CellIndex, MapGrid, SPAWN_MAX, SPAWN_MIN, cell_center, ce
 use crate::nav::{approach_cell, footprint_cells, footprint_center};
 use crate::player::Player;
 use crate::rng::SplitMix64;
-use crate::rules::{Category, FactionId, MapDef, Ruleset, TypeId, WeaponId, fx_centi};
+use crate::rules::{
+    Category, FactionId, FeatureBlocks, MapDef, Ruleset, TypeId, WeaponId, fx_centi,
+};
 
 pub type UnitId = EntityId;
 
@@ -176,7 +178,7 @@ pub struct World {
 
 /// Open terrain of `map` with its blocked rectangles (spec 03 §5.6) and its
 /// elevation, cliffs blocked (spec 30).
-pub(crate) fn map_terrain(map: &MapDef) -> MapGrid {
+pub(crate) fn map_terrain(rules: &Ruleset, map: &MapDef) -> MapGrid {
     let mut terrain = MapGrid::open(map.width, map.height);
     for rect in &map.blocked {
         for y in rect[1]..=rect[3] {
@@ -187,6 +189,21 @@ pub(crate) fn map_terrain(map: &MapDef) -> MapGrid {
     }
     // Cliffs block ground movement like rocks (spec 30 §3).
     terrain.set_heights(map.corner_heights());
+    // Spec 26: the layers are stored, deep water blocks, and so do the
+    // footprints of solid features (`vehicles` blocks like `all` for now).
+    terrain.set_layers(map.ground_cells(), map.road_cells(), map.water_cells());
+    for f in &map.features {
+        let def = &rules.feature_types[f.kind as usize];
+        if def.blocks == FeatureBlocks::None {
+            continue;
+        }
+        let (w, h) = if f.rot % 2 == 1 {
+            (def.footprint[1], def.footprint[0])
+        } else {
+            (def.footprint[0], def.footprint[1])
+        };
+        terrain.block_footprint(Cell { x: f.x, y: f.y }, w, h);
+    }
     terrain
 }
 
@@ -255,7 +272,7 @@ impl World {
                 id: map_id.to_string(),
             })?;
 
-        let terrain = map_terrain(&map);
+        let terrain = map_terrain(&rules, &map);
         let factions: Vec<FactionId> = map.starts.iter().map(|start| start.faction).collect();
         let mut world = World::sandbox(rules, terrain, &factions);
 

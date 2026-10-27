@@ -436,3 +436,78 @@ layer machinery; 5 needs the commands UI; 6 is independent and can swap with 5;
 * AC-26-01: the owner picks an order and answers the open questions; each
   accepted phase gets its own spec (garrison, bridges, roads) before code.
 * AC-26-02: this document ships alone: no data, schema or code changes.
+
+## 11. Phase 1 contract (as built)
+
+The shared base the vegetation, ground and road, water and port, and civilian
+building tasks build on. Pattern of spec 30: map YAML, compiled by
+`scripts/build-data.mjs` (layer code in `scripts/map-layers.mjs`) into
+`data/generated/ruleset.json`, read by `crates/sim` and `client/src/render`.
+
+**Map keys (all optional, `data/schema/map.schema.json`).** Rects are inclusive
+cells `[x0,y0,x1,y1]`; a path is `[[x,y],...]` with an integer `width` in cells
+(a cell is covered when its centre is within `width / 2` of the polyline; exact
+integer maths).
+
+```yaml
+terrain:
+  ground: { default: grass, patches: [ {material, rect} | {material, path, width} ] }
+  roads:  [ {type: asphalt|dirt, path, width} ]
+  water:  [ {kind: river|lake|sea, depth: deep|shallow, rect} | {kind, depth, path, width, fords: [[x,y,radius]]} ]
+features:
+  - { type, at: [x,y], rot: 0..3, variant: n, state: intact|damaged|wrecked|abandoned }
+  - { type, area: [x0,y0,x1,y1], density: 0..100, seed: n }
+```
+
+Ground materials (byte = index): grass, dirt, sand, rock, mud, gravel, asphalt,
+concrete, snow-field. Later entries paint over earlier ones; a ford turns the
+cells of its own water entry within `radius` shallow.
+
+**Feature types** (`data/features/<id>.yaml`, listed under `features:` in
+`globals.yaml`, schema `features.schema.json`): `types: [ {id, family, footprint:
+[w,h], blocks: all|vehicles|none, variants, render: {}} ]`; family is
+vegetation, building, prop, port or wall. `render` is free-form for the client.
+Compiled into `featureTypes`.
+
+**Compiled map** (only maps that use the keys carry them): `ground`, `roads`,
+`water` (hex, one byte per cell, row-major) and `features` (`{type, x, y, rot,
+variant, state}`, `type` = index in `featureTypes`, sorted by row, column).
+Water byte = `depth | kind << 2` (depth 0 dry, 1 shallow, 2 deep; kind 1 river,
+2 lake, 3 sea). `layerNames` lists the names of every index. Area entries are
+expanded at compile time by an integer hash of `(seed, x, y)`: density picks the
+cell, the same hash picks variant and rotation (rot only for non-square
+footprints); cells where the footprint does not fit are skipped. Explicit `at`
+entries are placed first and a clash with a blocked cell, deep water, a depot,
+an HQ or another footprint is a data error; roads on deep water and a dozer
+start on a solid cell are errors too.
+
+**Sim.** `MapGrid` keeps `ground_at`, `road_at`, `water_at`, `water_depth_at`
+per cell (empty layers read as 0). `map_terrain` blocks deep water and every
+footprint whose type is not `blocks: none` through the same `blocked` grid as the
+rock rectangles. Shallow water and roads change nothing yet. Layers and features
+are static map input: not in saves or the world hash, legacy maps compile and
+hash unchanged. Test: `crates/sim/tests/map_features.rs`.
+
+**Client** (`client/src/render/features/`). `createMapFeatures(rules, map,
+elevation)` is called by `app/skirmish.ts` and returns one group: ground layer
+object, water object, then one object per family. Extension points, all in
+`registry.ts` (import from `../registry` inside a renderer file):
+
+* `registerFeatureRenderer(family, (instances, ctx) => Object3D)`
+* `registerGroundLayerRenderer((layers, ctx) => Object3D | null)` (ground and roads)
+* `registerWaterRenderer((layers, ctx) => Object3D | null)`
+
+A follow-up adds one file `client/src/render/features/renderers/<name>.ts` that
+calls these at import; `index.ts` imports every file there (`import.meta.glob`),
+so parallel tasks never touch the same file. Defaults (`placeholder.ts`): one
+instanced box per family sized to the footprint on the lowest ground corner
+(`render.color`, `render.height` override), one merged translucent mesh for the
+water (lighter in the shallows), nothing for the ground. `ctx` has `elevation`,
+`layers` (decoded bytes and `names`) and the map size.
+
+**Assumptions.** `blocks: vehicles` is valid data but blocks like `all` until the
+nav grid has a second layer (crate-stack therefore says `all`). Layers stay out of
+the hash and saves because maps are static; runtime changes (destroyed bridge,
+felled tree) will be deltas added by the phase that needs them. `rot` turns the
+footprint in 90 degree steps; its visual direction is up to the family renderer.
+Demo: map and save `landscape-lab` (`/?load=landscape-lab`).

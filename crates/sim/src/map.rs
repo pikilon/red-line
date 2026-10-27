@@ -22,7 +22,21 @@ pub struct MapGrid {
     /// Corner heights in `HEIGHT_STEPS_PER_TILE`ths of a tile, row-major over
     /// `(width + 1) x (height + 1)`; empty for a flat map (spec 30 §3).
     heights: Vec<u8>,
+    /// Spec 26 Phase 1 layers, one byte per cell in `index` order; empty when
+    /// the map has no `terrain:` section. Stored for later phases (speed on
+    /// roads and shallows, vehicle-only water); only deep water changes
+    /// passability today.
+    ground: Vec<u8>,
+    roads: Vec<u8>,
+    water: Vec<u8>,
 }
+
+/// Low two bits of a water byte: 0 dry, 1 shallow, 2 deep (blocks ground movers).
+pub const WATER_DEPTH_MASK: u8 = 3;
+pub const WATER_SHALLOW: u8 = 1;
+pub const WATER_DEEP: u8 = 2;
+/// Bits 2-3 of a water byte: 0 none, 1 river, 2 lake, 3 sea.
+pub const WATER_KIND_SHIFT: u8 = 2;
 
 /// Height steps per tile: one byte per corner, 1/16 tile each, like Zero
 /// Hour's `MAP_HEIGHT_SCALE = MAP_XY_FACTOR / 16` (spec 30 §2).
@@ -40,7 +54,71 @@ impl MapGrid {
             height,
             blocked: vec![false; usize::from(width) * usize::from(height)],
             heights: Vec::new(),
+            ground: Vec::new(),
+            roads: Vec::new(),
+            water: Vec::new(),
         }
+    }
+
+    /// Stores the ground, road and water layers (each empty or one byte per
+    /// cell) and blocks every deep-water cell like a rock (spec 26 Phase 1).
+    /// Panics on a layer of the wrong length.
+    pub fn set_layers(&mut self, ground: Vec<u8>, roads: Vec<u8>, water: Vec<u8>) {
+        let cells = usize::from(self.width) * usize::from(self.height);
+        for layer in [&ground, &roads, &water] {
+            assert!(
+                layer.is_empty() || layer.len() == cells,
+                "a terrain layer must cover every cell"
+            );
+        }
+        for (i, byte) in water.iter().enumerate() {
+            if byte & WATER_DEPTH_MASK == WATER_DEEP {
+                self.blocked[i] = true;
+            }
+        }
+        self.ground = ground;
+        self.roads = roads;
+        self.water = water;
+    }
+
+    /// Blocks every in-map cell of the `w x h` footprint at `origin`.
+    pub fn block_footprint(&mut self, origin: Cell, w: i32, h: i32) {
+        for y in origin.y..origin.y + h {
+            for x in origin.x..origin.x + w {
+                let cell = Cell { x, y };
+                if self.in_bounds(cell) {
+                    self.set_blocked(cell, true);
+                }
+            }
+        }
+    }
+
+    fn layer_at(&self, layer: &[u8], cell: Cell) -> u8 {
+        if layer.is_empty() || !self.in_bounds(cell) {
+            return 0;
+        }
+        layer[self.index(cell) as usize]
+    }
+
+    /// Ground material id of `cell` (index into the ruleset `layerNames.ground`);
+    /// 0 (the default grass) without a `terrain:` section.
+    pub fn ground_at(&self, cell: Cell) -> u8 {
+        self.layer_at(&self.ground, cell)
+    }
+
+    /// Road type id of `cell`: 0 none, 1 asphalt, 2 dirt.
+    pub fn road_at(&self, cell: Cell) -> u8 {
+        self.layer_at(&self.roads, cell)
+    }
+
+    /// Water byte of `cell`: `depth | kind << WATER_KIND_SHIFT`, 0 when dry.
+    pub fn water_at(&self, cell: Cell) -> u8 {
+        self.layer_at(&self.water, cell)
+    }
+
+    /// 0 dry, `WATER_SHALLOW` or `WATER_DEEP`.
+    pub fn water_depth_at(&self, cell: Cell) -> u8 {
+        self.water_at(cell) & WATER_DEPTH_MASK
     }
 
     /// Gives the grid its corner heights and blocks every cliff cell (spec 30
