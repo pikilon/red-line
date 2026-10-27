@@ -35,7 +35,7 @@ describe("civilian builders", () => {
         }
       }
     }
-  });
+  }, 30_000); // builds every type x variant x state: slow on CI runners
 
   it("builds the demo town into two meshes worth of geometry", () => {
     const map = ruleset.maps.find((m) => m.id === "demo-town");
