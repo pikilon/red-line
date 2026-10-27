@@ -18,7 +18,7 @@ export * from "./layers";
 export * from "./registry";
 
 // Renderer modules register themselves when imported (see `registry.ts`).
-import.meta.glob("./renderers/*.ts", { eager: true });
+import.meta.glob(["./renderers/*.ts", "!./renderers/*.test.ts"], { eager: true });
 
 /** The scene object of a map's terrain layers and features: ground, water,
  *  then one object per family that has instances. */
