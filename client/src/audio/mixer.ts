@@ -103,6 +103,7 @@ export class AudioMixer {
       audioMusic: initialVolumes?.audioMusic ?? catalog.mix.buses.music ?? 55,
       strongLanguage: initialVolumes?.strongLanguage ?? true,
     };
+    this.loader.strongLanguage = this.volumes.strongLanguage !== false;
   }
 
   /** Hooks first user gesture to create & resume `AudioContext` and probe `/audio-ref/`. */
@@ -137,6 +138,8 @@ export class AudioMixer {
   }
 
   setVolumes(next: Partial<VolumeSettings>): void {
+    if (next.strongLanguage !== undefined)
+      this.loader.strongLanguage = next.strongLanguage;
     this.volumes = { ...this.volumes, ...next };
     this.applyBusVolumes();
   }

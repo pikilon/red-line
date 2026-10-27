@@ -1,0 +1,414 @@
+# Ukrainian voice/EVA script (spec 25 §5.3); drafted by a local model, review by ear.
+building.die:
+- explicit: false
+  id: 1
+  text: Сука!
+- explicit: true
+  id: 2
+  text: Блядь, нахуй!
+- explicit: true
+  id: 3
+  text: Пиздець нам...
+- explicit: true
+  id: 4
+  text: Йобаний рот!
+- explicit: true
+  id: 5
+  text: А-а-а, бля!
+- explicit: true
+  id: 6
+  text: Срака!
+- explicit: false
+  id: 7
+  text: Прощавай...
+building.select:
+- explicit: false
+  id: 1
+  text: Я тут, кажи.
+foot.attack:
+- explicit: false
+  id: 1
+  text: Йдемо на штурм!
+- explicit: true
+  id: 2
+  text: Погнали, сука, розноси їх!
+- explicit: false
+  id: 3
+  text: Ціль бачу, працюю по ній!
+- explicit: true
+  id: 4
+  text: Всіх нахуй перевб'ємо!
+- explicit: false
+  id: 5
+  text: Виявили ворога, вогонь!
+- explicit: true
+  id: 6
+  text: Давай, блядь, гаси їх!
+- explicit: false
+  id: 7
+  text: Завдання прийнято, вибиваємо!
+foot.created:
+- explicit: false
+  id: 1
+  text: Я готовий, який план, командире?
+foot.die:
+- explicit: false
+  id: 1
+  text: А-а-а!
+- explicit: true
+  id: 2
+  text: Сука!
+- explicit: true
+  id: 3
+  text: Пиздець...
+- explicit: true
+  id: 4
+  text: Йобаний рот!
+- explicit: true
+  id: 5
+  text: Блядь!
+- explicit: true
+  id: 6
+  text: Ой, бля...
+- explicit: true
+  id: 7
+  text: Матір вашу!
+- explicit: false
+  id: 8
+  text: А-ах!
+- explicit: true
+  id: 9
+  text: Нахуй все!
+- explicit: true
+  id: 10
+  text: Твою мать!
+- explicit: false
+  id: 11
+  text: Хрін...
+- explicit: true
+  id: 12
+  text: Срака!
+foot.move:
+- explicit: false
+  id: 1
+  text: Вирушаємо!
+- explicit: true
+  id: 2
+  text: Змінюємо позицію, блядь.
+- explicit: false
+  id: 3
+  text: Рухаємось до точки!
+- explicit: true
+  id: 4
+  text: Погнали, сука, швидше!
+- explicit: false
+  id: 5
+  text: Вперед, шукаємо ціль!
+foot.select:
+- explicit: false
+  id: 1
+  text: Я на зв'язку.
+- explicit: true
+  id: 2
+  text: Кажи, що робити, бля.
+- explicit: false
+  id: 3
+  text: Готовий до роботи.
+- explicit: true
+  id: 4
+  text: Чекаю на наказ, сука.
+- explicit: false
+  id: 5
+  text: Слухаю вас!
+foot.underFire:
+- explicit: false
+  id: 1
+  text: По нам стріляють!
+- explicit: true
+  id: 2
+  text: Блядь, нас притиснули!
+- explicit: true
+  id: 3
+  text: Де допомога, сука?!
+- explicit: true
+  id: 4
+  text: Прикрийте мене, блядь!
+- explicit: false
+  id: 5
+  text: За нами полюють!
+- explicit: true
+  id: 6
+  text: Це пиздець, вони всюди!
+- explicit: true
+  id: 7
+  text: Тут палить, нахуй!
+tracked.attack:
+- explicit: false
+  id: 1
+  text: Зараз ми їх розбудимо!
+- explicit: true
+  id: 2
+  text: Випускаю снаряд, сука!
+- explicit: true
+  id: 3
+  text: Рознесемо їх нахуй в щепки!
+- explicit: true
+  id: 4
+  text: Залиємо їх кров'ю, бля!
+- explicit: false
+  id: 5
+  text: У мене вони на прицілі!
+- explicit: true
+  id: 6
+  text: По полювання почалося, йобаний край!
+tracked.created:
+- explicit: false
+  id: 1
+  text: Бронетанковий підрозділ в строю!
+tracked.die:
+- explicit: false
+  id: 1
+  text: Сука!
+- explicit: true
+  id: 2
+  text: Блядь!
+- explicit: true
+  id: 3
+  text: Пиздець...
+- explicit: true
+  id: 4
+  text: Мать твою!
+- explicit: true
+  id: 5
+  text: А-а-а, бля!
+- explicit: true
+  id: 6
+  text: Нахуй!
+tracked.move:
+- explicit: false
+  id: 1
+  text: Висуваємось на позицію.
+- explicit: false
+  id: 2
+  text: Куди треба, так і зробимо.
+- explicit: true
+  id: 3
+  text: Йдемо вперед, бля.
+- explicit: false
+  id: 4
+  text: Прочісуємо місцевість.
+- explicit: true
+  id: 5
+  text: Захоплюємо нову точку, сука!
+tracked.select:
+- explicit: false
+  id: 1
+  text: Танк на зв'язку.
+- explicit: true
+  id: 2
+  text: Важка броня готова, бля.
+- explicit: true
+  id: 3
+  text: Покажемо їм силу, сука!
+- explicit: false
+  id: 4
+  text: Бронетранспортер до вашого сервісу.
+- explicit: true
+  id: 5
+  text: Чекаю на команду, йобаний рот.
+tracked.underFire:
+- explicit: false
+  id: 1
+  text: Нас обстрілюють!
+- explicit: true
+  id: 2
+  text: Сука, по нам гатять!
+- explicit: true
+  id: 3
+  text: Бля, вони нас затиснули!
+- explicit: true
+  id: 4
+  text: Тут все летить до пизди!
+- explicit: true
+  id: 5
+  text: Йобаний приліт, блядь!
+unit.attack:
+- explicit: false
+  id: 1
+  text: Зараз ми їх розбудимо!
+- explicit: true
+  id: 2
+  text: По снаряду, сука!
+- explicit: true
+  id: 3
+  text: Рознесемо їх нахуй в щепки!
+- explicit: false
+  id: 4
+  text: Замастимо цих гадів мастилом!
+- explicit: false
+  id: 5
+  text: В полі зору, пали їх!
+- explicit: true
+  id: 6
+  text: Давай, блядь, розривай їх!
+unit.created:
+- explicit: false
+  id: 1
+  text: Броньований підрозділ на зв'язку!
+unit.die:
+- explicit: false
+  id: 1
+  text: Сука!
+- explicit: true
+  id: 2
+  text: Блядь!
+- explicit: true
+  id: 3
+  text: Пиздець...
+- explicit: true
+  id: 4
+  text: Йобаний рот!
+- explicit: true
+  id: 5
+  text: А-а-а, нахуй!
+- explicit: false
+  id: 6
+  text: Матір вашу...
+unit.move:
+- explicit: false
+  id: 1
+  text: Вирушаємо в зону цілі.
+- explicit: false
+  id: 2
+  text: Куди треба, так і зробимо.
+- explicit: true
+  id: 3
+  text: Рухаємось, блядь.
+- explicit: false
+  id: 4
+  text: Прочіслюємо місцевість.
+- explicit: true
+  id: 5
+  text: Займаємо позицію, сука.
+unit.select:
+- explicit: false
+  id: 1
+  text: Танк на зв'язку.
+- explicit: true
+  id: 2
+  text: Важка броня готова, блядь.
+- explicit: false
+  id: 3
+  text: Покажемо їм силу?
+- explicit: false
+  id: 4
+  text: Бронегрупа до вашого сервісу.
+- explicit: true
+  id: 5
+  text: Чекаю на команду, сука.
+unit.underFire:
+- explicit: false
+  id: 1
+  text: Нас обстрілюють!
+- explicit: true
+  id: 2
+  text: Блядь, по нам б'ють!
+- explicit: true
+  id: 3
+  text: Сука, повний пиздець!
+- explicit: true
+  id: 4
+  text: Прикрий нас, нахуй!
+- explicit: true
+  id: 5
+  text: Заїбало, вони всюди!
+wheeled.attack:
+- explicit: false
+  id: 1
+  text: Погнали, рознесемо їх у сраку!
+- explicit: true
+  id: 2
+  text: Тут буде весело, сука!
+- explicit: false
+  id: 3
+  text: Покажемо їм, де раки зимують!
+- explicit: true
+  id: 4
+  text: Розривай їх нахуй!
+- explicit: true
+  id: 5
+  text: Забирай все, блядь!
+- explicit: false
+  id: 6
+  text: Вперед! Випалюй їх!
+wheeled.created:
+- explicit: false
+  id: 1
+  text: Пристебніться, блядь, ми виїжджаємо!
+wheeled.die:
+- explicit: false
+  id: 1
+  text: Сука!
+- explicit: true
+  id: 2
+  text: Пиздець...
+- explicit: true
+  id: 3
+  text: Блядь!
+- explicit: true
+  id: 4
+  text: А-а-а, нахуй!
+- explicit: true
+  id: 5
+  text: Йобаний рот!
+- explicit: false
+  id: 6
+  text: Мамочки...
+wheeled.move:
+- explicit: false
+  id: 1
+  text: Газуємо!
+- explicit: true
+  id: 2
+  text: Тільки обережно, блядь!
+- explicit: true
+  id: 3
+  text: Поїхали, сука!
+- explicit: true
+  id: 4
+  text: Давай, подвір, нахуй!
+- explicit: true
+  id: 5
+  text: Нормальний маршрут, бля!
+- explicit: false
+  id: 6
+  text: Рухаємось далі.
+- explicit: true
+  id: 7
+  text: По коням, йобаний бас!
+wheeled.select:
+- explicit: false
+  id: 1
+  text: На зв'язку.
+- explicit: true
+  id: 2
+  text: Колеса крутяться, бля.
+- explicit: false
+  id: 3
+  text: Ми тут, чекаємо.
+- explicit: true
+  id: 4
+  text: Готові до руху, сука.
+wheeled.underFire:
+- explicit: false
+  id: 1
+  text: Нас підбивають, блядь!
+- explicit: true
+  id: 2
+  text: Сука, вони полюють на нас!
+- explicit: true
+  id: 3
+  text: Блять, залізяка розсипається!
+- explicit: true
+  id: 4
+  text: Прикрий нас, нахуй!
