@@ -546,3 +546,27 @@ map data but drawn by the road renderer of the ground task. Demo: map and save
 factory district, south rows of the same apartment block, house, shop, church,
 office tower, factory and gas station in the four states, and an abandoned
 quarter.
+
+## 12. Phase 6 vegetation (as built)
+
+Renderer `client/src/render/features/renderers/vegetation.ts`, types in
+`data/features/vegetation.yaml`, demo `demo-forest` (`/?load=demo-forest`).
+
+* **Types** (`render.model` = type id): pine, fir, oak, birch, poplar, palm,
+  dead-tree (bare), burnt-stump, bush, hedge (footprint 2x1, `rot` turns it).
+  Trees, dead-tree and hedge `blocks: all`; burnt-stump and bush `blocks: none`
+  (decoration). Each has 3 variants; `render.height` is the height in tiles and
+  `render.color` the foliage colour.
+* **Look.** Flat-shaded low-poly pieces (cones, lumpy icospheres, cylinders) merged
+  into one geometry per type, one InstancedMesh per type (10 draw calls at most).
+  Variant 0/1/2 = normal / slim and tall, yellower / wide and short, bluer. Spin,
+  size, tint and a 0.15-tile offset come from an integer hash of the cell (no
+  floats in data, no hash-order), so a map always looks the same.
+* **Wind and snow.** Shared material: vertex-shader sway weighted by height and
+  per-type factor (stumps 0), and upward-facing faces whiten by a `uSnow` uniform.
+  `setVegetationSnow(0..1)` is exported; it is 0.8 when the page URL has a
+  `?weather=` climate, static (not yet tied to the progressive cover of spec 22).
+* **Forests.** One type per `area` entry; overlap areas with different seeds to
+  mix (earlier entries claim cells first, later ones fill the gaps). No `mix` key.
+* **Not done.** Billboard LOD and a draw budget (cost is fine at ~1000 instances),
+  crushing/burning transitions (burnt/dead exist only as types), `state` ignored.

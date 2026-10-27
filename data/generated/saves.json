@@ -180,6 +180,12 @@
       "map": "demo-town",
       "form": "setup",
       "entities": 4
+    },
+    {
+      "id": "demo-forest",
+      "map": "demo-forest",
+      "form": "setup",
+      "entities": 4
     }
   ]
 }
