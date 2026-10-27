@@ -570,3 +570,34 @@ Renderer `client/src/render/features/renderers/vegetation.ts`, types in
   mix (earlier entries claim cells first, later ones fill the gaps). No `mix` key.
 * **Not done.** Billboard LOD and a draw budget (cost is fine at ~1000 instances),
   crushing/burning transitions (burnt/dead exist only as types), `state` ignored.
+
+## 12. Phase 3 (as built): ground materials and roads
+
+Renderer: `client/src/render/features/renderers/groundAndRoads.ts`
+(`registerGroundLayerRenderer`), helpers in `features/ground/`. Two meshes laid
+over the terrain with one quad per cell on the terrain's own corner heights
+(`GROUND_LIFT` / `ROAD_LIFT` plus a polygon offset), so they follow hills; both
+are transparent, so the terrain's grass, dirt noise and cliff mix stay underneath.
+
+* **Ground.** Ground bytes are mapped to a 9-layer generated texture array by
+  name (`grass, dirt, sand, rock, mud, gravel, asphalt, concrete, snow-field`;
+  grass, dirt and rock reuse the terrain's pixels). A CPU-baked weight map (8 px
+  per cell: noise-bent bilinear blend of the four nearest cells, two RGBA8
+  textures) is sampled in the fragment shader (`onBeforeCompile` on a Lambert
+  material); alpha is `1 - weight(grass)` so grass cells show the terrain itself,
+  and the colour alpha fades out on cliff slopes so rock faces still show. Only
+  cells within one cell of a non-grass cell get geometry.
+* **Roads.** The compiled layer holds cells, not paths, so `roadBake.ts` paints
+  one RGBA image of the whole map (up to 2048 px, 16 px per cell): rounded,
+  slightly ragged shape from a noise-bent bilinear coverage; lane centres from a
+  distance transform; dashes only where the distance matches a common road half
+  width (so crossings stay clear); asphalt gets worn shoulders, cracks, patches;
+  dirt gets feathered edges, two tyre ruts and grass tufts. No speed bonus yet.
+* **Assumptions.** Craters and track presses deform the terrain mesh only, so on
+  a non-grass material the overlay hides them (decals still show). Snow is not
+  hooked in: `snow-field` is its own material. Bake cost grows with map area
+  (about a second on 256 x 256). Roads on `rot`/diagonal paths read as a stair of
+  cells softened by the blur.
+* Demo: map and save `demo-ground` (`/?load=demo-ground`): every material in its
+  own patch, a concrete plaza next to an asphalt apron, a muddy field running into
+  sand, a rocky area with gravel, an asphalt crossroads, two dirt tracks.
