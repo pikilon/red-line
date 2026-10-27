@@ -1,0 +1,41 @@
+id: demo-ground                      # required, equals the file name
+width: 64                            # required, 16..256
+height: 64                           # required, 16..256
+blocked: []                          # open ground; ground materials and roads never block
+depots:                              # required; origin = top-left cell
+  - { origin: [8, 44], amount: 10000 }
+  - { origin: [54, 44], amount: 10000 }
+# Spec 26 Phase 3 demo: every ground material side by side, an asphalt crossroads, a dirt track,
+# a muddy field, a concrete plaza, a rocky area and a sandy area. Grass is the default.
+terrain:
+  ground:
+    default: grass
+    patches:
+      # Row of one patch per material (with a grass gap to see each border).
+      - { material: dirt, rect: [3, 4, 10, 11] }
+      - { material: sand, rect: [12, 4, 19, 11] }
+      - { material: rock, rect: [21, 4, 28, 11] }
+      - { material: mud, rect: [30, 4, 37, 11] }
+      - { material: gravel, rect: [39, 4, 46, 11] }
+      - { material: concrete, rect: [48, 4, 55, 11] }
+      - { material: snow-field, rect: [57, 4, 62, 11] }
+      # Concrete plaza with an asphalt apron.
+      - { material: concrete, rect: [3, 15, 16, 25] }
+      - { material: asphalt, rect: [17, 15, 22, 25] }
+      # Muddy field running into sand.
+      - { material: mud, rect: [26, 15, 40, 26] }
+      - { material: sand, rect: [41, 15, 46, 26] }
+      # Rocky area.
+      - { material: rock, path: [[49, 16], [61, 25]], width: 6 }
+      - { material: gravel, path: [[49, 22], [61, 28]], width: 2 }
+      # Sandy shore south-west.
+      - { material: sand, rect: [2, 50, 17, 61] }
+      - { material: dirt, rect: [18, 52, 24, 61] }
+  roads:
+    - { type: asphalt, path: [[0, 33], [63, 33]], width: 3 }
+    - { type: asphalt, path: [[32, 28], [32, 63]], width: 3 }
+    - { type: dirt, path: [[32, 45], [25, 49], [20, 47], [12, 46], [8, 40], [8, 34]], width: 2 }
+    - { type: dirt, path: [[34, 50], [46, 52], [56, 58], [63, 60]], width: 3 }
+starts:                              # required, exactly 2 entries; start i is player i
+  - { faction: ukraine, hq: [8, 28], dozerCenti: [1350, 3050] }
+  - { faction: russia, hq: [52, 28], dozerCenti: [5100, 3050] }

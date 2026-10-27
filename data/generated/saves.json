@@ -186,6 +186,12 @@
       "map": "demo-forest",
       "form": "setup",
       "entities": 4
+    },
+    {
+      "id": "demo-ground",
+      "map": "demo-ground",
+      "form": "setup",
+      "entities": 4
     }
   ]
 }

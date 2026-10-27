@@ -147,6 +147,8 @@
   "saves.demo-town.description": "A small town: main street of shops and houses, apartment blocks, church square, gas station, factory district, the same buildings intact, damaged, wrecked and abandoned, and an abandoned quarter.",
   "saves.demo-forest.name": "Demo forest",
   "saves.demo-forest.description": "Every tree, bush and hedge type: a catalogue of variants, a forest edge, groves, a palm beach, a burnt grove and hedgerows; two tanks per side.",
+  "saves.demo-ground.name": "Ground and roads",
+  "saves.demo-ground.description": "Every ground material side by side, an asphalt crossroads, dirt tracks, a muddy field, a concrete plaza, rocks and sand; two tanks per side.",
   "menu.saveGame": "Save game",
   "menu.loadGame": "Load game",
   "menu.volumeMaster": "Master volume: {pct}%",
