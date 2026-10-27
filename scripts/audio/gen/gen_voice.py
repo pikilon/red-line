@@ -51,6 +51,8 @@ for ev, e in inventory().items():
         else:
             model, spk = UK, uk_speaker("tetiana" if unit == "eva" else "mykyta")
             pick = "tetiana" if unit == "eva" else "mykyta"
-        speak(model, line["text"], out, spk, 1.0 if unit == "eva" else length)
+        # The Ukrainian model is character-based and has no uppercase symbols.
+        text = line["text"].lower() if model == UK else line["text"]
+        speak(model, text, out, spk, 1.0 if unit == "eva" else length)
         write_sidecar(t, event=ev, tool="piper", voice=pick, text=line["text"], explicit=line["explicit"])
 print("voices done")
