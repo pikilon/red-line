@@ -146,6 +146,8 @@ pub const FLAG_GHOST: i32 = 4;
 pub const FLAG_FIRED: i32 = 8;
 /// `requires_power` and the owner has a power deficit.
 pub const FLAG_POWERED_OFF: i32 = 16;
+/// Spec 31 block 2: the unit is garrisoned in a building (shown to its owner only).
+pub const FLAG_INSIDE: i32 = 32;
 
 /// Phase 2 match snapshot (§5.15): header, then every entity visible to
 /// `viewer` plus, for a player viewer, its ghosts, then the viewer's
@@ -186,7 +188,8 @@ pub fn encode_match_snapshot_with_shots(
 
     let mut rows: Vec<(EntityId, [i32; ENTITY_STRIDE])> = Vec::new();
     for entity in world.entities() {
-        if world.is_entity_visible(viewer, entity.id) {
+        let hidden = entity.inside.is_some() && entity.owner != viewer;
+        if !hidden && world.is_entity_visible(viewer, entity.id) {
             rows.push((entity.id, entity_row(world, entity, shots)));
         }
     }
@@ -366,6 +369,9 @@ fn entity_flags(world: &World, entity: &Entity) -> i32 {
     }
     if entity.last_target.is_some() {
         flags |= FLAG_FIRED;
+    }
+    if entity.inside.is_some() {
+        flags |= FLAG_INSIDE;
     }
     if world.rules().ty(entity.kind).requires_power && power_deficit(world, entity.owner) {
         flags |= FLAG_POWERED_OFF;

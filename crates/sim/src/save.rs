@@ -131,6 +131,9 @@ pub struct EntityState {
     /// default, so saves without it load as before.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub locomotion: Option<LocomotionSaveState>,
+    /// Spec 31 block 2: index of the feature this unit garrisons.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inside: Option<u32>,
 }
 
 /// Saved locomotion and turret state of an entity (spec 11 §5.1).
@@ -186,6 +189,10 @@ pub enum OrderState {
     Build {
         order_id: u32,
         building: u32,
+    },
+    Garrison {
+        order_id: u32,
+        feature: u32,
     },
 }
 
@@ -261,6 +268,13 @@ pub enum CommandState {
     Harvest {
         units: Vec<u32>,
         depot: u32,
+    },
+    Garrison {
+        units: Vec<u32>,
+        feature: u32,
+    },
+    Unload {
+        feature: u32,
     },
     Construct {
         dozer: u32,
@@ -703,6 +717,7 @@ fn save_order(order: Order) -> OrderState {
             timer,
         },
         Order::Build { order_id, building } => OrderState::Build { order_id, building },
+        Order::Garrison { order_id, feature } => OrderState::Garrison { order_id, feature },
     }
 }
 
@@ -742,6 +757,7 @@ fn load_order(order: OrderState) -> Order {
             timer,
         },
         OrderState::Build { order_id, building } => Order::Build { order_id, building },
+        OrderState::Garrison { order_id, feature } => Order::Garrison { order_id, feature },
     }
 }
 
@@ -797,6 +813,7 @@ fn save_entity(entity: &Entity, rules: &Ruleset) -> EntityState {
         }),
         site: site.as_ref().map(|site| save_site(site, rules)),
         locomotion: locomotion_save(entity),
+        inside: entity.inside,
     }
 }
 
@@ -865,6 +882,7 @@ fn load_entity(state: &EntityState, rules: &Ruleset) -> Result<Entity, String> {
         reversing: state.locomotion.is_some_and(|l| l.reversing),
         aim: state.locomotion.and_then(|l| l.aim),
         idle_aim_ticks: state.locomotion.map_or(0, |l| l.idle_aim_ticks),
+        inside: state.inside,
     })
 }
 
@@ -952,6 +970,11 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
         Command::Stop { units } => CommandState::Stop {
             units: units.clone(),
         },
+        Command::Garrison { units, feature } => CommandState::Garrison {
+            units: units.clone(),
+            feature: *feature,
+        },
+        Command::Unload { feature } => CommandState::Unload { feature: *feature },
         Command::DebugSpawn { kind, pos } => CommandState::DebugSpawn {
             kind: type_id(rules, *kind),
             pos: vec2(*pos),
@@ -1008,6 +1031,11 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
         CommandState::Stop { units } => Command::Stop {
             units: units.clone(),
         },
+        CommandState::Garrison { units, feature } => Command::Garrison {
+            units: units.clone(),
+            feature: *feature,
+        },
+        CommandState::Unload { feature } => Command::Unload { feature: *feature },
         CommandState::DebugSpawn { kind, pos } => Command::DebugSpawn {
             kind: type_index(rules, kind)?,
             pos: fx_vec2(*pos),
@@ -1082,6 +1110,8 @@ pub enum SetupOrder {
     Harvest(String),
     /// Spec 20 force fire at a ground point, in centi-tiles.
     AttackGroundCenti([i32; 2]),
+    /// Spec 31 block 2: a cell inside the footprint of a garrisonable feature.
+    Garrison([i32; 2]),
 }
 
 /// World, seed and AIs of a setup (spec 19 §3.5). Errors are the `SimError`
@@ -1251,6 +1281,12 @@ impl World {
                 SetupOrder::AttackGroundCenti([x, y]) => Command::AttackGround {
                     units,
                     target: FxVec2::new(signed_centi(*x), signed_centi(*y)),
+                },
+                SetupOrder::Garrison(cell) => Command::Garrison {
+                    units,
+                    feature: world
+                        .feature_at(to_cell(*cell))
+                        .ok_or_else(|| at(format!("no feature at {},{}", cell[0], cell[1])))?,
                 },
             };
             world.enqueue_as(entry.player, command);

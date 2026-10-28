@@ -370,6 +370,9 @@ pub struct FeatureTypeDef {
     /// Spec 31 block 1: the feature burns when hit and spreads the fire.
     #[serde(default)]
     pub flammable: Option<FeatureFlammable>,
+    /// Spec 31 block 2: infantry can garrison this feature; `None` means it cannot.
+    #[serde(default)]
+    pub garrison: Option<GarrisonDef>,
 }
 
 /// Spec 31 block 1: fire on a feature. Everything is an integer.
@@ -388,6 +391,30 @@ pub struct FeatureFlammable {
     /// Ticks a fire lasts before it burns out.
     #[serde(rename = "burnTicks")]
     pub burn_ticks: u32,
+}
+
+/// Spec 31 block 2: garrison data of a feature type (Zero Hour `GarrisonContain`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GarrisonDef {
+    /// Riders the building holds (`ContainMax`).
+    pub slots: u32,
+    /// Range of the occupants' weapons, percent (GameData 133).
+    pub range_pct: u32,
+    /// Damage of the occupants' weapons, percent (GameData 125).
+    pub damage_pct: u32,
+    /// Occupants leave when the building is wrecked.
+    pub evict_on_wrecked: bool,
+    /// Zero Hour `AllowNeutralInside`: an empty (neutral) building accepts riders.
+    #[serde(default = "default_true")]
+    pub allow_neutral: bool,
+    /// Zero Hour `AllowEnemiesInside`: riders may join a building held by another player.
+    #[serde(default)]
+    pub allow_enemies: bool,
+}
+
+fn default_true() -> bool {
+    true
 }
 
 /// Spec 31: damage thresholds of a feature type, percent of hit points.
@@ -497,6 +524,10 @@ pub struct AiDef {
     pub faction: FactionId,
     pub harvesters: u32,
     pub defense_radius_centi: u32,
+    /// Spec 31 block 2: enemy infantry this close to a garrisonable building
+    /// make the AI garrison it; `0` turns the rule off.
+    #[serde(default)]
+    pub garrison_radius_centi: u32,
     pub build_order: Vec<TypeId>,
     pub task_forces: Vec<TaskForceDef>,
     pub triggers: Vec<TriggerDef>,

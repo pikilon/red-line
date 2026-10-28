@@ -2025,6 +2025,12 @@
         "collapseTicks": 60
       },
       "crushLevel": 0,
+      "garrison": {
+        "slots": 4,
+        "rangePct": 133,
+        "damagePct": 125,
+        "evictOnWrecked": true
+      },
       "render": {
         "model": "house-small"
       }
@@ -2048,6 +2054,12 @@
         "collapseTicks": 60
       },
       "crushLevel": 0,
+      "garrison": {
+        "slots": 6,
+        "rangePct": 133,
+        "damagePct": 125,
+        "evictOnWrecked": true
+      },
       "render": {
         "model": "townhouse-row"
       }
@@ -2071,6 +2083,12 @@
         "collapseTicks": 60
       },
       "crushLevel": 0,
+      "garrison": {
+        "slots": 10,
+        "rangePct": 133,
+        "damagePct": 125,
+        "evictOnWrecked": true
+      },
       "render": {
         "model": "apartment-block"
       }
@@ -2094,6 +2112,12 @@
         "collapseTicks": 60
       },
       "crushLevel": 0,
+      "garrison": {
+        "slots": 4,
+        "rangePct": 133,
+        "damagePct": 125,
+        "evictOnWrecked": true
+      },
       "render": {
         "model": "shop"
       }
@@ -2117,6 +2141,12 @@
         "collapseTicks": 60
       },
       "crushLevel": 0,
+      "garrison": {
+        "slots": 3,
+        "rangePct": 133,
+        "damagePct": 125,
+        "evictOnWrecked": true
+      },
       "render": {
         "model": "gas-station"
       }
@@ -2140,6 +2170,12 @@
         "collapseTicks": 60
       },
       "crushLevel": 0,
+      "garrison": {
+        "slots": 10,
+        "rangePct": 133,
+        "damagePct": 125,
+        "evictOnWrecked": true
+      },
       "render": {
         "model": "office-tower"
       }
@@ -2163,6 +2199,12 @@
         "collapseTicks": 60
       },
       "crushLevel": 0,
+      "garrison": {
+        "slots": 8,
+        "rangePct": 133,
+        "damagePct": 125,
+        "evictOnWrecked": true
+      },
       "render": {
         "model": "factory"
       }
@@ -2186,6 +2228,12 @@
         "collapseTicks": 60
       },
       "crushLevel": 0,
+      "garrison": {
+        "slots": 8,
+        "rangePct": 133,
+        "damagePct": 125,
+        "evictOnWrecked": true
+      },
       "render": {
         "model": "church"
       }
@@ -2209,6 +2257,12 @@
         "collapseTicks": 60
       },
       "crushLevel": 0,
+      "garrison": {
+        "slots": 6,
+        "rangePct": 133,
+        "damagePct": 125,
+        "evictOnWrecked": true
+      },
       "render": {
         "model": "warehouse-barn"
       }
@@ -2232,6 +2286,12 @@
         "collapseTicks": 60
       },
       "crushLevel": 0,
+      "garrison": {
+        "slots": 5,
+        "rangePct": 133,
+        "damagePct": 125,
+        "evictOnWrecked": true
+      },
       "render": {
         "model": "farmhouse"
       }
@@ -13216,6 +13276,7 @@
       "faction": 0,
       "harvesters": 3,
       "defenseRadiusCenti": 2000,
+      "garrisonRadiusCenti": 800,
       "buildOrder": [
         11,
         12,
@@ -13312,6 +13373,7 @@
       "faction": 0,
       "harvesters": 6,
       "defenseRadiusCenti": 1500,
+      "garrisonRadiusCenti": 800,
       "buildOrder": [
         11,
         13,
@@ -13398,6 +13460,7 @@
       "faction": 1,
       "harvesters": 3,
       "defenseRadiusCenti": 2000,
+      "garrisonRadiusCenti": 800,
       "buildOrder": [
         25,
         26,
@@ -13488,6 +13551,7 @@
       "faction": 1,
       "harvesters": 4,
       "defenseRadiusCenti": 1500,
+      "garrisonRadiusCenti": 800,
       "buildOrder": [
         25,
         27,

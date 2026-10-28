@@ -53,6 +53,7 @@ impl World {
                 let asked = b != m
                     && other.owner == owner
                     && other.site.is_none()
+                    && other.inside.is_none()
                     && other.last_target.is_none()
                     && matches!(other.order, Order::Idle { last_order_id } if last_order_id != order_id)
                     && !(mover_foot && self.is_foot(b));
