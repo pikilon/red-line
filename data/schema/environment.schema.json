@@ -82,6 +82,10 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 1000
+        },
+        "vehicleRepairTicks": {
+          "type": "integer",
+          "minimum": 1
         }
       }
     },

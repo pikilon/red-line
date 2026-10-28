@@ -9,6 +9,7 @@ import {
   resolveDigClick,
   resolveInfirmaryClick,
   resolveRepairClick,
+  resolveVehicleRepairClick,
   withRepairState,
 } from "./repair";
 
@@ -204,6 +205,57 @@ describe("spec 40 infantry healing input", () => {
                 flags: entity.flags | ENTITY_FLAGS.underConstruction,
               }
             : entity,
+        ),
+        x: 10,
+        y: 10,
+      }),
+    ).toEqual([]);
+  });
+});
+
+describe("spec 39 vehicle repair input", () => {
+  it("AC-39-04: only damaged non-foot vehicles use a real repair factory", () => {
+    const factory = {
+      ...unit(4, "ua-vehicle-factory", 10, 10),
+      hp: 2000,
+      progress: 1000,
+    };
+    const entities = [
+      unit(1, "ua-rifleman", 3, 2),
+      unit(2, "ua-dozer", 3, 3),
+      unit(3, "ua-leopard-2a4", 3, 4),
+      factory,
+    ];
+    expect(
+      resolveVehicleRepairClick({
+        player: 0,
+        selected: [1, 2, 3],
+        entities,
+        x: 10,
+        y: 10,
+      }),
+    ).toEqual([
+      { kind: "repairVehicle", player: 0, units: [2, 3], factory: 4 },
+    ]);
+    expect(
+      resolveVehicleRepairClick({
+        player: 0,
+        selected: [2, 3],
+        entities: entities.map((entity) =>
+          entity.id === 2 || entity.id === 3
+            ? { ...entity, hp: typeDef(entity.kind).hp }
+            : entity,
+        ),
+        x: 10,
+        y: 10,
+      }),
+    ).toEqual([]);
+    expect(
+      resolveVehicleRepairClick({
+        player: 0,
+        selected: [2, 3],
+        entities: entities.map((entity) =>
+          entity.id === 4 ? { ...entity, kind: typeIndex("ua-hq") } : entity,
         ),
         x: 10,
         y: 10,

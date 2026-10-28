@@ -629,6 +629,8 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       ...(t.infinite === undefined ? {} : { infinite: t.infinite }),
       unloadTicks: t.unloadTicks ?? 0,
       freeUnit: t.freeUnit === undefined ? -1 : typeIndex.get(t.freeUnit),
+      // Spec 39: a completed vehicle-repair pad.
+      ...(t.repairsVehicles === undefined ? {} : { repairsVehicles: t.repairsVehicles }),
       // Spec 36: drives over deep water too.
       ...(t.amphibious === undefined ? {} : { amphibious: t.amphibious }),
       // Spec 40: damaged infantry heal inside this building.

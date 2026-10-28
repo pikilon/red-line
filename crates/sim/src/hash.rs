@@ -209,9 +209,21 @@ fn put_order(out: &mut Vec<u8>, order: &Order) {
             missing,
             remaining,
         } => {
-            out.push(10);
+            out.push(11);
             put_u32(out, order_id);
             put_u32(out, building);
+            put_u32(out, missing);
+            put_u32(out, remaining);
+        }
+        Order::RepairVehicle {
+            order_id,
+            factory,
+            missing,
+            remaining,
+        } => {
+            out.push(10);
+            put_u32(out, order_id);
+            put_u32(out, factory);
             put_u32(out, missing);
             put_u32(out, remaining);
         }

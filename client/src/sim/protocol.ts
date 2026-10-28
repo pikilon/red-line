@@ -76,6 +76,8 @@ export type SimCommand =
       units: number[];
       building: number;
     }
+  /** Spec 39: damaged vehicles dock at their own repair factory. */
+  | { kind: "repairVehicle"; player: number; units: number[]; factory: number }
   /** Spec 35: workers dig a trench with its top-left cell at (x, y). */
   | {
       kind: "dig";

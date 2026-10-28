@@ -180,6 +180,7 @@ types:                               # required
     footprint: [4, 4]
     power: -4
     produces: [ua-kozak-scout, ua-bradley, ua-leopard-2a4, ua-himars]
+    repairsVehicles: true
     requires: [ua-supply-center]
     render: { height: 110 }
   - id: ua-defense

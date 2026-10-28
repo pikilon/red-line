@@ -186,6 +186,45 @@ export function resolveInfirmaryClick(args: {
   return [{ kind: "healAt", player, units, building: target.id }];
 }
 
+/** Right click an own repair factory with damaged vehicles selected (spec 39). */
+export function resolveVehicleRepairClick(args: {
+  player: number;
+  selected: readonly number[];
+  entities: readonly EntityState[];
+  x: number;
+  y: number;
+}): SimCommand[] {
+  const { player, selected, entities, x, y } = args;
+  const targetId = pickEntity(entities, x, y, ORDER_PICK_RADIUS_TILES);
+  const target = entities.find((entity) => entity.id === targetId);
+  if (target === undefined) return [];
+  const targetDef = typeDef(target.kind);
+  if (
+    target.owner !== player ||
+    targetDef.category !== "building" ||
+    targetDef.repairsVehicles !== true ||
+    hasFlag(target, ENTITY_FLAGS.underConstruction)
+  ) {
+    return [];
+  }
+  const wanted = new Set(selected);
+  const units = entities
+    .filter((entity) => {
+      if (!wanted.has(entity.id) || entity.owner !== player) return false;
+      const def = typeDef(entity.kind);
+      return (
+        def.category === "unit" &&
+        RULES.locomotors[def.locomotor]?.kind !== "foot" &&
+        entity.hp > 0 &&
+        entity.hp < def.hp &&
+        !hasFlag(entity, ENTITY_FLAGS.inside)
+      );
+    })
+    .map((entity) => entity.id);
+  if (units.length === 0) return [];
+  return [{ kind: "repairVehicle", player, units, factory: target.id }];
+}
+
 /** Spec 35: the trench dig a click at `(x, y)` orders for the selected
  *  workers: the 2x1 trench centred on the click, turned when `turned`. */
 export function resolveDigClick(args: {

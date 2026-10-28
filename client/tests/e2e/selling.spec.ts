@@ -66,11 +66,16 @@ test("AC-37-05: sells a producer and refunds its building and queue", async ({
     .toEqual([barracks.id]);
 
   const rifle = page.locator('#command-panel button[data-type="ua-rifleman"]');
-  await rifle.click();
-  await rifle.click();
+  await expect(rifle).toBeVisible();
+  // Queue both units in one browser turn: on a slow runner each separate
+  // Playwright click can take several seconds, long enough for the first
+  // rifleman to finish and change what the sell must refund.
+  await rifle.evaluate((button) => {
+    (button as HTMLButtonElement).click();
+    (button as HTMLButtonElement).click();
+  });
   await expect.poll(() => call(page, (api) => api.credits())).toBe(4800);
-  // Pause before the DOM assertions: a slow runner can take seconds per frame,
-  // long enough for the first queued rifleman to finish and change the refund.
+  // Pause before the DOM assertions for the same reason.
   await call(page, (api) => api.setSimPaused(true));
   await expect(page.locator("#queue .queue-item")).toHaveCount(2);
   const sell = page.locator('#command-panel button[data-type="sell"]');

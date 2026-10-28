@@ -130,6 +130,11 @@ pub enum Command {
         units: Vec<EntityId>,
         building: EntityId,
     },
+    /// Spec 39: damaged vehicles dock at their own repair factory.
+    RepairVehicle {
+        units: Vec<EntityId>,
+        factory: EntityId,
+    },
     DebugSpawn {
         kind: TypeId,
         pos: FxVec2,
@@ -713,6 +718,7 @@ impl World {
         self.run_over();
         self.features_step();
         self.repair_works();
+        self.repair_vehicles();
         self.heal_infirmaries();
         self.separate_units();
         self.arrive_on_contact();
@@ -828,6 +834,9 @@ impl World {
                 }
                 Command::HealAt { units, building } => {
                     self.apply_heal_at(player, &units, building);
+                }
+                Command::RepairVehicle { units, factory } => {
+                    self.apply_repair_vehicle(player, &units, factory);
                 }
                 Command::Dig { units, origin, rot } => self.apply_dig(player, &units, origin, rot),
                 Command::AttackGround { units, target } => {
@@ -1110,6 +1119,11 @@ impl World {
                 Order::Heal {
                     order_id, building, ..
                 } => self.step_heal(index, order_id, building),
+                Order::RepairVehicle {
+                    order_id, factory, ..
+                } => {
+                    self.step_repair_vehicle(index, order_id, factory);
+                }
                 Order::Harvest { .. } => self.step_harvest(index),
                 Order::Attack { order_id, target } => self.step_attack(index, order_id, target),
                 Order::AttackGround { target, .. } => self.step_attack_ground(index, target),
@@ -1506,6 +1520,9 @@ impl World {
                         .map(|goal| self.nav.index(goal)),
                     Order::RepairBuilding { building, .. } => {
                         self.build_goal(building).map(|goal| self.nav.index(goal))
+                    }
+                    Order::RepairVehicle { factory, .. } => {
+                        self.build_goal(factory).map(|goal| self.nav.index(goal))
                     }
                     _ => None,
                 };

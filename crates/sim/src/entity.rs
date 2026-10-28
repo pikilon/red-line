@@ -81,6 +81,13 @@ pub enum Order {
         missing: u32,
         remaining: u32,
     },
+    /// Spec 39: dock this damaged vehicle at its factory for a timed repair.
+    RepairVehicle {
+        order_id: u32,
+        factory: EntityId,
+        missing: u32,
+        remaining: u32,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
