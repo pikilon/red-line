@@ -55,6 +55,10 @@ export type SimCommand =
   | { kind: "garrison"; player: number; units: number[]; feature: number }
   /** Spec 31 block 2: evacuate the garrisoned feature `feature`. */
   | { kind: "unload"; player: number; feature: number }
+  /** Spec 32: infantry walk to the own vehicle `carrier` and board it. */
+  | { kind: "board"; player: number; units: number[]; carrier: number }
+  /** Spec 32: the riders of vehicle `carrier` leave it, one at a time. */
+  | { kind: "disembark"; player: number; carrier: number }
   | {
       kind: "debugSpawn";
       player: number;

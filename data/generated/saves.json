@@ -222,6 +222,12 @@
       "map": "demo-cover",
       "form": "setup",
       "entities": 10
+    },
+    {
+      "id": "infantry-transport",
+      "map": "demo-ground",
+      "form": "setup",
+      "entities": 18
     }
   ]
 }

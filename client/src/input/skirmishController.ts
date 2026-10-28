@@ -21,6 +21,7 @@ import {
   type ScreenPoint,
   type ScreenRect,
 } from "./selection";
+import { resolveBoardClick } from "./transport";
 
 export interface SkirmishControllerOptions {
   canvas: HTMLCanvasElement;
@@ -385,6 +386,18 @@ export function createSkirmishController(
     });
     if (entering.length > 0) {
       for (const command of entering) options.command(command);
+      return;
+    }
+    // Spec 32: infantry board the own transport under the cursor.
+    const boarding = resolveBoardClick({
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      x: ground.x,
+      y: ground.y,
+    });
+    if (boarding.length > 0) {
+      for (const command of boarding) options.command(command);
       return;
     }
     const commands = resolveRightClick({

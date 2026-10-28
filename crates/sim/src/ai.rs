@@ -645,7 +645,7 @@ fn pool(
                 && rules.weapon_of(entity.kind).is_some()
                 && entity.kind != dozer
                 && Some(entity.kind) != truck
-                && entity.inside.is_none()
+                && !entity.contained()
                 && !attackers.contains(&entity.id)
         })
         .map(|entity| entity.id)
@@ -670,7 +670,7 @@ fn garrison_orders(
     let threat = i64::from(fx_centi(radius_centi).raw());
     let reach = threat * 2;
     let infantry = |entity: &Entity| {
-        world.rules().ty(entity.kind).motion.kind == LocoKind::Foot && entity.inside.is_none()
+        world.rules().ty(entity.kind).motion.kind == LocoKind::Foot && !entity.contained()
     };
     let mut candidates: Vec<EntityId> = pool(world, player, faction, attackers)
         .into_iter()

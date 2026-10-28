@@ -20,9 +20,11 @@ export interface CommandButton {
   enabled: boolean;
   /** Whether the button constructs a building, produces a unit, or (spec 31
    *  block 2) garrisons the selection / evacuates a garrisoned building. */
-  action: "construct" | "produce" | "garrison" | "evacuate";
+  action: "construct" | "produce" | "garrison" | "evacuate" | "disembark";
   /** Feature index the garrison and evacuate buttons act on. */
   feature?: number;
+  /** Spec 32: vehicle the Unload button empties. */
+  carrier?: number;
 }
 
 /** What one command panel render shows (spec §6.7). */
@@ -45,7 +47,8 @@ export function samePanelInput(a: PanelInput, b: PanelInput): boolean {
       button.cost === other.cost &&
       button.enabled === other.enabled &&
       button.action === other.action &&
-      button.feature === other.feature
+      button.feature === other.feature &&
+      button.carrier === other.carrier
     );
   });
   if (!sameButtons) return false;
@@ -70,6 +73,8 @@ export interface CommandPanelArgs {
   queue: QueueState | null;
   /** Spec 31 block 2: garrison and evacuate offers for the selection. */
   garrison?: { garrison: number | null; evacuate: number | null };
+  /** Spec 32: the selected transport with riders, for the Unload button. */
+  disembark?: { carrier: number; riders: number } | null;
 }
 
 /** Builds the construct/produce buttons for the current selection (spec §6.6). */
@@ -79,6 +84,7 @@ export function commandButtons({
   credits,
   queue,
   garrison,
+  disembark,
 }: CommandPanelArgs): CommandButton[] {
   const buttons = productionButtons({
     selected,
@@ -92,6 +98,16 @@ export function commandButtons({
   }
   if (garrison?.evacuate != null) {
     extra.push(garrisonButton("evacuate", garrison.evacuate));
+  }
+  if (disembark != null) {
+    extra.push({
+      typeIndex: -1,
+      label: `${t("ui.disembark")} (${disembark.riders})`,
+      cost: 0,
+      enabled: true,
+      action: "disembark",
+      carrier: disembark.carrier,
+    });
   }
   return [...buttons, ...extra];
 }
@@ -231,6 +247,8 @@ export function createCommandPanel(
     onGarrison?(feature: number): void;
     /** Spec 31 block 2: the Evacuate button was pressed for `feature`. */
     onEvacuate?(feature: number): void;
+    /** Spec 32: the Unload button was pressed for vehicle `carrier`. */
+    onDisembark?(carrier: number): void;
     /** A disabled offer was pressed; the caller plays the error sound/EVA. */
     onDisabled?(button: CommandButton): void;
   },
@@ -274,6 +292,8 @@ export function createCommandPanel(
         handlers.onGarrison?.(button.feature ?? -1);
       else if (button.action === "evacuate")
         handlers.onEvacuate?.(button.feature ?? -1);
+      else if (button.action === "disembark")
+        handlers.onDisembark?.(button.carrier ?? -1);
       else handlers.onProduce(button.typeIndex);
     });
     element.addEventListener("contextmenu", (event) => {

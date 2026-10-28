@@ -72,7 +72,8 @@
               "moveCenti": { "$ref": "#/$defs/pair" },
               "harvest": { "$ref": "#/$defs/id" },
               "attackGroundCenti": { "$ref": "#/$defs/pair" },
-              "garrison": { "$ref": "#/$defs/pair" }
+              "garrison": { "$ref": "#/$defs/pair" },
+              "board": { "$ref": "#/$defs/id" }
             }
           }
         }

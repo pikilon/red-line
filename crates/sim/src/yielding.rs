@@ -53,7 +53,7 @@ impl World {
                 let asked = b != m
                     && other.owner == owner
                     && other.site.is_none()
-                    && other.inside.is_none()
+                    && !other.contained()
                     && other.last_target.is_none()
                     && matches!(other.order, Order::Idle { last_order_id } if last_order_id != order_id)
                     && !(mover_foot && self.is_foot(b));
@@ -117,7 +117,7 @@ impl World {
         })
     }
 
-    fn radius_of(&self, index: usize) -> Fx {
+    pub(crate) fn radius_of(&self, index: usize) -> Fx {
         match self.rules.ty(self.entities[index].kind).radius_centi {
             0 => Fx::from_raw(crate::world::SEPARATION_DISTANCE.raw() / 2),
             centi => crate::rules::fx_centi(centi),

@@ -137,6 +137,12 @@ pub struct EntityState {
     /// Spec 31 block 2: index of the feature this unit garrisons.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub inside: Option<u32>,
+    /// Spec 32: id of the vehicle this unit rides.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub aboard: Option<u32>,
+    /// Spec 32: ticks until an unloading vehicle lets its next rider out.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unloading: Option<u32>,
 }
 
 /// Saved locomotion and turret state of an entity (spec 11 §5.1).
@@ -196,6 +202,10 @@ pub enum OrderState {
     Garrison {
         order_id: u32,
         feature: u32,
+    },
+    Board {
+        order_id: u32,
+        carrier: u32,
     },
 }
 
@@ -278,6 +288,13 @@ pub enum CommandState {
     },
     Unload {
         feature: u32,
+    },
+    Board {
+        units: Vec<u32>,
+        carrier: u32,
+    },
+    Disembark {
+        carrier: u32,
     },
     Construct {
         dozer: u32,
@@ -737,6 +754,7 @@ fn save_order(order: Order) -> OrderState {
         },
         Order::Build { order_id, building } => OrderState::Build { order_id, building },
         Order::Garrison { order_id, feature } => OrderState::Garrison { order_id, feature },
+        Order::Board { order_id, carrier } => OrderState::Board { order_id, carrier },
     }
 }
 
@@ -777,6 +795,7 @@ fn load_order(order: OrderState) -> Order {
         },
         OrderState::Build { order_id, building } => Order::Build { order_id, building },
         OrderState::Garrison { order_id, feature } => Order::Garrison { order_id, feature },
+        OrderState::Board { order_id, carrier } => Order::Board { order_id, carrier },
     }
 }
 
@@ -833,6 +852,8 @@ fn save_entity(entity: &Entity, rules: &Ruleset) -> EntityState {
         site: site.as_ref().map(|site| save_site(site, rules)),
         locomotion: locomotion_save(entity),
         inside: entity.inside,
+        aboard: entity.aboard,
+        unloading: entity.unloading,
     }
 }
 
@@ -902,6 +923,8 @@ fn load_entity(state: &EntityState, rules: &Ruleset) -> Result<Entity, String> {
         aim: state.locomotion.and_then(|l| l.aim),
         idle_aim_ticks: state.locomotion.map_or(0, |l| l.idle_aim_ticks),
         inside: state.inside,
+        aboard: state.aboard,
+        unloading: state.unloading,
     })
 }
 
@@ -994,6 +1017,11 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
             feature: *feature,
         },
         Command::Unload { feature } => CommandState::Unload { feature: *feature },
+        Command::Board { units, carrier } => CommandState::Board {
+            units: units.clone(),
+            carrier: *carrier,
+        },
+        Command::Disembark { carrier } => CommandState::Disembark { carrier: *carrier },
         Command::DebugSpawn { kind, pos } => CommandState::DebugSpawn {
             kind: type_id(rules, *kind),
             pos: vec2(*pos),
@@ -1055,6 +1083,11 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
             feature: *feature,
         },
         CommandState::Unload { feature } => Command::Unload { feature: *feature },
+        CommandState::Board { units, carrier } => Command::Board {
+            units: units.clone(),
+            carrier: *carrier,
+        },
+        CommandState::Disembark { carrier } => Command::Disembark { carrier: *carrier },
         CommandState::DebugSpawn { kind, pos } => Command::DebugSpawn {
             kind: type_index(rules, kind)?,
             pos: fx_vec2(*pos),
@@ -1131,6 +1164,8 @@ pub enum SetupOrder {
     AttackGroundCenti([i32; 2]),
     /// Spec 31 block 2: a cell inside the footprint of a garrisonable feature.
     Garrison([i32; 2]),
+    /// Spec 32: label of an own transport to board.
+    Board(String),
 }
 
 /// World, seed and AIs of a setup (spec 19 §3.5). Errors are the `SimError`
@@ -1300,6 +1335,10 @@ impl World {
                 SetupOrder::AttackGroundCenti([x, y]) => Command::AttackGround {
                     units,
                     target: FxVec2::new(signed_centi(*x), signed_centi(*y)),
+                },
+                SetupOrder::Board(carrier) => Command::Board {
+                    units,
+                    carrier: label(carrier)?,
                 },
                 SetupOrder::Garrison(cell) => Command::Garrison {
                     units,

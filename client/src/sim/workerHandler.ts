@@ -72,6 +72,8 @@ export interface SkirmishSimLike {
   command_harvest(player: number, unitIds: Uint32Array, depot: number): void;
   command_garrison(player: number, unitIds: Uint32Array, feature: number): void;
   command_unload(player: number, feature: number): void;
+  command_board(player: number, unitIds: Uint32Array, carrier: number): void;
+  command_disembark(player: number, carrier: number): void;
   command_construct(
     player: number,
     dozer: number,
@@ -191,6 +193,16 @@ const COMMANDS = {
       Uint32Array.from(command.units),
       command.feature,
     );
+  }),
+  board: run((sim, command: Extract<SimCommand, { kind: "board" }>) => {
+    sim.command_board(
+      command.player,
+      Uint32Array.from(command.units),
+      command.carrier,
+    );
+  }),
+  disembark: run((sim, command: Extract<SimCommand, { kind: "disembark" }>) => {
+    sim.command_disembark(command.player, command.carrier);
   }),
   unload: run((sim, command: Extract<SimCommand, { kind: "unload" }>) => {
     sim.command_unload(command.player, command.feature);

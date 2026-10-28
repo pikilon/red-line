@@ -94,6 +94,15 @@ pub enum Command {
     Unload {
         feature: u32,
     },
+    /// Spec 32: infantry walk to the own vehicle `carrier` and board it.
+    Board {
+        units: Vec<EntityId>,
+        carrier: EntityId,
+    },
+    /// Spec 32: the vehicle's riders leave it, one at a time.
+    Disembark {
+        carrier: EntityId,
+    },
     DebugSpawn {
         kind: TypeId,
         pos: FxVec2,
@@ -519,6 +528,8 @@ impl World {
             aim: None,
             idle_aim_ticks: 0,
             inside: None,
+            aboard: None,
+            unloading: None,
         });
         id
     }
@@ -646,12 +657,15 @@ impl World {
         self.update_economy();
         self.yield_to_movers();
         self.move_units();
+        self.carry_riders();
         self.run_over();
         self.features_step();
         self.separate_units();
         self.arrive_on_contact();
         self.update_visibility();
         self.update_combat();
+        self.unload_transports();
+        self.empty_dead_transports();
         self.remove_dead();
         self.update_memory();
         self.update_victory();
@@ -750,6 +764,8 @@ impl World {
                     self.apply_garrison(player, &units, feature);
                 }
                 Command::Unload { feature } => self.apply_unload(player, feature),
+                Command::Board { units, carrier } => self.apply_board(player, &units, carrier),
+                Command::Disembark { carrier } => self.apply_disembark(player, carrier),
                 Command::AttackGround { units, target } => {
                     self.apply_attack_ground(player, &units, target);
                 }
@@ -847,7 +863,7 @@ impl World {
             .filter_map(|&id| self.index_of(id))
             .filter(|&index| {
                 let entity = &self.entities[index];
-                entity.owner == player && entity.site.is_none() && entity.inside.is_none()
+                entity.owner == player && entity.site.is_none() && !entity.contained()
             })
             .collect::<BTreeSet<usize>>()
             .into_iter()
@@ -1008,7 +1024,7 @@ impl World {
     fn move_units(&mut self) {
         for index in 0..self.entities.len() {
             // A garrisoned unit stays in its building (spec 31 block 2).
-            if self.entities[index].inside.is_some() {
+            if self.entities[index].contained() {
                 continue;
             }
             let before = self.entities[index].pos;
@@ -1022,6 +1038,7 @@ impl World {
                 Order::Garrison { order_id, feature } => {
                     self.step_garrison(index, order_id, feature);
                 }
+                Order::Board { order_id, carrier } => self.step_board(index, order_id, carrier),
                 Order::Harvest { .. } => self.step_harvest(index),
                 Order::Attack { order_id, target } => self.step_attack(index, order_id, target),
                 Order::AttackGround { target, .. } => self.step_attack_ground(index, target),
@@ -1249,7 +1266,7 @@ impl World {
         let is_unit: Vec<bool> = self
             .entities
             .iter()
-            .map(|e| e.site.is_none() && e.inside.is_none())
+            .map(|e| e.site.is_none() && !e.contained())
             .collect();
         let is_idle: Vec<bool> = self
             .entities
@@ -1407,6 +1424,9 @@ impl World {
                     Order::Garrison { feature, .. } => self
                         .garrison_goal(self.entities[index].pos, feature)
                         .map(|goal| self.nav.index(goal)),
+                    Order::Board { carrier, .. } => {
+                        self.board_goal(carrier).map(|goal| self.nav.index(goal))
+                    }
                     _ => None,
                 };
                 goal.map(|goal| (self.layer_of(index), goal))
