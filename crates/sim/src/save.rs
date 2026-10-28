@@ -207,6 +207,10 @@ pub enum OrderState {
         order_id: u32,
         carrier: u32,
     },
+    Repair {
+        order_id: u32,
+        feature: u32,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -295,6 +299,10 @@ pub enum CommandState {
     },
     Disembark {
         carrier: u32,
+    },
+    Repair {
+        units: Vec<u32>,
+        feature: u32,
     },
     Construct {
         dozer: u32,
@@ -755,6 +763,7 @@ fn save_order(order: Order) -> OrderState {
         Order::Build { order_id, building } => OrderState::Build { order_id, building },
         Order::Garrison { order_id, feature } => OrderState::Garrison { order_id, feature },
         Order::Board { order_id, carrier } => OrderState::Board { order_id, carrier },
+        Order::Repair { order_id, feature } => OrderState::Repair { order_id, feature },
     }
 }
 
@@ -796,6 +805,7 @@ fn load_order(order: OrderState) -> Order {
         OrderState::Build { order_id, building } => Order::Build { order_id, building },
         OrderState::Garrison { order_id, feature } => Order::Garrison { order_id, feature },
         OrderState::Board { order_id, carrier } => Order::Board { order_id, carrier },
+        OrderState::Repair { order_id, feature } => Order::Repair { order_id, feature },
     }
 }
 
@@ -1022,6 +1032,10 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
             carrier: *carrier,
         },
         Command::Disembark { carrier } => CommandState::Disembark { carrier: *carrier },
+        Command::Repair { units, feature } => CommandState::Repair {
+            units: units.clone(),
+            feature: *feature,
+        },
         Command::DebugSpawn { kind, pos } => CommandState::DebugSpawn {
             kind: type_id(rules, *kind),
             pos: vec2(*pos),
@@ -1088,6 +1102,10 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
             carrier: *carrier,
         },
         CommandState::Disembark { carrier } => Command::Disembark { carrier: *carrier },
+        CommandState::Repair { units, feature } => Command::Repair {
+            units: units.clone(),
+            feature: *feature,
+        },
         CommandState::DebugSpawn { kind, pos } => Command::DebugSpawn {
             kind: type_index(rules, kind)?,
             pos: fx_vec2(*pos),
@@ -1117,6 +1135,18 @@ pub struct Setup {
     pub ai: Vec<SetupAi>,
     #[serde(default)]
     pub entities: Vec<SetupEntity>,
+    /// Spec 33: map features damaged at tick 0 (e.g. a broken bridge to repair).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub features: Vec<SetupFeature>,
+}
+
+/// A map feature, by a cell it covers, left at `hp_percent` of its hit points.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SetupFeature {
+    pub at: [i32; 2],
+    /// 0..=99; 0 destroys (or breaks) it.
+    pub hp_percent: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -1166,6 +1196,8 @@ pub enum SetupOrder {
     Garrison([i32; 2]),
     /// Spec 34: label of an own transport to board.
     Board(String),
+    /// Spec 33: a cell on the deck of the bridge to repair.
+    Repair([i32; 2]),
 }
 
 /// World, seed and AIs of a setup (spec 19 §3.5). Errors are the `SimError`
@@ -1336,6 +1368,12 @@ impl World {
                     units,
                     target: FxVec2::new(signed_centi(*x), signed_centi(*y)),
                 },
+                SetupOrder::Repair(cell) => Command::Repair {
+                    units,
+                    feature: world
+                        .repair_job_at(to_cell(*cell))
+                        .ok_or_else(|| at(format!("no bridge at {},{}", cell[0], cell[1])))?,
+                },
                 SetupOrder::Board(carrier) => Command::Board {
                     units,
                     carrier: label(carrier)?,
@@ -1348,6 +1386,22 @@ impl World {
                 },
             };
             world.enqueue_as(entry.player, command);
+        }
+
+        for (index, entry) in setup.features.iter().enumerate() {
+            let cell = to_cell(entry.at);
+            let feature = world
+                .repair_job_at(cell)
+                .or_else(|| world.feature_at(cell))
+                .ok_or_else(|| {
+                    invalid(format!(
+                        "features[{index}]: no feature at {},{}",
+                        entry.at[0], entry.at[1]
+                    ))
+                })? as usize;
+            let hp = world.features[feature].hp;
+            let keep = (u64::from(hp) * u64::from(entry.hp_percent.min(100)) / 100) as u32;
+            world.damage_feature(feature, hp - keep);
         }
 
         world.victory_enabled = setup.victory;

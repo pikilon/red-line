@@ -159,7 +159,7 @@ pub fn distance_to_rect(pos: FxVec2, rect: (i32, i32, i32, i32)) -> Fx {
 }
 
 /// `true` when going from `old` to `new` can change which cells are blocked.
-fn blocking_differs(rules: &Ruleset, old: &FeatureState, new: &FeatureState) -> bool {
+pub(crate) fn blocking_differs(rules: &Ruleset, old: &FeatureState, new: &FeatureState) -> bool {
     old.kind != new.kind
         || old.alive != new.alive
         || (new.state != old.state
@@ -168,7 +168,7 @@ fn blocking_differs(rules: &Ruleset, old: &FeatureState, new: &FeatureState) -> 
 
 /// Damage state of `hp` out of `max` under the type's thresholds: 2 when at
 /// or below the wrecked threshold, 1 at or below the damaged one, else 0.
-fn state_for(hp: u32, max: u32, damaged: u32, wrecked: u32) -> u8 {
+pub(crate) fn state_for(hp: u32, max: u32, damaged: u32, wrecked: u32) -> u8 {
     let percent = hp * 100 / max;
     if percent <= wrecked {
         2

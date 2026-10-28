@@ -1,0 +1,25 @@
+# Spec 33: repair works. The road bridge (north) is broken and the wooden bridge (middle) is badly damaged. Player 0's
+# three riflemen walk to the road bridge and repair it at once; a dozer and another squad wait on the west bank: select
+# them and right click a damaged bridge. Every worker adds up (a dozer counts as three soldiers, six workers at most),
+# so more workers finish faster; the broken bridge opens to traffic again once it is repaired past 35%.
+id: bridge-repair
+map: demo-bridges
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 28, y: 14, zoom: 0.8 }
+features:
+  - { at: [30, 9], hpPercent: 0 }
+  - { at: [30, 23], hpPercent: 20 }
+entities:
+  - { player: 0, type: ua-rifleman, atCenti: [2300, 900], order: { repair: [30, 9] } }
+  - { player: 0, type: ua-rifleman, atCenti: [2300, 1000], order: { repair: [30, 9] } }
+  - { player: 0, type: ua-rifleman, atCenti: [2300, 1100], order: { repair: [30, 9] } }
+  - { player: 0, type: ua-dozer, atCenti: [2200, 1700] }
+  - { player: 0, type: ua-rifleman, atCenti: [2300, 2300] }
+  - { player: 0, type: ua-rifleman, atCenti: [2300, 2400] }
+  - { player: 0, type: ua-rifleman, atCenti: [2300, 2500] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [2000, 1000] }

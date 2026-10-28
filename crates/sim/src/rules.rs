@@ -588,6 +588,9 @@ pub struct Ruleset {
 pub struct EnvironmentDef {
     pub high_ground: HighGroundDef,
     pub cover: CoverDef,
+    /// Spec 33: repair works; `None` (no balance entry) means nothing repairs.
+    #[serde(default)]
+    pub repair: Option<RepairDef>,
 }
 
 impl Default for EnvironmentDef {
@@ -601,6 +604,7 @@ impl Default for EnvironmentDef {
                 forest_pct: 0,
                 wall_pct: 0,
             },
+            repair: None,
         }
     }
 }
@@ -611,6 +615,18 @@ impl Default for EnvironmentDef {
 pub struct HighGroundDef {
     pub min_tiles: u32,
     pub range_pct: u32,
+}
+
+/// Spec 33: how fast workers repair. Each worker on a job adds its points, up
+/// to `max_workers` workers; one point restores `permille_per_second_per_point`
+/// of the maximum hit points per second.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairDef {
+    pub permille_per_second_per_point: u32,
+    pub infantry_points: u32,
+    pub dozer_points: u32,
+    pub max_workers: u32,
 }
 
 /// Percent of damage a target in cover does not take; the best cover applies.

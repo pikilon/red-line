@@ -154,6 +154,8 @@
   "saves.environment-cover.description": "Riflemen on a plateau shoot at enemies below, farther than flat ground allows: behind a stone wall, beside a pine stand and in the open. Cover cuts the damage they take.",
   "saves.infantry-transport.name": "Infantry transport",
   "saves.infantry-transport.description": "Riflemen board a Bradley and a Kozak. Right click your own vehicle with infantry selected to board it, and press Unload to let them out one by one. Kozak riders shoot from the vehicle.",
+  "saves.bridge-repair.name": "Bridge repair",
+  "saves.bridge-repair.description": "A broken and a damaged bridge. Riflemen and dozers repair them; right click a damaged bridge with workers selected. More workers finish faster, and the broken bridge reopens.",
   "saves.environment-garrison.name": "Environment garrison",
   "saves.environment-garrison.description": "Riflemen garrison an apartment block and fire from its windows with more range and damage; another squad can garrison a house, and the enemy holds the east block.",
   "saves.landscape-lab.name": "Landscape lab",

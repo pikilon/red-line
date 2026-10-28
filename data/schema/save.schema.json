@@ -48,6 +48,19 @@
         }
       }
     },
+    "features": {
+      "description": "Spec 33: map features damaged at tick 0, by a cell they cover.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["at", "hpPercent"],
+        "properties": {
+          "at": { "$ref": "#/$defs/pair" },
+          "hpPercent": { "type": "integer", "minimum": 0, "maximum": 99 }
+        }
+      }
+    },
     "entities": {
       "type": "array",
       "items": {
@@ -73,7 +86,8 @@
               "harvest": { "$ref": "#/$defs/id" },
               "attackGroundCenti": { "$ref": "#/$defs/pair" },
               "garrison": { "$ref": "#/$defs/pair" },
-              "board": { "$ref": "#/$defs/id" }
+              "board": { "$ref": "#/$defs/id" },
+              "repair": { "$ref": "#/$defs/pair" }
             }
           }
         }

@@ -14,6 +14,7 @@ import {
 import { resolveForceFire, resolveRightClick } from "./intent";
 import { createPinchGesture } from "./pinch";
 import { canPlace, footprintOrigin } from "./placement";
+import { type RepairJob, resolveRepairClick } from "./repair";
 import {
   isDrag,
   isSelectAllShortcut,
@@ -47,6 +48,8 @@ export interface SkirmishControllerOptions {
   command(command: SimCommand): void;
   /** Garrisonable features of the map (spec 31 block 2); none when absent. */
   garrisonFeatures?(): readonly GarrisonFeature[];
+  /** Spec 33: the map's bridges with their live damage; none when absent. */
+  repairJobs?(): readonly RepairJob[];
   onSelectionChange(selected: ReadonlySet<number>): void;
   /** Enables the debug-only F2/F3 keys (spec §6.5). */
   debug: boolean;
@@ -398,6 +401,19 @@ export function createSkirmishController(
     });
     if (boarding.length > 0) {
       for (const command of boarding) options.command(command);
+      return;
+    }
+    // Spec 33: workers repair the damaged bridge under the cursor.
+    const repairing = resolveRepairClick({
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      jobs: options.repairJobs?.() ?? [],
+      x: ground.x,
+      y: ground.y,
+    });
+    if (repairing.length > 0) {
+      for (const command of repairing) options.command(command);
       return;
     }
     const commands = resolveRightClick({

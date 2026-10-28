@@ -64,6 +64,11 @@ pub enum Order {
         order_id: u32,
         carrier: EntityId,
     },
+    /// Spec 33: walk to the map feature `feature` and work on its repair.
+    Repair {
+        order_id: u32,
+        feature: u32,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
