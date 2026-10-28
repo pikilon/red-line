@@ -174,6 +174,8 @@ describe("worker handler", () => {
       vi.fn<(player: number, building: number, kind: number) => void>();
     const command_cancel = vi.fn<(player: number, building: number) => void>();
     const command_sell = vi.fn<(player: number, building: number) => void>();
+    const command_repair_building =
+      vi.fn<(player: number, unitIds: Uint32Array, building: number) => void>();
     const command_rally =
       vi.fn<
         (player: number, building: number, xRaw: number, yRaw: number) => void
@@ -214,6 +216,7 @@ describe("worker handler", () => {
       command_board: vi.fn(),
       command_disembark: vi.fn(),
       command_repair: vi.fn(),
+      command_repair_building,
       command_dig: vi.fn(),
       debug_spawn,
       debug_set_hp,
@@ -292,6 +295,7 @@ describe("worker handler", () => {
       { kind: "produce", player: 1, building: 16, typeIndex: 5 },
       { kind: "cancel", player: 1, building: 16 },
       { kind: "sell", player: 1, building: 16 },
+      { kind: "repairBuilding", player: 1, units: [4, 5], building: 16 },
       { kind: "rally", player: 1, building: 16, xRaw: 4194304, yRaw: 2097152 },
       { kind: "stop", player: 1, units: [4, 5] },
       { kind: "debugSpawn", player: 1, typeIndex: 5, xRaw: 1, yRaw: 2 },
@@ -313,6 +317,11 @@ describe("worker handler", () => {
     expect(command_produce).toHaveBeenCalledWith(1, 16, 5);
     expect(command_cancel).toHaveBeenCalledWith(1, 16);
     expect(command_sell).toHaveBeenCalledWith(1, 16);
+    expect(command_repair_building).toHaveBeenCalledWith(
+      1,
+      new Uint32Array([4, 5]),
+      16,
+    );
     expect(command_rally).toHaveBeenCalledWith(1, 16, 4194304, 2097152);
     expect(command_stop).toHaveBeenCalledWith(1, new Uint32Array([4, 5]));
     expect(debug_spawn).toHaveBeenCalledWith(1, 5, 1, 2);
@@ -376,6 +385,7 @@ describe("worker handler", () => {
       command_board: vi.fn(),
       command_disembark: vi.fn(),
       command_repair: vi.fn(),
+      command_repair_building: vi.fn(),
       command_dig: vi.fn(),
       debug_spawn: vi.fn(),
       debug_set_hp: vi.fn(),
@@ -436,6 +446,7 @@ describe("worker handler", () => {
       command_board: vi.fn(),
       command_disembark: vi.fn(),
       command_repair: vi.fn(),
+      command_repair_building: vi.fn(),
       command_dig: vi.fn(),
       debug_spawn: vi.fn(),
       debug_set_hp: vi.fn(),
@@ -514,6 +525,7 @@ describe("worker handler", () => {
       command_board: vi.fn(),
       command_disembark: vi.fn(),
       command_repair: vi.fn(),
+      command_repair_building: vi.fn(),
       command_dig: vi.fn(),
       debug_spawn: vi.fn(),
       debug_set_hp: vi.fn(),
@@ -584,6 +596,7 @@ function saveSim(world: string, error?: string): SkirmishSimLike {
     command_board: vi.fn(),
     command_disembark: vi.fn(),
     command_repair: vi.fn(),
+    command_repair_building: vi.fn(),
     command_dig: vi.fn(),
     debug_spawn: vi.fn(),
     debug_set_hp: vi.fn(),

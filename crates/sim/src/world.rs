@@ -120,6 +120,11 @@ pub enum Command {
         units: Vec<EntityId>,
         feature: u32,
     },
+    /// Spec 38: dozers repair an own damaged entity building.
+    RepairBuilding {
+        units: Vec<EntityId>,
+        building: EntityId,
+    },
     DebugSpawn {
         kind: TypeId,
         pos: FxVec2,
@@ -811,6 +816,9 @@ impl World {
                 Command::Board { units, carrier } => self.apply_board(player, &units, carrier),
                 Command::Disembark { carrier } => self.apply_disembark(player, carrier),
                 Command::Repair { units, feature } => self.apply_repair(player, &units, feature),
+                Command::RepairBuilding { units, building } => {
+                    self.apply_repair_building(player, &units, building);
+                }
                 Command::Dig { units, origin, rot } => self.apply_dig(player, &units, origin, rot),
                 Command::AttackGround { units, target } => {
                     self.apply_attack_ground(player, &units, target);
@@ -1086,6 +1094,9 @@ impl World {
                 }
                 Order::Board { order_id, carrier } => self.step_board(index, order_id, carrier),
                 Order::Repair { order_id, feature } => self.step_repair(index, order_id, feature),
+                Order::RepairBuilding { order_id, building } => {
+                    self.step_repair_building(index, order_id, building);
+                }
                 Order::Harvest { .. } => self.step_harvest(index),
                 Order::Attack { order_id, target } => self.step_attack(index, order_id, target),
                 Order::AttackGround { target, .. } => self.step_attack_ground(index, target),
@@ -1480,6 +1491,9 @@ impl World {
                     Order::Repair { feature, .. } => self
                         .repair_goal(index, feature)
                         .map(|goal| self.nav.index(goal)),
+                    Order::RepairBuilding { building, .. } => {
+                        self.build_goal(building).map(|goal| self.nav.index(goal))
+                    }
                     _ => None,
                 };
                 goal.map(|goal| (self.layer_of(index), goal))

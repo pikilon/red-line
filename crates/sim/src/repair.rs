@@ -96,6 +96,56 @@ impl World {
         }
     }
 
+    /// True when an entity building is alive, complete and below full HP (spec 38).
+    pub fn needs_building_repair(&self, building: EntityId) -> bool {
+        self.rules.environment.repair.is_some()
+            && self.entity(building).is_some_and(|entity| {
+                let ty = self.rules.ty(entity.kind);
+                entity.hp > 0
+                    && entity.hp < ty.hp
+                    && ty.category == Category::Building
+                    && entity.site.as_ref().is_some_and(|site| site.complete)
+            })
+    }
+
+    /// Only a dozer of the building's owner repairs entity buildings (spec 38).
+    pub fn can_repair_building(&self, unit: EntityId, building: EntityId) -> bool {
+        let (Some(worker), Some(target)) = (self.entity(unit), self.entity(building)) else {
+            return false;
+        };
+        worker.owner == target.owner
+            && !self.rules.ty(worker.kind).builds.is_empty()
+            && self.work_points(unit) > 0
+            && self.needs_building_repair(building)
+    }
+
+    /// `RepairBuilding` command: every listed dozer of the owner approaches;
+    /// only the lowest-id active dozer heals, as Zero Hour's sole benefactor.
+    pub(crate) fn apply_repair_building(
+        &mut self,
+        player: PlayerId,
+        units: &[EntityId],
+        building: EntityId,
+    ) {
+        if self
+            .entity(building)
+            .is_none_or(|entity| entity.owner != player)
+            || !self.needs_building_repair(building)
+        {
+            return;
+        }
+        let order_id = self.next_order_id;
+        self.next_order_id += 1;
+        for &id in units {
+            let Some(index) = self.index_of(id) else {
+                continue;
+            };
+            if self.entities[index].owner == player && self.can_repair_building(id, building) {
+                self.entities[index].order = Order::RepairBuilding { order_id, building };
+            }
+        }
+    }
+
     /// Number of features the map placed; later rows were dug in the match.
     pub fn placed_feature_count(&self) -> usize {
         self.map_id
@@ -194,6 +244,28 @@ impl World {
         }
     }
 
+    /// Approach an entity building and stand within work range (spec 38).
+    pub(crate) fn step_repair_building(&mut self, index: usize, order_id: u32, building: EntityId) {
+        let id = self.entities[index].id;
+        if !self.can_repair_building(id, building) {
+            self.entities[index].order = Order::Idle {
+                last_order_id: order_id,
+            };
+            return;
+        }
+        let pos = self.entities[index].pos;
+        let docked = self
+            .entity(building)
+            .is_some_and(|target| self.entity_distance(pos, target) <= fx_centi(WORK_RANGE_CENTI));
+        if docked {
+            self.entities[index].speed = Fx::ZERO;
+            return;
+        }
+        if let Some(goal) = self.build_goal(building) {
+            self.step_toward_goal(index, goal);
+        }
+    }
+
     /// Where unit `index` walks to work on `feature`: the passable cell, on its
     /// own layer, nearest to the job cell closest to it.
     pub(crate) fn repair_goal(&self, index: usize, feature: u32) -> Option<Cell> {
@@ -241,6 +313,59 @@ impl World {
                 / 100_000;
             self.repair_feature(feature as usize, (gain as u32).max(1));
         }
+
+        // Entity buildings use one active dozer, not additive bridge work.
+        let mut buildings: BTreeMap<EntityId, u32> = BTreeMap::new();
+        for index in 0..self.entities.len() {
+            let Order::RepairBuilding { building, .. } = self.entities[index].order else {
+                continue;
+            };
+            let id = self.entities[index].id;
+            if !self.can_repair_building(id, building) {
+                continue;
+            }
+            let pos = self.entities[index].pos;
+            let in_range = self.entity(building).is_some_and(|target| {
+                self.entity_distance(pos, target) <= fx_centi(WORK_RANGE_CENTI)
+            });
+            if !in_range {
+                continue;
+            }
+            let points = self.work_points(id);
+            if points > 0 {
+                buildings.entry(building).or_insert(points);
+            }
+        }
+        for (building, points) in buildings {
+            let Some(target) = self.entity(building) else {
+                continue;
+            };
+            let gain = u64::from(self.rules.ty(target.kind).hp)
+                * u64::from(repair.permille_per_second_per_point)
+                * u64::from(points)
+                / 1000;
+            self.repair_entity_building(building, (gain as u32).max(1));
+        }
+        for index in 0..self.entities.len() {
+            let Order::RepairBuilding { order_id, building } = self.entities[index].order else {
+                continue;
+            };
+            if !self.needs_building_repair(building) {
+                self.entities[index].order = Order::Idle {
+                    last_order_id: order_id,
+                };
+            }
+        }
+    }
+
+    /// Restores hit points to an entity building without touching construction,
+    /// production or rally state (spec 38).
+    pub(crate) fn repair_entity_building(&mut self, building: EntityId, amount: u32) {
+        let Some(index) = self.index_of(building) else {
+            return;
+        };
+        let max = self.rules.ty(self.entities[index].kind).hp;
+        self.entities[index].hp = self.entities[index].hp.saturating_add(amount).min(max);
     }
 
     /// Restores `amount` hit points to feature `index`: it stands again, and its

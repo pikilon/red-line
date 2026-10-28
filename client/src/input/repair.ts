@@ -2,6 +2,7 @@ import { RULES, typeDef } from "../rules";
 import type { FeatureRow } from "../sim/featureSnapshot";
 import { ENTITY_FLAGS, type EntityState, hasFlag } from "../sim/matchSnapshot";
 import type { SimCommand } from "../sim/protocol";
+import { ORDER_PICK_RADIUS_TILES, pickEntity } from "./entitySelection";
 
 /** Spec 35: a repairable map feature (a bridge) and the cells it covers. */
 export interface RepairJob {
@@ -94,6 +95,48 @@ export function resolveRepairClick(args: {
     .map((entity) => entity.id);
   if (units.length === 0) return [];
   return [{ kind: "repair", player, units, feature: job.index }];
+}
+
+/** A dozer, excluding passengers and hidden occupants (spec 38). */
+export function isDozer(entity: EntityState): boolean {
+  return (
+    typeDef(entity.kind).category === "unit" &&
+    typeDef(entity.kind).builds.length > 0 &&
+    !hasFlag(entity, ENTITY_FLAGS.inside)
+  );
+}
+
+/** Right click an own complete damaged building with dozers selected. */
+export function resolveBuildingRepairClick(args: {
+  player: number;
+  selected: readonly number[];
+  entities: readonly EntityState[];
+  x: number;
+  y: number;
+}): SimCommand[] {
+  const { player, selected, entities, x, y } = args;
+  const targetId = pickEntity(entities, x, y, ORDER_PICK_RADIUS_TILES);
+  const target = entities.find((entity) => entity.id === targetId);
+  if (target === undefined) return [];
+  const def = typeDef(target.kind);
+  if (
+    target.owner !== player ||
+    def.category !== "building" ||
+    hasFlag(target, ENTITY_FLAGS.underConstruction) ||
+    target.hp === 0 ||
+    target.hp >= def.hp
+  ) {
+    return [];
+  }
+  const wanted = new Set(selected);
+  const units = entities
+    .filter(
+      (entity) =>
+        wanted.has(entity.id) && entity.owner === player && isDozer(entity),
+    )
+    .map((entity) => entity.id);
+  if (units.length === 0) return [];
+  return [{ kind: "repairBuilding", player, units, building: target.id }];
 }
 
 /** Spec 35: the trench dig a click at `(x, y)` orders for the selected

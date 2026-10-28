@@ -69,6 +69,11 @@ pub enum Order {
         order_id: u32,
         feature: u32,
     },
+    /// Spec 38: walk to an own damaged entity building and repair it.
+    RepairBuilding {
+        order_id: u32,
+        building: EntityId,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

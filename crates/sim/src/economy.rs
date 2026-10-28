@@ -424,7 +424,8 @@ impl World {
                 | Order::Build { order_id, .. }
                 | Order::Garrison { order_id, .. }
                 | Order::Board { order_id, .. }
-                | Order::Repair { order_id, .. } => order_id,
+                | Order::Repair { order_id, .. }
+                | Order::RepairBuilding { order_id, .. } => order_id,
             };
             unit.order = Order::Idle { last_order_id };
         }

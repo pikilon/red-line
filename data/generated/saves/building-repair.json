@@ -1,0 +1,71 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "building-repair",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "first-line",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 10,
+      "y": 63,
+      "zoom": 1.15
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "first-line",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          6,
+          60
+        ],
+        "hpPercent": 40
+      },
+      {
+        "player": 0,
+        "type": "ua-barracks",
+        "origin": [
+          6,
+          65
+        ],
+        "hpPercent": 50
+      },
+      {
+        "player": 0,
+        "type": "ua-dozer",
+        "atCenti": [
+          500,
+          6300
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-dozer",
+        "atCenti": [
+          500,
+          6400
+        ]
+      }
+    ]
+  }
+}

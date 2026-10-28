@@ -198,6 +198,11 @@ fn put_order(out: &mut Vec<u8>, order: &Order) {
             put_u32(out, order_id);
             put_u32(out, feature);
         }
+        Order::RepairBuilding { order_id, building } => {
+            out.push(9);
+            put_u32(out, order_id);
+            put_u32(out, building);
+        }
     }
 }
 

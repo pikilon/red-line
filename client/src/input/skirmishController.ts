@@ -14,7 +14,12 @@ import {
 import { resolveForceFire, resolveRightClick } from "./intent";
 import { createPinchGesture } from "./pinch";
 import { canPlace, footprintOrigin } from "./placement";
-import { type RepairJob, resolveDigClick, resolveRepairClick } from "./repair";
+import {
+  type RepairJob,
+  resolveBuildingRepairClick,
+  resolveDigClick,
+  resolveRepairClick,
+} from "./repair";
 import {
   isDrag,
   isSelectAllShortcut,
@@ -437,6 +442,18 @@ export function createSkirmishController(
     });
     if (repairing.length > 0) {
       for (const command of repairing) options.command(command);
+      return;
+    }
+    // Spec 38: dozers repair the own damaged building under the cursor.
+    const repairingBuilding = resolveBuildingRepairClick({
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      x: ground.x,
+      y: ground.y,
+    });
+    if (repairingBuilding.length > 0) {
+      for (const command of repairingBuilding) options.command(command);
       return;
     }
     const commands = resolveRightClick({

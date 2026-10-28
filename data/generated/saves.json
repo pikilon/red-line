@@ -86,6 +86,12 @@
       "entities": 3
     },
     {
+      "id": "building-repair",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 4
+    },
+    {
       "id": "construction",
       "map": "showcase",
       "form": "setup",
