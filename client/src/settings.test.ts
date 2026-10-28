@@ -109,7 +109,7 @@ describe("settings", () => {
       audioSfx: 80,
       audioAmbient: 50,
       audioVoice: 70,
-      audioMusic: 55,
+      audioMusic: 0,
     });
     expect(
       resolveAudioVolumes({ gore: true, audioMaster: 45, audioMusic: 0 }),

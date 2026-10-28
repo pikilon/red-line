@@ -494,7 +494,8 @@ fall back through a chain so every weapon sounds like something:
 * Buses: `master` (compressor/limiter at the end) <- `sfx`, `voice`, `eva`,
   `ui`, `ambient`, `music`. Settings sliders per bus in `client/src/settings.ts`
   (master, effects, ambient, voices, music) with Zero Hour's defaults as the
-  starting point: effects 80, ambient 50, voices 70, music 55; persisted like
+  starting point: effects 80, ambient 50, voices 70; music starts at 0 (off) by
+  owner request (2026-10-28), so the player turns it up in the menu; persisted like
   the other settings. Ambient has its own slider because birds/wind are not
   combat effects and are the first thing players want to turn down.
 * **Master volume 100 by default.** From 2026-10-26 the master started at 0
