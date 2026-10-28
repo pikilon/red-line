@@ -9,6 +9,7 @@
     "faction": { "$ref": "faction.schema.json#/$defs/id" },
     "harvesters": { "type": "integer", "minimum": 0, "maximum": 20 },
     "defenseRadiusCenti": { "type": "integer", "minimum": 0, "maximum": 12800 },
+    "garrisonRadiusCenti": { "description": "Spec 31 block 2: enemy infantry this close to a garrisonable building make the AI garrison it with nearby idle infantry; 0 or absent turns the rule off.", "type": "integer", "minimum": 0, "maximum": 12800 },
     "buildOrder": {
       "type": "array",
       "minItems": 1,

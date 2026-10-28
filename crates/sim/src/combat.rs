@@ -61,6 +61,7 @@ impl World {
         let Some((weapon_id, weapon)) = self.weapon_data(kind) else {
             return;
         };
+        let weapon = self.garrison_weapon(self.entities[index].id, weapon);
         if let Order::AttackGround { target, .. } = self.entities[index].order {
             self.fire_ground(index, weapon_id, &weapon, target);
             return;
@@ -371,6 +372,7 @@ impl World {
         let Some(weapon) = self.weapon_def(projectile.weapon) else {
             return;
         };
+        let weapon = self.garrison_weapon(projectile.shooter, weapon);
         self.hit_features(projectile.impact, &weapon);
         let hit = if weapon.splash_centi > 0 {
             self.apply_splash(
@@ -423,6 +425,7 @@ impl World {
         for index in 0..self.entities.len() {
             let entity = &self.entities[index];
             if entity.hp == 0
+                || entity.inside.is_some()
                 || entity.id == shooter
                 || entity.owner == NEUTRAL
                 || self
@@ -476,6 +479,7 @@ impl World {
         let attacker = &self.entities[index];
         let target = &self.entities[target_index];
         if target.hp == 0
+            || target.inside.is_some()
             || target.owner == attacker.owner
             || target.owner == NEUTRAL
             || self
@@ -595,6 +599,7 @@ impl World {
             // NEUTRAL out because here it only marks supply depots (owner
             // request 2026-10-25).
             if entity.hp == 0
+                || entity.inside.is_some()
                 || entity.id == shooter
                 || entity.owner == NEUTRAL
                 || self.entity_distance(impact, entity) > radius

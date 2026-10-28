@@ -630,6 +630,7 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       // Spec 31 block 1: crush level (0 = cannot be crushed) and fire.
       crushLevel: t.crushLevel ?? 0,
       ...(t.flammable === undefined ? {} : { flammable: t.flammable }),
+      ...(t.garrison === undefined ? {} : { garrison: t.garrison }),
       render: t.render,
     })),
     maps: maps.map((m, mi) => ({
@@ -660,6 +661,7 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       faction: factions.findIndex((f) => f.id === a.faction),
       harvesters: a.harvesters,
       defenseRadiusCenti: a.defenseRadiusCenti,
+      ...(a.garrisonRadiusCenti === undefined ? {} : { garrisonRadiusCenti: a.garrisonRadiusCenti }),
       buildOrder: types(a.buildOrder),
       taskForces: a.taskForces.map((tf) => ({
         id: tf.id,

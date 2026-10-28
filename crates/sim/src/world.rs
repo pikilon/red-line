@@ -76,6 +76,16 @@ pub enum Command {
     Stop {
         units: Vec<EntityId>,
     },
+    /// Spec 31 block 2: infantry walk to map feature `feature` (index into
+    /// `World::features`) and garrison it.
+    Garrison {
+        units: Vec<EntityId>,
+        feature: u32,
+    },
+    /// Spec 31 block 2: the garrisoned building's owner evacuates it.
+    Unload {
+        feature: u32,
+    },
     DebugSpawn {
         kind: TypeId,
         pos: FxVec2,
@@ -491,6 +501,7 @@ impl World {
             reversing: false,
             aim: None,
             idle_aim_ticks: 0,
+            inside: None,
         });
         id
     }
@@ -674,6 +685,10 @@ impl World {
                 Command::Stop { units } => self.apply_stop(player, &units),
                 Command::Harvest { units, depot } => self.apply_harvest(player, &units, depot),
                 Command::Attack { units, target } => self.apply_attack(player, &units, target),
+                Command::Garrison { units, feature } => {
+                    self.apply_garrison(player, &units, feature);
+                }
+                Command::Unload { feature } => self.apply_unload(player, feature),
                 Command::AttackGround { units, target } => {
                     self.apply_attack_ground(player, &units, target);
                 }
@@ -769,7 +784,7 @@ impl World {
             .filter_map(|&id| self.index_of(id))
             .filter(|&index| {
                 let entity = &self.entities[index];
-                entity.owner == player && entity.site.is_none()
+                entity.owner == player && entity.site.is_none() && entity.inside.is_none()
             })
             .collect::<BTreeSet<usize>>()
             .into_iter()
@@ -931,6 +946,10 @@ impl World {
     /// Phase 2: moves every unit one tick along its field toward its goal.
     fn move_units(&mut self) {
         for index in 0..self.entities.len() {
+            // A garrisoned unit stays in its building (spec 31 block 2).
+            if self.entities[index].inside.is_some() {
+                continue;
+            }
             let before = self.entities[index].pos;
             match self.entities[index].order {
                 Order::Move {
@@ -939,6 +958,9 @@ impl World {
                     goal,
                 } => self.step_move(index, order_id, target, goal),
                 Order::Build { order_id, building } => self.step_build(index, order_id, building),
+                Order::Garrison { order_id, feature } => {
+                    self.step_garrison(index, order_id, feature);
+                }
                 Order::Harvest { .. } => self.step_harvest(index),
                 Order::Attack { order_id, target } => self.step_attack(index, order_id, target),
                 Order::AttackGround { target, .. } => self.step_attack_ground(index, target),
@@ -1152,7 +1174,11 @@ impl World {
         let buckets = self.bucket_by_cell(&before);
         let half_push = Fx::from_raw(SEPARATION_DISTANCE.raw() / 2);
         // Buildings and depots neither push nor are pushed.
-        let is_unit: Vec<bool> = self.entities.iter().map(|e| e.site.is_none()).collect();
+        let is_unit: Vec<bool> = self
+            .entities
+            .iter()
+            .map(|e| e.site.is_none() && e.inside.is_none())
+            .collect();
         let is_idle: Vec<bool> = self
             .entities
             .iter()
@@ -1310,6 +1336,9 @@ impl World {
                 Order::Attack { target, .. } => {
                     self.attack_goal(target).map(|goal| self.nav.index(goal))
                 }
+                Order::Garrison { feature, .. } => self
+                    .garrison_goal(self.entities[index].pos, feature)
+                    .map(|goal| self.nav.index(goal)),
                 _ => None,
             })
             .collect();

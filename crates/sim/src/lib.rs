@@ -12,6 +12,7 @@ mod environment;
 pub mod features;
 pub mod fixed;
 pub mod flow;
+pub mod garrison;
 pub mod hash;
 pub mod locomotor;
 pub mod map;

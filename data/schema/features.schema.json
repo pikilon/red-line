@@ -83,6 +83,20 @@
               "burnTicks": { "type": "integer", "minimum": 1, "maximum": 36000 }
             }
           },
+          "garrison": {
+            "description": "Spec 31 block 2: infantry can garrison this feature (Zero Hour GarrisonContain). Occupants are hidden, cannot be targeted and fire with the percent bonuses; a neutral building takes its riders' team and reverts when emptied.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["slots", "rangePct", "damagePct", "evictOnWrecked"],
+            "properties": {
+              "slots": { "type": "integer", "minimum": 1, "maximum": 32 },
+              "rangePct": { "description": "Occupants' weapon range, percent (Zero Hour 133).", "type": "integer", "minimum": 100, "maximum": 300 },
+              "damagePct": { "description": "Occupants' weapon damage, percent (Zero Hour 125).", "type": "integer", "minimum": 100, "maximum": 300 },
+              "evictOnWrecked": { "description": "Occupants leave when the building reaches the wrecked state.", "type": "boolean" },
+              "allowNeutral": { "description": "An empty (neutral) building accepts riders (default true).", "type": "boolean" },
+              "allowEnemies": { "description": "Riders may join a building held by another player (default false).", "type": "boolean" }
+            }
+          },
           "render": {
             "description": "Free-form hints for the client renderer of the family (model id, colours, scale...); the sim ignores it.",
             "type": "object"

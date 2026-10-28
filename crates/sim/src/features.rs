@@ -167,6 +167,20 @@ impl World {
         &self.features
     }
 
+    /// Index of the living feature whose footprint covers `cell`.
+    pub fn feature_at(&self, cell: Cell) -> Option<u32> {
+        self.features
+            .iter()
+            .position(|row| {
+                if !row.alive {
+                    return false;
+                }
+                let (w, h) = footprint(&self.rules.feature_types[row.kind as usize], row.rot);
+                (row.x..row.x + w).contains(&cell.x) && (row.y..row.y + h).contains(&cell.y)
+            })
+            .map(|index| index as u32)
+    }
+
     /// Spec 31: applies `amount` damage to feature `index`. Damage states only
     /// get worse. At zero hit points the feature becomes its `destroy` type at
     /// full hit points (after `collapseTicks`, when the type has them), or stops
@@ -219,7 +233,27 @@ impl World {
         if blocking_differs(&self.rules, &row, &next) {
             self.refresh_feature_blocks();
         }
+        self.evict_if_unfit(index as u32, row);
         true
+    }
+
+    /// Spec 31 block 2: occupants leave a feature that was wrecked (when its
+    /// type evicts) or destroyed; those with no room to leave die when it was
+    /// destroyed. `before` is the row as it was, which gives the footprint.
+    fn evict_if_unfit(&mut self, index: u32, before: FeatureState) {
+        if !self.entities.iter().any(|e| e.inside == Some(index)) {
+            return;
+        }
+        let after = self.features[index as usize];
+        let destroyed = !after.alive || after.kind != before.kind || after.collapse > 0;
+        let keeps = !destroyed
+            && self
+                .garrison_def(index)
+                .is_some_and(|def| !(def.evict_on_wrecked && after.state >= 2));
+        if !keeps {
+            let size = footprint(&self.rules.feature_types[before.kind as usize], before.rot);
+            self.evict_feature(index, destroyed, size);
+        }
     }
 
     /// Index of the feature type `id`.
@@ -341,7 +375,7 @@ impl World {
     /// Collapse: a building at zero hit points turns into its rubble when its
     /// timer runs out.
     fn collapse_features(&mut self) {
-        let mut changed = false;
+        let mut collapsed: Vec<(usize, FeatureState)> = Vec::new();
         for index in 0..self.features.len() {
             let row = self.features[index];
             if !row.alive || row.collapse == 0 {
@@ -363,10 +397,14 @@ impl World {
                     ..row
                 },
             };
-            changed = true;
+            collapsed.push((index, row));
         }
-        if changed {
-            self.refresh_feature_blocks();
+        if collapsed.is_empty() {
+            return;
+        }
+        self.refresh_feature_blocks();
+        for (index, before) in collapsed {
+            self.evict_if_unfit(index as u32, before);
         }
     }
 

@@ -1,8 +1,11 @@
 /** Feature table of the snapshot (spec 31): the runtime state of the map
  *  features, in map order. Mirrors `encode_features` in `crates/sim`. */
 
-/** Ints per feature record: index, kind, state, flags, hit points permille. */
-export const FEATURE_STRIDE = 5;
+/** Ints per feature record: index, kind, state, flags, hit points permille,
+ *  garrison owner, occupant count. */
+export const FEATURE_STRIDE = 7;
+/** Garrison owner of an empty building (the sim's `NEUTRAL`). */
+export const FEATURE_NO_OWNER = 255;
 export const FEATURE_ALIVE = 1;
 export const FEATURE_BURNING = 2;
 export const FEATURE_COLLAPSING = 4;
@@ -21,6 +24,10 @@ export interface FeatureRow {
   readonly collapsing: boolean;
   /** Hit points in 1/1000 of the type's maximum. */
   readonly hpPermille: number;
+  /** Spec 31 block 2: player holding the building, `FEATURE_NO_OWNER` when empty. */
+  readonly owner: number;
+  /** Spec 31 block 2: infantry inside. */
+  readonly occupants: number;
 }
 
 /** Decodes a `features_for` `Int32Array`; an empty array means "unchanged"
@@ -40,6 +47,8 @@ export function decodeFeatures(data: Int32Array): FeatureRow[] | null {
       burning: (flags & FEATURE_BURNING) !== 0,
       collapsing: (flags & FEATURE_COLLAPSING) !== 0,
       hpPermille: data[base + 4] ?? 0,
+      owner: data[base + 5] ?? FEATURE_NO_OWNER,
+      occupants: data[base + 6] ?? 0,
     });
   }
   return rows;
