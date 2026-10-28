@@ -17,7 +17,7 @@ interface MobileDebugView {
 type DebugWindow = Window & { __redline?: MobileDebugView };
 
 async function boot(page: Page): Promise<void> {
-  await page.goto("/?debug=1&seed=1&ai=off");
+  await page.goto("/?map=first-line&debug=1&seed=1&ai=off");
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
