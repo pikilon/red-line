@@ -258,6 +258,25 @@ allowEnemies? }` on the feature type; the AI reads `garrisonRadiusCenti` from
   best one applies.
 * **Scatter.** Unchanged (Zero Hour scatter).
 
+**Built (PR for block 3).** `crates/sim/src/environment.rs`, values in
+`data/balance/environment.yaml`. `effective_range` scales a weapon's range by
+`highGround.rangePct` when the ground under the shooter is at least
+`highGround.minTiles` above the target's; it is used for both the attack and
+the target pick. `cover_pct` applies the best of forest and wall cover to the
+damage of direct hits and splash (`reduce_damage`, at least 1).
+Example save: `?load=environment-cover`.
+
+* **A13 — what covers.** Forest: a living tree or hedge (vegetation that
+  blocks movement) on or next to the target's cell; stumps and bushes give
+  none. Wall: the line of fire crosses a living wall or building footprint,
+  except a footprint that holds the shooter (a garrison fires out of its own
+  building) or the target. Splash is shielded by walls between the impact and
+  the target, not between the shooter and the target. Craters are not in the
+  sim (spec 24 draws them in the client), so `cover.crater` is not read yet.
+* **A14 — walls reduce, they do not stop shots.** The owner's request is
+  "takes less damage" behind a wall, so a wall cuts damage by `wall.pct` and
+  the shot still lands (open question 2 stays open for a stronger rule).
+
 ## 6. Data sketch
 
 ```yaml

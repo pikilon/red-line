@@ -216,6 +216,12 @@
       "map": "demo-town",
       "form": "setup",
       "entities": 15
+    },
+    {
+      "id": "environment-cover",
+      "map": "demo-cover",
+      "form": "setup",
+      "entities": 10
     }
   ]
 }

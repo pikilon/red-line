@@ -997,10 +997,13 @@ impl World {
             };
             return;
         }
-        let range = self
+        let base_range = self
             .rules
             .weapon_of(kind)
             .map_or(Fx::ZERO, |weapon| fx_centi(weapon.range_centi));
+        let range = self.entity(target).map_or(base_range, |entity| {
+            self.effective_range(base_range, pos, entity.pos)
+        });
         let distance = self
             .entity(target)
             .map(|entity| self.entity_distance(pos, entity));
