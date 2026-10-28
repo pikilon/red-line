@@ -1,0 +1,22 @@
+# Spec 31 block 3 demo: Ukrainian riflemen on a 2.5-tile plateau shoot at Russian riflemen below, out of their own
+# flat range. Rows 1-2: targets behind a stone wall. Rows 3-4: targets beside a pine stand. Row 5: targets in the open.
+id: environment-cover
+map: demo-cover
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 15, y: 27, zoom: 0.9 }
+entities:
+  - { player: 0, type: ua-rifleman, atCenti: [1250, 2050] }
+  - { player: 1, type: ru-rifleman, atCenti: [1740, 2050] }
+  - { player: 0, type: ua-rifleman, atCenti: [1250, 2250] }
+  - { player: 1, type: ru-rifleman, atCenti: [1740, 2250] }
+  - { player: 0, type: ua-rifleman, atCenti: [1250, 2750] }
+  - { player: 1, type: ru-rifleman, atCenti: [1740, 2750] }
+  - { player: 0, type: ua-rifleman, atCenti: [1250, 2950] }
+  - { player: 1, type: ru-rifleman, atCenti: [1740, 2950] }
+  - { player: 0, type: ua-rifleman, atCenti: [1250, 3350] }
+  - { player: 1, type: ru-rifleman, atCenti: [1740, 3350] }

@@ -16,6 +16,7 @@
 
 use crate::angle::{Angle, atan2};
 use crate::entity::{EntityId, GROUND_TARGET, NEUTRAL, Order, Projectile};
+use crate::environment::reduce_damage;
 use crate::fixed::{Fx, FxVec2};
 use crate::rng::SplitMix64;
 use crate::rules::{Delivery, LocoKind, TypeId, WeaponDef, WeaponId, fx_centi};
@@ -112,8 +113,12 @@ impl World {
     ) {
         let kind = self.entities[index].kind;
         let distance = (point - self.entities[index].pos).length();
-        let in_range = distance >= fx_centi(weapon.min_range_centi)
-            && distance <= fx_centi(weapon.range_centi);
+        let range = self.effective_range(
+            fx_centi(weapon.range_centi),
+            self.entities[index].pos,
+            point,
+        );
+        let in_range = distance >= fx_centi(weapon.min_range_centi) && distance <= range;
         let aligned = if self.rules.ty(kind).motion.kind == LocoKind::Immediate {
             true
         } else {
@@ -481,7 +486,8 @@ impl World {
             return false;
         }
         let distance = self.entity_distance(attacker.pos, target);
-        distance >= fx_centi(weapon.min_range_centi) && distance <= fx_centi(weapon.range_centi)
+        let range = self.effective_range(fx_centi(weapon.range_centi), attacker.pos, target.pos);
+        distance >= fx_centi(weapon.min_range_centi) && distance <= range
     }
 
     /// An automatic pick also needs the target visible to the attacker's
@@ -511,6 +517,8 @@ impl World {
         if damage == 0 {
             return;
         }
+        let cover = self.cover_pct(self.entity(shooter).map(|e| e.pos), target.pos);
+        let damage = reduce_damage(damage, cover);
         self.entities[target_index].hp = self.entities[target_index].hp.saturating_sub(damage);
         self.entities[target_index].last_hit = Some((shooter, weapon_id));
         self.retaliate(target_index, shooter);
@@ -580,6 +588,7 @@ impl World {
         impact: FxVec2,
     ) {
         let radius = fx_centi(weapon.splash_centi);
+        let shooter_pos = self.entity(shooter).map(|e| e.pos);
         for index in 0..self.entities.len() {
             let entity = &self.entities[index];
             // Zero Hour's default splash mask skips the shooter (and its
@@ -600,6 +609,8 @@ impl World {
             if damage == 0 {
                 continue;
             }
+            let cover = self.cover_pct(shooter_pos, entity.pos);
+            let damage = reduce_damage(damage, cover);
             self.entities[index].hp = self.entities[index].hp.saturating_sub(damage);
             self.entities[index].last_hit = Some((shooter, weapon_id));
             self.retaliate(index, shooter);

@@ -210,6 +210,12 @@
       "map": "demo-destruction",
       "form": "setup",
       "entities": 5
+    },
+    {
+      "id": "environment-cover",
+      "map": "demo-cover",
+      "form": "setup",
+      "entities": 10
     }
   ]
 }

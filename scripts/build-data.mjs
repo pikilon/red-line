@@ -19,7 +19,7 @@ import {
 import { expandBridges } from "./map-bridges.mjs";
 
 /** @typedef {{ file: string, text: string }} SourceFile */
-/** @typedef {{ globals: SourceFile, factions: SourceFile[], maps: SourceFile[], ai: SourceFile[], features?: SourceFile[], saves?: SourceFile[] }} Sources */
+/** @typedef {{ globals: SourceFile, factions: SourceFile[], maps: SourceFile[], ai: SourceFile[], features?: SourceFile[], saves?: SourceFile[], environment?: SourceFile }} Sources */
 /** @typedef {"parse"|"schema"|"duplicate-id"|"unknown-reference"|"invalid-value"} DataErrorCode */
 /** @typedef {{ file: string, pointer: string, code: DataErrorCode, message: string }} DataError */
 
@@ -27,6 +27,7 @@ const FORMAT_VERSION = 1;
 const QUEUE_SLOTS = 9;
 const SCHEMA_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "data", "schema");
 const GLOBALS_FILE = "data/rules/globals.yaml";
+const ENVIRONMENT_FILE = "data/balance/environment.yaml";
 
 const readSchema = (name) => JSON.parse(readFileSync(join(SCHEMA_DIR, `${name}.schema.json`), "utf8"));
 
@@ -39,6 +40,7 @@ const createValidators = () => {
     map: ajv.compile(readSchema("map")),
     features: ajv.compile(readSchema("features")),
     ai: ajv.compile(readSchema("ai")),
+    environment: ajv.compile(readSchema("environment")),
   };
 };
 
@@ -67,6 +69,8 @@ export function readSources(rootDir) {
     maps: listedIds(globals.text, "maps").map((id) => read(`data/maps/${id}.yaml`)),
     ai: listedIds(globals.text, "ai").map((id) => read(`data/ai/${id}.yaml`)),
     saves: listedIds(globals.text, "saves").map((id) => read(saveFile(id))),
+    // Spec 31 section 6: one balance file, optional so older fixtures keep their shape.
+    environment: existsSync(join(rootDir, ENVIRONMENT_FILE)) ? read(ENVIRONMENT_FILE) : undefined,
   };
 }
 
@@ -100,6 +104,7 @@ export function buildRuleset(sources) {
   const maps = sources.maps.map((source) => load(source, validators.map));
   const featureFiles = (sources.features ?? []).map((source) => load(source, validators.features));
   const ai = (sources.ai ?? []).map((source) => load(source, validators.ai));
+  const environment = sources.environment ? load(sources.environment, validators.environment) : null;
   if (errors.length > 0) return { ruleset: null, errors };
 
   checkGlobals(sources.globals.file, globals, fail);
@@ -110,7 +115,7 @@ export function buildRuleset(sources) {
   (sources.ai ?? []).forEach((source, i) => checkAi(source.file, ai[i], factions, fail));
   if (errors.length > 0) return { ruleset: null, errors };
 
-  return { ruleset: assemble(globals, factions, maps, ai, featureTypes, layers), errors };
+  return { ruleset: assemble(globals, factions, maps, ai, featureTypes, layers, environment), errors };
 }
 
 /**
@@ -497,7 +502,7 @@ function checkAi(file, ai, factions, fail) {
   });
 }
 
-const assemble = (globals, factions, maps, ai, featureTypes, layers) => {
+const assemble = (globals, factions, maps, ai, featureTypes, layers, environment) => {
   const weaponList = factions.flatMap((f) => f.weapons);
   const typeList = [
     ...globals.commonTypes.map((t) => ({ t, faction: -1 })),
@@ -524,6 +529,15 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers) => {
     dockRangeCenti: globals.dockRangeCenti,
     aimToleranceDeg: globals.aimToleranceDeg ?? 0,
     turretRecenterTicks: globals.turretRecenterTicks ?? 0,
+    // Spec 31 block 3: only what the sim reads; omitted without the balance file.
+    ...(environment
+      ? {
+          environment: {
+            highGround: { minTiles: environment.highGround.minTiles, rangePct: environment.highGround.rangePct },
+            cover: { forestPct: environment.cover.forest.pct, wallPct: environment.cover.wall.pct },
+          },
+        }
+      : {}),
     locomotors: Object.entries(globals.locomotors ?? {}).map(([id, l]) => ({
       id,
       kind: { foot: "foot", tracks: "tracks", wheels: "wheels" }[l.kind],

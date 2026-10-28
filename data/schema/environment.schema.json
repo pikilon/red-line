@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "environment.schema.json",
+  "description": "data/balance/environment.yaml: height and cover balance (spec 31 section 6).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["highGround", "cover"],
+  "properties": {
+    "highGround": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minTiles", "rangePct"],
+      "properties": {
+        "minTiles": { "type": "integer", "minimum": 1, "maximum": 64 },
+        "rangePct": { "type": "integer", "minimum": 100, "maximum": 300 }
+      }
+    },
+    "cover": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["crater", "forest", "wall"],
+      "properties": {
+        "crater": { "$ref": "#/$defs/cover" },
+        "forest": { "$ref": "#/$defs/cover" },
+        "wall": { "$ref": "#/$defs/cover" }
+      }
+    },
+    "garrison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rangePct", "damagePct"],
+      "properties": {
+        "rangePct": { "type": "integer", "minimum": 100, "maximum": 300 },
+        "damagePct": { "type": "integer", "minimum": 100, "maximum": 300 }
+      }
+    },
+    "rubble": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["infantrySlowPct"],
+      "properties": { "infantrySlowPct": { "type": "integer", "minimum": 1, "maximum": 100 } }
+    }
+  },
+  "$defs": {
+    "cover": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pct"],
+      "properties": {
+        "pct": { "type": "integer", "minimum": 0, "maximum": 90 },
+        "blocksShots": { "type": "boolean" }
+      }
+    }
+  }
+}

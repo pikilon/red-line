@@ -1,0 +1,8 @@
+# Spec 31 section 6: height and cover in combat. All values are percentages or whole tiles.
+highGround: { minTiles: 2, rangePct: 115 }   # shooter >= minTiles above the target reaches rangePct percent of its range
+cover:                                       # pct = damage the target avoids; the best cover applies, never the sum (A3)
+  crater: { pct: 30 }                        # read when the sim tracks craters (spec 24); not applied yet
+  forest: { pct: 25 }                        # target on or beside a living vegetation feature
+  wall:   { pct: 40, blocksShots: false }    # the shot crosses a wall or building footprint; reduces, does not stop (spec 31 section 9, question 2)
+garrison: { rangePct: 133, damagePct: 125 }  # Zero Hour values; used by block 2
+rubble:   { infantrySlowPct: 60 }            # used by block 1

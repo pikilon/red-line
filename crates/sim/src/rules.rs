@@ -528,6 +528,49 @@ pub struct Ruleset {
     pub locomotors: Vec<LocomotorDef>,
     #[serde(default)]
     pub turret_recenter_ticks: u32,
+    /// Spec 31 block 3: high ground and cover (`data/balance/environment.yaml`).
+    #[serde(default)]
+    pub environment: EnvironmentDef,
+}
+
+/// Spec 31 block 3: balance of height and cover. The default changes nothing.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EnvironmentDef {
+    pub high_ground: HighGroundDef,
+    pub cover: CoverDef,
+}
+
+impl Default for EnvironmentDef {
+    fn default() -> Self {
+        EnvironmentDef {
+            high_ground: HighGroundDef {
+                min_tiles: 0,
+                range_pct: 100,
+            },
+            cover: CoverDef {
+                forest_pct: 0,
+                wall_pct: 0,
+            },
+        }
+    }
+}
+
+/// A shooter at least `min_tiles` above its target gets `range_pct` percent range.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HighGroundDef {
+    pub min_tiles: u32,
+    pub range_pct: u32,
+}
+
+/// Percent of damage a target in cover does not take; the best cover applies.
+/// Craters are not tracked by the sim yet, so they have no entry here.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CoverDef {
+    pub forest_pct: u32,
+    pub wall_pct: u32,
 }
 
 impl Ruleset {
