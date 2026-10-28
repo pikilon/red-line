@@ -278,6 +278,9 @@ pub struct TypeDef {
     /// `load_ticks` on top of their own each time they load.
     #[serde(default)]
     pub infinite: bool,
+    /// Spec 40: this completed building heals damaged infantry that enters it.
+    #[serde(default)]
+    pub heals_infantry: bool,
     /// Spec 39: this completed building is a vehicle repair pad.
     #[serde(default)]
     pub repairs_vehicles: bool,
@@ -619,6 +622,9 @@ pub struct EnvironmentDef {
     /// Spec 35: repair works; `None` (no balance entry) means nothing repairs.
     #[serde(default)]
     pub repair: Option<RepairDef>,
+    /// Spec 40: infantry heal inside an own barracks; `None` disables it.
+    #[serde(default)]
+    pub infirmary: Option<InfirmaryDef>,
 }
 
 impl Default for EnvironmentDef {
@@ -634,8 +640,18 @@ impl Default for EnvironmentDef {
                 trench_pct: 0,
             },
             repair: None,
+            infirmary: None,
         }
     }
+}
+
+/// Spec 40: a `healsInfantry` building takes in damaged infantry, heals each
+/// deficit over `heal_ticks` and lets it out; at most `slots` patients.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InfirmaryDef {
+    pub heal_ticks: u32,
+    pub slots: u32,
 }
 
 /// A shooter at least `min_tiles` above its target gets `range_pct` percent range.

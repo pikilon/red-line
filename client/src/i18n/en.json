@@ -133,6 +133,8 @@
   "saves.selling.description": "Queue units, then select a complete building and sell it for half its cost plus a full queue refund.",
   "saves.building-repair.name": "Building repair",
   "saves.building-repair.description": "Select the two dozers and right click the damaged power plant or barracks; repair is free and does not stack.",
+  "saves.infantry-healing.name": "Infantry healing",
+  "saves.infantry-healing.description": "Select the damaged riflemen and right click your barracks: healing is free, takes two seconds and production continues; they walk out whole.",
   "saves.vehicle-repair.name": "Vehicle repair",
   "saves.vehicle-repair.description": "Select a damaged vehicle and right click its factory: free five-second repair, one vehicle at a time.",
   "saves.construction.name": "Construction",

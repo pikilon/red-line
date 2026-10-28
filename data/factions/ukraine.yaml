@@ -167,6 +167,7 @@ types:                               # required
     footprint: [3, 3]
     power: -2
     produces: [ua-rifleman, ua-stugna-team]
+    healsInfantry: true
     requires: [ua-power-plant]
     render: { height: 90 }
   - id: ua-vehicle-factory

@@ -412,7 +412,7 @@ impl World {
                 continue;
             };
             let unit = &mut self.entities[index];
-            if unit.owner != player || unit.site.is_some() {
+            if unit.owner != player || unit.site.is_some() || unit.contained() {
                 continue;
             }
             let last_order_id = match unit.order {
@@ -426,6 +426,7 @@ impl World {
                 | Order::Board { order_id, .. }
                 | Order::Repair { order_id, .. }
                 | Order::RepairBuilding { order_id, .. }
+                | Order::Heal { order_id, .. }
                 | Order::RepairVehicle { order_id, .. } => order_id,
             };
             unit.order = Order::Idle { last_order_id };

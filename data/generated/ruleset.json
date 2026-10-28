@@ -69,6 +69,10 @@
       "dozerPoints": 3,
       "maxWorkers": 6,
       "vehicleRepairTicks": 75
+    },
+    "infirmary": {
+      "healTicks": 30,
+      "slots": 10
     }
   },
   "locomotors": [
@@ -1007,6 +1011,7 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "healsInfantry": true,
       "render": {
         "size": [
           300,
@@ -1591,6 +1596,7 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "healsInfantry": true,
       "render": {
         "size": [
           300,

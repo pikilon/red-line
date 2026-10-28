@@ -31,6 +31,8 @@ export interface TypeDef {
   locomotor: number;
   /** Collision radius in centi-tiles; 0 uses the sim default. */
   radiusCenti?: number;
+  /** Spec 40: damaged infantry heal inside this building. */
+  healsInfantry?: boolean;
   /** Spec 39: this building repairs damaged vehicles. */
   repairsVehicles?: boolean;
   /** Spec 34: infantry can ride this vehicle. */

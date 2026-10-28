@@ -123,6 +123,7 @@
         "repairsVehicles": { "description": "Spec 39: this building is a vehicle repair pad.", "type": "boolean" },
         "amphibious": { "description": "Spec 36: the vehicle drives over deep water too (Zero Hour Surfaces = GROUND WATER).", "type": "boolean" },
         "infinite": { "description": "Spec 36: a depot that never runs out (a port).", "type": "boolean" },
+        "healsInfantry": { "description": "Spec 40: damaged infantry heal inside this building (Zero Hour HealContain).", "type": "boolean" },
         "transport": {
           "description": "Spec 34: infantry can ride this vehicle (Zero Hour TransportContain).",
           "type": "object",

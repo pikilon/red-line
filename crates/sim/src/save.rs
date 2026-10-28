@@ -219,6 +219,12 @@ pub enum OrderState {
         order_id: u32,
         building: u32,
     },
+    Heal {
+        order_id: u32,
+        building: u32,
+        missing: u32,
+        remaining: u32,
+    },
     RepairVehicle {
         order_id: u32,
         factory: u32,
@@ -319,6 +325,10 @@ pub enum CommandState {
         feature: u32,
     },
     RepairBuilding {
+        units: Vec<u32>,
+        building: u32,
+    },
+    HealAt {
         units: Vec<u32>,
         building: u32,
     },
@@ -810,6 +820,17 @@ fn save_order(order: Order) -> OrderState {
         Order::RepairBuilding { order_id, building } => {
             OrderState::RepairBuilding { order_id, building }
         }
+        Order::Heal {
+            order_id,
+            building,
+            missing,
+            remaining,
+        } => OrderState::Heal {
+            order_id,
+            building,
+            missing,
+            remaining,
+        },
         Order::RepairVehicle {
             order_id,
             factory,
@@ -866,6 +887,17 @@ fn load_order(order: OrderState) -> Order {
         OrderState::RepairBuilding { order_id, building } => {
             Order::RepairBuilding { order_id, building }
         }
+        OrderState::Heal {
+            order_id,
+            building,
+            missing,
+            remaining,
+        } => Order::Heal {
+            order_id,
+            building,
+            missing,
+            remaining,
+        },
         OrderState::RepairVehicle {
             order_id,
             factory,
@@ -1114,6 +1146,10 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
             units: units.clone(),
             building: *building,
         },
+        Command::HealAt { units, building } => CommandState::HealAt {
+            units: units.clone(),
+            building: *building,
+        },
         Command::RepairVehicle { units, factory } => CommandState::RepairVehicle {
             units: units.clone(),
             factory: *factory,
@@ -1197,6 +1233,10 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
             feature: *feature,
         },
         CommandState::RepairBuilding { units, building } => Command::RepairBuilding {
+            units: units.clone(),
+            building: *building,
+        },
+        CommandState::HealAt { units, building } => Command::HealAt {
             units: units.clone(),
             building: *building,
         },

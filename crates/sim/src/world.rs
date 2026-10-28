@@ -125,6 +125,11 @@ pub enum Command {
         units: Vec<EntityId>,
         building: EntityId,
     },
+    /// Spec 40: damaged infantry heal inside an own barracks.
+    HealAt {
+        units: Vec<EntityId>,
+        building: EntityId,
+    },
     /// Spec 39: damaged vehicles dock at their own repair factory.
     RepairVehicle {
         units: Vec<EntityId>,
@@ -714,12 +719,14 @@ impl World {
         self.features_step();
         self.repair_works();
         self.repair_vehicles();
+        self.heal_infirmaries();
         self.separate_units();
         self.arrive_on_contact();
         self.update_visibility();
         self.update_combat();
         self.unload_transports();
         self.empty_dead_transports();
+        self.empty_dead_infirmaries();
         self.remove_dead();
         self.update_memory();
         self.update_victory();
@@ -824,6 +831,9 @@ impl World {
                 Command::Repair { units, feature } => self.apply_repair(player, &units, feature),
                 Command::RepairBuilding { units, building } => {
                     self.apply_repair_building(player, &units, building);
+                }
+                Command::HealAt { units, building } => {
+                    self.apply_heal_at(player, &units, building);
                 }
                 Command::RepairVehicle { units, factory } => {
                     self.apply_repair_vehicle(player, &units, factory);
@@ -1106,6 +1116,9 @@ impl World {
                 Order::RepairBuilding { order_id, building } => {
                     self.step_repair_building(index, order_id, building);
                 }
+                Order::Heal {
+                    order_id, building, ..
+                } => self.step_heal(index, order_id, building),
                 Order::RepairVehicle {
                     order_id, factory, ..
                 } => {

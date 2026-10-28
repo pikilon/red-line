@@ -77,7 +77,9 @@ impl World {
 
     /// `Disembark` command: the vehicle's owner starts unloading it.
     pub(crate) fn apply_disembark(&mut self, player: PlayerId, carrier: EntityId) {
-        if self.riders(carrier).is_empty() {
+        // Spec 40: patients inside a barracks are not riders; only real
+        // transports unload early.
+        if self.transport_def(carrier).is_none() || self.riders(carrier).is_empty() {
             return;
         }
         if let Some(index) = self.index_of(carrier) {

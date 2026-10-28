@@ -168,6 +168,7 @@ types:                               # required
     footprint: [3, 3]
     power: -2
     produces: [ru-rifleman, ru-rpg-gunner]
+    healsInfantry: true
     requires: [ru-power-plant]
     render: { height: 90 }
   - id: ru-vehicle-factory

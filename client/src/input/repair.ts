@@ -139,6 +139,53 @@ export function resolveBuildingRepairClick(args: {
   return [{ kind: "repairBuilding", player, units, building: target.id }];
 }
 
+/** Damaged foot infantry free on the map, the patients a barracks takes (spec 40). */
+export function isHealableInfantry(entity: EntityState): boolean {
+  const def = typeDef(entity.kind);
+  return (
+    def.category === "unit" &&
+    RULES.locomotors[def.locomotor]?.kind === "foot" &&
+    entity.hp > 0 &&
+    entity.hp < def.hp &&
+    !hasFlag(entity, ENTITY_FLAGS.inside)
+  );
+}
+
+/** Right click an own complete barracks with damaged infantry selected (spec 40). */
+export function resolveInfirmaryClick(args: {
+  player: number;
+  selected: readonly number[];
+  entities: readonly EntityState[];
+  x: number;
+  y: number;
+}): SimCommand[] {
+  const { player, selected, entities, x, y } = args;
+  const targetId = pickEntity(entities, x, y, ORDER_PICK_RADIUS_TILES);
+  const target = entities.find((entity) => entity.id === targetId);
+  if (target === undefined) return [];
+  const targetDef = typeDef(target.kind);
+  if (
+    target.owner !== player ||
+    targetDef.category !== "building" ||
+    targetDef.healsInfantry !== true ||
+    hasFlag(target, ENTITY_FLAGS.underConstruction) ||
+    target.hp === 0
+  ) {
+    return [];
+  }
+  const wanted = new Set(selected);
+  const units = entities
+    .filter(
+      (entity) =>
+        wanted.has(entity.id) &&
+        entity.owner === player &&
+        isHealableInfantry(entity),
+    )
+    .map((entity) => entity.id);
+  if (units.length === 0) return [];
+  return [{ kind: "healAt", player, units, building: target.id }];
+}
+
 /** Right click an own repair factory with damaged vehicles selected (spec 39). */
 export function resolveVehicleRepairClick(args: {
   player: number;

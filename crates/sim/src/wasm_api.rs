@@ -245,6 +245,18 @@ impl Sim {
         );
     }
 
+    /// Spec 40: `unit_ids` walk to `building` and heal inside it.
+    pub fn command_heal_at(&mut self, player: u8, unit_ids: &[u32], building: u32) {
+        self.world.enqueue_as(
+            player,
+            Command::HealAt {
+                units: unit_ids.to_vec(),
+                building,
+            },
+        );
+    }
+
+    /// Spec 39: `unit_ids` dock at their own repair factory.
     pub fn command_repair_vehicle(&mut self, player: u8, unit_ids: &[u32], factory: u32) {
         self.world.enqueue_as(
             player,

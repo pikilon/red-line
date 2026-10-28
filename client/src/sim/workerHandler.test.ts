@@ -176,6 +176,8 @@ describe("worker handler", () => {
     const command_sell = vi.fn<(player: number, building: number) => void>();
     const command_repair_building =
       vi.fn<(player: number, unitIds: Uint32Array, building: number) => void>();
+    const command_heal_at =
+      vi.fn<(player: number, unitIds: Uint32Array, building: number) => void>();
     const command_repair_vehicle =
       vi.fn<(player: number, unitIds: Uint32Array, factory: number) => void>();
     const command_rally =
@@ -219,6 +221,7 @@ describe("worker handler", () => {
       command_disembark: vi.fn(),
       command_repair: vi.fn(),
       command_repair_building,
+      command_heal_at,
       command_repair_vehicle,
       command_dig: vi.fn(),
       debug_spawn,
@@ -299,6 +302,7 @@ describe("worker handler", () => {
       { kind: "cancel", player: 1, building: 16 },
       { kind: "sell", player: 1, building: 16 },
       { kind: "repairBuilding", player: 1, units: [4, 5], building: 16 },
+      { kind: "healAt", player: 1, units: [4, 5], building: 16 },
       { kind: "repairVehicle", player: 1, units: [4, 5], factory: 16 },
       { kind: "rally", player: 1, building: 16, xRaw: 4194304, yRaw: 2097152 },
       { kind: "stop", player: 1, units: [4, 5] },
@@ -322,6 +326,11 @@ describe("worker handler", () => {
     expect(command_cancel).toHaveBeenCalledWith(1, 16);
     expect(command_sell).toHaveBeenCalledWith(1, 16);
     expect(command_repair_building).toHaveBeenCalledWith(
+      1,
+      new Uint32Array([4, 5]),
+      16,
+    );
+    expect(command_heal_at).toHaveBeenCalledWith(
       1,
       new Uint32Array([4, 5]),
       16,
@@ -395,6 +404,7 @@ describe("worker handler", () => {
       command_disembark: vi.fn(),
       command_repair: vi.fn(),
       command_repair_building: vi.fn(),
+      command_heal_at: vi.fn(),
       command_repair_vehicle: vi.fn(),
       command_dig: vi.fn(),
       debug_spawn: vi.fn(),
@@ -457,6 +467,7 @@ describe("worker handler", () => {
       command_disembark: vi.fn(),
       command_repair: vi.fn(),
       command_repair_building: vi.fn(),
+      command_heal_at: vi.fn(),
       command_repair_vehicle: vi.fn(),
       command_dig: vi.fn(),
       debug_spawn: vi.fn(),
@@ -537,6 +548,7 @@ describe("worker handler", () => {
       command_disembark: vi.fn(),
       command_repair: vi.fn(),
       command_repair_building: vi.fn(),
+      command_heal_at: vi.fn(),
       command_repair_vehicle: vi.fn(),
       command_dig: vi.fn(),
       debug_spawn: vi.fn(),
@@ -609,6 +621,7 @@ function saveSim(world: string, error?: string): SkirmishSimLike {
     command_disembark: vi.fn(),
     command_repair: vi.fn(),
     command_repair_building: vi.fn(),
+    command_heal_at: vi.fn(),
     command_repair_vehicle: vi.fn(),
     command_dig: vi.fn(),
     debug_spawn: vi.fn(),

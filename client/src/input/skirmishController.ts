@@ -18,6 +18,7 @@ import {
   type RepairJob,
   resolveBuildingRepairClick,
   resolveDigClick,
+  resolveInfirmaryClick,
   resolveRepairClick,
   resolveVehicleRepairClick,
 } from "./repair";
@@ -467,6 +468,18 @@ export function createSkirmishController(
     });
     if (repairingBuilding.length > 0) {
       for (const command of repairingBuilding) options.command(command);
+      return;
+    }
+    // Spec 40: damaged infantry heal in the own barracks under the cursor.
+    const healing = resolveInfirmaryClick({
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      x: ground.x,
+      y: ground.y,
+    });
+    if (healing.length > 0) {
+      for (const command of healing) options.command(command);
       return;
     }
     const commands = resolveRightClick({

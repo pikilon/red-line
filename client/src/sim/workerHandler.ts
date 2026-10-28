@@ -80,6 +80,7 @@ export interface SkirmishSimLike {
     unitIds: Uint32Array,
     building: number,
   ): void;
+  command_heal_at(player: number, unitIds: Uint32Array, building: number): void;
   command_repair_vehicle(
     player: number,
     unitIds: Uint32Array,
@@ -232,6 +233,13 @@ const COMMANDS = {
       );
     },
   ),
+  healAt: run((sim, command: Extract<SimCommand, { kind: "healAt" }>) => {
+    sim.command_heal_at(
+      command.player,
+      Uint32Array.from(command.units),
+      command.building,
+    );
+  }),
   repairVehicle: run(
     (sim, command: Extract<SimCommand, { kind: "repairVehicle" }>) => {
       sim.command_repair_vehicle(
