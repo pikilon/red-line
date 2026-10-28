@@ -8,42 +8,70 @@ types:
     footprint: [1, 1]
     blocks: all
     variants: 3
+    hp: 150
+    crushLevel: 1
+    flammable: { dps: 1, everyTicks: 1, spreadRadius: 1, spreadPermille: 30, burnTicks: 200 }
+    destroy: { becomes: tree-stump }
     render: { model: pine, color: "#2f5d34", height: 2.4 }
   - id: fir
     family: vegetation
     footprint: [1, 1]
     blocks: all
     variants: 3
+    hp: 150
+    crushLevel: 1
+    flammable: { dps: 1, everyTicks: 1, spreadRadius: 1, spreadPermille: 30, burnTicks: 200 }
+    destroy: { becomes: tree-stump }
     render: { model: fir, color: "#24523f", height: 2.9 }
   - id: oak
     family: vegetation
     footprint: [1, 1]
     blocks: all
     variants: 3
+    hp: 150
+    crushLevel: 1
+    flammable: { dps: 1, everyTicks: 1, spreadRadius: 1, spreadPermille: 30, burnTicks: 200 }
+    destroy: { becomes: tree-stump }
     render: { model: oak, color: "#5b8b35", height: 2.1 }
   - id: birch
     family: vegetation
     footprint: [1, 1]
     blocks: all
     variants: 3
+    hp: 150
+    crushLevel: 1
+    flammable: { dps: 1, everyTicks: 1, spreadRadius: 1, spreadPermille: 30, burnTicks: 200 }
+    destroy: { becomes: tree-stump }
     render: { model: birch, color: "#8fb54a", height: 2.4 }
   - id: poplar
     family: vegetation
     footprint: [1, 1]
     blocks: all
     variants: 3
+    hp: 150
+    crushLevel: 1
+    flammable: { dps: 1, everyTicks: 1, spreadRadius: 1, spreadPermille: 30, burnTicks: 200 }
+    destroy: { becomes: tree-stump }
     render: { model: poplar, color: "#7da63a", height: 3.1 }
   - id: palm
     family: vegetation
     footprint: [1, 1]
     blocks: all
     variants: 3
+    hp: 150
+    crushLevel: 1
+    flammable: { dps: 1, everyTicks: 1, spreadRadius: 1, spreadPermille: 30, burnTicks: 200 }
+    destroy: { becomes: tree-stump }
     render: { model: palm, color: "#3f8f3a", height: 2.5 }
   - id: dead-tree
     family: vegetation
     footprint: [1, 1]
     blocks: all
     variants: 3
+    hp: 150
+    crushLevel: 1
+    flammable: { dps: 1, everyTicks: 1, spreadRadius: 1, spreadPermille: 30, burnTicks: 200 }
+    destroy: { becomes: tree-stump }
     render: { model: dead-tree, color: "#6b6056", height: 2.0 }
   - id: burnt-stump
     family: vegetation
@@ -56,10 +84,22 @@ types:
     footprint: [1, 1]
     blocks: none
     variants: 3
+    hp: 30
+    crushLevel: 1
+    flammable: { dps: 1, everyTicks: 1, spreadRadius: 1, spreadPermille: 45, burnTicks: 90 }
     render: { model: bush, color: "#4f8a3a", height: 0.65 }
   - id: hedge
     family: vegetation
     footprint: [2, 1]
     blocks: all
     variants: 3
+    hp: 60
+    crushLevel: 1
+    flammable: { dps: 1, everyTicks: 1, spreadRadius: 1, spreadPermille: 40, burnTicks: 120 }
     render: { model: hedge, color: "#3d7a35", height: 0.85 }
+  - id: tree-stump
+    family: vegetation
+    footprint: [1, 1]
+    blocks: none
+    variants: 3
+    render: { model: tree-stump, color: "#6a4a2e", height: 0.4 }

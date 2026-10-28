@@ -55,7 +55,32 @@
             "additionalProperties": false,
             "required": ["becomes"],
             "properties": {
-              "becomes": { "$ref": "faction.schema.json#/$defs/id" }
+              "becomes": { "$ref": "faction.schema.json#/$defs/id" },
+              "collapseTicks": {
+                "description": "Spec 31 block 1: ticks a building at zero hp stays standing (wrecked) before it becomes `becomes`. 0 (default) is at once.",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3600
+              }
+            }
+          },
+          "crushLevel": {
+            "description": "Spec 31 block 1: lowest crusher level that flattens the feature (tracked hulls are 1). 0 (default) means vehicles cannot crush it. Wheeled vehicles shove and damage the ones with blocks none.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4
+          },
+          "flammable": {
+            "description": "Spec 31 block 1: the feature burns when hit. It loses dps hit points every everyTicks ticks, may light each flammable feature within spreadRadius cells (spreadPermille in 1000 per neighbour per tick, seeded) and burns out after burnTicks.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["dps", "everyTicks", "spreadRadius", "spreadPermille", "burnTicks"],
+            "properties": {
+              "dps": { "type": "integer", "minimum": 0, "maximum": 1000 },
+              "everyTicks": { "type": "integer", "minimum": 1, "maximum": 600 },
+              "spreadRadius": { "type": "integer", "minimum": 0, "maximum": 4 },
+              "spreadPermille": { "type": "integer", "minimum": 0, "maximum": 1000 },
+              "burnTicks": { "type": "integer", "minimum": 1, "maximum": 36000 }
             }
           },
           "render": {

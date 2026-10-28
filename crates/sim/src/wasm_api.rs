@@ -12,7 +12,8 @@ use std::collections::BTreeMap;
 
 use crate::entity::EntityId;
 use crate::snapshot::{
-    encode_combat, encode_fog, encode_match_snapshot_with_shots, encode_snapshot,
+    encode_combat, encode_features, encode_fog, encode_match_snapshot_with_shots, encode_snapshot,
+    features_signature,
 };
 use crate::world::{CombatEvent, Command, SimError, World};
 
@@ -34,6 +35,8 @@ pub struct Sim {
     /// Combat events since the last `combat_for`, so several `step` calls
     /// before one snapshot still report them (spec 17 §4.7).
     pending_events: Vec<CombatEvent>,
+    /// Signature of the feature table the last `features_for` call sent.
+    features_sent: Option<u64>,
 }
 
 #[wasm_bindgen]
@@ -48,6 +51,7 @@ impl Sim {
             ais: Vec::new(),
             shots: BTreeMap::new(),
             pending_events: Vec::new(),
+            features_sent: None,
         })
     }
 
@@ -62,6 +66,7 @@ impl Sim {
             ais: Vec::new(),
             shots: BTreeMap::new(),
             pending_events: Vec::new(),
+            features_sent: None,
         })
     }
 
@@ -310,6 +315,18 @@ impl Sim {
         out
     }
 
+    /// Feature table (spec 31): empty when it has not changed since the last
+    /// call, otherwise `[count, then per feature: index, kind, state, flags,
+    /// hit points in permille]`. The first call always sends the table.
+    pub fn features_for(&mut self) -> Vec<i32> {
+        let signature = features_signature(&self.world);
+        if self.features_sent == Some(signature) {
+            return Vec::new();
+        }
+        self.features_sent = Some(signature);
+        encode_features(&self.world)
+    }
+
     pub fn state_hash_hex(&self) -> String {
         format!("{:016x}", state_hash(&self.world))
     }
@@ -326,6 +343,7 @@ impl Sim {
             ais: Vec::new(),
             shots: BTreeMap::new(),
             pending_events: Vec::new(),
+            features_sent: None,
         }
     }
 
@@ -336,6 +354,7 @@ impl Sim {
             ais,
             shots: BTreeMap::new(),
             pending_events: Vec::new(),
+            features_sent: None,
         }
     }
 

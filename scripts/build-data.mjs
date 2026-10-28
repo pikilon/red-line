@@ -613,6 +613,9 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers) => {
       hp: t.hp ?? 0,
       states: t.states ?? { damaged: 70, wrecked: 35 },
       ...(t.destroy === undefined ? {} : { destroy: t.destroy }),
+      // Spec 31 block 1: crush level (0 = cannot be crushed) and fire.
+      crushLevel: t.crushLevel ?? 0,
+      ...(t.flammable === undefined ? {} : { flammable: t.flammable }),
       render: t.render,
     })),
     maps: maps.map((m, mi) => ({

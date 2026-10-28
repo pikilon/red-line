@@ -48,6 +48,8 @@ pub fn state_hash(world: &World) -> u64 {
         out.extend_from_slice(&[row.rot, row.state, u8::from(row.alive)]);
         put_u32(&mut out, row.variant);
         put_u32(&mut out, row.hp);
+        put_u32(&mut out, row.burn);
+        put_u32(&mut out, row.collapse);
     }
     for projectile in &world.projectiles {
         put_u32(&mut out, projectile.id);

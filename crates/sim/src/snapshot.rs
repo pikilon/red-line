@@ -239,6 +239,60 @@ pub fn encode_match_snapshot_with_shots(
     out
 }
 
+/// One feature record of the feature table (spec 31): `index, kind, state,
+/// flags, hit points in permille`.
+pub const FEATURE_STRIDE: usize = 5;
+pub const FEATURE_ALIVE: i32 = 1;
+pub const FEATURE_BURNING: i32 = 2;
+pub const FEATURE_COLLAPSING: i32 = 4;
+
+/// Feature table (spec 31): `count`, then one record per map feature in map
+/// order. `kind` indexes the ruleset `featureTypes`.
+pub fn encode_features(world: &World) -> Vec<i32> {
+    let rows = world.features();
+    let mut out = Vec::with_capacity(1 + rows.len() * FEATURE_STRIDE);
+    out.push(rows.len() as i32);
+    for (index, row) in rows.iter().enumerate() {
+        let max = world.rules().feature_types[row.kind as usize].hp;
+        let permille = if max == 0 {
+            1000
+        } else {
+            (u64::from(row.hp) * 1000 / u64::from(max)) as i32
+        };
+        let mut flags = 0;
+        if row.alive {
+            flags |= FEATURE_ALIVE;
+        }
+        if row.burn > 0 {
+            flags |= FEATURE_BURNING;
+        }
+        if row.collapse > 0 {
+            flags |= FEATURE_COLLAPSING;
+        }
+        out.extend_from_slice(&[
+            index as i32,
+            row.kind as i32,
+            i32::from(row.state),
+            flags,
+            permille,
+        ]);
+    }
+    out
+}
+
+/// A hash of what `encode_features` reports, to send the table only when it
+/// changed.
+pub fn features_signature(world: &World) -> u64 {
+    let mut bytes = Vec::with_capacity(world.features().len() * 12);
+    for row in world.features() {
+        bytes.extend_from_slice(&row.kind.to_le_bytes());
+        bytes.extend_from_slice(&[row.state, u8::from(row.alive), u8::from(row.burn > 0)]);
+        bytes.push(u8::from(row.collapse > 0));
+        bytes.extend_from_slice(&row.hp.to_le_bytes());
+    }
+    crate::hash::fnv1a64(&bytes)
+}
+
 /// Row-major `World::fog` values (§5.15).
 pub fn encode_fog(world: &World, viewer: PlayerId) -> Vec<u8> {
     let map = world.terrain();
