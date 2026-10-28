@@ -180,6 +180,7 @@ types:                               # required
     footprint: [4, 4]
     power: -4
     produces: [ru-brdm-scout, ru-bmp-2, ru-t-72b3, ru-tos-1a]
+    repairsVehicles: true
     requires: [ru-supply-center]
     render: { height: 110 }
   - id: ru-defense

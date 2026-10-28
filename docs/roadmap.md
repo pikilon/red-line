@@ -83,7 +83,7 @@ Owner order: build 1-3, then 4-7; keep drones in the pool for later.
 
 4. **Sell buildings.** The owner sells a building for part of its cost (spec 37).
 5. **Repair buildings.** Dozers repair damaged buildings (spec 38).
-6. **Repair vehicles.** Damaged vehicles repair at their vehicle factory.
+6. **Repair vehicles.** Damaged vehicles repair at their vehicle factory (spec 39).
 7. **Heal infantry.** Infantry heal at the barracks (owner unsure: follow
    the Zero Hour precedent before deciding).
 

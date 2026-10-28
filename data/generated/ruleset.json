@@ -67,7 +67,8 @@
       "permillePerSecondPerPoint": 7,
       "infantryPoints": 1,
       "dozerPoints": 3,
-      "maxWorkers": 6
+      "maxWorkers": 6,
+      "vehicleRepairTicks": 75
     }
   },
   "locomotors": [
@@ -1052,6 +1053,7 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "repairsVehicles": true,
       "render": {
         "size": [
           400,
@@ -1635,6 +1637,7 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "repairsVehicles": true,
       "render": {
         "size": [
           400,

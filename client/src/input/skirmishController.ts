@@ -19,6 +19,7 @@ import {
   resolveBuildingRepairClick,
   resolveDigClick,
   resolveRepairClick,
+  resolveVehicleRepairClick,
 } from "./repair";
 import {
   isDrag,
@@ -442,6 +443,18 @@ export function createSkirmishController(
     });
     if (repairing.length > 0) {
       for (const command of repairing) options.command(command);
+      return;
+    }
+    // Spec 39: damaged vehicles dock at the own factory under the cursor.
+    const repairingVehicles = resolveVehicleRepairClick({
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      x: ground.x,
+      y: ground.y,
+    });
+    if (repairingVehicles.length > 0) {
+      for (const command of repairingVehicles) options.command(command);
       return;
     }
     // Spec 38: dozers repair the own damaged building under the cursor.

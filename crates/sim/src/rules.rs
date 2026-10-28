@@ -278,6 +278,9 @@ pub struct TypeDef {
     /// `load_ticks` on top of their own each time they load.
     #[serde(default)]
     pub infinite: bool,
+    /// Spec 39: this completed building is a vehicle repair pad.
+    #[serde(default)]
+    pub repairs_vehicles: bool,
     /// Spec 34: infantry can ride this vehicle; `None` means it carries nobody.
     #[serde(default)]
     pub transport: Option<TransportDef>,
@@ -643,6 +646,10 @@ pub struct HighGroundDef {
     pub range_pct: u32,
 }
 
+fn default_vehicle_repair_ticks() -> u32 {
+    75
+}
+
 /// Spec 35: how fast workers repair. Each worker on a job adds its points, up
 /// to `max_workers` workers; one point restores `permille_per_second_per_point`
 /// of the maximum hit points per second.
@@ -653,6 +660,9 @@ pub struct RepairDef {
     pub infantry_points: u32,
     pub dozer_points: u32,
     pub max_workers: u32,
+    /// Spec 39: ticks a repair pad spends on the initial missing HP.
+    #[serde(default = "default_vehicle_repair_ticks")]
+    pub vehicle_repair_ticks: u32,
 }
 
 /// Percent of damage a target in cover does not take; the best cover applies.
