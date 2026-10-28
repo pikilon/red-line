@@ -2,12 +2,12 @@
 
 export const SETTINGS_KEY = "redline.settings.v1";
 
-/** Master volume 0..100 (spec 25 §10). Back to full now that the game ships its
- *  own generated sounds (phase 3) instead of procedural placeholders. */
-export const DEFAULT_AUDIO_MASTER = 100;
-export const DEFAULT_AUDIO_SFX = 80;
-export const DEFAULT_AUDIO_AMBIENT = 50;
-export const DEFAULT_AUDIO_VOICE = 70;
+/** Master volume 0..100 (spec 25 §10). The game starts quiet (owner request,
+ *  2026-10-28); the player turns it up in the menu. */
+export const DEFAULT_AUDIO_MASTER = 50;
+export const DEFAULT_AUDIO_SFX = 60;
+export const DEFAULT_AUDIO_AMBIENT = 30;
+export const DEFAULT_AUDIO_VOICE = 60;
 /** Music starts off: the game's music made the first minutes of play hard to
  *  follow, so the player turns it up in the menu if they want it (owner request). */
 export const DEFAULT_AUDIO_MUSIC = 0;
@@ -18,13 +18,13 @@ export interface Settings {
   generatedTextures?: boolean;
   /** Absent means true: snow shows on snow maps (spec 22 §4). */
   weather?: boolean;
-  /** Master volume 0..100 (default 100, spec 25 §10). */
+  /** Master volume 0..100 (default 50, spec 25 §10). */
   audioMaster?: number;
-  /** Effects/UI volume 0..100 (default 80, spec 25 §10). */
+  /** Effects/UI volume 0..100 (default 60, spec 25 §10). */
   audioSfx?: number;
-  /** Ambient beds volume 0..100 (default 50, spec 25 §10). */
+  /** Ambient beds volume 0..100 (default 30, spec 25 §10). */
   audioAmbient?: number;
-  /** Voices/EVA volume 0..100 (default 70, spec 25 §10). */
+  /** Voices/EVA volume 0..100 (default 60, spec 25 §10). */
   audioVoice?: number;
   /** Music volume 0..100 (default 0, off, spec 25 §10). */
   audioMusic?: number;
