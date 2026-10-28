@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import { decodeFeatures } from "./featureSnapshot";
 
 describe("decodeFeatures", () => {
-  it("reads kind, state, flags and hit points per row", () => {
-    const data = Int32Array.from([2, 0, 7, 1, 1, 640, 1, 9, 2, 6, 0]);
+  it("reads kind, state, flags, hit points and garrison per row", () => {
+    const data = Int32Array.from([
+      2, 0, 7, 1, 1, 640, 255, 0, 1, 9, 2, 6, 0, 1, 3,
+    ]);
     expect(decodeFeatures(data)).toEqual([
       {
         index: 0,
@@ -13,6 +15,8 @@ describe("decodeFeatures", () => {
         burning: false,
         collapsing: false,
         hpPermille: 640,
+        owner: 255,
+        occupants: 0,
       },
       {
         index: 1,
@@ -22,6 +26,8 @@ describe("decodeFeatures", () => {
         burning: true,
         collapsing: true,
         hpPermille: 0,
+        owner: 1,
+        occupants: 3,
       },
     ]);
   });

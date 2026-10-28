@@ -224,17 +224,27 @@ rider and reverts when emptied (nothing else is stored). Data lives in
 allowEnemies? }` on the feature type; the AI reads `garrisonRadiusCenti` from
 `data/ai/*.yaml`. Example save: `?load=environment-garrison`.
 
-* **A6 — riders.** Only free infantry (foot locomotor) enter. A building held
+* **A9 — riders.** Only free infantry (foot locomotor) enter. A building held
   by one player refuses riders of another unless `allowEnemies`; allies do not
   exist in the sim yet, so `allowAllies` is not read.
-* **A7 — eviction.** Occupants leave onto the first free passable cell of the
+* **A10 — eviction.** Occupants leave onto the first free passable cell of the
   rings (up to 3) around the old footprint, in `(y, x)` order. A wrecked
-  building with no room keeps them inside; a destroyed one kills them.
-* **A8 — interface.** Right click on a garrisonable building with infantry
+  building with no room keeps them inside; a destroyed one kills them. A
+  building that starts to collapse (block 1, zero hit points) counts as
+  destroyed: it empties at once, before it turns into rubble.
+* **A11 — interface.** Right click on a garrisonable building with infantry
   selected, or the Garrison button (nearest valid building within 14 tiles),
   garrisons; a left click on an own garrisoned building selects its occupants,
-  which shows the Evacuate button. The client never learns a feature's wrecked
-  state (block 1), so it may offer a building the sim then refuses.
+  which shows the Evacuate button. The feature table of the snapshot carries
+  each building's holder (`NEUTRAL` when empty) and occupant count, so the
+  client offers only what the sim accepts: not a wrecked, collapsing or
+  destroyed building, not a full one and not one another player holds. The
+  holder is public, as in Zero Hour, where a garrisoned building shows its
+  team colour.
+* **A12 — attacking a garrison.** Occupants cannot be targeted. Enemies clear
+  a building by damaging it (force fire or splash, block 1): at the wrecked
+  state the occupants are thrown out. Units do not pick a held building as an
+  automatic target yet (Zero Hour does); see open question 3.
 
 ### Block 3 — Cover and position
 
@@ -307,6 +317,8 @@ Blocks 2 and 3 depend on PR 1 only (and on block 1's snapshot and tick step). Bl
    missing text if it had more requirements.
 2. Should a shot that crosses a wall stop the shot (Difference 2 `blocksShots`)
    or only reduce the damage? This spec assumes "reduce".
+3. Should units attack an enemy-held building on their own, as in Zero Hour
+   (A12)? Today the player has to force fire on it.
 
 ## 10. Acceptance criteria
 

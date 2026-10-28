@@ -1,4 +1,5 @@
 import { RULES, typeDef } from "../rules";
+import { FEATURE_NO_OWNER, type FeatureRow } from "../sim/featureSnapshot";
 import { ENTITY_FLAGS, type EntityState, hasFlag } from "../sim/matchSnapshot";
 import type { SimCommand } from "../sim/protocol";
 
@@ -9,11 +10,19 @@ export const GARRISON_BUTTON_REACH_TILES = 14;
  *  list is the index the sim uses in `garrison` and `unload`. */
 export interface GarrisonFeature {
   index: number;
+  /** Feature type placed on the map; a destroyed building changes type. */
+  kind: number;
   x: number;
   y: number;
   width: number;
   height: number;
   slots: number;
+  /** From the snapshot (`withLiveState`): holder and occupant count. Without
+   *  them only the viewer's own visible occupants are counted. */
+  owner?: number;
+  occupants?: number;
+  /** Wrecked or collapsing: occupants may still be inside, nobody enters. */
+  closed?: boolean;
 }
 
 /** The parts of the ruleset feature types read here. */
@@ -42,6 +51,7 @@ export function garrisonFeaturesOf(
     const swap = feature.rot % 2 === 1;
     found.push({
       index,
+      kind: feature.type,
       x: feature.x,
       y: feature.y,
       width: swap ? info.footprint[1] : info.footprint[0],
@@ -50,6 +60,30 @@ export function garrisonFeaturesOf(
     });
   });
   return found;
+}
+
+/** The garrisonable features still standing as their placed type, given the
+ *  sim's feature table, with their holder and occupant count; wrecked (state
+ *  2) or collapsing ones are `closed`. Before the first table arrives every
+ *  feature is kept as placed. */
+export function withLiveState(
+  features: readonly GarrisonFeature[],
+  rows: readonly FeatureRow[] | null,
+): GarrisonFeature[] {
+  if (rows === null) return [...features];
+  const live: GarrisonFeature[] = [];
+  for (const feature of features) {
+    const row = rows[feature.index];
+    if (row === undefined) continue;
+    if (!row.alive || row.kind !== feature.kind) continue;
+    live.push({
+      ...feature,
+      owner: row.owner,
+      occupants: row.occupants,
+      closed: row.collapsing || row.state >= 2,
+    });
+  }
+  return live;
 }
 
 /** The feature whose footprint covers the point (tiles). */
@@ -101,6 +135,11 @@ function hasRoomFor(
   entities: readonly EntityState[],
   player: number,
 ): boolean {
+  if (feature.closed === true) return false;
+  if (feature.owner !== undefined && feature.occupants !== undefined) {
+    if (feature.occupants >= feature.slots) return false;
+    return feature.owner === FEATURE_NO_OWNER || feature.owner === player;
+  }
   const inside = occupantsOf(feature, entities);
   if (inside.length >= feature.slots) return false;
   return inside.every((entity) => entity.owner === player);

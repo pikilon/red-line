@@ -2,7 +2,7 @@
 
 use std::collections::BTreeMap;
 
-use crate::entity::{Entity, EntityId, Ghost, Order, PlayerId, Projectile};
+use crate::entity::{Entity, EntityId, Ghost, NEUTRAL, Order, PlayerId, Projectile};
 use crate::fixed::FxVec2;
 use crate::map::{Cell, cell_of};
 use crate::nav::footprint_center;
@@ -243,8 +243,10 @@ pub fn encode_match_snapshot_with_shots(
 }
 
 /// One feature record of the feature table (spec 31): `index, kind, state,
-/// flags, hit points in permille`.
-pub const FEATURE_STRIDE: usize = 5;
+/// flags, hit points in permille, garrison owner (`NEUTRAL` when empty),
+/// occupant count`. A garrisoned building shows its team to everybody, as in
+/// Zero Hour, so the client never offers one the sim would refuse.
+pub const FEATURE_STRIDE: usize = 7;
 pub const FEATURE_ALIVE: i32 = 1;
 pub const FEATURE_BURNING: i32 = 2;
 pub const FEATURE_COLLAPSING: i32 = 4;
@@ -255,6 +257,7 @@ pub fn encode_features(world: &World) -> Vec<i32> {
     let rows = world.features();
     let mut out = Vec::with_capacity(1 + rows.len() * FEATURE_STRIDE);
     out.push(rows.len() as i32);
+    let (owners, counts) = garrisons(world);
     for (index, row) in rows.iter().enumerate() {
         let max = world.rules().feature_types[row.kind as usize].hp;
         let permille = if max == 0 {
@@ -278,20 +281,44 @@ pub fn encode_features(world: &World) -> Vec<i32> {
             i32::from(row.state),
             flags,
             permille,
+            i32::from(owners[index]),
+            counts[index] as i32,
         ]);
     }
     out
 }
 
+/// Per feature row: the garrison owner (its lowest-id occupant's, `NEUTRAL`
+/// when empty, as `World::feature_owner`) and the number of occupants.
+fn garrisons(world: &World) -> (Vec<PlayerId>, Vec<u32>) {
+    let len = world.features().len();
+    let (mut owners, mut counts) = (vec![NEUTRAL; len], vec![0u32; len]);
+    for entity in world.entities() {
+        let Some(index) = entity.inside.map(|index| index as usize) else {
+            continue;
+        };
+        if index < len {
+            if counts[index] == 0 {
+                owners[index] = entity.owner;
+            }
+            counts[index] += 1;
+        }
+    }
+    (owners, counts)
+}
+
 /// A hash of what `encode_features` reports, to send the table only when it
 /// changed.
 pub fn features_signature(world: &World) -> u64 {
-    let mut bytes = Vec::with_capacity(world.features().len() * 12);
-    for row in world.features() {
+    let mut bytes = Vec::with_capacity(world.features().len() * 17);
+    let (owners, counts) = garrisons(world);
+    for (index, row) in world.features().iter().enumerate() {
         bytes.extend_from_slice(&row.kind.to_le_bytes());
         bytes.extend_from_slice(&[row.state, u8::from(row.alive), u8::from(row.burn > 0)]);
         bytes.push(u8::from(row.collapse > 0));
         bytes.extend_from_slice(&row.hp.to_le_bytes());
+        bytes.push(owners[index]);
+        bytes.extend_from_slice(&counts[index].to_le_bytes());
     }
     crate::hash::fnv1a64(&bytes)
 }

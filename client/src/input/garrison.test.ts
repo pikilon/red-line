@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { typeIndex } from "../rules";
+import { FEATURE_NO_OWNER, type FeatureRow } from "../sim/featureSnapshot";
 import { ENTITY_FLAGS, type EntityState } from "../sim/matchSnapshot";
 import { commandButtons } from "../ui/commandPanel";
 import {
@@ -7,6 +8,7 @@ import {
   garrisonOffers,
   resolveGarrisonClick,
   selectOccupantsAt,
+  withLiveState,
 } from "./garrison";
 
 const unit = (
@@ -91,6 +93,51 @@ describe("garrison interface (spec 31 block 2)", () => {
       features,
     });
     expect(offers.garrison).toBe(2);
+  });
+
+  it("follows the sim's feature table: hidden enemy riders, wrecks and rubble", () => {
+    const row = (
+      index: number,
+      kind: number,
+      more: Partial<FeatureRow> = {},
+    ) => ({
+      index,
+      kind,
+      state: 0,
+      alive: true,
+      burning: false,
+      collapsing: false,
+      hpPermille: 1000,
+      owner: FEATURE_NO_OWNER,
+      occupants: 0,
+      ...more,
+    });
+    const shooter = [unit(1, 0, "ua-rifleman", 9, 14)];
+    const offer = (rows: FeatureRow[]) =>
+      garrisonOffers({
+        player: 0,
+        selected: [1],
+        entities: shooter,
+        features: withLiveState(features, rows),
+      }).garrison;
+    expect(offer([row(0, 1), row(1, 0), row(2, 0)])).toBe(1);
+    // Enemy riders are hidden from the snapshot; the table still names the holder.
+    expect(
+      offer([row(0, 1), row(1, 0, { owner: 1, occupants: 1 }), row(2, 0)]),
+    ).toBe(2);
+    expect(
+      offer([row(0, 1), row(1, 0, { owner: 0, occupants: 1 }), row(2, 0)]),
+    ).toBe(1);
+    expect(
+      offer([row(0, 1), row(1, 0, { owner: 0, occupants: 2 }), row(2, 0)]),
+    ).toBe(2);
+    expect(offer([row(0, 1), row(1, 0, { state: 2 }), row(2, 0)])).toBe(2);
+    expect(offer([row(0, 1), row(1, 0, { collapsing: true }), row(2, 0)])).toBe(
+      2,
+    );
+    expect(
+      offer([row(0, 1), row(1, 5), row(2, 0, { alive: false })]),
+    ).toBeNull();
   });
 
   it("offers Garrison near a building and Evacuate for garrisoned units", () => {

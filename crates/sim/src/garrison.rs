@@ -517,6 +517,61 @@ mod tests {
     }
 
     #[test]
+    fn a_collapsing_building_empties_before_it_turns_to_rubble() {
+        // Real data: the apartment block collapses into rubble (spec 31 block 1).
+        let (mut world, feature) = town(false);
+        let kind = world.features[feature as usize].kind as usize;
+        world.rules.feature_types[kind]
+            .garrison
+            .as_mut()
+            .unwrap()
+            .evict_on_wrecked = false;
+        let units: Vec<EntityId> = (0..2)
+            .map(|i| rifleman(&mut world, 0, 1550 + 80 * i, 2650))
+            .collect();
+        world.enqueue_as(
+            0,
+            Command::Garrison {
+                units: units.clone(),
+                feature,
+            },
+        );
+        run(&mut world, 120);
+        assert_eq!(world.occupants(feature).len(), 2);
+        let hp = world.features[feature as usize].hp;
+        assert!(world.damage_feature(feature as usize, hp));
+        assert!(world.features[feature as usize].collapse > 0);
+        assert!(
+            world.occupants(feature).is_empty(),
+            "the collapse throws them out"
+        );
+        assert!(units.iter().all(|&id| world.entity(id).unwrap().hp > 0));
+        run(&mut world, 61);
+        assert_ne!(world.features[feature as usize].kind as usize, kind);
+        assert!(world.occupants(feature).is_empty());
+    }
+
+    #[test]
+    fn the_feature_table_names_the_holder_of_a_building() {
+        let (mut world, feature) = town(false);
+        let foe = rifleman(&mut world, 1, 1650, 2650);
+        world.enqueue_as(
+            1,
+            Command::Garrison {
+                units: vec![foe],
+                feature,
+            },
+        );
+        run(&mut world, 120);
+        let table = crate::snapshot::encode_features(&world);
+        let base = 1 + feature as usize * crate::snapshot::FEATURE_STRIDE;
+        assert_eq!(table[base], feature as i32);
+        assert_eq!((table[base + 5], table[base + 6]), (1, 1));
+        let empty = 1 + (feature as usize + 1) * crate::snapshot::FEATURE_STRIDE;
+        assert_eq!(table[empty + 5], i32::from(NEUTRAL));
+    }
+
+    #[test]
     fn garrison_changes_the_hash_and_survives_a_save() {
         let (mut world, feature) = town(false);
         let unit = rifleman(&mut world, 0, 1650, 2650);

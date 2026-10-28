@@ -40,6 +40,7 @@ import {
   garrisonCommand,
   garrisonFeaturesOf,
   garrisonOffers,
+  withLiveState,
 } from "../input/garrison";
 import {
   createSkirmishController,
@@ -719,8 +720,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     boot.start,
   );
   let uiRenders = 0;
-  /** Garrisonable buildings of the map, in the sim's feature row order (spec 31 block 2). */
-  const garrisonFeatures = garrisonFeaturesOf(
+  /** Garrisonable buildings as placed on the map, in the sim's feature row order (spec 31 block 2). */
+  const placedGarrisons = garrisonFeaturesOf(
     (
       ruleset.maps.find((entry) => entry.id === mapId) as
         | { features?: readonly GarrisonMapFeature[] }
@@ -729,6 +730,9 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     (ruleset as unknown as { featureTypes?: readonly GarrisonTypeInfo[] })
       .featureTypes ?? [],
   );
+  /** The placed buildings the sim still accepts riders in, with their holder
+   *  and occupants, from the latest feature table (spec 31 block 2). */
+  let garrisonFeatures = withLiveState(placedGarrisons, null);
   const commandPanel = createCommandPanel(document.body, {
     onGarrison: (feature) => {
       uiClick();
@@ -1297,7 +1301,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
 
   interact.onSnapshot((snapshot, receivedFog, at, combat, features) => {
     initial ??= snapshot;
-    if (features !== null) liveFeatures?.apply(features, performance.now());
+    if (features !== null) {
+      liveFeatures?.apply(features, performance.now());
+      garrisonFeatures = withLiveState(placedGarrisons, features);
+    }
     const previous = next;
     flying = combat.projectiles;
     prev = previous ?? snapshot;
