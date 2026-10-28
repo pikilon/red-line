@@ -49,8 +49,10 @@ Source: `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`; data: `INIZH.big`
   10.0 (`GameData.ini:48`).
 * **Rubble and pathing.** `setCorrectDamageState` (`ActiveBody.cpp:~213`)
   re-registers the object in the pathfind map. `setTypeAsObstacle`
-  (`AI/AIPathfind.cpp:1452`) marks rubble cells `CELL_RUBBLE`. Whether ground
-  units can cross rubble was **not verified**; see Assumption A2.
+  (`AI/AIPathfind.cpp:1451`) marks rubble cells `CELL_RUBBLE`. Infantry
+  locomotors have `Surfaces = GROUND RUBBLE` and vehicles `GROUND` only, so
+  infantry cross rubble at full speed and vehicles cannot (no speed or path
+  cost); see Assumption A7.
 * **Collapse.** `StructureCollapseUpdate` (`Update/StructureCollapseUpdate.cpp:132`,
   `update` at 170) runs a timed collapse on GameLogic RNG and spawns debris.
 
@@ -105,10 +107,10 @@ terrain cover. Here a unit on high ground gets a range bonus. A unit in a crater
 behind a wall or in a forest takes less damage. Reason: owner request. The
 values are data (section 6) and all of them are fixed-point.
 
-**Difference 3 — rubble blocks vehicles.** Zero Hour's rubble passability was not
-confirmed. Here wrecked buildings leave rubble that blocks vehicles and slows
-infantry to 60%. Reason: owner request ("escombros que bloquean o frenan
-vehículos"), and `rubble-large` already carries this in `data/features/props.yaml`.
+**Difference 3 — rubble blocks vehicles.** Wrecked buildings leave rubble that
+blocks vehicles and lets infantry through at full speed, as Zero Hour does
+(review of 2026-10-28; the earlier 60% infantry slowdown is dropped). Reason:
+owner request ("escombros que bloquean o frenan vehículos").
 
 **Difference 4 — garrisoned civilian buildings do not capture the map.** Zero
 Hour gives a neutral building to the rider's team. Here a civilian building is
@@ -287,7 +289,6 @@ cover:
   forest:  { pct: 25 }
   wall:    { pct: 40, blocksShots: true }
 garrison: { rangePct: 133, damagePct: 125 }   # Zero Hour values
-rubble:   { infantrySlowPct: 60 }
 ```
 
 ## 7. Phases and PRs
@@ -307,9 +308,8 @@ Blocks 2 and 3 depend on PR 1 only (and on block 1's snapshot and tick step). Bl
 
 * **A1 — trees in the sim.** Trees have hp and burn in the sim; the client fells
   them. Stumps are decor (`blocks: none`).
-* **A2 — rubble.** Zero Hour's rubble passability is unverified. Here rubble
-  blocks vehicles and slows infantry to 60%. Revisit if the owner tests a
-  different expectation.
+* **A2 — rubble.** Superseded by A7: rubble blocks vehicles only, with no
+  infantry slowdown (Zero Hour `CELL_RUBBLE`).
 * **A3 — cover does not stack.** The best cover applies, not the sum.
 * **A4 — garrison capacity.** `slots` is per building type; civilian values as
   in section 2.2 (10 for the apartment block).
@@ -320,10 +320,15 @@ Blocks 2 and 3 depend on PR 1 only (and on block 1's snapshot and tick step). Bl
   "above 1"). A hull flattens a feature within its radius plus a quarter tile
   and ahead of it (45 degree cone), so a tank felling a tree must drive at it.
   Wheeled hulls damage only the ones that do not block (`shoveDamage` a tick).
-* **A7 — rubble (block 1).** The nav grid has one layer, so `blocks: vehicles`
-  blocks infantry too: rubble stops everybody and the 60% infantry slowdown of
-  Difference 3 waits for the layer split. A collapsed building becomes the
-  `rubble-<w>x<h>` type of its footprint.
+* **A7 — rubble.** A collapsed building becomes the `rubble-<w>x<h>` type of
+  its footprint. `blocks: vehicles` features block vehicles and let foot units
+  (`locomotor: foot`) walk through at full speed, as Zero Hour's `CELL_RUBBLE`
+  (`AIPathfind.cpp:1451`; infantry `Surfaces = GROUND RUBBLE`). The sim keeps a
+  second passability layer for foot units (`World.nav_foot`, rebuilt with
+  `nav`) only while such a feature lies on the map; foot units then use their
+  own flow fields (saved as `footFlowGoals`), goal remapping, yielding and
+  garrison entry and eviction cells. Without rubble both layers are one, so
+  the state hash and old saves are unchanged.
 * **A8 — bridges (block 1).** A bridge at the wrecked state (35% hp) or lower
   blocks its deep-water deck cells and the client stops drawing it; units on
   the deck at that moment are not harmed.

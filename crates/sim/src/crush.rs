@@ -7,7 +7,7 @@ use crate::fixed::{Fx, FxVec2};
 use crate::map::cell_of;
 use crate::rules::FeatureBlocks;
 use crate::rules::{LocoKind, Motion, Ruleset};
-use crate::world::World;
+use crate::world::{Layer, World};
 
 /// Extra reach of a hull against map features (a quarter tile): a tank
 /// stopped against a tree, whose cell it cannot enter, still crushes it.
@@ -157,7 +157,7 @@ impl World {
         let off_line = Fx::from_raw((lateral.abs() >> Fx::FRAC_BITS) as i32);
         let aside = (reach - off_line).max(Fx::ZERO) + motion.shove_push;
         let target = soldier.pos + side.scale(aside);
-        if self.nav.is_passable(cell_of(target)) {
+        if self.grid(Layer::Foot).is_passable(cell_of(target)) {
             self.entities[b].pos = target;
         }
     }
