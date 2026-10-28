@@ -1,4 +1,4 @@
-//! AC-32-01..07: infantry riding vehicles (spec 32).
+//! AC-34-01..07: infantry riding vehicles (spec 34).
 
 use sim::entity::{EntityId, Order};
 use sim::fixed::{Fx, FxVec2};

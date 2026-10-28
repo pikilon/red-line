@@ -3,7 +3,7 @@ import { ENTITY_FLAGS, type EntityState, hasFlag } from "../sim/matchSnapshot";
 import type { SimCommand } from "../sim/protocol";
 import { ORDER_PICK_RADIUS_TILES } from "./entitySelection";
 
-/** Spec 32: slots of a vehicle type that carries infantry, 0 otherwise. */
+/** Spec 34: slots of a vehicle type that carries infantry, 0 otherwise. */
 export function transportSlots(kind: number): number {
   return typeDef(kind).transport?.slots ?? 0;
 }

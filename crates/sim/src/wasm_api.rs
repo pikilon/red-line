@@ -206,7 +206,7 @@ impl Sim {
         self.world.enqueue_as(player, Command::Unload { feature });
     }
 
-    /// Spec 32: `unit_ids` walk to the own vehicle `carrier` and board it.
+    /// Spec 34: `unit_ids` walk to the own vehicle `carrier` and board it.
     pub fn command_board(&mut self, player: u8, unit_ids: &[u32], carrier: u32) {
         self.world.enqueue_as(
             player,
@@ -217,7 +217,7 @@ impl Sim {
         );
     }
 
-    /// Spec 32: the riders of `carrier` leave it, one at a time.
+    /// Spec 34: the riders of `carrier` leave it, one at a time.
     pub fn command_disembark(&mut self, player: u8, carrier: u32) {
         self.world
             .enqueue_as(player, Command::Disembark { carrier });

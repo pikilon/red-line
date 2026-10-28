@@ -1,4 +1,4 @@
-# 32 — Infantry transport
+# 34 — Infantry transport
 
 Status: built (owner request 2026-10-28, backlog item 1 in `docs/roadmap.md`).
 Depends on `31-environment-interaction.md` (garrison, whose containment model
@@ -74,5 +74,5 @@ damagePct, exitTicks }` on the unit type (`data/factions/*.yaml`).
 
 ## 6. Acceptance criteria
 
-AC-32-01..07 in `crates/sim/tests/transport.rs`: board, entry rules and slots,
+AC-34-01..07 in `crates/sim/tests/transport.rs`: board, entry rules and slots,
 riding hidden, unloading one at a time, fire ports, death damage, hash and save.

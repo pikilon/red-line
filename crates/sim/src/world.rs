@@ -94,12 +94,12 @@ pub enum Command {
     Unload {
         feature: u32,
     },
-    /// Spec 32: infantry walk to the own vehicle `carrier` and board it.
+    /// Spec 34: infantry walk to the own vehicle `carrier` and board it.
     Board {
         units: Vec<EntityId>,
         carrier: EntityId,
     },
-    /// Spec 32: the vehicle's riders leave it, one at a time.
+    /// Spec 34: the vehicle's riders leave it, one at a time.
     Disembark {
         carrier: EntityId,
     },

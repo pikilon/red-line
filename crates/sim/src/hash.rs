@@ -123,7 +123,7 @@ fn put_entity(out: &mut Vec<u8>, entity: &Entity) {
         out.push(1);
         put_u32(out, feature);
     }
-    // Spec 32: written only for riders and unloading vehicles, likewise.
+    // Spec 34: written only for riders and unloading vehicles, likewise.
     if let Some(carrier) = entity.aboard {
         out.push(2);
         put_u32(out, carrier);

@@ -75,7 +75,7 @@ offline PWA release on GitHub Pages.
 Owner order: build 1-3, then 4-7; keep drones in the pool for later.
 
 1. **Infantry transport.** Infantry board vehicles, ride, fire from some of
-   them and unload (spec 32).
+   them and unload (spec 34).
 2. **Engineering works.** Infantry dig trenches and repair destroyed bridges;
    dozers help; more workers finish faster (spec 33).
 3. **Ports and amphibious vehicles.** Ports pay supply trucks; some vehicles

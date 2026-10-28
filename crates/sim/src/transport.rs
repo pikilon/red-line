@@ -1,4 +1,4 @@
-//! Spec 32: infantry ride vehicles (Zero Hour `TransportContain`). A rider
+//! Spec 34: infantry ride vehicles (Zero Hour `TransportContain`). A rider
 //! stays in `World::entities` with `aboard = Some(vehicle id)`: it is hidden,
 //! cannot be targeted, moves with the vehicle and fires from it only when the
 //! vehicle type allows it. Riders leave one at a time, `exit_ticks` apart; when
@@ -143,7 +143,7 @@ impl World {
         }
     }
 
-    /// Spec 32: a rider fires only from a vehicle with fire ports, and only an
+    /// Spec 34: a rider fires only from a vehicle with fire ports, and only an
     /// infantry rider (`TransportContain` passenger fire).
     pub(crate) fn rider_may_fire(&self, index: usize) -> bool {
         match self.entities[index].aboard {

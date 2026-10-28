@@ -29,7 +29,7 @@ const unit = (
 
 const ABOARD = ENTITY_FLAGS.inside | ENTITY_FLAGS.aboard;
 
-describe("spec 32 transport input", () => {
+describe("spec 34 transport input", () => {
   const bradley = unit(1, 0, "ua-bradley", 10, 10);
   const tank = unit(2, 0, "ua-leopard-2a4", 20, 20);
   const rifleman = unit(3, 0, "ua-rifleman", 5, 5);

@@ -137,10 +137,10 @@ pub struct EntityState {
     /// Spec 31 block 2: index of the feature this unit garrisons.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub inside: Option<u32>,
-    /// Spec 32: id of the vehicle this unit rides.
+    /// Spec 34: id of the vehicle this unit rides.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub aboard: Option<u32>,
-    /// Spec 32: ticks until an unloading vehicle lets its next rider out.
+    /// Spec 34: ticks until an unloading vehicle lets its next rider out.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub unloading: Option<u32>,
 }
@@ -1164,7 +1164,7 @@ pub enum SetupOrder {
     AttackGroundCenti([i32; 2]),
     /// Spec 31 block 2: a cell inside the footprint of a garrisonable feature.
     Garrison([i32; 2]),
-    /// Spec 32: label of an own transport to board.
+    /// Spec 34: label of an own transport to board.
     Board(String),
 }
 

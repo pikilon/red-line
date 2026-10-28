@@ -388,7 +388,7 @@ export function createSkirmishController(
       for (const command of entering) options.command(command);
       return;
     }
-    // Spec 32: infantry board the own transport under the cursor.
+    // Spec 34: infantry board the own transport under the cursor.
     const boarding = resolveBoardClick({
       player: options.player(),
       selected: [...selected],

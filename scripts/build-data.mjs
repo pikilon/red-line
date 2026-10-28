@@ -605,7 +605,7 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       loadTicks: t.loadTicks ?? 0,
       unloadTicks: t.unloadTicks ?? 0,
       freeUnit: t.freeUnit === undefined ? -1 : typeIndex.get(t.freeUnit),
-      // Spec 32: infantry transport.
+      // Spec 34: infantry transport.
       ...(t.transport === undefined ? {} : { transport: t.transport }),
       render: { size: renderSize(t) },
     })),

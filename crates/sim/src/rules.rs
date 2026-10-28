@@ -270,7 +270,7 @@ pub struct TypeDef {
     /// Launcher types fire only while standing still (they stow when moving).
     #[serde(default)]
     pub stationary_fire: bool,
-    /// Spec 32: infantry can ride this vehicle; `None` means it carries nobody.
+    /// Spec 34: infantry can ride this vehicle; `None` means it carries nobody.
     #[serde(default)]
     pub transport: Option<TransportDef>,
     /// Precomputed at load (`Ruleset::from_json`), never read from the wire.
@@ -415,7 +415,7 @@ pub struct GarrisonDef {
     pub allow_enemies: bool,
 }
 
-/// Spec 32: transport data of a vehicle type (Zero Hour `TransportContain`).
+/// Spec 34: transport data of a vehicle type (Zero Hour `TransportContain`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransportDef {

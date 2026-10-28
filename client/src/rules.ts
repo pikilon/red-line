@@ -31,7 +31,7 @@ export interface TypeDef {
   locomotor: number;
   /** Collision radius in centi-tiles; 0 uses the sim default. */
   radiusCenti?: number;
-  /** Spec 32: infantry can ride this vehicle. */
+  /** Spec 34: infantry can ride this vehicle. */
   transport?: {
     slots: number;
     fireFromInside?: boolean;

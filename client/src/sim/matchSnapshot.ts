@@ -16,7 +16,7 @@ export const ENTITY_FLAGS = {
   poweredOff: 16,
   /** Spec 31 block 2: garrisoned in a building; hidden on the map. */
   inside: 32,
-  /** Spec 32: rides a vehicle (with `inside`); `progress` holds its id. */
+  /** Spec 34: rides a vehicle (with `inside`); `progress` holds its id. */
   aboard: 64,
 } as const;
 export const OUTCOMES = ["ongoing", "winner", "draw"] as const;

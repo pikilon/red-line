@@ -23,7 +23,7 @@ export interface CommandButton {
   action: "construct" | "produce" | "garrison" | "evacuate" | "disembark";
   /** Feature index the garrison and evacuate buttons act on. */
   feature?: number;
-  /** Spec 32: vehicle the Unload button empties. */
+  /** Spec 34: vehicle the Unload button empties. */
   carrier?: number;
 }
 
@@ -73,7 +73,7 @@ export interface CommandPanelArgs {
   queue: QueueState | null;
   /** Spec 31 block 2: garrison and evacuate offers for the selection. */
   garrison?: { garrison: number | null; evacuate: number | null };
-  /** Spec 32: the selected transport with riders, for the Unload button. */
+  /** Spec 34: the selected transport with riders, for the Unload button. */
   disembark?: { carrier: number; riders: number } | null;
 }
 
@@ -247,7 +247,7 @@ export function createCommandPanel(
     onGarrison?(feature: number): void;
     /** Spec 31 block 2: the Evacuate button was pressed for `feature`. */
     onEvacuate?(feature: number): void;
-    /** Spec 32: the Unload button was pressed for vehicle `carrier`. */
+    /** Spec 34: the Unload button was pressed for vehicle `carrier`. */
     onDisembark?(carrier: number): void;
     /** A disabled offer was pressed; the caller plays the error sound/EVA. */
     onDisabled?(button: CommandButton): void;

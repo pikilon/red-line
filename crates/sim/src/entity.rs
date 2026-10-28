@@ -59,7 +59,7 @@ pub enum Order {
         order_id: u32,
         feature: u32,
     },
-    /// Spec 32: walk to the own vehicle `carrier` and board it.
+    /// Spec 34: walk to the own vehicle `carrier` and board it.
     Board {
         order_id: u32,
         carrier: EntityId,
@@ -119,10 +119,10 @@ pub struct Entity {
     /// Spec 31 block 2: index of the feature this unit garrisons; it is hidden
     /// and fires from the building. `None` for everything on the map.
     pub inside: Option<u32>,
-    /// Spec 32: id of the vehicle this unit rides; it is hidden and moves with
+    /// Spec 34: id of the vehicle this unit rides; it is hidden and moves with
     /// it. `None` for everything on the map.
     pub aboard: Option<EntityId>,
-    /// Spec 32: on a transport that is unloading, ticks until the next rider
+    /// Spec 34: on a transport that is unloading, ticks until the next rider
     /// leaves; `None` when it is not unloading.
     pub unloading: Option<u32>,
 }
@@ -141,7 +141,7 @@ pub struct LocomotionState {
 
 impl Entity {
     /// True while the unit is inside a building or a vehicle: hidden, not
-    /// targetable, not moved or pushed (spec 31 block 2, spec 32).
+    /// targetable, not moved or pushed (spec 31 block 2, spec 34).
     pub fn contained(&self) -> bool {
         self.inside.is_some() || self.aboard.is_some()
     }

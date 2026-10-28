@@ -42,7 +42,7 @@ export function pickEntity(
   let structureId: number | null = null;
 
   for (const entity of entities) {
-    // Spec 32: riders are hidden in their vehicle; the vehicle is picked.
+    // Spec 34: riders are hidden in their vehicle; the vehicle is picked.
     if (hasFlag(entity, ENTITY_FLAGS.aboard)) continue;
     if (isUnit(entity)) {
       const distance = Math.hypot(entity.x - x, entity.y - y);
