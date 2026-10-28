@@ -418,6 +418,10 @@ mod tests {
         // The owner sees its unit flagged inside; the enemy sees no row for it.
         assert!(listed(0).contains(&(mine as i32, FLAG_INSIDE)));
         assert!(listed(1).iter().all(|&(id, _)| id != mine as i32));
+        assert!(
+            listed(NEUTRAL).contains(&(mine as i32, FLAG_INSIDE)),
+            "revealed view"
+        );
         run(&mut world, 120);
         assert_eq!(world.entity(mine).unwrap().hp, hp, "no shot can hit it");
     }

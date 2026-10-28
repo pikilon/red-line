@@ -186,7 +186,7 @@
         "player": 1,
         "type": "ru-rifleman",
         "atCenti": [
-          3300,
+          4600,
           2650
         ],
         "order": {
@@ -200,7 +200,7 @@
         "player": 1,
         "type": "ru-rifleman",
         "atCenti": [
-          3300,
+          4600,
           2750
         ],
         "order": {
@@ -214,7 +214,7 @@
         "player": 1,
         "type": "ru-rifleman",
         "atCenti": [
-          3400,
+          4700,
           2700
         ],
         "order": {
