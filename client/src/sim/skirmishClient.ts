@@ -1,4 +1,5 @@
 import { type CombatSnapshot, decodeCombat } from "./combatSnapshot";
+import { decodeFeatures, type FeatureRow } from "./featureSnapshot";
 import { decodeMatchSnapshot, type MatchSnapshot } from "./matchSnapshot";
 import {
   type CommandMessage,
@@ -35,6 +36,7 @@ export interface SkirmishClient {
       fog: Uint8Array,
       receivedAtMs: number,
       combat: CombatSnapshot,
+      features: readonly FeatureRow[] | null,
     ) => void,
   ): () => void;
 }
@@ -44,6 +46,7 @@ type SnapshotListener = (
   fog: Uint8Array,
   receivedAtMs: number,
   combat: CombatSnapshot,
+  features: readonly FeatureRow[] | null,
 ) => void;
 
 const EMPTY_COMBAT: CombatSnapshot = { projectiles: [], events: [] };
@@ -119,10 +122,14 @@ export function createSkirmishClient(
         message.combat === undefined
           ? EMPTY_COMBAT
           : decodeCombat(message.combat);
+      const features =
+        message.features === undefined
+          ? null
+          : decodeFeatures(message.features);
       const fog = message.fog ?? new Uint8Array(0);
       const receivedAtMs = now();
       for (const listener of [...listeners]) {
-        listener(snapshot, fog, receivedAtMs, combat);
+        listener(snapshot, fog, receivedAtMs, combat, features);
       }
     },
   } as const;

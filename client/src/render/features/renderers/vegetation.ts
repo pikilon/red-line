@@ -348,6 +348,23 @@ const BUILDERS: Record<string, Builder> = {
     }
     return { sway: 0.35 };
   },
+  "tree-stump"(build, base) {
+    // Spec 31 block 1: what a felled tree leaves; the cut top is pale wood.
+    add(
+      build,
+      new CylinderGeometry(0.2, 0.28, 0.38, 8, 1),
+      base,
+      at(0, 0.19, 0),
+      { lump: 0.05, seed: 63 },
+    );
+    add(
+      build,
+      new CylinderGeometry(0.17, 0.17, 0.02, 8, 1),
+      new Color("#c9a56a"),
+      at(0, 0.385, 0),
+    );
+    return { sway: 0 };
+  },
   "burnt-stump"(build, base) {
     add(
       build,

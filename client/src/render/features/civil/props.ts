@@ -281,6 +281,38 @@ export const rubblePile: BuilderFn = (b) => {
   b.bag.ribbon([0.05, 0.2, 0.05], [-0.3, 0.34, 0.2], 0.012, 0x4a3a28);
 };
 
+/** Spec 31 block 1: what a collapsed building leaves, filling its footprint:
+ *  a low mound of debris with bent rebar. */
+export const rubbleHeap: BuilderFn = (b) => {
+  const sets = [
+    [0x9a5a44, 0x8a847a, 0x4a423c],
+    [0x9a9890, 0x7a7870, 0x3f3b36],
+    [0x7a5a3c, 0x5a4630, 0x3a3028],
+  ];
+  const colours = sets[b.variant % sets.length] as number[];
+  const hw = Math.max(0.4, b.w / 2 - 0.15);
+  const hd = Math.max(0.4, b.d / 2 - 0.15);
+  b.bag.frustum(
+    [-hw, -hd, hw, hd],
+    [-hw * 0.5, -hd * 0.5, hw * 0.5, hd * 0.5],
+    0,
+    0.5,
+    b.cj(colours[1] as number, 0.05),
+  );
+  b.rubble(
+    { x0: -hw, z0: -hd, x1: hw, z1: hd, h: 1 },
+    Math.round(8 * b.w * b.d),
+    colours,
+  );
+  b.bag.ribbon([-hw * 0.4, 0.4, 0], [hw * 0.3, 0.9, -hd * 0.3], 0.02, 0x3a3028);
+  b.bag.ribbon(
+    [hw * 0.1, 0.45, hd * 0.2],
+    [-hw * 0.5, 0.8, hd * 0.4],
+    0.02,
+    0x4a3a28,
+  );
+};
+
 export const crateStack: BuilderFn = (b) => {
   const wood = b.c(0x8a6a3c);
   b.bag.box(-0.4, 0, -0.35, 0.05, 0.4, 0.1, wood);
@@ -295,5 +327,6 @@ export const PROP_BUILDERS: Readonly<Record<string, BuilderFn>> = {
   "parked-car": car,
   "bus-stop": busStop,
   "rubble-pile": rubblePile,
+  "rubble-heap": rubbleHeap,
   "crate-stack": crateStack,
 };

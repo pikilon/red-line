@@ -140,11 +140,14 @@ state to map features`), before any block starts.
   lowers `hp`, raises `state` (states only get worse), and at zero hp replaces
   the row's type at full hit points or marks it dead. It returns whether the row
   changed.
-* **Not in the base layer (later blocks).** `CombatEvent` has no feature event
-  yet; the client learns states from the snapshot. The per-tick step for fire
-  and collapse timers (`features_step`, after `run_over`) arrives with block 1.
-  Snapshot encoding of feature rows also arrives with block 1; the client draws
-  nothing new until then.
+* **Block 1 (built).** `World::step` runs `features_step` after `run_over`: vehicle
+  crush (`crush_features`, geometry of `crush.rs`), fire (`burn_features`) and
+  collapse timers (`collapse_features`). Rows also hold `burn` (fire ticks
+  left), `collapse` (ticks to rubble) and, for bridges, `to`. Shots call
+  `hit_features` at their impact. The snapshot carries the table through
+  `features_for` (`[count, then index, kind, state, flags, hp permille]`, empty
+  when unchanged). `CombatEvent` has no feature event; the client reads states
+  from the table.
 * **Hash and save (built).** `state_hash` writes the feature rows (kind, origin,
   rot, state, alive, variant, hp) after the entities, only when the map has
   features, so worlds without features keep the AC-03-08 layout. `save_state`
@@ -260,6 +263,18 @@ Blocks 2 and 3 depend on PR 1 only (and on block 1's snapshot and tick step). Bl
   in section 2.2 (10 for the apartment block).
 * **A5 — fire spread** uses the seeded RNG, one roll per burning neighbour per
   tick.
+* **A6 — crusher level (block 1).** Tracked hulls have `crusherLevel: 1` in the
+  data, so a feature's `crushLevel: 1` is what they flatten (the spec text said
+  "above 1"). A hull flattens a feature within its radius plus a quarter tile
+  and ahead of it (45 degree cone), so a tank felling a tree must drive at it.
+  Wheeled hulls damage only the ones that do not block (`shoveDamage` a tick).
+* **A7 — rubble (block 1).** The nav grid has one layer, so `blocks: vehicles`
+  blocks infantry too: rubble stops everybody and the 60% infantry slowdown of
+  Difference 3 waits for the layer split. A collapsed building becomes the
+  `rubble-<w>x<h>` type of its footprint.
+* **A8 — bridges (block 1).** A bridge at the wrecked state (35% hp) or lower
+  blocks its deep-water deck cells and the client stops drawing it; units on
+  the deck at that moment are not harmed.
 
 ## 9. Open questions for the owner
 

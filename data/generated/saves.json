@@ -204,6 +204,12 @@
       "map": "demo-bridges",
       "form": "setup",
       "entities": 12
+    },
+    {
+      "id": "environment-destruction",
+      "map": "demo-destruction",
+      "form": "setup",
+      "entities": 5
     }
   ]
 }

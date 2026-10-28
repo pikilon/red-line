@@ -1,4 +1,5 @@
 import { Group, type Object3D } from "three";
+import type { FeatureRow } from "../../sim/featureSnapshot";
 import type { Elevation } from "../elevation";
 import {
   FEATURE_FAMILIES,
@@ -8,6 +9,7 @@ import {
   featureInstancesOf,
   terrainLayersOf,
 } from "./layers";
+import { LiveFeatures } from "./live";
 import {
   featureRendererFor,
   groundLayerRenderer,
@@ -52,4 +54,48 @@ export function createMapFeatures(
     add(featureRendererFor(family)(ofFamily, ctx));
   }
   return group;
+}
+
+/** The map's ground and water, and its features as a live object that follows
+ *  the snapshot's feature table (spec 31). */
+export interface LiveMapFeatures {
+  readonly object: Group;
+  /** Feeds the feature table of a snapshot. */
+  apply(rows: readonly FeatureRow[], nowMs: number): void;
+  /** Call every frame: rebuilds what changed and animates the flames. */
+  update(nowMs: number): void;
+}
+
+export function createLiveMapFeatures(
+  rules: FeatureRules,
+  map: FeatureMap,
+  elevation: Elevation,
+): LiveMapFeatures {
+  const layers = terrainLayersOf(map, rules.layerNames);
+  const ctx: FeatureContext = {
+    elevation,
+    layers,
+    mapWidth: map.width,
+    mapHeight: map.height,
+  };
+  const group = new Group();
+  group.name = "map-features";
+  if (layers.present) {
+    const ground = groundLayerRenderer()(layers, ctx);
+    if (ground !== null) group.add(ground);
+    const water = waterLayerRenderer()(layers, ctx);
+    if (water !== null) group.add(water);
+  }
+  const live = new LiveFeatures(
+    featureInstancesOf(map, rules.featureTypes ?? []),
+    rules.featureTypes ?? [],
+    ctx,
+    (family, instances) => featureRendererFor(family)(instances, ctx),
+  );
+  group.add(live.object);
+  return {
+    object: group,
+    apply: (rows, nowMs) => live.apply(rows, nowMs),
+    update: (nowMs) => live.update(nowMs),
+  };
 }

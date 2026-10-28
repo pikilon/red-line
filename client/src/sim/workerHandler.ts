@@ -12,6 +12,7 @@ import {
   type SetPausedMessage,
   type SetViewerMessage,
   type SimCommand,
+  type SnapshotMessage,
   TICK_MS,
   type WorkerToMain,
 } from "./protocol";
@@ -46,6 +47,8 @@ export interface SkirmishSimLike {
   fog_for(viewer: number): Uint8Array;
   /** Optional combat snapshot (spec 17 §5); newer sims expose `combat_for`. */
   combat_for?(viewer: number): Int32Array;
+  /** Optional feature table (spec 31); empty when unchanged. */
+  features_for?(): Int32Array;
   /** World state JSON (spec 19 §3.7); throws the sim's error text. */
   save_state?(): string;
   command_move(
@@ -224,18 +227,21 @@ export function createWorkerHandler(
     const data = target.snapshot_for(viewer);
     const combat = target.combat_for?.(viewer);
     const fog = target.fog_for(viewer);
-    if (combat === undefined) {
-      post({ type: "snapshot", data, fog }, [
-        data.buffer as ArrayBuffer,
-        fog.buffer as ArrayBuffer,
-      ]);
-      return;
-    }
-    post({ type: "snapshot", data, fog, combat }, [
+    const features = target.features_for?.();
+    const message: SnapshotMessage = { type: "snapshot", data, fog };
+    const transfer: ArrayBuffer[] = [
       data.buffer as ArrayBuffer,
       fog.buffer as ArrayBuffer,
-      combat.buffer as ArrayBuffer,
-    ]);
+    ];
+    if (combat !== undefined) {
+      message.combat = combat;
+      transfer.push(combat.buffer as ArrayBuffer);
+    }
+    if (features !== undefined && features.length > 0) {
+      message.features = features;
+      transfer.push(features.buffer as ArrayBuffer);
+    }
+    post(message, transfer);
   };
 
   const resetClock = (): void => {
