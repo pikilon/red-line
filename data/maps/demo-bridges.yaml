@@ -1,0 +1,39 @@
+id: demo-bridges                     # required, equals the file name
+width: 64                            # required, 16..256
+height: 48                           # required, 16..256
+blocked: []                          # open ground; the deep water blocks except under the bridges
+depots:                              # required; origin = top-left cell
+  - { origin: [4, 38], amount: 10000 }
+  - { origin: [56, 38], amount: 10000 }
+# Spec 26 section 17 demo: a deep river crossing the whole map, a shallow bank on each side, and three bridges
+# (road-bridge, wooden-bridge, stone-arch) with roads leading to them. Tanks and infantry of both sides wait
+# at the approaches: order them across.
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: dirt, rect: [4, 34, 14, 44] }
+      - { material: dirt, rect: [50, 34, 60, 44] }
+  roads:
+    - { type: asphalt, path: [[10, 10], [27, 10]], width: 2 }
+    - { type: asphalt, path: [[36, 10], [54, 10]], width: 2 }
+    - { type: dirt, path: [[10, 24], [27, 24]], width: 1 }
+    - { type: dirt, path: [[36, 24], [54, 24]], width: 1 }
+    - { type: asphalt, path: [[10, 38], [27, 38]], width: 2 }
+    - { type: asphalt, path: [[36, 38], [54, 38]], width: 2 }
+    - { type: asphalt, path: [[10, 10], [10, 38]], width: 2 }
+    - { type: asphalt, path: [[54, 10], [54, 38]], width: 2 }
+  water:
+    - { kind: river, depth: shallow, path: [[32, 0], [32, 47]], width: 6 }
+    - { kind: river, depth: deep, path: [[32, 0], [32, 47]], width: 4 }
+features:
+  - { type: road-bridge, from: [28, 9], to: [35, 9], variant: 0 }
+  - { type: wooden-bridge, from: [28, 24], to: [35, 24], variant: 0 }
+  - { type: stone-arch, from: [28, 38], to: [35, 38], variant: 0 }
+  - { type: pine, area: [2, 1, 22, 6], density: 25, seed: 3 }
+  - { type: pine, area: [42, 1, 62, 6], density: 25, seed: 5 }
+  - { type: pine, area: [2, 28, 22, 33], density: 20, seed: 9 }
+  - { type: pine, area: [42, 28, 62, 33], density: 20, seed: 11 }
+starts:                              # required, exactly 2 entries; start i is player i
+  - { faction: ukraine, hq: [4, 14], dozerCenti: [1000, 2000] }
+  - { faction: russia, hq: [57, 14], dozerCenti: [5500, 2000] }

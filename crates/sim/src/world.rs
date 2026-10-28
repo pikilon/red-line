@@ -192,6 +192,7 @@ pub(crate) fn map_terrain(rules: &Ruleset, map: &MapDef) -> MapGrid {
     // Spec 26: the layers are stored, deep water blocks, and so do the
     // footprints of solid features (`vehicles` blocks like `all` for now).
     terrain.set_layers(map.ground_cells(), map.road_cells(), map.water_cells());
+    terrain.set_bridges(map.bridge_cells());
     for f in &map.features {
         let def = &rules.feature_types[f.kind as usize];
         if def.blocks == FeatureBlocks::None {

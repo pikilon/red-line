@@ -23,6 +23,7 @@ terrain:
     - { kind: river, depth: deep, path: [[30, 4], [31, 63]], width: 4, fords: [[31, 35, 3]] }
     - { kind: lake, depth: deep, rect: [43, 47, 49, 53] }
 features:
+  - { type: road-bridge, from: [25, 24], to: [35, 24], variant: 0 }
   - { type: pine, area: [34, 8, 56, 20], density: 35, seed: 7 }
   - { type: pine, area: [4, 8, 20, 18], density: 25, seed: 3 }
   - { type: house-small, at: [38, 38], rot: 0, variant: 0 }

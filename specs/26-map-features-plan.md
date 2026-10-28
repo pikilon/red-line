@@ -646,3 +646,55 @@ with the owner (follow the Zero Hour precedent in 2.3 and 6.6):
 * Shallow water and fords do not slow units; civilian buildings take no
   damage and cannot be garrisoned; fences and walls cannot be crushed.
 
+
+## 17. Phase 5 first step: river bridges (as built)
+
+Owner request: "we need bridges on the rivers". Static, indestructible, map-placed
+bridges that ground units cross. Precedent: Zero Hour bridges, section 2.2 (a bridge
+is its own `PathfindLayer`; towers, damage states and repair are Zero Hour features
+we do not copy yet). Difference recorded: **bridges are not a separate nav layer
+yet** because there are no naval units (nothing moves on the water under a deck), so
+the deck simply opens its cells on the single nav grid.
+
+* **Map data.** A `features:` entry `{ type: <bridge type>, from: [x, y], to: [x, y], variant }`.
+  `from` and `to` are the first and last cell of the top or left lane; the deck then
+  extends `lanes` cells to the right or down. Straight only (horizontal or vertical;
+  diagonals are pending). Compile errors (`scripts/map-bridges.mjs`): not a bridge
+  type, not straight, shorter than 3 cells, out of the map, a cell beyond either end
+  (any lane) not free land (shallow water counts as land), a deck cell on a rock,
+  cliff or footprint (deep water is the only blocked cell a deck may cover), overlap
+  with another bridge. Deck cells that are not deep water become solid for later
+  footprints, so props and trees skip them. Bridges are expanded before other
+  features.
+* **Types** (`data/features/bridges.yaml`, family `bridge`, `blocks: none`, new
+  optional `lanes` 1..2, `render.deckHeight` in tiles): `road-bridge` (2 lanes, 0.34;
+  concrete deck, asphalt wearing course with a dashed centre line, steel girders,
+  concrete pylons, barriers and a steel rail), `wooden-bridge` (1 lane, 0.22; planks,
+  wooden piles, rope rails), `stone-arch` (2 lanes, 0.8; stone viaduct with arches,
+  voussoir rings, parapets). Two variants each.
+* **Compiled map.** `bridges` (hex, one byte per cell, 0 none, otherwise the index of
+  the bridge type plus one) next to `water`, and bridge instances in `features`
+  with an extra `to: [x, y]` (the last deck cell, lanes included). Not in saves or
+  the world hash (static map input).
+* **Sim.** `MapGrid::set_bridges` opens every deck cell that deep water blocks;
+  `bridge_at(cell)` reads the layer. Everything else in deep water stays blocked, so a
+  path across the river only exists over a deck. Tests in
+  `crates/sim/tests/map_features.rs` (decks open, rest of the river blocked, a unit
+  crosses `demo-bridges` and every deep-water cell it enters is a deck cell).
+* **Client.** `renderers/bridges.ts` (family `bridge`), models in `features/bridge/`:
+  all bridges of a map are one merged vertex-coloured mesh (one draw call, double
+  sided). The deck climbs over `ramp` tiles (1, or 2 for decks 0.45 or taller) at each
+  end. `features/bridge/deck.ts` gives the deck surface to `elevation.ts`
+  (`setDeckHeights`), and `groundY` returns at least that, so units and their tilt
+  follow the ramp and stand on the deck. Snow whitens upward faces at build time when
+  the page has a `?weather=` climate (same trigger as vegetation). Roads that meet a
+  bridge end on the bank cell beside the deck; the road bridge's asphalt matches the
+  road renderer.
+* **Demos.** `demo-bridges` (`/?load=demo-bridges`): a deep river across the map with
+  all three bridge types, asphalt and dirt roads leading to them, tanks and riflemen of
+  both sides at the approaches. `demo-coast` gets a road bridge and a wooden bridge and
+  `landscape-lab` a road bridge.
+* **Pending.** Destruction states, towers, repair by engineers, building bridges,
+  units (boats) under the bridge, AI use, diagonal bridges, a pick ray that hits the
+  deck (clicks aim at the ground below it), roads that connect to a bridge
+  automatically.

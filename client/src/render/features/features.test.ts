@@ -53,6 +53,7 @@ describe("map feature layers", () => {
     );
     const names = group.children.map((c) => c.name).sort();
     expect(names).toEqual([
+      "features-bridge",
       "features-building",
       "features-prop",
       "features-vegetation",

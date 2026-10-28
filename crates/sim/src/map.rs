@@ -29,6 +29,9 @@ pub struct MapGrid {
     ground: Vec<u8>,
     roads: Vec<u8>,
     water: Vec<u8>,
+    /// Bridge decks, one byte per cell (0 none); empty without bridges
+    /// (spec 26 section 17).
+    bridges: Vec<u8>,
 }
 
 /// Low two bits of a water byte: 0 dry, 1 shallow, 2 deep (blocks ground movers).
@@ -57,6 +60,7 @@ impl MapGrid {
             ground: Vec::new(),
             roads: Vec::new(),
             water: Vec::new(),
+            bridges: Vec::new(),
         }
     }
 
@@ -79,6 +83,34 @@ impl MapGrid {
         self.ground = ground;
         self.roads = roads;
         self.water = water;
+    }
+
+    /// Stores the bridge deck layer (empty or one byte per cell) and opens
+    /// every deck cell that deep water blocks: the deck is a road over the
+    /// water (spec 26 section 17). Call after `set_layers` and `set_heights`;
+    /// the data compiler guarantees the deck sits on no rock, cliff or
+    /// footprint. Panics on a layer of the wrong length.
+    pub fn set_bridges(&mut self, bridges: Vec<u8>) {
+        let cells = usize::from(self.width) * usize::from(self.height);
+        assert!(
+            bridges.is_empty() || bridges.len() == cells,
+            "the bridge layer must cover every cell"
+        );
+        for (i, byte) in bridges.iter().enumerate() {
+            let deep = self
+                .water
+                .get(i)
+                .is_some_and(|w| w & WATER_DEPTH_MASK == WATER_DEEP);
+            if *byte != 0 && deep {
+                self.blocked[i] = false;
+            }
+        }
+        self.bridges = bridges;
+    }
+
+    /// Bridge type index plus one when `cell` is a bridge deck, 0 otherwise.
+    pub fn bridge_at(&self, cell: Cell) -> u8 {
+        self.layer_at(&self.bridges, cell)
     }
 
     /// Blocks every in-map cell of the `w x h` footprint at `origin`.

@@ -16,6 +16,7 @@ import {
   layerHex,
   rasterizeTerrain,
 } from "./map-layers.mjs";
+import { expandBridges } from "./map-bridges.mjs";
 
 /** @typedef {{ file: string, text: string }} SourceFile */
 /** @typedef {{ globals: SourceFile, factions: SourceFile[], maps: SourceFile[], ai: SourceFile[], features?: SourceFile[], saves?: SourceFile[] }} Sources */
@@ -409,8 +410,12 @@ function checkMap(file, map, globals, factions, featureTypes, fail) {
 
   // Features go last: explicit ones may not touch anything above, area ones fill what is left.
   const solid = new Set([...blocked, ...occupied]);
-  const { instances, problems } = expandFeatures(map, featureTypes, solid);
-  problems.forEach((p) => fail(file, p.pointer, p.code, p.message));
+  // Bridges first (spec 26 section 17): their deck cells are the only deep-water cells units may use.
+  const bridges = expandBridges(map, featureTypes, solid, (x, y) => terrain !== null && isDeepWater(terrain.water[y * map.width + x]));
+  bridges.problems.forEach((p) => fail(file, p.pointer, p.code, p.message));
+  const expanded = expandFeatures(map, featureTypes, solid);
+  expanded.problems.forEach((p) => fail(file, p.pointer, p.code, p.message));
+  const instances = [...expanded.instances, ...bridges.instances].sort((a, b) => a.y - b.y || a.x - b.x || a.type - b.type || a.rot - b.rot);
   // Maps that use the new keys must not start a dozer on a solid cell (legacy maps are left as they are).
   if (terrain || instances.length > 0) {
     map.starts.forEach((start, i) => {
@@ -420,7 +425,7 @@ function checkMap(file, map, globals, factions, featureTypes, fail) {
       }
     });
   }
-  return { terrain, instances };
+  return { terrain, instances, bridges: bridges.layer };
 }
 
 /** Semantic checks for one AI personality file (specs/05 §4.1). */
@@ -571,6 +576,7 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers) => {
       footprint: t.footprint,
       blocks: t.blocks,
       variants: t.variants,
+      ...(t.lanes === undefined ? {} : { lanes: t.lanes }),
       render: t.render,
     })),
     maps: maps.map((m, mi) => ({
@@ -588,6 +594,7 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers) => {
             roads: layerHex(layers[mi].terrain.roads),
             water: layerHex(layers[mi].terrain.water),
           }),
+      ...(layers[mi].bridges === null ? {} : { bridges: layerHex(layers[mi].bridges) }),
       ...(layers[mi].instances.length === 0 ? {} : { features: layers[mi].instances }),
       starts: m.starts.map((s) => ({
         faction: factions.findIndex((f) => f.id === s.faction),

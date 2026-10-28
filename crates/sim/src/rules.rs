@@ -323,6 +323,11 @@ pub struct MapDef {
     pub roads: String,
     #[serde(default)]
     pub water: String,
+    /// Bridge decks (spec 26 section 17): one byte per cell, 0 none, otherwise
+    /// the bridge type index plus one; same layout as `water`. Deck cells are
+    /// passable even over deep water.
+    #[serde(default)]
+    pub bridges: String,
     /// Feature instances, already expanded by the data compiler (spec 26).
     #[serde(default)]
     pub features: Vec<FeatureInstanceDef>,
@@ -362,6 +367,9 @@ pub struct FeatureInstanceDef {
     pub rot: u8,
     pub variant: u32,
     pub state: u8,
+    /// Bridges only: the last (bottom-right, inclusive) deck cell; `(x, y)` is the first.
+    #[serde(default)]
+    pub to: Option<[i32; 2]>,
 }
 
 impl MapDef {
@@ -378,6 +386,11 @@ impl MapDef {
     /// The decoded water layer; empty without a `terrain:` section.
     pub fn water_cells(&self) -> Vec<u8> {
         decode_hex(&self.water).unwrap_or_default()
+    }
+
+    /// The decoded bridge deck layer; empty without bridges.
+    pub fn bridge_cells(&self) -> Vec<u8> {
+        decode_hex(&self.bridges).unwrap_or_default()
     }
 
     /// The decoded corner heights; empty when the map is flat or `heights`
@@ -666,6 +679,7 @@ impl Ruleset {
                 ("ground", &m.ground),
                 ("roads", &m.roads),
                 ("water", &m.water),
+                ("bridges", &m.bridges),
             ] {
                 if !layer.is_empty() && decode_hex(layer).map(|b| b.len()) != Some(cells) {
                     return Err(format!(
@@ -688,6 +702,14 @@ impl Ruleset {
                     || f.y + h > i32::from(m.height)
                 {
                     return Err(format!("maps[{mi}].features[{fi}] is out of the map"));
+                }
+                if let Some([tx, ty]) = f.to
+                    && (tx < f.x
+                        || ty < f.y
+                        || tx >= i32::from(m.width)
+                        || ty >= i32::from(m.height))
+                {
+                    return Err(format!("maps[{mi}].features[{fi}].to is out of the map"));
                 }
             }
             for (si, s) in m.starts.iter().enumerate() {
