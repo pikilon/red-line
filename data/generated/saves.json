@@ -234,6 +234,12 @@
       "map": "demo-bridges",
       "form": "setup",
       "entities": 8
+    },
+    {
+      "id": "trench-digging",
+      "map": "demo-ground",
+      "form": "setup",
+      "entities": 11
     }
   ]
 }

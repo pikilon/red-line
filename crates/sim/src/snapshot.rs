@@ -289,6 +289,15 @@ pub fn encode_features(world: &World) -> Vec<i32> {
             counts[index] as i32,
         ]);
     }
+    // Spec 35: rows past the map's were dug in the match; the client cannot
+    // know where, so they trail the table as `placed, (x, y, rot)...`.
+    let placed = world.placed_feature_count();
+    if rows.len() > placed {
+        out.push(placed as i32);
+        for row in &rows[placed..] {
+            out.extend_from_slice(&[row.x, row.y, i32::from(row.rot)]);
+        }
+    }
     out
 }
 

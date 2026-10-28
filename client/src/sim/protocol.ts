@@ -61,6 +61,15 @@ export type SimCommand =
   | { kind: "disembark"; player: number; carrier: number }
   /** Spec 35: infantry and dozers walk to feature `feature` and repair it. */
   | { kind: "repair"; player: number; units: number[]; feature: number }
+  /** Spec 35: workers dig a trench with its top-left cell at (x, y). */
+  | {
+      kind: "dig";
+      player: number;
+      units: number[];
+      x: number;
+      y: number;
+      rot: number;
+    }
   | {
       kind: "debugSpawn";
       player: number;

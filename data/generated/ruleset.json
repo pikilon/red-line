@@ -59,7 +59,8 @@
     },
     "cover": {
       "forestPct": 25,
-      "wallPct": 40
+      "wallPct": 40,
+      "trenchPct": 50
     },
     "repair": {
       "permillePerSecondPerPoint": 7,
@@ -2815,6 +2816,26 @@
       "render": {
         "kind": "stone-arch",
         "deckHeight": 0.8
+      }
+    },
+    {
+      "id": "trench",
+      "family": "earthwork",
+      "footprint": [
+        2,
+        1
+      ],
+      "blocks": "none",
+      "variants": 1,
+      "hp": 300,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
+      "crushLevel": 0,
+      "repairPct": 400,
+      "render": {
+        "kind": "trench"
       }
     }
   ],

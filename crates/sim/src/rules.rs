@@ -375,6 +375,13 @@ pub struct FeatureTypeDef {
     /// Spec 31 block 2: infantry can garrison this feature; `None` means it cannot.
     #[serde(default)]
     pub garrison: Option<GarrisonDef>,
+    /// Spec 35: repair (or dig) speed of this type, percent of the base rate.
+    #[serde(default = "hundred", rename = "repairPct")]
+    pub repair_pct: u32,
+}
+
+fn hundred() -> u32 {
+    100
 }
 
 /// Spec 31 block 1: fire on a feature. Everything is an integer.
@@ -603,6 +610,7 @@ impl Default for EnvironmentDef {
             cover: CoverDef {
                 forest_pct: 0,
                 wall_pct: 0,
+                trench_pct: 0,
             },
             repair: None,
         }
@@ -636,6 +644,9 @@ pub struct RepairDef {
 pub struct CoverDef {
     pub forest_pct: u32,
     pub wall_pct: u32,
+    /// Spec 35: infantry in a finished trench.
+    #[serde(default)]
+    pub trench_pct: u32,
 }
 
 impl Ruleset {

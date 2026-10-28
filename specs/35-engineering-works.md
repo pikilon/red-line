@@ -1,7 +1,6 @@
-# 35 — Engineering works: bridge repair
+# 35 — Engineering works: bridge repair and trenches
 
-Status: bridge repair built (owner request 2026-10-28, backlog item 2 in
-`docs/roadmap.md`); trenches are the next PR of this spec.
+Status: built (owner request 2026-10-28, backlog item 2 in `docs/roadmap.md`).
 Depends on `31-environment-interaction.md` (broken bridges, block 1),
 `26-map-features-plan.md` (bridges), `19-save-games.md`.
 Decisions: D-02 (fixed-point deterministic simulation), D-05 (data driven).
@@ -58,16 +57,41 @@ once repaired above that threshold, and the client draws it again.
 * Client: right click a damaged bridge with infantry or dozers selected
   (`client/src/input/repair.ts`).
 
+## 5b. Trenches
+
+* **D3 — soldiers dig trenches** (no Zero Hour precedent; its dozer FORTIFY
+  task is an empty stub, `DozerAIUpdate.cpp:749-755`).
+* `Command::Dig { units, origin, rot }` appends a `trench` feature
+  (`data/features/earthworks.yaml`, family `earthwork`, 2x1, `blocks: none`)
+  at one hit point and orders the workers to repair it: digging *is* the
+  repair from empty, so workers add up the same way. `repairPct: 400` makes a
+  trench four times faster than a bridge (one soldier about 36 s, three or a
+  dozer about 12 s). Refused unless every cell is on the map, open to infantry
+  and free of features.
+* A finished trench gives foot units on its cells `cover.trench.pct` (50,
+  `data/balance/environment.yaml`); the best cover applies. Vehicles drive over
+  it and get no cover.
+* Rows past the map's (`placed_feature_count`) are dug rows: the feature table
+  trails `placed, (x, y, rot)...` so the client can draw them; saves keep them.
+* Client: the "Dig trench" button arms the next left click (Shift turns the
+  trench, right click cancels); `client/src/render/features/renderers/earthworks.ts`
+  draws the floor, parapets that rise with the digging and sandbags when done.
+  Example save `?load=trench-digging`; setup order `{ dig: [x, y] }`.
+
 ## 6. Assumptions
 
 * **A1** Only bridges are jobs for now; building repair by dozers is backlog
   item 5 and will reuse this module.
 * **A2** Any player's workers may repair any bridge (bridges are neutral).
 * **A3** No repair animation or scaffolding yet; workers stand by the bank.
-* **A4** The AI does not repair bridges yet.
+* **A4** The AI does not repair bridges or dig trenches yet.
+* **A5** Trenches cannot be damaged or filled in; there is no limit on how
+  many a player digs.
 
 ## 7. Acceptance criteria
 
 AC-35-01..04 in `crates/sim/tests/repair.rs`: infantry reopen a broken
 bridge; more workers and dozers finish faster, the cap holds; tanks and whole
-bridges take no work; repair survives a save.
+bridges take no work; repair survives a save. Trench unit tests in
+`crates/sim/src/repair.rs`: a dug trench covers infantry only once finished,
+needs free open cells, trails the feature table and survives a save.

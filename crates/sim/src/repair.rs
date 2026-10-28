@@ -16,8 +16,11 @@ use crate::world::{TICK_RATE_HZ, World};
 
 /// How close (centi-tiles from the job's cells) a worker must stand to work.
 const WORK_RANGE_CENTI: u32 = 150;
-/// Feature family that can be repaired today.
-const REPAIRABLE_FAMILY: &str = "bridge";
+/// Feature families that can be repaired: bridges, and earthworks, whose
+/// digging is their repair from one hit point.
+const REPAIRABLE_FAMILIES: [&str; 2] = ["bridge", EARTHWORK_FAMILY];
+/// Family of the features soldiers dig during a match (spec 35).
+pub const EARTHWORK_FAMILY: &str = "earthwork";
 
 impl World {
     /// Index of the living or broken bridge whose deck covers `cell`.
@@ -27,7 +30,7 @@ impl World {
             .position(|row| {
                 let def = &self.rules.feature_types[row.kind as usize];
                 let (x0, y0, x1, y1) = extent(def, row);
-                def.family == REPAIRABLE_FAMILY
+                REPAIRABLE_FAMILIES.contains(&def.family.as_str())
                     && (x0..=x1).contains(&cell.x)
                     && (y0..=y1).contains(&cell.y)
             })
@@ -41,7 +44,7 @@ impl World {
         };
         let def = &self.rules.feature_types[row.kind as usize];
         self.rules.environment.repair.is_some()
-            && def.family == REPAIRABLE_FAMILY
+            && REPAIRABLE_FAMILIES.contains(&def.family.as_str())
             && def.hp > 0
             && row.collapse == 0
             && (!row.alive || row.hp < def.hp)
@@ -91,6 +94,78 @@ impl World {
                 self.entities[index].order = Order::Repair { order_id, feature };
             }
         }
+    }
+
+    /// Number of features the map placed; later rows were dug in the match.
+    pub fn placed_feature_count(&self) -> usize {
+        self.map_id
+            .as_ref()
+            .and_then(|id| self.rules.maps.iter().find(|map| &map.id == id))
+            .map_or(self.features.len(), |map| map.features.len())
+            .min(self.features.len())
+    }
+
+    /// The cells feature type `kind` would cover at `origin` turned `rot`,
+    /// when they are on the map, open to infantry and free of other features.
+    fn dig_cells(&self, kind: usize, origin: Cell, rot: u8) -> Option<Vec<Cell>> {
+        let (w, h) = crate::features::footprint(&self.rules.feature_types[kind], rot);
+        let grid = self.grid(crate::world::Layer::Foot);
+        let mut cells = Vec::new();
+        for y in origin.y..origin.y + h {
+            for x in origin.x..origin.x + w {
+                let cell = Cell { x, y };
+                if !grid.in_bounds(cell)
+                    || !grid.is_passable(cell)
+                    || self.feature_at(cell).is_some()
+                    || self.repair_job_at(cell).is_some()
+                {
+                    return None;
+                }
+                cells.push(cell);
+            }
+        }
+        Some(cells)
+    }
+
+    /// `Dig` command: a new trench at `origin` (empty, one hit point) and the
+    /// listed workers of `player` dig it. Refused when the cells are not free.
+    pub(crate) fn apply_dig(
+        &mut self,
+        player: PlayerId,
+        units: &[EntityId],
+        origin: Cell,
+        rot: u8,
+    ) {
+        let Some(kind) = self
+            .rules
+            .feature_types
+            .iter()
+            .position(|ty| ty.family == EARTHWORK_FAMILY)
+        else {
+            return;
+        };
+        if !units.iter().any(|&id| {
+            self.entity(id).is_some_and(|e| e.owner == player) && self.work_points(id) > 0
+        }) || self.dig_cells(kind, origin, rot % 4).is_none()
+        {
+            return;
+        }
+        let def = &self.rules.feature_types[kind];
+        self.features.push(FeatureState {
+            kind: kind as u32,
+            x: origin.x,
+            y: origin.y,
+            rot: rot % 4,
+            variant: 0,
+            state: state_for(1, def.hp, def.states.damaged, def.states.wrecked),
+            hp: 1,
+            alive: true,
+            to: None,
+            burn: 0,
+            collapse: 0,
+        });
+        let index = (self.features.len() - 1) as u32;
+        self.apply_repair(player, units, index);
     }
 
     /// Distance from the unit to the cells of `feature`.
@@ -158,11 +233,12 @@ impl World {
             }
         }
         for (feature, (_, points)) in jobs {
-            let max = self.rules.feature_types[self.features[feature as usize].kind as usize].hp;
-            let gain = u64::from(max)
+            let def = &self.rules.feature_types[self.features[feature as usize].kind as usize];
+            let gain = u64::from(def.hp)
                 * u64::from(repair.permille_per_second_per_point)
                 * u64::from(points)
-                / 1000;
+                * u64::from(def.repair_pct)
+                / 100_000;
             self.repair_feature(feature as usize, (gain as u32).max(1));
         }
     }
@@ -183,5 +259,111 @@ impl World {
         if blocking_differs(&self.rules, &row, &next) {
             self.refresh_feature_blocks();
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::hash::state_hash;
+    use crate::rules::Ruleset;
+    use crate::save::{load_state, save_state};
+    use crate::snapshot::{FEATURE_STRIDE, encode_features};
+    use crate::world::Command;
+
+    fn ground() -> World {
+        World::skirmish(Ruleset::builtin(), "demo-ground", 3).unwrap()
+    }
+
+    fn rifleman(world: &mut World, x: i32, y: i32) -> EntityId {
+        let kind = world.rules.type_index("ua-rifleman").unwrap();
+        world.spawn(0, kind, crate::map::cell_center(Cell { x, y }))
+    }
+
+    fn dig(world: &mut World, units: Vec<EntityId>, x: i32, y: i32) {
+        world.enqueue_as(
+            0,
+            Command::Dig {
+                units,
+                origin: Cell { x, y },
+                rot: 0,
+            },
+        );
+    }
+
+    #[test]
+    fn workers_dig_a_trench_that_covers_infantry_once_finished() {
+        let mut world = ground();
+        let placed = world.features.len();
+        let units: Vec<EntityId> = (0..3).map(|i| rifleman(&mut world, 28 + i, 30)).collect();
+        dig(&mut world, units.clone(), 30, 33);
+        world.step();
+        assert_eq!(world.features.len(), placed + 1, "the trench row appears");
+        let trench = placed as u32;
+        assert!(world.needs_repair(trench), "it starts empty");
+        let soldier = world.index_of(units[0]).unwrap();
+        world.entities[soldier].pos = crate::map::cell_center(Cell { x: 30, y: 33 });
+        assert_eq!(
+            world.unit_cover_pct(None, soldier),
+            0,
+            "no cover while digging"
+        );
+        for _ in 0..3000 {
+            world.step();
+            if !world.needs_repair(trench) {
+                break;
+            }
+        }
+        assert!(!world.needs_repair(trench), "dug to full");
+        let soldier = world.index_of(units[0]).unwrap();
+        world.entities[soldier].pos = crate::map::cell_center(Cell { x: 31, y: 33 });
+        assert_eq!(world.unit_cover_pct(None, soldier), 50);
+        // Vehicles get no trench cover.
+        let tank = world.rules.type_index("ua-leopard-2a4").unwrap();
+        let tank = world.spawn(0, tank, crate::map::cell_center(Cell { x: 30, y: 33 }));
+        let tank = world.index_of(tank).unwrap();
+        assert_eq!(world.unit_cover_pct(None, tank), 0);
+    }
+
+    #[test]
+    fn a_trench_needs_free_open_cells() {
+        let mut world = ground();
+        let placed = world.features.len();
+        let unit = rifleman(&mut world, 28, 30);
+        dig(&mut world, vec![unit], 30, 33);
+        world.step();
+        dig(&mut world, vec![unit], 31, 33);
+        world.step();
+        assert_eq!(
+            world.features.len(),
+            placed + 1,
+            "overlapping trench refused"
+        );
+        dig(&mut world, vec![unit], 63, 33);
+        world.step();
+        assert_eq!(world.features.len(), placed + 1, "off the map refused");
+    }
+
+    #[test]
+    fn dug_rows_trail_the_feature_table_and_survive_a_save() {
+        let mut world = ground();
+        let unit = rifleman(&mut world, 28, 30);
+        dig(&mut world, vec![unit], 30, 33);
+        for _ in 0..40 {
+            world.step();
+        }
+        let placed = world.placed_feature_count();
+        let table = encode_features(&world);
+        let rows = table[0] as usize;
+        let trailer = 1 + rows * FEATURE_STRIDE;
+        assert_eq!(&table[trailer..], &[placed as i32, 30, 33, 0]);
+        let saved = save_state(&world, 3, &[]).unwrap();
+        let (mut loaded, _, _) = load_state(&saved).unwrap();
+        assert_eq!(state_hash(&loaded), state_hash(&world));
+        for _ in 0..200 {
+            world.step();
+            loaded.step();
+        }
+        assert_eq!(state_hash(&loaded), state_hash(&world));
     }
 }

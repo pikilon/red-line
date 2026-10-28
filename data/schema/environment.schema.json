@@ -41,6 +41,9 @@
         "crater": {
           "$ref": "#/$defs/cover"
         },
+        "trench": {
+          "$ref": "#/$defs/cover"
+        },
         "forest": {
           "$ref": "#/$defs/cover"
         },

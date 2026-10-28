@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { typeIndex } from "../rules";
+import { decodeFeatures } from "../sim/featureSnapshot";
 import type { EntityState } from "../sim/matchSnapshot";
-import { repairJobsOf, resolveRepairClick, withRepairState } from "./repair";
+import {
+  canDig,
+  repairJobsOf,
+  resolveDigClick,
+  resolveRepairClick,
+  withRepairState,
+} from "./repair";
 
 const unit = (id: number, kind: string, x: number, y: number): EntityState => ({
   id,
@@ -73,5 +80,45 @@ describe("spec 35 repair input", () => {
         y: 2.5,
       }),
     ).toEqual([]);
+  });
+});
+
+describe("spec 35 trench digging input", () => {
+  it("a dig click centres a 2x1 trench and only workers dig", () => {
+    const entities = [
+      unit(1, "ua-rifleman", 3, 2),
+      unit(3, "ua-leopard-2a4", 3, 4),
+    ];
+    expect(
+      resolveDigClick({
+        player: 0,
+        selected: [1, 3],
+        entities,
+        x: 10.2,
+        y: 5.7,
+        turned: false,
+      }),
+    ).toEqual([{ kind: "dig", player: 0, units: [1], x: 9, y: 5, rot: 0 }]);
+    expect(
+      resolveDigClick({
+        player: 0,
+        selected: [3],
+        entities,
+        x: 10,
+        y: 5,
+        turned: false,
+      }),
+    ).toEqual([]);
+    expect(canDig(0, entities)).toBe(true);
+  });
+
+  it("the feature table trailer places rows dug in the match", () => {
+    // Two rows of 7 ints, then placed = 1 and (x, y, rot) for row 1.
+    const table = Int32Array.from([
+      2, 0, 0, 0, 1, 1000, 255, 0, 1, 5, 2, 1, 3, 255, 0, 1, 30, 33, 1,
+    ]);
+    const rows = decodeFeatures(table);
+    expect(rows?.[0]?.at).toBeUndefined();
+    expect(rows?.[1]?.at).toEqual({ x: 30, y: 33, rot: 1 });
   });
 });

@@ -55,7 +55,7 @@ export class LiveFeatures {
   /** Holds one object per family plus the flames. */
   readonly object = new Group();
 
-  private readonly initial: readonly FeatureInstance[];
+  private readonly initial: FeatureInstance[];
   private readonly types: readonly FeatureTypeInfo[];
   private readonly ctx: FeatureContext;
   private readonly render: FamilyRenderer;
@@ -88,7 +88,7 @@ export class LiveFeatures {
     ctx: FeatureContext,
     render: FamilyRenderer,
   ) {
-    this.initial = initial;
+    this.initial = [...initial];
     this.types = types;
     this.ctx = ctx;
     this.render = render;
@@ -102,6 +102,7 @@ export class LiveFeatures {
   /** Takes the feature table of a snapshot. */
   apply(rows: readonly FeatureRow[], nowMs: number): void {
     for (const row of rows) {
+      this.adopt(row);
       const start = this.initial[row.index];
       const type = this.types[row.kind];
       const old = this.wanted[row.index];
@@ -153,6 +154,29 @@ export class LiveFeatures {
     this.flameGeometry.dispose();
     this.outer.dispose();
     this.inner.dispose();
+  }
+
+  /** Spec 35: a row dug during the match becomes an instance where it lies. */
+  private adopt(row: FeatureRow): void {
+    const type = this.types[row.kind];
+    if (this.initial[row.index] !== undefined || row.at === undefined) return;
+    if (type === undefined) return;
+    const [width, height] = dimensions(type, row.at.rot);
+    const instance: FeatureInstance = {
+      type,
+      typeIndex: row.kind,
+      x: row.at.x,
+      y: row.at.y,
+      rot: row.at.rot,
+      variant: 0,
+      state: row.state,
+      width,
+      height,
+    };
+    this.initial[row.index] = instance;
+    this.wanted[row.index] = instance;
+    this.alive[row.index] = row.alive;
+    this.dirty.add(type.family);
   }
 
   private rebuild(nowMs: number): void {

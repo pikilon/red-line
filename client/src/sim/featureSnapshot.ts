@@ -28,6 +28,12 @@ export interface FeatureRow {
   readonly owner: number;
   /** Spec 31 block 2: infantry inside. */
   readonly occupants: number;
+  /** Spec 35: where a row dug during the match lies (map rows have none). */
+  readonly at?: {
+    readonly x: number;
+    readonly y: number;
+    readonly rot: number;
+  };
 }
 
 /** Decodes a `features_for` `Int32Array`; an empty array means "unchanged"
@@ -50,6 +56,20 @@ export function decodeFeatures(data: Int32Array): FeatureRow[] | null {
       owner: data[base + 5] ?? FEATURE_NO_OWNER,
       occupants: data[base + 6] ?? 0,
     });
+  }
+  // Spec 35: `placed, (x, y, rot)...` for the rows dug during the match.
+  const trailer = 1 + count * FEATURE_STRIDE;
+  if (data.length > trailer) {
+    const placed = data[trailer] ?? count;
+    for (let i = placed; i < count; i++) {
+      const at = trailer + 1 + (i - placed) * 3;
+      const row = rows[i];
+      if (row === undefined) continue;
+      rows[i] = {
+        ...row,
+        at: { x: data[at] ?? 0, y: data[at + 1] ?? 0, rot: data[at + 2] ?? 0 },
+      };
+    }
   }
   return rows;
 }

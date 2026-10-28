@@ -10,7 +10,9 @@ export type FeatureFamily =
   | "prop"
   | "port"
   | "wall"
-  | "bridge";
+  | "bridge"
+  /** Spec 35: trenches dug during a match. */
+  | "earthwork";
 
 /** Draw order of the families when a renderer pass runs over all of them. */
 export const FEATURE_FAMILIES: readonly FeatureFamily[] = [
@@ -20,6 +22,7 @@ export const FEATURE_FAMILIES: readonly FeatureFamily[] = [
   "port",
   "wall",
   "bridge",
+  "earthwork",
 ];
 
 export type FeatureBlocks = "all" | "vehicles" | "none";

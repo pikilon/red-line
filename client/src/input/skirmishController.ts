@@ -14,7 +14,7 @@ import {
 import { resolveForceFire, resolveRightClick } from "./intent";
 import { createPinchGesture } from "./pinch";
 import { canPlace, footprintOrigin } from "./placement";
-import { type RepairJob, resolveRepairClick } from "./repair";
+import { type RepairJob, resolveDigClick, resolveRepairClick } from "./repair";
 import {
   isDrag,
   isSelectAllShortcut,
@@ -65,6 +65,9 @@ export interface PlacementPreview {
 
 export interface SkirmishController {
   readonly selected: ReadonlySet<number>;
+  /** Spec 35: the next left click on the ground digs a trench there (Shift
+   *  turns it); a right click cancels. */
+  armDig(): void;
   cameraTarget(): { x: number; y: number };
   /** Clamped to [0, mapWidth] x [0, mapHeight]. */
   setTarget(x: number, y: number): void;
@@ -105,6 +108,8 @@ export function createSkirmishController(
   // next click force-fires. Ctrl + left click also arrives as a context menu on
   // macOS, so `forceFireIssued` keeps the two event paths from ordering twice.
   let forceFireArmed = false;
+  /** Spec 35: the Dig button was pressed; the next left click digs there. */
+  let digArmed = false;
   let forceFireIssued = false;
 
   function setSelection(ids: Iterable<number>): void {
@@ -317,6 +322,20 @@ export function createSkirmishController(
       return;
     }
     const ground = groundAt(end);
+    if (digArmed && ground !== null) {
+      digArmed = false;
+      for (const command of resolveDigClick({
+        player: options.player(),
+        selected: [...selected],
+        entities: options.entities(),
+        x: ground.x,
+        y: ground.y,
+        turned: event.shiftKey,
+      })) {
+        options.command(command);
+      }
+      return;
+    }
     if (ground !== null && tryPlace(ground.x, ground.y)) return;
     if (ground !== null && attackUnderCursor(ground)) return;
     const picked =
@@ -356,6 +375,10 @@ export function createSkirmishController(
       if (!(event.ctrlKey && event.button === LEFT_BUTTON)) {
         options.exitPlacement();
       }
+      return;
+    }
+    if (digArmed) {
+      digArmed = false;
       return;
     }
     if (forceFireIssued) {
@@ -457,6 +480,9 @@ export function createSkirmishController(
 
   return {
     selected,
+    armDig() {
+      digArmed = true;
+    },
     cameraTarget: () => ({ ...target }),
     setTarget,
     zoom: () => camera.zoom,

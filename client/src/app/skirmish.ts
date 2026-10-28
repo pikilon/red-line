@@ -43,6 +43,7 @@ import {
   withLiveState,
 } from "../input/garrison";
 import {
+  canDig,
   type RepairMapFeature,
   type RepairTypeInfo,
   repairJobsOf,
@@ -767,6 +768,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       uiClick();
       interact.command({ kind: "unload", player: controlled, feature });
     },
+    onDig: () => {
+      uiClick();
+      controller?.armDig();
+    },
     onDisembark: (carrier) => {
       uiClick();
       interact.command({ kind: "disembark", player: controlled, carrier });
@@ -1282,6 +1287,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
                 entities: next.entities,
                 features: garrisonFeatures,
               }),
+              dig: canDig(controlled, selectedEntities()),
               disembark: disembarkOffer({
                 player: controlled,
                 selected: [...(controller?.selected ?? [])],

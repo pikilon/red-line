@@ -103,6 +103,12 @@ pub enum Command {
     Disembark {
         carrier: EntityId,
     },
+    /// Spec 35: infantry and dozers dig a trench at `origin`, turned `rot`.
+    Dig {
+        units: Vec<EntityId>,
+        origin: Cell,
+        rot: u8,
+    },
     /// Spec 35: infantry and dozers walk to map feature `feature` and repair it.
     Repair {
         units: Vec<EntityId>,
@@ -773,6 +779,7 @@ impl World {
                 Command::Board { units, carrier } => self.apply_board(player, &units, carrier),
                 Command::Disembark { carrier } => self.apply_disembark(player, carrier),
                 Command::Repair { units, feature } => self.apply_repair(player, &units, feature),
+                Command::Dig { units, origin, rot } => self.apply_dig(player, &units, origin, rot),
                 Command::AttackGround { units, target } => {
                     self.apply_attack_ground(player, &units, target);
                 }

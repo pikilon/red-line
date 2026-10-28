@@ -20,7 +20,13 @@ export interface CommandButton {
   enabled: boolean;
   /** Whether the button constructs a building, produces a unit, or (spec 31
    *  block 2) garrisons the selection / evacuates a garrisoned building. */
-  action: "construct" | "produce" | "garrison" | "evacuate" | "disembark";
+  action:
+    | "construct"
+    | "produce"
+    | "garrison"
+    | "evacuate"
+    | "disembark"
+    | "dig";
   /** Feature index the garrison and evacuate buttons act on. */
   feature?: number;
   /** Spec 34: vehicle the Unload button empties. */
@@ -75,6 +81,8 @@ export interface CommandPanelArgs {
   garrison?: { garrison: number | null; evacuate: number | null };
   /** Spec 34: the selected transport with riders, for the Unload button. */
   disembark?: { carrier: number; riders: number } | null;
+  /** Spec 35: the selection holds workers that can dig a trench. */
+  dig?: boolean;
 }
 
 /** Builds the construct/produce buttons for the current selection (spec §6.6). */
@@ -85,6 +93,7 @@ export function commandButtons({
   queue,
   garrison,
   disembark,
+  dig,
 }: CommandPanelArgs): CommandButton[] {
   const buttons = productionButtons({
     selected,
@@ -98,6 +107,15 @@ export function commandButtons({
   }
   if (garrison?.evacuate != null) {
     extra.push(garrisonButton("evacuate", garrison.evacuate));
+  }
+  if (dig === true) {
+    extra.push({
+      typeIndex: -1,
+      label: t("ui.dig"),
+      cost: 0,
+      enabled: true,
+      action: "dig",
+    });
   }
   if (disembark != null) {
     extra.push({
@@ -249,6 +267,8 @@ export function createCommandPanel(
     onEvacuate?(feature: number): void;
     /** Spec 34: the Unload button was pressed for vehicle `carrier`. */
     onDisembark?(carrier: number): void;
+    /** Spec 35: the Dig trench button was pressed. */
+    onDig?(): void;
     /** A disabled offer was pressed; the caller plays the error sound/EVA. */
     onDisabled?(button: CommandButton): void;
   },
@@ -292,6 +312,7 @@ export function createCommandPanel(
         handlers.onGarrison?.(button.feature ?? -1);
       else if (button.action === "evacuate")
         handlers.onEvacuate?.(button.feature ?? -1);
+      else if (button.action === "dig") handlers.onDig?.();
       else if (button.action === "disembark")
         handlers.onDisembark?.(button.carrier ?? -1);
       else handlers.onProduce(button.typeIndex);

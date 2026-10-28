@@ -534,7 +534,11 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       ? {
           environment: {
             highGround: { minTiles: environment.highGround.minTiles, rangePct: environment.highGround.rangePct },
-            cover: { forestPct: environment.cover.forest.pct, wallPct: environment.cover.wall.pct },
+            cover: {
+              forestPct: environment.cover.forest.pct,
+              wallPct: environment.cover.wall.pct,
+              trenchPct: environment.cover.trench?.pct ?? 0,
+            },
             // Spec 35: repair works.
             ...(environment.repair === undefined ? {} : { repair: environment.repair }),
           },
@@ -635,6 +639,8 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       crushLevel: t.crushLevel ?? 0,
       ...(t.flammable === undefined ? {} : { flammable: t.flammable }),
       ...(t.garrison === undefined ? {} : { garrison: t.garrison }),
+      // Spec 35: repair or dig speed, percent of the base rate.
+      ...(t.repairPct === undefined ? {} : { repairPct: t.repairPct }),
       render: t.render,
     })),
     maps: maps.map((m, mi) => ({
