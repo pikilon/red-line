@@ -140,6 +140,8 @@ pub const ENTITY_STRIDE: usize = 11;
 /// One production queue record: `building_id, head permille, queue_len` plus
 /// `QUEUE_SLOTS` kinds.
 pub const QUEUE_STRIDE: usize = 12;
+/// One rally record: `building_id, target.x raw, target.y raw` (spec 33).
+pub const RALLY_STRIDE: usize = 3;
 
 pub const FLAG_UNDER_CONSTRUCTION: i32 = 2;
 pub const FLAG_GHOST: i32 = 4;
@@ -243,6 +245,26 @@ pub fn encode_match_snapshot_with_shots(
     }
     out.push(queue_count);
     out.extend_from_slice(&queues);
+
+    // Rally points outlive empty queues. A player sees only their own; the
+    // observer sees all, matching entity visibility (spec 33).
+    let mut rallies = Vec::new();
+    let mut rally_count = 0;
+    for entity in world.entities() {
+        if player.is_some_and(|player| entity.owner != player.id) {
+            continue;
+        }
+        let Some(site) = &entity.site else {
+            continue;
+        };
+        let Some(target) = site.rally else {
+            continue;
+        };
+        rally_count += 1;
+        rallies.extend_from_slice(&[entity.id as i32, target.x.raw(), target.y.raw()]);
+    }
+    out.push(rally_count);
+    out.extend_from_slice(&rallies);
     out
 }
 

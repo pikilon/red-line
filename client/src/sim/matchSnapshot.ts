@@ -5,6 +5,7 @@ export const MATCH_HEADER_LEN = 8;
 export const ENTITY_STRIDE = 11;
 export const QUEUE_SLOTS = 9;
 export const QUEUE_STRIDE = 12; // building_id, headPermille, queue_len, kind_0..kind_8
+export const RALLY_STRIDE = 3; // building_id, x raw, y raw (spec 33)
 export const NEUTRAL = 255;
 export const OBSERVER = 255;
 
@@ -44,6 +45,12 @@ export interface QueueState {
   items: number[];
 } // -1 slots dropped
 
+export interface RallyState {
+  building: number;
+  x: number;
+  y: number;
+}
+
 export interface MatchSnapshot {
   tick: number;
   viewer: number;
@@ -54,6 +61,7 @@ export interface MatchSnapshot {
   winner: number | null;
   entities: EntityState[];
   queues: QueueState[];
+  rallies: RallyState[];
 }
 
 // decodeMatchSnapshot(data): per spec §5.15 — header (8), entity_count entities (11 each),
@@ -101,6 +109,18 @@ export function decodeMatchSnapshot(data: Int32Array): MatchSnapshot {
     });
   }
 
+  const rallyBase = queueBase + 1 + queueCount * QUEUE_STRIDE;
+  const rallyCount = data[rallyBase] ?? 0;
+  const rallies: RallyState[] = [];
+  for (let i = 0; i < rallyCount; i++) {
+    const base = rallyBase + 1 + i * RALLY_STRIDE;
+    rallies.push({
+      building: data[base] ?? 0,
+      x: fromRaw(data[base + 1] ?? 0),
+      y: fromRaw(data[base + 2] ?? 0),
+    });
+  }
+
   return {
     tick: data[0] ?? 0,
     viewer,
@@ -111,6 +131,7 @@ export function decodeMatchSnapshot(data: Int32Array): MatchSnapshot {
     winner: winnerRaw < 0 ? null : winnerRaw,
     entities,
     queues,
+    rallies,
   };
 }
 

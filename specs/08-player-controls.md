@@ -540,7 +540,6 @@ viewport shows `#rotate-device` ("Rotate your device") with no overflow and
 2. Clear selection indicator: ring under selected units and a selection panel
    showing the selected unit's name, portrait/icon and health.
 3. Camera rotation in 90° steps.
-4. Rally points for production buildings in the UI (the sim already supports
-   `Rally`) and unit waypoints.
+4. Unit waypoints (production rally points are delivered in spec 33).
 5. Unit stances: guard/defend, scout/explore, scatter, hold position.
 6. Rotating buildings before placing them (footprint rotation in the sim).
