@@ -1,4 +1,4 @@
-//! AC-40-01..05: damaged infantry heal inside an own barracks (spec 40).
+//! AC-40-01..06: damaged infantry heal inside an own barracks (spec 40).
 
 use sim::entity::{EntityId, Order};
 use sim::fixed::{Fx, FxVec2};

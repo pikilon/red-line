@@ -77,9 +77,9 @@ Precedent researched for the owner before building this slice (backlog item 7).
 
 ## 6. Acceptance criteria
 
-AC-40-01..07: a damaged patient heals in exactly 30 ticks, reaches full and exits
-automatically while production advances; full-health, vehicles, enemies,
-incomplete and non-infirmary buildings are rejected; only 10 patients fit; a
-mid-heal save continues with identical hashes; a destroyed barracks ejects its
+AC-40-01..08: a damaged patient heals in exactly 30 ticks, reaches full and exits
+automatically; full-health, vehicles, enemies, incomplete and non-infirmary
+buildings are rejected; production advances while it heals; only 10 patients fit;
+a mid-heal save continues with identical hashes; a destroyed barracks ejects its
 patients unharmed; client filtering and worker dispatch are covered; real mouse
 input heals the example rifleman and he walks out.

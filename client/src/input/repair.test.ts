@@ -136,7 +136,7 @@ describe("spec 38 building repair input", () => {
 });
 
 describe("spec 40 infantry healing input", () => {
-  it("AC-40-07: damaged foot infantry enter an own barracks", () => {
+  it("AC-40-07: only damaged foot infantry enter an own barracks", () => {
     const barracks = {
       ...unit(4, "ua-barracks", 10, 10),
       hp: 1000,

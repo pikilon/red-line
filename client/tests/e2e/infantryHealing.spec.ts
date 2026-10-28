@@ -49,7 +49,7 @@ async function clickTiles(
 
 const INSIDE = 32;
 
-test("AC-40-07: damaged infantry heal inside the barracks and walk out", async ({
+test("AC-40-08: damaged infantry heal inside the barracks and walk out", async ({
   page,
 }) => {
   const errors: string[] = [];
