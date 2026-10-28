@@ -5,7 +5,7 @@
   "additionalProperties": false,
   "required": [
     "factions", "maps", "ai", "damageTypes", "armorClasses", "damageModifiers", "startingCredits",
-    "lowPowerMinSpeedPercent", "lowPowerMaxSpeedPercent", "maxQueue", "dockRangeCenti", "sellRefundPercent", "commonTypes"
+    "lowPowerMinSpeedPercent", "lowPowerMaxSpeedPercent", "maxQueue", "dockRangeCenti", "commonTypes"
   ],
   "properties": {
     "factions": { "$ref": "#/$defs/idList" },
