@@ -46,18 +46,18 @@ describe("bridge decks", () => {
     );
     expect(wooden).toMatchObject({
       x0: 28,
-      y0: 24,
+      y0: 23,
       x1: 35,
       y1: 24,
       horizontal: true,
       length: 8,
-      width: 1,
+      width: 2,
     });
   });
 
   it("raises units over a deck, ramping at the ends, and leaves other ground alone", () => {
     const decks = bridges.map((b) => deckOf(b, ctx));
-    const wooden = decks.find((d) => d.y0 === 24) as (typeof decks)[number];
+    const wooden = decks.find((d) => d.y0 === 23) as (typeof decks)[number];
     setGroundElevation(elevation);
     setDeckHeights(deckLookup(decks));
     expect(groundY(32, 24.5)).toBeCloseTo(wooden.height, 5);
@@ -85,5 +85,47 @@ describe("bridge decks", () => {
     };
     expect(brightness(snowy)).toBeGreaterThan(brightness(plain));
     expect(bridgeGeometry([], 0)).toBeNull();
+  });
+});
+
+describe("rendered decks match the walkable cells", () => {
+  const raw = map as unknown as { bridges: string; width: number };
+  const bytes = (hex: string): number[] =>
+    (hex.match(/../g) ?? []).map((h) => Number.parseInt(h, 16));
+
+  it("covers exactly the deck cells of the compiled layer", () => {
+    const layer = bytes(raw.bridges);
+    const decks = bridges.map((b) => deckOf(b, ctx));
+    layer.forEach((value, i) => {
+      const x = i % raw.width;
+      const y = Math.floor(i / raw.width);
+      const inside = decks.some(
+        (d) => x >= d.x0 && x <= d.x1 && y >= d.y0 && y <= d.y1,
+      );
+      expect(inside, `cell ${x},${y}`).toBe(value !== 0);
+    });
+  });
+
+  it("builds each model inside its deck rectangle, horizontal or vertical", () => {
+    for (const b of bridges) {
+      const deck = deckOf(b, ctx);
+      for (const d of [
+        deck,
+        { ...deck, horizontal: false, length: deck.width + 6, width: 2 },
+      ]) {
+        const g = bridgeGeometry(
+          [{ deck: d, kind: String(b.type.render.kind), variant: 0 }],
+          0,
+        );
+        g?.computeBoundingBox();
+        const box = g?.boundingBox;
+        const w = d.horizontal ? d.length : d.width;
+        const h = d.horizontal ? d.width : d.length;
+        expect(box?.min.x).toBeGreaterThanOrEqual(d.x0 - 0.05);
+        expect(box?.max.x).toBeLessThanOrEqual(d.x0 + w + 0.05);
+        expect(box?.min.z).toBeGreaterThanOrEqual(d.y0 - 0.05);
+        expect(box?.max.z).toBeLessThanOrEqual(d.y0 + h + 0.05);
+      }
+    }
   });
 });

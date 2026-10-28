@@ -113,6 +113,31 @@ export function buildRuleset(sources) {
   return { ruleset: assemble(globals, factions, maps, ai, featureTypes, layers), errors };
 }
 
+/**
+ * Spec 26 section 17: a road that reaches a bridge end runs on under the ramp, lane by lane, so no grass gap
+ * shows between road and ramp (the road bake blurs the edge of the last road cell). Dry or shallow cells only.
+ */
+function snapRoadsToBridges(terrain, decks, width) {
+  const at = (x, y) => y * width + x;
+  for (const d of decks) {
+    const [x1, y1] = d.to;
+    const horizontal = x1 - d.x > y1 - d.y;
+    const length = horizontal ? x1 - d.x + 1 : y1 - d.y + 1;
+    for (let lane = 0; lane < (horizontal ? y1 - d.y + 1 : x1 - d.x + 1); lane++) {
+      const cell = (u) => (horizontal ? [d.x + u, d.y + lane] : [d.x + lane, d.y + u]);
+      for (const [from, step] of [[0, 1], [length - 1, -1]]) {
+        const [bx, by] = horizontal ? [cell(from)[0] - step, cell(from)[1]] : [cell(from)[0], cell(from)[1] - step];
+        const road = terrain.roads[at(bx, by)];
+        if (road === 0) continue;
+        for (let k = 0; k < 2; k++) {
+          const [x, y] = cell(from + step * k);
+          if (!isDeepWater(terrain.water[at(x, y)])) terrain.roads[at(x, y)] = road;
+        }
+      }
+    }
+  }
+}
+
 /** Spec 26: the feature types of every data/features file, with `variants` defaulted; duplicate ids fail. */
 function checkFeatureTypes(sources, files, fail) {
   const seen = new Set();
@@ -413,6 +438,7 @@ function checkMap(file, map, globals, factions, featureTypes, fail) {
   // Bridges first (spec 26 section 17): their deck cells are the only deep-water cells units may use.
   const bridges = expandBridges(map, featureTypes, solid, (x, y) => terrain !== null && isDeepWater(terrain.water[y * map.width + x]));
   bridges.problems.forEach((p) => fail(file, p.pointer, p.code, p.message));
+  if (terrain) snapRoadsToBridges(terrain, bridges.instances, map.width);
   const expanded = expandFeatures(map, featureTypes, solid);
   expanded.problems.forEach((p) => fail(file, p.pointer, p.code, p.message));
   const instances = [...expanded.instances, ...bridges.instances].sort((a, b) => a.y - b.y || a.x - b.x || a.type - b.type || a.rot - b.rot);

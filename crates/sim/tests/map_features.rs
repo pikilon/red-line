@@ -151,8 +151,8 @@ fn bridge_decks_are_passable_over_deep_water_and_the_rest_of_the_river_is_not() 
             }
         }
     }
-    // Three decks of 4 deep columns: 2 + 1 + 2 lanes.
-    assert_eq!(deck_over_deep, 4 * (2 + 1 + 2));
+    // Three decks of 4 deep columns: 2 + 2 + 2 lanes.
+    assert_eq!(deck_over_deep, 4 * (2 + 2 + 2));
     assert!(deep_without_deck > 100);
 }
 
@@ -212,4 +212,33 @@ fn legacy_and_bridgeless_maps_have_no_deck_layer() {
         let world = World::skirmish(rules.clone(), id, 1).unwrap();
         assert_eq!(world.terrain().bridge_at(c(5, 5)), 0);
     }
+}
+
+/// A unit driving the road line over the two-lane wooden bridge stays on the
+/// deck centre: the road runs on the boundary between rows 23 and 24, so the
+/// deck must be those two rows.
+#[test]
+fn a_unit_crosses_the_wooden_bridge_along_its_centre() {
+    let rules = Ruleset::builtin();
+    let mut world = World::skirmish(rules, "demo-bridges", 1).unwrap();
+    let road = FxVec2::new(Fx::from_int(22), Fx::from_int(24));
+    let id = world.spawn_unit_at(road);
+    world.enqueue(Command::Move {
+        units: vec![id],
+        target: FxVec2::new(Fx::from_int(42), Fx::from_int(24)),
+    });
+    let mut on_deck = 0;
+    for _ in 0..6000 {
+        world.step();
+        let u = world.unit(id).unwrap();
+        if world.terrain().water_depth_at(cell_of(u.pos)) == WATER_DEEP {
+            on_deck += 1;
+            let y = f64::from(u.pos.y.raw()) / 65536.0;
+            assert!((23.6..24.4).contains(&y), "off the deck centre: y = {y}");
+        }
+        if matches!(u.order, Order::Idle { .. }) {
+            break;
+        }
+    }
+    assert!(on_deck > 10);
 }
