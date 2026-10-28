@@ -8,6 +8,7 @@ pub mod combat;
 pub mod crush;
 pub mod economy;
 pub mod entity;
+pub mod features;
 pub mod fixed;
 pub mod flow;
 pub mod hash;

@@ -123,31 +123,34 @@ state to map features`), before any block starts.
 
 ### 4.1 Sim (`crates/sim`)
 
-* **Runtime feature table.** `World.features: Vec<FeatureState>`, one per map
-  feature in map order (index = map feature index, never reused). Each entry
-  holds the type, the origin cell and rotation (from the map), `hp` (fixed-point
-  integer), `state` (0 intact, 1 damaged, 2 wrecked, 3 rubble), `alive` and
-  timers (integer ticks). Built from `MapDef.features` in `map_terrain`'s
-  caller; `blocks: none` features are in the table too (they can burn).
-* **Hit points and states.** A feature type gets `hp` and `states` (percent
-  thresholds: damaged at 70, wrecked at 35, as Zero Hour). `damage_feature`
-  lowers `hp`, moves the state when a threshold is crossed, and emits
-  `CombatEvent::FeatureChanged { index, state }`. At zero hp the feature
-  becomes its `destroy` result (nothing, or rubble of another type).
-* **Obstruction changes.** `apply_obstruction_change(cells, blocked)` updates
-  `terrain`, then calls `rebuild_nav` (which already clears flow fields). Every
-  state change that alters blocking goes through it. Nothing else writes to
-  blocked cells at runtime.
-* **Step.** `features_step()` runs once per tick after `run_over` (crush).
-  It advances fire and collapse timers in integer ticks. No wall-clock, no
-  floats, no hash-order iteration (`check:rules`).
-* **Hash and save.** `state_hash` includes every feature row (type, state, hp,
-  alive, timers) in index order. `save_state` writes `features` with
-  `#[serde(default)]`, so a save without them loads from the map (`format_version`
-  stays 1; spec 19 §3.6 is kept by the default).
-* **Snapshot.** `encode_match_snapshot` gains a feature section (index, state,
-  alive, hp permille) so the client draws states without guessing. Changes
-  to the wire format follow spec 03 §6.3.
+* **Runtime feature table (base layer, built).** `World.features: Vec<FeatureState>`
+  holds one row per map feature in map order; rows are never removed, so an index
+  is stable. A row holds `kind` (feature type index), origin, `rot`, `variant`,
+  `state` (0 intact, 1 damaged, 2 wrecked; 3 abandoned is kept as placed), `hp`
+  and `alive`. Built by `features::from_map`.
+* **Base terrain.** `World.terrain_base` is the map terrain without feature
+  footprints. `World.terrain` is `features::with_blocks(terrain_base, features)`.
+  Every change of blocking calls `refresh_feature_blocks`, which rebuilds
+  `terrain` and then `nav` (clearing the flow fields). Nothing else writes
+  feature blocking at runtime.
+* **Hit points and states (built).** A feature type has `hp` (0 means
+  indestructible, the default for every type today), `states` (percent
+  thresholds, defaults 70 and 35, as Zero Hour) and `destroy.becomes` (a feature
+  type id, or absent to disappear). `World::damage_feature(index, amount)`
+  lowers `hp`, raises `state` (states only get worse), and at zero hp replaces
+  the row's type at full hit points or marks it dead. It returns whether the row
+  changed.
+* **Not in the base layer (later blocks).** `CombatEvent` has no feature event
+  yet; the client learns states from the snapshot. The per-tick step for fire
+  and collapse timers (`features_step`, after `run_over`) arrives with block 1.
+  Snapshot encoding of feature rows also arrives with block 1; the client draws
+  nothing new until then.
+* **Hash and save (built).** `state_hash` writes the feature rows (kind, origin,
+  rot, state, alive, variant, hp) after the entities, only when the map has
+  features, so worlds without features keep the AC-03-08 layout. `save_state`
+  writes `features` (feature type id per row) with `#[serde(default)]`; a save
+  without rows loads from the map at full hit points, and `format_version`
+  stays 1.
 
 ### 4.2 Data (`data/features/*.yaml`)
 
@@ -236,12 +239,12 @@ rubble:   { infantrySlowPct: 60 }
 
 | PR | Scope | Owner-visible demo |
 | --- | --- | --- |
-| 1. Base layer | 4.1 and 4.2 (sim table, damage API, states, obstruction change, save, hash, snapshot section) | none yet; sim tests |
+| 1. Base layer | 4.1 and 4.2 (sim rows, damage API, states, blocking refresh, save, hash); snapshot and tick step follow in block 1 | none yet; sim tests |
 | 2. Block 1 | Crush decor and trees, burn and fire spread, building damage states and rubble, bridge break | `?load=environment-destruction` |
 | 3. Block 2 | Garrison command, fire from windows, eviction, AI garrison, buttons | `?load=environment-garrison` |
 | 4. Block 3 | High ground range, cover, scatter unchanged | `?load=environment-cover` |
 
-Blocks 2 and 3 depend on PR 1 only. Blocks 2 and 3 both touch
+Blocks 2 and 3 depend on PR 1 only (and on block 1's snapshot and tick step). Blocks 2 and 3 both touch
 `data/balance/` and `en.json`, so they merge one at a time and regenerate
 `data/generated` (owner rule; see the PR workflow in AGENTS.md).
 

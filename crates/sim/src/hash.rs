@@ -36,6 +36,19 @@ pub fn state_hash(world: &World) -> u64 {
         put_entity(&mut out, entity);
     }
     put_u32(&mut out, world.projectiles.len() as u32);
+    // Spec 31: written only when the map has features, so worlds without them
+    // keep the layout pinned by AC-03-08.
+    if !world.features.is_empty() {
+        put_u32(&mut out, world.features.len() as u32);
+    }
+    for row in &world.features {
+        put_u32(&mut out, row.kind);
+        put_i32(&mut out, row.x);
+        put_i32(&mut out, row.y);
+        out.extend_from_slice(&[row.rot, row.state, u8::from(row.alive)]);
+        put_u32(&mut out, row.variant);
+        put_u32(&mut out, row.hp);
+    }
     for projectile in &world.projectiles {
         put_u32(&mut out, projectile.id);
         out.push(projectile.owner);

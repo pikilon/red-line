@@ -146,9 +146,15 @@ function checkFeatureTypes(sources, files, fail) {
     (file?.types ?? []).forEach((t, j) => {
       if (seen.has(t.id)) fail(sources[i].file, `/types/${j}/id`, "duplicate-id", `duplicate id ${t.id}`);
       seen.add(t.id);
-      types.push({ ...t, variants: t.variants ?? 1, render: t.render ?? {} });
+      types.push({ ...t, variants: t.variants ?? 1, render: t.render ?? {}, file: sources[i].file });
     });
   });
+  // Spec 31: a feature may only become a feature type that exists.
+  for (const t of types) {
+    if (t.destroy !== undefined && !seen.has(t.destroy.becomes)) {
+      fail(t.file, `/types/${t.id}/destroy/becomes`, "unknown-reference", `${t.id} becomes unknown feature ${t.destroy.becomes}`);
+    }
+  }
   return types;
 }
 
@@ -603,6 +609,10 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers) => {
       blocks: t.blocks,
       variants: t.variants,
       ...(t.lanes === undefined ? {} : { lanes: t.lanes }),
+      // Spec 31: hp 0 means indestructible; damage states default to Zero Hour's 70 and 35 percent.
+      hp: t.hp ?? 0,
+      states: t.states ?? { damaged: 70, wrecked: 35 },
+      ...(t.destroy === undefined ? {} : { destroy: t.destroy }),
       render: t.render,
     })),
     maps: maps.map((m, mi) => ({

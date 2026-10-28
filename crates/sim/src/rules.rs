@@ -353,6 +353,35 @@ pub struct FeatureTypeDef {
     pub footprint: [i32; 2],
     pub blocks: FeatureBlocks,
     pub variants: u32,
+    /// Spec 31: hit points; 0 means the feature cannot be damaged.
+    #[serde(default)]
+    pub hp: u32,
+    /// Spec 31: damage state thresholds in percent of `hp`: `[damaged, wrecked]`.
+    #[serde(default = "default_states")]
+    pub states: FeatureStates,
+    /// Spec 31: the feature type a destroyed feature becomes; `None` removes it.
+    #[serde(default)]
+    pub destroy: Option<FeatureDestroy>,
+}
+
+/// Spec 31: damage thresholds of a feature type, percent of hit points.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+pub struct FeatureStates {
+    pub damaged: u32,
+    pub wrecked: u32,
+}
+
+/// Spec 31: the replacement of a destroyed feature.
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+pub struct FeatureDestroy {
+    pub becomes: String,
+}
+
+fn default_states() -> FeatureStates {
+    FeatureStates {
+        damaged: 70,
+        wrecked: 35,
+    }
 }
 
 /// One placed feature: `kind` indexes `Ruleset::feature_types`, `(x, y)` is the

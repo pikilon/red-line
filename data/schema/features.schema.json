@@ -33,6 +33,31 @@
             "maximum": 2
           },
           "variants": { "type": "integer", "minimum": 1, "maximum": 16 },
+          "hp": {
+            "description": "Spec 31: hit points. 0 (default) means the feature cannot be damaged.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000
+          },
+          "states": {
+            "description": "Spec 31: damage state thresholds in percent of hp (defaults 70 and 35, as Zero Hour). Damaged at or below the first, wrecked at or below the second.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["damaged", "wrecked"],
+            "properties": {
+              "damaged": { "type": "integer", "minimum": 1, "maximum": 99 },
+              "wrecked": { "type": "integer", "minimum": 1, "maximum": 99 }
+            }
+          },
+          "destroy": {
+            "description": "Spec 31: what the feature becomes at zero hp. Omitted means it disappears.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["becomes"],
+            "properties": {
+              "becomes": { "$ref": "faction.schema.json#/$defs/id" }
+            }
+          },
           "render": {
             "description": "Free-form hints for the client renderer of the family (model id, colours, scale...); the sim ignores it.",
             "type": "object"

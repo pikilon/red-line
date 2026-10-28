@@ -5,6 +5,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use crate::angle::Angle;
 use crate::entity::{Entity, LocomotionState, NEUTRAL, PlayerId, Projectile, Site};
 pub use crate::entity::{EntityId, Order, Unit};
+use crate::features::{self, FeatureState};
 use crate::fixed::{Fx, FxVec2};
 use crate::flow::FlowField;
 use crate::locomotor;
@@ -12,9 +13,7 @@ use crate::map::{Cell, CellIndex, MapGrid, SPAWN_MAX, SPAWN_MIN, cell_center, ce
 use crate::nav::{approach_cell, footprint_cells, footprint_center};
 use crate::player::Player;
 use crate::rng::SplitMix64;
-use crate::rules::{
-    Category, FactionId, FeatureBlocks, MapDef, Ruleset, TypeId, WeaponId, fx_centi,
-};
+use crate::rules::{Category, FactionId, MapDef, Ruleset, TypeId, WeaponId, fx_centi};
 
 pub type UnitId = EntityId;
 
@@ -149,6 +148,10 @@ pub struct World {
     pub(crate) tick: u32,
     pub(crate) rules: Ruleset,
     pub(crate) terrain: MapGrid,
+    /// Terrain without feature footprints (spec 31, derived from the map).
+    pub(crate) terrain_base: MapGrid,
+    /// Map features, one row per map feature in map order (spec 31).
+    pub(crate) features: Vec<FeatureState>,
     /// Terrain plus building and depot footprints (derived).
     pub(crate) nav: MapGrid,
     pub(crate) players: Vec<Player>,
@@ -176,9 +179,10 @@ pub struct World {
     pub(crate) map_id: Option<String>,
 }
 
-/// Open terrain of `map` with its blocked rectangles (spec 03 §5.6) and its
-/// elevation, cliffs blocked (spec 30).
-pub(crate) fn map_terrain(rules: &Ruleset, map: &MapDef) -> MapGrid {
+/// Open terrain of `map` with its blocked rectangles (spec 03 §5.6), its
+/// elevation (cliffs blocked, spec 30) and its layers, without the feature
+/// footprints (spec 31: see `features::with_blocks`).
+pub(crate) fn map_terrain(map: &MapDef) -> MapGrid {
     let mut terrain = MapGrid::open(map.width, map.height);
     for rect in &map.blocked {
         for y in rect[1]..=rect[3] {
@@ -193,18 +197,6 @@ pub(crate) fn map_terrain(rules: &Ruleset, map: &MapDef) -> MapGrid {
     // footprints of solid features (`vehicles` blocks like `all` for now).
     terrain.set_layers(map.ground_cells(), map.road_cells(), map.water_cells());
     terrain.set_bridges(map.bridge_cells());
-    for f in &map.features {
-        let def = &rules.feature_types[f.kind as usize];
-        if def.blocks == FeatureBlocks::None {
-            continue;
-        }
-        let (w, h) = if f.rot % 2 == 1 {
-            (def.footprint[1], def.footprint[0])
-        } else {
-            (def.footprint[0], def.footprint[1])
-        };
-        terrain.block_footprint(Cell { x: f.x, y: f.y }, w, h);
-    }
     terrain
 }
 
@@ -217,6 +209,8 @@ impl World {
             tick: 0,
             rules: Ruleset::builtin(),
             terrain: map.clone(),
+            terrain_base: map.clone(),
+            features: Vec::new(),
             nav: map,
             players: vec![Player::new(0, 0, 0, cells)],
             entities: Vec::new(),
@@ -273,9 +267,13 @@ impl World {
                 id: map_id.to_string(),
             })?;
 
-        let terrain = map_terrain(&rules, &map);
+        let base = map_terrain(&map);
+        let features = features::from_map(&rules, &map);
+        let terrain = features::with_blocks(&base, &features, &rules);
         let factions: Vec<FactionId> = map.starts.iter().map(|start| start.faction).collect();
         let mut world = World::sandbox(rules, terrain, &factions);
+        world.terrain_base = base;
+        world.features = features;
 
         for depot in &map.depots {
             world.place_depot(
