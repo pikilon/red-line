@@ -151,6 +151,7 @@ impl World {
         let complete = entity.site.as_ref().is_some_and(|site| site.complete);
         let queue_len = entity.site.as_ref().map_or(0, |site| site.queue.len());
         if entity.owner != player
+            || entity.hp == 0
             || !complete
             || self.rules.ty(entity.kind).category != Category::Building
             || usize::from(kind) >= self.rules.types.len()
@@ -190,6 +191,43 @@ impl World {
             return;
         };
         let refund = self.rules.ty(item.kind).cost;
+        if let Some(owner) = self.players.get_mut(usize::from(player)) {
+            owner.credits = owner.credits.saturating_add(refund);
+        }
+    }
+
+    /// Spec 37: a sale refunds every queued item and half the building cost,
+    /// then ordinary death cleanup removes it in the same step.
+    pub(crate) fn apply_sell(&mut self, player: PlayerId, building: EntityId) {
+        let Some(index) = self.index_of(building) else {
+            return;
+        };
+        let entity = &self.entities[index];
+        let complete = entity.site.as_ref().is_some_and(|site| site.complete);
+        if entity.owner != player
+            || entity.hp == 0
+            || !complete
+            || self.rules.ty(entity.kind).category != Category::Building
+        {
+            return;
+        }
+        let kind = entity.kind;
+        let queue = std::mem::take(
+            &mut self.entities[index]
+                .site
+                .as_mut()
+                .expect("complete building site")
+                .queue,
+        );
+        let mut refund =
+            u64::from(self.rules.ty(kind).cost) * u64::from(self.rules.sell_refund_percent) / 100;
+        for item in queue {
+            refund = refund.saturating_add(u64::from(self.rules.ty(item.kind).cost));
+        }
+        let refund = refund.min(u64::from(u32::MAX)) as u32;
+        let entity = &mut self.entities[index];
+        entity.last_hit = None;
+        entity.hp = 0;
         if let Some(owner) = self.players.get_mut(usize::from(player)) {
             owner.credits = owner.credits.saturating_add(refund);
         }

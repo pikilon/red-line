@@ -569,6 +569,10 @@ pub struct AiDef {
     pub triggers: Vec<TriggerDef>,
 }
 
+fn default_sell_refund_percent() -> u32 {
+    50
+}
+
 /// The full ruleset: weapons, types, factions and maps.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -578,6 +582,9 @@ pub struct Ruleset {
     pub armor_classes: Vec<String>,
     pub damage_modifiers: Vec<Vec<u32>>,
     pub starting_credits: u32,
+    /// Spec 37: integer percentage of a sold building's cost refunded.
+    #[serde(default = "default_sell_refund_percent")]
+    pub sell_refund_percent: u32,
     pub low_power_min_speed_percent: u32,
     pub low_power_max_speed_percent: u32,
     pub max_queue: u32,

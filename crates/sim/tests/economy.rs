@@ -4,7 +4,7 @@ use sim::economy::production_speed_percent;
 use sim::fixed::{Fx, FxVec2};
 use sim::map::{Cell, MapGrid};
 use sim::rules::{Ruleset, fx_centi};
-use sim::world::{Command, Order, World};
+use sim::world::{CombatEvent, Command, Order, World};
 
 fn test_rules() -> Ruleset {
     Ruleset::from_json(include_str!("fixtures/test-rules.json")).unwrap()
@@ -199,6 +199,41 @@ fn ac_03_18_rally_point() {
         world.entity(power).unwrap().site.as_ref().unwrap().rally,
         None
     );
+}
+
+#[test]
+fn ac_37_01_sale_refunds_building_and_whole_queue_once() {
+    let (mut world, factory) = factory_world();
+    for _ in 0..2 {
+        produce(&mut world, factory, 9);
+    }
+    world.enqueue(Command::Sell { building: factory });
+    world.enqueue(Command::Sell { building: factory });
+    world.step();
+    assert_eq!(world.player(0).unwrap().credits, 1100);
+    assert!(world.entity(factory).is_none());
+    assert!(world.map().is_passable(Cell { x: 10, y: 10 }));
+    assert!(world.events().iter().any(|event| matches!(
+        event,
+        CombatEvent::Death { victim, killer: None, weapon: None, .. } if *victim == factory
+    )));
+}
+
+#[test]
+fn ac_37_02_sale_rejects_incomplete_enemy_and_non_buildings() {
+    let (mut world, factory) = factory_world();
+    let incomplete = world.place_building(0, 5, Cell { x: 20, y: 10 }, false);
+    let enemy = world.place_building(1, 5, Cell { x: 25, y: 10 }, true);
+    let soldier = world.spawn(0, 9, at(550, 550));
+    for building in [incomplete, enemy, soldier, 999] {
+        world.enqueue(Command::Sell { building });
+    }
+    world.step();
+    assert_eq!(world.player(0).unwrap().credits, 1000);
+    assert!(world.entity(factory).is_some());
+    assert!(world.entity(incomplete).is_some());
+    assert!(world.entity(enemy).is_some());
+    assert!(world.entity(soldier).is_some());
 }
 
 #[test]

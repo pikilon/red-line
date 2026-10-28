@@ -46,6 +46,7 @@
     ]
   ],
   "startingCredits": 5000,
+  "sellRefundPercent": 50,
   "lowPowerMinSpeedPercent": 25,
   "lowPowerMaxSpeedPercent": 75,
   "maxQueue": 9,

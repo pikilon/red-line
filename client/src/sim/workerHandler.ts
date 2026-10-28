@@ -92,6 +92,7 @@ export interface SkirmishSimLike {
   command_resume(player: number, unitIds: Uint32Array, building: number): void;
   command_produce(player: number, building: number, kind: number): void;
   command_cancel(player: number, building: number): void;
+  command_sell(player: number, building: number): void;
   command_rally(
     player: number,
     building: number,
@@ -186,6 +187,9 @@ const COMMANDS = {
   }),
   cancel: run((sim, command: Extract<SimCommand, { kind: "cancel" }>) => {
     sim.command_cancel(command.player, command.building);
+  }),
+  sell: run((sim, command: Extract<SimCommand, { kind: "sell" }>) => {
+    sim.command_sell(command.player, command.building);
   }),
   rally: run((sim, command: Extract<SimCommand, { kind: "rally" }>) => {
     sim.command_rally(
