@@ -547,7 +547,7 @@ factory district, south rows of the same apartment block, house, shop, church,
 office tower, factory and gas station in the four states, and an abandoned
 quarter.
 
-## 12. Phase 6 vegetation (as built)
+## 13. Phase 6 vegetation (as built)
 
 Renderer `client/src/render/features/renderers/vegetation.ts`, types in
 `data/features/vegetation.yaml`, demo `demo-forest` (`/?load=demo-forest`).
@@ -571,7 +571,7 @@ Renderer `client/src/render/features/renderers/vegetation.ts`, types in
 * **Not done.** Billboard LOD and a draw budget (cost is fine at ~1000 instances),
   crushing/burning transitions (burnt/dead exist only as types), `state` ignored.
 
-## 12. Phase 3 (as built): ground materials and roads
+## 14. Phase 3 (as built): ground materials and roads
 
 Renderer: `client/src/render/features/renderers/groundAndRoads.ts`
 (`registerGroundLayerRenderer`), helpers in `features/ground/`. Two meshes laid
@@ -602,7 +602,7 @@ are transparent, so the terrain's grass, dirt noise and cliff mix stay underneat
   own patch, a concrete plaza next to an asphalt apron, a muddy field running into
   sand, a rocky area with gravel, an asphalt crossroads, two dirt tracks.
 
-## 12. Phase 4: water, sea and ports (as built)
+## 15. Phase 4: water, sea and ports (as built)
 
 Files: `client/src/render/features/renderers/water.ts` (water renderer),
 `renderers/port.ts` (family `port`), `data/features/port.yaml`, demo map and save
@@ -630,3 +630,19 @@ Files: `client/src/render/features/renderers/water.ts` (water renderer),
   buoys use `blocks: none`; crane, warehouse, containers and lighthouse are `blocks: all` on land.
   Boats in shallow water stay walkable (decoration): keep them on deep water.
 * Snow whitening of port props is not done (cheap hook not available yet).
+
+## 16. Pending: interaction with the environment (owner note 2026-10-28)
+
+The landscape is visual only today. Noted for later, design to be decided
+with the owner (follow the Zero Hour precedent in 2.3 and 6.6):
+
+* Roads give no speed bonus yet (6.1; proposal +30 % vehicles, +15 %
+  infantry on asphalt, flow-field costs follow).
+* Shooting a tree does nothing: trees should take damage, catch fire and
+  burn to a black trunk (Zero Hour `FlammableUpdate`, `FireSpreadUpdate`,
+  `BURNED`).
+* Vehicles cannot crush bushes or topple trees (Zero Hour `CrushableLevel`
+  and `ToppleUpdate`, leaving a stump).
+* Shallow water and fords do not slow units; civilian buildings take no
+  damage and cannot be garrisoned; fences and walls cannot be crushed.
+
