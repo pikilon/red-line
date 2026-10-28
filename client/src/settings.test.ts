@@ -102,13 +102,13 @@ describe("settings", () => {
     });
   });
 
-  it("starts the mixer at full master volume until a volume is saved (spec 25 §10)", () => {
-    expect(DEFAULT_AUDIO_MASTER).toBe(100);
+  it("starts the mixer quiet until a volume is saved (spec 25 §10)", () => {
+    expect(DEFAULT_AUDIO_MASTER).toBe(50);
     expect(resolveAudioVolumes({ gore: true })).toEqual({
-      audioMaster: 100,
-      audioSfx: 80,
-      audioAmbient: 50,
-      audioVoice: 70,
+      audioMaster: 50,
+      audioSfx: 60,
+      audioAmbient: 30,
+      audioVoice: 60,
       audioMusic: 0,
     });
     expect(
