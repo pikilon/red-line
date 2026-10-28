@@ -286,9 +286,18 @@ impl MapGrid {
     /// §5.2): an integer grid walk; where it crosses a cell corner exactly,
     /// both side cells must be passable too.
     pub fn line_passable(&self, from: FxVec2, to: FxVec2) -> bool {
+        line_all(from, to, |cell| self.is_passable(cell))
+    }
+}
+
+/// The grid walk of `line_passable` with any cell test: whether `clear` holds
+/// for every cell the segment `from`-`to` crosses (and, where it crosses a
+/// corner exactly, for both side cells).
+pub fn line_all(from: FxVec2, to: FxVec2, clear: impl Fn(Cell) -> bool) -> bool {
+    {
         let mut cell = cell_of(from);
         let end = cell_of(to);
-        if !self.is_passable(cell) {
+        if !clear(cell) {
             return false;
         }
         let dx = i64::from(to.x.raw()) - i64::from(from.x.raw());
@@ -326,7 +335,7 @@ impl MapGrid {
                         x: cell.x,
                         y: cell.y + step_y,
                     };
-                    if !self.is_passable(side_x) || !self.is_passable(side_y) {
+                    if !clear(side_x) || !clear(side_y) {
                         return false;
                     }
                     Cell {
@@ -335,13 +344,15 @@ impl MapGrid {
                     }
                 }
             };
-            if !self.is_passable(cell) {
+            if !clear(cell) {
                 return false;
             }
         }
         true
     }
+}
 
+impl MapGrid {
     pub fn index(&self, cell: Cell) -> CellIndex {
         (cell.y as u32) * u32::from(self.width) + (cell.x as u32)
     }

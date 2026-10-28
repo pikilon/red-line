@@ -1,18 +1,18 @@
-# Spec 26 phase 2: civilian buildings, walls and props. Spec 31 block 1: hit points, crush level and collapse into
+# Spec 26 phase 2: civilian buildings, walls and props. Spec 31: hit points, crush level, infantry garrison and collapse into
 # `rubble-<w>x<h>` (`blocks: vehicles` is `all` for the sim until the nav grid has layers: rubble stops infantry too).
 # `render.model` picks the procedural builder in client/src/render/features/civil/; the look follows `variant`
 # and the placed `state` (intact, damaged, wrecked, abandoned). Fences, walls and lamps are decoration (`none`).
 types:
-  - { id: house-small,     family: building, footprint: [2, 2], blocks: all, variants: 3, render: { model: house-small }, hp: 300, destroy: { becomes: rubble-2x2, collapseTicks: 60 } }
-  - { id: townhouse-row,   family: building, footprint: [4, 2], blocks: all, variants: 3, render: { model: townhouse-row }, hp: 500, destroy: { becomes: rubble-4x2, collapseTicks: 60 } }
-  - { id: apartment-block, family: building, footprint: [3, 3], blocks: all, variants: 3, render: { model: apartment-block }, hp: 800, destroy: { becomes: rubble-3x3, collapseTicks: 60 } }
-  - { id: shop,            family: building, footprint: [2, 2], blocks: all, variants: 3, render: { model: shop }, hp: 400, destroy: { becomes: rubble-2x2, collapseTicks: 60 } }
-  - { id: gas-station,     family: building, footprint: [4, 3], blocks: all, variants: 3, render: { model: gas-station }, hp: 500, destroy: { becomes: rubble-4x3, collapseTicks: 60 } }
-  - { id: office-tower,    family: building, footprint: [3, 3], blocks: all, variants: 3, render: { model: office-tower }, hp: 900, destroy: { becomes: rubble-3x3, collapseTicks: 60 } }
-  - { id: factory,         family: building, footprint: [4, 3], blocks: all, variants: 3, render: { model: factory }, hp: 900, destroy: { becomes: rubble-4x3, collapseTicks: 60 } }
-  - { id: church,          family: building, footprint: [3, 4], blocks: all, variants: 3, render: { model: church }, hp: 800, destroy: { becomes: rubble-3x4, collapseTicks: 60 } }
-  - { id: warehouse-barn,  family: building, footprint: [4, 3], blocks: all, variants: 3, render: { model: warehouse-barn }, hp: 500, destroy: { becomes: rubble-4x3, collapseTicks: 60 } }
-  - { id: farmhouse,       family: building, footprint: [3, 2], blocks: all, variants: 3, render: { model: farmhouse }, hp: 300, destroy: { becomes: rubble-3x2, collapseTicks: 60 } }
+  - { id: house-small,     family: building, footprint: [2, 2], blocks: all, variants: 3, garrison: { slots: 4, rangePct: 133, damagePct: 125, evictOnWrecked: true }, render: { model: house-small }, hp: 300, destroy: { becomes: rubble-2x2, collapseTicks: 60 } }
+  - { id: townhouse-row,   family: building, footprint: [4, 2], blocks: all, variants: 3, garrison: { slots: 6, rangePct: 133, damagePct: 125, evictOnWrecked: true }, render: { model: townhouse-row }, hp: 500, destroy: { becomes: rubble-4x2, collapseTicks: 60 } }
+  - { id: apartment-block, family: building, footprint: [3, 3], blocks: all, variants: 3, garrison: { slots: 10, rangePct: 133, damagePct: 125, evictOnWrecked: true }, render: { model: apartment-block }, hp: 800, destroy: { becomes: rubble-3x3, collapseTicks: 60 } }
+  - { id: shop,            family: building, footprint: [2, 2], blocks: all, variants: 3, garrison: { slots: 4, rangePct: 133, damagePct: 125, evictOnWrecked: true }, render: { model: shop }, hp: 400, destroy: { becomes: rubble-2x2, collapseTicks: 60 } }
+  - { id: gas-station,     family: building, footprint: [4, 3], blocks: all, variants: 3, garrison: { slots: 3, rangePct: 133, damagePct: 125, evictOnWrecked: true }, render: { model: gas-station }, hp: 500, destroy: { becomes: rubble-4x3, collapseTicks: 60 } }
+  - { id: office-tower,    family: building, footprint: [3, 3], blocks: all, variants: 3, garrison: { slots: 10, rangePct: 133, damagePct: 125, evictOnWrecked: true }, render: { model: office-tower }, hp: 900, destroy: { becomes: rubble-3x3, collapseTicks: 60 } }
+  - { id: factory,         family: building, footprint: [4, 3], blocks: all, variants: 3, garrison: { slots: 8, rangePct: 133, damagePct: 125, evictOnWrecked: true }, render: { model: factory }, hp: 900, destroy: { becomes: rubble-4x3, collapseTicks: 60 } }
+  - { id: church,          family: building, footprint: [3, 4], blocks: all, variants: 3, garrison: { slots: 8, rangePct: 133, damagePct: 125, evictOnWrecked: true }, render: { model: church }, hp: 800, destroy: { becomes: rubble-3x4, collapseTicks: 60 } }
+  - { id: warehouse-barn,  family: building, footprint: [4, 3], blocks: all, variants: 3, garrison: { slots: 6, rangePct: 133, damagePct: 125, evictOnWrecked: true }, render: { model: warehouse-barn }, hp: 500, destroy: { becomes: rubble-4x3, collapseTicks: 60 } }
+  - { id: farmhouse,       family: building, footprint: [3, 2], blocks: all, variants: 3, garrison: { slots: 5, rangePct: 133, damagePct: 125, evictOnWrecked: true }, render: { model: farmhouse }, hp: 300, destroy: { becomes: rubble-3x2, collapseTicks: 60 } }
   - { id: fence,           family: wall,     footprint: [1, 1], blocks: none, variants: 3, render: { model: fence }, hp: 60, crushLevel: 1 }
   - { id: stone-wall,      family: wall,     footprint: [1, 1], blocks: none, variants: 3, render: { model: stone-wall }, hp: 120, crushLevel: 1 }
   - { id: lamp-post,       family: prop,     footprint: [1, 1], blocks: none, variants: 2, render: { model: lamp-post } }

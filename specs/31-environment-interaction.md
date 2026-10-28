@@ -228,6 +228,39 @@ under `client/src/render/features/renderers/` with **no test files there**
   building are selected; an "evacuate" button on a garrisoned building. Strings
   go in `client/src/i18n/` (AGENTS.md).
 
+**Built (PR for block 2).** `crates/sim/src/garrison.rs`; commands `Garrison`
+and `Unload`; order `Order::Garrison`; `Entity.inside` (feature row index) is
+hashed and saved (`inside`, serde default). Occupants stay in `entities`,
+hidden from other players' snapshots (`FLAG_INSIDE` for the owner), skipped by
+targeting, splash, crushing, separation and movement. The building's team is
+derived from its occupants, so a neutral building is captured by the first
+rider and reverts when emptied (nothing else is stored). Data lives in
+`garrison: { slots, rangePct, damagePct, evictOnWrecked, allowNeutral?,
+allowEnemies? }` on the feature type; the AI reads `garrisonRadiusCenti` from
+`data/ai/*.yaml`. Example save: `?load=environment-garrison`.
+
+* **A9 — riders.** Only free infantry (foot locomotor) enter. A building held
+  by one player refuses riders of another unless `allowEnemies`; allies do not
+  exist in the sim yet, so `allowAllies` is not read.
+* **A10 — eviction.** Occupants leave onto the first free passable cell of the
+  rings (up to 3) around the old footprint, in `(y, x)` order. A wrecked
+  building with no room keeps them inside; a destroyed one kills them. A
+  building that starts to collapse (block 1, zero hit points) counts as
+  destroyed: it empties at once, before it turns into rubble.
+* **A11 — interface.** Right click on a garrisonable building with infantry
+  selected, or the Garrison button (nearest valid building within 14 tiles),
+  garrisons; a left click on an own garrisoned building selects its occupants,
+  which shows the Evacuate button. The feature table of the snapshot carries
+  each building's holder (`NEUTRAL` when empty) and occupant count, so the
+  client offers only what the sim accepts: not a wrecked, collapsing or
+  destroyed building, not a full one and not one another player holds. The
+  holder is public, as in Zero Hour, where a garrisoned building shows its
+  team colour.
+* **A12 — attacking a garrison.** Occupants cannot be targeted. Enemies clear
+  a building by damaging it (force fire or splash, block 1): at the wrecked
+  state the occupants are thrown out. Units do not pick a held building as an
+  automatic target yet (Zero Hour does); see open question 3.
+
 ### Block 3 — Cover and position
 
 * **High ground (Difference 2).** A shooter whose cell is at least
@@ -239,6 +272,25 @@ under `client/src/render/features/renderers/` with **no test files there**
   shot crosses (`line_passable` check). Multiple covers do not stack; the
   best one applies.
 * **Scatter.** Unchanged (Zero Hour scatter).
+
+**Built (PR for block 3).** `crates/sim/src/environment.rs`, values in
+`data/balance/environment.yaml`. `effective_range` scales a weapon's range by
+`highGround.rangePct` when the ground under the shooter is at least
+`highGround.minTiles` above the target's; it is used for both the attack and
+the target pick. `cover_pct` applies the best of forest and wall cover to the
+damage of direct hits and splash (`reduce_damage`, at least 1).
+Example save: `?load=environment-cover`.
+
+* **A13 — what covers.** Forest: a living tree or hedge (vegetation that
+  blocks movement) on or next to the target's cell; stumps and bushes give
+  none. Wall: the line of fire crosses a living wall or building footprint,
+  except a footprint that holds the shooter (a garrison fires out of its own
+  building) or the target. Splash is shielded by walls between the impact and
+  the target, not between the shooter and the target. Craters are not in the
+  sim (spec 24 draws them in the client), so `cover.crater` is not read yet.
+* **A14 — walls reduce, they do not stop shots.** The owner's request is
+  "takes less damage" behind a wall, so a wall cuts damage by `wall.pct` and
+  the shot still lands (open question 2 stays open for a stronger rule).
 
 ## 6. Data sketch
 
@@ -299,6 +351,8 @@ Blocks 2 and 3 depend on PR 1 only (and on block 1's snapshot and tick step). Bl
    missing text if it had more requirements.
 2. Should a shot that crosses a wall stop the shot (Difference 2 `blocksShots`)
    or only reduce the damage? This spec assumes "reduce".
+3. Should units attack an enemy-held building on their own, as in Zero Hour
+   (A12)? Today the player has to force fire on it.
 
 ## 10. Acceptance criteria
 

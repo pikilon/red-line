@@ -210,6 +210,18 @@
       "map": "demo-destruction",
       "form": "setup",
       "entities": 5
+    },
+    {
+      "id": "environment-garrison",
+      "map": "demo-town",
+      "form": "setup",
+      "entities": 15
+    },
+    {
+      "id": "environment-cover",
+      "map": "demo-cover",
+      "form": "setup",
+      "entities": 10
     }
   ]
 }

@@ -2,6 +2,7 @@ id: russia-rush
 faction: russia
 harvesters: 4
 defenseRadiusCenti: 1500
+garrisonRadiusCenti: 800
 buildOrder: [ru-power-plant, ru-barracks, ru-supply-center, ru-vehicle-factory, ru-power-plant, ru-defense, ru-power-plant]
 taskForces:
   - { id: rifles, units: { ru-rifleman: 8 } }

@@ -58,6 +58,8 @@ const row = (
   burning: false,
   collapsing: false,
   hpPermille: 1000,
+  owner: 255,
+  occupants: 0,
   ...patch,
 });
 

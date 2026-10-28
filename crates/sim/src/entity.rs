@@ -53,6 +53,12 @@ pub enum Order {
         order_id: u32,
         building: EntityId,
     },
+    /// Spec 31 block 2: walk to the map feature `feature` (index into
+    /// `World::features`) and garrison it.
+    Garrison {
+        order_id: u32,
+        feature: u32,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -105,6 +111,9 @@ pub struct Entity {
     pub aim: Option<EntityId>,
     /// Ticks since the turret last had a target (spec 11 §5.3).
     pub idle_aim_ticks: u32,
+    /// Spec 31 block 2: index of the feature this unit garrisons; it is hidden
+    /// and fires from the building. `None` for everything on the map.
+    pub inside: Option<u32>,
 }
 
 /// The locomotion and turret state of an entity (spec 11 §5.1). Read and written

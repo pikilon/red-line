@@ -2,6 +2,7 @@ id: ukraine-rush
 faction: ukraine
 harvesters: 6
 defenseRadiusCenti: 1500
+garrisonRadiusCenti: 800
 buildOrder: [ua-power-plant, ua-barracks, ua-supply-center, ua-vehicle-factory, ua-barracks, ua-power-plant]
 taskForces:
   - { id: rifles, units: { ua-rifleman: 8 } }

@@ -18,8 +18,11 @@ export interface CommandButton {
   cost: number;
   /** Whether the button is currently actionable (affordable, requirements met). */
   enabled: boolean;
-  /** Whether the button constructs a building or produces a unit. */
-  action: "construct" | "produce";
+  /** Whether the button constructs a building, produces a unit, or (spec 31
+   *  block 2) garrisons the selection / evacuates a garrisoned building. */
+  action: "construct" | "produce" | "garrison" | "evacuate";
+  /** Feature index the garrison and evacuate buttons act on. */
+  feature?: number;
 }
 
 /** What one command panel render shows (spec §6.7). */
@@ -41,7 +44,8 @@ export function samePanelInput(a: PanelInput, b: PanelInput): boolean {
       button.label === other.label &&
       button.cost === other.cost &&
       button.enabled === other.enabled &&
-      button.action === other.action
+      button.action === other.action &&
+      button.feature === other.feature
     );
   });
   if (!sameButtons) return false;
@@ -64,10 +68,51 @@ export interface CommandPanelArgs {
   credits: number;
   /** Queue of the selected production building, if any. */
   queue: QueueState | null;
+  /** Spec 31 block 2: garrison and evacuate offers for the selection. */
+  garrison?: { garrison: number | null; evacuate: number | null };
 }
 
 /** Builds the construct/produce buttons for the current selection (spec §6.6). */
 export function commandButtons({
+  selected,
+  ownEntities,
+  credits,
+  queue,
+  garrison,
+}: CommandPanelArgs): CommandButton[] {
+  const buttons = productionButtons({
+    selected,
+    ownEntities,
+    credits,
+    queue,
+  });
+  const extra: CommandButton[] = [];
+  if (garrison?.garrison != null) {
+    extra.push(garrisonButton("garrison", garrison.garrison));
+  }
+  if (garrison?.evacuate != null) {
+    extra.push(garrisonButton("evacuate", garrison.evacuate));
+  }
+  return [...buttons, ...extra];
+}
+
+/** A garrison or evacuate button (spec 31 block 2). */
+function garrisonButton(
+  action: "garrison" | "evacuate",
+  feature: number,
+): CommandButton {
+  return {
+    typeIndex: -1,
+    label: t(action === "garrison" ? "ui.garrison" : "ui.evacuate"),
+    cost: 0,
+    enabled: true,
+    action,
+    feature,
+  };
+}
+
+/** The construct/produce buttons of the selection (spec §6.6). */
+function productionButtons({
   selected,
   ownEntities,
   credits,
@@ -182,6 +227,10 @@ export function createCommandPanel(
     onConstruct(kind: number): void;
     onProduce(kind: number): void;
     onCancel(): void;
+    /** Spec 31 block 2: the Garrison button was pressed for `feature`. */
+    onGarrison?(feature: number): void;
+    /** Spec 31 block 2: the Evacuate button was pressed for `feature`. */
+    onEvacuate?(feature: number): void;
     /** A disabled offer was pressed; the caller plays the error sound/EVA. */
     onDisabled?(button: CommandButton): void;
   },
@@ -221,6 +270,10 @@ export function createCommandPanel(
       const button = rendered[index];
       if (button === undefined) return;
       if (button.action === "construct") handlers.onConstruct(button.typeIndex);
+      else if (button.action === "garrison")
+        handlers.onGarrison?.(button.feature ?? -1);
+      else if (button.action === "evacuate")
+        handlers.onEvacuate?.(button.feature ?? -1);
       else handlers.onProduce(button.typeIndex);
     });
     element.addEventListener("contextmenu", (event) => {
@@ -259,7 +312,12 @@ export function createCommandPanel(
         if (button === undefined) continue;
         const element = buttonAt(i);
         const def = RULES.types[button.typeIndex];
-        setData(element, def?.id ?? String(button.typeIndex));
+        setData(
+          element,
+          button.typeIndex < 0
+            ? button.action
+            : (def?.id ?? String(button.typeIndex)),
+        );
         if (element.textContent !== button.label)
           element.textContent = button.label;
         if (element.disabled === button.enabled)

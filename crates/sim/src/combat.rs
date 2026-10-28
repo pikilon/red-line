@@ -16,6 +16,7 @@
 
 use crate::angle::{Angle, atan2};
 use crate::entity::{EntityId, GROUND_TARGET, NEUTRAL, Order, Projectile};
+use crate::environment::reduce_damage;
 use crate::fixed::{Fx, FxVec2};
 use crate::rng::SplitMix64;
 use crate::rules::{Delivery, LocoKind, TypeId, WeaponDef, WeaponId, fx_centi};
@@ -60,6 +61,7 @@ impl World {
         let Some((weapon_id, weapon)) = self.weapon_data(kind) else {
             return;
         };
+        let weapon = self.garrison_weapon(self.entities[index].id, weapon);
         if let Order::AttackGround { target, .. } = self.entities[index].order {
             self.fire_ground(index, weapon_id, &weapon, target);
             return;
@@ -112,8 +114,12 @@ impl World {
     ) {
         let kind = self.entities[index].kind;
         let distance = (point - self.entities[index].pos).length();
-        let in_range = distance >= fx_centi(weapon.min_range_centi)
-            && distance <= fx_centi(weapon.range_centi);
+        let range = self.effective_range(
+            fx_centi(weapon.range_centi),
+            self.entities[index].pos,
+            point,
+        );
+        let in_range = distance >= fx_centi(weapon.min_range_centi) && distance <= range;
         let aligned = if self.rules.ty(kind).motion.kind == LocoKind::Immediate {
             true
         } else {
@@ -366,6 +372,7 @@ impl World {
         let Some(weapon) = self.weapon_def(projectile.weapon) else {
             return;
         };
+        let weapon = self.garrison_weapon(projectile.shooter, weapon);
         self.hit_features(projectile.impact, &weapon);
         let hit = if weapon.splash_centi > 0 {
             self.apply_splash(
@@ -418,6 +425,7 @@ impl World {
         for index in 0..self.entities.len() {
             let entity = &self.entities[index];
             if entity.hp == 0
+                || entity.inside.is_some()
                 || entity.id == shooter
                 || entity.owner == NEUTRAL
                 || self
@@ -471,6 +479,7 @@ impl World {
         let attacker = &self.entities[index];
         let target = &self.entities[target_index];
         if target.hp == 0
+            || target.inside.is_some()
             || target.owner == attacker.owner
             || target.owner == NEUTRAL
             || self
@@ -481,7 +490,8 @@ impl World {
             return false;
         }
         let distance = self.entity_distance(attacker.pos, target);
-        distance >= fx_centi(weapon.min_range_centi) && distance <= fx_centi(weapon.range_centi)
+        let range = self.effective_range(fx_centi(weapon.range_centi), attacker.pos, target.pos);
+        distance >= fx_centi(weapon.min_range_centi) && distance <= range
     }
 
     /// An automatic pick also needs the target visible to the attacker's
@@ -511,6 +521,8 @@ impl World {
         if damage == 0 {
             return;
         }
+        let cover = self.cover_pct(self.entity(shooter).map(|e| e.pos), target.pos);
+        let damage = reduce_damage(damage, cover);
         self.entities[target_index].hp = self.entities[target_index].hp.saturating_sub(damage);
         self.entities[target_index].last_hit = Some((shooter, weapon_id));
         self.retaliate(target_index, shooter);
@@ -587,6 +599,7 @@ impl World {
             // NEUTRAL out because here it only marks supply depots (owner
             // request 2026-10-25).
             if entity.hp == 0
+                || entity.inside.is_some()
                 || entity.id == shooter
                 || entity.owner == NEUTRAL
                 || self.entity_distance(impact, entity) > radius
@@ -600,6 +613,9 @@ impl World {
             if damage == 0 {
                 continue;
             }
+            // The blast comes from the impact: a wall between them shields.
+            let cover = self.cover_pct(Some(impact), entity.pos);
+            let damage = reduce_damage(damage, cover);
             self.entities[index].hp = self.entities[index].hp.saturating_sub(damage);
             self.entities[index].last_hit = Some((shooter, weapon_id));
             self.retaliate(index, shooter);

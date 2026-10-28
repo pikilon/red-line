@@ -6,6 +6,11 @@ import type { EntityState } from "../sim/matchSnapshot";
 import type { SimCommand } from "../sim/protocol";
 import { PAN_SPEED_TILES_PER_SECOND, panDelta } from "./cameraPan";
 import { boxSelect, clickSelect, selectAllOwnUnits } from "./entitySelection";
+import {
+  type GarrisonFeature,
+  resolveGarrisonClick,
+  selectOccupantsAt,
+} from "./garrison";
 import { resolveForceFire, resolveRightClick } from "./intent";
 import { createPinchGesture } from "./pinch";
 import { canPlace, footprintOrigin } from "./placement";
@@ -39,6 +44,8 @@ export interface SkirmishControllerOptions {
   /** The player whose units receive the orders. */
   player(): number;
   command(command: SimCommand): void;
+  /** Garrisonable features of the map (spec 31 block 2); none when absent. */
+  garrisonFeatures?(): readonly GarrisonFeature[];
   onSelectionChange(selected: ReadonlySet<number>): void;
   /** Enables the debug-only F2/F3 keys (spec §6.5). */
   debug: boolean;
@@ -308,10 +315,21 @@ export function createSkirmishController(
     const ground = groundAt(end);
     if (ground !== null && tryPlace(ground.x, ground.y)) return;
     if (ground !== null && attackUnderCursor(ground)) return;
-    setSelection(
+    const picked =
       ground === null
         ? []
-        : clickSelect(options.entities(), ground.x, ground.y, options.player()),
+        : clickSelect(options.entities(), ground.x, ground.y, options.player());
+    // A click on an own garrisoned building selects the units inside it.
+    setSelection(
+      picked.length > 0 || ground === null
+        ? picked
+        : selectOccupantsAt({
+            player: options.player(),
+            entities: options.entities(),
+            features: options.garrisonFeatures?.() ?? [],
+            x: ground.x,
+            y: ground.y,
+          }),
     );
   });
 
@@ -356,6 +374,19 @@ export function createSkirmishController(
     const point = lastPointer ?? { x: event.clientX, y: event.clientY };
     const ground = groundAt(point);
     if (ground === null) return;
+    // Infantry enter the garrisonable building under the cursor.
+    const entering = resolveGarrisonClick({
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      features: options.garrisonFeatures?.() ?? [],
+      x: ground.x,
+      y: ground.y,
+    });
+    if (entering.length > 0) {
+      for (const command of entering) options.command(command);
+      return;
+    }
     const commands = resolveRightClick({
       player: options.player(),
       selected: [...selected],
