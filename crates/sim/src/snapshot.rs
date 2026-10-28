@@ -148,6 +148,9 @@ pub const FLAG_FIRED: i32 = 8;
 pub const FLAG_POWERED_OFF: i32 = 16;
 /// Spec 31 block 2: the unit is garrisoned in a building (shown to its owner only).
 pub const FLAG_INSIDE: i32 = 32;
+/// Spec 32: the unit rides a vehicle (with `FLAG_INSIDE`); its `progress`
+/// field holds the vehicle id.
+pub const FLAG_ABOARD: i32 = 64;
 
 /// Phase 2 match snapshot (§5.15): header, then every entity visible to
 /// `viewer` plus, for a player viewer, its ghosts, then the viewer's
@@ -189,7 +192,7 @@ pub fn encode_match_snapshot_with_shots(
     let mut rows: Vec<(EntityId, [i32; ENTITY_STRIDE])> = Vec::new();
     for entity in world.entities() {
         // Occupants show to their owner and to a revealed (neutral) viewer.
-        let hidden = entity.inside.is_some() && viewer != NEUTRAL && entity.owner != viewer;
+        let hidden = entity.contained() && viewer != NEUTRAL && entity.owner != viewer;
         if !hidden && world.is_entity_visible(viewer, entity.id) {
             rows.push((entity.id, entity_row(world, entity, shots)));
         }
@@ -401,6 +404,9 @@ fn entity_flags(world: &World, entity: &Entity) -> i32 {
     if entity.inside.is_some() {
         flags |= FLAG_INSIDE;
     }
+    if entity.aboard.is_some() {
+        flags |= FLAG_INSIDE | FLAG_ABOARD;
+    }
     if world.rules().ty(entity.kind).requires_power && power_deficit(world, entity.owner) {
         flags |= FLAG_POWERED_OFF;
     }
@@ -410,6 +416,9 @@ fn entity_flags(world: &World, entity: &Entity) -> i32 {
 /// Incomplete buildings show how far they are; every other entity is either
 /// finished (1000) or has no progress (0).
 fn entity_progress(world: &World, entity: &Entity) -> i32 {
+    if let Some(carrier) = entity.aboard {
+        return carrier as i32;
+    }
     let Some(site) = &entity.site else {
         return 0;
     };

@@ -120,6 +120,18 @@
         "requiresPower": { "type": "boolean" },
         "dropOff": { "type": "boolean" },
         "freeUnit": { "$ref": "#/$defs/id" },
+        "transport": {
+          "description": "Spec 32: infantry can ride this vehicle (Zero Hour TransportContain).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["slots", "damagePct", "exitTicks"],
+          "properties": {
+            "slots": { "type": "integer", "minimum": 1, "maximum": 12 },
+            "fireFromInside": { "type": "boolean" },
+            "damagePct": { "type": "integer", "minimum": 0, "maximum": 100 },
+            "exitTicks": { "type": "integer", "minimum": 0 }
+          }
+        },
         "render": {
           "type": "object",
           "additionalProperties": false,

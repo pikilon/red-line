@@ -9,6 +9,7 @@
   "ui.buttonLabel": "{name} ({cost})",
   "ui.garrison": "Garrison",
   "ui.evacuate": "Evacuate",
+  "ui.disembark": "Unload",
   "ui.victory": "Victory",
   "ui.defeat": "Defeat",
   "ui.draw": "Draw",

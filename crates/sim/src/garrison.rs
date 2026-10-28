@@ -58,7 +58,7 @@ impl World {
         };
         if entity.hp == 0
             || entity.site.is_some()
-            || entity.inside.is_some()
+            || entity.contained()
             || entity.owner == NEUTRAL
             || self.rules.ty(entity.kind).category != Category::Unit
             || self.rules.ty(entity.kind).motion.kind != LocoKind::Foot
@@ -188,7 +188,7 @@ impl World {
 
     /// First passable, unused cell in the rings around the rectangle, scanning
     /// each ring in ascending `(y, x)` order.
-    fn free_cell_around(
+    pub(crate) fn free_cell_around(
         &self,
         ox: i32,
         oy: i32,

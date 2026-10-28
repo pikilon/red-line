@@ -22,6 +22,7 @@ pub mod rng;
 pub mod rules;
 pub mod save;
 pub mod snapshot;
+pub mod transport;
 pub mod vision;
 pub mod wasm_api;
 pub mod world;

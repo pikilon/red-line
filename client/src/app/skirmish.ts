@@ -46,6 +46,7 @@ import {
   createSkirmishController,
   type SkirmishController,
 } from "../input/skirmishController";
+import { disembarkOffer } from "../input/transport";
 import { createPerfPanel } from "../perfPanel";
 import { type Animator, createAnimator } from "../render/animation";
 import { type AttackMarker, createAttackMarker } from "../render/attackMarker";
@@ -749,6 +750,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       uiClick();
       interact.command({ kind: "unload", player: controlled, feature });
     },
+    onDisembark: (carrier) => {
+      uiClick();
+      interact.command({ kind: "disembark", player: controlled, carrier });
+    },
     onConstruct: (kind) => {
       uiClick();
       // Zero Hour's "building ready / select target" EVA line while placing.
@@ -1258,6 +1263,11 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
                 selected: [...(controller?.selected ?? [])],
                 entities: next.entities,
                 features: garrisonFeatures,
+              }),
+              disembark: disembarkOffer({
+                player: controlled,
+                selected: [...(controller?.selected ?? [])],
+                entities: next.entities,
               }),
             }),
       queue,

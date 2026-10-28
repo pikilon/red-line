@@ -270,6 +270,9 @@ pub struct TypeDef {
     /// Launcher types fire only while standing still (they stow when moving).
     #[serde(default)]
     pub stationary_fire: bool,
+    /// Spec 32: infantry can ride this vehicle; `None` means it carries nobody.
+    #[serde(default)]
+    pub transport: Option<TransportDef>,
     /// Precomputed at load (`Ruleset::from_json`), never read from the wire.
     #[serde(skip)]
     pub motion: Motion,
@@ -410,6 +413,22 @@ pub struct GarrisonDef {
     /// Zero Hour `AllowEnemiesInside`: riders may join a building held by another player.
     #[serde(default)]
     pub allow_enemies: bool,
+}
+
+/// Spec 32: transport data of a vehicle type (Zero Hour `TransportContain`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TransportDef {
+    /// Infantry the vehicle holds, one slot each (`Slots`).
+    pub slots: u32,
+    /// `PassengersAllowedToFire`: riders fire from the vehicle.
+    #[serde(default)]
+    pub fire_from_inside: bool,
+    /// `DamagePercentToUnits`: share of each rider's maximum hit points lost
+    /// when the vehicle dies; 100 kills them, less ejects the survivors.
+    pub damage_pct: u32,
+    /// `ExitDelay` in ticks: riders leave one at a time.
+    pub exit_ticks: u32,
 }
 
 fn default_true() -> bool {

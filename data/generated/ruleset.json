@@ -621,6 +621,12 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "transport": {
+        "slots": 5,
+        "fireFromInside": true,
+        "damagePct": 100,
+        "exitTicks": 4
+      },
       "render": {
         "size": [
           60,
@@ -660,6 +666,11 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "transport": {
+        "slots": 6,
+        "damagePct": 10,
+        "exitTicks": 4
+      },
       "render": {
         "size": [
           70,
@@ -1191,6 +1202,12 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "transport": {
+        "slots": 4,
+        "fireFromInside": true,
+        "damagePct": 100,
+        "exitTicks": 4
+      },
       "render": {
         "size": [
           60,
@@ -1230,6 +1247,11 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "transport": {
+        "slots": 6,
+        "damagePct": 10,
+        "exitTicks": 4
+      },
       "render": {
         "size": [
           70,

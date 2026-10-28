@@ -37,7 +37,7 @@ fn runner<'a>(rules: &'a Ruleset, unit: &Entity) -> Option<&'a Motion> {
 /// A soldier on foot (Zero Hour `CrushableLevel = 0`).
 fn crushable(rules: &Ruleset, unit: &Entity) -> bool {
     unit.site.is_none()
-        && unit.inside.is_none()
+        && !unit.contained()
         && unit.hp > 0
         && rules.ty(unit.kind).motion.kind == LocoKind::Foot
 }
