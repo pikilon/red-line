@@ -10,13 +10,14 @@ use serde::{Deserialize, Serialize};
 use crate::ai::Ai;
 use crate::entity::EntityId;
 use crate::entity::{Entity, Ghost, HarvestPhase, Order, Projectile, QueueItem, Site};
+use crate::features::{self, FeatureState};
 use crate::fixed::{Fx, FxVec2};
 use crate::flow::FlowField;
 use crate::map::Cell;
 use crate::map::cell_of;
 use crate::nav::footprint_cells;
 use crate::player::Player;
-use crate::rules::{Category, fx_centi};
+use crate::rules::{Category, MapDef, fx_centi};
 use crate::rules::{Ruleset, TypeId, WeaponId};
 use crate::world::{Command, MAX_UNITS, Outcome, SimError, World, map_terrain};
 
@@ -51,6 +52,24 @@ pub struct SimState {
     pub flow_goals: Vec<[i32; 2]>,
     /// Ascending player.
     pub ais: Vec<AiState>,
+    /// Spec 31: one row per map feature in map order. Missing in saves from
+    /// before spec 31, which load with the map's features at full hit points.
+    #[serde(default)]
+    pub features: Vec<FeatureSaveState>,
+}
+
+/// Spec 31: one feature row; `kind` is the feature type's id.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct FeatureSaveState {
+    pub kind: String,
+    pub x: i32,
+    pub y: i32,
+    pub rot: u8,
+    pub variant: u32,
+    pub state: u8,
+    pub hp: u32,
+    pub alive: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -290,6 +309,8 @@ pub fn save_state(world: &World, seed: u64, ais: &[Ai]) -> Result<SimState, Stri
         tick,
         rules,
         terrain: _,
+        terrain_base: _,
+        features,
         nav: _,
         players,
         entities,
@@ -343,7 +364,63 @@ pub fn save_state(world: &World, seed: u64, ais: &[Ai]) -> Result<SimState, Stri
             .map(|&index| cell(world.nav.cell(index)))
             .collect(),
         ais: sorted_ais.iter().map(|ai| ai.save(rules)).collect(),
+        features: features
+            .iter()
+            .map(|row| save_feature(row, rules))
+            .collect(),
     })
+}
+
+fn save_feature(row: &FeatureState, rules: &Ruleset) -> FeatureSaveState {
+    FeatureSaveState {
+        kind: rules.feature_types[row.kind as usize].id.clone(),
+        x: row.x,
+        y: row.y,
+        rot: row.rot,
+        variant: row.variant,
+        state: row.state,
+        hp: row.hp,
+        alive: row.alive,
+    }
+}
+
+/// Feature rows of a save, checked against the map's feature count and the
+/// ruleset's feature types.
+fn load_features(
+    saved: &[FeatureSaveState],
+    rules: &Ruleset,
+    map: &MapDef,
+) -> Result<Vec<FeatureState>, String> {
+    if saved.is_empty() {
+        return Ok(features::from_map(rules, map));
+    }
+    if saved.len() != map.features.len() {
+        return Err(format!(
+            "{} feature rows for {} map features",
+            saved.len(),
+            map.features.len()
+        ));
+    }
+    saved
+        .iter()
+        .map(|row| {
+            let kind = rules
+                .feature_types
+                .iter()
+                .position(|ty| ty.id == row.kind)
+                .ok_or_else(|| format!("unknown feature type {}", row.kind))?;
+            Ok(FeatureState {
+                kind: kind as u32,
+                x: row.x,
+                y: row.y,
+                rot: row.rot,
+                variant: row.variant,
+                state: row.state,
+                hp: row.hp,
+                alive: row.alive,
+            })
+        })
+        .collect()
 }
 
 /// Rebuilds a world, its seed and its AIs. Errors start with "invalid save: ".
@@ -364,8 +441,11 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
         .cloned()
         .ok_or_else(|| format!("unknown map: {}", state.map_id))?;
     let seed = parse_u64("seed", &state.seed)?;
-    let terrain = map_terrain(&rules, &map);
+    let base = map_terrain(&map);
     let cells = usize::from(map.width) * usize::from(map.height);
+    let features = load_features(&state.features, &rules, &map)?;
+    let terrain = features::with_blocks(&base, &features, &rules);
+    let nav = terrain.clone();
 
     let players = state
         .players
@@ -394,8 +474,10 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
     let mut world = World {
         tick: state.tick,
         rules,
-        terrain: terrain.clone(),
-        nav: terrain,
+        terrain,
+        terrain_base: base,
+        features,
+        nav,
         players,
         entities,
         next_entity_id: state.next_entity_id,

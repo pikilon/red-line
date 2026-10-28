@@ -1700,6 +1700,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "pine",
         "color": "#2f5d34",
@@ -1715,6 +1720,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "fir",
         "color": "#24523f",
@@ -1730,6 +1740,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "oak",
         "color": "#5b8b35",
@@ -1745,6 +1760,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "birch",
         "color": "#8fb54a",
@@ -1760,6 +1780,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "poplar",
         "color": "#7da63a",
@@ -1775,6 +1800,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "palm",
         "color": "#3f8f3a",
@@ -1790,6 +1820,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "dead-tree",
         "color": "#6b6056",
@@ -1805,6 +1840,11 @@
       ],
       "blocks": "none",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "burnt-stump",
         "color": "#2b2622",
@@ -1820,6 +1860,11 @@
       ],
       "blocks": "none",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "bush",
         "color": "#4f8a3a",
@@ -1835,6 +1880,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "hedge",
         "color": "#3d7a35",
@@ -1850,6 +1900,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "house-small"
       }
@@ -1863,6 +1918,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "townhouse-row"
       }
@@ -1876,6 +1936,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "apartment-block"
       }
@@ -1889,6 +1954,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "shop"
       }
@@ -1902,6 +1972,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "gas-station"
       }
@@ -1915,6 +1990,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "office-tower"
       }
@@ -1928,6 +2008,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "factory"
       }
@@ -1941,6 +2026,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "church"
       }
@@ -1954,6 +2044,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "warehouse-barn"
       }
@@ -1967,6 +2062,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "farmhouse"
       }
@@ -1980,6 +2080,11 @@
       ],
       "blocks": "none",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "fence"
       }
@@ -1993,6 +2098,11 @@
       ],
       "blocks": "none",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "stone-wall"
       }
@@ -2006,6 +2116,11 @@
       ],
       "blocks": "none",
       "variants": 2,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "lamp-post"
       }
@@ -2019,6 +2134,11 @@
       ],
       "blocks": "all",
       "variants": 5,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "parked-car"
       }
@@ -2032,6 +2152,11 @@
       ],
       "blocks": "none",
       "variants": 1,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "bus-stop"
       }
@@ -2045,6 +2170,11 @@
       ],
       "blocks": "none",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "rubble-pile"
       }
@@ -2058,6 +2188,11 @@
       ],
       "blocks": "all",
       "variants": 2,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "model": "crate-stack",
         "color": "#8a6a3c",
@@ -2073,6 +2208,11 @@
       ],
       "blocks": "none",
       "variants": 2,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "kind": "pier"
       }
@@ -2086,6 +2226,11 @@
       ],
       "blocks": "none",
       "variants": 2,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "kind": "quay"
       }
@@ -2099,6 +2244,11 @@
       ],
       "blocks": "all",
       "variants": 2,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "kind": "dock-crane"
       }
@@ -2112,6 +2262,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "kind": "warehouse"
       }
@@ -2125,6 +2280,11 @@
       ],
       "blocks": "all",
       "variants": 3,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "kind": "container-stack"
       }
@@ -2138,6 +2298,11 @@
       ],
       "blocks": "none",
       "variants": 2,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "kind": "fishing-boat"
       }
@@ -2151,6 +2316,11 @@
       ],
       "blocks": "none",
       "variants": 2,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "kind": "cargo-ship"
       }
@@ -2164,6 +2334,11 @@
       ],
       "blocks": "none",
       "variants": 2,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "kind": "buoy"
       }
@@ -2177,6 +2352,11 @@
       ],
       "blocks": "all",
       "variants": 2,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "kind": "lighthouse"
       }
@@ -2191,6 +2371,11 @@
       "blocks": "none",
       "variants": 2,
       "lanes": 2,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "kind": "road-bridge",
         "deckHeight": 0.34
@@ -2206,6 +2391,11 @@
       "blocks": "none",
       "variants": 2,
       "lanes": 2,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "kind": "wooden-bridge",
         "deckHeight": 0.22
@@ -2221,6 +2411,11 @@
       "blocks": "none",
       "variants": 2,
       "lanes": 2,
+      "hp": 0,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
       "render": {
         "kind": "stone-arch",
         "deckHeight": 0.8
