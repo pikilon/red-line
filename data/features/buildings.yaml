@@ -1,0 +1,20 @@
+# Spec 26 phase 2: civilian buildings, walls and props (visuals only; no garrison or hit points yet).
+# `render.model` picks the procedural builder in client/src/render/features/civil/; the look follows `variant`
+# and the placed `state` (intact, damaged, wrecked, abandoned). Fences, walls and lamps are decoration (`none`).
+types:
+  - { id: house-small,     family: building, footprint: [2, 2], blocks: all, variants: 3, render: { model: house-small } }
+  - { id: townhouse-row,   family: building, footprint: [4, 2], blocks: all, variants: 3, render: { model: townhouse-row } }
+  - { id: apartment-block, family: building, footprint: [3, 3], blocks: all, variants: 3, render: { model: apartment-block } }
+  - { id: shop,            family: building, footprint: [2, 2], blocks: all, variants: 3, render: { model: shop } }
+  - { id: gas-station,     family: building, footprint: [4, 3], blocks: all, variants: 3, render: { model: gas-station } }
+  - { id: office-tower,    family: building, footprint: [3, 3], blocks: all, variants: 3, render: { model: office-tower } }
+  - { id: factory,         family: building, footprint: [4, 3], blocks: all, variants: 3, render: { model: factory } }
+  - { id: church,          family: building, footprint: [3, 4], blocks: all, variants: 3, render: { model: church } }
+  - { id: warehouse-barn,  family: building, footprint: [4, 3], blocks: all, variants: 3, render: { model: warehouse-barn } }
+  - { id: farmhouse,       family: building, footprint: [3, 2], blocks: all, variants: 3, render: { model: farmhouse } }
+  - { id: fence,           family: wall,     footprint: [1, 1], blocks: none, variants: 3, render: { model: fence } }
+  - { id: stone-wall,      family: wall,     footprint: [1, 1], blocks: none, variants: 3, render: { model: stone-wall } }
+  - { id: lamp-post,       family: prop,     footprint: [1, 1], blocks: none, variants: 2, render: { model: lamp-post } }
+  - { id: parked-car,      family: prop,     footprint: [1, 1], blocks: all,  variants: 5, render: { model: parked-car } }
+  - { id: bus-stop,        family: prop,     footprint: [2, 1], blocks: none, variants: 1, render: { model: bus-stop } }
+  - { id: rubble-pile,     family: prop,     footprint: [1, 1], blocks: none, variants: 3, render: { model: rubble-pile } }

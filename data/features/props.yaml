@@ -1,0 +1,10 @@
+# Spec 26 Phase 1: prop feature types.
+# `blocks: vehicles` passes the schema, but the nav grid has a single layer, so the sim blocks the cells for
+# everybody until a later phase splits it; crate-stack therefore says `all`.
+types:
+  - id: crate-stack
+    family: prop
+    footprint: [1, 1]
+    blocks: all
+    variants: 2
+    render: { model: crate-stack, color: "#8a6a3c", height: 0.7 }

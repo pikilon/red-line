@@ -1,0 +1,102 @@
+id: demo-forest
+width: 64
+height: 48
+blocked: []
+depots:
+  - { origin: [6, 42], amount: 10000 }
+  - { origin: [50, 42], amount: 10000 }
+# Spec 26 Phase 6 demo: every vegetation type and variant. A catalogue of the 10 types in 3 variant rows
+# (x 15-34, y 12-16), a pine/fir forest edge in the west, a clearing, oak/birch/poplar groves in the
+# north, a palm beach strip on the east sand, a dead and burnt grove on bare earth and hedgerows around a field.
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: sand, rect: [48, 0, 59, 47] }
+      - { material: dirt, rect: [28, 20, 44, 34] }
+      - { material: mud, rect: [30, 24, 36, 30] }
+  water:
+    - { kind: sea, depth: deep, rect: [60, 0, 63, 47] }
+    - { kind: sea, depth: shallow, rect: [58, 0, 59, 47] }
+features:
+  - { type: pine, at: [15, 12], variant: 0 }
+  - { type: fir, at: [17, 12], variant: 0 }
+  - { type: oak, at: [19, 12], variant: 0 }
+  - { type: birch, at: [21, 12], variant: 0 }
+  - { type: poplar, at: [23, 12], variant: 0 }
+  - { type: palm, at: [25, 12], variant: 0 }
+  - { type: dead-tree, at: [27, 12], variant: 0 }
+  - { type: burnt-stump, at: [29, 12], variant: 0 }
+  - { type: bush, at: [31, 12], variant: 0 }
+  - { type: hedge, at: [33, 12], rot: 0, variant: 0 }
+  - { type: pine, at: [15, 14], variant: 1 }
+  - { type: fir, at: [17, 14], variant: 1 }
+  - { type: oak, at: [19, 14], variant: 1 }
+  - { type: birch, at: [21, 14], variant: 1 }
+  - { type: poplar, at: [23, 14], variant: 1 }
+  - { type: palm, at: [25, 14], variant: 1 }
+  - { type: dead-tree, at: [27, 14], variant: 1 }
+  - { type: burnt-stump, at: [29, 14], variant: 1 }
+  - { type: bush, at: [31, 14], variant: 1 }
+  - { type: hedge, at: [33, 14], rot: 0, variant: 1 }
+  - { type: pine, at: [15, 16], variant: 2 }
+  - { type: fir, at: [17, 16], variant: 2 }
+  - { type: oak, at: [19, 16], variant: 2 }
+  - { type: birch, at: [21, 16], variant: 2 }
+  - { type: poplar, at: [23, 16], variant: 2 }
+  - { type: palm, at: [25, 16], variant: 2 }
+  - { type: dead-tree, at: [27, 16], variant: 2 }
+  - { type: burnt-stump, at: [29, 16], variant: 2 }
+  - { type: bush, at: [31, 16], variant: 2 }
+  - { type: hedge, at: [33, 16], rot: 0, variant: 0 }
+  - { type: hedge, at: [14, 30], rot: 0, variant: 0 }
+  - { type: hedge, at: [14, 36], rot: 0, variant: 1 }
+  - { type: hedge, at: [16, 30], rot: 0, variant: 1 }
+  - { type: hedge, at: [16, 36], rot: 0, variant: 0 }
+  - { type: hedge, at: [18, 30], rot: 0, variant: 0 }
+  - { type: hedge, at: [18, 36], rot: 0, variant: 1 }
+  - { type: hedge, at: [20, 30], rot: 0, variant: 1 }
+  - { type: hedge, at: [20, 36], rot: 0, variant: 0 }
+  - { type: hedge, at: [22, 30], rot: 0, variant: 0 }
+  - { type: hedge, at: [22, 36], rot: 0, variant: 1 }
+  - { type: hedge, at: [24, 30], rot: 0, variant: 1 }
+  - { type: hedge, at: [24, 36], rot: 0, variant: 0 }
+  - { type: hedge, at: [26, 30], rot: 1, variant: 0 }
+  - { type: hedge, at: [26, 32], rot: 1, variant: 0 }
+  - { type: hedge, at: [26, 34], rot: 1, variant: 0 }
+  - { type: hedge, at: [13, 30], rot: 1, variant: 1 }
+  - { type: hedge, at: [13, 32], rot: 1, variant: 0 }
+  - { type: bush, at: [17, 33], variant: 2 }
+  - { type: bush, at: [20, 32], variant: 1 }
+  - { type: bush, at: [22, 34], variant: 2 }
+  - { type: bush, at: [19, 34], variant: 2 }
+  - { type: bush, at: [16, 22], variant: 2 }
+  - { type: bush, at: [21, 24], variant: 0 }
+  - { type: bush, at: [24, 20], variant: 2 }
+  - { type: bush, at: [18, 26], variant: 2 }
+  - { type: bush, at: [23, 27], variant: 2 }
+  - { type: bush, at: [50, 32], variant: 1 }
+  - { type: bush, at: [52, 36], variant: 1 }
+  - { type: bush, at: [55, 34], variant: 2 }
+  - { type: bush, at: [50, 14], variant: 1 }
+  - { type: bush, at: [54, 20], variant: 2 }
+  # Forest edge (west): dense pines under firs, thinning out towards the clearing.
+  - { type: fir, area: [1, 2, 11, 34], density: 50, seed: 2 }
+  - { type: pine, area: [1, 2, 11, 34], density: 85, seed: 1 }
+  - { type: pine, area: [12, 6, 13, 28], density: 22, seed: 3 }
+  - { type: bush, area: [12, 6, 13, 28], density: 20, seed: 13 }
+  # Mixed groves (north).
+  - { type: oak, area: [16, 2, 26, 8], density: 60, seed: 4 }
+  - { type: birch, area: [16, 2, 26, 8], density: 45, seed: 5 }
+  - { type: poplar, area: [28, 2, 40, 9], density: 55, seed: 6 }
+  - { type: oak, area: [28, 2, 40, 9], density: 35, seed: 7 }
+  - { type: bush, area: [28, 2, 40, 9], density: 15, seed: 14 }
+  # Dead and burnt grove.
+  - { type: dead-tree, area: [28, 20, 44, 34], density: 16, seed: 8 }
+  - { type: burnt-stump, area: [28, 20, 44, 34], density: 20, seed: 9 }
+  # Palm beach strip.
+  - { type: palm, area: [49, 3, 57, 30], density: 28, seed: 10 }
+  - { type: bush, area: [49, 3, 57, 40], density: 8, seed: 11 }
+starts:
+  - { faction: ukraine, hq: [6, 36], dozerCenti: [1150, 4100] }
+  - { faction: russia, hq: [50, 36], dozerCenti: [5550, 4100] }

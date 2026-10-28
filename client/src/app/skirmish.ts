@@ -73,6 +73,11 @@ import {
   setGroundRelief,
 } from "../render/elevation";
 import { createEntityRenderer, type EntityRenderer } from "../render/entities";
+import {
+  createMapFeatures,
+  type FeatureMap,
+  type FeatureRules,
+} from "../render/features";
 import { createFogOverlay } from "../render/fog";
 import {
   type GeneratedTextures,
@@ -900,6 +905,16 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       elevation,
     );
     scene.add(terrain);
+    // Ground/water layers and placed features of the map (spec 26 Phase 1).
+    if (mapDefinition !== undefined) {
+      scene.add(
+        createMapFeatures(
+          ruleset as unknown as FeatureRules,
+          mapDefinition as FeatureMap,
+          elevation,
+        ),
+      );
+    }
     // Units, hulks and corpses stand on the visual surface, craters included
     // (spec 24 §3.6). The simulation keeps its flat 2D height.
     const relief = terrainDeformerOf(terrain);
@@ -1346,6 +1361,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         });
       }
       audioMixer.syncConstructionLoops(audioBatch.constructionLoops);
+      audioMixer.syncUnitLoops(audioBatch.unitLoops);
       const factionId = localFactionId();
       for (const evaId of audioBatch.evaEvents) {
         audioMixer.triggerEva(evaId, factionId);

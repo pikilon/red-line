@@ -1,0 +1,25 @@
+# Spec 26 section 17: river bridges (family bridge). Static and indestructible for now. A map places one with
+# `{ type, from: [x, y], to: [x, y] }`; `lanes` is the deck width in cells; `render.deckHeight` is the deck
+# height above the ground in tiles (units on the deck stand there). The deck cells are passable over deep water.
+types:
+  - id: road-bridge
+    family: bridge
+    footprint: [1, 1]
+    blocks: none
+    lanes: 2
+    variants: 2
+    render: { kind: road-bridge, deckHeight: 0.34 }
+  - id: wooden-bridge
+    family: bridge
+    footprint: [1, 1]
+    blocks: none
+    lanes: 2
+    variants: 2
+    render: { kind: wooden-bridge, deckHeight: 0.22 }
+  - id: stone-arch
+    family: bridge
+    footprint: [1, 1]
+    blocks: none
+    lanes: 2
+    variants: 2
+    render: { kind: stone-arch, deckHeight: 0.8 }

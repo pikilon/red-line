@@ -138,20 +138,34 @@ test.describe("touch device", () => {
         .locator("#touch-joystick-knob")
         .evaluate((element) => element.classList.contains("pressed"));
 
-    // Tiles per second the camera moves over 400 ms, timed inside the page.
+    // Tiles per second the camera moves over at least 400 ms. Both samples are
+    // taken inside animation frames and timed with the frame timestamp, so the
+    // result does not depend on how slow the runner renders: the game's own
+    // frame callback (registered earlier) has already advanced the camera to
+    // that same timestamp.
     const speed = (): Promise<{ rate: number; dx: number; dy: number }> =>
-      page.evaluate(async () => {
-        const api = (window as WorldWindow).__redline;
-        if (api === undefined) throw new Error("no debug api");
-        const from = api.cameraTarget();
-        const t0 = performance.now();
-        await new Promise((resolve) => setTimeout(resolve, 400));
-        const to = api.cameraTarget();
-        const seconds = (performance.now() - t0) / 1000;
-        const dx = to.x - from.x;
-        const dy = to.y - from.y;
-        return { rate: Math.hypot(dx, dy) / seconds, dx, dy };
-      });
+      page.evaluate(
+        () =>
+          new Promise<{ rate: number; dx: number; dy: number }>((resolve) => {
+            const api = (window as WorldWindow).__redline;
+            if (api === undefined) throw new Error("no debug api");
+            let start: { t: number; x: number; y: number } | null = null;
+            const sample = (now: number): void => {
+              const at = api.cameraTarget();
+              if (start === null) {
+                start = { t: now, x: at.x, y: at.y };
+              } else if (now - start.t >= 400) {
+                const seconds = (now - start.t) / 1000;
+                const dx = at.x - start.x;
+                const dy = at.y - start.y;
+                resolve({ rate: Math.hypot(dx, dy) / seconds, dx, dy });
+                return;
+              }
+              requestAnimationFrame(sample);
+            };
+            requestAnimationFrame(sample);
+          }),
+      );
 
     await touch("touchStart", 0);
     await touch("touchMove", -radius / 2);

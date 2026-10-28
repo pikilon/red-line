@@ -23,9 +23,16 @@ import type {
   AudioPlayRequest,
   ConstructionLoopState,
   PlayerRelation,
+  UnitLoopState,
 } from "./types";
 
 const DAMAGE_TYPES: readonly string[] = ruleset.damageTypes;
+/** Turret slew per snapshot (65536 units per turn) that counts as moving: ~0.8°. */
+const TURRET_SLEW_MIN = 150;
+
+function wrapAngle(delta: number): number {
+  return ((((delta + 32768) % 65536) + 65536) % 65536) - 32768;
+}
 
 export interface ScreenProjector {
   /** Projects world tile `(x, y)` to normalized screen X in `[-1, 1]` and `onScreen` flag. */
@@ -42,6 +49,7 @@ export interface DerivedAudioBatch {
   evaEvents: string[];
   /** Buildings that need an `UnderConstructionLoop` this snapshot. */
   constructionLoops: ConstructionLoopState[];
+  unitLoops: UnitLoopState[];
   combatActive: boolean;
 }
 
@@ -109,6 +117,7 @@ export function deriveSnapshotAudio(
     [];
   const evaEvents: string[] = [];
   const constructionLoops: ConstructionLoopState[] = [];
+  const unitLoops: UnitLoopState[] = [];
   let combatActive = false;
 
   const isFirstSnapshot = prev === null || prev.tick === 0;
@@ -385,6 +394,40 @@ export function deriveSnapshotAudio(
       });
     }
 
+    // Our loops after Zero Hour's `GenericTankMoveLoop` / `TurretMoveLoop`:
+    // tracks or wheels while a vehicle drives, servos while its turret or
+    // launcher slews relative to the hull (owner, 2026-10-27).
+    const loco = locomotorKindOf(entity.kind);
+    if (def.category === "unit" && (loco === "tracks" || loco === "wheels")) {
+      const base = {
+        entityId: entity.id,
+        tileX: entity.x,
+        tileY: entity.y,
+        screenX,
+        onScreen,
+        tileVisible,
+        relation: rel,
+      };
+      if (hasFlag(entity, ENTITY_FLAGS.moving)) {
+        unitLoops.push({
+          ...base,
+          eventId: loco === "tracks" ? "move.loop.tracks" : "move.loop.wheels",
+        });
+      }
+      if (
+        prevEntity &&
+        Math.abs(
+          wrapAngle(
+            entity.turretAngle -
+              entity.heading -
+              (prevEntity.turretAngle - prevEntity.heading),
+          ),
+        ) > TURRET_SLEW_MIN
+      ) {
+        unitLoops.push({ ...base, eventId: "move.turret" });
+      }
+    }
+
     if (!isFirstSnapshot && !prevEntity) {
       // Newly spawned/placed entity
       if (rel === "self") {
@@ -476,6 +519,31 @@ export function deriveSnapshotAudio(
           },
         });
       }
+
+      // Engine shut-down when a vehicle stops (owner, 2026-10-27; Zero Hour has
+      // no stop event, this is our own content).
+      const stopLoco = locomotorKindOf(entity.kind);
+      if (
+        def.category === "unit" &&
+        (stopLoco === "tracks" || stopLoco === "wheels") &&
+        hasFlag(prevEntity, ENTITY_FLAGS.moving) &&
+        !hasFlag(entity, ENTITY_FLAGS.moving)
+      ) {
+        requests.push({
+          request: {
+            eventId:
+              stopLoco === "tracks" ? "move.stop.tracks" : "move.stop.wheels",
+            entityId: entity.id,
+            ownerPlayer: entity.owner,
+            relation: rel,
+            tileX: entity.x,
+            tileY: entity.y,
+            screenX,
+            onScreen,
+            tileVisible,
+          },
+        });
+      }
     }
   }
 
@@ -495,7 +563,7 @@ export function deriveSnapshotAudio(
     }
   }
 
-  return { requests, evaEvents, constructionLoops, combatActive };
+  return { requests, evaEvents, constructionLoops, unitLoops, combatActive };
 }
 
 /**

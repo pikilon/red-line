@@ -20,6 +20,17 @@ def loop_chain(src, x):
 
 
 TRIM = "silenceremove=start_periods=1:start_threshold=-50dB,areverse,silenceremove=start_periods=1:start_threshold=-50dB,areverse,"
+# Longest one-shot per event family (seconds). Zero Hour's samples are short; long
+# generated tails overlap in a fight and read as a noise bed.
+CAPS = [("weapon.", 1.4), ("impact.", 0.9), ("explosion.small", 1.8), ("explosion.medium", 2.6),
+        ("explosion.large", 3.5), ("explosion.", 2.5), ("move.", 4.0), ("vehicle.", 1.8),
+        ("building.", 3.0), ("ui.", 0.5)]
+
+
+def cap(ev, secs):
+    return min(secs, next((c for prefix, c in CAPS if ev.startswith(prefix)), 3.0))
+
+
 RADIO = "highpass=f=300,lowpass=f=3400,acompressor=threshold=-18dB:ratio=4:makeup=4,asoftclip=type=tanh,"
 done = []
 for ev, e in inventory().items():
@@ -38,12 +49,15 @@ for ev, e in inventory().items():
             chain, br, ch = TRIM + "highpass=f=180,lowpass=f=6000,acompressor=threshold=-18dB:ratio=3,loudnorm=I=-20:TP=-2,", "32k", 1
         elif k == "music":
             chain, br, ch = (loop_chain(src, 4) if e.get("loop") else "") + "loudnorm=I=-16:TP=-1.5,", "96k", 2
+        elif k == "sfx" and e.get("loop"):  # positional loops: seamless, never capped
+            chain, br, ch = "afftdn=nf=-35," + loop_chain(src, 2) + "loudnorm=I=-20:TP=-3,", "64k", 1
         elif k == "ambient":
             chain, br, ch = loop_chain(src, 2) + "loudnorm=I=-24:TP=-3,", "96k", 2
         else:
-            secs = e.get("seconds") or 2
-            chain, br, ch = (TRIM + f"atrim=0:{min(secs + 0.3, 30)},loudnorm=I=-16:TP=-3,"
-                             f"afade=t=out:st={max(0.05, min(secs + 0.3, dur(src)) - 0.08)}:d=0.08,"), "64k", 1
+            secs = min(cap(ev, e.get("seconds") or 2), dur(src))
+            fade = max(0.05, secs * 0.35)
+            chain, br, ch = ("afftdn=nf=-35," + TRIM + f"atrim=0:{secs},loudnorm=I=-18:TP=-3,"
+                             f"afade=t=out:st={secs - fade:.3f}:d={fade:.3f},"), "64k", 1
         out.parent.mkdir(parents=True, exist_ok=True)
         flt = chain.rstrip(",")
         args = ["ffmpeg", "-v", "error", "-y", "-i", str(src)]

@@ -144,6 +144,11 @@ export interface AudioCatalog {
 export type PlayerRelation = "self" | "ally" | "enemy" | "neutral";
 
 /** One under-construction building the mixer should keep a site loop for. */
+/** A positional sample loop on a unit (tracks, wheels, turret servos). */
+export interface UnitLoopState extends ConstructionLoopState {
+  eventId: "move.loop.tracks" | "move.loop.wheels" | "move.turret";
+}
+
 export interface ConstructionLoopState {
   entityId: number;
   tileX: number;

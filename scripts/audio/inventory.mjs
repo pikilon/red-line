@@ -86,10 +86,19 @@ for (const entry of buildEntries(pack)) {
   if (old.prompt) record.prompt = old.prompt;
   if (old.tags?.length) record.tags = old.tags;
   if (old.notes) record.notes = old.notes;
-  entries[entry.id] = record;
+  // `original: true` marks our own content where Zero Hour is silent (e.g.
+  // infantry footsteps, owner 2026-10-27): keep its hand-written target.
+  entries[entry.id] = old.original ? old : record;
+}
+
+for (const [id, old] of Object.entries(previousEntries)) {
+  if (old.original && !entries[id]) entries[id] = old;
 }
 
 const header = `# Audio inventory (spec 25 §5.1, phase 2).
+#
+# \`original: true\` entries are our own additions where Zero Hour has no sound;
+# the rebuild keeps them as written.
 #
 # One entry per game sound event. \`target\` is the WebM file we will ship,
 # with \`<n>\` replaced by the variant number (1..variants). No entry points at a

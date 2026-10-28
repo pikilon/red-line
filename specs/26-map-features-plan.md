@@ -436,3 +436,265 @@ layer machinery; 5 needs the commands UI; 6 is independent and can swap with 5;
 * AC-26-01: the owner picks an order and answers the open questions; each
   accepted phase gets its own spec (garrison, bridges, roads) before code.
 * AC-26-02: this document ships alone: no data, schema or code changes.
+
+## 11. Phase 1 contract (as built)
+
+The shared base the vegetation, ground and road, water and port, and civilian
+building tasks build on. Pattern of spec 30: map YAML, compiled by
+`scripts/build-data.mjs` (layer code in `scripts/map-layers.mjs`) into
+`data/generated/ruleset.json`, read by `crates/sim` and `client/src/render`.
+
+**Map keys (all optional, `data/schema/map.schema.json`).** Rects are inclusive
+cells `[x0,y0,x1,y1]`; a path is `[[x,y],...]` with an integer `width` in cells
+(a cell is covered when its centre is within `width / 2` of the polyline; exact
+integer maths).
+
+```yaml
+terrain:
+  ground: { default: grass, patches: [ {material, rect} | {material, path, width} ] }
+  roads:  [ {type: asphalt|dirt, path, width} ]
+  water:  [ {kind: river|lake|sea, depth: deep|shallow, rect} | {kind, depth, path, width, fords: [[x,y,radius]]} ]
+features:
+  - { type, at: [x,y], rot: 0..3, variant: n, state: intact|damaged|wrecked|abandoned }
+  - { type, area: [x0,y0,x1,y1], density: 0..100, seed: n }
+```
+
+Ground materials (byte = index): grass, dirt, sand, rock, mud, gravel, asphalt,
+concrete, snow-field. Later entries paint over earlier ones; a ford turns the
+cells of its own water entry within `radius` shallow.
+
+**Feature types** (`data/features/<id>.yaml`, listed under `features:` in
+`globals.yaml`, schema `features.schema.json`): `types: [ {id, family, footprint:
+[w,h], blocks: all|vehicles|none, variants, render: {}} ]`; family is
+vegetation, building, prop, port or wall. `render` is free-form for the client.
+Compiled into `featureTypes`.
+
+**Compiled map** (only maps that use the keys carry them): `ground`, `roads`,
+`water` (hex, one byte per cell, row-major) and `features` (`{type, x, y, rot,
+variant, state}`, `type` = index in `featureTypes`, sorted by row, column).
+Water byte = `depth | kind << 2` (depth 0 dry, 1 shallow, 2 deep; kind 1 river,
+2 lake, 3 sea). `layerNames` lists the names of every index. Area entries are
+expanded at compile time by an integer hash of `(seed, x, y)`: density picks the
+cell, the same hash picks variant and rotation (rot only for non-square
+footprints); cells where the footprint does not fit are skipped. Explicit `at`
+entries are placed first and a clash with a blocked cell, deep water, a depot,
+an HQ or another footprint is a data error; roads on deep water and a dozer
+start on a solid cell are errors too.
+
+**Sim.** `MapGrid` keeps `ground_at`, `road_at`, `water_at`, `water_depth_at`
+per cell (empty layers read as 0). `map_terrain` blocks deep water and every
+footprint whose type is not `blocks: none` through the same `blocked` grid as the
+rock rectangles. Shallow water and roads change nothing yet. Layers and features
+are static map input: not in saves or the world hash, legacy maps compile and
+hash unchanged. Test: `crates/sim/tests/map_features.rs`.
+
+**Client** (`client/src/render/features/`). `createMapFeatures(rules, map,
+elevation)` is called by `app/skirmish.ts` and returns one group: ground layer
+object, water object, then one object per family. Extension points, all in
+`registry.ts` (import from `../registry` inside a renderer file):
+
+* `registerFeatureRenderer(family, (instances, ctx) => Object3D)`
+* `registerGroundLayerRenderer((layers, ctx) => Object3D | null)` (ground and roads)
+* `registerWaterRenderer((layers, ctx) => Object3D | null)`
+
+A follow-up adds one file `client/src/render/features/renderers/<name>.ts` that
+calls these at import; `index.ts` imports every file there (`import.meta.glob`),
+so parallel tasks never touch the same file. Defaults (`placeholder.ts`): one
+instanced box per family sized to the footprint on the lowest ground corner
+(`render.color`, `render.height` override), one merged translucent mesh for the
+water (lighter in the shallows), nothing for the ground. `ctx` has `elevation`,
+`layers` (decoded bytes and `names`) and the map size.
+
+**Assumptions.** `blocks: vehicles` is valid data but blocks like `all` until the
+nav grid has a second layer (crate-stack therefore says `all`). Layers stay out of
+the hash and saves because maps are static; runtime changes (destroyed bridge,
+felled tree) will be deltas added by the phase that needs them. `rot` turns the
+footprint in 90 degree steps; its visual direction is up to the family renderer.
+Demo: map and save `landscape-lab` (`/?load=landscape-lab`).
+
+## 12. Phase 2: civilian buildings and towns (as built)
+
+Visuals of sections 5.1-5.2 only: no garrison, hit points or destruction.
+Renderer file `client/src/render/features/renderers/civil.ts` registers the
+`building`, `prop` and `wall` families; the builders live in
+`client/src/render/features/civil/` (outside `renderers/`, whose files are all
+auto-imported). Each family is one merged flat-shaded mesh plus one unlit mesh
+(lit windows, lamps, signs), with vertex colours and a small canvas grain
+texture, so a town costs a few draw calls.
+
+**Types** (`data/features/buildings.yaml`, `render.model` = builder id; every
+type has `variants`, building footprints at rot 0, front = south at rot 0):
+`house-small` 2x2, `townhouse-row` 4x2, `apartment-block` 3x3, `shop` 2x2
+(awning, sign), `gas-station` 4x3, `office-tower` 3x3, `factory` 4x3 (sawtooth
+roof, chimney), `church` 3x4 (tower and spire; variant 1 is a white chapel),
+`warehouse-barn` 4x3 (variants 0 and 2 warehouses, 1 a red barn), `farmhouse`
+3x2 (shed, silo); walls `fence` and `stone-wall` 1x1 (long side along x at rot
+0); props `lamp-post`, `parked-car` (blocks all), `bus-stop` 2x1, `rubble-pile`.
+`crate-stack` (phase 1) is drawn by the same prop renderer.
+
+**State** (`state` of the placed instance): intact (random lit windows),
+damaged (darker, cracks, soot, broken windows, missing tiles), wrecked
+(charred, holes, roofs and upper corners missing, rubble), abandoned (faded,
+boarded windows and doors, creeping green, no lights, gaps in fences).
+
+**Assumptions.** Fences, walls, lamps, bus stops and rubble are `blocks: none`
+(decoration) until the prop mechanics of 6.6 exist. Facade textures are a
+generated canvas grain, not the spec 16 images (the feature layer has no access
+to the loaded textures). Smoke and snow tinting are not done. Roads are in the
+map data but drawn by the road renderer of the ground task. Demo: map and save
+`demo-town` (`/?load=demo-town`): main street, church square, gas station,
+factory district, south rows of the same apartment block, house, shop, church,
+office tower, factory and gas station in the four states, and an abandoned
+quarter.
+
+## 13. Phase 6 vegetation (as built)
+
+Renderer `client/src/render/features/renderers/vegetation.ts`, types in
+`data/features/vegetation.yaml`, demo `demo-forest` (`/?load=demo-forest`).
+
+* **Types** (`render.model` = type id): pine, fir, oak, birch, poplar, palm,
+  dead-tree (bare), burnt-stump, bush, hedge (footprint 2x1, `rot` turns it).
+  Trees, dead-tree and hedge `blocks: all`; burnt-stump and bush `blocks: none`
+  (decoration). Each has 3 variants; `render.height` is the height in tiles and
+  `render.color` the foliage colour.
+* **Look.** Flat-shaded low-poly pieces (cones, lumpy icospheres, cylinders) merged
+  into one geometry per type, one InstancedMesh per type (10 draw calls at most).
+  Variant 0/1/2 = normal / slim and tall, yellower / wide and short, bluer. Spin,
+  size, tint and a 0.15-tile offset come from an integer hash of the cell (no
+  floats in data, no hash-order), so a map always looks the same.
+* **Wind and snow.** Shared material: vertex-shader sway weighted by height and
+  per-type factor (stumps 0), and upward-facing faces whiten by a `uSnow` uniform.
+  `setVegetationSnow(0..1)` is exported; it is 0.8 when the page URL has a
+  `?weather=` climate, static (not yet tied to the progressive cover of spec 22).
+* **Forests.** One type per `area` entry; overlap areas with different seeds to
+  mix (earlier entries claim cells first, later ones fill the gaps). No `mix` key.
+* **Not done.** Billboard LOD and a draw budget (cost is fine at ~1000 instances),
+  crushing/burning transitions (burnt/dead exist only as types), `state` ignored.
+
+## 14. Phase 3 (as built): ground materials and roads
+
+Renderer: `client/src/render/features/renderers/groundAndRoads.ts`
+(`registerGroundLayerRenderer`), helpers in `features/ground/`. Two meshes laid
+over the terrain with one quad per cell on the terrain's own corner heights
+(`GROUND_LIFT` / `ROAD_LIFT` plus a polygon offset), so they follow hills; both
+are transparent, so the terrain's grass, dirt noise and cliff mix stay underneath.
+
+* **Ground.** Ground bytes are mapped to a 9-layer generated texture array by
+  name (`grass, dirt, sand, rock, mud, gravel, asphalt, concrete, snow-field`;
+  grass, dirt and rock reuse the terrain's pixels). A CPU-baked weight map (8 px
+  per cell: noise-bent bilinear blend of the four nearest cells, two RGBA8
+  textures) is sampled in the fragment shader (`onBeforeCompile` on a Lambert
+  material); alpha is `1 - weight(grass)` so grass cells show the terrain itself,
+  and the colour alpha fades out on cliff slopes so rock faces still show. Only
+  cells within one cell of a non-grass cell get geometry.
+* **Roads.** The compiled layer holds cells, not paths, so `roadBake.ts` paints
+  one RGBA image of the whole map (up to 2048 px, 16 px per cell): rounded,
+  slightly ragged shape from a noise-bent bilinear coverage; lane centres from a
+  distance transform; dashes only where the distance matches a common road half
+  width (so crossings stay clear); asphalt gets worn shoulders, cracks, patches;
+  dirt gets feathered edges, two tyre ruts and grass tufts. No speed bonus yet.
+* **Assumptions.** Craters and track presses deform the terrain mesh only, so on
+  a non-grass material the overlay hides them (decals still show). Snow is not
+  hooked in: `snow-field` is its own material. Bake cost grows with map area
+  (about a second on 256 x 256). Roads on `rot`/diagonal paths read as a stair of
+  cells softened by the blur.
+* Demo: map and save `demo-ground` (`/?load=demo-ground`): every material in its
+  own patch, a concrete plaza next to an asphalt apron, a muddy field running into
+  sand, a rocky area with gravel, an asphalt crossroads, two dirt tracks.
+
+## 15. Phase 4: water, sea and ports (as built)
+
+Files: `client/src/render/features/renderers/water.ts` (water renderer),
+`renderers/port.ts` (family `port`), `data/features/port.yaml`, demo map and save
+`demo-coast` (`/?load=demo-coast`). No bridges, no naval units.
+
+* **Water.** One mesh, one draw call, one `ShaderMaterial`. The water layer is turned
+  into a blurred coverage field (4 texels per cell; R coverage, G depth, B kind), so shores
+  are smooth curves. The shader draws the shallow-to-deep ramp, sand-tinted shallows and
+  fords (shallow cells are visibly lighter), two scrolling generated normal layers (sea
+  swells stronger than lake, rivers drift toward +z), whitecaps on the sea, animated foam
+  where water meets land and a dark wet bank on the land side so banks read clearly. Frozen
+  edges (ice from the shore inwards) switch on when the `?weather=` climate of spec 22 is
+  active. Time runs from `onBeforeRender`; nothing in the sim changes.
+* **Assumption: no terrain lowering.** The terrain mesh is not touched; the wet bank and
+  foam give the bank its edge instead of a real depression. A depressed river bed needs a
+  terrain hook (a per-corner height offset in `groundGeometry`) and is left for later.
+* **Ports.** Types `pier`, `quay`, `dock-crane`, `warehouse`, `container-stack`,
+  `fishing-boat`, `cargo-ship`, `buoy`, `lighthouse` (all family `port`; `render.kind` picks the
+  model). Procedural boxes, cylinders and extruded hulls merged into two meshes per map (one
+  lit with vertex colours, one unlit for lamps and the lantern). Models are built for the
+  rot 0 footprint and turned about its centre by `rot`; piers, boats and buoys sit on the
+  water surface, the rest on the lowest ground corner.
+* **Docks on water need no new flag.** Features with `blocks: none` are not checked
+  against solid cells, and deep water is already blocked by the sim, so pier, quay, boats and
+  buoys use `blocks: none`; crane, warehouse, containers and lighthouse are `blocks: all` on land.
+  Boats in shallow water stay walkable (decoration): keep them on deep water.
+* Snow whitening of port props is not done (cheap hook not available yet).
+
+## 16. Pending: interaction with the environment (owner note 2026-10-28)
+
+The landscape is visual only today. Noted for later, design to be decided
+with the owner (follow the Zero Hour precedent in 2.3 and 6.6):
+
+* Roads give no speed bonus yet (6.1; proposal +30 % vehicles, +15 %
+  infantry on asphalt, flow-field costs follow).
+* Shooting a tree does nothing: trees should take damage, catch fire and
+  burn to a black trunk (Zero Hour `FlammableUpdate`, `FireSpreadUpdate`,
+  `BURNED`).
+* Vehicles cannot crush bushes or topple trees (Zero Hour `CrushableLevel`
+  and `ToppleUpdate`, leaving a stump).
+* Shallow water and fords do not slow units; civilian buildings take no
+  damage and cannot be garrisoned; fences and walls cannot be crushed.
+
+
+## 17. Phase 5 first step: river bridges (as built)
+
+Owner request: "we need bridges on the rivers". Static, indestructible, map-placed
+bridges that ground units cross. Precedent: Zero Hour bridges, section 2.2 (a bridge
+is its own `PathfindLayer`; towers, damage states and repair are Zero Hour features
+we do not copy yet). Difference recorded: **bridges are not a separate nav layer
+yet** because there are no naval units (nothing moves on the water under a deck), so
+the deck simply opens its cells on the single nav grid.
+
+* **Map data.** A `features:` entry `{ type: <bridge type>, from: [x, y], to: [x, y], variant }`.
+  `from` and `to` are the first and last cell of the top or left lane; the deck then
+  extends `lanes` cells to the right or down. Straight only (horizontal or vertical;
+  diagonals are pending). Compile errors (`scripts/map-bridges.mjs`): not a bridge
+  type, not straight, shorter than 3 cells, out of the map, a cell beyond either end
+  (any lane) not free land (shallow water counts as land), a deck cell on a rock,
+  cliff or footprint (deep water is the only blocked cell a deck may cover), overlap
+  with another bridge. Deck cells that are not deep water become solid for later
+  footprints, so props and trees skip them. Bridges are expanded before other
+  features.
+* **Types** (`data/features/bridges.yaml`, family `bridge`, `blocks: none`, new
+  optional `lanes` 1..2 (a road two cells wide runs on a cell boundary, so a 1-lane deck made units hug its edge: decks match the road width, and a lane row is `from.y .. from.y + lanes - 1`, the same rows a width-2 road covers), `render.deckHeight` in tiles): `road-bridge` (2 lanes, 0.34;
+  concrete deck, asphalt wearing course with a dashed centre line, steel girders,
+  concrete pylons, barriers and a steel rail), `wooden-bridge` (2 lanes, 0.22; planks,
+  wooden piles, rope rails), `stone-arch` (2 lanes, 0.8; stone viaduct with arches,
+  voussoir rings, parapets). Two variants each.
+* **Compiled map.** `bridges` (hex, one byte per cell, 0 none, otherwise the index of
+  the bridge type plus one) next to `water`, and bridge instances in `features`
+  with an extra `to: [x, y]` (the last deck cell, lanes included). Not in saves or
+  the world hash (static map input).
+* **Sim.** `MapGrid::set_bridges` opens every deck cell that deep water blocks;
+  `bridge_at(cell)` reads the layer. Everything else in deep water stays blocked, so a
+  path across the river only exists over a deck. Tests in
+  `crates/sim/tests/map_features.rs` (decks open, rest of the river blocked, a unit
+  crosses `demo-bridges` and every deep-water cell it enters is a deck cell).
+* **Client.** `renderers/bridges.ts` (family `bridge`), models in `features/bridge/`:
+  all bridges of a map are one merged vertex-coloured mesh (one draw call, double
+  sided). The deck climbs over `ramp` tiles (1, or 2 for decks 0.45 or taller) at each
+  end. `features/bridge/deck.ts` gives the deck surface to `elevation.ts`
+  (`setDeckHeights`), and `groundY` returns at least that, so units and their tilt
+  follow the ramp and stand on the deck. Snow whitens upward faces at build time when
+  the page has a `?weather=` climate (same trigger as vegetation). Roads that meet a
+  bridge end on the bank cell beside the deck; the road bridge's asphalt matches the
+  road renderer.
+* **Demos.** `demo-bridges` (`/?load=demo-bridges`): a deep river across the map with
+  all three bridge types, asphalt and dirt roads leading to them, tanks and riflemen of
+  both sides at the approaches. `demo-coast` gets a road bridge and a wooden bridge and
+  `landscape-lab` a road bridge.
+* **Pending.** Destruction states, towers, repair by engineers, building bridges,
+  units (boats) under the bridge, AI use, diagonal bridges, a pick ray that hits the
+  deck (clicks aim at the ground below it), roads that connect to a bridge
+  automatically.

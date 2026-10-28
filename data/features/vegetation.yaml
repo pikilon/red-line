@@ -1,0 +1,65 @@
+# Spec 26 Phase 1 + Phase 6 (vegetation): vegetation feature types. One file per family; listed in globals.yaml `features`.
+# `render.model` selects the procedural builder in client/src/render/features/renderers/vegetation.ts;
+# `render.height` is the tree height in tiles (variants stretch or widen it). Trees block everyone; bushes
+# and stumps are decoration (`blocks: none`) so units walk through them.
+types:
+  - id: pine
+    family: vegetation
+    footprint: [1, 1]
+    blocks: all
+    variants: 3
+    render: { model: pine, color: "#2f5d34", height: 2.4 }
+  - id: fir
+    family: vegetation
+    footprint: [1, 1]
+    blocks: all
+    variants: 3
+    render: { model: fir, color: "#24523f", height: 2.9 }
+  - id: oak
+    family: vegetation
+    footprint: [1, 1]
+    blocks: all
+    variants: 3
+    render: { model: oak, color: "#5b8b35", height: 2.1 }
+  - id: birch
+    family: vegetation
+    footprint: [1, 1]
+    blocks: all
+    variants: 3
+    render: { model: birch, color: "#8fb54a", height: 2.4 }
+  - id: poplar
+    family: vegetation
+    footprint: [1, 1]
+    blocks: all
+    variants: 3
+    render: { model: poplar, color: "#7da63a", height: 3.1 }
+  - id: palm
+    family: vegetation
+    footprint: [1, 1]
+    blocks: all
+    variants: 3
+    render: { model: palm, color: "#3f8f3a", height: 2.5 }
+  - id: dead-tree
+    family: vegetation
+    footprint: [1, 1]
+    blocks: all
+    variants: 3
+    render: { model: dead-tree, color: "#6b6056", height: 2.0 }
+  - id: burnt-stump
+    family: vegetation
+    footprint: [1, 1]
+    blocks: none
+    variants: 3
+    render: { model: burnt-stump, color: "#2b2622", height: 0.55 }
+  - id: bush
+    family: vegetation
+    footprint: [1, 1]
+    blocks: none
+    variants: 3
+    render: { model: bush, color: "#4f8a3a", height: 0.65 }
+  - id: hedge
+    family: vegetation
+    footprint: [2, 1]
+    blocks: all
+    variants: 3
+    render: { model: hedge, color: "#3d7a35", height: 0.85 }

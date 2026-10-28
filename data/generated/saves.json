@@ -168,6 +168,42 @@
       "map": "showcase",
       "form": "setup",
       "entities": 26
+    },
+    {
+      "id": "landscape-lab",
+      "map": "landscape-lab",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "demo-town",
+      "map": "demo-town",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "demo-forest",
+      "map": "demo-forest",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "demo-ground",
+      "map": "demo-ground",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "demo-coast",
+      "map": "demo-coast",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "demo-bridges",
+      "map": "demo-bridges",
+      "form": "setup",
+      "entities": 12
     }
   ]
 }

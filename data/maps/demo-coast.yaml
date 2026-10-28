@@ -1,0 +1,60 @@
+id: demo-coast                       # required, equals the file name
+width: 64                            # required, 16..256
+height: 64                           # required, 16..256
+blocked: []                          # open ground; the water and the features below block cells
+depots:                              # required; origin = top-left cell
+  - { origin: [8, 44], amount: 10000 }
+  - { origin: [54, 44], amount: 10000 }
+# Spec 26 phase 4 demo: a coast with a harbour (every port prop), a river with a ford reaching the sea, and a lake.
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: sand, rect: [0, 13, 63, 14] }
+      - { material: concrete, rect: [8, 13, 38, 22] }
+  water:
+    - { kind: sea, depth: deep, rect: [0, 0, 63, 11] }
+    - { kind: sea, depth: shallow, rect: [0, 12, 63, 12] }
+    - { kind: river, depth: deep, path: [[44, 12], [44, 24], [46, 36], [45, 50], [47, 63]], width: 3, fords: [[46, 36, 2]] }
+    - { kind: lake, depth: shallow, rect: [26, 34, 38, 46] }
+    - { kind: lake, depth: deep, rect: [28, 36, 36, 44] }
+features:
+  # Bridges over the river (spec 26 section 17).
+  - { type: road-bridge, from: [40, 20], to: [47, 20], variant: 0 }
+  - { type: wooden-bridge, from: [41, 50], to: [48, 50], variant: 1 }
+  # Quay along the shore, with a pier running out into the sea between the boats.
+  - { type: quay, at: [8, 13], rot: 2, variant: 0 }
+  - { type: quay, at: [12, 13], rot: 2, variant: 1 }
+  - { type: quay, at: [16, 13], rot: 2, variant: 0 }
+  - { type: quay, at: [20, 13], rot: 2, variant: 1 }
+  - { type: pier, at: [24, 7], rot: 0, variant: 1 }
+  - { type: pier, at: [32, 7], rot: 0, variant: 0 }
+  - { type: quay, at: [23, 13], rot: 2, variant: 0 }
+  - { type: quay, at: [31, 13], rot: 2, variant: 0 }
+  # Moored boats.
+  - { type: fishing-boat, at: [21, 7], rot: 0, variant: 0 }
+  - { type: fishing-boat, at: [27, 8], rot: 0, variant: 1 }
+  - { type: fishing-boat, at: [29, 5], rot: 0, variant: 0 }
+  - { type: cargo-ship, at: [35, 3], rot: 1, variant: 0 }
+  - { type: cargo-ship, at: [4, 5], rot: 1, variant: 1 }
+  # Buoys and the lighthouse.
+  - { type: buoy, at: [14, 4], variant: 0 }
+  - { type: buoy, at: [17, 8], variant: 1 }
+  - { type: buoy, at: [46, 5], variant: 0 }
+  - { type: buoy, at: [50, 9], variant: 1 }
+  - { type: lighthouse, at: [3, 15], variant: 0 }
+  - { type: lighthouse, at: [58, 15], variant: 1 }
+  # Back yard: crane at the water, warehouses, containers.
+  - { type: dock-crane, at: [10, 15], rot: 2, variant: 0 }
+  - { type: dock-crane, at: [28, 15], rot: 2, variant: 1 }
+  - { type: warehouse, at: [10, 19], rot: 0, variant: 0 }
+  - { type: warehouse, at: [15, 19], rot: 0, variant: 1 }
+  - { type: warehouse, at: [20, 19], rot: 0, variant: 2 }
+  - { type: container-stack, at: [14, 15], rot: 0, variant: 0 }
+  - { type: container-stack, at: [18, 15], rot: 0, variant: 1 }
+  - { type: container-stack, at: [24, 16], rot: 0, variant: 2 }
+  - { type: container-stack, at: [32, 16], rot: 1, variant: 1 }
+  - { type: container-stack, at: [32, 19], rot: 0, variant: 0 }
+starts:                              # required, exactly 2 entries; start i is player i
+  - { faction: ukraine, hq: [8, 28], dozerCenti: [1350, 3300] }
+  - { faction: russia, hq: [52, 28], dozerCenti: [5100, 3300] }

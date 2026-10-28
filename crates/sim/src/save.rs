@@ -364,7 +364,7 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
         .cloned()
         .ok_or_else(|| format!("unknown map: {}", state.map_id))?;
     let seed = parse_u64("seed", &state.seed)?;
-    let terrain = map_terrain(&map);
+    let terrain = map_terrain(&rules, &map);
     let cells = usize::from(map.width) * usize::from(map.height);
 
     let players = state

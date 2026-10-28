@@ -1,0 +1,15 @@
+# Spec 26 phase 2: the demo-town map (civilian buildings in every variant and state) with both bases and two tanks for scale.
+id: demo-town
+map: demo-town
+victory: false
+debug: true
+starts: true                  # the HQ and dozer of each start
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 22, y: 36, zoom: 1 }
+entities:
+  - { player: 0, type: ua-leopard-2a4, atCenti: [1500, 2850] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [1900, 2850] }
+  - { player: 1, type: ru-t-72b3, atCenti: [3900, 2750] }
+  - { player: 1, type: ru-t-72b3, atCenti: [4300, 2750] }

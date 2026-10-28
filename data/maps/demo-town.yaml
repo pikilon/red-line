@@ -1,0 +1,179 @@
+id: demo-town                        # required, equals the file name
+width: 64
+height: 56
+blocked: []
+depots:
+  - { origin: [2, 2], amount: 10000 }
+  - { origin: [58, 2], amount: 10000 }
+# Spec 26 phase 2 demo: a small town. Main street of shops, houses, apartment blocks, a church square,
+# a gas station, a factory district, the same buildings in all four states (south rows) and an abandoned quarter.
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: concrete, rect: [34, 25, 43, 26] }
+      - { material: gravel, rect: [34, 30, 62, 34] }
+      - { material: dirt, rect: [44, 36, 63, 54] }
+  roads:
+    - { type: asphalt, path: [[0, 28], [63, 28]], width: 3 }
+    - { type: asphalt, path: [[32, 8], [32, 35]], width: 3 }
+    - { type: asphalt, path: [[0, 35], [63, 35]], width: 2 }
+features:
+  # Main street, north side (fronts face south)
+  - { type: shop, at: [4, 24], rot: 0, variant: 0 }
+  - { type: shop, at: [6, 24], rot: 0, variant: 1 }
+  - { type: shop, at: [8, 24], rot: 0, variant: 2 }
+  - { type: townhouse-row, at: [10, 24], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [15, 23], rot: 0, variant: 0 }
+  - { type: house-small, at: [19, 24], rot: 0, variant: 0 }
+  - { type: house-small, at: [21, 24], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [26, 23], rot: 0, variant: 1 }
+  - { type: church, at: [36, 21], rot: 0, variant: 0 }
+  - { type: office-tower, at: [44, 23], rot: 0, variant: 0 }
+  - { type: office-tower, at: [48, 23], rot: 0, variant: 1 }
+  - { type: office-tower, at: [52, 23], rot: 0, variant: 2 }
+  - { type: farmhouse, at: [57, 24], rot: 0, variant: 0 }
+  # Main street, south side (fronts face north)
+  - { type: shop, at: [4, 31], rot: 2, variant: 1 }
+  - { type: shop, at: [6, 31], rot: 2, variant: 2 }
+  - { type: shop, at: [8, 31], rot: 2, variant: 0 }
+  - { type: gas-station, at: [11, 31], rot: 2, variant: 0 }
+  - { type: house-small, at: [16, 31], rot: 2, variant: 2 }
+  - { type: house-small, at: [18, 31], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [21, 31], rot: 2, variant: 2 }
+  - { type: factory, at: [36, 31], rot: 2, variant: 0 }
+  - { type: factory, at: [41, 31], rot: 2, variant: 1 }
+  - { type: warehouse-barn, at: [46, 31], rot: 2, variant: 0 }
+  - { type: warehouse-barn, at: [51, 31], rot: 2, variant: 2 }
+  - { type: warehouse-barn, at: [56, 31], rot: 2, variant: 1 }
+  # Props along the street
+  - { type: lamp-post, at: [3, 26], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [12, 26], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [18, 26], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [30, 26], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [34, 26], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [40, 26], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [46, 26], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [54, 26], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [60, 26], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [6, 30], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [14, 30], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [24, 30], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [35, 30], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [47, 30], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [58, 30], rot: 0, variant: 1 }
+  - { type: bus-stop, at: [23, 26], rot: 0, variant: 0 }
+  - { type: parked-car, at: [5, 26], rot: 0, variant: 0 }
+  - { type: parked-car, at: [11, 26], rot: 0, variant: 1 }
+  - { type: parked-car, at: [20, 26], rot: 0, variant: 3 }
+  - { type: parked-car, at: [29, 26], rot: 0, variant: 2 }
+  - { type: parked-car, at: [42, 26], rot: 0, variant: 4 }
+  - { type: parked-car, at: [9, 30], rot: 0, variant: 2 }
+  - { type: parked-car, at: [27, 30], rot: 0, variant: 0 }
+  - { type: parked-car, at: [44, 30], rot: 0, variant: 1 }
+  # Church square: stone wall around the back
+  - { type: stone-wall, at: [34, 19], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [35, 19], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [36, 19], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [37, 19], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [38, 19], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [39, 19], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [40, 19], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [41, 19], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [33, 20], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [33, 21], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [33, 22], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [33, 23], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [33, 24], rot: 1, variant: 0 }
+  # Yard fences behind the houses
+  - { type: fence, at: [19, 22], rot: 0, variant: 0 }
+  - { type: fence, at: [20, 22], rot: 0, variant: 0 }
+  - { type: fence, at: [21, 22], rot: 0, variant: 0 }
+  - { type: fence, at: [22, 22], rot: 0, variant: 0 }
+  - { type: fence, at: [16, 34], rot: 0, variant: 1 }
+  - { type: fence, at: [17, 34], rot: 0, variant: 1 }
+  - { type: fence, at: [18, 34], rot: 0, variant: 1 }
+  - { type: fence, at: [19, 34], rot: 0, variant: 1 }
+  # Northern farmland
+  - { type: farmhouse, at: [6, 8], rot: 0, variant: 0 }
+  - { type: warehouse-barn, at: [12, 8], rot: 0, variant: 1 }
+  - { type: farmhouse, at: [50, 8], rot: 0, variant: 2 }
+  - { type: fence, at: [4, 12], rot: 0, variant: 2 }
+  - { type: fence, at: [5, 12], rot: 0, variant: 2 }
+  - { type: fence, at: [6, 12], rot: 0, variant: 2 }
+  - { type: fence, at: [7, 12], rot: 0, variant: 2 }
+  - { type: fence, at: [8, 12], rot: 0, variant: 2 }
+  - { type: fence, at: [9, 12], rot: 0, variant: 2 }
+  # Four states side by side: apartment block, house, shop, church, office tower
+  - { type: apartment-block, at: [4, 37], rot: 2, variant: 1, state: intact }
+  - { type: apartment-block, at: [9, 37], rot: 2, variant: 1, state: damaged }
+  - { type: apartment-block, at: [14, 37], rot: 2, variant: 1, state: wrecked }
+  - { type: apartment-block, at: [19, 37], rot: 2, variant: 1, state: abandoned }
+  - { type: house-small, at: [4, 42], rot: 0, variant: 0, state: intact }
+  - { type: house-small, at: [8, 42], rot: 0, variant: 0, state: damaged }
+  - { type: house-small, at: [12, 42], rot: 0, variant: 0, state: wrecked }
+  - { type: house-small, at: [16, 42], rot: 0, variant: 0, state: abandoned }
+  - { type: shop, at: [4, 46], rot: 0, variant: 1, state: intact }
+  - { type: shop, at: [8, 46], rot: 0, variant: 1, state: damaged }
+  - { type: shop, at: [12, 46], rot: 0, variant: 1, state: wrecked }
+  - { type: shop, at: [16, 46], rot: 0, variant: 1, state: abandoned }
+  - { type: church, at: [4, 50], rot: 0, variant: 0, state: intact }
+  - { type: church, at: [9, 50], rot: 0, variant: 0, state: damaged }
+  - { type: church, at: [14, 50], rot: 0, variant: 0, state: wrecked }
+  - { type: church, at: [19, 50], rot: 0, variant: 0, state: abandoned }
+  - { type: office-tower, at: [26, 37], rot: 2, variant: 0, state: intact }
+  - { type: office-tower, at: [30, 37], rot: 2, variant: 0, state: damaged }
+  - { type: office-tower, at: [34, 37], rot: 2, variant: 0, state: wrecked }
+  - { type: office-tower, at: [38, 37], rot: 2, variant: 0, state: abandoned }
+  - { type: factory, at: [26, 42], rot: 0, variant: 0, state: intact }
+  - { type: factory, at: [31, 42], rot: 0, variant: 0, state: damaged }
+  - { type: factory, at: [36, 42], rot: 0, variant: 0, state: wrecked }
+  - { type: gas-station, at: [26, 47], rot: 0, variant: 0, state: intact }
+  - { type: gas-station, at: [31, 47], rot: 0, variant: 0, state: damaged }
+  - { type: gas-station, at: [36, 47], rot: 0, variant: 0, state: wrecked }
+  - { type: parked-car, at: [42, 38], rot: 0, variant: 0, state: intact }
+  - { type: parked-car, at: [42, 39], rot: 0, variant: 0, state: damaged }
+  - { type: parked-car, at: [42, 40], rot: 0, variant: 0, state: wrecked }
+  - { type: parked-car, at: [42, 41], rot: 0, variant: 0, state: abandoned }
+  # Abandoned quarter
+  - { type: house-small, at: [46, 38], rot: 0, variant: 0, state: abandoned }
+  - { type: house-small, at: [49, 38], rot: 1, variant: 1, state: abandoned }
+  - { type: house-small, at: [52, 38], rot: 2, variant: 2, state: abandoned }
+  - { type: house-small, at: [55, 38], rot: 3, variant: 0, state: abandoned }
+  - { type: apartment-block, at: [59, 37], rot: 2, variant: 1, state: abandoned }
+  - { type: shop, at: [46, 43], rot: 0, variant: 0, state: abandoned }
+  - { type: shop, at: [48, 43], rot: 0, variant: 1, state: abandoned }
+  - { type: shop, at: [50, 43], rot: 0, variant: 2, state: abandoned }
+  - { type: townhouse-row, at: [53, 43], rot: 0, variant: 1, state: abandoned }
+  - { type: farmhouse, at: [58, 43], rot: 0, variant: 1, state: abandoned }
+  - { type: warehouse-barn, at: [46, 48], rot: 0, variant: 1, state: abandoned }
+  - { type: factory, at: [51, 48], rot: 0, variant: 1, state: abandoned }
+  - { type: gas-station, at: [56, 48], rot: 0, variant: 2, state: abandoned }
+  - { type: fence, at: [46, 41], rot: 0, variant: 1, state: abandoned }
+  - { type: fence, at: [47, 41], rot: 0, variant: 2, state: wrecked }
+  - { type: fence, at: [48, 41], rot: 0, variant: 0, state: abandoned }
+  - { type: fence, at: [49, 41], rot: 0, variant: 1, state: wrecked }
+  - { type: fence, at: [50, 41], rot: 0, variant: 2, state: abandoned }
+  - { type: fence, at: [51, 41], rot: 0, variant: 0, state: wrecked }
+  - { type: fence, at: [52, 41], rot: 0, variant: 1, state: abandoned }
+  - { type: fence, at: [53, 41], rot: 0, variant: 2, state: wrecked }
+  - { type: fence, at: [54, 41], rot: 0, variant: 0, state: abandoned }
+  - { type: fence, at: [55, 41], rot: 0, variant: 1, state: wrecked }
+  - { type: fence, at: [56, 41], rot: 0, variant: 2, state: abandoned }
+  - { type: fence, at: [57, 41], rot: 0, variant: 0, state: wrecked }
+  - { type: lamp-post, at: [47, 46], rot: 0, variant: 0, state: wrecked }
+  - { type: lamp-post, at: [52, 46], rot: 0, variant: 0, state: wrecked }
+  - { type: lamp-post, at: [57, 46], rot: 0, variant: 0, state: wrecked }
+  - { type: parked-car, at: [45, 46], rot: 0, variant: 2, state: abandoned }
+  - { type: parked-car, at: [54, 46], rot: 0, variant: 0, state: wrecked }
+  - { type: parked-car, at: [60, 41], rot: 0, variant: 3, state: abandoned }
+  - { type: rubble-pile, at: [45, 41], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [55, 46], rot: 0, variant: 1 }
+  - { type: rubble-pile, at: [61, 46], rot: 0, variant: 1 }
+  - { type: rubble-pile, at: [44, 52], rot: 0, variant: 2 }
+  - { type: rubble-pile, at: [60, 52], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [61, 50], rot: 0, variant: 0, state: damaged }
+  - { type: stone-wall, at: [62, 50], rot: 0, variant: 0, state: wrecked }
+starts:
+  - { faction: ukraine, hq: [8, 3], dozerCenti: [1300, 700] }
+  - { faction: russia, hq: [50, 3], dozerCenti: [4900, 700] }

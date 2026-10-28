@@ -1,0 +1,15 @@
+# Spec 26 Phase 6 demo: all vegetation types, a forest edge, groves, palms, a dead grove and hedgerows; two tanks per side.
+id: demo-forest
+map: demo-forest
+victory: false
+debug: true
+starts: true
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 28, y: 18, zoom: 0.55 }
+entities:
+  - { player: 0, type: ua-leopard-2a4, atCenti: [1800, 2000] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [1800, 2300] }
+  - { player: 1, type: ru-t-72b3, atCenti: [2400, 2000] }
+  - { player: 1, type: ru-t-72b3, atCenti: [2400, 2300] }

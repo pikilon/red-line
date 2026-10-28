@@ -1,0 +1,23 @@
+# Spec 26 section 17: the demo-bridges map (a river with a road bridge, a wooden bridge and a stone arch) with tanks and infantry of both sides at the approaches.
+id: demo-bridges
+map: demo-bridges
+victory: false
+debug: true
+starts: true                  # the HQ and dozer of each start
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 32, y: 24, zoom: 0.7 }
+entities:
+  - { player: 0, type: ua-leopard-2a4, atCenti: [2300, 1000] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [2300, 2400] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [2300, 3800] }
+  - { player: 0, type: ua-rifleman, atCenti: [2100, 1100] }
+  - { player: 0, type: ua-rifleman, atCenti: [2100, 2500] }
+  - { player: 0, type: ua-rifleman, atCenti: [2100, 3900] }
+  - { player: 1, type: ru-t-72b3, atCenti: [4100, 1000] }
+  - { player: 1, type: ru-t-72b3, atCenti: [4100, 2400] }
+  - { player: 1, type: ru-t-72b3, atCenti: [4100, 3800] }
+  - { player: 1, type: ru-rifleman, atCenti: [4300, 1100] }
+  - { player: 1, type: ru-rifleman, atCenti: [4300, 2500] }
+  - { player: 1, type: ru-rifleman, atCenti: [4300, 3900] }
