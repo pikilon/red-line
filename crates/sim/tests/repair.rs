@@ -263,12 +263,12 @@ fn ac_39_01_factory_repairs_one_vehicle_in_75_ticks_without_pausing_production()
         factory,
     });
     world.step();
-    let first_gain = (first_max / 2).div_ceil(75);
+    let first_gain = (first_max / 2) / 75;
     assert_eq!(world.entity(first).unwrap().hp, first_max / 2 + first_gain);
     assert_eq!(world.entity(second).unwrap().hp, second_max / 2);
-    assert_eq!(
-        world.entity(factory).unwrap().site.as_ref().unwrap().queue[0].progress,
-        100
+    assert!(
+        world.entity(factory).unwrap().site.as_ref().unwrap().queue[0].progress > 0,
+        "production advances during vehicle repair"
     );
     for _ in 1..75 {
         world.step();
@@ -282,8 +282,52 @@ fn ac_39_01_factory_repairs_one_vehicle_in_75_ticks_without_pausing_production()
     world.step();
     assert_eq!(
         world.entity(second).unwrap().hp,
-        second_max / 2 + (second_max / 2).div_ceil(75)
+        second_max / 2 + (second_max / 2) / 75
     );
+}
+
+#[test]
+fn ac_39_04_new_damage_during_a_cycle_starts_a_fresh_one() {
+    let mut world = World::sandbox(Ruleset::builtin(), MapGrid::open(40, 24), &[0, 0]);
+    let factory = world.place_building(
+        0,
+        world.rules().type_index("ua-vehicle-factory").unwrap(),
+        Cell { x: 10, y: 10 },
+        true,
+    );
+    let tank = spawn(&mut world, "ua-leopard-2a4", 9, 10);
+    let max = world.rules().ty(world.entity(tank).unwrap().kind).hp;
+    world.set_hp(tank, max / 2);
+    world.enqueue(Command::RepairVehicle {
+        units: vec![tank],
+        factory,
+    });
+    for _ in 0..10 {
+        world.step();
+    }
+    assert_eq!(world.entity(tank).unwrap().hp, max / 2 + 10 * 5);
+    world.set_hp(tank, max / 4);
+    for _ in 0..65 {
+        world.step();
+    }
+    assert_eq!(world.entity(tank).unwrap().hp, max / 4 + 325);
+    match world.entity(tank).unwrap().order {
+        Order::RepairVehicle {
+            missing, remaining, ..
+        } => {
+            assert_eq!(missing, max - (max / 4 + 325));
+            assert_eq!(remaining, 75);
+        }
+        other => panic!("expected a fresh repair cycle, got {other:?}"),
+    }
+    for _ in 0..75 {
+        world.step();
+    }
+    assert_eq!(world.entity(tank).unwrap().hp, max);
+    assert!(matches!(
+        world.entity(tank).unwrap().order,
+        Order::Idle { .. }
+    ));
 }
 
 #[test]

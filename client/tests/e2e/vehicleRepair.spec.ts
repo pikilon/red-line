@@ -69,26 +69,22 @@ test("AC-39-05: a damaged vehicle repairs at its factory through right click", a
         .find((entity) => entity.owner === 0 && entity.kind === factoryKind),
     };
   });
-  if (actors.tank === undefined || actors.factory === undefined) {
+  const { tank, factory } = actors;
+  if (tank === undefined || factory === undefined) {
     throw new Error("missing vehicle or factory");
   }
-  await clickTiles(page, actors.tank.x, actors.tank.y);
+  await clickTiles(page, tank.x, tank.y);
   await expect
     .poll(() => call(page, (api) => api.selectedIds()))
-    .toEqual([actors.tank.id]);
-  await clickTiles(page, actors.factory.x, actors.factory.y, "right");
+    .toEqual([tank.id]);
+  await clickTiles(page, factory.x, factory.y, "right");
   await expect
     .poll(
-      () =>
-        call(
-          page,
-          (api, id: number) => api.entity(id)?.hp ?? 0,
-          actors.tank.id,
-        ),
+      () => call(page, (api, id: number) => api.entity(id)?.hp ?? 0, tank.id),
       {
         timeout: ms(15_000),
       },
     )
-    .toBeGreaterThan(actors.tank.hp);
+    .toBeGreaterThan(tank.hp);
   expect(errors).toEqual([]);
 });

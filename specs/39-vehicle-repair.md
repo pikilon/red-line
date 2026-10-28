@@ -33,10 +33,12 @@ Source: `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`; Zero Hour 1.04 INI.
 * Vehicles approach the outside footprint and wait within the existing dock
   range. The lowest-id docked vehicle repairs; all others wait with their own
   countdown untouched. Losing the factory or becoming ineligible returns to idle.
-* `environment.repair.vehicleRepairTicks = 75` (five seconds at 15 Hz). Each
-  active tick restores `ceil(initialMissing / remaining)`, clamped to current
-  missing HP, so the initial deficit is exactly repaired in 75 ticks. New damage
-  after a completed cycle starts a fresh deficit cycle. Repair costs no credits.
+* `environment.repair.vehicleRepairTicks = 75` (five seconds at 15 Hz). The
+  rate is fixed when the cycle starts from the initial missing HP: each active
+  tick restores the share of that deficit that is due by then, so the deficit is
+  repaired in exactly 75 ticks. Damage taken during the cycle is not healed by
+  it; when the countdown ends below full, a fresh cycle starts for the remaining
+  deficit. Repair costs no credits.
 * The vehicle remains outside and targetable. Production, rally and construction
   state are untouched; completion returns the vehicle to idle.
 * No explicit five-position queue geometry is added: waiting vehicles use normal
@@ -65,5 +67,5 @@ Source: `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`; Zero Hour 1.04 INI.
 
 AC-39-01..05: one vehicle finishes in exactly 75 ticks while production advances
 and the second waits; full/foot/wrong-pad cases are rejected; save/load preserves
-an active countdown; client filtering and worker dispatch are covered; real mouse
-input repairs a vehicle in the example.
+an active countdown; damage taken mid-cycle starts a fresh cycle; client filtering
+and worker dispatch are covered; real mouse input repairs a vehicle in the example.

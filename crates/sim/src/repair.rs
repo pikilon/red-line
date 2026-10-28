@@ -473,10 +473,15 @@ impl World {
                 continue;
             };
             let max = self.rules.ty(self.entities[index].kind).hp;
+            let ticks = repair.vehicle_repair_ticks.max(1);
             let remaining = remaining.max(1);
-            let gain =
-                ((u64::from(missing) + u64::from(remaining) - 1) / u64::from(remaining)) as u32;
-            self.repair_entity(id, gain.max(1));
+            // The rate is fixed when the cycle starts: the share of the initial
+            // deficit that is due by this tick, so the whole deficit is repaired
+            // in exactly `ticks` active ticks no matter how `remaining` shrinks.
+            let done = u64::from(ticks.saturating_sub(remaining));
+            let before = u64::from(missing) * done / u64::from(ticks);
+            let after = u64::from(missing) * (done + 1) / u64::from(ticks);
+            self.repair_entity(id, (after - before) as u32);
             let hp = self.entities[index].hp;
             self.entities[index].order = if hp == max {
                 Order::Idle {
