@@ -304,6 +304,11 @@ pub enum CommandState {
         units: Vec<u32>,
         feature: u32,
     },
+    Dig {
+        units: Vec<u32>,
+        origin: [i32; 2],
+        rot: u8,
+    },
     Construct {
         dozer: u32,
         kind: String,
@@ -452,7 +457,8 @@ fn load_features(
     if saved.is_empty() {
         return Ok(features::from_map(rules, map));
     }
-    if saved.len() != map.features.len() {
+    // Spec 35: rows past the map's were dug during the match.
+    if saved.len() < map.features.len() {
         return Err(format!(
             "{} feature rows for {} map features",
             saved.len(),
@@ -461,8 +467,9 @@ fn load_features(
     }
     saved
         .iter()
-        .zip(&map.features)
-        .map(|(row, placed)| {
+        .enumerate()
+        .map(|(index, row)| {
+            let to = map.features.get(index).and_then(|placed| placed.to);
             let kind = rules
                 .feature_types
                 .iter()
@@ -477,7 +484,7 @@ fn load_features(
                 state: row.state,
                 hp: row.hp,
                 alive: row.alive,
-                to: placed.to,
+                to,
                 burn: row.burn,
                 collapse: row.collapse,
             })
@@ -1036,6 +1043,11 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
             units: units.clone(),
             feature: *feature,
         },
+        Command::Dig { units, origin, rot } => CommandState::Dig {
+            units: units.clone(),
+            origin: cell(*origin),
+            rot: *rot,
+        },
         Command::DebugSpawn { kind, pos } => CommandState::DebugSpawn {
             kind: type_id(rules, *kind),
             pos: vec2(*pos),
@@ -1105,6 +1117,11 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
         CommandState::Repair { units, feature } => Command::Repair {
             units: units.clone(),
             feature: *feature,
+        },
+        CommandState::Dig { units, origin, rot } => Command::Dig {
+            units: units.clone(),
+            origin: to_cell(*origin),
+            rot: *rot,
         },
         CommandState::DebugSpawn { kind, pos } => Command::DebugSpawn {
             kind: type_index(rules, kind)?,
@@ -1198,6 +1215,8 @@ pub enum SetupOrder {
     Board(String),
     /// Spec 35: a cell on the deck of the bridge to repair.
     Repair([i32; 2]),
+    /// Spec 35: top-left cell of a trench to dig (turned 0).
+    Dig([i32; 2]),
 }
 
 /// World, seed and AIs of a setup (spec 19 §3.5). Errors are the `SimError`
@@ -1367,6 +1386,11 @@ impl World {
                 SetupOrder::AttackGroundCenti([x, y]) => Command::AttackGround {
                     units,
                     target: FxVec2::new(signed_centi(*x), signed_centi(*y)),
+                },
+                SetupOrder::Dig(cell) => Command::Dig {
+                    units,
+                    origin: to_cell(*cell),
+                    rot: 0,
                 },
                 SetupOrder::Repair(cell) => Command::Repair {
                     units,

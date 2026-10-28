@@ -521,7 +521,7 @@ impl World {
         if damage == 0 {
             return;
         }
-        let cover = self.cover_pct(self.entity(shooter).map(|e| e.pos), target.pos);
+        let cover = self.unit_cover_pct(self.entity(shooter).map(|e| e.pos), target_index);
         let damage = reduce_damage(damage, cover);
         self.entities[target_index].hp = self.entities[target_index].hp.saturating_sub(damage);
         self.entities[target_index].last_hit = Some((shooter, weapon_id));
@@ -614,7 +614,7 @@ impl World {
                 continue;
             }
             // The blast comes from the impact: a wall between them shields.
-            let cover = self.cover_pct(Some(impact), entity.pos);
+            let cover = self.unit_cover_pct(Some(impact), index);
             let damage = reduce_damage(damage, cover);
             self.entities[index].hp = self.entities[index].hp.saturating_sub(damage);
             self.entities[index].last_hit = Some((shooter, weapon_id));

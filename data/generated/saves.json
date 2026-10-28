@@ -234,6 +234,18 @@
       "map": "demo-bridges",
       "form": "setup",
       "entities": 8
+    },
+    {
+      "id": "trench-digging",
+      "map": "demo-ground",
+      "form": "setup",
+      "entities": 11
+    },
+    {
+      "id": "port-supply",
+      "map": "demo-coast",
+      "form": "setup",
+      "entities": 4
     }
   ]
 }

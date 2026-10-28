@@ -17,7 +17,8 @@
         "required": ["origin", "amount"],
         "properties": {
           "origin": { "$ref": "#/$defs/pair" },
-          "amount": { "type": "integer", "minimum": 1 }
+          "amount": { "type": "integer", "minimum": 1 },
+          "type": { "description": "Spec 36: depot type id (e.g. port-depot); absent is supply-depot.", "$ref": "faction.schema.json#/$defs/id" }
         }
       }
     },

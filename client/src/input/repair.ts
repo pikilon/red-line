@@ -95,3 +95,45 @@ export function resolveRepairClick(args: {
   if (units.length === 0) return [];
   return [{ kind: "repair", player, units, feature: job.index }];
 }
+
+/** Spec 35: the trench dig a click at `(x, y)` orders for the selected
+ *  workers: the 2x1 trench centred on the click, turned when `turned`. */
+export function resolveDigClick(args: {
+  player: number;
+  selected: readonly number[];
+  entities: readonly EntityState[];
+  x: number;
+  y: number;
+  turned: boolean;
+}): SimCommand[] {
+  const { player, selected, entities, x, y, turned } = args;
+  const wanted = new Set(selected);
+  const units = entities
+    .filter(
+      (entity) =>
+        wanted.has(entity.id) && entity.owner === player && isWorker(entity),
+    )
+    .map((entity) => entity.id);
+  if (units.length === 0) return [];
+  const origin = turned
+    ? { x: Math.floor(x), y: Math.floor(y - 0.5) }
+    : { x: Math.floor(x - 0.5), y: Math.floor(y) };
+  return [
+    {
+      kind: "dig",
+      player,
+      units,
+      x: origin.x,
+      y: origin.y,
+      rot: turned ? 1 : 0,
+    },
+  ];
+}
+
+/** True when the selection holds a worker of `player`: the Dig button shows. */
+export function canDig(
+  player: number,
+  selected: readonly EntityState[],
+): boolean {
+  return selected.some((entity) => entity.owner === player && isWorker(entity));
+}

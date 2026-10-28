@@ -87,7 +87,8 @@
               "attackGroundCenti": { "$ref": "#/$defs/pair" },
               "garrison": { "$ref": "#/$defs/pair" },
               "board": { "$ref": "#/$defs/id" },
-              "repair": { "$ref": "#/$defs/pair" }
+              "repair": { "$ref": "#/$defs/pair" },
+              "dig": { "$ref": "#/$defs/pair" }
             }
           }
         }

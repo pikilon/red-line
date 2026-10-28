@@ -120,6 +120,7 @@
         "requiresPower": { "type": "boolean" },
         "dropOff": { "type": "boolean" },
         "freeUnit": { "$ref": "#/$defs/id" },
+        "infinite": { "description": "Spec 36: a depot that never runs out (a port).", "type": "boolean" },
         "transport": {
           "description": "Spec 34: infantry can ride this vehicle (Zero Hour TransportContain).",
           "type": "object",
@@ -175,7 +176,7 @@
             "properties": {
               "hp": false, "sightCenti": false, "speedCenti": false, "cost": false, "buildTicks": false,
               "weapon": false, "requires": false, "builds": false, "produces": false, "capacity": false,
-              "loadTicks": false, "unloadTicks": false, "power": false, "requiresPower": false,
+              "unloadTicks": false, "power": false, "requiresPower": false,
               "dropOff": false, "freeUnit": false,
               "render": { "required": ["height"], "properties": { "size": false } }
             }

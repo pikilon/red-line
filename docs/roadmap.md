@@ -79,7 +79,7 @@ Owner order: build 1-3, then 4-7; keep drones in the pool for later.
 2. **Engineering works.** Infantry dig trenches and repair destroyed bridges;
    dozers help; more workers finish faster (spec 35).
 3. **Ports and amphibious vehicles.** Ports pay supply trucks; some vehicles
-   cross water (spec 34).
+   cross water (spec 36).
 
 4. **Sell buildings.** The owner sells a building for part of its cost.
 5. **Repair buildings.** Dozers repair damaged buildings.
