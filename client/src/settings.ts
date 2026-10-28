@@ -8,7 +8,9 @@ export const DEFAULT_AUDIO_MASTER = 100;
 export const DEFAULT_AUDIO_SFX = 80;
 export const DEFAULT_AUDIO_AMBIENT = 50;
 export const DEFAULT_AUDIO_VOICE = 70;
-export const DEFAULT_AUDIO_MUSIC = 55;
+/** Music starts off: the game's music made the first minutes of play hard to
+ *  follow, so the player turns it up in the menu if they want it (owner request). */
+export const DEFAULT_AUDIO_MUSIC = 0;
 
 export interface Settings {
   gore: boolean;
@@ -24,7 +26,7 @@ export interface Settings {
   audioAmbient?: number;
   /** Voices/EVA volume 0..100 (default 70, spec 25 §10). */
   audioVoice?: number;
-  /** Music volume 0..100 (default 55, spec 25 §10). */
+  /** Music volume 0..100 (default 0, off, spec 25 §10). */
   audioMusic?: number;
   /** Absent means true: strong language enabled by default (spec 25 §5.3). */
   strongLanguage?: boolean;
