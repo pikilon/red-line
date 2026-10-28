@@ -256,10 +256,13 @@ allowEnemies? }` on the feature type; the AI reads `garrisonRadiusCenti` from
   destroyed building, not a full one and not one another player holds. The
   holder is public, as in Zero Hour, where a garrisoned building shows its
   team colour.
-* **A12 — attacking a garrison.** Occupants cannot be targeted. Enemies clear
-  a building by damaging it (force fire or splash, block 1): at the wrecked
-  state the occupants are thrown out. Units do not pick a held building as an
-  automatic target yet (Zero Hour does); see open question 3.
+* **A12 — attacking a garrison (owner answer, open question 3).** As in Zero
+  Hour (`PartitionFilterRejectBuildings`, `PartitionManager.cpp:4922`), a
+  building garrisoned by another player is an enemy: a unit with no unit to
+  shoot fires on its own at the nearest one it sees and reaches, aiming at the
+  footprint cell nearest to it. An empty building is never a target. The shot
+  damages the building only (`GarrisonContain::onDamage` is empty); at the
+  wrecked state the occupants are thrown out and become targets.
 
 ### Block 3 — Cover and position
 
@@ -351,8 +354,8 @@ Blocks 2 and 3 depend on PR 1 only (and on block 1's snapshot and tick step). Bl
    missing text if it had more requirements.
 2. Should a shot that crosses a wall stop the shot (Difference 2 `blocksShots`)
    or only reduce the damage? This spec assumes "reduce".
-3. Should units attack an enemy-held building on their own, as in Zero Hour
-   (A12)? Today the player has to force fire on it.
+3. Answered 2026-10-28: yes, units attack an enemy-held building on their
+   own, as in Zero Hour (A12).
 
 ## 10. Acceptance criteria
 

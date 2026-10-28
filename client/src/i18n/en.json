@@ -152,7 +152,7 @@
   "saves.environment-cover.name": "Environment cover",
   "saves.environment-cover.description": "Riflemen on a plateau shoot at enemies below, farther than flat ground allows: behind a stone wall, beside a pine stand and in the open. Cover cuts the damage they take.",
   "saves.environment-garrison.name": "Environment garrison",
-  "saves.environment-garrison.description": "Riflemen garrison an apartment block and fire from its windows with more range and damage; another squad can garrison a house, and the enemy holds the east block.",
+  "saves.environment-garrison.description": "Riflemen garrison an apartment block and fire from its windows with more range and damage; another squad can garrison a house, and a tank shells the east block the enemy holds.",
   "saves.landscape-lab.name": "Landscape lab",
   "saves.landscape-lab.description": "A map with ground patches, a road, a river with a ford, a lake, a sea strip, pines and houses; two tanks per side.",
   "saves.demo-town.name": "Demo town",

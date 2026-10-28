@@ -234,6 +234,68 @@ impl World {
         }
     }
 
+    /// Buildings held by a player, `(feature, holder)` in ascending feature
+    /// order: the holder is the first occupant's owner, as `feature_owner`.
+    pub(crate) fn held_buildings(&self) -> Vec<(u32, PlayerId)> {
+        let mut held: Vec<(u32, PlayerId)> = Vec::new();
+        for entity in &self.entities {
+            if let Some(feature) = entity.inside
+                && !held.iter().any(|&(f, _)| f == feature)
+            {
+                held.push((feature, entity.owner));
+            }
+        }
+        held.sort_unstable_by_key(|&(feature, _)| feature);
+        held
+    }
+
+    /// Zero Hour `PartitionFilterRejectBuildings`: a building garrisoned by
+    /// another player is an enemy the shooter at `index` picks on its own;
+    /// an empty one never is. Returns the point to fire at (the footprint cell
+    /// nearest the shooter) of the nearest such building it sees and reaches
+    /// with `weapon`. The shot damages the building, not the occupants
+    /// (`GarrisonContain::onDamage` is empty).
+    pub(crate) fn held_building_target(
+        &self,
+        index: usize,
+        weapon: &WeaponDef,
+        held: &[(u32, PlayerId)],
+    ) -> Option<FxVec2> {
+        let attacker = &self.entities[index];
+        if attacker.owner == NEUTRAL || weapon.damage == 0 {
+            return None;
+        }
+        let here = cell_of(attacker.pos);
+        let mut best: Option<(Fx, FxVec2)> = None;
+        for &(feature, holder) in held {
+            if holder == attacker.owner || Some(feature) == attacker.inside {
+                continue;
+            }
+            let row = &self.features[feature as usize];
+            if !row.alive || row.collapse > 0 {
+                continue;
+            }
+            let (w, h) = footprint(&self.rules.feature_types[row.kind as usize], row.rot);
+            let cell = Cell {
+                x: here.x.clamp(row.x, row.x + w - 1),
+                y: here.y.clamp(row.y, row.y + h - 1),
+            };
+            if self.fog(attacker.owner, cell) != 2 {
+                continue;
+            }
+            let point = cell_center(cell);
+            let distance = (point - attacker.pos).length();
+            let range = self.effective_range(fx_centi(weapon.range_centi), attacker.pos, point);
+            if distance < fx_centi(weapon.min_range_centi) || distance > range {
+                continue;
+            }
+            if best.is_none_or(|(nearest, _)| distance < nearest) {
+                best = Some((distance, point));
+            }
+        }
+        best.map(|(_, point)| point)
+    }
+
     /// Centre of feature `index`'s footprint.
     pub fn feature_center(&self, index: u32) -> Option<FxVec2> {
         let row = self.features.get(index as usize)?;
@@ -573,6 +635,46 @@ mod tests {
         assert_eq!((table[base + 5], table[base + 6]), (1, 1));
         let empty = 1 + (feature as usize + 1) * crate::snapshot::FEATURE_STRIDE;
         assert_eq!(table[empty + 5], i32::from(NEUTRAL));
+    }
+
+    #[test]
+    fn units_attack_an_enemy_held_building_on_their_own() {
+        let (mut world, feature) = town(false);
+        let foe = rifleman(&mut world, 1, 1650, 2650);
+        world.enqueue_as(
+            1,
+            Command::Garrison {
+                units: vec![foe],
+                feature,
+            },
+        );
+        run(&mut world, 120);
+        assert_eq!(world.feature_owner(feature), 1);
+        let foe_hp = world.entity(foe).unwrap().hp;
+        let hp = world.features[feature as usize].hp;
+        let empty = world.feature_at(Cell { x: 19, y: 24 }).expect("house");
+        let empty_hp = world.features[empty as usize].hp;
+        // A tank idle 4 tiles south of the block, out of the rifle's reach.
+        world.spawn(
+            0,
+            world.rules.type_index("ua-leopard-2a4").unwrap(),
+            at(1650, 3000),
+        );
+        world.refresh_visibility();
+        run(&mut world, 200);
+        assert!(
+            world.features[feature as usize].hp < hp,
+            "the held block is shelled"
+        );
+        assert_eq!(
+            world.features[empty as usize].hp, empty_hp,
+            "empty ones are not"
+        );
+        if let Some(rider) = world.entity(foe)
+            && rider.inside.is_some()
+        {
+            assert_eq!(rider.hp, foe_hp, "occupants take no damage while inside");
+        }
     }
 
     #[test]

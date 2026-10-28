@@ -15,7 +15,7 @@
 //! picks enemies.
 
 use crate::angle::{Angle, atan2};
-use crate::entity::{EntityId, GROUND_TARGET, NEUTRAL, Order, Projectile};
+use crate::entity::{EntityId, GROUND_TARGET, NEUTRAL, Order, PlayerId, Projectile};
 use crate::environment::reduce_damage;
 use crate::fixed::{Fx, FxVec2};
 use crate::rng::SplitMix64;
@@ -43,14 +43,17 @@ impl World {
         for entity in &mut self.entities {
             entity.last_target = None;
         }
+        let held = self.held_buildings();
         for index in 0..self.entities.len() {
-            self.fire(index);
+            self.fire(index, &held);
         }
         self.impact_projectiles();
     }
 
-    /// One entity's combat step: cooldown, target selection and fire.
-    fn fire(&mut self, index: usize) {
+    /// One entity's combat step: cooldown, target selection and fire. With no
+    /// unit to shoot, a building another player garrisons is the target
+    /// (spec 31 block 2, `held` from `held_buildings`).
+    fn fire(&mut self, index: usize, held: &[(u32, PlayerId)]) {
         let (kind, hp) = {
             let entity = &self.entities[index];
             (entity.kind, entity.hp)
@@ -72,12 +75,18 @@ impl World {
         } else {
             self.sticky_target(index, &weapon)
         };
+        let building = if legacy || target_index.is_some() || held.is_empty() {
+            None
+        } else {
+            self.held_building_target(index, &weapon, held)
+        };
         let aligned = if legacy {
             true
         } else {
             let entity = &self.entities[index];
             let stowed = self.rules.ty(kind).stationary_fire && entity.speed > Fx::ZERO;
-            self.aim_turret(index, &weapon, target_index.map(|i| self.entities[i].pos)) && !stowed
+            let aim = target_index.map(|i| self.entities[i].pos).or(building);
+            self.aim_turret(index, &weapon, aim) && !stowed
         };
         let cooldown = self.entities[index].cooldown;
         if cooldown > 0 {
@@ -92,6 +101,17 @@ impl World {
             target_index
         };
         let Some(target_index) = target_index else {
+            let building = if legacy && !held.is_empty() {
+                self.held_building_target(index, &weapon, held)
+            } else {
+                building
+            };
+            if let Some(point) = building
+                && aligned
+            {
+                let distance = (point - self.entities[index].pos).length();
+                self.shoot(index, weapon_id, &weapon, None, point, distance);
+            }
             return;
         };
         if !aligned {
