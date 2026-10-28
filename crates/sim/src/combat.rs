@@ -588,7 +588,6 @@ impl World {
         impact: FxVec2,
     ) {
         let radius = fx_centi(weapon.splash_centi);
-        let shooter_pos = self.entity(shooter).map(|e| e.pos);
         for index in 0..self.entities.len() {
             let entity = &self.entities[index];
             // Zero Hour's default splash mask skips the shooter (and its
@@ -609,7 +608,8 @@ impl World {
             if damage == 0 {
                 continue;
             }
-            let cover = self.cover_pct(shooter_pos, entity.pos);
+            // The blast comes from the impact: a wall between them shields.
+            let cover = self.cover_pct(Some(impact), entity.pos);
             let damage = reduce_damage(damage, cover);
             self.entities[index].hp = self.entities[index].hp.saturating_sub(damage);
             self.entities[index].last_hit = Some((shooter, weapon_id));

@@ -9,6 +9,7 @@
 use crate::features::{FeatureState, footprint};
 use crate::fixed::{Fx, FxVec2};
 use crate::map::{Cell, cell_of, line_all};
+use crate::rules::FeatureBlocks;
 use crate::world::World;
 
 impl World {
@@ -46,18 +47,22 @@ impl World {
         best.min(100)
     }
 
-    /// Whether `cell` or a neighbour holds a living vegetation feature. Trees
-    /// block movement, so a unit "in a forest" stands beside them.
+    /// Whether `cell` or a neighbour holds a living tree or hedge (vegetation
+    /// that blocks movement). Trees block movement, so a unit "in a forest"
+    /// stands beside them; stumps and bushes give no cover.
     fn in_forest(&self, cell: Cell) -> bool {
         self.features.iter().any(|row| {
+            let def = &self.rules.feature_types[row.kind as usize];
             row.alive
-                && self.rules.feature_types[row.kind as usize].family == "vegetation"
+                && def.family == "vegetation"
+                && def.blocks != FeatureBlocks::None
                 && self.row_covers(row, cell, 1)
         })
     }
 
     /// Whether the line of fire crosses the footprint of a living wall or
-    /// building feature, ignoring the shooter's and the target's own cells.
+    /// building feature, ignoring the shooter's and the target's own cells and
+    /// any footprint they stand in (a garrison fires out of its own building).
     fn shot_crosses_wall(&self, from: FxVec2, to: FxVec2) -> bool {
         let walls: Vec<&FeatureState> = self
             .features
@@ -73,6 +78,10 @@ impl World {
             return false;
         }
         let (start, end) = (cell_of(from), cell_of(to));
+        let walls: Vec<&FeatureState> = walls
+            .into_iter()
+            .filter(|row| !self.row_covers(row, start, 0) && !self.row_covers(row, end, 0))
+            .collect();
         !line_all(from, to, |cell| {
             cell == start || cell == end || !walls.iter().any(|row| self.row_covers(row, cell, 0))
         })
@@ -142,6 +151,9 @@ mod tests {
             state: 0,
             hp: 0,
             alive: true,
+            to: None,
+            burn: 0,
+            collapse: 0,
         });
         world.refresh_feature_blocks();
     }
@@ -232,5 +244,18 @@ mod tests {
         assert_eq!(reduce_damage(10, 40), 6);
         assert_eq!(reduce_damage(1, 90), 1);
         assert_eq!(reduce_damage(10, 0), 10);
+    }
+
+    #[test]
+    fn stumps_and_own_buildings_give_no_cover() {
+        let mut stumps = world(MapGrid::open(40, 24));
+        add_feature(&mut stumps, "tree-stump", 14, 10);
+        assert_eq!(stumps.cover_pct(None, at(1350, 1050)), 0);
+        // A shooter inside a 2x2 house (a garrison) fires out without its own
+        // walls covering the target; a house between them still does.
+        let mut town = world(MapGrid::open(40, 24));
+        add_feature(&mut town, "house-small", 10, 10);
+        assert_eq!(town.cover_pct(Some(at(1100, 1100)), at(1500, 1100)), 0);
+        assert_eq!(town.cover_pct(Some(at(800, 1100)), at(1500, 1100)), 40);
     }
 }
