@@ -1,0 +1,101 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "amphibious-crossing",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "demo-bridges",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 1,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 32,
+      "y": 16,
+      "zoom": 0.8
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "demo-bridges",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          2200,
+          1500
+        ],
+        "order": {
+          "moveCenti": [
+            4300,
+            1500
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          2200,
+          1700
+        ],
+        "order": {
+          "moveCenti": [
+            4300,
+            1700
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-brdm-scout",
+        "atCenti": [
+          2200,
+          1900
+        ],
+        "order": {
+          "moveCenti": [
+            4300,
+            1900
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          2000,
+          1700
+        ],
+        "order": {
+          "moveCenti": [
+            4300,
+            1700
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          4500,
+          1300
+        ]
+      }
+    ]
+  }
+}

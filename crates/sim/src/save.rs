@@ -53,6 +53,10 @@ pub struct SimState {
     /// index; absent while no rubble splits the layers.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub foot_flow_goals: Vec<[i32; 2]>,
+    /// Spec 36: goal cells of the cached amphibious-layer fields; absent
+    /// without amphibious movers on a map with deep water.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub water_flow_goals: Vec<[i32; 2]>,
     /// Ascending player.
     pub ais: Vec<AiState>,
     /// Spec 31: one row per map feature in map order. Missing in saves from
@@ -367,6 +371,8 @@ pub fn save_state(world: &World, seed: u64, ais: &[Ai]) -> Result<SimState, Stri
         nav: _,
         terrain_foot: _,
         nav_foot: _,
+        terrain_water: _,
+        nav_water: _,
         players,
         entities,
         next_entity_id,
@@ -422,6 +428,11 @@ pub fn save_state(world: &World, seed: u64, ais: &[Ai]) -> Result<SimState, Stri
         foot_flow_goals: fields
             .keys()
             .filter(|(layer, _)| *layer == Layer::Foot)
+            .map(|&(_, index)| cell(world.nav.cell(index)))
+            .collect(),
+        water_flow_goals: fields
+            .keys()
+            .filter(|(layer, _)| *layer == Layer::Water)
             .map(|&(_, index)| cell(world.nav.cell(index)))
             .collect(),
         ais: sorted_ais.iter().map(|ai| ai.save(rules)).collect(),
@@ -515,6 +526,7 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
     let features = load_features(&state.features, &rules, &map)?;
     let terrain = features::with_blocks(&base, &features, &rules);
     let terrain_foot = features::foot_blocks(&base, &features, &rules);
+    let terrain_water = features::water_blocks(&base, &features, &rules);
     let nav = terrain.clone();
 
     let players = state
@@ -550,6 +562,8 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
         nav,
         terrain_foot,
         nav_foot: None,
+        terrain_water,
+        nav_water: None,
         players,
         entities,
         next_entity_id: state.next_entity_id,
@@ -573,6 +587,7 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
     let layers = [
         (Layer::Vehicle, &state.flow_goals),
         (Layer::Foot, &state.foot_flow_goals),
+        (Layer::Water, &state.water_flow_goals),
     ];
     for (layer, goals) in layers {
         for &goal in goals {

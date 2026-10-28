@@ -38,6 +38,8 @@ pub const DIRECT_HIT_CENTI: u32 = 45;
 pub(crate) enum Layer {
     Vehicle,
     Foot,
+    /// Spec 36: amphibious vehicles, over land and deep water.
+    Water,
 }
 
 /// Commands issued by a player, applied at the start of the next step (§5.8).
@@ -197,6 +199,10 @@ pub struct World {
     /// foot units then use `terrain` and `nav`, and the `Vehicle` fields.
     pub(crate) terrain_foot: Option<MapGrid>,
     pub(crate) nav_foot: Option<MapGrid>,
+    /// Spec 36: `terrain` with deep water open, for amphibious vehicles;
+    /// `None` without deep water.
+    pub(crate) terrain_water: Option<MapGrid>,
+    pub(crate) nav_water: Option<MapGrid>,
     pub(crate) players: Vec<Player>,
     /// Ascending id; removed entities leave gaps.
     pub(crate) entities: Vec<Entity>,
@@ -257,6 +263,8 @@ impl World {
             nav: map,
             terrain_foot: None,
             nav_foot: None,
+            terrain_water: None,
+            nav_water: None,
             players: vec![Player::new(0, 0, 0, cells)],
             entities: Vec::new(),
             next_entity_id: 0,
@@ -318,6 +326,7 @@ impl World {
         let factions: Vec<FactionId> = map.starts.iter().map(|start| start.faction).collect();
         let mut world = World::sandbox(rules, terrain, &factions);
         world.terrain_foot = features::foot_blocks(&base, &features, &world.rules);
+        world.terrain_water = features::water_blocks(&base, &features, &world.rules);
         world.terrain_base = base;
         world.features = features;
         world.rebuild_nav();
@@ -590,6 +599,10 @@ impl World {
     pub(crate) fn rebuild_nav(&mut self) {
         self.nav = self.with_sites(&self.terrain);
         self.nav_foot = self.terrain_foot.as_ref().map(|foot| self.with_sites(foot));
+        self.nav_water = self
+            .terrain_water
+            .as_ref()
+            .map(|water| self.with_sites(water));
         self.fields.clear();
         for index in 0..self.entities.len() {
             let Order::Move { order_id, goal, .. } = self.entities[index].order else {
@@ -629,9 +642,12 @@ impl World {
     /// Layer unit `index` moves on: `Foot` for a foot locomotor while rubble
     /// splits the layers, otherwise `Vehicle` (one shared grid and fields).
     pub(crate) fn layer_of(&self, index: usize) -> Layer {
-        let foot = self.rules.ty(self.entities[index].kind).motion.kind == LocoKind::Foot;
+        let ty = self.rules.ty(self.entities[index].kind);
+        let foot = ty.motion.kind == LocoKind::Foot;
         if foot && self.nav_foot.is_some() {
             Layer::Foot
+        } else if ty.amphibious && self.nav_water.is_some() {
+            Layer::Water
         } else {
             Layer::Vehicle
         }
@@ -641,6 +657,7 @@ impl World {
     pub(crate) fn grid(&self, layer: Layer) -> &MapGrid {
         match layer {
             Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
+            Layer::Water => self.nav_water.as_ref().unwrap_or(&self.nav),
             Layer::Vehicle => &self.nav,
         }
     }
@@ -654,6 +671,7 @@ impl World {
     pub(crate) fn field(&mut self, layer: Layer, goal: Cell) -> &FlowField {
         let map = match layer {
             Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
+            Layer::Water => self.nav_water.as_ref().unwrap_or(&self.nav),
             Layer::Vehicle => &self.nav,
         };
         self.fields
@@ -1078,6 +1096,7 @@ impl World {
                 let motion = self.rules.ty(unit.kind).motion;
                 let nav = match self.layer_of(index) {
                     Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
+                    Layer::Water => self.nav_water.as_ref().unwrap_or(&self.nav),
                     Layer::Vehicle => &self.nav,
                 };
                 locomotor::coast(&mut self.entities[index], &motion, nav);
@@ -1188,6 +1207,7 @@ impl World {
         };
         let nav = match layer {
             Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
+            Layer::Water => self.nav_water.as_ref().unwrap_or(&self.nav),
             Layer::Vehicle => &self.nav,
         };
         let arrived = locomotor::drive(
@@ -1252,6 +1272,7 @@ impl World {
         self.field(layer, goal);
         let map = match layer {
             Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
+            Layer::Water => self.nav_water.as_ref().unwrap_or(&self.nav),
             Layer::Vehicle => &self.nav,
         };
         let field = &self.fields[&(layer, map.index(goal))];
