@@ -1,7 +1,6 @@
 # 36 — Ports and amphibious vehicles
 
-Status: port supply built (owner request 2026-10-28, backlog item 3 in
-`docs/roadmap.md`); amphibious vehicles are the next PR of this spec.
+Status: built (owner request 2026-10-28, backlog item 3 in `docs/roadmap.md`).
 Depends on `03-phase2-core-loop.md` (harvesting), `26-map-features-plan.md`
 (water, harbour props), `19-save-games.md`.
 Decisions: D-02 (fixed-point deterministic simulation), D-05 (data driven).
@@ -50,12 +49,30 @@ harbour yard.
 * Model `tools/models/port-depot.py` (containers, crates, a small crane).
 * Example save `?load=port-supply`.
 
+## 5b. Amphibious vehicles
+
+* `amphibious: true` on a unit type (Zero Hour `Surfaces = GROUND WATER`):
+  `ru-bmp-2` and `ru-brdm-scout` (the real vehicles swim). Same speed on land
+  and water, as Zero Hour.
+* `MapGrid::water_blocked` records the cells only deep water blocks;
+  `features::water_blocks` builds a third nav layer (`Layer::Water`,
+  `World::nav_water`) with them open, broken bridge decks included. Without
+  deep water the layer is absent and amphibious units use the vehicle grid.
+  Saves keep its flow goals (`waterFlowGoals`).
+* Client: no change; the water surface sits just above the ground, so a
+  swimming vehicle is drawn at the right height. Example save
+  `?load=amphibious-crossing`.
+
 ## 6. Assumptions
 
 * **A1** The port is neutral like every depot: any player's trucks use it.
 * **A2** Its stock bar shows the map's `amount` and never drops.
+* **A3** Ukraine has no amphibious vehicle yet (the Bradley does not swim);
+  balance to be decided by the owner.
 
 ## 7. Acceptance criteria
 
 AC-36-01..02 in `crates/sim/tests/port.rs`: a port pays and keeps its stock;
-a supply depot still empties.
+a supply depot still empties. AC-36-03..04 in `crates/sim/tests/amphibious.rs`:
+a BMP-2 swims across the river while a T-72 takes a bridge; a swimming
+vehicle survives a save.

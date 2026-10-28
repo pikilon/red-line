@@ -162,6 +162,8 @@
   "saves.trench-digging.description": "Riflemen and a dozer dig two trenches. Select infantry, press Dig trench and click the ground to dig one; a finished trench halves the damage its soldiers take.",
   "saves.port-supply.name": "Port supply",
   "saves.port-supply.description": "Supply trucks load at the harbour's cargo yard, which never runs out but loads slowly, and at an ordinary supply depot that empties.",
+  "saves.amphibious-crossing.name": "Amphibious crossing",
+  "saves.amphibious-crossing.description": "Russian BMP-2s and a BRDM-2 swim straight across the river while a T-72 drives round by a bridge. Right click the far bank to try it.",
   "saves.environment-garrison.name": "Environment garrison",
   "saves.environment-garrison.description": "Riflemen garrison an apartment block and fire from its windows with more range and damage; another squad can garrison a house, and the enemy holds the east block.",
   "saves.landscape-lab.name": "Landscape lab",

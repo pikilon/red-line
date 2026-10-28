@@ -246,6 +246,12 @@
       "map": "demo-coast",
       "form": "setup",
       "entities": 4
+    },
+    {
+      "id": "amphibious-crossing",
+      "map": "demo-bridges",
+      "form": "setup",
+      "entities": 5
     }
   ]
 }

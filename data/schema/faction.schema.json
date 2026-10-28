@@ -120,6 +120,7 @@
         "requiresPower": { "type": "boolean" },
         "dropOff": { "type": "boolean" },
         "freeUnit": { "$ref": "#/$defs/id" },
+        "amphibious": { "description": "Spec 36: the vehicle drives over deep water too (Zero Hour Surfaces = GROUND WATER).", "type": "boolean" },
         "infinite": { "description": "Spec 36: a depot that never runs out (a port).", "type": "boolean" },
         "transport": {
           "description": "Spec 34: infantry can ride this vehicle (Zero Hour TransportContain).",

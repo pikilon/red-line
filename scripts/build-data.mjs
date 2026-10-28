@@ -626,6 +626,8 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       ...(t.infinite === undefined ? {} : { infinite: t.infinite }),
       unloadTicks: t.unloadTicks ?? 0,
       freeUnit: t.freeUnit === undefined ? -1 : typeIndex.get(t.freeUnit),
+      // Spec 36: drives over deep water too.
+      ...(t.amphibious === undefined ? {} : { amphibious: t.amphibious }),
       // Spec 34: infantry transport.
       ...(t.transport === undefined ? {} : { transport: t.transport }),
       render: { size: renderSize(t) },

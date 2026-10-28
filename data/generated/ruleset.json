@@ -1209,6 +1209,7 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "amphibious": true,
       "transport": {
         "slots": 4,
         "fireFromInside": true,
@@ -1254,6 +1255,7 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "amphibious": true,
       "transport": {
         "slots": 6,
         "damagePct": 10,

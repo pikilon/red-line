@@ -270,6 +270,10 @@ pub struct TypeDef {
     /// Launcher types fire only while standing still (they stow when moving).
     #[serde(default)]
     pub stationary_fire: bool,
+    /// Spec 36: the vehicle drives over deep water as well as land (Zero Hour
+    /// `Surfaces = GROUND WATER`), at the same speed.
+    #[serde(default)]
+    pub amphibious: bool,
     /// Spec 36: a depot that never runs out (a port); trucks still pay its
     /// `load_ticks` on top of their own each time they load.
     #[serde(default)]
