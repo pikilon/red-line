@@ -147,6 +147,8 @@
   "saves.demo-bridges.description": "A deep river with a road bridge, a wooden bridge and a stone arch, roads leading to each; tanks and infantry of both sides wait at the approaches: order them across.",
   "saves.environment-destruction.name": "Environment destruction",
   "saves.environment-destruction.description": "A tank flattens bushes and fences, a shell sets a pine grove on fire, two buildings collapse into rubble and a wooden bridge breaks.",
+  "saves.environment-cover.name": "Environment cover",
+  "saves.environment-cover.description": "Riflemen on a plateau shoot at enemies below, farther than flat ground allows: behind a stone wall, beside a pine stand and in the open. Cover cuts the damage they take.",
   "saves.landscape-lab.name": "Landscape lab",
   "saves.landscape-lab.description": "A map with ground patches, a road, a river with a ford, a lake, a sea strip, pines and houses; two tanks per side.",
   "saves.demo-town.name": "Demo town",
