@@ -14,6 +14,8 @@ export const ENTITY_FLAGS = {
   ghost: 4,
   fired: 8,
   poweredOff: 16,
+  /** Spec 31 block 2: garrisoned in a building; hidden on the map. */
+  inside: 32,
 } as const;
 export const OUTCOMES = ["ongoing", "winner", "draw"] as const;
 export type Outcome = (typeof OUTCOMES)[number];

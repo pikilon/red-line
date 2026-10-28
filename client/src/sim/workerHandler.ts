@@ -70,6 +70,8 @@ export interface SkirmishSimLike {
     yRaw: number,
   ): void;
   command_harvest(player: number, unitIds: Uint32Array, depot: number): void;
+  command_garrison(player: number, unitIds: Uint32Array, feature: number): void;
+  command_unload(player: number, feature: number): void;
   command_construct(
     player: number,
     dozer: number,
@@ -182,6 +184,16 @@ const COMMANDS = {
       command.xRaw,
       command.yRaw,
     );
+  }),
+  garrison: run((sim, command: Extract<SimCommand, { kind: "garrison" }>) => {
+    sim.command_garrison(
+      command.player,
+      Uint32Array.from(command.units),
+      command.feature,
+    );
+  }),
+  unload: run((sim, command: Extract<SimCommand, { kind: "unload" }>) => {
+    sim.command_unload(command.player, command.feature);
   }),
   stop: run((sim, command: Extract<SimCommand, { kind: "stop" }>) => {
     sim.command_stop(command.player, Uint32Array.from(command.units));

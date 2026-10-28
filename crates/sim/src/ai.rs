@@ -12,7 +12,7 @@ use crate::fixed::{Fx, FxVec2};
 use crate::map::{Cell, cell_of};
 use crate::nav::footprint_center;
 use crate::rng::SplitMix64;
-use crate::rules::{AiDef, Category, FactionId, Ruleset, TypeId, fx_centi};
+use crate::rules::{AiDef, Category, FactionId, LocoKind, Ruleset, TypeId, fx_centi};
 use crate::save::AiState;
 use crate::world::{Command, Outcome, World};
 
@@ -285,6 +285,15 @@ impl Ai {
                 }
             }
         }
+
+        // 5b. Garrison: infantry take civilian buildings enemy infantry approach.
+        commands.extend(garrison_orders(
+            world,
+            player,
+            faction,
+            &self.attackers,
+            def.garrison_radius_centi,
+        ));
 
         // Units that received the launch order this pass, so step 8 does not
         // target them twice.
@@ -636,10 +645,93 @@ fn pool(
                 && rules.weapon_of(entity.kind).is_some()
                 && entity.kind != dozer
                 && Some(entity.kind) != truck
+                && entity.inside.is_none()
                 && !attackers.contains(&entity.id)
         })
         .map(|entity| entity.id)
         .collect()
+}
+
+/// Spec 31 block 2: for each garrisonable building with room that enemy
+/// infantry stand within `radius_centi` of (and that no other player holds),
+/// the nearest idle pool infantry within twice that radius are sent to garrison
+/// it. Ascending feature index; a unit is used once per pass.
+fn garrison_orders(
+    world: &World,
+    player: PlayerId,
+    faction: FactionId,
+    attackers: &[EntityId],
+    radius_centi: u32,
+) -> Vec<Command> {
+    let mut commands = Vec::new();
+    if radius_centi == 0 {
+        return commands;
+    }
+    let threat = i64::from(fx_centi(radius_centi).raw());
+    let reach = threat * 2;
+    let infantry = |entity: &Entity| {
+        world.rules().ty(entity.kind).motion.kind == LocoKind::Foot && entity.inside.is_none()
+    };
+    let mut candidates: Vec<EntityId> = pool(world, player, faction, attackers)
+        .into_iter()
+        .filter(|&id| {
+            world.entity(id).is_some_and(|entity| {
+                infantry(entity) && matches!(entity.order, Order::Idle { .. })
+            })
+        })
+        .collect();
+    for feature in 0..world.features().len() as u32 {
+        let Some(def) = world.garrison_def(feature) else {
+            continue;
+        };
+        let owner = world.feature_owner(feature);
+        let free = def
+            .slots
+            .saturating_sub(world.occupants(feature).len() as u32) as usize;
+        if free == 0 || (owner != NEUTRAL && owner != player) || candidates.is_empty() {
+            continue;
+        }
+        let Some(center) = world.feature_center(feature) else {
+            continue;
+        };
+        let contested = world.entities().iter().any(|entity| {
+            entity.owner != player
+                && entity.owner != NEUTRAL
+                && infantry(entity)
+                && world.is_entity_visible(player, entity.id)
+                && squared_distance(entity.pos, center) <= threat * threat
+        });
+        if !contested {
+            continue;
+        }
+        let mut near: Vec<(i64, EntityId)> = candidates
+            .iter()
+            .filter_map(|&id| {
+                let distance = squared_distance(entity_pos(world, id), center);
+                (distance <= reach * reach && world.can_garrison(id, feature))
+                    .then_some((distance, id))
+            })
+            .collect();
+        near.sort();
+        let units: Vec<EntityId> = near.iter().take(free).map(|&(_, id)| id).collect();
+        if units.is_empty() {
+            continue;
+        }
+        candidates.retain(|id| !units.contains(id));
+        commands.push(Command::Garrison { units, feature });
+    }
+    commands
+}
+
+/// Test hook: `garrison_orders` for the first faction of `player`, no attackers.
+#[cfg(test)]
+pub(crate) fn garrison_orders_for_test(
+    world: &World,
+    player: PlayerId,
+    radius_centi: u32,
+) -> Vec<Command> {
+    let faction = world.player(player).map_or(0, |p| p.faction);
+    garrison_orders(world, player, faction, &[], radius_centi)
 }
 
 /// Pool units of `kind` (ascending id).

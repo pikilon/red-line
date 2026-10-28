@@ -117,6 +117,12 @@ fn put_entity(out: &mut Vec<u8>, entity: &Entity) {
     out.push(u8::from(entity.reversing));
     put_u32(out, entity.aim.unwrap_or(u32::MAX));
     put_u32(out, entity.idle_aim_ticks);
+    // Spec 31 block 2: written only for garrisoned units, so worlds without
+    // garrisons keep their hashes.
+    if let Some(feature) = entity.inside {
+        out.push(1);
+        put_u32(out, feature);
+    }
 }
 
 fn put_order(out: &mut Vec<u8>, order: &Order) {
@@ -167,6 +173,11 @@ fn put_order(out: &mut Vec<u8>, order: &Order) {
             out.push(4);
             put_u32(out, order_id);
             put_u32(out, building);
+        }
+        Order::Garrison { order_id, feature } => {
+            out.push(6);
+            put_u32(out, order_id);
+            put_u32(out, feature);
         }
     }
 }

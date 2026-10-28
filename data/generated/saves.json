@@ -210,6 +210,12 @@
       "map": "demo-destruction",
       "form": "setup",
       "entities": 5
+    },
+    {
+      "id": "environment-garrison",
+      "map": "demo-town",
+      "form": "setup",
+      "entities": 15
     }
   ]
 }

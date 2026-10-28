@@ -51,6 +51,10 @@ export type SimCommand =
       yRaw: number;
     }
   | { kind: "stop"; player: number; units: number[] }
+  /** Spec 31 block 2: infantry walk to feature `feature` (map row index) and garrison it. */
+  | { kind: "garrison"; player: number; units: number[]; feature: number }
+  /** Spec 31 block 2: evacuate the garrisoned feature `feature`. */
+  | { kind: "unload"; player: number; feature: number }
   | {
       kind: "debugSpawn";
       player: number;

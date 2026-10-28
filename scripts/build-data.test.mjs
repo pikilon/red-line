@@ -282,6 +282,7 @@ test("AC-05-01: personality sources build", () => {
       faction: factionIndex(source.faction),
       harvesters: source.harvesters,
       defenseRadiusCenti: source.defenseRadiusCenti,
+      ...(source.garrisonRadiusCenti === undefined ? {} : { garrisonRadiusCenti: source.garrisonRadiusCenti }),
       buildOrder: buildOrder(source.buildOrder),
       taskForces: source.taskForces.map((force) => ({ id: force.id, units: kinds(Object.entries(force.units)) })),
       triggers: source.triggers.map((t) => ({ taskForce: forceIds.indexOf(t.taskForce), weight: t.weight, minTick: t.minTick })),

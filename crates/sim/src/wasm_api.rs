@@ -190,6 +190,22 @@ impl Sim {
         );
     }
 
+    /// Spec 31 block 2: `unit_ids` walk to feature `feature` and garrison it.
+    pub fn command_garrison(&mut self, player: u8, unit_ids: &[u32], feature: u32) {
+        self.world.enqueue_as(
+            player,
+            Command::Garrison {
+                units: unit_ids.to_vec(),
+                feature,
+            },
+        );
+    }
+
+    /// Spec 31 block 2: evacuate the garrisoned feature `feature`.
+    pub fn command_unload(&mut self, player: u8, feature: u32) {
+        self.world.enqueue_as(player, Command::Unload { feature });
+    }
+
     pub fn command_harvest(&mut self, player: u8, unit_ids: &[u32], depot: u32) {
         self.world.enqueue_as(
             player,
