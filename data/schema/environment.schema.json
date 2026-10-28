@@ -84,6 +84,27 @@
           "maximum": 1000
         }
       }
+    },
+    "infirmary": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Spec 40: damaged infantry heal inside an own barracks.",
+      "required": [
+        "healTicks",
+        "slots"
+      ],
+      "properties": {
+        "healTicks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "slots": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
+        }
+      }
     }
   },
   "$defs": {

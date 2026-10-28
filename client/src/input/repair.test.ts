@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { typeDef, typeIndex } from "../rules";
 import { decodeFeatures } from "../sim/featureSnapshot";
-import type { EntityState } from "../sim/matchSnapshot";
+import { ENTITY_FLAGS, type EntityState } from "../sim/matchSnapshot";
 import {
   canDig,
   repairJobsOf,
   resolveBuildingRepairClick,
   resolveDigClick,
+  resolveInfirmaryClick,
   resolveRepairClick,
   withRepairState,
 } from "./repair";
@@ -125,6 +126,84 @@ describe("spec 38 building repair input", () => {
         selected: [2],
         entities: entities.map((entity) =>
           entity.id === 4 ? { ...entity, owner: 1 } : entity,
+        ),
+        x: 10,
+        y: 10,
+      }),
+    ).toEqual([]);
+  });
+});
+
+describe("spec 40 infantry healing input", () => {
+  it("AC-40-07: damaged foot infantry enter an own barracks", () => {
+    const barracks = {
+      ...unit(4, "ua-barracks", 10, 10),
+      hp: 1000,
+      progress: 1000,
+    };
+    const entities = [
+      { ...unit(1, "ua-rifleman", 3, 2), hp: 40 },
+      { ...unit(2, "ua-rifleman", 3, 3), hp: 100 },
+      { ...unit(3, "ua-leopard-2a4", 3, 4), hp: 300 },
+      barracks,
+    ];
+    expect(
+      resolveInfirmaryClick({
+        player: 0,
+        selected: [1, 2, 3],
+        entities,
+        x: 10,
+        y: 10,
+      }),
+    ).toEqual([{ kind: "healAt", player: 0, units: [1], building: 4 }]);
+    // A full-health selection has nobody to heal.
+    expect(
+      resolveInfirmaryClick({
+        player: 0,
+        selected: [2, 3],
+        entities,
+        x: 10,
+        y: 10,
+      }),
+    ).toEqual([]);
+    // Enemies and buildings without healsInfantry are not infirmaries.
+    expect(
+      resolveInfirmaryClick({
+        player: 0,
+        selected: [1],
+        entities: entities.map((entity) =>
+          entity.id === 4 ? { ...entity, owner: 1 } : entity,
+        ),
+        x: 10,
+        y: 10,
+      }),
+    ).toEqual([]);
+    const hq = {
+      ...unit(5, "ua-hq", 20, 10),
+      hp: 1000,
+      progress: 1000,
+    };
+    expect(
+      resolveInfirmaryClick({
+        player: 0,
+        selected: [1],
+        entities: [...entities, hq],
+        x: 20,
+        y: 10,
+      }),
+    ).toEqual([]);
+    // An unfinished barracks takes nobody yet.
+    expect(
+      resolveInfirmaryClick({
+        player: 0,
+        selected: [1],
+        entities: entities.map((entity) =>
+          entity.id === 4
+            ? {
+                ...entity,
+                flags: entity.flags | ENTITY_FLAGS.underConstruction,
+              }
+            : entity,
         ),
         x: 10,
         y: 10,

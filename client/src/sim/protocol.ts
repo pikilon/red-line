@@ -69,6 +69,13 @@ export type SimCommand =
       units: number[];
       building: number;
     }
+  /** Spec 40: damaged infantry walk into an own barracks and heal there. */
+  | {
+      kind: "healAt";
+      player: number;
+      units: number[];
+      building: number;
+    }
   /** Spec 35: workers dig a trench with its top-left cell at (x, y). */
   | {
       kind: "dig";

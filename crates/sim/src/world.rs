@@ -125,6 +125,11 @@ pub enum Command {
         units: Vec<EntityId>,
         building: EntityId,
     },
+    /// Spec 40: damaged infantry heal inside an own barracks.
+    HealAt {
+        units: Vec<EntityId>,
+        building: EntityId,
+    },
     DebugSpawn {
         kind: TypeId,
         pos: FxVec2,
@@ -708,12 +713,14 @@ impl World {
         self.run_over();
         self.features_step();
         self.repair_works();
+        self.heal_infirmaries();
         self.separate_units();
         self.arrive_on_contact();
         self.update_visibility();
         self.update_combat();
         self.unload_transports();
         self.empty_dead_transports();
+        self.empty_dead_infirmaries();
         self.remove_dead();
         self.update_memory();
         self.update_victory();
@@ -818,6 +825,9 @@ impl World {
                 Command::Repair { units, feature } => self.apply_repair(player, &units, feature),
                 Command::RepairBuilding { units, building } => {
                     self.apply_repair_building(player, &units, building);
+                }
+                Command::HealAt { units, building } => {
+                    self.apply_heal_at(player, &units, building);
                 }
                 Command::Dig { units, origin, rot } => self.apply_dig(player, &units, origin, rot),
                 Command::AttackGround { units, target } => {
@@ -1097,6 +1107,9 @@ impl World {
                 Order::RepairBuilding { order_id, building } => {
                     self.step_repair_building(index, order_id, building);
                 }
+                Order::Heal {
+                    order_id, building, ..
+                } => self.step_heal(index, order_id, building),
                 Order::Harvest { .. } => self.step_harvest(index),
                 Order::Attack { order_id, target } => self.step_attack(index, order_id, target),
                 Order::AttackGround { target, .. } => self.step_attack_ground(index, target),

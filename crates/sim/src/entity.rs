@@ -74,6 +74,13 @@ pub enum Order {
         order_id: u32,
         building: EntityId,
     },
+    /// Spec 40: enter an own `healsInfantry` building and heal inside it.
+    Heal {
+        order_id: u32,
+        building: EntityId,
+        missing: u32,
+        remaining: u32,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

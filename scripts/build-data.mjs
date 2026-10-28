@@ -555,6 +555,8 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
             },
             // Spec 35: repair works.
             ...(environment.repair === undefined ? {} : { repair: environment.repair }),
+            // Spec 40: infantry healing at the barracks.
+            ...(environment.infirmary === undefined ? {} : { infirmary: environment.infirmary }),
           },
         }
       : {}),
@@ -629,6 +631,8 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       freeUnit: t.freeUnit === undefined ? -1 : typeIndex.get(t.freeUnit),
       // Spec 36: drives over deep water too.
       ...(t.amphibious === undefined ? {} : { amphibious: t.amphibious }),
+      // Spec 40: damaged infantry heal inside this building.
+      ...(t.healsInfantry === undefined ? {} : { healsInfantry: t.healsInfantry }),
       // Spec 34: infantry transport.
       ...(t.transport === undefined ? {} : { transport: t.transport }),
       render: { size: renderSize(t) },

@@ -80,6 +80,7 @@ export interface SkirmishSimLike {
     unitIds: Uint32Array,
     building: number,
   ): void;
+  command_heal_at(player: number, unitIds: Uint32Array, building: number): void;
   command_dig(
     player: number,
     unitIds: Uint32Array,
@@ -227,6 +228,13 @@ const COMMANDS = {
       );
     },
   ),
+  healAt: run((sim, command: Extract<SimCommand, { kind: "healAt" }>) => {
+    sim.command_heal_at(
+      command.player,
+      Uint32Array.from(command.units),
+      command.building,
+    );
+  }),
   dig: run((sim, command: Extract<SimCommand, { kind: "dig" }>) => {
     sim.command_dig(
       command.player,

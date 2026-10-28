@@ -14,6 +14,7 @@ pub mod fixed;
 pub mod flow;
 pub mod garrison;
 pub mod hash;
+pub mod infirmary;
 pub mod locomotor;
 pub mod map;
 pub mod nav;

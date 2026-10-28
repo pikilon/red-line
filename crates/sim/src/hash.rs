@@ -203,6 +203,18 @@ fn put_order(out: &mut Vec<u8>, order: &Order) {
             put_u32(out, order_id);
             put_u32(out, building);
         }
+        Order::Heal {
+            order_id,
+            building,
+            missing,
+            remaining,
+        } => {
+            out.push(10);
+            put_u32(out, order_id);
+            put_u32(out, building);
+            put_u32(out, missing);
+            put_u32(out, remaining);
+        }
     }
 }
 
