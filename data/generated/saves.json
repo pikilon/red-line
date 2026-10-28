@@ -92,6 +92,12 @@
       "entities": 4
     },
     {
+      "id": "vehicle-repair",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 5
+    },
+    {
       "id": "construction",
       "map": "showcase",
       "form": "setup",

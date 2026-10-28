@@ -43,6 +43,7 @@ function skirmishSim(
     command_disembark: vi.fn(),
     command_repair: vi.fn(),
     command_repair_building: vi.fn(),
+    command_repair_vehicle: vi.fn(),
     command_dig: vi.fn(),
     debug_spawn: vi.fn(),
     debug_set_hp: vi.fn(),

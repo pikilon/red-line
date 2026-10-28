@@ -12,3 +12,4 @@ repair:
   infantryPoints: 1
   dozerPoints: 3
   maxWorkers: 6
+  vehicleRepairTicks: 75   # spec 39: five seconds at 15 Hz, Zero Hour TimeForFullHeal = 5000 ms

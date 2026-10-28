@@ -230,6 +230,119 @@ fn ac_38_03_building_repair_survives_a_save() {
 }
 
 #[test]
+fn ac_39_01_factory_repairs_one_vehicle_in_75_ticks_without_pausing_production() {
+    let mut world = World::sandbox(Ruleset::builtin(), MapGrid::open(40, 24), &[0, 0]);
+    world.place_building(
+        0,
+        world.rules().type_index("ua-supply-center").unwrap(),
+        Cell { x: 20, y: 10 },
+        true,
+    );
+    let factory = world.place_building(
+        0,
+        world.rules().type_index("ua-vehicle-factory").unwrap(),
+        Cell { x: 10, y: 10 },
+        true,
+    );
+    let first = spawn(&mut world, "ua-leopard-2a4", 9, 10);
+    let second = spawn(&mut world, "ua-bradley", 9, 11);
+    let first_max = world.rules().ty(world.entity(first).unwrap().kind).hp;
+    let second_max = world.rules().ty(world.entity(second).unwrap().kind).hp;
+    world.set_hp(first, first_max / 2);
+    world.set_hp(second, second_max / 2);
+    let produced = world
+        .rules()
+        .ty(world.entity(factory).unwrap().kind)
+        .produces[0];
+    world.enqueue(Command::Produce {
+        building: factory,
+        kind: produced,
+    });
+    world.enqueue(Command::RepairVehicle {
+        units: vec![first, second],
+        factory,
+    });
+    world.step();
+    let first_gain = (first_max / 2).div_ceil(75);
+    assert_eq!(world.entity(first).unwrap().hp, first_max / 2 + first_gain);
+    assert_eq!(world.entity(second).unwrap().hp, second_max / 2);
+    assert_eq!(
+        world.entity(factory).unwrap().site.as_ref().unwrap().queue[0].progress,
+        100
+    );
+    for _ in 1..75 {
+        world.step();
+    }
+    assert_eq!(world.entity(first).unwrap().hp, first_max);
+    assert_eq!(world.entity(second).unwrap().hp, second_max / 2);
+    assert!(matches!(
+        world.entity(first).unwrap().order,
+        Order::Idle { .. }
+    ));
+    world.step();
+    assert_eq!(
+        world.entity(second).unwrap().hp,
+        second_max / 2 + (second_max / 2).div_ceil(75)
+    );
+}
+
+#[test]
+fn ac_39_02_factory_repair_checks_vehicle_damage_and_real_pad() {
+    let mut world = World::sandbox(Ruleset::builtin(), MapGrid::open(40, 24), &[0, 0]);
+    let factory = world.place_building(
+        0,
+        world.rules().type_index("ua-vehicle-factory").unwrap(),
+        Cell { x: 10, y: 10 },
+        true,
+    );
+    let hq = world.place_building(
+        0,
+        world.rules().type_index("ua-hq").unwrap(),
+        Cell { x: 20, y: 10 },
+        true,
+    );
+    let tank = spawn(&mut world, "ua-leopard-2a4", 9, 10);
+    let rifleman = spawn(&mut world, "ua-rifleman", 9, 11);
+    let max = world.rules().ty(world.entity(tank).unwrap().kind).hp;
+    assert!(!world.can_repair_vehicle_at(rifleman, factory));
+    assert!(!world.can_repair_vehicle_at(tank, factory));
+    world.set_hp(tank, max / 2);
+    assert!(world.can_repair_vehicle_at(tank, factory));
+    assert!(!world.can_repair_vehicle_at(tank, hq));
+}
+
+#[test]
+fn ac_39_03_vehicle_repair_survives_a_save() {
+    let mut world = World::skirmish(Ruleset::builtin(), "first-line", 9).unwrap();
+    let factory = world.place_building(
+        0,
+        world.rules().type_index("ua-vehicle-factory").unwrap(),
+        Cell { x: 12, y: 66 },
+        true,
+    );
+    let tank = spawn(&mut world, "ua-leopard-2a4", 11, 66);
+    let max = world.rules().ty(world.entity(tank).unwrap().kind).hp;
+    world.set_hp(tank, max / 2);
+    world.enqueue(Command::RepairVehicle {
+        units: vec![tank],
+        factory,
+    });
+    for _ in 0..30 {
+        world.step();
+    }
+    let saved = save_state(&world, 9, &[]).unwrap();
+    let (mut loaded, _, _) = load_state(&saved).unwrap();
+    assert_eq!(state_hash(&loaded), state_hash(&world));
+    for _ in 0..100 {
+        world.step();
+        loaded.step();
+    }
+    assert_eq!(state_hash(&loaded), state_hash(&world));
+    assert_eq!(world.entity(tank).unwrap().hp, max);
+    assert_eq!(loaded.entity(tank).unwrap().hp, max);
+}
+
+#[test]
 fn ac_33_04_repair_survives_a_save() {
     let (mut world, bridge) = broken_bridge();
     let unit = spawn(&mut world, "ua-rifleman", 25, 9);

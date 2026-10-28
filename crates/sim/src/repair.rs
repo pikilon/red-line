@@ -146,6 +146,61 @@ impl World {
         }
     }
 
+    /// True when this damaged non-foot vehicle can dock at that own repair pad.
+    pub fn can_repair_vehicle_at(&self, unit: EntityId, factory: EntityId) -> bool {
+        let (Some(vehicle), Some(pad)) = (self.entity(unit), self.entity(factory)) else {
+            return false;
+        };
+        let vehicle_ty = self.rules.ty(vehicle.kind);
+        let pad_ty = self.rules.ty(pad.kind);
+        vehicle.owner == pad.owner
+            && vehicle.hp > 0
+            && vehicle.hp < vehicle_ty.hp
+            && !vehicle.contained()
+            && vehicle_ty.category == Category::Unit
+            && vehicle_ty.motion.kind != LocoKind::Foot
+            && pad.hp > 0
+            && pad_ty.category == Category::Building
+            && pad_ty.repairs_vehicles
+            && pad.site.as_ref().is_some_and(|site| site.complete)
+    }
+
+    /// `RepairVehicle` command: every eligible vehicle approaches the factory;
+    /// one docked vehicle is repaired at a time (spec 39).
+    pub(crate) fn apply_repair_vehicle(
+        &mut self,
+        player: PlayerId,
+        units: &[EntityId],
+        factory: EntityId,
+    ) {
+        if self
+            .entity(factory)
+            .is_none_or(|entity| entity.owner != player)
+        {
+            return;
+        }
+        let Some(repair) = self.rules.environment.repair else {
+            return;
+        };
+        let order_id = self.next_order_id;
+        self.next_order_id += 1;
+        for &id in units {
+            let Some(index) = self.index_of(id) else {
+                continue;
+            };
+            if self.entities[index].owner != player || !self.can_repair_vehicle_at(id, factory) {
+                continue;
+            }
+            let missing = self.rules.ty(self.entities[index].kind).hp - self.entities[index].hp;
+            self.entities[index].order = Order::RepairVehicle {
+                order_id,
+                factory,
+                missing,
+                remaining: repair.vehicle_repair_ticks,
+            };
+        }
+    }
+
     /// Number of features the map placed; later rows were dug in the match.
     pub fn placed_feature_count(&self) -> usize {
         self.map_id
@@ -266,6 +321,28 @@ impl World {
         }
     }
 
+    /// Approach the factory's outside dock and wait there (spec 39).
+    pub(crate) fn step_repair_vehicle(&mut self, index: usize, order_id: u32, factory: EntityId) {
+        let id = self.entities[index].id;
+        if !self.can_repair_vehicle_at(id, factory) {
+            self.entities[index].order = Order::Idle {
+                last_order_id: order_id,
+            };
+            return;
+        }
+        let pos = self.entities[index].pos;
+        let docked = self.entity(factory).is_some_and(|target| {
+            self.entity_distance(pos, target) <= fx_centi(self.rules.dock_range_centi)
+        });
+        if docked {
+            self.entities[index].speed = Fx::ZERO;
+            return;
+        }
+        if let Some(goal) = self.build_goal(factory) {
+            self.step_toward_goal(index, goal);
+        }
+    }
+
     /// Where unit `index` walks to work on `feature`: the passable cell, on its
     /// own layer, nearest to the job cell closest to it.
     pub(crate) fn repair_goal(&self, index: usize, feature: u32) -> Option<Cell> {
@@ -344,7 +421,7 @@ impl World {
                 * u64::from(repair.permille_per_second_per_point)
                 * u64::from(points)
                 / 1000;
-            self.repair_entity_building(building, (gain as u32).max(1));
+            self.repair_entity(building, (gain as u32).max(1));
         }
         for index in 0..self.entities.len() {
             let Order::RepairBuilding { order_id, building } = self.entities[index].order else {
@@ -358,9 +435,74 @@ impl World {
         }
     }
 
-    /// Restores hit points to an entity building without touching construction,
+    /// Every tick, the lowest-id docked vehicle at each factory repairs its
+    /// initial deficit over `vehicleRepairTicks`; waiting vehicles keep their
+    /// own countdown untouched (spec 39).
+    pub(crate) fn repair_vehicles(&mut self) {
+        let Some(repair) = self.rules.environment.repair else {
+            return;
+        };
+        let mut bays: BTreeMap<EntityId, EntityId> = BTreeMap::new();
+        for index in 0..self.entities.len() {
+            let Order::RepairVehicle { factory, .. } = self.entities[index].order else {
+                continue;
+            };
+            let id = self.entities[index].id;
+            if !self.can_repair_vehicle_at(id, factory) {
+                continue;
+            }
+            let pos = self.entities[index].pos;
+            let docked = self.entity(factory).is_some_and(|target| {
+                self.entity_distance(pos, target) <= fx_centi(self.rules.dock_range_centi)
+            });
+            if docked {
+                bays.entry(factory).or_insert(id);
+            }
+        }
+        for (factory, id) in bays {
+            let Some(index) = self.index_of(id) else {
+                continue;
+            };
+            let Order::RepairVehicle {
+                order_id,
+                missing,
+                remaining,
+                ..
+            } = self.entities[index].order
+            else {
+                continue;
+            };
+            let max = self.rules.ty(self.entities[index].kind).hp;
+            let remaining = remaining.max(1);
+            let gain =
+                ((u64::from(missing) + u64::from(remaining) - 1) / u64::from(remaining)) as u32;
+            self.repair_entity(id, gain.max(1));
+            let hp = self.entities[index].hp;
+            self.entities[index].order = if hp == max {
+                Order::Idle {
+                    last_order_id: order_id,
+                }
+            } else if remaining == 1 {
+                Order::RepairVehicle {
+                    order_id,
+                    factory,
+                    missing: max - hp,
+                    remaining: repair.vehicle_repair_ticks,
+                }
+            } else {
+                Order::RepairVehicle {
+                    order_id,
+                    factory,
+                    missing,
+                    remaining: remaining - 1,
+                }
+            };
+        }
+    }
+
+    /// Restores hit points to an entity without touching construction,
     /// production or rally state (spec 38).
-    pub(crate) fn repair_entity_building(&mut self, building: EntityId, amount: u32) {
+    pub(crate) fn repair_entity(&mut self, building: EntityId, amount: u32) {
         let Some(index) = self.index_of(building) else {
             return;
         };

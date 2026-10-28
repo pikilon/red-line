@@ -219,6 +219,12 @@ pub enum OrderState {
         order_id: u32,
         building: u32,
     },
+    RepairVehicle {
+        order_id: u32,
+        factory: u32,
+        missing: u32,
+        remaining: u32,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -315,6 +321,10 @@ pub enum CommandState {
     RepairBuilding {
         units: Vec<u32>,
         building: u32,
+    },
+    RepairVehicle {
+        units: Vec<u32>,
+        factory: u32,
     },
     Dig {
         units: Vec<u32>,
@@ -800,6 +810,17 @@ fn save_order(order: Order) -> OrderState {
         Order::RepairBuilding { order_id, building } => {
             OrderState::RepairBuilding { order_id, building }
         }
+        Order::RepairVehicle {
+            order_id,
+            factory,
+            missing,
+            remaining,
+        } => OrderState::RepairVehicle {
+            order_id,
+            factory,
+            missing,
+            remaining,
+        },
     }
 }
 
@@ -845,6 +866,17 @@ fn load_order(order: OrderState) -> Order {
         OrderState::RepairBuilding { order_id, building } => {
             Order::RepairBuilding { order_id, building }
         }
+        OrderState::RepairVehicle {
+            order_id,
+            factory,
+            missing,
+            remaining,
+        } => Order::RepairVehicle {
+            order_id,
+            factory,
+            missing,
+            remaining,
+        },
     }
 }
 
@@ -1082,6 +1114,10 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
             units: units.clone(),
             building: *building,
         },
+        Command::RepairVehicle { units, factory } => CommandState::RepairVehicle {
+            units: units.clone(),
+            factory: *factory,
+        },
         Command::Dig { units, origin, rot } => CommandState::Dig {
             units: units.clone(),
             origin: cell(*origin),
@@ -1163,6 +1199,10 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
         CommandState::RepairBuilding { units, building } => Command::RepairBuilding {
             units: units.clone(),
             building: *building,
+        },
+        CommandState::RepairVehicle { units, factory } => Command::RepairVehicle {
+            units: units.clone(),
+            factory: *factory,
         },
         CommandState::Dig { units, origin, rot } => Command::Dig {
             units: units.clone(),

@@ -125,6 +125,11 @@ pub enum Command {
         units: Vec<EntityId>,
         building: EntityId,
     },
+    /// Spec 39: damaged vehicles dock at their own repair factory.
+    RepairVehicle {
+        units: Vec<EntityId>,
+        factory: EntityId,
+    },
     DebugSpawn {
         kind: TypeId,
         pos: FxVec2,
@@ -708,6 +713,7 @@ impl World {
         self.run_over();
         self.features_step();
         self.repair_works();
+        self.repair_vehicles();
         self.separate_units();
         self.arrive_on_contact();
         self.update_visibility();
@@ -818,6 +824,9 @@ impl World {
                 Command::Repair { units, feature } => self.apply_repair(player, &units, feature),
                 Command::RepairBuilding { units, building } => {
                     self.apply_repair_building(player, &units, building);
+                }
+                Command::RepairVehicle { units, factory } => {
+                    self.apply_repair_vehicle(player, &units, factory);
                 }
                 Command::Dig { units, origin, rot } => self.apply_dig(player, &units, origin, rot),
                 Command::AttackGround { units, target } => {
@@ -1096,6 +1105,11 @@ impl World {
                 Order::Repair { order_id, feature } => self.step_repair(index, order_id, feature),
                 Order::RepairBuilding { order_id, building } => {
                     self.step_repair_building(index, order_id, building);
+                }
+                Order::RepairVehicle {
+                    order_id, factory, ..
+                } => {
+                    self.step_repair_vehicle(index, order_id, factory);
                 }
                 Order::Harvest { .. } => self.step_harvest(index),
                 Order::Attack { order_id, target } => self.step_attack(index, order_id, target),
@@ -1493,6 +1507,9 @@ impl World {
                         .map(|goal| self.nav.index(goal)),
                     Order::RepairBuilding { building, .. } => {
                         self.build_goal(building).map(|goal| self.nav.index(goal))
+                    }
+                    Order::RepairVehicle { factory, .. } => {
+                        self.build_goal(factory).map(|goal| self.nav.index(goal))
                     }
                     _ => None,
                 };
