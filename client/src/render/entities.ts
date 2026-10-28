@@ -896,6 +896,8 @@ export function createEntityRenderer(
       let scaffoldCount = 0;
 
       for (const entity of entities) {
+        // Garrisoned units are hidden: the building stands for them.
+        if (hasFlag(entity, ENTITY_FLAGS.inside)) continue;
         const type = typeDef(entity.kind);
         const [w, h, d] = type.render.size.map((size) => size / 100) as [
           number,

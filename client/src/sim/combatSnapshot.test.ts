@@ -36,6 +36,8 @@ function skirmishSim(
     command_cancel: vi.fn(),
     command_rally: vi.fn(),
     command_stop: vi.fn(),
+    command_garrison: vi.fn(),
+    command_unload: vi.fn(),
     debug_spawn: vi.fn(),
     debug_set_hp: vi.fn(),
     ...overrides,

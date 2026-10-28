@@ -1,0 +1,29 @@
+# Spec 31 block 2: infantry garrison civilian buildings. Player 0 has six riflemen walking into the west apartment block
+# (they fire from the windows with +33% range and +25% damage; click the block to select them and press Evacuate) and a
+# squad beside the house at (19, 24): select it and press Garrison, or right click the house. Player 1 garrisons the
+# east apartment block (hidden to player 0) and sends a squad toward the house.
+id: environment-garrison
+map: demo-town
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 21, y: 26, zoom: 1 }
+entities:
+  - { player: 0, type: ua-rifleman, atCenti: [1500, 2700], order: { garrison: [16, 24] } }
+  - { player: 0, type: ua-rifleman, atCenti: [1600, 2700], order: { garrison: [16, 24] } }
+  - { player: 0, type: ua-rifleman, atCenti: [1700, 2700], order: { garrison: [16, 24] } }
+  - { player: 0, type: ua-rifleman, atCenti: [1500, 2800], order: { garrison: [16, 24] } }
+  - { player: 0, type: ua-rifleman, atCenti: [1600, 2800], order: { garrison: [16, 24] } }
+  - { player: 0, type: ua-rifleman, atCenti: [1700, 2800], order: { garrison: [16, 24] } }
+  - { player: 0, type: ua-rifleman, atCenti: [1900, 2750] }
+  - { player: 0, type: ua-rifleman, atCenti: [2000, 2750] }
+  - { player: 0, type: ua-rifleman, atCenti: [2100, 2750] }
+  - { player: 1, type: ru-rifleman, atCenti: [2650, 2700], order: { garrison: [27, 24] } }
+  - { player: 1, type: ru-rifleman, atCenti: [2750, 2700], order: { garrison: [27, 24] } }
+  - { player: 1, type: ru-rifleman, atCenti: [2850, 2700], order: { garrison: [27, 24] } }
+  - { player: 1, type: ru-rifleman, atCenti: [3300, 2650], order: { moveCenti: [2300, 2650] } }
+  - { player: 1, type: ru-rifleman, atCenti: [3300, 2750], order: { moveCenti: [2300, 2750] } }
+  - { player: 1, type: ru-rifleman, atCenti: [3400, 2700], order: { moveCenti: [2300, 2700] } }

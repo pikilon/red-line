@@ -213,6 +213,29 @@ under `client/src/render/features/renderers/` with **no test files there**
   building are selected; an "evacuate" button on a garrisoned building. Strings
   go in `client/src/i18n/` (AGENTS.md).
 
+**Built (PR for block 2).** `crates/sim/src/garrison.rs`; commands `Garrison`
+and `Unload`; order `Order::Garrison`; `Entity.inside` (feature row index) is
+hashed and saved (`inside`, serde default). Occupants stay in `entities`,
+hidden from other players' snapshots (`FLAG_INSIDE` for the owner), skipped by
+targeting, splash, crushing, separation and movement. The building's team is
+derived from its occupants, so a neutral building is captured by the first
+rider and reverts when emptied (nothing else is stored). Data lives in
+`garrison: { slots, rangePct, damagePct, evictOnWrecked, allowNeutral?,
+allowEnemies? }` on the feature type; the AI reads `garrisonRadiusCenti` from
+`data/ai/*.yaml`. Example save: `?load=environment-garrison`.
+
+* **A6 — riders.** Only free infantry (foot locomotor) enter. A building held
+  by one player refuses riders of another unless `allowEnemies`; allies do not
+  exist in the sim yet, so `allowAllies` is not read.
+* **A7 — eviction.** Occupants leave onto the first free passable cell of the
+  rings (up to 3) around the old footprint, in `(y, x)` order. A wrecked
+  building with no room keeps them inside; a destroyed one kills them.
+* **A8 — interface.** Right click on a garrisonable building with infantry
+  selected, or the Garrison button (nearest valid building within 14 tiles),
+  garrisons; a left click on an own garrisoned building selects its occupants,
+  which shows the Evacuate button. The client never learns a feature's wrecked
+  state (block 1), so it may offer a building the sim then refuses.
+
 ### Block 3 — Cover and position
 
 * **High ground (Difference 2).** A shooter whose cell is at least

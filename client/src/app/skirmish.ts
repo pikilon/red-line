@@ -35,6 +35,13 @@ import {
 import { createHud } from "../hud";
 import { t } from "../i18n";
 import {
+  type GarrisonMapFeature,
+  type GarrisonTypeInfo,
+  garrisonCommand,
+  garrisonFeaturesOf,
+  garrisonOffers,
+} from "../input/garrison";
+import {
   createSkirmishController,
   type SkirmishController,
 } from "../input/skirmishController";
@@ -712,7 +719,32 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     boot.start,
   );
   let uiRenders = 0;
+  /** Garrisonable buildings of the map, in the sim's feature row order (spec 31 block 2). */
+  const garrisonFeatures = garrisonFeaturesOf(
+    (
+      ruleset.maps.find((entry) => entry.id === mapId) as
+        | { features?: readonly GarrisonMapFeature[] }
+        | undefined
+    )?.features ?? [],
+    (ruleset as unknown as { featureTypes?: readonly GarrisonTypeInfo[] })
+      .featureTypes ?? [],
+  );
   const commandPanel = createCommandPanel(document.body, {
+    onGarrison: (feature) => {
+      uiClick();
+      for (const command of garrisonCommand({
+        player: controlled,
+        selected: [...(controller?.selected ?? [])],
+        entities: next?.entities ?? [],
+        feature,
+      })) {
+        interact.command(command);
+      }
+    },
+    onEvacuate: (feature) => {
+      uiClick();
+      interact.command({ kind: "unload", player: controlled, feature });
+    },
     onConstruct: (kind) => {
       uiClick();
       // Zero Hour's "building ready / select target" EVA line while placing.
@@ -1036,6 +1068,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       mapWidth: mapInfo.mapWidth,
       mapHeight: mapInfo.mapHeight,
       entities: () => next?.entities ?? [],
+      garrisonFeatures: () => garrisonFeatures,
       tiles: () => mapInfo.tiles,
       fog: () => fog,
       placementKind: () => placementKind,
@@ -1216,6 +1249,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
               ),
               credits: next.credits,
               queue,
+              garrison: garrisonOffers({
+                player: controlled,
+                selected: [...(controller?.selected ?? [])],
+                entities: next.entities,
+                features: garrisonFeatures,
+              }),
             }),
       queue,
       placing: placementKind,

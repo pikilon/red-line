@@ -1,0 +1,229 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "environment-garrison",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "demo-town",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 21,
+      "y": 26,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "demo-town",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1500,
+          2700
+        ],
+        "order": {
+          "garrison": [
+            16,
+            24
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1600,
+          2700
+        ],
+        "order": {
+          "garrison": [
+            16,
+            24
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1700,
+          2700
+        ],
+        "order": {
+          "garrison": [
+            16,
+            24
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1500,
+          2800
+        ],
+        "order": {
+          "garrison": [
+            16,
+            24
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1600,
+          2800
+        ],
+        "order": {
+          "garrison": [
+            16,
+            24
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1700,
+          2800
+        ],
+        "order": {
+          "garrison": [
+            16,
+            24
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1900,
+          2750
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2000,
+          2750
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2100,
+          2750
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          2650,
+          2700
+        ],
+        "order": {
+          "garrison": [
+            27,
+            24
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          2750,
+          2700
+        ],
+        "order": {
+          "garrison": [
+            27,
+            24
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          2850,
+          2700
+        ],
+        "order": {
+          "garrison": [
+            27,
+            24
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          3300,
+          2650
+        ],
+        "order": {
+          "moveCenti": [
+            2300,
+            2650
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          3300,
+          2750
+        ],
+        "order": {
+          "moveCenti": [
+            2300,
+            2750
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          3400,
+          2700
+        ],
+        "order": {
+          "moveCenti": [
+            2300,
+            2700
+          ]
+        }
+      }
+    ]
+  }
+}
