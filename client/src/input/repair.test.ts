@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { typeIndex } from "../rules";
+import { typeDef, typeIndex } from "../rules";
 import { decodeFeatures } from "../sim/featureSnapshot";
 import type { EntityState } from "../sim/matchSnapshot";
 import {
   canDig,
   repairJobsOf,
+  resolveBuildingRepairClick,
   resolveDigClick,
   resolveRepairClick,
   withRepairState,
@@ -78,6 +79,55 @@ describe("spec 35 repair input", () => {
         jobs: live,
         x: 7.5,
         y: 2.5,
+      }),
+    ).toEqual([]);
+  });
+});
+
+describe("spec 38 building repair input", () => {
+  it("AC-38-04: only dozers repair an own damaged complete building", () => {
+    const building = {
+      ...unit(4, "ua-power-plant", 10, 10),
+      hp: 200,
+      progress: 1000,
+    };
+    const entities = [
+      unit(1, "ua-rifleman", 3, 2),
+      unit(2, "ua-dozer", 3, 3),
+      unit(3, "ua-leopard-2a4", 3, 4),
+      building,
+    ];
+    expect(
+      resolveBuildingRepairClick({
+        player: 0,
+        selected: [1, 2, 3],
+        entities,
+        x: 10,
+        y: 10,
+      }),
+    ).toEqual([{ kind: "repairBuilding", player: 0, units: [2], building: 4 }]);
+    expect(
+      resolveBuildingRepairClick({
+        player: 0,
+        selected: [2],
+        entities: entities.map((entity) =>
+          entity.id === 4
+            ? { ...entity, hp: typeDef(typeIndex("ua-power-plant")).hp }
+            : entity,
+        ),
+        x: 10,
+        y: 10,
+      }),
+    ).toEqual([]);
+    expect(
+      resolveBuildingRepairClick({
+        player: 0,
+        selected: [2],
+        entities: entities.map((entity) =>
+          entity.id === 4 ? { ...entity, owner: 1 } : entity,
+        ),
+        x: 10,
+        y: 10,
       }),
     ).toEqual([]);
   });

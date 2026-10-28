@@ -215,6 +215,10 @@ pub enum OrderState {
         order_id: u32,
         feature: u32,
     },
+    RepairBuilding {
+        order_id: u32,
+        building: u32,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -307,6 +311,10 @@ pub enum CommandState {
     Repair {
         units: Vec<u32>,
         feature: u32,
+    },
+    RepairBuilding {
+        units: Vec<u32>,
+        building: u32,
     },
     Dig {
         units: Vec<u32>,
@@ -789,6 +797,9 @@ fn save_order(order: Order) -> OrderState {
         Order::Garrison { order_id, feature } => OrderState::Garrison { order_id, feature },
         Order::Board { order_id, carrier } => OrderState::Board { order_id, carrier },
         Order::Repair { order_id, feature } => OrderState::Repair { order_id, feature },
+        Order::RepairBuilding { order_id, building } => {
+            OrderState::RepairBuilding { order_id, building }
+        }
     }
 }
 
@@ -831,6 +842,9 @@ fn load_order(order: OrderState) -> Order {
         OrderState::Garrison { order_id, feature } => Order::Garrison { order_id, feature },
         OrderState::Board { order_id, carrier } => Order::Board { order_id, carrier },
         OrderState::Repair { order_id, feature } => Order::Repair { order_id, feature },
+        OrderState::RepairBuilding { order_id, building } => {
+            Order::RepairBuilding { order_id, building }
+        }
     }
 }
 
@@ -1064,6 +1078,10 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
             units: units.clone(),
             feature: *feature,
         },
+        Command::RepairBuilding { units, building } => CommandState::RepairBuilding {
+            units: units.clone(),
+            building: *building,
+        },
         Command::Dig { units, origin, rot } => CommandState::Dig {
             units: units.clone(),
             origin: cell(*origin),
@@ -1141,6 +1159,10 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
         CommandState::Repair { units, feature } => Command::Repair {
             units: units.clone(),
             feature: *feature,
+        },
+        CommandState::RepairBuilding { units, building } => Command::RepairBuilding {
+            units: units.clone(),
+            building: *building,
         },
         CommandState::Dig { units, origin, rot } => Command::Dig {
             units: units.clone(),

@@ -235,6 +235,16 @@ impl Sim {
     }
 
     /// Spec 35: `unit_ids` dig a trench with its top-left cell at `(x, y)`.
+    pub fn command_repair_building(&mut self, player: u8, unit_ids: &[u32], building: u32) {
+        self.world.enqueue_as(
+            player,
+            Command::RepairBuilding {
+                units: unit_ids.to_vec(),
+                building,
+            },
+        );
+    }
+
     pub fn command_dig(&mut self, player: u8, unit_ids: &[u32], x: i32, y: i32, rot: u8) {
         self.world.enqueue_as(
             player,
