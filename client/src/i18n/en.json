@@ -126,6 +126,8 @@
   "saves.low-power.description": "A base that consumes more power than it produces.",
   "saves.production.name": "Production",
   "saves.production.description": "Every Ukrainian building and 50000 credits, to test the build menu.",
+  "saves.rally-points.name": "Rally points",
+  "saves.rally-points.description": "Select the barracks or vehicle factory to see its rally flag; right click to move it and produce a unit.",
   "saves.construction.name": "Construction",
   "saves.construction.description": "Barracks and factories at 0, 30, 60 and 100 % built.",
   "saves.damaged-base.name": "Damaged buildings",

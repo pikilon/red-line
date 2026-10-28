@@ -88,7 +88,8 @@
               "garrison": { "$ref": "#/$defs/pair" },
               "board": { "$ref": "#/$defs/id" },
               "repair": { "$ref": "#/$defs/pair" },
-              "dig": { "$ref": "#/$defs/pair" }
+              "dig": { "$ref": "#/$defs/pair" },
+              "rally": { "$ref": "#/$defs/pair" }
             }
           }
         }

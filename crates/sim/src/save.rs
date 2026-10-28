@@ -1232,6 +1232,8 @@ pub enum SetupOrder {
     Repair([i32; 2]),
     /// Spec 35: top-left cell of a trench to dig (turned 0).
     Dig([i32; 2]),
+    /// Spec 33: a production building's rally point in centi-tiles.
+    Rally([i32; 2]),
 }
 
 /// World, seed and AIs of a setup (spec 19 §3.5). Errors are the `SimError`
@@ -1392,6 +1394,10 @@ impl World {
                 },
                 SetupOrder::MoveCenti([x, y]) => Command::Move {
                     units,
+                    target: FxVec2::new(signed_centi(*x), signed_centi(*y)),
+                },
+                SetupOrder::Rally([x, y]) => Command::Rally {
+                    building: placed[index],
                     target: FxVec2::new(signed_centi(*x), signed_centi(*y)),
                 },
                 SetupOrder::Harvest(depot) => Command::Harvest {

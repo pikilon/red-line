@@ -54,6 +54,7 @@ function snapshot(tick: number, entities: EntityState[]): MatchSnapshot {
     winner: null,
     entities,
     queues: [],
+    rallies: [],
   };
 }
 

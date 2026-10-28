@@ -74,6 +74,12 @@
       "entities": 6
     },
     {
+      "id": "rally-points",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 5
+    },
+    {
       "id": "construction",
       "map": "showcase",
       "form": "setup",

@@ -88,7 +88,11 @@ import {
   setGroundElevation,
   setGroundRelief,
 } from "../render/elevation";
-import { createEntityRenderer, type EntityRenderer } from "../render/entities";
+import {
+  createEntityRenderer,
+  type EntityRenderer,
+  OWNER_COLORS,
+} from "../render/entities";
 import {
   createLiveMapFeatures,
   type FeatureMap,
@@ -111,6 +115,7 @@ import {
   type ProjectileModel,
   type Projectiles,
 } from "../render/projectiles";
+import { createRallyMarker, type RallyMarker } from "../render/rallyMarker";
 import { poseOnDeath } from "../render/rig";
 import {
   createTerrain,
@@ -825,6 +830,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let generatedLoading = false;
   let effects: Effects | null = null;
   let attackMarker: AttackMarker | null = null;
+  let rallyMarker: RallyMarker | null = null;
   let decals: Decals | null = null;
   let groundImpacts: GroundImpacts | null = null;
   let projectiles: Projectiles | null = null;
@@ -1018,6 +1024,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     scene.add(effects.group);
     attackMarker = createAttackMarker();
     scene.add(attackMarker.group);
+    rallyMarker = createRallyMarker();
+    scene.add(rallyMarker.group);
     decals = createDecals(
       createTerrainSurface(
         mapInfo.mapWidth,
@@ -1632,6 +1640,23 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       const entity = next?.entities.find((row) => row.id === id);
       return entity === undefined ? null : { x: entity.x, y: entity.y };
     });
+    const rally = next?.rallies.find(
+      (point) =>
+        controller?.selected.has(point.building) === true &&
+        (next?.entities ?? []).some(
+          (entity) =>
+            entity.id === point.building && entity.owner === controlled,
+        ),
+    );
+    rallyMarker?.show(
+      rally === undefined
+        ? null
+        : {
+            x: rally.x,
+            y: rally.y,
+            color: OWNER_COLORS[controlled] ?? 0xffffff,
+          },
+    );
     decals?.update(effectTime(now));
     relief?.update(effectTime(now));
     fogOverlay?.update(fog);
@@ -1716,6 +1741,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       stateHash: () => interact.requestHash(),
       effectCounts: () => effects?.counts() ?? NO_EFFECT_COUNTS,
       attackMarkerCount: () => attackMarker?.activeCount() ?? 0,
+      rallyMarkerCount: () => rallyMarker?.activeCount() ?? 0,
+      rallyPoints: () => next?.rallies ?? [],
       decalCount: () => decals?.count() ?? 0,
       projectileCounts: () => projectiles?.counts() ?? NO_PROJECTILE_COUNTS,
       projectileSamples: () => projectiles?.samples() ?? [],

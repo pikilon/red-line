@@ -200,3 +200,20 @@ fn ac_03_18_rally_point() {
         None
     );
 }
+
+#[test]
+fn ac_33_06_rally_snapshot_with_an_empty_queue() {
+    let (mut world, factory) = factory_world();
+    world.enqueue(Command::Rally {
+        building: factory,
+        target: at(1550, 2050),
+    });
+    world.step();
+    let expected = [0, 1, factory as i32, 1015808, 1343488];
+    let own = sim::snapshot::encode_match_snapshot(&world, 0);
+    assert_eq!(&own[own.len() - expected.len()..], &expected);
+    let observer = sim::snapshot::encode_match_snapshot(&world, 255);
+    assert_eq!(&observer[observer.len() - expected.len()..], &expected);
+    let other = sim::snapshot::encode_match_snapshot(&world, 1);
+    assert_eq!(&other[other.len() - 2..], &[0, 0]);
+}
