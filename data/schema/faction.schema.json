@@ -121,7 +121,7 @@
         "dropOff": { "type": "boolean" },
         "freeUnit": { "$ref": "#/$defs/id" },
         "transport": {
-          "description": "Spec 32: infantry can ride this vehicle (Zero Hour TransportContain).",
+          "description": "Spec 34: infantry can ride this vehicle (Zero Hour TransportContain).",
           "type": "object",
           "additionalProperties": false,
           "required": ["slots", "damagePct", "exitTicks"],

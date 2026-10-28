@@ -94,14 +94,19 @@ pub enum Command {
     Unload {
         feature: u32,
     },
-    /// Spec 32: infantry walk to the own vehicle `carrier` and board it.
+    /// Spec 34: infantry walk to the own vehicle `carrier` and board it.
     Board {
         units: Vec<EntityId>,
         carrier: EntityId,
     },
-    /// Spec 32: the vehicle's riders leave it, one at a time.
+    /// Spec 34: the vehicle's riders leave it, one at a time.
     Disembark {
         carrier: EntityId,
+    },
+    /// Spec 35: infantry and dozers walk to map feature `feature` and repair it.
+    Repair {
+        units: Vec<EntityId>,
+        feature: u32,
     },
     DebugSpawn {
         kind: TypeId,
@@ -660,6 +665,7 @@ impl World {
         self.carry_riders();
         self.run_over();
         self.features_step();
+        self.repair_works();
         self.separate_units();
         self.arrive_on_contact();
         self.update_visibility();
@@ -766,6 +772,7 @@ impl World {
                 Command::Unload { feature } => self.apply_unload(player, feature),
                 Command::Board { units, carrier } => self.apply_board(player, &units, carrier),
                 Command::Disembark { carrier } => self.apply_disembark(player, carrier),
+                Command::Repair { units, feature } => self.apply_repair(player, &units, feature),
                 Command::AttackGround { units, target } => {
                     self.apply_attack_ground(player, &units, target);
                 }
@@ -1039,6 +1046,7 @@ impl World {
                     self.step_garrison(index, order_id, feature);
                 }
                 Order::Board { order_id, carrier } => self.step_board(index, order_id, carrier),
+                Order::Repair { order_id, feature } => self.step_repair(index, order_id, feature),
                 Order::Harvest { .. } => self.step_harvest(index),
                 Order::Attack { order_id, target } => self.step_attack(index, order_id, target),
                 Order::AttackGround { target, .. } => self.step_attack_ground(index, target),
@@ -1427,6 +1435,9 @@ impl World {
                     Order::Board { carrier, .. } => {
                         self.board_goal(carrier).map(|goal| self.nav.index(goal))
                     }
+                    Order::Repair { feature, .. } => self
+                        .repair_goal(index, feature)
+                        .map(|goal| self.nav.index(goal)),
                     _ => None,
                 };
                 goal.map(|goal| (self.layer_of(index), goal))

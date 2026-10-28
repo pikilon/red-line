@@ -43,6 +43,12 @@ import {
   withLiveState,
 } from "../input/garrison";
 import {
+  type RepairMapFeature,
+  type RepairTypeInfo,
+  repairJobsOf,
+  withRepairState,
+} from "../input/repair";
+import {
   createSkirmishController,
   type SkirmishController,
 } from "../input/skirmishController";
@@ -734,6 +740,17 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   /** The placed buildings the sim still accepts riders in, with their holder
    *  and occupants, from the latest feature table (spec 31 block 2). */
   let garrisonFeatures = withLiveState(placedGarrisons, null);
+  /** The map's bridges, in the sim's feature row order (spec 35). */
+  const placedBridges = repairJobsOf(
+    (
+      ruleset.maps.find((entry) => entry.id === mapId) as
+        | { features?: readonly RepairMapFeature[] }
+        | undefined
+    )?.features ?? [],
+    (ruleset as unknown as { featureTypes?: readonly RepairTypeInfo[] })
+      .featureTypes ?? [],
+  );
+  let repairJobs = withRepairState(placedBridges, null);
   const commandPanel = createCommandPanel(document.body, {
     onGarrison: (feature) => {
       uiClick();
@@ -1078,6 +1095,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       mapHeight: mapInfo.mapHeight,
       entities: () => next?.entities ?? [],
       garrisonFeatures: () => garrisonFeatures,
+      repairJobs: () => repairJobs,
       tiles: () => mapInfo.tiles,
       fog: () => fog,
       placementKind: () => placementKind,
@@ -1314,6 +1332,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     if (features !== null) {
       liveFeatures?.apply(features, performance.now());
       garrisonFeatures = withLiveState(placedGarrisons, features);
+      repairJobs = withRepairState(placedBridges, features);
     }
     const previous = next;
     flying = combat.projectiles;

@@ -270,7 +270,7 @@ pub struct TypeDef {
     /// Launcher types fire only while standing still (they stow when moving).
     #[serde(default)]
     pub stationary_fire: bool,
-    /// Spec 32: infantry can ride this vehicle; `None` means it carries nobody.
+    /// Spec 34: infantry can ride this vehicle; `None` means it carries nobody.
     #[serde(default)]
     pub transport: Option<TransportDef>,
     /// Precomputed at load (`Ruleset::from_json`), never read from the wire.
@@ -415,7 +415,7 @@ pub struct GarrisonDef {
     pub allow_enemies: bool,
 }
 
-/// Spec 32: transport data of a vehicle type (Zero Hour `TransportContain`).
+/// Spec 34: transport data of a vehicle type (Zero Hour `TransportContain`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransportDef {
@@ -588,6 +588,9 @@ pub struct Ruleset {
 pub struct EnvironmentDef {
     pub high_ground: HighGroundDef,
     pub cover: CoverDef,
+    /// Spec 35: repair works; `None` (no balance entry) means nothing repairs.
+    #[serde(default)]
+    pub repair: Option<RepairDef>,
 }
 
 impl Default for EnvironmentDef {
@@ -601,6 +604,7 @@ impl Default for EnvironmentDef {
                 forest_pct: 0,
                 wall_pct: 0,
             },
+            repair: None,
         }
     }
 }
@@ -611,6 +615,18 @@ impl Default for EnvironmentDef {
 pub struct HighGroundDef {
     pub min_tiles: u32,
     pub range_pct: u32,
+}
+
+/// Spec 35: how fast workers repair. Each worker on a job adds its points, up
+/// to `max_workers` workers; one point restores `permille_per_second_per_point`
+/// of the maximum hit points per second.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairDef {
+    pub permille_per_second_per_point: u32,
+    pub infantry_points: u32,
+    pub dozer_points: u32,
+    pub max_workers: u32,
 }
 
 /// Percent of damage a target in cover does not take; the best cover applies.

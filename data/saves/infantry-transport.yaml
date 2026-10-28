@@ -1,4 +1,4 @@
-# Spec 32: infantry ride vehicles. Player 0: four riflemen board the west Bradley and three the Kozak (both on their way
+# Spec 34: infantry ride vehicles. Player 0: four riflemen board the west Bradley and three the Kozak (both on their way
 # at load); a free squad stands beside an empty Bradley: select it and right click the Bradley. Select a loaded vehicle
 # and press Unload: the riders leave one at a time. The Kozak has fire ports, so its riders shoot from it; the Bradley
 # does not. Drive the Kozak east toward player 1's squad to see it. Player 1 boards a BMP-2 in the east.

@@ -60,6 +60,12 @@
     "cover": {
       "forestPct": 25,
       "wallPct": 40
+    },
+    "repair": {
+      "permillePerSecondPerPoint": 7,
+      "infantryPoints": 1,
+      "dozerPoints": 3,
+      "maxWorkers": 6
     }
   },
   "locomotors": [

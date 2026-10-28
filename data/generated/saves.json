@@ -228,6 +228,12 @@
       "map": "demo-ground",
       "form": "setup",
       "entities": 18
+    },
+    {
+      "id": "bridge-repair",
+      "map": "demo-bridges",
+      "form": "setup",
+      "entities": 8
     }
   ]
 }

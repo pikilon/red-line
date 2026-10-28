@@ -148,7 +148,7 @@ pub const FLAG_FIRED: i32 = 8;
 pub const FLAG_POWERED_OFF: i32 = 16;
 /// Spec 31 block 2: the unit is garrisoned in a building (shown to its owner only).
 pub const FLAG_INSIDE: i32 = 32;
-/// Spec 32: the unit rides a vehicle (with `FLAG_INSIDE`); its `progress`
+/// Spec 34: the unit rides a vehicle (with `FLAG_INSIDE`); its `progress`
 /// field holds the vehicle id.
 pub const FLAG_ABOARD: i32 = 64;
 

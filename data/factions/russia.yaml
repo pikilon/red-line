@@ -48,7 +48,7 @@ types:                               # required
     turretTurnRateDeg: 240
     weapon: ru-kpvt
     radiusCenti: 34
-    transport: { slots: 4, fireFromInside: true, damagePct: 100, exitTicks: 4 }   # spec 32: Humvee-like
+    transport: { slots: 4, fireFromInside: true, damagePct: 100, exitTicks: 4 }   # spec 34: Humvee-like
     render: { size: [60, 50, 90] }
   - id: ru-bmp-2
     category: unit
@@ -63,7 +63,7 @@ types:                               # required
     turretTurnRateDeg: 150
     weapon: ru-2a42
     radiusCenti: 41
-    transport: { slots: 6, damagePct: 10, exitTicks: 4 }   # spec 32: Troop Crawler-like
+    transport: { slots: 6, damagePct: 10, exitTicks: 4 }   # spec 34: Troop Crawler-like
     render: { size: [70, 55, 110] }
   - id: ru-t-72b3
     category: unit
