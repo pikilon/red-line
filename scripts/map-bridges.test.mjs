@@ -22,9 +22,9 @@ test("demo-bridges compiles with three decks over the river", () => {
   assert.deepEqual(errors, []);
   const decks = map.features.filter((f) => f.to);
   assert.equal(decks.length, 3);
-  // road-bridge 2 lanes, wooden 1 lane, stone arch 2 lanes: deck cells = 8 columns x lanes.
+  // road-bridge 2 lanes, wooden 2 lanes, stone arch 2 lanes: deck cells = 8 columns x lanes.
   const bytes = map.bridges.match(/../g).filter((b) => b !== "00");
-  assert.equal(bytes.length, 8 * (2 + 1 + 2));
+  assert.equal(bytes.length, 8 * (2 + 2 + 2));
 });
 
 test("a bridge must be straight, at least 3 cells, connect to land at both ends and not overlap", () => {
@@ -36,4 +36,20 @@ test("a bridge must be straight, at least 3 cells, connect to land at both ends 
   assert.ok(messages((m) => Object.assign(m.features[first(m)], { from: [31, 9], to: [33, 9] })).some((e) => /connect to land/.test(e)));
   assert.ok(messages((m) => m.features.push({ type: "road-bridge", from: [30, 10], to: [37, 10] })).some((e) => /connect to land|overlaps/.test(e)));
   assert.ok(messages((m) => (m.features[first(m)].type = "pine")).some((e) => /not a bridge type/.test(e)));
+});
+
+test("in demo-bridges every road meets its bridge head-on, lane by lane", () => {
+  const { map } = compile(() => {});
+  const roads = map.roads.match(/../g);
+  for (const d of map.features.filter((f) => f.to)) {
+    for (let y = d.y; y <= d.to[1]; y++) {
+      for (const x of [d.x - 1, d.to[0] + 1]) {
+        assert.notEqual(roads[y * map.width + x], "00", `no road at ${x},${y} beside the deck`);
+      }
+    }
+    // And no road row beside the deck that the deck does not cover.
+    for (const y of [d.y - 1, d.to[1] + 1]) {
+      assert.equal(roads[y * map.width + d.x - 1], "00", `road overhang at ${d.x - 1},${y}`);
+    }
+  }
 });

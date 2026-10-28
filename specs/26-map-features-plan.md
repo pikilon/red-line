@@ -667,9 +667,9 @@ the deck simply opens its cells on the single nav grid.
   footprints, so props and trees skip them. Bridges are expanded before other
   features.
 * **Types** (`data/features/bridges.yaml`, family `bridge`, `blocks: none`, new
-  optional `lanes` 1..2, `render.deckHeight` in tiles): `road-bridge` (2 lanes, 0.34;
+  optional `lanes` 1..2 (a road two cells wide runs on a cell boundary, so a 1-lane deck made units hug its edge: decks match the road width, and a lane row is `from.y .. from.y + lanes - 1`, the same rows a width-2 road covers), `render.deckHeight` in tiles): `road-bridge` (2 lanes, 0.34;
   concrete deck, asphalt wearing course with a dashed centre line, steel girders,
-  concrete pylons, barriers and a steel rail), `wooden-bridge` (1 lane, 0.22; planks,
+  concrete pylons, barriers and a steel rail), `wooden-bridge` (2 lanes, 0.22; planks,
   wooden piles, rope rails), `stone-arch` (2 lanes, 0.8; stone viaduct with arches,
   voussoir rings, parapets). Two variants each.
 * **Compiled map.** `bridges` (hex, one byte per cell, 0 none, otherwise the index of

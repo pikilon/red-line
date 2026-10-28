@@ -13,7 +13,7 @@ types:
     family: bridge
     footprint: [1, 1]
     blocks: none
-    lanes: 1
+    lanes: 2
     variants: 2
     render: { kind: wooden-bridge, deckHeight: 0.22 }
   - id: stone-arch

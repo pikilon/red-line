@@ -17,8 +17,8 @@ terrain:
   roads:
     - { type: asphalt, path: [[10, 10], [27, 10]], width: 2 }
     - { type: asphalt, path: [[36, 10], [54, 10]], width: 2 }
-    - { type: dirt, path: [[10, 24], [27, 24]], width: 1 }
-    - { type: dirt, path: [[36, 24], [54, 24]], width: 1 }
+    - { type: dirt, path: [[10, 24], [27, 24]], width: 2 }
+    - { type: dirt, path: [[36, 24], [54, 24]], width: 2 }
     - { type: asphalt, path: [[10, 38], [27, 38]], width: 2 }
     - { type: asphalt, path: [[36, 38], [54, 38]], width: 2 }
     - { type: asphalt, path: [[10, 10], [10, 38]], width: 2 }
@@ -28,8 +28,8 @@ terrain:
     - { kind: river, depth: deep, path: [[32, 0], [32, 47]], width: 4 }
 features:
   - { type: road-bridge, from: [28, 9], to: [35, 9], variant: 0 }
-  - { type: wooden-bridge, from: [28, 24], to: [35, 24], variant: 0 }
-  - { type: stone-arch, from: [28, 38], to: [35, 38], variant: 0 }
+  - { type: wooden-bridge, from: [28, 23], to: [35, 23], variant: 0 }
+  - { type: stone-arch, from: [28, 37], to: [35, 37], variant: 0 }
   - { type: pine, area: [2, 1, 22, 6], density: 25, seed: 3 }
   - { type: pine, area: [42, 1, 62, 6], density: 25, seed: 5 }
   - { type: pine, area: [2, 28, 22, 33], density: 20, seed: 9 }
