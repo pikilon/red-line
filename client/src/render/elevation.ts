@@ -113,11 +113,22 @@ export function fromCorners(
 let current: Elevation = flatElevation(1, 1);
 /** Visual surface on top of the elevation (craters and tread press, spec 24). */
 let reliefAt: ((x: number, y: number) => number) | null = null;
+/** Bridge deck surface in tiles at a position, or null off the decks (spec 26 section 17). */
+let deckAt: ((x: number, y: number) => number | null) | null = null;
 
 /** Makes `elevation` the ground every renderer stands things on. */
 export function setGroundElevation(elevation: Elevation | null): void {
   current = elevation ?? flatElevation(1, 1);
   reliefAt = null;
+  deckAt = null;
+}
+
+/** Makes `surfaceOf` the bridge deck units stand on: where it returns a
+ *  height, `groundY` is at least that. `null` clears it. */
+export function setDeckHeights(
+  surfaceOf: ((x: number, y: number) => number | null) | null,
+): void {
+  deckAt = surfaceOf;
 }
 
 /** Makes `heightOf` the visual surface the renderer stands things on: the
@@ -136,7 +147,10 @@ export function groundElevation(): Elevation {
 /** Ground height at sim tile (x, y), in tiles (Three y), including the visual
  *  relief under it (spec 24). */
 export function groundY(x: number, y: number): number {
-  return reliefAt === null ? current.at(x, y) : reliefAt(x, y);
+  const ground = reliefAt === null ? current.at(x, y) : reliefAt(x, y);
+  if (deckAt === null) return ground;
+  const deck = deckAt(x, y);
+  return deck === null ? ground : Math.max(ground, deck);
 }
 
 /** Ground a building of `w` x `d` tiles centred at (x, y) stands on: the
@@ -172,7 +186,9 @@ export function groundTilt(
   length: number,
   width: number,
 ): { pitch: number; roll: number } {
-  if (!current.raised && reliefAt === null) return { pitch: 0, roll: 0 };
+  if (!current.raised && reliefAt === null && deckAt === null) {
+    return { pitch: 0, roll: 0 };
+  }
   const fx = Math.sin(yaw);
   const fz = Math.cos(yaw);
   const halfLength = Math.max(0.25, length / 2);

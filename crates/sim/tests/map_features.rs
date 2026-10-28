@@ -50,7 +50,10 @@ fn deep_water_and_solid_footprints_block_shallows_and_roads_do_not() {
             match terrain.water_depth_at(cell) {
                 WATER_DEEP => {
                     deep += 1;
-                    assert!(!terrain.is_passable(cell), "deep water at {cell:?}");
+                    assert!(
+                        terrain.bridge_at(cell) != 0 || !terrain.is_passable(cell),
+                        "deep water at {cell:?}"
+                    );
                 }
                 WATER_SHALLOW => {
                     shallow += 1;
@@ -77,6 +80,9 @@ fn deep_water_and_solid_footprints_block_shallows_and_roads_do_not() {
         );
         last = (f.y, f.x);
         let def = &rules.feature_types[f.kind as usize];
+        if def.family == "bridge" {
+            continue; // a deck is walkable (see the bridge tests below)
+        }
         assert_ne!(def.blocks, FeatureBlocks::None);
         let (w, h) = if f.rot % 2 == 1 {
             (def.footprint[1], def.footprint[0])
@@ -117,4 +123,93 @@ fn a_unit_crosses_the_river_by_the_ford() {
         }
     }
     assert_eq!(cell_of(world.unit(id).unwrap().pos), cell_of(target));
+}
+
+/// Spec 26 section 17: deck cells open over deep water, nothing else does.
+#[test]
+fn bridge_decks_are_passable_over_deep_water_and_the_rest_of_the_river_is_not() {
+    let rules = Ruleset::builtin();
+    let map = rules.map("demo-bridges").unwrap();
+    let world = World::skirmish(rules.clone(), "demo-bridges", 1).unwrap();
+    let terrain = world.terrain();
+    let (mut deck_over_deep, mut deep_without_deck) = (0, 0);
+    for y in 0..i32::from(map.height) {
+        for x in 0..i32::from(map.width) {
+            let cell = c(x, y);
+            if terrain.water_depth_at(cell) != WATER_DEEP {
+                continue;
+            }
+            if terrain.bridge_at(cell) != 0 {
+                deck_over_deep += 1;
+                assert!(
+                    terrain.is_passable(cell),
+                    "deck over deep water at {cell:?}"
+                );
+            } else {
+                deep_without_deck += 1;
+                assert!(!terrain.is_passable(cell), "open deep water at {cell:?}");
+            }
+        }
+    }
+    // Three decks of 4 deep columns: 2 + 1 + 2 lanes.
+    assert_eq!(deck_over_deep, 4 * (2 + 1 + 2));
+    assert!(deep_without_deck > 100);
+}
+
+/// Orders `unit` to `target` and returns every cell it entered; panics if it
+/// does not arrive.
+fn walk(world: &mut World, unit: u32, target: FxVec2) -> Vec<Cell> {
+    world.enqueue(Command::Move {
+        units: vec![unit],
+        target,
+    });
+    let mut cells = Vec::new();
+    for _ in 0..6000 {
+        world.step();
+        let u = world.unit(unit).unwrap();
+        cells.push(cell_of(u.pos));
+        if matches!(u.order, Order::Idle { .. }) {
+            break;
+        }
+    }
+    assert_eq!(cell_of(world.unit(unit).unwrap().pos), cell_of(target));
+    cells
+}
+
+#[test]
+fn a_unit_crosses_the_deep_river_only_by_a_bridge() {
+    let rules = Ruleset::builtin();
+    let mut world = World::skirmish(rules, "demo-bridges", 1).unwrap();
+    // West bank to east bank at the row of the one-lane wooden bridge.
+    let id = world.spawn_unit_at(centre(22, 24));
+    let cells = walk(&mut world, id, centre(42, 24));
+    let in_deep: Vec<_> = cells
+        .iter()
+        .filter(|&&cell| world.terrain().water_depth_at(cell) == WATER_DEEP)
+        .collect();
+    assert!(!in_deep.is_empty(), "the unit must cross the deep river");
+    for cell in in_deep {
+        assert_ne!(
+            world.terrain().bridge_at(*cell),
+            0,
+            "left the deck at {cell:?}"
+        );
+    }
+
+    // Starting on the south road it still has to find a deck: nothing else is open.
+    let id = world.spawn_unit_at(centre(22, 30));
+    let cells = walk(&mut world, id, centre(42, 30));
+    assert!(cells.iter().all(|&cell| {
+        world.terrain().water_depth_at(cell) != WATER_DEEP || world.terrain().bridge_at(cell) != 0
+    }));
+}
+
+#[test]
+fn legacy_and_bridgeless_maps_have_no_deck_layer() {
+    let rules = Ruleset::builtin();
+    for id in ["first-line", "demo-forest", "demo-ground"] {
+        assert!(rules.map(id).unwrap().bridges.is_empty());
+        let world = World::skirmish(rules.clone(), id, 1).unwrap();
+        assert_eq!(world.terrain().bridge_at(c(5, 5)), 0);
+    }
 }

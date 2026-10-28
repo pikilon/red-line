@@ -198,6 +198,12 @@
       "map": "demo-coast",
       "form": "setup",
       "entities": 4
+    },
+    {
+      "id": "demo-bridges",
+      "map": "demo-bridges",
+      "form": "setup",
+      "entities": 12
     }
   ]
 }

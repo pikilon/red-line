@@ -9,7 +9,8 @@ export type FeatureFamily =
   | "building"
   | "prop"
   | "port"
-  | "wall";
+  | "wall"
+  | "bridge";
 
 /** Draw order of the families when a renderer pass runs over all of them. */
 export const FEATURE_FAMILIES: readonly FeatureFamily[] = [
@@ -18,6 +19,7 @@ export const FEATURE_FAMILIES: readonly FeatureFamily[] = [
   "prop",
   "port",
   "wall",
+  "bridge",
 ];
 
 export type FeatureBlocks = "all" | "vehicles" | "none";
@@ -64,6 +66,8 @@ export interface FeatureMap {
     readonly rot: number;
     readonly variant: number;
     readonly state: number;
+    /** Bridges only: the last (bottom-right) deck cell, inclusive. */
+    readonly to?: readonly [number, number];
   }[];
 }
 
@@ -101,7 +105,8 @@ export interface FeatureInstance {
   readonly variant: number;
   /** Index into `names.featureStates`: 0 intact, 1 damaged, 2 wrecked, 3 abandoned. */
   readonly state: number;
-  /** Footprint in cells after rotation (odd `rot` swaps width and height). */
+  /** Footprint in cells after rotation (odd `rot` swaps width and height); a
+   *  bridge's is its whole deck rectangle. */
   readonly width: number;
   readonly height: number;
 }
@@ -167,8 +172,18 @@ export function featureInstancesOf(
       rot: f.rot,
       variant: f.variant,
       state: f.state,
-      width: swap ? type.footprint[1] : type.footprint[0],
-      height: swap ? type.footprint[0] : type.footprint[1],
+      width:
+        f.to !== undefined
+          ? f.to[0] - f.x + 1
+          : swap
+            ? type.footprint[1]
+            : type.footprint[0],
+      height:
+        f.to !== undefined
+          ? f.to[1] - f.y + 1
+          : swap
+            ? type.footprint[0]
+            : type.footprint[1],
     });
   }
   return instances;

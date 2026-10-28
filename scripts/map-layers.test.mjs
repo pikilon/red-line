@@ -91,5 +91,5 @@ test("a road on deep water or a feature on a start is rejected", () => {
   };
   assert.ok(compile((m) => m.terrain.roads.push({ type: "dirt", path: [[5, 1], [20, 1]], width: 1 })).some((e) => /road on deep water/.test(e.message)));
   assert.ok(compile((m) => m.features.push({ type: "house-small", at: [8, 28] })).some((e) => /overlaps/.test(e.message)));
-  assert.ok(compile((m) => m.features.push({ type: "oak", at: [1, 20] })).some((e) => e.code === "unknown-reference"));
+  assert.ok(compile((m) => m.features.push({ type: "no-such-type", at: [1, 20] })).some((e) => e.code === "unknown-reference"));
 });

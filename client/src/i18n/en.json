@@ -143,6 +143,8 @@
   "saves.hills-and-cliffs.description": "Ukrainian armour climbs the ramp of a plateau on First Line; Russian tanks wait under its cliffs.",
   "saves.demo-coast.name": "Demo coast",
   "saves.demo-coast.description": "A sea coast with a harbour (pier, quays, cranes, warehouses, containers, boats, buoys, lighthouses), a river with a ford and a lake; two tanks per side.",
+  "saves.demo-bridges.name": "Demo bridges",
+  "saves.demo-bridges.description": "A deep river with a road bridge, a wooden bridge and a stone arch, roads leading to each; tanks and infantry of both sides wait at the approaches: order them across.",
   "saves.landscape-lab.name": "Landscape lab",
   "saves.landscape-lab.description": "A map with ground patches, a road, a river with a ford, a lake, a sea strip, pines and houses; two tanks per side.",
   "saves.demo-town.name": "Demo town",

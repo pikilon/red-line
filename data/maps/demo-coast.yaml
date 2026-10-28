@@ -19,6 +19,9 @@ terrain:
     - { kind: lake, depth: shallow, rect: [26, 34, 38, 46] }
     - { kind: lake, depth: deep, rect: [28, 36, 36, 44] }
 features:
+  # Bridges over the river (spec 26 section 17).
+  - { type: road-bridge, from: [40, 20], to: [47, 20], variant: 0 }
+  - { type: wooden-bridge, from: [41, 50], to: [48, 50], variant: 1 }
   # Quay along the shore, with a pier running out into the sea between the boats.
   - { type: quay, at: [8, 13], rot: 2, variant: 0 }
   - { type: quay, at: [12, 13], rot: 2, variant: 1 }

@@ -183,6 +183,18 @@
             }
           },
           {
+            "description": "A bridge: a straight deck from the first to the last cell of its top or left lane, horizontal or vertical (spec 26 section 17).",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "from", "to"],
+            "properties": {
+              "type": { "$ref": "faction.schema.json#/$defs/id" },
+              "from": { "$ref": "#/$defs/pair" },
+              "to": { "$ref": "#/$defs/pair" },
+              "variant": { "type": "integer", "minimum": 0 }
+            }
+          },
+          {
             "type": "object",
             "additionalProperties": false,
             "required": ["type", "area", "density", "seed"],

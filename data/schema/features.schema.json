@@ -14,7 +14,7 @@
         "required": ["id", "family", "footprint", "blocks"],
         "properties": {
           "id": { "$ref": "faction.schema.json#/$defs/id" },
-          "family": { "enum": ["vegetation", "building", "prop", "port", "wall"] },
+          "family": { "enum": ["vegetation", "building", "prop", "port", "wall", "bridge"] },
           "footprint": {
             "description": "[width, height] in cells at rot 0; odd rot swaps them.",
             "type": "array",
@@ -25,6 +25,12 @@
           "blocks": {
             "description": "all = nothing walks through; vehicles = infantry may pass (sim treats it as all until a later phase); none = decoration.",
             "enum": ["all", "vehicles", "none"]
+          },
+          "lanes": {
+            "description": "Bridges only: deck width in cells (spec 26 section 17).",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
           },
           "variants": { "type": "integer", "minimum": 1, "maximum": 16 },
           "render": {
