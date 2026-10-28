@@ -12,14 +12,13 @@ use crate::entity::EntityId;
 use crate::entity::{Entity, Ghost, HarvestPhase, Order, Projectile, QueueItem, Site};
 use crate::features::{self, FeatureState};
 use crate::fixed::{Fx, FxVec2};
-use crate::flow::FlowField;
 use crate::map::Cell;
 use crate::map::cell_of;
 use crate::nav::footprint_cells;
 use crate::player::Player;
 use crate::rules::{Category, MapDef, fx_centi};
 use crate::rules::{Ruleset, TypeId, WeaponId};
-use crate::world::{Command, MAX_UNITS, Outcome, SimError, World, map_terrain};
+use crate::world::{Command, Layer, MAX_UNITS, Outcome, SimError, World, map_terrain};
 
 /// Version of the `SimState` format (spec 19 §3.6).
 pub const SAVE_FORMAT_VERSION: u32 = 1;
@@ -50,6 +49,10 @@ pub struct SimState {
     /// because `Move` orders never rebuild a missing field; the fields are
     /// recomputed from `nav` on load (spec 19 §3.3).
     pub flow_goals: Vec<[i32; 2]>,
+    /// Spec 31 A7: goal cells of the cached foot-layer fields, ascending cell
+    /// index; absent while no rubble splits the layers.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub foot_flow_goals: Vec<[i32; 2]>,
     /// Ascending player.
     pub ais: Vec<AiState>,
     /// Spec 31: one row per map feature in map order. Missing in saves from
@@ -332,6 +335,8 @@ pub fn save_state(world: &World, seed: u64, ais: &[Ai]) -> Result<SimState, Stri
         terrain_base: _,
         features,
         nav: _,
+        terrain_foot: _,
+        nav_foot: _,
         players,
         entities,
         next_entity_id,
@@ -381,7 +386,13 @@ pub fn save_state(world: &World, seed: u64, ais: &[Ai]) -> Result<SimState, Stri
             .collect(),
         flow_goals: fields
             .keys()
-            .map(|&index| cell(world.nav.cell(index)))
+            .filter(|(layer, _)| *layer == Layer::Vehicle)
+            .map(|&(_, index)| cell(world.nav.cell(index)))
+            .collect(),
+        foot_flow_goals: fields
+            .keys()
+            .filter(|(layer, _)| *layer == Layer::Foot)
+            .map(|&(_, index)| cell(world.nav.cell(index)))
             .collect(),
         ais: sorted_ais.iter().map(|ai| ai.save(rules)).collect(),
         features: features
@@ -471,6 +482,7 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
     let cells = usize::from(map.width) * usize::from(map.height);
     let features = load_features(&state.features, &rules, &map)?;
     let terrain = features::with_blocks(&base, &features, &rules);
+    let terrain_foot = features::foot_blocks(&base, &features, &rules);
     let nav = terrain.clone();
 
     let players = state
@@ -504,6 +516,8 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
         terrain_base: base,
         features,
         nav,
+        terrain_foot,
+        nav_foot: None,
         players,
         entities,
         next_entity_id: state.next_entity_id,
@@ -524,13 +538,18 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
     };
     // Saved goals are never blocked, so the `Move` remap is a no-op.
     world.rebuild_nav();
-    for &goal in &state.flow_goals {
-        let goal = to_cell(goal);
-        if !world.nav.in_bounds(goal) {
-            return Err(format!("flow goal {goal:?} outside the map"));
+    let layers = [
+        (Layer::Vehicle, &state.flow_goals),
+        (Layer::Foot, &state.foot_flow_goals),
+    ];
+    for (layer, goals) in layers {
+        for &goal in goals {
+            let goal = to_cell(goal);
+            if !world.nav.in_bounds(goal) {
+                return Err(format!("flow goal {goal:?} outside the map"));
+            }
+            world.field(layer, goal);
         }
-        let field = FlowField::compute(&world.nav, goal);
-        world.fields.insert(world.nav.index(goal), field);
     }
     let ais = state
         .ais

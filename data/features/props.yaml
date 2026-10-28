@@ -1,6 +1,5 @@
 # Spec 26 Phase 1: prop feature types.
-# `blocks: vehicles` passes the schema, but the nav grid has a single layer, so the sim blocks the cells for
-# everybody until a later phase splits it; crate-stack therefore says `all`.
+# `blocks: vehicles` stops vehicles and lets infantry through (spec 31 A7); crate-stack says `all`.
 types:
   - id: crate-stack
     family: prop

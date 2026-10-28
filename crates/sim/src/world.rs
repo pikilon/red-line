@@ -13,7 +13,7 @@ use crate::map::{Cell, CellIndex, MapGrid, SPAWN_MAX, SPAWN_MIN, cell_center, ce
 use crate::nav::{approach_cell, footprint_cells, footprint_center};
 use crate::player::Player;
 use crate::rng::SplitMix64;
-use crate::rules::{Category, FactionId, MapDef, Ruleset, TypeId, WeaponId, fx_centi};
+use crate::rules::{Category, FactionId, LocoKind, MapDef, Ruleset, TypeId, WeaponId, fx_centi};
 
 pub type UnitId = EntityId;
 
@@ -31,6 +31,14 @@ pub const MAX_CENTROID_OFFSET: Fx = Fx::from_raw(393216);
 const MAX_GOAL_SEARCH_RING: i32 = 20;
 /// Spec 17 §4.1: direct-hit radius of a ballistic `splash == 0` projectile.
 pub const DIRECT_HIT_CENTI: u32 = 45;
+
+/// Passability layer a unit moves on (spec 31 A7): vehicles stop at rubble,
+/// foot units (Zero Hour's `Surfaces = GROUND RUBBLE`) walk through it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) enum Layer {
+    Vehicle,
+    Foot,
+}
 
 /// Commands issued by a player, applied at the start of the next step (§5.8).
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -164,6 +172,11 @@ pub struct World {
     pub(crate) features: Vec<FeatureState>,
     /// Terrain plus building and depot footprints (derived).
     pub(crate) nav: MapGrid,
+    /// Spec 31 A7: `terrain` without the `blocks: vehicles` footprints, and
+    /// `nav` built from it (derived). `None` while no rubble lies on the map:
+    /// foot units then use `terrain` and `nav`, and the `Vehicle` fields.
+    pub(crate) terrain_foot: Option<MapGrid>,
+    pub(crate) nav_foot: Option<MapGrid>,
     pub(crate) players: Vec<Player>,
     /// Ascending id; removed entities leave gaps.
     pub(crate) entities: Vec<Entity>,
@@ -179,8 +192,8 @@ pub struct World {
     /// starts (spec 17 §4.1).
     pub(crate) events: Vec<CombatEvent>,
     pub(crate) pending: Vec<(PlayerId, Command)>,
-    /// Keyed by goal cell index.
-    pub(crate) fields: BTreeMap<CellIndex, FlowField>,
+    /// Keyed by layer and goal cell index.
+    pub(crate) fields: BTreeMap<(Layer, CellIndex), FlowField>,
     pub(crate) outcome: Outcome,
     pub(crate) victory_enabled: bool,
     pub(crate) debug_commands: bool,
@@ -222,6 +235,8 @@ impl World {
             terrain_base: map.clone(),
             features: Vec::new(),
             nav: map,
+            terrain_foot: None,
+            nav_foot: None,
             players: vec![Player::new(0, 0, 0, cells)],
             entities: Vec::new(),
             next_entity_id: 0,
@@ -282,8 +297,10 @@ impl World {
         let terrain = features::with_blocks(&base, &features, &rules);
         let factions: Vec<FactionId> = map.starts.iter().map(|start| start.faction).collect();
         let mut world = World::sandbox(rules, terrain, &factions);
+        world.terrain_foot = features::foot_blocks(&base, &features, &world.rules);
         world.terrain_base = base;
         world.features = features;
+        world.rebuild_nav();
 
         for depot in &map.depots {
             world.place_depot(
@@ -536,27 +553,23 @@ impl World {
                 .any(|e| e.site.is_none() && cells.contains(&cell_of(e.pos)))
     }
 
-    /// `nav = terrain` plus every building and depot footprint; clears the flow
-    /// fields and remaps every `Move` whose goal became blocked (Phase 1 rule).
+    /// `nav = terrain` (and `nav_foot = terrain_foot`) plus every building and
+    /// depot footprint; clears the flow fields and remaps every `Move` whose
+    /// goal became blocked on the unit's layer (Phase 1 rule).
     pub(crate) fn rebuild_nav(&mut self) {
-        let mut nav = self.terrain.clone();
-        for entity in &self.entities {
-            if let Some(site) = &entity.site {
-                for cell in footprint_cells(site.origin, self.rules.ty(entity.kind).footprint) {
-                    nav.set_blocked(cell, true);
-                }
-            }
-        }
-        self.nav = nav;
+        self.nav = self.with_sites(&self.terrain);
+        self.nav_foot = self.terrain_foot.as_ref().map(|foot| self.with_sites(foot));
         self.fields.clear();
-        for entity in &mut self.entities {
-            let Order::Move { order_id, goal, .. } = entity.order else {
+        for index in 0..self.entities.len() {
+            let Order::Move { order_id, goal, .. } = self.entities[index].order else {
                 continue;
             };
-            if self.nav.is_passable(goal) {
+            let map = self.nav_of(index);
+            if map.is_passable(goal) {
                 continue;
             }
-            entity.order = match self.nav.nearest_passable(goal) {
+            let found = map.nearest_passable(goal);
+            self.entities[index].order = match found {
                 None => Order::Idle {
                     last_order_id: order_id,
                 },
@@ -567,6 +580,54 @@ impl World {
                 },
             };
         }
+    }
+
+    /// `terrain` plus every building and depot footprint.
+    fn with_sites(&self, terrain: &MapGrid) -> MapGrid {
+        let mut nav = terrain.clone();
+        for entity in &self.entities {
+            if let Some(site) = &entity.site {
+                for cell in footprint_cells(site.origin, self.rules.ty(entity.kind).footprint) {
+                    nav.set_blocked(cell, true);
+                }
+            }
+        }
+        nav
+    }
+
+    /// Layer unit `index` moves on: `Foot` for a foot locomotor while rubble
+    /// splits the layers, otherwise `Vehicle` (one shared grid and fields).
+    pub(crate) fn layer_of(&self, index: usize) -> Layer {
+        let foot = self.rules.ty(self.entities[index].kind).motion.kind == LocoKind::Foot;
+        if foot && self.nav_foot.is_some() {
+            Layer::Foot
+        } else {
+            Layer::Vehicle
+        }
+    }
+
+    /// Navigation grid of `layer`.
+    pub(crate) fn grid(&self, layer: Layer) -> &MapGrid {
+        match layer {
+            Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
+            Layer::Vehicle => &self.nav,
+        }
+    }
+
+    /// Navigation grid unit `index` moves on.
+    pub(crate) fn nav_of(&self, index: usize) -> &MapGrid {
+        self.grid(self.layer_of(index))
+    }
+
+    /// The flow field of `layer` toward `goal`, computed on demand.
+    pub(crate) fn field(&mut self, layer: Layer, goal: Cell) -> &FlowField {
+        let map = match layer {
+            Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
+            Layer::Vehicle => &self.nav,
+        };
+        self.fields
+            .entry((layer, map.index(goal)))
+            .or_insert_with(|| FlowField::compute(map, goal))
     }
 
     /// == `enqueue_as(0, command)`.
@@ -741,22 +802,24 @@ impl World {
     pub(crate) fn apply_move(&mut self, player: PlayerId, units: &[EntityId], target: FxVec2) {
         let target = self.clamp_to_map(target);
         let goal = cell_of(target);
-        if !self.nav.is_passable(goal) {
-            if self.nav.nearest_passable(goal).is_some() {
+        let commanded = self.commanded_units(player, units);
+        let layer = commanded
+            .first()
+            .map_or(Layer::Vehicle, |&index| self.layer_of(index));
+        let map = self.grid(layer);
+        if !map.is_passable(goal) {
+            if map.nearest_passable(goal).is_some() {
                 self.apply_spread_move(player, units, target, false);
             }
             return;
         }
         // A group never shares one destination: each unit keeps its offset
         // from the group centroid and claims its own cell.
-        if self.commanded_units(player, units).len() > 1 {
+        if commanded.len() > 1 {
             self.apply_spread_move(player, units, target, true);
             return;
         }
-        let map = &self.nav;
-        self.fields
-            .entry(map.index(goal))
-            .or_insert_with(|| FlowField::compute(map, goal));
+        self.field(layer, goal);
         let order_id = self.next_order_id;
         self.next_order_id += 1;
         let order = Order::Move {
@@ -840,10 +903,11 @@ impl World {
                 Fx::from_raw(target.y.raw() + dy),
             ));
             let candidate = cell_of(dest);
-            let goal = self
-                .nav
+            let layer = self.layer_of(index);
+            let map = self.grid(layer);
+            let goal = map
                 .ring_search(candidate, MAX_GOAL_SEARCH_RING, |c| !claimed.contains(&c))
-                .or_else(|| self.nav.nearest_passable(candidate));
+                .or_else(|| map.nearest_passable(candidate));
             let Some(goal) = goal else {
                 continue;
             };
@@ -866,10 +930,7 @@ impl World {
                     });
                 }
             }
-            let map = &self.nav;
-            self.fields
-                .entry(map.index(goal))
-                .or_insert_with(|| FlowField::compute(map, goal));
+            self.field(layer, goal);
             self.entities[index].order = Order::Move {
                 order_id,
                 target: cell_center(goal),
@@ -974,7 +1035,11 @@ impl World {
             }
             if unit.pos == before {
                 let motion = self.rules.ty(unit.kind).motion;
-                locomotor::coast(unit, &motion, &self.nav);
+                let nav = match self.layer_of(index) {
+                    Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
+                    Layer::Vehicle => &self.nav,
+                };
+                locomotor::coast(&mut self.entities[index], &motion, nav);
             }
         }
     }
@@ -1062,12 +1127,13 @@ impl World {
         let cell = cell_of(pos);
         let in_goal = cell == goal;
         let delta = target - pos;
-        let desired = if in_goal || self.nav.line_passable(pos, target) {
+        let layer = self.layer_of(index);
+        let desired = if in_goal || self.grid(layer).line_passable(pos, target) {
             delta.normalize()
         } else {
             let direction = self
                 .fields
-                .get(&self.nav.index(goal))
+                .get(&(layer, self.nav.index(goal)))
                 .and_then(|field| field.direction(cell));
             match direction {
                 Some(dir) => dir.unit_vector(),
@@ -1079,10 +1145,14 @@ impl World {
                 }
             }
         };
+        let nav = match layer {
+            Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
+            Layer::Vehicle => &self.nav,
+        };
         let arrived = locomotor::drive(
             &mut self.entities[index],
             &motion,
-            &self.nav,
+            nav,
             desired,
             delta.length(),
             in_goal,
@@ -1137,11 +1207,13 @@ impl World {
     /// centre in a straight passable line move to it, otherwise follow the (on
     /// demand) flow field; no direction means the unit stays this tick.
     pub(crate) fn step_toward_goal(&mut self, index: usize, goal: Cell) {
-        let map = &self.nav;
-        let field = self
-            .fields
-            .entry(map.index(goal))
-            .or_insert_with(|| FlowField::compute(map, goal));
+        let layer = self.layer_of(index);
+        self.field(layer, goal);
+        let map = match layer {
+            Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
+            Layer::Vehicle => &self.nav,
+        };
+        let field = &self.fields[&(layer, map.index(goal))];
         let pos = self.entities[index].pos;
         let kind = self.entities[index].kind;
         let motion = self.rules.ty(kind).motion;
@@ -1159,7 +1231,7 @@ impl World {
         locomotor::drive(
             &mut self.entities[index],
             &motion,
-            &self.nav,
+            map,
             desired,
             delta.length(),
             in_goal,
@@ -1230,18 +1302,11 @@ impl World {
                 push = FxVec2::ZERO;
             }
             let pos = self.entities[a].pos;
+            let nav = self.nav_of(a);
             let x = FxVec2::new(pos.x + push.x, pos.y);
-            let pos = if self.nav.is_passable(cell_of(x)) {
-                x
-            } else {
-                pos
-            };
+            let pos = if nav.is_passable(cell_of(x)) { x } else { pos };
             let y = FxVec2::new(pos.x, pos.y + push.y);
-            self.entities[a].pos = if self.nav.is_passable(cell_of(y)) {
-                y
-            } else {
-                pos
-            };
+            self.entities[a].pos = if nav.is_passable(cell_of(y)) { y } else { pos };
         }
     }
 
@@ -1326,20 +1391,25 @@ impl World {
 
     /// Phase 5: removes flow fields no move order uses any more.
     fn drop_unused_fields(&mut self) {
-        let used: BTreeSet<CellIndex> = (0..self.entities.len())
-            .filter_map(|index| match self.entities[index].order {
-                Order::Move { goal, .. } => Some(self.nav.index(goal)),
-                Order::Build { building, .. } => {
-                    self.build_goal(building).map(|goal| self.nav.index(goal))
-                }
-                Order::Harvest { .. } => self.harvest_goal(index).map(|goal| self.nav.index(goal)),
-                Order::Attack { target, .. } => {
-                    self.attack_goal(target).map(|goal| self.nav.index(goal))
-                }
-                Order::Garrison { feature, .. } => self
-                    .garrison_goal(self.entities[index].pos, feature)
-                    .map(|goal| self.nav.index(goal)),
-                _ => None,
+        let used: BTreeSet<(Layer, CellIndex)> = (0..self.entities.len())
+            .filter_map(|index| {
+                let goal = match self.entities[index].order {
+                    Order::Move { goal, .. } => Some(self.nav.index(goal)),
+                    Order::Build { building, .. } => {
+                        self.build_goal(building).map(|goal| self.nav.index(goal))
+                    }
+                    Order::Harvest { .. } => {
+                        self.harvest_goal(index).map(|goal| self.nav.index(goal))
+                    }
+                    Order::Attack { target, .. } => {
+                        self.attack_goal(target).map(|goal| self.nav.index(goal))
+                    }
+                    Order::Garrison { feature, .. } => self
+                        .garrison_goal(self.entities[index].pos, feature)
+                        .map(|goal| self.nav.index(goal)),
+                    _ => None,
+                };
+                goal.map(|goal| (self.layer_of(index), goal))
             })
             .collect();
         self.fields.retain(|goal, _| used.contains(goal));

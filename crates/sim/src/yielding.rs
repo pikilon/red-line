@@ -5,11 +5,10 @@ use std::collections::BTreeSet;
 
 use crate::entity::Order;
 use crate::fixed::{Fx, FxVec2};
-use crate::flow::FlowField;
 use crate::locomotor;
 use crate::map::{Cell, cell_center, cell_of};
 use crate::rules::LocoKind;
-use crate::world::World;
+use crate::world::{Layer, World};
 
 /// How far ahead of a moving unit idle allies are asked to step aside.
 pub const YIELD_LOOKAHEAD: Fx = Fx::from_raw(3 * 65536);
@@ -42,7 +41,8 @@ impl World {
             }
             let owner = mover.owner;
             let mover_foot = self.is_foot(m);
-            let path = self.path_ahead(positions[m], target, goal, YIELD_LOOKAHEAD);
+            let layer = self.layer_of(m);
+            let path = self.path_ahead(layer, positions[m], target, goal, YIELD_LOOKAHEAD);
             let candidates: BTreeSet<usize> = path
                 .iter()
                 .flat_map(|&point| self.neighbours(&buckets, cell_of(point)))
@@ -62,10 +62,11 @@ impl World {
                     continue;
                 }
                 let clear = clearance.get_or_insert_with(|| {
-                    self.path_ahead(positions[m], target, goal, YIELD_CLEARANCE_LOOKAHEAD)
+                    self.path_ahead(layer, positions[m], target, goal, YIELD_CLEARANCE_LOOKAHEAD)
                 });
                 let others = self.bodies_around(b, &positions, &radius, &buckets);
                 let Some(cell) = self.yield_cell(
+                    self.layer_of(b),
                     positions[b],
                     positions[m],
                     clear,
@@ -128,16 +129,24 @@ impl World {
     }
 
     /// Points of the path a unit at `pos` follows toward `target`, cut after
-    /// `budget` tiles: straight when the line is passable or inside the goal
-    /// cell, otherwise flow-field steps between cell centres.
-    fn path_ahead(&self, pos: FxVec2, target: FxVec2, goal: Cell, budget: Fx) -> Vec<FxVec2> {
+    /// `budget` tiles on `layer`: straight when the line is passable or inside
+    /// the goal cell, otherwise flow-field steps between cell centres.
+    fn path_ahead(
+        &self,
+        layer: Layer,
+        pos: FxVec2,
+        target: FxVec2,
+        goal: Cell,
+        budget: Fx,
+    ) -> Vec<FxVec2> {
         let mut points = vec![pos];
         let mut current = pos;
         let mut left = budget;
-        let field = self.fields.get(&self.nav.index(goal));
+        let nav = self.grid(layer);
+        let field = self.fields.get(&(layer, nav.index(goal)));
         while left > Fx::ZERO {
             let cell = cell_of(current);
-            let next = if cell == goal || self.nav.line_passable(current, target) {
+            let next = if cell == goal || nav.line_passable(current, target) {
                 target
             } else {
                 match field.and_then(|field| field.direction(cell)) {
@@ -212,6 +221,7 @@ impl World {
     #[allow(clippy::too_many_arguments)]
     fn yield_cell(
         &self,
+        layer: Layer,
         pos: FxVec2,
         mover: FxVec2,
         path: &[FxVec2],
@@ -222,6 +232,7 @@ impl World {
         others: &[(FxVec2, Fx)],
     ) -> Option<Cell> {
         let home = cell_of(pos);
+        let nav = self.grid(layer);
         for ring in 1..=YIELD_SEARCH_RING {
             let mut best: Option<(i64, i32, i32, Cell)> = None;
             for dy in -ring..=ring {
@@ -233,8 +244,8 @@ impl World {
                         x: home.x + dx,
                         y: home.y + dy,
                     };
-                    if !self.nav.in_bounds(cell)
-                        || !self.nav.is_passable(cell)
+                    if !nav.in_bounds(cell)
+                        || !nav.is_passable(cell)
                         || cell == goal
                         || claimed.contains(&cell)
                         || !buckets[self.nav.index(cell) as usize].is_empty()
@@ -245,7 +256,7 @@ impl World {
                     let drive = [pos, center];
                     if path_hits(path, center, reach)
                         || dot(center - pos, mover - pos) > 0
-                        || !self.nav.line_passable(pos, center)
+                        || !nav.line_passable(pos, center)
                         || others.iter().any(|&(at, gap)| path_hits(&drive, at, gap))
                     {
                         continue;
@@ -265,10 +276,8 @@ impl World {
 
     /// Gives unit `index` a move to the centre of `cell` under a fresh order id.
     fn order_yield(&mut self, index: usize, cell: Cell) {
-        let map = &self.nav;
-        self.fields
-            .entry(map.index(cell))
-            .or_insert_with(|| FlowField::compute(map, cell));
+        let layer = self.layer_of(index);
+        self.field(layer, cell);
         let order_id = self.next_order_id;
         self.next_order_id += 1;
         let target = cell_center(cell);

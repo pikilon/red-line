@@ -338,8 +338,7 @@ pub struct MapDef {
 #[serde(rename_all = "lowercase")]
 pub enum FeatureBlocks {
     All,
-    /// Accepted by the data; the nav grid has one layer, so it blocks like `All`
-    /// until a later phase splits it.
+    /// Blocks vehicles; foot units walk through (spec 31 A7, rubble).
     Vehicles,
     None,
 }
