@@ -30,7 +30,12 @@
     "aimToleranceDeg": { "$ref": "#/$defs/aimDeg" },
     "turretRecenterTicks": { "type": "integer", "minimum": 0 },
     "locomotors": { "type": "object", "additionalProperties": { "$ref": "#/$defs/locomotor" } },
-    "commonTypes": { "type": "array", "items": { "$ref": "faction.schema.json#/$defs/type" } }
+    "commonTypes": { "type": "array", "items": { "$ref": "faction.schema.json#/$defs/type" } },
+    "lateTypes": {
+      "description": "Spec 36: common types listed after the factions' types, so adding one keeps every earlier type index.",
+      "type": "array",
+      "items": { "$ref": "faction.schema.json#/$defs/type" }
+    }
   },
   "$defs": {
     "idList": { "type": "array", "minItems": 1, "items": { "$ref": "faction.schema.json#/$defs/id" } },

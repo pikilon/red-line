@@ -270,6 +270,10 @@ pub struct TypeDef {
     /// Launcher types fire only while standing still (they stow when moving).
     #[serde(default)]
     pub stationary_fire: bool,
+    /// Spec 36: a depot that never runs out (a port); trucks still pay its
+    /// `load_ticks` on top of their own each time they load.
+    #[serde(default)]
+    pub infinite: bool,
     /// Spec 34: infantry can ride this vehicle; `None` means it carries nobody.
     #[serde(default)]
     pub transport: Option<TransportDef>,
@@ -291,6 +295,9 @@ pub struct FactionDef {
 pub struct DepotDef {
     pub origin: [i32; 2],
     pub amount: u32,
+    /// Spec 36: depot type id; absent is the first depot type (`supply-depot`).
+    #[serde(default, rename = "type")]
+    pub kind: Option<String>,
 }
 
 /// A starting position for a map. `render` is ignored by the sim.

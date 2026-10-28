@@ -5,6 +5,7 @@ blocked: []                          # open ground; the water and the features b
 depots:                              # required; origin = top-left cell
   - { origin: [8, 44], amount: 10000 }
   - { origin: [54, 44], amount: 10000 }
+  - { origin: [26, 19], amount: 10000, type: port-depot }   # spec 36: the harbour's cargo yard never runs out
 # Spec 26 phase 4 demo: a coast with a harbour (every port prop), a river with a ford reaching the sea, and a lake.
 terrain:
   ground:

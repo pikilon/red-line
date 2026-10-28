@@ -480,7 +480,11 @@ impl World {
                     }
                     if self.docked(index, depot) {
                         phase = HarvestPhase::Loading;
-                        timer = self.rules.ty(kind).load_ticks;
+                        // Spec 36: a port makes the truck wait its own load time too.
+                        let extra = self
+                            .entity(depot)
+                            .map_or(0, |d| self.rules.ty(d.kind).load_ticks);
+                        timer = self.rules.ty(kind).load_ticks + extra;
                     }
                 }
                 HarvestPhase::Loading => {
@@ -489,7 +493,13 @@ impl World {
                         let capacity = self.rules.ty(kind).capacity;
                         let cargo = self.entities[index].cargo;
                         let take = self.index_of(depot).map_or(0, |d| {
-                            let take = capacity.saturating_sub(cargo).min(self.entities[d].hp);
+                            let want = capacity.saturating_sub(cargo);
+                            // Spec 36: a port never runs out (owner request; no
+                            // Zero Hour warehouse regenerates).
+                            if self.rules.ty(self.entities[d].kind).infinite {
+                                return want;
+                            }
+                            let take = want.min(self.entities[d].hp);
                             self.entities[d].hp -= take;
                             take
                         });

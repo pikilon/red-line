@@ -323,12 +323,21 @@ impl World {
         world.rebuild_nav();
 
         for depot in &map.depots {
-            world.place_depot(
+            let kind = depot
+                .kind
+                .as_deref()
+                .and_then(|id| world.rules.type_index(id))
+                .unwrap_or_else(|| world.rules.depot_type());
+            world.place_site(
+                NEUTRAL,
+                kind,
                 Cell {
                     x: depot.origin[0],
                     y: depot.origin[1],
                 },
                 depot.amount,
+                0,
+                true,
             );
         }
 

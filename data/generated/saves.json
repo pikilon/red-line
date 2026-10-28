@@ -240,6 +240,12 @@
       "map": "demo-ground",
       "form": "setup",
       "entities": 11
+    },
+    {
+      "id": "port-supply",
+      "map": "demo-coast",
+      "form": "setup",
+      "entities": 4
     }
   ]
 }
