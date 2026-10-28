@@ -1,4 +1,4 @@
-//! Spec 33: repair works. Infantry and dozers repair a damaged or broken
+//! Spec 35: repair works. Infantry and dozers repair a damaged or broken
 //! bridge; every worker on the job adds its work points (a deliberate
 //! difference from Zero Hour, where one dozer heals at a time and bridges are
 //! not repairable). Once a second, a job regains

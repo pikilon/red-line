@@ -49,7 +49,7 @@
       }
     },
     "features": {
-      "description": "Spec 33: map features damaged at tick 0, by a cell they cover.",
+      "description": "Spec 35: map features damaged at tick 0, by a cell they cover.",
       "type": "array",
       "items": {
         "type": "object",

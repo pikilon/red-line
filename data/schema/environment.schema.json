@@ -52,7 +52,7 @@
     "repair": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Spec 33: repair works; workers add up.",
+      "description": "Spec 35: repair works; workers add up.",
       "required": [
         "permillePerSecondPerPoint",
         "infantryPoints",

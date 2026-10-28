@@ -1135,7 +1135,7 @@ pub struct Setup {
     pub ai: Vec<SetupAi>,
     #[serde(default)]
     pub entities: Vec<SetupEntity>,
-    /// Spec 33: map features damaged at tick 0 (e.g. a broken bridge to repair).
+    /// Spec 35: map features damaged at tick 0 (e.g. a broken bridge to repair).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub features: Vec<SetupFeature>,
 }
@@ -1196,7 +1196,7 @@ pub enum SetupOrder {
     Garrison([i32; 2]),
     /// Spec 34: label of an own transport to board.
     Board(String),
-    /// Spec 33: a cell on the deck of the bridge to repair.
+    /// Spec 35: a cell on the deck of the bridge to repair.
     Repair([i32; 2]),
 }
 

@@ -1,4 +1,4 @@
-# Spec 33: repair works. The road bridge (north) is broken and the wooden bridge (middle) is badly damaged. Player 0's
+# Spec 35: repair works. The road bridge (north) is broken and the wooden bridge (middle) is badly damaged. Player 0's
 # three riflemen walk to the road bridge and repair it at once; a dozer and another squad wait on the west bank: select
 # them and right click a damaged bridge. Every worker adds up (a dozer counts as three soldiers, six workers at most),
 # so more workers finish faster; the broken bridge opens to traffic again once it is repaired past 35%.

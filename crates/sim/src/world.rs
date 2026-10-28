@@ -103,7 +103,7 @@ pub enum Command {
     Disembark {
         carrier: EntityId,
     },
-    /// Spec 33: infantry and dozers walk to map feature `feature` and repair it.
+    /// Spec 35: infantry and dozers walk to map feature `feature` and repair it.
     Repair {
         units: Vec<EntityId>,
         feature: u32,

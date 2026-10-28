@@ -3,7 +3,7 @@ import type { FeatureRow } from "../sim/featureSnapshot";
 import { ENTITY_FLAGS, type EntityState, hasFlag } from "../sim/matchSnapshot";
 import type { SimCommand } from "../sim/protocol";
 
-/** Spec 33: a repairable map feature (a bridge) and the cells it covers. */
+/** Spec 35: a repairable map feature (a bridge) and the cells it covers. */
 export interface RepairJob {
   /** Row in the map's feature list: the index the sim uses in `repair`. */
   index: number;

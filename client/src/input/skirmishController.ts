@@ -48,7 +48,7 @@ export interface SkirmishControllerOptions {
   command(command: SimCommand): void;
   /** Garrisonable features of the map (spec 31 block 2); none when absent. */
   garrisonFeatures?(): readonly GarrisonFeature[];
-  /** Spec 33: the map's bridges with their live damage; none when absent. */
+  /** Spec 35: the map's bridges with their live damage; none when absent. */
   repairJobs?(): readonly RepairJob[];
   onSelectionChange(selected: ReadonlySet<number>): void;
   /** Enables the debug-only F2/F3 keys (spec §6.5). */
@@ -403,7 +403,7 @@ export function createSkirmishController(
       for (const command of boarding) options.command(command);
       return;
     }
-    // Spec 33: workers repair the damaged bridge under the cursor.
+    // Spec 35: workers repair the damaged bridge under the cursor.
     const repairing = resolveRepairClick({
       player: options.player(),
       selected: [...selected],

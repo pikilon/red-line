@@ -59,7 +59,7 @@ export type SimCommand =
   | { kind: "board"; player: number; units: number[]; carrier: number }
   /** Spec 34: the riders of vehicle `carrier` leave it, one at a time. */
   | { kind: "disembark"; player: number; carrier: number }
-  /** Spec 33: infantry and dozers walk to feature `feature` and repair it. */
+  /** Spec 35: infantry and dozers walk to feature `feature` and repair it. */
   | { kind: "repair"; player: number; units: number[]; feature: number }
   | {
       kind: "debugSpawn";

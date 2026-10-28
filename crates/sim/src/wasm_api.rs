@@ -223,7 +223,7 @@ impl Sim {
             .enqueue_as(player, Command::Disembark { carrier });
     }
 
-    /// Spec 33: `unit_ids` walk to map feature `feature` and repair it.
+    /// Spec 35: `unit_ids` walk to map feature `feature` and repair it.
     pub fn command_repair(&mut self, player: u8, unit_ids: &[u32], feature: u32) {
         self.world.enqueue_as(
             player,

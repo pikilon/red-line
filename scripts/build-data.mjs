@@ -535,7 +535,7 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
           environment: {
             highGround: { minTiles: environment.highGround.minTiles, rangePct: environment.highGround.rangePct },
             cover: { forestPct: environment.cover.forest.pct, wallPct: environment.cover.wall.pct },
-            // Spec 33: repair works.
+            // Spec 35: repair works.
             ...(environment.repair === undefined ? {} : { repair: environment.repair }),
           },
         }

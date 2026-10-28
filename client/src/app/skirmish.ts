@@ -740,7 +740,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   /** The placed buildings the sim still accepts riders in, with their holder
    *  and occupants, from the latest feature table (spec 31 block 2). */
   let garrisonFeatures = withLiveState(placedGarrisons, null);
-  /** The map's bridges, in the sim's feature row order (spec 33). */
+  /** The map's bridges, in the sim's feature row order (spec 35). */
   const placedBridges = repairJobsOf(
     (
       ruleset.maps.find((entry) => entry.id === mapId) as

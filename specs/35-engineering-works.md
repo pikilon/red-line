@@ -1,4 +1,4 @@
-# 33 — Engineering works: bridge repair
+# 35 — Engineering works: bridge repair
 
 Status: bridge repair built (owner request 2026-10-28, backlog item 2 in
 `docs/roadmap.md`); trenches are the next PR of this spec.
@@ -68,6 +68,6 @@ once repaired above that threshold, and the client draws it again.
 
 ## 7. Acceptance criteria
 
-AC-33-01..04 in `crates/sim/tests/repair.rs`: infantry reopen a broken
+AC-35-01..04 in `crates/sim/tests/repair.rs`: infantry reopen a broken
 bridge; more workers and dozers finish faster, the cap holds; tanks and whole
 bridges take no work; repair survives a save.

@@ -588,7 +588,7 @@ pub struct Ruleset {
 pub struct EnvironmentDef {
     pub high_ground: HighGroundDef,
     pub cover: CoverDef,
-    /// Spec 33: repair works; `None` (no balance entry) means nothing repairs.
+    /// Spec 35: repair works; `None` (no balance entry) means nothing repairs.
     #[serde(default)]
     pub repair: Option<RepairDef>,
 }
@@ -617,7 +617,7 @@ pub struct HighGroundDef {
     pub range_pct: u32,
 }
 
-/// Spec 33: how fast workers repair. Each worker on a job adds its points, up
+/// Spec 35: how fast workers repair. Each worker on a job adds its points, up
 /// to `max_workers` workers; one point restores `permille_per_second_per_point`
 /// of the maximum hit points per second.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]

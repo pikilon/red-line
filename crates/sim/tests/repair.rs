@@ -1,4 +1,4 @@
-//! AC-33-01..05: infantry and dozers repair bridges, and workers add up (spec 33).
+//! AC-35-01..05: infantry and dozers repair bridges, and workers add up (spec 35).
 
 use sim::entity::{EntityId, Order};
 use sim::fixed::{Fx, FxVec2};

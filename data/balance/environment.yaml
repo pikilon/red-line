@@ -4,7 +4,7 @@ cover:                                       # pct = damage the target avoids; t
   crater: { pct: 30 }                        # read when the sim tracks craters (spec 24); not applied yet
   forest: { pct: 25 }                        # target on or beside a living tree or hedge (stumps and bushes give none)
   wall:   { pct: 40, blocksShots: false }    # the shot crosses a wall or building footprint; reduces, does not stop (spec 31 section 9, question 2)
-# Spec 33: repair works. Zero Hour's dozer heals 2% of max health per second alone (RepairHealthPercentPerSecond);
+# Spec 35: repair works. Zero Hour's dozer heals 2% of max health per second alone (RepairHealthPercentPerSecond);
 # here workers add up (owner request): each worker brings its work points, up to maxWorkers workers per job.
 repair:
   permillePerSecondPerPoint: 7   # max hp permille one work point restores per second (dozer 3 points = 2.1%/s)

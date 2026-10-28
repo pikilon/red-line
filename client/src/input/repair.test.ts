@@ -29,7 +29,7 @@ const row = (index: number, alive: boolean, hpPermille: number) => ({
   occupants: 0,
 });
 
-describe("spec 33 repair input", () => {
+describe("spec 35 repair input", () => {
   // Row 0 a lamp, row 1 a bridge from (5, 2) to (9, 3).
   const jobs = repairJobsOf(
     [
