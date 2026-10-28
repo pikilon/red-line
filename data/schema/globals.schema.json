@@ -27,6 +27,7 @@
     "lowPowerMaxSpeedPercent": { "$ref": "#/$defs/percent" },
     "maxQueue": { "type": "integer", "minimum": 1, "maximum": 9 },
     "dockRangeCenti": { "type": "integer", "minimum": 1 },
+    "sellRefundPercent": { "$ref": "#/$defs/percent" },
     "aimToleranceDeg": { "$ref": "#/$defs/aimDeg" },
     "turretRecenterTicks": { "type": "integer", "minimum": 0 },
     "locomotors": { "type": "object", "additionalProperties": { "$ref": "#/$defs/locomotor" } },

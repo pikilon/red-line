@@ -536,6 +536,7 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
     armorClasses: globals.armorClasses,
     damageModifiers: globals.damageTypes.map((d) => globals.armorClasses.map((a) => globals.damageModifiers[d][a])),
     startingCredits: globals.startingCredits,
+    sellRefundPercent: globals.sellRefundPercent ?? 50,
     lowPowerMinSpeedPercent: globals.lowPowerMinSpeedPercent,
     lowPowerMaxSpeedPercent: globals.lowPowerMaxSpeedPercent,
     maxQueue: globals.maxQueue,

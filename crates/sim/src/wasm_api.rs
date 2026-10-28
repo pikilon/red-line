@@ -296,6 +296,10 @@ impl Sim {
         self.world.enqueue_as(player, Command::Cancel { building });
     }
 
+    pub fn command_sell(&mut self, player: u8, building: u32) {
+        self.world.enqueue_as(player, Command::Sell { building });
+    }
+
     pub fn command_rally(&mut self, player: u8, building: u32, x_raw: i32, y_raw: i32) {
         self.world.enqueue_as(
             player,

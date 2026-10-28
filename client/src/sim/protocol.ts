@@ -43,6 +43,7 @@ export type SimCommand =
   | { kind: "resume"; player: number; units: number[]; building: number }
   | { kind: "produce"; player: number; building: number; typeIndex: number }
   | { kind: "cancel"; player: number; building: number }
+  | { kind: "sell"; player: number; building: number }
   | {
       kind: "rally";
       player: number;

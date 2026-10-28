@@ -173,6 +173,7 @@ describe("worker handler", () => {
     const command_produce =
       vi.fn<(player: number, building: number, kind: number) => void>();
     const command_cancel = vi.fn<(player: number, building: number) => void>();
+    const command_sell = vi.fn<(player: number, building: number) => void>();
     const command_rally =
       vi.fn<
         (player: number, building: number, xRaw: number, yRaw: number) => void
@@ -205,6 +206,7 @@ describe("worker handler", () => {
       command_resume,
       command_produce,
       command_cancel,
+      command_sell,
       command_rally,
       command_stop,
       command_garrison: vi.fn(),
@@ -289,6 +291,7 @@ describe("worker handler", () => {
       { kind: "resume", player: 1, units: [9], building: 16 },
       { kind: "produce", player: 1, building: 16, typeIndex: 5 },
       { kind: "cancel", player: 1, building: 16 },
+      { kind: "sell", player: 1, building: 16 },
       { kind: "rally", player: 1, building: 16, xRaw: 4194304, yRaw: 2097152 },
       { kind: "stop", player: 1, units: [4, 5] },
       { kind: "debugSpawn", player: 1, typeIndex: 5, xRaw: 1, yRaw: 2 },
@@ -309,6 +312,7 @@ describe("worker handler", () => {
     expect(command_resume).toHaveBeenCalledWith(1, new Uint32Array([9]), 16);
     expect(command_produce).toHaveBeenCalledWith(1, 16, 5);
     expect(command_cancel).toHaveBeenCalledWith(1, 16);
+    expect(command_sell).toHaveBeenCalledWith(1, 16);
     expect(command_rally).toHaveBeenCalledWith(1, 16, 4194304, 2097152);
     expect(command_stop).toHaveBeenCalledWith(1, new Uint32Array([4, 5]));
     expect(debug_spawn).toHaveBeenCalledWith(1, 5, 1, 2);
@@ -364,6 +368,7 @@ describe("worker handler", () => {
       command_resume: vi.fn(),
       command_produce: vi.fn(),
       command_cancel: vi.fn(),
+      command_sell: vi.fn(),
       command_rally: vi.fn(),
       command_stop: vi.fn(),
       command_garrison: vi.fn(),
@@ -423,6 +428,7 @@ describe("worker handler", () => {
       command_resume: vi.fn(),
       command_produce: vi.fn(),
       command_cancel: vi.fn(),
+      command_sell: vi.fn(),
       command_rally: vi.fn(),
       command_stop: vi.fn(),
       command_garrison: vi.fn(),
@@ -500,6 +506,7 @@ describe("worker handler", () => {
       command_resume: vi.fn(),
       command_produce: vi.fn(),
       command_cancel: vi.fn(),
+      command_sell: vi.fn(),
       command_rally: vi.fn(),
       command_stop: vi.fn(),
       command_garrison: vi.fn(),
@@ -569,6 +576,7 @@ function saveSim(world: string, error?: string): SkirmishSimLike {
     command_resume: vi.fn(),
     command_produce: vi.fn(),
     command_cancel: vi.fn(),
+    command_sell: vi.fn(),
     command_rally: vi.fn(),
     command_stop: vi.fn(),
     command_garrison: vi.fn(),

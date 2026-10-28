@@ -80,6 +80,12 @@
       "entities": 5
     },
     {
+      "id": "selling",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 3
+    },
+    {
       "id": "construction",
       "map": "showcase",
       "form": "setup",

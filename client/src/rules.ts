@@ -58,6 +58,7 @@ export interface FactionDef {
 
 export interface Ruleset {
   maxQueue: number;
+  sellRefundPercent: number;
   locomotors: LocomotorDef[];
   types: TypeDef[];
   factions: FactionDef[];
@@ -65,6 +66,7 @@ export interface Ruleset {
 
 export const RULES: Ruleset = {
   maxQueue: ruleset.maxQueue,
+  sellRefundPercent: ruleset.sellRefundPercent,
   locomotors: ruleset.locomotors as LocomotorDef[],
   types: ruleset.types as unknown as TypeDef[],
   factions: ruleset.factions as FactionDef[],

@@ -329,6 +329,9 @@ pub enum CommandState {
     Cancel {
         building: u32,
     },
+    Sell {
+        building: u32,
+    },
     Rally {
         building: u32,
         target: [i32; 2],
@@ -1037,6 +1040,9 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
         Command::Cancel { building } => CommandState::Cancel {
             building: *building,
         },
+        Command::Sell { building } => CommandState::Sell {
+            building: *building,
+        },
         Command::Rally { building, target } => CommandState::Rally {
             building: *building,
             target: vec2(*target),
@@ -1110,6 +1116,9 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
             kind: type_index(rules, kind)?,
         },
         CommandState::Cancel { building } => Command::Cancel {
+            building: *building,
+        },
+        CommandState::Sell { building } => Command::Sell {
             building: *building,
         },
         CommandState::Rally { building, target } => Command::Rally {

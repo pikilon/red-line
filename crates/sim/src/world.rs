@@ -79,6 +79,10 @@ pub enum Command {
     Cancel {
         building: EntityId,
     },
+    /// Spec 37: sell a complete own building and refund its queue.
+    Sell {
+        building: EntityId,
+    },
     Rally {
         building: EntityId,
         target: FxVec2,
@@ -789,6 +793,7 @@ impl World {
                 Command::Move { units, target } => self.apply_move(player, &units, target),
                 Command::Produce { building, kind } => self.apply_produce(player, building, kind),
                 Command::Cancel { building } => self.apply_cancel(player, building),
+                Command::Sell { building } => self.apply_sell(player, building),
                 Command::Rally { building, target } => self.apply_rally(player, building, target),
                 Command::Construct {
                     dozer,

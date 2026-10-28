@@ -26,7 +26,8 @@ export interface CommandButton {
     | "garrison"
     | "evacuate"
     | "disembark"
-    | "dig";
+    | "dig"
+    | "sell";
   /** Feature index the garrison and evacuate buttons act on. */
   feature?: number;
   /** Spec 34: vehicle the Unload button empties. */
@@ -102,6 +103,24 @@ export function commandButtons({
     queue,
   });
   const extra: CommandButton[] = [];
+  const subject = selected.length === 1 ? selected[0] : undefined;
+  if (
+    subject !== undefined &&
+    ownEntities.some((entity) => entity.id === subject.id) &&
+    typeDef(subject.kind).category === "building" &&
+    isComplete(subject)
+  ) {
+    const refund = Math.floor(
+      (typeDef(subject.kind).cost * RULES.sellRefundPercent) / 100,
+    );
+    extra.push({
+      typeIndex: -1,
+      label: t("ui.sell", { refund }),
+      cost: 0,
+      enabled: true,
+      action: "sell",
+    });
+  }
   if (garrison?.garrison != null) {
     extra.push(garrisonButton("garrison", garrison.garrison));
   }
@@ -261,6 +280,8 @@ export function createCommandPanel(
     onConstruct(kind: number): void;
     onProduce(kind: number): void;
     onCancel(): void;
+    /** Spec 37: sell the selected complete building. */
+    onSell(): void;
     /** Spec 31 block 2: the Garrison button was pressed for `feature`. */
     onGarrison?(feature: number): void;
     /** Spec 31 block 2: the Evacuate button was pressed for `feature`. */
@@ -313,6 +334,7 @@ export function createCommandPanel(
       else if (button.action === "evacuate")
         handlers.onEvacuate?.(button.feature ?? -1);
       else if (button.action === "dig") handlers.onDig?.();
+      else if (button.action === "sell") handlers.onSell();
       else if (button.action === "disembark")
         handlers.onDisembark?.(button.carrier ?? -1);
       else handlers.onProduce(button.typeIndex);
