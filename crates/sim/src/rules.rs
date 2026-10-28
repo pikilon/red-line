@@ -362,6 +362,32 @@ pub struct FeatureTypeDef {
     /// Spec 31: the feature type a destroyed feature becomes; `None` removes it.
     #[serde(default)]
     pub destroy: Option<FeatureDestroy>,
+    /// Spec 31 block 1: lowest crusher level that flattens the feature; 0 means
+    /// vehicles cannot crush it. Wheeled vehicles shove and damage the ones
+    /// that do not block movement.
+    #[serde(default, rename = "crushLevel")]
+    pub crush_level: u8,
+    /// Spec 31 block 1: the feature burns when hit and spreads the fire.
+    #[serde(default)]
+    pub flammable: Option<FeatureFlammable>,
+}
+
+/// Spec 31 block 1: fire on a feature. Everything is an integer.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+pub struct FeatureFlammable {
+    /// Hit points a burning feature loses every `everyTicks` ticks.
+    pub dps: u32,
+    #[serde(rename = "everyTicks")]
+    pub every_ticks: u32,
+    /// Cells between footprints within which a burning feature can light another.
+    #[serde(rename = "spreadRadius")]
+    pub spread_radius: i32,
+    /// Chance in 1/1000 that one burning neighbour lights this feature on a tick.
+    #[serde(rename = "spreadPermille")]
+    pub spread_permille: u32,
+    /// Ticks a fire lasts before it burns out.
+    #[serde(rename = "burnTicks")]
+    pub burn_ticks: u32,
 }
 
 /// Spec 31: damage thresholds of a feature type, percent of hit points.
@@ -375,6 +401,10 @@ pub struct FeatureStates {
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 pub struct FeatureDestroy {
     pub becomes: String,
+    /// Ticks the feature stays standing (wrecked) after reaching zero hit
+    /// points before it turns into `becomes` (building collapse); 0 is at once.
+    #[serde(default, rename = "collapseTicks")]
+    pub collapse_ticks: u32,
 }
 
 fn default_states() -> FeatureStates {

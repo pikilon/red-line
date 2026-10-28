@@ -1,4 +1,4 @@
-# Spec 26 section 17: river bridges (family bridge). Static and indestructible for now. A map places one with
+# Spec 26 section 17: river bridges (family bridge). Spec 31 block 1: shots damage a bridge; at the wrecked state (35% hp) its deep-water deck cells block. A map places one with
 # `{ type, from: [x, y], to: [x, y] }`; `lanes` is the deck width in cells; `render.deckHeight` is the deck
 # height above the ground in tiles (units on the deck stand there). The deck cells are passable over deep water.
 types:
@@ -8,6 +8,7 @@ types:
     blocks: none
     lanes: 2
     variants: 2
+    hp: 1500
     render: { kind: road-bridge, deckHeight: 0.34 }
   - id: wooden-bridge
     family: bridge
@@ -15,6 +16,7 @@ types:
     blocks: none
     lanes: 2
     variants: 2
+    hp: 600
     render: { kind: wooden-bridge, deckHeight: 0.22 }
   - id: stone-arch
     family: bridge
@@ -22,4 +24,5 @@ types:
     blocks: none
     lanes: 2
     variants: 2
+    hp: 2500
     render: { kind: stone-arch, deckHeight: 0.8 }

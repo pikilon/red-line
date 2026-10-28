@@ -70,6 +70,12 @@ pub struct FeatureSaveState {
     pub state: u8,
     pub hp: u32,
     pub alive: bool,
+    /// Ticks of fire left (spec 31 block 1); missing means not burning.
+    #[serde(default)]
+    pub burn: u32,
+    /// Ticks until the building collapses; missing means not collapsing.
+    #[serde(default)]
+    pub collapse: u32,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -381,6 +387,8 @@ fn save_feature(row: &FeatureState, rules: &Ruleset) -> FeatureSaveState {
         state: row.state,
         hp: row.hp,
         alive: row.alive,
+        burn: row.burn,
+        collapse: row.collapse,
     }
 }
 
@@ -403,7 +411,8 @@ fn load_features(
     }
     saved
         .iter()
-        .map(|row| {
+        .zip(&map.features)
+        .map(|(row, placed)| {
             let kind = rules
                 .feature_types
                 .iter()
@@ -418,6 +427,9 @@ fn load_features(
                 state: row.state,
                 hp: row.hp,
                 alive: row.alive,
+                to: placed.to,
+                burn: row.burn,
+                collapse: row.collapse,
             })
         })
         .collect()

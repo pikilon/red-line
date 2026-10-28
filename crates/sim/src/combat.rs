@@ -152,6 +152,9 @@ impl World {
         if flight == 0 {
             // Instant branch of §5.11 step 4, with the target's position as the
             // impact point for splash.
+            if target.is_none() {
+                self.hit_features(aim, weapon);
+            }
             if weapon.splash_centi > 0 {
                 self.apply_splash(shooter, weapon_id, weapon, aim);
             } else if let Some(hit) = target.or_else(|| self.direct_hit(shooter, weapon, aim)) {
@@ -363,6 +366,7 @@ impl World {
         let Some(weapon) = self.weapon_def(projectile.weapon) else {
             return;
         };
+        self.hit_features(projectile.impact, &weapon);
         let hit = if weapon.splash_centi > 0 {
             self.apply_splash(
                 projectile.shooter,

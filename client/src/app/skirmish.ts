@@ -74,9 +74,10 @@ import {
 } from "../render/elevation";
 import { createEntityRenderer, type EntityRenderer } from "../render/entities";
 import {
-  createMapFeatures,
+  createLiveMapFeatures,
   type FeatureMap,
   type FeatureRules,
+  type LiveMapFeatures,
 } from "../render/features";
 import { createFogOverlay } from "../render/fog";
 import {
@@ -754,6 +755,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   const vehicleFx = createVehicleFx();
   let entities: EntityRenderer | null = null;
   let terrain: Group | null = null;
+  /** Map features that follow the snapshot's feature table (spec 31). */
+  let liveFeatures: LiveMapFeatures | null = null;
   /** Generated PNGs, loaded the first time they are switched on (spec 12). */
   let generated: GeneratedTextures | null = null;
   let generatedLoading = false;
@@ -907,13 +910,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     scene.add(terrain);
     // Ground/water layers and placed features of the map (spec 26 Phase 1).
     if (mapDefinition !== undefined) {
-      scene.add(
-        createMapFeatures(
-          ruleset as unknown as FeatureRules,
-          mapDefinition as FeatureMap,
-          elevation,
-        ),
+      liveFeatures = createLiveMapFeatures(
+        ruleset as unknown as FeatureRules,
+        mapDefinition as FeatureMap,
+        elevation,
       );
+      scene.add(liveFeatures.object);
     }
     // Units, hulks and corpses stand on the visual surface, craters included
     // (spec 24 §3.6). The simulation keeps its flat 2D height.
@@ -1254,8 +1256,9 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     );
   }
 
-  interact.onSnapshot((snapshot, receivedFog, at, combat) => {
+  interact.onSnapshot((snapshot, receivedFog, at, combat, features) => {
     initial ??= snapshot;
+    if (features !== null) liveFeatures?.apply(features, performance.now());
     const previous = next;
     flying = combat.projectiles;
     prev = previous ?? snapshot;
@@ -1514,6 +1517,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     }
     lastFrameMs = now;
     controller?.update(dtMs / 1000);
+    liveFeatures?.update(now);
     const relief = terrain === null ? null : terrainDeformerOf(terrain);
     updateSun();
     if (next !== null && prev !== null && entities !== null) {

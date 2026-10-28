@@ -1,0 +1,39 @@
+id: demo-destruction                 # required, equals the file name
+width: 64
+height: 40
+blocked: []
+depots:
+  - { origin: [2, 2], amount: 10000 }
+  - { origin: [58, 2], amount: 10000 }
+# Spec 31 block 1 demo (example save `environment-destruction`): bushes and fences a tank drives over, a pine grove a
+# shell sets on fire, two houses shelled into rubble and a wooden bridge shelled until it breaks.
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: dirt, rect: [34, 8, 56, 24] }
+  roads:
+    - { type: dirt, path: [[4, 7], [32, 7]], width: 1 }
+  water:
+    - { kind: river, depth: shallow, path: [[0, 32], [63, 32]], width: 6 }
+    - { kind: river, depth: deep, path: [[0, 32], [63, 32]], width: 4 }
+features:
+  # Row of bushes and fences on the tank lane.
+  - { type: bush, at: [10, 7], variant: 0 }
+  - { type: bush, at: [12, 7], variant: 1 }
+  - { type: bush, at: [14, 7], variant: 2 }
+  - { type: fence, at: [18, 7], variant: 0 }
+  - { type: fence, at: [19, 7], variant: 1 }
+  - { type: fence, at: [20, 7], variant: 2 }
+  - { type: bush, at: [24, 7], variant: 1 }
+  - { type: bush, at: [26, 7], variant: 0 }
+  # Pine grove: close trees so the fire spreads.
+  - { type: pine, area: [24, 14, 29, 17], density: 85, seed: 7 }
+  - { type: bush, area: [22, 13, 30, 18], density: 25, seed: 4 }
+  # Houses.
+  - { type: house-small, at: [44, 12], rot: 0, variant: 0 }
+  - { type: shop, at: [44, 18], rot: 0, variant: 1 }
+  - { type: wooden-bridge, from: [31, 28], to: [31, 35], variant: 0 }
+starts:                              # required, exactly 2 entries; start i is player i
+  - { faction: ukraine, hq: [4, 20], dozerCenti: [1000, 3800] }
+  - { faction: russia, hq: [57, 20], dozerCenti: [5500, 3800] }

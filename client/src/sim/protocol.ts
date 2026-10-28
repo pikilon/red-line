@@ -111,6 +111,8 @@ export type SnapshotMessage = {
   fog?: Uint8Array;
   /** Combat snapshot when the sim exposes `combat_for` (spec 17 §5). */
   combat?: Int32Array;
+  /** Feature table when it changed since the last snapshot (spec 31). */
+  features?: Int32Array;
 };
 export type HashMessage = { type: "hash"; requestId: number; hash: string };
 export type ErrorMessage = { type: "error"; detail: string };

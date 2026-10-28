@@ -575,6 +575,7 @@ impl World {
         self.yield_to_movers();
         self.move_units();
         self.run_over();
+        self.features_step();
         self.separate_units();
         self.arrive_on_contact();
         self.update_visibility();
