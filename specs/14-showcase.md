@@ -1,7 +1,7 @@
 # 14 — Showcase
 
 Status: superseded by `19-save-games.md` (2026-10-15), except §2 and the
-`#hud-selected-type` label of §5. Originally accepted 2026-10-13, issue #259.
+`#picked` selection label of §5. Originally accepted 2026-10-13, issue #259.
 Depends on `03-phase2-core-loop.md` §5.8 (`DebugSpawn`) and `08-player-controls.md`.
 
 ## 1. Context
@@ -56,10 +56,11 @@ one `debugSpawn` command per `showcasePlan` entry. `?showcase=units` is the same
 rows (`x0 + 9.5`, `y = 18.5`), to inspect vehicles up close. F2 or the menu switch the
 controlled side, which is how the other side's units are selected.
 
-The HUD gains `#hud-selected-type` under `#hud-selected`: empty without
-selection, the name (`type.<id>` i18n) of a single selected type, or
-`Name x n` entries joined with ", " when several types are selected (same type
-counted).
+The command panel names the pick in `#picked`, the first line of its body
+(moved down from the top-left HUD by owner request 2026-10-29, spec 03 §6.6):
+hidden without selection, otherwise the name (`type.<id>` i18n) of a single
+selected type, or `Name x n` entries joined with ", " when several types are
+selected (same type counted). Everything picked is named, own or not.
 
 ## Acceptance criteria
 
@@ -74,4 +75,4 @@ counted).
   and "Name x 2, Other" as in §5.
 * AC-14-04: Given `?showcase=1`, When the match is ready, Then both sides'
   buildings and units exist (14 per faction) and clicking a unit with the real
-  mouse shows its name in `#hud-selected-type`.
+  mouse shows its name in `#picked`.

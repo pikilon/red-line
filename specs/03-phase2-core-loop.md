@@ -1455,11 +1455,15 @@ i18n keys: `ui.credits` "Credits {credits}", `ui.power` "Power
 the ground to build · Esc to cancel", `ui.placementIllegal`
 "Cannot build here".
 
-`client/index.html` styles: `#resource-bar` fixed top centre; `#command-panel`
-fixed bottom centre; `.cmd.active` highlighted (outline and background);
-`#placement-hint` fixed top centre, below the resource bar; `#outcome` fixed centre, large text; `.cmd[disabled]`
-dimmed; `.power-low` red. The HUD stays top-left and the perf panel top-right;
-none overlap.
+`client/index.html` styles: `#resource-bar` is a `.bar-panel` plate fixed top
+centre holding `#res-player` (who the local player is), `#res-credits` and
+`#res-power`; `#command-panel` fixed bottom left; `.cmd.active` highlighted
+(outline and background); `#placement-hint` fixed top centre, below the
+resource panel; `#outcome` fixed centre, large text; `.cmd[disabled]`
+dimmed; `.power-low` red. The skirmish has no top-left HUD block: the
+selection name is `#picked` at the top of the command panel and the tick is
+`#perf-tick` inside the perf panel top-right, which the game menu hides and
+shows (spec 08 §3.5); none overlap.
 
 ### 6.7 App, modes and debug API
 
@@ -1470,17 +1474,18 @@ none overlap.
 * `client/src/app/skirmish.ts`: parameters `seed` (default 1), `map` (default
   `DEFAULT_MAP`), `debug=1`, `speed` (debug only, `1..=MAX_SPEED`); creates the
   worker and the skirmish client (viewer 0, controlled player 0), terrain, fog
-  overlay, entity renderer, placement ghost, HUD (`#hud-selected`, `#hud-tick`,
-  `#hud-player`), resource bar, command panel and outcome overlay; centres the
+  overlay, entity renderer, placement ghost, resource panel (`#res-player`,
+  `#res-credits`, `#res-power`), command panel (with `#picked` naming the
+  selection), perf panel (with `#perf-tick`) and outcome overlay; centres the
   camera on the controlled player's HQ from the first snapshot; renders
   `interpolateEntities` every frame. The DOM overlay is not part of the frame
   loop (#140): the resource bar, outcome overlay and command panel are
   refreshed only on events (a snapshot arrives, the selection changes,
   placement starts or ends, the controlled player changes), and the command
-  panel's `render` is called only when its buttons, queue or `placing` differ
-  from the previous call. The frame loop updates only the 3D scene, the
-  placement ghost and the placement hint. The perf panel as in Phase 1 when
-  `debug=1`.
+  panel's `render` is called only when its selection name, buttons, queue or
+  `placing` differ from the previous call. The frame loop updates only the 3D
+  scene, the placement ghost, the placement hint and the tick. The perf panel
+  as in Phase 1 when `debug=1`.
 * `client/src/debug.ts` adds:
 
 ```ts
@@ -1972,8 +1977,9 @@ for `isReady()` (10 s).
 **AC-03-55 Skirmish boot.** Given `/?debug=1`, then `mode()` is `"skirmish"`,
 `entities()` contains an owner-0 `ua-hq` and `ua-dozer` and no owner-1
 entity, `fogAt(14, 62) === 2`, `fogAt(113, 65) === 0`, `#res-credits` reads
-`Credits 5000`, `#res-power` reads `Power 0/0`, `#hud-player` reads
-`Player 1: Ukraine`, and `tick()` increases over 1 s.
+`Credits 5000`, `#res-power` reads `Power 0/0`, `#res-player` reads
+`Player 1: Ukraine`, `#perf-tick` reads `Tick <n>`, and `tick()` increases
+over 1 s.
 
 **AC-03-56 Build through the UI.** Given `/?debug=1&speed=4`, when the user
 clicks the dozer, then `#command-panel button[data-type="ua-power-plant"]` is
@@ -2007,7 +2013,7 @@ clicks the T-72, then within 2 s the Leopard has the `moving` flag, and within
 30 s the T-72 no longer exists while the Leopard does.
 
 **AC-03-60 Hot-seat and reveal.** Given `/?debug=1`, when the user presses
-`F2`, then `controlledPlayer()` is 1, `#hud-player` reads `Player 2: Russia`,
+`F2`, then `controlledPlayer()` is 1, `#res-player` reads `Player 2: Russia`,
 `#res-credits` reads `Credits 5000` and `entities()` contains an owner-1
 `ru-hq` and no owner-0 entity; when they press `F3`, `viewer()` is 255 and
 `entities()` contains both HQs; `F3` again makes `viewer()` 1. Without

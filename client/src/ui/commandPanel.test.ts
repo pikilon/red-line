@@ -8,6 +8,7 @@ import {
   type PanelInput,
   samePanelInput,
   selectionChips,
+  selectionLabel,
 } from "./commandPanel";
 
 // Type indices from the builtin ruleset.
@@ -385,6 +386,19 @@ describe("samePanelInput", () => {
     expect(samePanelInput(base, { ...base, units: false })).toBe(false);
     expect(samePanelInput(base, { ...base, rally: true })).toBe(false);
     expect(samePanelInput(base, { ...base, armed: "force" })).toBe(false);
+    expect(samePanelInput(base, { ...base, selection: "Rifleman" })).toBe(
+      false,
+    );
+  });
+});
+
+describe("selectionLabel", () => {
+  it("AC-14-03: names the selection, counting a group", () => {
+    expect(selectionLabel([])).toBe("");
+    expect(selectionLabel(["M2 Bradley"])).toBe("M2 Bradley");
+    expect(selectionLabel(["M2 Bradley", "HIMARS", "M2 Bradley"])).toBe(
+      "M2 Bradley x 2, HIMARS",
+    );
   });
 });
 

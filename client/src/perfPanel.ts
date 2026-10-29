@@ -31,6 +31,10 @@ export interface PerfPanel {
   resume(): void;
   /** Shows or hides the panel (spec 08 §3.5); it keeps recording hidden. */
   setVisible(visible: boolean): void;
+  /** `#perf-tick`: the simulation tick lives with the FPS now, so the one
+   *  menu switch that hides the performance readout hides it too (owner
+   *  request 2026-10-29, spec 03 §6.7). */
+  setTick(tick: number): void;
 }
 
 function appendDiv(root: HTMLElement, id: string): HTMLDivElement {
@@ -44,9 +48,11 @@ export function createPerfPanel(parent: HTMLElement): PerfPanel {
   const panel = appendDiv(parent, "perf-panel");
   const fpsLine = appendDiv(panel, "perf-fps");
   const p95Line = appendDiv(panel, "perf-p95");
+  const tickLine = appendDiv(panel, "perf-tick");
   let window: number[] = [];
   let injected = false;
   let lastRenderMs = Number.NEGATIVE_INFINITY;
+  let lastTick: number | null = null;
 
   function render(): void {
     const { fps, p95FrameMs, bad } = summarizeFrames(window);
@@ -76,6 +82,11 @@ export function createPerfPanel(parent: HTMLElement): PerfPanel {
     },
     setVisible(visible) {
       panel.hidden = !visible;
+    },
+    setTick(tick) {
+      if (tick === lastTick) return;
+      lastTick = tick;
+      tickLine.textContent = t("hud.tick", { tick });
     },
   };
 }

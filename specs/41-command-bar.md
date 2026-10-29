@@ -47,6 +47,11 @@ Three docked panels, each with a fold tab. Touch targets are ≥ 44 px.
 
 ### 3.1 Command panel
 
+* **Selection name (`#picked`):** the first line of the body, "Territorial
+  Defense rifleman" or "Rifleman x 2, RPG gunner" for a group (spec 14 §5).
+  It is where the old top-left HUD said the selection (owner request
+  2026-10-29), so the panel shows whenever something is picked, even a
+  selection that offers no button, and hides without one.
 * **Selection strip:** one chip per selected type with its cameo and a count
   badge. Tapping a chip narrows the selection to that type.
 * **Units section** (shown when the selection holds own vehicles or infantry):

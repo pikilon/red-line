@@ -137,12 +137,17 @@ test.describe("touch device", () => {
     );
     const before = await cameraTarget(page);
     const client = await page.context().newCDPSession(page);
-    // On the map, away from the HUD panels (as in the pinch test).
-    const mid = { x: viewport.width * 0.4, y: viewport.height * 0.35 };
+    // On the map, away from the HUD panels: the command panel names the
+    // selection now (spec 14 §5), so it reaches a little higher than the
+    // pinch test's point, which starts without a panel on screen.
+    const mid = { x: viewport.width * 0.4, y: viewport.height * 0.25 };
     const fingers = (dx: number) => [
       { x: mid.x - 50 + dx, y: mid.y, id: 1 },
       { x: mid.x + 50 + dx, y: mid.y, id: 2 },
     ];
+    expect(
+      overlaps({ x: mid.x - 50, y: mid.y - 4, width: 100, height: 8 }, panel),
+    ).toBe(false);
     await client.send("Input.dispatchTouchEvent", {
       type: "touchStart",
       touchPoints: fingers(0),
