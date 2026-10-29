@@ -73,13 +73,16 @@ The animator keeps per-unit eased state (`RigState`): `walk` (0..1, 6/s),
   back to the front of the muzzle, nose first; 50–78 % the gunner's own round
   slides in; 80–96 % he brings the launcher back down to aim, ready when the
   cooldown ends. The spent round disappears at the shot.
-* **Stugna team pick-up** (`carry`, 0.85/s forwards, 1.2/s back): the operator
-  stands up first (0–30 %), turns to the launcher and bends over it with his
-  arms reaching (25–70 %), while the launcher lifts to the shoulder
-  (`anchor_carry`) and the tripod legs fold together and swing back (40–100 %);
-  the cable disappears. Only then do his legs start walking (`carry` ≥ 95 %).
-  When he stops, the launcher goes down again and he kneels. The unit already
-  moves in the simulation during the pick-up, so it glides for about a second.
+* **Launcher pick-up** (`carry` follows the stow the simulation reports, at
+  3/s, and targets 1 while the team walks): the operator stands up first
+  (0–30 %), turns to the launcher and bends over it with his arms reaching
+  (25–70 %), while the launcher lifts to the shoulder (`anchor_carry`) and the
+  tripod legs fold together and swing back (40–100 %); the cable disappears.
+  Only then do his legs start walking (`carry` ≥ 95 %). When he stops, the
+  launcher goes down again and he kneels. The simulation holds the team still
+  while it stows and sets up (spec 11), so the legs stay put and the unit no
+  longer glides during the pick-up. The RPG gunner shoulders his launcher the
+  same way (`stowTicks` 8).
 * **Stugna reload** over the weapon cooldown (5 s): the spent canister falls
   away (10–30 %) and a new one drops in from above (30–78 %).
 * Which weapons show a reload: those whose render `launch` is `backblast` or
