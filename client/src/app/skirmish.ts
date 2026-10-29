@@ -179,13 +179,16 @@ import {
   samePanelInput,
   selectionChips,
 } from "../ui/commandPanel";
+import { withFolded } from "../ui/foldable";
 import { createGameMenu } from "../ui/gameMenu";
 import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
+import { createQuickBar } from "../ui/quickBar";
 import { createResourceBar } from "../ui/resourceBar";
 import { createSaveManager, type SlotView } from "../ui/saveManager";
 import { createSelectionBox } from "../ui/selectionBox";
 import { createTouchControls, isTouchDevice } from "../ui/touchControls";
+import { createZoomBar } from "../ui/zoomBar";
 import { createCameraMemory, homeView } from "./cameraMemory";
 
 export const DEFAULT_MAP = "river-port";
@@ -854,6 +857,19 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       }
     },
   });
+
+  const commandPanelElement = document.getElementById("command-panel");
+  if (commandPanelElement !== null) {
+    const syncCommandBarHeight = (): void => {
+      const height = commandPanelElement.getBoundingClientRect().height;
+      document.documentElement.style.setProperty(
+        "--command-bar-height",
+        `${height}px`,
+      );
+    };
+    new ResizeObserver(syncCommandBarHeight).observe(commandPanelElement);
+    syncCommandBarHeight();
+  }
   let animator: Animator;
   const corpses = createCorpses();
   const deathCauses = createDeathCauses();
@@ -1308,6 +1324,40 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     renderMenu();
   }
 
+  const quickBar = createQuickBar(document.body, {
+    entities: () => next?.entities ?? [],
+    player: () => controlled,
+    selected: () => controller?.selected ?? NO_SELECTION,
+    select: (ids) => controller?.setSelection(ids),
+    centre: (x, y) => moveCamera(x, y),
+    active: () => !paused,
+    folded: settings.foldedPanels?.includes("quick") ?? false,
+    onFold: (folded) => {
+      const current = loadSettings();
+      settings = {
+        ...current,
+        foldedPanels: withFolded(current.foldedPanels ?? [], "quick", folded),
+      };
+      saveSettings(settings);
+    },
+  });
+  const zoomBar = createZoomBar(document.body, {
+    zoom: () => camera.zoom,
+    setZoom: (zoom) => {
+      camera.zoom = zoom;
+      camera.updateProjectionMatrix();
+    },
+    folded: settings.foldedPanels?.includes("zoom") ?? false,
+    onFold: (folded) => {
+      const current = loadSettings();
+      settings = {
+        ...current,
+        foldedPanels: withFolded(current.foldedPanels ?? [], "zoom", folded),
+      };
+      saveSettings(settings);
+    },
+  });
+
   /** Last command panel input, to skip renders that would change nothing. */
   let lastPanel: PanelInput | null = null;
 
@@ -1315,6 +1365,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
    *  (spec §6.7, #140). */
   function refreshOverlay(): void {
     resourceBar.render(next);
+    quickBar.refresh();
     outcome.render(next === null ? null : outcomeText(next, controlled));
     const queue = next === null ? null : selectedQueue();
     const selection = selectedEntities();
@@ -1661,6 +1712,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     }
     lastFrameMs = now;
     controller?.update(dtMs / 1000);
+    zoomBar.sync(camera.zoom);
     liveFeatures?.update(effectTime(now));
     const relief = terrain === null ? null : terrainDeformerOf(terrain);
     updateSun();
@@ -1754,6 +1806,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       }),
       selectedIds: () =>
         [...(controller?.selected ?? [])].sort((a, b) => a - b),
+      select: (ids) => controller?.setSelection(ids),
       worldToScreen: (x, y) => {
         const ndc = new Vector3(x, 0, y).project(camera);
         const rect = renderer.domElement.getBoundingClientRect();
