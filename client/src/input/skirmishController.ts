@@ -15,6 +15,7 @@ import { resolveClickOrder, resolveForceFire, resolveRally } from "./intent";
 import { createPinchGesture } from "./pinch";
 import { canPlace, footprintOrigin } from "./placement";
 import {
+  joinedTrenchLine,
   type RepairJob,
   resolveBuildingRepairClick,
   resolveDigClick,
@@ -23,7 +24,6 @@ import {
   resolveRepairClick,
   resolveVehicleRepairClick,
   type TrenchSegment,
-  trenchLineSegments,
 } from "./repair";
 import {
   narrowToKind,
@@ -55,6 +55,8 @@ export interface SkirmishControllerOptions {
   tiles(): Uint8Array;
   /** Spec 35 §5b: cells too hard to dig (hard ground, roads), 1 per cell. */
   hardCells?(): Uint8Array | undefined;
+  /** Spec 35 §5b.3: cells covered by dug trenches (`y * mapWidth + x`). */
+  trenchCells?(): ReadonlySet<number>;
   /** Latest fog: 0 unexplored, 1 explored, 2 visible (spec §5.15). */
   fog(): Uint8Array;
   /** Type index being placed, or null when not in placement mode. */
@@ -418,6 +420,8 @@ export function createSkirmishController(
         entities: options.entities(),
         from,
         to,
+        isTrench,
+        isFree,
       })) {
         options.command(command);
       }
@@ -605,6 +609,19 @@ export function createSkirmishController(
   });
   options.keyTarget.addEventListener("blur", () => pressed.clear());
 
+  /** Spec 35 §5b.3: a dug trench covers cell (x, y). */
+  const isTrench = (x: number, y: number): boolean =>
+    options.trenchCells?.().has(y * options.mapWidth + x) ?? false;
+  /** The client's view of a diggable cell: on the map, open to infantry
+   *  and not hard ground (buildings and features are the sim's call). */
+  const isFree = (x: number, y: number): boolean =>
+    x >= 0 &&
+    y >= 0 &&
+    x < options.mapWidth &&
+    y < options.mapHeight &&
+    options.tiles()[y * options.mapWidth + x] === 0 &&
+    options.hardCells?.()?.[y * options.mapWidth + x] !== 1;
+
   return {
     selected,
     armDig() {
@@ -616,23 +633,14 @@ export function createSkirmishController(
       const from = groundAt(dragStart);
       const to = groundAt(lastPointer);
       if (from === null || to === null) return null;
-      const tiles = options.tiles();
-      const hard = options.hardCells?.();
-      return trenchLineSegments(from, to).map((segment) => {
+      return joinedTrenchLine(from, to, isTrench, isFree).map((segment) => {
         const [w, h] = segment.rot === 0 ? [2, 1] : [1, 2];
         let valid = true;
         for (let dy = 0; dy < h; dy++) {
           for (let dx = 0; dx < w; dx++) {
             const x = segment.x + dx;
             const y = segment.y + dy;
-            const open =
-              x >= 0 &&
-              y >= 0 &&
-              x < options.mapWidth &&
-              y < options.mapHeight &&
-              tiles[y * options.mapWidth + x] === 0 &&
-              hard?.[y * options.mapWidth + x] !== 1;
-            if (!open) valid = false;
+            if (!isFree(x, y) || isTrench(x, y)) valid = false;
           }
         }
         return { ...segment, valid };

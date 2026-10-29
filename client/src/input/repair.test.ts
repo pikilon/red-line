@@ -4,6 +4,7 @@ import { decodeFeatures } from "../sim/featureSnapshot";
 import { ENTITY_FLAGS, type EntityState } from "../sim/matchSnapshot";
 import {
   canDig,
+  joinedTrenchLine,
   repairJobsOf,
   resolveBuildingRepairClick,
   resolveDigClick,
@@ -13,6 +14,7 @@ import {
   resolveVehicleRepairClick,
   trenchLineSegments,
   undiggableCells,
+  unfinishedTrenchJobs,
   withRepairState,
 } from "./repair";
 
@@ -333,6 +335,83 @@ describe("spec 35 trench digging input", () => {
         units: [1],
         segments: [10, 5, 0, 12, 5, 0],
       },
+    ]);
+  });
+
+  it("an odd line drawn backwards never folds back over its own cells", () => {
+    expect(
+      trenchLineSegments({ x: 14.5, y: 8.5 }, { x: 10.5, y: 8.5 }),
+    ).toEqual([
+      { x: 13, y: 8, rot: 0 },
+      { x: 11, y: 8, rot: 0 },
+      { x: 9, y: 8, rot: 0 },
+    ]);
+  });
+
+  it("a line drawn near a trench snaps onto it so the network joins", () => {
+    // A trench on cells (10..11, 5); the line is drawn from two cells away.
+    const trench = new Set(["10,5", "11,5"]);
+    const isTrench = (x: number, y: number) => trench.has(`${x},${y}`);
+    const isFree = () => true;
+    const segments = joinedTrenchLine(
+      { x: 13.9, y: 5.5 },
+      { x: 19.5, y: 5.5 },
+      isTrench,
+      isFree,
+    );
+    expect(segments[0]).toEqual({ x: 12, y: 5, rot: 0 });
+    // Drawn towards the trench, an odd line grows at its free start instead.
+    const towards = joinedTrenchLine(
+      { x: 18.5, y: 5.5 },
+      { x: 13.5, y: 5.5 },
+      isTrench,
+      isFree,
+    );
+    const cells = towards.flatMap((s) => [s.x, s.x + 1]);
+    expect(Math.min(...cells)).toBe(12);
+    expect(cells.some((x) => trench.has(`${x},5`))).toBe(false);
+  });
+
+  it("unfinished dug trenches are construction marks workers can click", () => {
+    const rows = [
+      {
+        index: 0,
+        kind: 3,
+        state: 0,
+        alive: true,
+        burning: false,
+        collapsing: false,
+        hpPermille: 1000,
+        owner: 255,
+        occupants: 0,
+      },
+      {
+        index: 1,
+        kind: 7,
+        state: 2,
+        alive: true,
+        burning: false,
+        collapsing: false,
+        hpPermille: 40,
+        owner: 255,
+        occupants: 0,
+        at: { x: 4, y: 6, rot: 1, variant: 0 },
+      },
+      {
+        index: 2,
+        kind: 7,
+        state: 0,
+        alive: true,
+        burning: false,
+        collapsing: false,
+        hpPermille: 1000,
+        owner: 255,
+        occupants: 0,
+        at: { x: 8, y: 6, rot: 0, variant: 0 },
+      },
+    ];
+    expect(unfinishedTrenchJobs(rows, new Set([7]))).toEqual([
+      { index: 1, x0: 4, y0: 6, x1: 4, y1: 7, damaged: true },
     ]);
   });
 

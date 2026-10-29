@@ -134,6 +134,24 @@ once repaired above that threshold, and the client draws it again.
   buildings and features are decided by the sim. **A8** the hand-on rule also
   lets a finished digger help any unfinished trench within 8 cells.
 
+### 5b.3 Joining and continuing (owner request 2026-10-29)
+
+* **Snap.** A drawn line end within `TRENCH_JOIN_REACH` (2) cells of a dug
+  trench moves to the nearest free cell touching it (8-neighbour, the same
+  rule the client uses to draw the network as one channel), so a new line
+  joins instead of leaving a gap. With both ends snapping, the end cell that
+  makes the line an even number of cells wins. An odd line adds its extra
+  cell past the end, or before the start when only the end joins; never back
+  over its own cells (`joinedTrenchLine`, `client/src/input/repair.ts`).
+* **Continue.** An unfinished dug trench is a construction mark (stakes and
+  tape): a left click on it with workers (infantry, dozers) selected sends
+  `Repair` on that row, so they dig on (`unfinishedTrenchJobs`).
+* **Look.** The client joins all pieces into smoothed centrelines
+  (`render/features/trenchNetwork.ts`) and the terrain deformer carves them
+  with a crater-like profile (flat floor, walls, spoil berm); finished
+  stretches get sandbags and duckboards, `variant` 1 pieces a log-and-sandbag
+  roof. Infantry stand on the carved floor, so they are drawn sunk.
+
 ## 6. Assumptions
 
 * **A1** Only bridges are jobs for now; building repair by dozers is backlog

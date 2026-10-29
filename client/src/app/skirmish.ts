@@ -50,6 +50,7 @@ import {
   repairJobsOf,
   resolveRepairButton,
   undiggableCells,
+  unfinishedTrenchJobs,
   withRepairState,
 } from "../input/repair";
 import {
@@ -745,7 +746,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   const placedGarrisons = garrisonFeaturesOf(
     (
       ruleset.maps.find((entry) => entry.id === mapId) as
-        { features?: readonly GarrisonMapFeature[] } | undefined
+        | { features?: readonly GarrisonMapFeature[] }
+        | undefined
     )?.features ?? [],
     (ruleset as unknown as { featureTypes?: readonly GarrisonTypeInfo[] })
       .featureTypes ?? [],
@@ -757,12 +759,20 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   const placedBridges = repairJobsOf(
     (
       ruleset.maps.find((entry) => entry.id === mapId) as
-        { features?: readonly RepairMapFeature[] } | undefined
+        | { features?: readonly RepairMapFeature[] }
+        | undefined
     )?.features ?? [],
     (ruleset as unknown as { featureTypes?: readonly RepairTypeInfo[] })
       .featureTypes ?? [],
   );
   let repairJobs = withRepairState(placedBridges, null);
+  /** Spec 35: feature types that are trenches. */
+  const earthworkKinds = new Set(
+    (
+      (ruleset as unknown as { featureTypes?: readonly { family: string }[] })
+        .featureTypes ?? []
+    ).flatMap((type, index) => (type.family === "earthwork" ? [index] : [])),
+  );
   const commandPanel = createCommandPanel(document.body, {
     onStop: () => {
       uiClick();
@@ -1232,6 +1242,28 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       mapDefinition === undefined
         ? undefined
         : undiggableCells(mapDefinition, trenchType?.hardGround ?? []);
+    // Spec 35 §5b.3: cells of the dug trenches, rebuilt per feature table.
+    let trenchCellRows: typeof lastFeatureRows = null;
+    let trenchCellSet: ReadonlySet<number> = new Set();
+    const trenchCellsOf = (
+      rows: typeof lastFeatureRows,
+    ): ReadonlySet<number> => {
+      if (rows === trenchCellRows) return trenchCellSet;
+      const cells = new Set<number>();
+      for (const row of rows ?? []) {
+        if (!row.alive || row.at === undefined) continue;
+        if (!earthworkKinds.has(row.kind)) continue;
+        const [w, h] = row.at.rot % 2 === 0 ? [2, 1] : [1, 2];
+        for (let dy = 0; dy < h; dy++) {
+          for (let dx = 0; dx < w; dx++) {
+            cells.add((row.at.y + dy) * mapInfo.mapWidth + row.at.x + dx);
+          }
+        }
+      }
+      trenchCellRows = rows;
+      trenchCellSet = cells;
+      return cells;
+    };
     controller = createSkirmishController({
       canvas: renderer.domElement,
       selectionBox: createSelectionBox(document.body),
@@ -1244,6 +1276,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       repairJobs: () => repairJobs,
       tiles: () => mapInfo.tiles,
       hardCells: () => hardCells,
+      trenchCells: () => trenchCellsOf(lastFeatureRows),
       fog: () => fog,
       placementKind: () => placementKind,
       exitPlacement: () => {
@@ -1571,7 +1604,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       lastFeatureRows = features;
       liveFeatures?.apply(features, effectTime(performance.now()));
       garrisonFeatures = withLiveState(placedGarrisons, features);
-      repairJobs = withRepairState(placedBridges, features);
+      repairJobs = [
+        ...withRepairState(placedBridges, features),
+        ...unfinishedTrenchJobs(features, earthworkKinds),
+      ];
     }
     const previous = next;
     flying = combat.projectiles;
