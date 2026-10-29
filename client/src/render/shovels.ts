@@ -49,7 +49,11 @@ export interface Shovels {
     height: number,
     dig: number,
     stroke: number,
+    /** Digging from the trench floor: the earth is thrown up over the edge. */
+    deep?: boolean,
   ): void;
+  /** A load of earth (`size` tiles) at a point: a dozer's blade full. */
+  addLoad(x: number, y: number, z: number, size: number): void;
   finish(): void;
 }
 
@@ -81,7 +85,7 @@ export function createShovels(capacity: number): Shovels {
       count = 0;
       clodCount = 0;
     },
-    add(x, ground, z, yaw, height, dig, stroke) {
+    add(x, ground, z, yaw, height, dig, stroke, deep = false) {
       if (count >= capacity || dig <= 0.05) return;
       const fx = Math.sin(yaw);
       const fz = Math.cos(yaw);
@@ -94,7 +98,7 @@ export function createShovels(capacity: number): Shovels {
       );
       tip.set(
         x + fx * (0.24 - 0.06 * up),
-        ground + 0.01 + 0.16 * up * dig,
+        ground + 0.01 + (deep ? 0.34 : 0.16) * up * dig,
         z + fz * (0.24 - 0.06 * up),
       );
       along.subVectors(tip, grip).normalize();
@@ -109,6 +113,13 @@ export function createShovels(capacity: number): Shovels {
         matrix.compose(tip, turn.identity(), scale);
         clods.setMatrixAt(clodCount++, matrix);
       }
+    },
+    addLoad(x, y, z, size) {
+      if (clodCount >= capacity || size <= 0) return;
+      tip.set(x, y, z);
+      scale.set(size * 1.4, size * 0.7, size);
+      matrix.compose(tip, turn.identity(), scale);
+      clods.setMatrixAt(clodCount++, matrix);
     },
     finish() {
       shovels.count = count;

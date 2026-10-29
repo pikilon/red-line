@@ -194,6 +194,20 @@ once repaired above that threshold, and the client draws it again.
   position is the entity position, both already hashed and saved.
 * Example save `?load=trench-assault`.
 
+### 5b.4 Digging and shelling, as seen (owner requests 2026-10-29)
+
+* Workers dig from inside the trench: they walk to within `DIG_STAND_CENTI`
+  (0.6 tiles) of a piece's centre (`stand_distance`); a second `Dig` on a
+  piece already started joins it.
+* Client only: a soldier digging bends over a shovel facing a side wall and
+  throws the earth over it (`RigState.dig`, `render/shovels.ts`); a dozer
+  scoops (blade in, shove), lifts the blade full of earth, swings aside to
+  drop it and back, alternating sides (`dozerStroke`).
+* Contact fire turns the shooter to his victim. Shelling a finished piece
+  bites a small crater into it; a destroyed piece is left a large crater and
+  is gone from the network (client `craterChanges`). A worn piece is drawn
+  battered (fewer sandbags, no stakes), not as a construction mark.
+
 ## 6. Assumptions
 
 * **A1** Only bridges are jobs for now; building repair by dozers is backlog

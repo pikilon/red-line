@@ -244,6 +244,9 @@ impl World {
                 return;
             }
         }
+        // Face the enemy in the next piece: he shoots at him, not the sky.
+        let offset = self.entities[target].pos - self.entities[index].pos;
+        self.entities[index].heading = crate::angle::atan2(offset.x, offset.y);
         let shooter: EntityId = self.entities[index].id;
         let victim = &self.entities[target];
         let modifier = self

@@ -16,8 +16,9 @@ use crate::world::{TICK_RATE_HZ, World};
 
 /// How close (centi-tiles from the job's cells) a worker must stand to work.
 const WORK_RANGE_CENTI: u32 = 150;
-/// How far from a trench's cells a soldier stands to dig it (spec 35 §5b.3).
-const DIG_STAND_CENTI: u32 = 35;
+/// How far from a trench's centre a worker stands to dig it: in the middle
+/// of it (spec 35 §5b.3).
+const DIG_STAND_CENTI: u32 = 60;
 /// Feature families that can be repaired: bridges, and earthworks, whose
 /// digging is their repair from one hit point.
 const REPAIRABLE_FAMILIES: [&str; 2] = ["bridge", EARTHWORK_FAMILY];
@@ -360,15 +361,25 @@ impl World {
         distance_to_rect(self.entities[index].pos, rect)
     }
 
-    /// How close (centi-tiles) a worker walks to a job before it stops: a
-    /// soldier digs a trench from its edge (spec 35 §5b.3), everything else
-    /// works from `WORK_RANGE_CENTI`.
-    fn stand_range(&self, index: usize, feature: u32) -> u32 {
+    /// How far the worker is from where it works: a trench's centre, or the
+    /// nearest cell of any other job.
+    fn stand_distance(&self, index: usize, feature: u32) -> Fx {
+        if self.stand_range(feature) == DIG_STAND_CENTI
+            && let Some(centre) = self.feature_center(feature)
+        {
+            return (centre - self.entities[index].pos).length();
+        }
+        self.job_distance(index, feature)
+    }
+
+    /// How close (centi-tiles) a worker walks to a job before it stops:
+    /// soldiers and dozers dig a trench from inside it (spec 35 §5b.3), every
+    /// other job is worked from `WORK_RANGE_CENTI`.
+    fn stand_range(&self, feature: u32) -> u32 {
         let earthwork = self.features.get(feature as usize).is_some_and(|row| {
             self.rules.feature_types[row.kind as usize].family == EARTHWORK_FAMILY
         });
-        let foot = self.rules.ty(self.entities[index].kind).motion.kind == LocoKind::Foot;
-        if earthwork && foot {
+        if earthwork {
             DIG_STAND_CENTI
         } else {
             WORK_RANGE_CENTI
@@ -392,7 +403,7 @@ impl World {
             };
             return;
         }
-        if self.job_distance(index, feature) <= fx_centi(self.stand_range(index, feature)) {
+        if self.stand_distance(index, feature) <= fx_centi(self.stand_range(feature)) {
             self.entities[index].speed = Fx::ZERO;
             return;
         }
@@ -780,7 +791,7 @@ mod tests {
     }
 
     #[test]
-    fn digging_a_started_trench_joins_it_and_soldiers_stand_at_its_edge() {
+    fn digging_a_started_trench_joins_it_and_workers_stand_in_it() {
         let mut world = ground();
         let placed = world.features.len();
         let first = rifleman(&mut world, 40, 36);
@@ -807,7 +818,7 @@ mod tests {
             world.step();
         }
         let index = world.index_of(first).unwrap();
-        assert!(world.job_distance(index, placed as u32) <= fx_centi(DIG_STAND_CENTI));
+        assert!(world.stand_distance(index, placed as u32) <= fx_centi(DIG_STAND_CENTI));
     }
 
     #[test]

@@ -105,7 +105,10 @@ import {
   type FeatureRules,
   type LiveMapFeatures,
 } from "../render/features";
-import { onTrenchStrokes } from "../render/features/trenchNetwork";
+import {
+  onTrenchCraters,
+  onTrenchStrokes,
+} from "../render/features/trenchNetwork";
 import { createFogOverlay } from "../render/fog";
 import {
   type GeneratedTextures,
@@ -1136,6 +1139,17 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     // Spec 35: the earthwork renderer's trench network is carved in it.
     onTrenchStrokes(
       relief === null ? null : (strokes) => relief.trenches(strokes),
+    );
+    // Shelling leaves craters on the trenches it breaks (spec 35 §5c).
+    onTrenchCraters(
+      relief === null
+        ? null
+        : (craters) => {
+            const now = effectTime(performance.now());
+            for (const c of craters) {
+              relief.crater(c.x, c.z, c.radius, c.depth, now);
+            }
+          },
     );
     const sun = new DirectionalLight(SUN_COLOR, SUN_INTENSITY);
     sun.castShadow = true;

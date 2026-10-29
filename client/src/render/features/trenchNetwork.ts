@@ -412,8 +412,9 @@ export function setDigSites(sites: readonly DigSite[]): void {
 export function digSiteNear(
   x: number,
   y: number,
-): { x: number; y: number } | null {
-  let best: { x: number; y: number } | null = null;
+): { x: number; y: number; inside: boolean; alongX: boolean } | null {
+  let best: { x: number; y: number; inside: boolean; alongX: boolean } | null =
+    null;
   let bestDistance = DIG_REACH;
   for (const site of digSites) {
     const px = Math.min(site.x + site.width, Math.max(site.x, x));
@@ -421,8 +422,13 @@ export function digSiteNear(
     const distance = Math.hypot(px - x, py - y);
     if (distance <= bestDistance) {
       bestDistance = distance;
-      // A worker standing on the cells digs at his feet, a bit ahead.
-      best = { x: px, y: py };
+      // A worker standing in the trench digs at his feet.
+      best = {
+        x: px,
+        y: py,
+        inside: distance === 0,
+        alongX: site.width >= site.height,
+      };
     }
   }
   return best;
@@ -441,4 +447,73 @@ export function withBattered<
     if (piece.state === 0) finishedOnce.add(id);
     return { ...piece, battered: piece.state > 0 && finishedOnce.has(id) };
   });
+}
+
+/** A crater shelling leaves on a trench: where, how wide and deep (tiles). */
+export interface TrenchCrater {
+  readonly x: number;
+  readonly z: number;
+  readonly radius: number;
+  readonly depth: number;
+}
+
+/** Spec 35 §5c: a destroyed piece is left a crater, useless; a hit that
+ *  only wears a finished piece down bites a smaller one into it. */
+const DESTROYED_CRATER = { radius: 1.1, depth: 0.2 };
+const WORN_CRATER = { radius: 0.6, depth: 0.12 };
+
+/** State of every piece at the last rebuild (`x,y,rot`). */
+const lastStates = new Map<string, { x: number; z: number; state: number }>();
+let craterSink: ((craters: readonly TrenchCrater[]) => void) | null = null;
+
+/** The skirmish digs the craters into its terrain deformer. */
+export function onTrenchCraters(
+  listener: ((craters: readonly TrenchCrater[]) => void) | null,
+): void {
+  craterSink = listener;
+  if (listener === null) lastStates.clear();
+}
+
+/** Compares the pieces with the last rebuild and digs the craters shelling
+ *  left: gone pieces (destroyed) and finished ones worn down. */
+export function craterChanges(
+  pieces: readonly {
+    x: number;
+    y: number;
+    rot: number;
+    width: number;
+    height: number;
+    state: number;
+    battered?: boolean;
+  }[],
+): void {
+  const seen = new Set<string>();
+  const craters: TrenchCrater[] = [];
+  for (const piece of pieces) {
+    const id = `${piece.x},${piece.y},${piece.rot}`;
+    const x = piece.x + piece.width / 2;
+    const z = piece.y + piece.height / 2;
+    seen.add(id);
+    const before = lastStates.get(id);
+    if (
+      before !== undefined &&
+      piece.battered === true &&
+      piece.state > before.state
+    ) {
+      // Off centre along the piece, so repeated hits do not stack.
+      const along = piece.state === 1 ? -0.45 : 0.45;
+      craters.push({
+        x: x + (piece.width > 1 ? along : 0),
+        z: z + (piece.height > 1 ? along : 0),
+        ...WORN_CRATER,
+      });
+    }
+    lastStates.set(id, { x, z, state: piece.state });
+  }
+  for (const [id, before] of lastStates) {
+    if (seen.has(id)) continue;
+    lastStates.delete(id);
+    craters.push({ x: before.x, z: before.z, ...DESTROYED_CRATER });
+  }
+  if (craters.length > 0) craterSink?.(craters);
 }

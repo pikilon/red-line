@@ -220,8 +220,48 @@ function finish(mesh: InstancedMesh, count: number): void {
   }
 }
 
-/** Tiles a dozer rocks forward and back while it pushes earth at a trench. */
-const DOZER_SHOVE = 0.08;
+/** Spec 35: a dozer digging a trench. One stroke takes 1 / `DOZER_STROKE_HZ`
+ *  seconds: blade in and a shove forward, up full of earth, a swing of
+ *  `DOZER_SWING` radians to one side (the other side the next stroke) to
+ *  empty it, and back. */
+const DOZER_STROKE_HZ = 0.35;
+const DOZER_SHOVE = 0.12;
+const DOZER_SWING = 0.7;
+/** Size of a full blade of earth, tiles. */
+const DOZER_LOAD = 0.16;
+
+function ramp(from: number, to: number, t: number): number {
+  const x = Math.min(1, Math.max(0, (t - from) / (to - from)));
+  return x * x * (3 - 2 * x);
+}
+
+/** Blade pitch, forward shove, swing and the earth load of a digging dozer. */
+function dozerStroke(
+  nowMs: number,
+  id: number,
+): {
+  pitch: number;
+  shove: number;
+  swing: number;
+  load: number;
+  loadHeight: number;
+} {
+  const cycles = (nowMs / 1000) * DOZER_STROKE_HZ + id * 0.17;
+  const t = cycles - Math.floor(cycles);
+  const side = Math.floor(cycles) % 2 === 0 ? 1 : -1;
+  const down = ramp(0, 0.18, t) * (1 - ramp(0.25, 0.42, t));
+  const dump = ramp(0.58, 0.66, t) * (1 - ramp(0.72, 0.85, t));
+  // The earth rides the raised blade, then drops off it to the side.
+  const load = ramp(0.2, 0.3, t) * (1 - ramp(0.62, 0.72, t));
+  const fall = ramp(0.6, 0.72, t);
+  return {
+    pitch: BLADE_RAISED * (1 - down) + 0.3 * dump,
+    shove: DOZER_SHOVE * (ramp(0, 0.25, t) - ramp(0.3, 0.5, t)),
+    swing: side * DOZER_SWING * ramp(0.4, 0.56, t) * (1 - ramp(0.78, 0.95, t)),
+    load,
+    loadHeight: (0.08 + 0.22 * (1 - down)) * (1 - fall) + 0.03,
+  };
+}
 
 /** `from` turned towards `to` by `share` (0..1) the short way round. */
 function turnTowards(from: number, to: number, share: number): number {
@@ -1025,15 +1065,17 @@ export function createEntityRenderer(
           working,
           nowMs,
         );
-        // A dozer at a trench pushes earth: it rocks back and forth on the
-        // spot in step with its blade.
-        const shove =
+        // A dozer digging a trench works its blade like a scoop: in, up full
+        // of earth, swung aside and emptied, back (spec 35).
+        const dozing =
           working && digSite !== null && type.articulation === "blade"
-            ? DOZER_SHOVE *
-              Math.sin((nowMs / 1000) * BLADE_WORK_HZ * 2 * Math.PI)
-            : 0;
+            ? dozerStroke(nowMs, entity.id)
+            : null;
+        const shove = dozing?.shove ?? 0;
         const shoveX = Math.sin(heading.yaw) * shove;
         const shoveZ = Math.cos(heading.yaw) * shove;
+        const bladePitch = dozing?.pitch ?? articulationPitch;
+        const swing = dozing?.swing ?? 0;
 
         if (isFallback || model === null) {
           if (type.category === "unit") {
@@ -1059,17 +1101,21 @@ export function createEntityRenderer(
           const typeSlots = slotsFor(type.id, model);
           const rigDig = pose.rig?.dig ?? 0;
           // A digging soldier turns to the trench he digs.
+          // In the trench he faces a side wall to throw the earth over it.
+          const digYaw =
+            digSite === null
+              ? heading.yaw
+              : digSite.inside
+                ? (digSite.alongX ? 0 : Math.PI / 2) +
+                  (entity.id % 2 === 0 ? 0 : Math.PI)
+                : Math.atan2(digSite.x - entity.x, digSite.y - entity.y);
           const hullYaw =
             type.category !== "unit"
               ? 0
-              : rigDig > 0 && digSite !== null
-                ? turnTowards(
-                    heading.yaw,
-                    Math.atan2(digSite.x - entity.x, digSite.y - entity.y),
-                    rigDig,
-                  )
-                : heading.yaw;
-          const turretYaw = heading.turretYaw;
+              : rigDig > 0
+                ? turnTowards(heading.yaw, digYaw, rigDig)
+                : heading.yaw + swing;
+          const turretYaw = heading.turretYaw + swing;
           const rig = pose.rig;
           if (rig !== null && model.limbs !== undefined) {
             // Soldiers walk on their own legs: no hull bounce (spec 20).
@@ -1105,6 +1151,7 @@ export function createEntityRenderer(
               h,
               rig.dig,
               -Math.cos(2 * Math.PI * rig.digPhase),
+              digSite?.inside === true,
             );
           }
           for (const slot of typeSlots.hull) {
@@ -1130,7 +1177,7 @@ export function createEntityRenderer(
               turretMatrix.multiply(pivotMatrix);
               rotationMatrix.makeRotationY(turretYaw - hullYaw);
               turretMatrix.multiply(rotationMatrix);
-              rotationMatrix.makeRotationX(articulationPitch);
+              rotationMatrix.makeRotationX(bladePitch);
               turretMatrix.multiply(rotationMatrix);
               recoilTranslation.makeTranslation(0, 0, -recoil);
               turretMatrix.multiply(recoilTranslation);
@@ -1138,6 +1185,17 @@ export function createEntityRenderer(
             };
             place(slot, slot.count, hex, composeTurret);
           }
+        }
+
+        if (dozing !== null && dozing.load > 0) {
+          const yaw = heading.yaw + swing;
+          const reach = d * 0.55 + 0.06;
+          shovels.addLoad(
+            entity.x + shoveX + Math.sin(yaw) * reach,
+            ground + dozing.loadHeight,
+            entity.y + shoveZ + Math.cos(yaw) * reach,
+            DOZER_LOAD * dozing.load,
+          );
         }
 
         if (

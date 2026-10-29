@@ -12,6 +12,7 @@ import {
 import type { FeatureContext, FeatureInstance } from "../layers";
 import { registerFeatureRenderer } from "../registry";
 import {
+  craterChanges,
   nearestStroke,
   publishTrenchStrokes,
   setDigSites,
@@ -154,6 +155,7 @@ function createEarthworks(
   const group = new Group();
   group.name = "earthworks";
   const pieces = withBattered(instances);
+  craterChanges(pieces);
   const lines = trenchLines(pieces);
   const strokes = trenchStrokes(lines);
   publishTrenchStrokes(strokes);
