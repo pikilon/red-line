@@ -62,8 +62,9 @@ Three docked panels, each with a fold tab. Touch targets are ≥ 44 px.
   grey; unaffordable ones show the cost in red. Right-click / long-press
   cancels as today.
 * **Queue:** there is no separate queue row. Each produce tile shows its unit's
-  name as text, a number badge on top of the cameo with how many of that type
-  are queued, and a clock-wipe of progress inside the cameo while the head of
+  name as text, a "− 3 +" stepper on the cameo with how many of that type are
+  queued ("+" queues one more, "−" cancels the last queued unit and, with one
+  left, the whole queue), and a clock-wipe of progress inside the cameo while the head of
   the queue is of that type. Right-click / long-press cancels as above.
 * Section headers are thin labels ("UNITS", "STRUCTURE"); a section with no
   buttons is not drawn.

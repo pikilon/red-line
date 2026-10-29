@@ -70,8 +70,11 @@
       #command-panel .cmd.tile .wipe { position: absolute; inset: 0; pointer-events: none; }
       #command-panel .cmd.tile.building .wipe { background: conic-gradient(rgba(0, 0, 0, 0.62) var(--p, 0deg), transparent 0); }
       #command-panel .cmd.tile.building { border-color: var(--amber); }
-      #command-panel .cmd.tile .qn { position: absolute; top: 1px; left: 1px; z-index: 1; min-width: 14px; padding: 0 3px; font-size: 12px; font-weight: 700; text-align: center; color: #111; background: var(--amber); }
-      #command-panel .cmd.tile .qn[hidden] { display: none; }
+      #command-panel .cmd.tile .qs { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; display: flex; align-items: stretch; background: rgba(0, 0, 0, 0.7); }
+      #command-panel .cmd.tile .qs[hidden] { display: none; }
+      #command-panel .cmd.tile .qm, #command-panel .cmd.tile .qp { flex: none; width: 20px; text-align: center; font-size: 15px; line-height: 20px; font-weight: 700; color: var(--amber); }
+      #command-panel .cmd.tile .qm.off { opacity: 0.35; }
+      #command-panel .cmd.tile .qn { flex: 1; text-align: center; font-size: 13px; line-height: 20px; font-weight: 700; color: #fff; }
       #placement-hint { position: fixed; top: calc(44px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); max-width: calc(100vw - 32px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 4px 12px; border-radius: 4px; background: rgba(0, 0, 0, 0.7); pointer-events: none; color: #fff; font: 14px/1.4 system-ui, sans-serif; }
       #outcome { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; color: #fff; font: 48px/1.2 system-ui, sans-serif; text-shadow: 0 2px 6px #000; }
       #toast { position: fixed; bottom: calc(96px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); max-width: calc(100vw - 32px); padding: 6px 14px; border-radius: 4px; background: rgba(0, 0, 0, 0.7); pointer-events: none; color: #fff; font: 16px/1.4 system-ui, sans-serif; opacity: 0; transition: opacity 0.15s; }

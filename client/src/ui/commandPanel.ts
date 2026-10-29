@@ -609,7 +609,22 @@ export function createCommandPanel(
     const element = button(key, (e) => {
       e.classList.add("tile");
       const box = cameoBox();
-      box.append(el("span", "wipe"), el("span", "qn"));
+      const steps = el("span", "qs");
+      const minus = el("span", "qm");
+      minus.textContent = "−";
+      const plus = el("span", "qp");
+      plus.textContent = "+";
+      steps.append(minus, el("span", "qn"), plus);
+      for (const [step, run] of [
+        [minus, () => handlers.onCancel()],
+        [plus, () => actions.get(e.dataset.key ?? "")?.()],
+      ] as const) {
+        step.addEventListener("click", (event) => {
+          event.stopPropagation();
+          if (!step.classList.contains("off")) run();
+        });
+      }
+      box.append(el("span", "wipe"), steps);
       e.append(box, el("span", "name"), el("span", "cost"));
     });
     element.dataset.type = def?.id ?? String(b.typeIndex);
@@ -679,6 +694,12 @@ export function createCommandPanel(
       if (badge.textContent !== text) badge.textContent = text;
       badge.hidden = queued === 0;
     }
+    const steps = element.querySelector<HTMLElement>(".qs");
+    if (steps !== null) steps.hidden = queued === 0;
+    // A cancel removes the last queued item, so "−" works on its own type.
+    element
+      .querySelector(".qm")
+      ?.classList.toggle("off", queue?.items.at(-1) !== b.typeIndex);
     element.classList.toggle("building", head);
     const wipe =
       head && queue ? `${(queue.headPermille * 360) / 1000}deg` : "0deg";
