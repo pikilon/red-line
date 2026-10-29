@@ -111,7 +111,7 @@ export function buildRuleset(sources) {
   checkGlobals(sources.globals.file, globals, fail);
   const index = checkReferences(sources, globals, factions, fail);
   sources.factions.forEach((source, i) => checkFaction(source.file, factions[i], fail));
-  const featureTypes = checkFeatureTypes(sources.features ?? [], featureFiles, fail);
+  const featureTypes = checkFeatureTypes(sources.features ?? [], featureFiles, fail, globals);
   const layers = sources.maps.map((source, i) => checkMap(source.file, maps[i], globals, factions, featureTypes, fail));
   (sources.ai ?? []).forEach((source, i) => checkAi(source.file, ai[i], factions, fail));
   if (errors.length > 0) return { ruleset: null, errors };
@@ -145,7 +145,7 @@ function snapRoadsToBridges(terrain, decks, width) {
 }
 
 /** Spec 26: the feature types of every data/features file, with `variants` defaulted; duplicate ids fail. */
-function checkFeatureTypes(sources, files, fail) {
+function checkFeatureTypes(sources, files, fail, globals) {
   const seen = new Set();
   const types = [];
   files.forEach((file, i) => {
@@ -160,6 +160,14 @@ function checkFeatureTypes(sources, files, fail) {
     if (t.destroy !== undefined && !seen.has(t.destroy.becomes)) {
       fail(t.file, `/types/${t.id}/destroy/becomes`, "unknown-reference", `${t.id} becomes unknown feature ${t.destroy.becomes}`);
     }
+  }
+  // Spec 35 §5c: a trench breaks with damage types that exist.
+  for (const t of types) {
+    (t.trench?.breaksWith ?? []).forEach((name, k) => {
+      if (!globals.damageTypes.includes(name)) {
+        fail(t.file, `/types/${t.id}/trench/breaksWith/${k}`, "unknown-reference", `${t.id} breaks with unknown damage type ${name}`);
+      }
+    });
   }
   return types;
 }
@@ -251,6 +259,7 @@ function checkReferences(sources, globals, factions, fail) {
       const at = `/${owner.list}/${i}`;
       known(new Set(globals.armorClasses), "armour class", [t.armor], owner.file, () => `${at}/armor`);
       known(weapons, "weapon", single(t.weapon), owner.file, () => `${at}/weapon`);
+      known(weapons, "weapon", single(t.trenchWeapon), owner.file, () => `${at}/trenchWeapon`);
       known(types, "type", single(t.freeUnit), owner.file, () => `${at}/freeUnit`);
       for (const key of ["requires", "produces", "builds"]) {
         known(types, "type", t[key] ?? [], owner.file, (j) => `${at}/${key}/${j}`);
@@ -632,6 +641,8 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       stowTicks: t.stowTicks ?? 0,
       locomotor: locomotorIndex(t.locomotor),
       weapon: t.weapon === undefined ? -1 : weaponIndex.get(t.weapon),
+      // Spec 35 §5c: weapon fired in a trench fight (omitted: none).
+      ...(t.trenchWeapon === undefined ? {} : { trenchWeapon: weaponIndex.get(t.trenchWeapon) }),
       requires: types(t.requires),
       produces: types(t.produces),
       builds: types(t.builds),
@@ -681,6 +692,11 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       ...(t.garrison === undefined ? {} : { garrison: t.garrison }),
       // Spec 35: repair or dig speed, percent of the base rate.
       ...(t.repairPct === undefined ? {} : { repairPct: t.repairPct }),
+      // Spec 35 §5b: undiggable ground (indices of layerNames.ground) and when wheels stop at it.
+      ...(t.hardGround === undefined ? {} : { hardGround: t.hardGround.map((name) => GROUND_MATERIALS.indexOf(name)) }),
+      ...(t.wheelsBlockedState === undefined ? {} : { wheelsBlockedState: t.wheelsBlockedState }),
+      // Spec 35 §5c: trench rules (breaksWith as indices of the damage types).
+      ...(t.trench === undefined ? {} : { trench: { ...t.trench, breaksWith: t.trench.breaksWith.map((name) => globals.damageTypes.indexOf(name)) } }),
       render: t.render,
     })),
     maps: maps.map((m, mi) => ({
@@ -834,6 +850,8 @@ function setupSave(source, id, ruleset, validate, fail) {
     ...(data.credits === undefined ? {} : { credits: data.credits }),
     ai: data.ai ?? [],
     entities: data.entities ?? [],
+    ...(data.features === undefined ? {} : { features: data.features }),
+    ...(data.trenches === undefined ? {} : { trenches: data.trenches }),
   };
   return {
     format: SAVE_FILE_FORMAT,

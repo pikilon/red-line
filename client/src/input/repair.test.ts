@@ -4,6 +4,7 @@ import { decodeFeatures } from "../sim/featureSnapshot";
 import { ENTITY_FLAGS, type EntityState } from "../sim/matchSnapshot";
 import {
   canDig,
+  joinedTrenchLine,
   repairJobsOf,
   resolveBuildingRepairClick,
   resolveDigClick,
@@ -12,6 +13,8 @@ import {
   resolveRepairClick,
   resolveVehicleRepairClick,
   trenchLineSegments,
+  undiggableCells,
+  unfinishedTrenchJobs,
   withRepairState,
 } from "./repair";
 
@@ -335,13 +338,128 @@ describe("spec 35 trench digging input", () => {
     ]);
   });
 
+  it("an odd line drawn backwards never folds back over its own cells", () => {
+    expect(
+      trenchLineSegments({ x: 14.5, y: 8.5 }, { x: 10.5, y: 8.5 }),
+    ).toEqual([
+      { x: 13, y: 8, rot: 0 },
+      { x: 11, y: 8, rot: 0 },
+      { x: 9, y: 8, rot: 0 },
+    ]);
+  });
+
+  it("a line drawn near a trench snaps onto it so the network joins", () => {
+    // A trench on cells (10..11, 5); the line is drawn from two cells away.
+    const trench = new Set(["10,5", "11,5"]);
+    const isTrench = (x: number, y: number) => trench.has(`${x},${y}`);
+    const isFree = () => true;
+    const segments = joinedTrenchLine(
+      { x: 13.9, y: 5.5 },
+      { x: 19.5, y: 5.5 },
+      isTrench,
+      isFree,
+    );
+    expect(segments[0]).toEqual({ x: 12, y: 5, rot: 0 });
+    // Drawn towards the trench, an odd line grows at its free start instead.
+    const towards = joinedTrenchLine(
+      { x: 18.5, y: 5.5 },
+      { x: 13.5, y: 5.5 },
+      isTrench,
+      isFree,
+    );
+    const cells = towards.flatMap((s) => [s.x, s.x + 1]);
+    expect(Math.min(...cells)).toBe(12);
+    expect(cells.some((x) => trench.has(`${x},5`))).toBe(false);
+  });
+
+  it("a line over trenches leaves them alone and fills only the gaps", () => {
+    // Trench cells at x 12..13 and 17..18 on row 5; the line runs 10..20.
+    const trench = new Set(["12,5", "13,5", "17,5", "18,5"]);
+    const isTrench = (x: number, y: number) => trench.has(`${x},${y}`);
+    const segments = joinedTrenchLine(
+      { x: 10.5, y: 5.5 },
+      { x: 20.5, y: 5.5 },
+      isTrench,
+      () => true,
+    );
+    const cells = segments.flatMap((s) =>
+      s.rot === 0
+        ? [`${s.x},${s.y}`, `${s.x + 1},${s.y}`]
+        : [`${s.x},${s.y}`, `${s.x},${s.y + 1}`],
+    );
+    // Nothing is dug twice, and every free cell of the line is covered.
+    expect(cells.some((cell) => trench.has(cell))).toBe(false);
+    expect(new Set(cells).size).toBe(cells.length);
+    for (const x of [10, 11, 14, 15, 16, 19, 20]) {
+      expect(cells).toContain(`${x},5`);
+    }
+  });
+
+  it("unfinished dug trenches are construction marks workers can click", () => {
+    const rows = [
+      {
+        index: 0,
+        kind: 3,
+        state: 0,
+        alive: true,
+        burning: false,
+        collapsing: false,
+        hpPermille: 1000,
+        owner: 255,
+        occupants: 0,
+      },
+      {
+        index: 1,
+        kind: 7,
+        state: 2,
+        alive: true,
+        burning: false,
+        collapsing: false,
+        hpPermille: 40,
+        owner: 255,
+        occupants: 0,
+        at: { x: 4, y: 6, rot: 1, variant: 0 },
+      },
+      {
+        index: 2,
+        kind: 7,
+        state: 0,
+        alive: true,
+        burning: false,
+        collapsing: false,
+        hpPermille: 1000,
+        owner: 255,
+        occupants: 0,
+        at: { x: 8, y: 6, rot: 0, variant: 0 },
+      },
+    ];
+    expect(unfinishedTrenchJobs(rows, new Set([7]))).toEqual([
+      { index: 1, x0: 4, y0: 6, x1: 4, y1: 7, damaged: true },
+    ]);
+  });
+
   it("the feature table trailer places rows dug in the match", () => {
-    // Two rows of 7 ints, then placed = 1 and (x, y, rot) for row 1.
+    // Two rows of 7 ints, then placed = 1 and (x, y, rot, variant) for row 1.
     const table = Int32Array.from([
-      2, 0, 0, 0, 1, 1000, 255, 0, 1, 5, 2, 1, 3, 255, 0, 1, 30, 33, 1,
+      2, 0, 0, 0, 1, 1000, 255, 0, 1, 5, 2, 1, 3, 255, 0, 1, 30, 33, 1, 1,
     ]);
     const rows = decodeFeatures(table);
     expect(rows?.[0]?.at).toBeUndefined();
-    expect(rows?.[1]?.at).toEqual({ x: 30, y: 33, rot: 1 });
+    expect(rows?.[1]?.at).toEqual({ x: 30, y: 33, rot: 1, variant: 1 });
+  });
+});
+
+describe("undiggableCells (spec 35 §5b)", () => {
+  it("marks road cells and hard ground, nothing else", () => {
+    const map = {
+      width: 2,
+      height: 2,
+      ground: "00070600",
+      roads: "00000100",
+    };
+    expect([...undiggableCells(map, [3, 6, 7])]).toEqual([0, 1, 1, 0]);
+    expect([...undiggableCells({ width: 2, height: 2 }, [3])]).toEqual([
+      0, 0, 0, 0,
+    ]);
   });
 });

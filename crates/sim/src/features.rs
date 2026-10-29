@@ -119,6 +119,35 @@ pub fn water_blocks(base: &MapGrid, features: &[FeatureState], rules: &Ruleset) 
         .then(|| blocks_for(&base.with_open_water(), features, rules, false, true))
 }
 
+/// `true` when `row` is a feature that stops wheeled hulls at its current
+/// damage state (spec 35 §5b: a trench dug to half depth or more).
+fn wheels_stopped(def: &FeatureTypeDef, row: &FeatureState) -> bool {
+    row.alive
+        && def
+            .wheels_blocked_state
+            .is_some_and(|state| row.state <= state)
+}
+
+/// Spec 35 §5b: the terrain wheeled vehicles drive on, `with_blocks` plus the
+/// footprints of features that stop wheels at their state (trenches dug to half
+/// depth or more). `None` while there are none, when it would equal
+/// `with_blocks`.
+pub fn wheels_blocks(
+    base: &MapGrid,
+    features: &[FeatureState],
+    rules: &Ruleset,
+) -> Option<MapGrid> {
+    let stops = |row: &FeatureState| wheels_stopped(&rules.feature_types[row.kind as usize], row);
+    features.iter().any(stops).then(|| {
+        let mut terrain = blocks_for(base, features, rules, false, false);
+        for row in features.iter().filter(|row| stops(row)) {
+            let (w, h) = footprint(&rules.feature_types[row.kind as usize], row.rot);
+            terrain.block_footprint(Cell { x: row.x, y: row.y }, w, h);
+        }
+        terrain
+    })
+}
+
 /// `base` plus the blocking features; `foot` lets `blocks: vehicles` pass and
 /// `amphibious` leaves broken bridge decks open (the water under them is).
 fn blocks_for(
@@ -158,7 +187,7 @@ fn blocks_for(
 }
 
 /// Chebyshev distance in cells between two cell rectangles; 1 when they touch.
-fn rect_gap(a: (i32, i32, i32, i32), b: (i32, i32, i32, i32)) -> i32 {
+pub(crate) fn rect_gap(a: (i32, i32, i32, i32), b: (i32, i32, i32, i32)) -> i32 {
     let dx = (b.0 - a.2).max(a.0 - b.2).max(0);
     let dy = (b.1 - a.3).max(a.1 - b.3).max(0);
     dx.max(dy)
@@ -183,6 +212,8 @@ pub(crate) fn blocking_differs(rules: &Ruleset, old: &FeatureState, new: &Featur
         || old.alive != new.alive
         || (new.state != old.state
             && rules.feature_types[new.kind as usize].family == BRIDGE_FAMILY)
+        || wheels_stopped(&rules.feature_types[new.kind as usize], old)
+            != wheels_stopped(&rules.feature_types[new.kind as usize], new)
 }
 
 /// Damage state of `hp` out of `max` under the type's thresholds: 2 when at
@@ -341,6 +372,10 @@ impl World {
             if distance_to_rect(impact, extent(def, &row)) > reach {
                 continue;
             }
+            if def.trench.is_some() {
+                self.hit_trench(index, weapon);
+                continue;
+            }
             self.damage_feature(index, weapon.damage);
             self.ignite_feature(index);
         }
@@ -453,6 +488,7 @@ impl World {
         self.terrain = with_blocks(&self.terrain_base, &self.features, &self.rules);
         self.terrain_foot = foot_blocks(&self.terrain_base, &self.features, &self.rules);
         self.terrain_water = water_blocks(&self.terrain_base, &self.features, &self.rules);
+        self.terrain_wheels = wheels_blocks(&self.terrain_base, &self.features, &self.rules);
         self.rebuild_nav();
     }
 }

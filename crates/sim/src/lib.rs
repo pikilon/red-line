@@ -25,6 +25,7 @@ pub mod rules;
 pub mod save;
 pub mod snapshot;
 pub mod transport;
+pub mod trench;
 pub mod vision;
 pub mod wasm_api;
 pub mod world;

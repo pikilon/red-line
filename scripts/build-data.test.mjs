@@ -460,6 +460,7 @@ test("AC-17-17: builtin weapons", () => {
     "ua-rh120": [900, 1, 0, 1, 0, 100, "shell", "straight", 0, "cannon", "none"],
     "ua-gmlrs": [40, 1, 0, 2, 8, 125, "rocket", "topAttack", 600, "rocketLaunch", "smoke"],
     "ua-stugna-emplacement": [45, 0, 0, 1, 0, 110, "atgm", "loft", 40, "softLaunch", "smoke"],
+    "ua-sidearm": [400, 0, 0, 1, 0, 4, "tracer", "straight", 0, "muzzle", "none"],
     "ru-ak74": [400, 0, 0, 1, 0, 9, "tracer", "straight", 0, "muzzle", "none"],
     "ru-rpg7": [60, 1, 25, 1, 0, 90, "rpg", "boost", 0, "backblast", "smoke"],
     "ru-kpvt": [450, 0, 0, 1, 0, 14, "tracer", "straight", 0, "muzzle", "none"],
@@ -467,6 +468,7 @@ test("AC-17-17: builtin weapons", () => {
     "ru-2a46m": [900, 1, 0, 1, 0, 85, "shell", "straight", 0, "cannon", "none"],
     "ru-tos-thermobaric": [30, 1, 150, 4, 3, 30, "rocket", "ballistic", 0, "rocketLaunch", "smoke"],
     "ru-kornet-emplacement": [45, 0, 0, 1, 0, 120, "atgm", "loft", 40, "softLaunch", "smoke"],
+    "ru-sidearm": [400, 0, 0, 1, 0, 4, "tracer", "straight", 0, "muzzle", "none"],
   };
   assert.deepEqual(
     builtin.weapons.map((w) => w.id).sort(),

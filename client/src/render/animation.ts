@@ -65,6 +65,11 @@ export interface Hit {
   readonly amplitude: number;
 }
 
+/** Spec 35: shovel strokes per second of a digging soldier, and how fast
+ *  (per second) he bends to it or puts it away. */
+const DIG_STROKES_PER_SECOND = 0.9;
+const DIG_EASE = 3;
+
 /** Jolt of a hit: it peaks this long after the hit, lasts this long (ms) and
  *  never tilts more than `FLINCH_MAX` radians. */
 const FLINCH_PEAK_MS = 70;
@@ -87,7 +92,7 @@ export interface Animator {
   /** recoil = recoilOffset(nowMs - last shot) or 0 without a recorded shot;
    *  lift = bobHeight(id, nowMs) for a moving infantry unit (category "unit",
    *  armor 0, `moving` flag), otherwise 0. */
-  pose(entity: EntityState, nowMs: number): Pose;
+  pose(entity: EntityState, nowMs: number, digging?: boolean): Pose;
   /** Knocks the soldiers that took a hit without dying (spec 22 §6). */
   recordHits?(hits: readonly Hit[], atMs: number): void;
   /** Rig state of the last pose of `id`, null for units without one. */
@@ -116,6 +121,8 @@ export function createAnimator(): Animator {
     hitAt: number;
     hitAmp: number;
     hitPush: number;
+    dig: number;
+    digPhase: number;
   }
   /** Entity id -> eased limb state of the infantry on screen. */
   const rigs = new Map<number, RigEntry>();
@@ -152,7 +159,11 @@ export function createAnimator(): Animator {
   /** Eases the state of one soldier to what it is doing this frame. The `moving`
    *  flag only says the unit has an order (an attacker that stands in range has
    *  one too), so the walk follows the speed the unit really has. */
-  function rigOf(entity: EntityState, nowMs: number): RigState {
+  function rigOf(
+    entity: EntityState,
+    nowMs: number,
+    digging: boolean,
+  ): RigState {
     const type = typeDef(entity.kind);
     let entry = rigs.get(entity.id);
     if (entry === undefined) {
@@ -170,6 +181,8 @@ export function createAnimator(): Animator {
         hitAt: Number.NEGATIVE_INFINITY,
         hitAmp: 0,
         hitPush: 0,
+        dig: 0,
+        digPhase: entity.id * 0.29,
       };
       rigs.set(entity.id, entry);
     }
@@ -212,6 +225,13 @@ export function createAnimator(): Animator {
           moving ? PICKUP_EASE : PUT_DOWN_EASE,
           dt,
         );
+    entry.dig = ease(
+      entry.dig,
+      digging && !moving && !aiming ? 1 : 0,
+      DIG_EASE,
+      dt,
+    );
+    entry.digPhase += dt * DIG_STROKES_PER_SECOND * (entry.dig > 0 ? 1 : 0);
     const weapon = type.weapon >= 0 ? WEAPONS[type.weapon] : undefined;
     const reloadMs =
       weapon !== undefined && VISIBLE_RELOADS.has(weapon.render.launch)
@@ -227,6 +247,8 @@ export function createAnimator(): Animator {
       reloadMs,
       flinch: flinchOf(entry, nowMs),
       flinchPush: entry.hitPush,
+      dig: entry.dig,
+      digPhase: entry.digPhase,
     };
   }
 
@@ -250,7 +272,7 @@ export function createAnimator(): Animator {
     for (const id of rigShots.keys()) if (!alive.has(id)) rigShots.delete(id);
   }
 
-  function pose(entity: EntityState, nowMs: number): Pose {
+  function pose(entity: EntityState, nowMs: number, digging = false): Pose {
     const shotAt = lastShotAt.get(entity.id);
     // A recorded shot older than the linear return is forgotten: its recoil is 0.
     if (shotAt !== undefined && nowMs - shotAt >= RECOIL_MS) {
@@ -268,7 +290,7 @@ export function createAnimator(): Animator {
       lift = bobHeight(entity.id, nowMs);
     }
 
-    const rig = isRigged(type.id) ? rigOf(entity, nowMs) : null;
+    const rig = isRigged(type.id) ? rigOf(entity, nowMs, digging) : null;
     if (rig !== null) lastRigs.set(entity.id, rig);
     return { recoil, lift, rig };
   }

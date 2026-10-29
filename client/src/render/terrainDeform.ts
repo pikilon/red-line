@@ -6,6 +6,12 @@ import {
   Uint32BufferAttribute,
 } from "three";
 import { type Elevation, flatElevation, SHADING_RELIEF } from "./elevation";
+import {
+  TRENCH_HALF_WIDTH,
+  TRENCH_REACH,
+  type TrenchStroke,
+  trenchProfile,
+} from "./features/trenchNetwork";
 
 /** Visual-only ground relief (specs 24, 27). The simulation never reads it:
  *  the heights below only move the grass and dirt vertices and their normals.
@@ -18,7 +24,9 @@ import { type Elevation, flatElevation, SHADING_RELIEF } from "./elevation";
  *    patch with the same material, UVs and dirt opacity is drawn instead, so
  *    craters are smooth bowls with a raised rim instead of one sunken vertex.
  *    Crater samples are zero on the outline of the refined area, so the
- *    patches meet the coarse tiles without seams. */
+ *    patches meet the coarse tiles without seams.
+ *  - `trench`, on the same fine grid: the dug trenches (spec 35), rebuilt
+ *    whole from their centrelines whenever the network changes. */
 
 /** Seconds a crater takes to reach its full depth. */
 export const CRATER_RISE_MS = 350;
@@ -130,6 +138,8 @@ export interface TerrainDeformer {
     startMs: number,
     rim?: number,
   ): boolean;
+  /** Carves the trench network (spec 35); replaces the previous one. */
+  trenches(strokes: readonly TrenchStroke[]): void;
   /** Sinks the ground under moving weights, scaled by the softness there. */
   press(sources: readonly PressSource[], nowMs: number): void;
   /** Per-corner softness in 0..1 over a (width+1) x (height+1) grid, row
@@ -354,6 +364,9 @@ export function attachTerrainDeformer(
     crater ??= new Float32Array(fineWidth * fineHeight);
     return crater;
   };
+  let trench: Float32Array | null = null;
+  let trenchStrokes: readonly TrenchStroke[] = [];
+  let trenchDirty = false;
 
   // Refined tiles: tile -> patch slot, and the pools per ground mesh.
   const patchOf = new Int32Array(width * height).fill(-1);
@@ -642,16 +655,22 @@ export function attachTerrainDeformer(
   const maskAt = (x: number, z: number): number =>
     cornerBilinear(craterMask, x, z);
 
-  function craterAt(fx: number, fz: number): number {
-    if (crater === null) return 0;
+  function fineAt(field: Float32Array | null, fx: number, fz: number): number {
+    if (field === null) return 0;
     const x = Math.min(fineWidth - 1, Math.max(0, fx));
     const z = Math.min(fineHeight - 1, Math.max(0, fz));
-    return crater[z * fineWidth + x] ?? 0;
+    return field[z * fineWidth + x] ?? 0;
   }
 
-  /** Relief (press + crater) at fine sample (fx, fz). */
+  const craterAt = (fx: number, fz: number): number => fineAt(crater, fx, fz);
+
+  /** Craters plus trenches: the carved part of the relief. */
+  const carvedAt = (fx: number, fz: number): number =>
+    fineAt(crater, fx, fz) + fineAt(trench, fx, fz);
+
+  /** Relief (press + crater + trench) at fine sample (fx, fz). */
   function reliefFine(fx: number, fz: number): number {
-    return cornerBilinear(press, fx / SUB, fz / SUB) + craterAt(fx, fz);
+    return cornerBilinear(press, fx / SUB, fz / SUB) + carvedAt(fx, fz);
   }
 
   /** Base height plus relief at fine sample (fx, fz). */
@@ -701,13 +720,13 @@ export function attachTerrainDeformer(
       relief >= 0
         ? 1 - RIM_DARKEN * Math.min(1, relief / (MAX_RISE * 0.5))
         : 1 - DARKEN * Math.min(1, -relief / DARKEN_DEPTH);
-    if (crater === null) return wet;
-    const centre = craterAt(fx, fz);
+    if (crater === null && trench === null) return wet;
+    const centre = carvedAt(fx, fz);
     const laplacian =
-      (craterAt(fx + 1, fz) +
-        craterAt(fx - 1, fz) +
-        craterAt(fx, fz + 1) +
-        craterAt(fx, fz - 1) -
+      (carvedAt(fx + 1, fz) +
+        carvedAt(fx - 1, fz) +
+        carvedAt(fx, fz + 1) +
+        carvedAt(fx, fz - 1) -
         4 * centre) *
       SUB *
       SUB;
@@ -715,10 +734,10 @@ export function attachTerrainDeformer(
       CURVE_LIGHT,
       Math.max(-CURVE_DARK, -CURVATURE_SHADE * laplacian),
     );
+    // Only shell holes burn; a dug trench floor is plain damp soil.
+    const burnt = craterAt(fx, fz);
     const soot =
-      centre < 0
-        ? 1 - CRATER_SOOT * Math.min(1, -centre / CRATER_SOOT_DEPTH)
-        : 1;
+      burnt < 0 ? 1 - CRATER_SOOT * Math.min(1, -burnt / CRATER_SOOT_DEPTH) : 1;
     return wet * (1 + occlusion) * soot;
   }
 
@@ -843,7 +862,7 @@ export function attachTerrainDeformer(
           const soil = smoothstep(
             SOIL_FROM,
             SOIL_FULL,
-            Math.abs(craterAt(fx, fz)),
+            Math.abs(carvedAt(fx, fz)),
           );
           layer.colors[vertex * size + 3] = Math.max(
             layer.baseAlpha[vertex] ?? 0,
@@ -883,6 +902,104 @@ export function attachTerrainDeformer(
       return true;
     },
 
+    trenches(strokes) {
+      const reach = TRENCH_HALF_WIDTH * TRENCH_REACH;
+      // Tile rectangle every stroke of `list` can change.
+      const bounds = (
+        list: readonly TrenchStroke[],
+      ): [number, number, number, number] | null => {
+        if (list.length === 0) return null;
+        let x0 = Infinity;
+        let z0 = Infinity;
+        let x1 = -Infinity;
+        let z1 = -Infinity;
+        for (const s of list) {
+          x0 = Math.min(x0, s.x0, s.x1);
+          z0 = Math.min(z0, s.z0, s.z1);
+          x1 = Math.max(x1, s.x0, s.x1);
+          z1 = Math.max(z1, s.z0, s.z1);
+        }
+        return [
+          Math.max(0, Math.floor(x0 - reach)),
+          Math.max(0, Math.floor(z0 - reach)),
+          Math.min(width - 1, Math.ceil(x1 + reach) - 1),
+          Math.min(height - 1, Math.ceil(z1 + reach) - 1),
+        ];
+      };
+      const before = bounds(trenchStrokes);
+      const after = bounds(strokes);
+      trenchStrokes = strokes;
+      if (before === null && after === null) return;
+      trench ??= new Float32Array(fineWidth * fineHeight);
+      const field = trench;
+      // Refine the tiles each stroke reaches (a straight run's own box).
+      for (const s of strokes) {
+        const own = bounds([s]);
+        if (own === null) continue;
+        for (let tz = own[1]; tz <= own[3]; tz++) {
+          for (let tx = own[0]; tx <= own[2]; tx++) {
+            if (!rockAt(tx, tz)) refine(tz * width + tx);
+          }
+        }
+      }
+      const area = [before, after].filter(
+        (b): b is [number, number, number, number] => b !== null,
+      );
+      const tx0 = Math.min(...area.map((b) => b[0]));
+      const tz0 = Math.min(...area.map((b) => b[1]));
+      const tx1 = Math.max(...area.map((b) => b[2]));
+      const tz1 = Math.max(...area.map((b) => b[3]));
+      const fx0 = tx0 * SUB;
+      const fz0 = tz0 * SUB;
+      const spanX = (tx1 + 1) * SUB - fx0 + 1;
+      const spanZ = (tz1 + 1) * SUB - fz0 + 1;
+      // Nearest stroke per sample: the union of the channels, so joins and
+      // crossings do not dig twice as deep.
+      const nearest = new Float32Array(spanX * spanZ).fill(Infinity);
+      const depthAt = new Float32Array(spanX * spanZ);
+      for (const s of strokes) {
+        const own = bounds([s]);
+        if (own === null) continue;
+        const dx = s.x1 - s.x0;
+        const dz = s.z1 - s.z0;
+        const length = dx * dx + dz * dz;
+        for (let fz = own[1] * SUB; fz <= (own[3] + 1) * SUB; fz++) {
+          for (let fx = own[0] * SUB; fx <= (own[2] + 1) * SUB; fx++) {
+            const px = fx / SUB;
+            const pz = fz / SUB;
+            const t =
+              length === 0
+                ? 0
+                : Math.min(
+                    1,
+                    Math.max(0, ((px - s.x0) * dx + (pz - s.z0) * dz) / length),
+                  );
+            const d = Math.hypot(px - (s.x0 + dx * t), pz - (s.z0 + dz * t));
+            const index = (fz - fz0) * spanX + (fx - fx0);
+            if (d < (nearest[index] ?? Infinity)) {
+              nearest[index] = d;
+              depthAt[index] = s.d0 + (s.d1 - s.d0) * t;
+            }
+          }
+        }
+      }
+      for (let fz = fz0; fz < fz0 + spanZ; fz++) {
+        for (let fx = fx0; fx < fx0 + spanX; fx++) {
+          const index = (fz - fz0) * spanX + (fx - fx0);
+          const d = nearest[index] ?? Infinity;
+          const value =
+            d === Infinity || !movable(fx, fz)
+              ? 0
+              : trenchProfile(d / TRENCH_HALF_WIDTH) *
+                (depthAt[index] ?? 0) *
+                maskAt(fx / SUB, fz / SUB);
+          field[fz * fineWidth + fx] = value;
+        }
+      }
+      mark(tx0, tz0, tx1 + 1, tz1 + 1);
+      trenchDirty = true;
+    },
+
     press(sources, nowMs) {
       const seen = new Set<number>();
       for (const source of sources) {
@@ -918,16 +1035,16 @@ export function attachTerrainDeformer(
     heightAt(x, z) {
       const ground = elevation.at(x, z);
       const pressed = ground + cornerBilinear(press, x, z);
-      if (crater === null) return pressed;
+      if (crater === null && trench === null) return pressed;
       const gx = Math.min(fineWidth - 1 - 1e-6, Math.max(0, x * SUB));
       const gz = Math.min(fineHeight - 1 - 1e-6, Math.max(0, z * SUB));
       const ix = Math.floor(gx);
       const iz = Math.floor(gz);
       const fx = gx - ix;
       const fz = gz - iz;
-      const top = craterAt(ix, iz) * (1 - fx) + craterAt(ix + 1, iz) * fx;
+      const top = carvedAt(ix, iz) * (1 - fx) + carvedAt(ix + 1, iz) * fx;
       const bottom =
-        craterAt(ix, iz + 1) * (1 - fx) + craterAt(ix + 1, iz + 1) * fx;
+        carvedAt(ix, iz + 1) * (1 - fx) + carvedAt(ix + 1, iz + 1) * fx;
       return pressed + top * (1 - fz) + bottom * fz;
     },
 
@@ -949,9 +1066,11 @@ export function attachTerrainDeformer(
       // sinking under vehicles is invisible frame to frame and waits.
       if (
         craterTouched ||
+        trenchDirty ||
         (slowDirty && nowMs - lastSlowFlush >= SLOW_FLUSH_MS)
       ) {
         flush();
+        trenchDirty = false;
         slowDirty = false;
         lastSlowFlush = nowMs;
       }

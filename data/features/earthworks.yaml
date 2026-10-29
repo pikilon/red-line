@@ -1,12 +1,17 @@
 # Spec 35: earthworks soldiers dig during a match (no map places them). A trench starts empty and workers dig it to full
 # hit points with the repair works (dozers help, workers add up); a finished trench gives the infantry in it the
-# environment's trench cover. Vehicles drive over it.
+# environment's trench cover. Tracked vehicles and soldiers cross it; wheeled ones cannot once it is half dug.
 types:
   - id: trench
     family: earthwork
     footprint: [2, 1]
     blocks: none
+    hardGround: [rock, asphalt, concrete]   # cannot be dug here; any road refuses too (spec 35 §5b)
+    wheelsBlockedState: 1          # wheeled hulls cannot cross it once half dug or more; tracks and soldiers do
     variants: 1
     hp: 300
     repairPct: 400                 # digs four times faster than a bridge repairs: one soldier ~36 s, three ~12 s
+    # Spec 35 §5c: soldiers garrison a finished trench; a rifle only grazes them, high explosives break it.
+    garrison: { slots: 3, rangePct: 100, damagePct: 100, evictOnWrecked: false, allowNeutral: true, allowEnemies: false }
+    trench: { smallDamagePct: 10, breaksWith: [highExplosive, thermobaric], shelterSlots: 2, advanceTicks: 15 }
     render: { kind: trench }

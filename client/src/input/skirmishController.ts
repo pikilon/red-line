@@ -7,6 +7,7 @@ import type { SimCommand } from "../sim/protocol";
 import { panDelta } from "./cameraPan";
 import { boxSelect, clickSelect, selectAllOwnUnits } from "./entitySelection";
 import {
+  blockSelection,
   type GarrisonFeature,
   resolveGarrisonClick,
   selectOccupantsAt,
@@ -23,7 +24,7 @@ import {
   resolveRepairClick,
   resolveVehicleRepairClick,
   type TrenchSegment,
-  trenchLineSegments,
+  trenchLineGhost,
 } from "./repair";
 import {
   narrowToKind,
@@ -53,6 +54,10 @@ export interface SkirmishControllerOptions {
   entities(): readonly EntityState[];
   /** Map cells, tile-major; 0 is passable (spec §5.15). */
   tiles(): Uint8Array;
+  /** Spec 35 §5b: cells too hard to dig (hard ground, roads), 1 per cell. */
+  hardCells?(): Uint8Array | undefined;
+  /** Spec 35 §5b.3: cells covered by dug trenches (`y * mapWidth + x`). */
+  trenchCells?(): ReadonlySet<number>;
   /** Latest fog: 0 unexplored, 1 explored, 2 visible (spec §5.15). */
   fog(): Uint8Array;
   /** Type index being placed, or null when not in placement mode. */
@@ -95,7 +100,8 @@ export interface SkirmishController {
    *  selected producer. */
   toggleRally(): void;
   /** The armed map-tap mode of the command panel, if any. */
-  armedMode(): "force" | "rally" | null;
+  /** The armed mode that lights its button; Dig trench counts (spec 35). */
+  armedMode(): "force" | "rally" | "dig" | null;
   /** Spec 41: selects the selected unit types on the screen or the map. */
   selectSameType(scope: "screen" | "map"): void;
   /** Spec 41: narrows the selection to the entities of `kind`. */
@@ -147,7 +153,15 @@ export function createSkirmishController(
   function setSelection(ids: Iterable<number>): void {
     armedMode = null;
     selected.clear();
-    for (const id of ids) selected.add(id);
+    // Spec 35 §5c: soldiers in a trench are picked as the whole trench.
+    for (const id of blockSelection(
+      ids,
+      options.entities(),
+      options.garrisonFeatures?.() ?? [],
+      options.player(),
+    )) {
+      selected.add(id);
+    }
     options.onSelectionChange(selected);
   }
 
@@ -410,15 +424,22 @@ export function createSkirmishController(
       const to = groundAt(end);
       digArmed = event.shiftKey;
       if (from === null || to === null) return;
-      for (const command of resolveDigLine({
+      const line = resolveDigLine({
         player: options.player(),
         selected: [...selected],
         entities: options.entities(),
         from,
         to,
-      })) {
-        options.command(command);
-      }
+        isTrench,
+        isFree,
+      });
+      const adds = line.some(
+        (command) => command.kind === "digLine" && command.segments.length > 0,
+      );
+      // A line drawn only over trenches adds nothing: the workers dig on the
+      // unfinished one under its end instead (spec 35 §5b.3).
+      const commands = adds ? line : digOnAt(to);
+      for (const command of commands) options.command(command);
       return;
     }
     if (isDrag(start, end)) {
@@ -453,6 +474,13 @@ export function createSkirmishController(
     }
     if (digArmed) {
       digArmed = false;
+      // Dig on a trench being dug: the workers join it (spec 35 §5b.3).
+      const join = digOnAt(ground);
+      if (join.length > 0) {
+        for (const command of join) options.command(command);
+        lastClick = null;
+        return;
+      }
       for (const command of resolveDigClick({
         player: options.player(),
         selected: [...selected],
@@ -603,6 +631,31 @@ export function createSkirmishController(
   });
   options.keyTarget.addEventListener("blur", () => pressed.clear());
 
+  /** Spec 35 §5b.3: the selected workers dig on the unfinished trench at
+   *  `point`, if there is one. */
+  const digOnAt = (point: { x: number; y: number }) =>
+    resolveRepairClick({
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      jobs: options.repairJobs?.() ?? [],
+      x: point.x,
+      y: point.y,
+    });
+
+  /** Spec 35 §5b.3: a dug trench covers cell (x, y). */
+  const isTrench = (x: number, y: number): boolean =>
+    options.trenchCells?.().has(y * options.mapWidth + x) ?? false;
+  /** The client's view of a diggable cell: on the map, open to infantry
+   *  and not hard ground (buildings and features are the sim's call). */
+  const isFree = (x: number, y: number): boolean =>
+    x >= 0 &&
+    y >= 0 &&
+    x < options.mapWidth &&
+    y < options.mapHeight &&
+    options.tiles()[y * options.mapWidth + x] === 0 &&
+    options.hardCells?.()?.[y * options.mapWidth + x] !== 1;
+
   return {
     selected,
     armDig() {
@@ -614,21 +667,15 @@ export function createSkirmishController(
       const from = groundAt(dragStart);
       const to = groundAt(lastPointer);
       if (from === null || to === null) return null;
-      const tiles = options.tiles();
-      return trenchLineSegments(from, to).map((segment) => {
+      // The ghost runs on over trenches already there: they join the line.
+      return trenchLineGhost(from, to, isTrench, isFree).map((segment) => {
         const [w, h] = segment.rot === 0 ? [2, 1] : [1, 2];
         let valid = true;
         for (let dy = 0; dy < h; dy++) {
           for (let dx = 0; dx < w; dx++) {
             const x = segment.x + dx;
             const y = segment.y + dy;
-            const open =
-              x >= 0 &&
-              y >= 0 &&
-              x < options.mapWidth &&
-              y < options.mapHeight &&
-              tiles[y * options.mapWidth + x] === 0;
-            if (!open) valid = false;
+            if (!isFree(x, y) && !isTrench(x, y)) valid = false;
           }
         }
         return { ...segment, valid };
@@ -640,7 +687,7 @@ export function createSkirmishController(
     toggleRally() {
       armedMode = armedMode === "rally" ? null : "rally";
     },
-    armedMode: () => armedMode,
+    armedMode: () => (digArmed ? "dig" : armedMode),
     selectSameType(scope) {
       const kinds = selectedUnitKinds(options.entities(), selected);
       if (kinds.length === 0) return;

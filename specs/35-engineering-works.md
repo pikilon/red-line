@@ -70,13 +70,47 @@ once repaired above that threshold, and the client draws it again.
   and free of features.
 * A finished trench gives foot units on its cells `cover.trench.pct` (50,
   `data/balance/environment.yaml`); the best cover applies. Vehicles drive over
-  it and get no cover.
+  it only while it is shallow and get no cover (see 5b.2).
 * Rows past the map's (`placed_feature_count`) are dug rows: the feature table
-  trails `placed, (x, y, rot)...` so the client can draw them; saves keep them.
+  trails `placed, (x, y, rot, variant)...` so the client can draw them; saves keep them.
+* **Shelters.** In a dug line every row created gets a running index `k`
+  (blocked segments do not count); `k % 4 == 2` is a covered shelter
+  (`variant` 1, `SHELTER_EVERY`), the rest open trenches. Single `Dig` trenches
+  are open.
+* **Setup.** `trenches: [{ at: [x, y], rot?, hpPercent? (1..=100), variant? }]`
+  creates finished (or part-dug) trenches at tick 0; refused if the cells are
+  not free. Example save `?load=trench-network` (straight line, L corner,
+  staircase, shelters, half-dug and barely started pieces).
 * Client: the "Dig trench" button arms the next left click (Shift turns the
   trench; a second press of the button cancels); `client/src/render/features/renderers/earthworks.ts`
   draws the floor, parapets that rise with the digging and sandbags when done.
   Example save `?load=trench-digging`; setup order `{ dig: [x, y] }`.
+
+### 5b.2 Hard ground and wheels
+
+* **Hard ground.** `trench.hardGround: [rock, asphalt, concrete]`
+  (`data/features/earthworks.yaml`, compiled to ids of `layerNames.ground`)
+  and every road cell refuse a trench: `dig_cells` fails if any of its cells
+  has such a ground or a road. In a `DigLine` those segments are skipped like
+  other blocked ones. The Dig ghost reads the same ruleset data
+  (`undiggableCells`, `client/src/input/repair.ts`) and turns red there.
+* **Wheels.** `trench.wheelsBlockedState: 1` (data): wheeled hulls
+  (locomotor `kind: wheels`, the existing `LocoKind::Wheels`; no unit ids are
+  named) cannot cross a trench whose damage state is at most 1, that is dug to
+  half or more. A just-started trench (state 2) blocks nobody; tracks and
+  infantry always cross. The sim keeps a fourth derived grid beside the foot
+  and water ones (`terrain_wheels`/`nav_wheels`, `Layer::Wheels`, `None` while
+  no trench is that deep) and rebuilds it through `refresh_feature_blocks`
+  when a trench reaches half depth, so flow fields route wheels around it.
+* **Caught under it.** A wheeled unit on cells that close under it may move
+  within its cell and, with no flow value there, heads straight for the nearest
+  open cell (`way_out`) and then follows its order. Buildings placed under
+  units had no such rule; this one covers both.
+* Assumptions: **A9** amphibious wheeled hulls keep the water grid and ignore
+  trenches (no such unit exists). **A10** the saved flow-goal lists carry no
+  wheels entry; those fields are derived and recomputed on demand. **A11**
+  rock, asphalt and concrete are the hard materials; gravel, mud, sand, dirt
+  and snow dig.
 
 ### 5b.1 Trench lines
 
@@ -97,8 +131,96 @@ once repaired above that threshold, and the client draws it again.
   line is dug in order with no extra saved state. Saves hold the command.
 * Assumptions: **A6** the whole squad digs one segment at a time (no
   splitting across segments). **A7** the client preview checks terrain only;
-  buildings and features are decided by the sim. **A8** the hand-on rule also
-  lets a finished digger help any unfinished trench within 8 cells.
+  buildings and features are decided by the sim. **A8** the hand-on rule only
+  follows the digger's own line (the next row made after the one it
+  finished, within 8 cells); an older unfinished trench nearby never draws it
+  away (owner request 2026-10-29).
+
+### 5b.3 Joining and continuing (owner request 2026-10-29)
+
+* **Snap.** A drawn line end within `TRENCH_JOIN_REACH` (2) cells of a dug
+  trench moves to the nearest free cell touching it (8-neighbour, the same
+  rule the client uses to draw the network as one channel), so a new line
+  joins instead of leaving a gap. With both ends snapping, the end cell that
+  makes the line an even number of cells wins. An odd line adds its extra
+  cell past the end, or before the start when only the end joins; never back
+  over its own cells (`joinedTrenchLine`, `client/src/input/repair.ts`).
+* **Continue.** An unfinished dug trench is a construction mark (stakes and
+  tape): a left click on it with workers (infantry, dozers) selected sends
+  `Repair` on that row, so they dig on (`unfinishedTrenchJobs`).
+* **Look.** The client joins all pieces into smoothed centrelines
+  (`render/features/trenchNetwork.ts`) and the terrain deformer carves them
+  with a crater-like profile (flat floor, walls, spoil berm); finished
+  stretches get sandbags and duckboards, `variant` 1 pieces a log-and-sandbag
+  roof. Infantry stand on the carved floor, so they are drawn sunk.
+
+## 5c. Trench garrison (owner request 2026-10-29)
+
+* **Precedent.** Trenches have no Zero Hour precedent (D3); the garrison base
+  copies spec 31 block 2 (`garrison.rs`: `Garrison`/`Unload`, `inside`,
+  `GarrisonDef`). Everything below is Red Line's own.
+* **Data.** `trench` in `data/features/earthworks.yaml` gets a `garrison:` block
+  (3 slots, range and damage 100 percent, `evictOnWrecked: false`, neutral
+  allowed, enemies not) and `trench: { smallDamagePct: 10, breaksWith:
+  [highExplosive, thermobaric], shelterSlots: 2, advanceTicks: 15 }`. Unit types
+  may name a `trenchWeapon`; both factions get a weak `smallArms` sidearm (4
+  damage, 3 tiles, 20 ticks) set on every infantry type whose main weapon is
+  `antiTank` (Stugna team, RPG gunner).
+* **Entry.** Only a finished (full hit points) piece takes riders. Riders that
+  do not fit go to the nearest connected piece that is empty or held by the same
+  player. The network is the pieces whose cells are 8-adjacent, transitively
+  (breadth first, neighbours in ascending feature index). A rider that finds its
+  piece full on arrival moves on to the next one. Vehicles never enter.
+* **Visible.** Occupants keep `FLAG_INSIDE` but are not hidden from other
+  players' snapshots. They stand at slot points of the piece (slot `i` of `n` at
+  `(2i+1)/2n` of the long axis, on the centre line).
+* **Damage.** A shot or splash reaching a piece (`hit_features`) goes through
+  `hit_trench`. Damage types in `breaksWith` wear the trench down; going below
+  zero destroys the row and the overflow hits every exposed occupant, who are
+  then put out on the piece's own cells or around it. Any other type leaves the
+  trench alone and hurts the lowest-id exposed occupant for `smallDamagePct`
+  percent (at least 1). In a `variant` 1 piece the first `shelterSlots`
+  occupants by id take nothing. Empty trenches break the same way.
+* **Advance to contact.** Every `advanceTicks`, in a network holding two or more
+  players, an occupant whose piece does not touch an enemy-held piece moves one
+  piece along the shortest path to the nearest enemy-held one, if the next piece
+  has room and is not enemy-held. An occupant in a piece touching an enemy-held
+  one shoots the lowest-id enemy occupant there directly (no trench or cover
+  reduction), with its `trenchWeapon` or, lacking one, its main weapon; never an
+  `antiTank` one.
+* **Outward fire.** Otherwise occupants fire out like building garrisons do
+  (range and damage 100 percent), launchers with their normal weapon.
+* **Evacuate.** `Unload` puts the occupants out; the piece's own cells count as
+  free for them.
+* **State.** Nothing new is stored: occupants are `inside` and their slot
+  position is the entity position, both already hashed and saved.
+* Example save `?load=trench-assault`.
+
+* **Over trenches.** A line may cross trenches dug or being dug: their cells
+  are left alone and only the gaps are cut into pieces; a one-cell gap gets a
+  piece running on past it or turned across the line. A line end snaps onto
+  a trench only when it does not already reach one along the line. Dig armed
+  on an unfinished trench (tap, or a line that adds nothing) sends the
+  workers to dig on it. The Dig trench button stays lit while armed and goes
+  out when the line is drawn (Shift keeps it), or on a second press or Esc.
+
+### 5b.4 Digging and shelling, as seen (owner requests 2026-10-29)
+
+* Workers dig from inside the trench (`dig_post`): a dozer at the piece's
+  centre, turned to lie along it; soldiers at `DIG_POSTS` (3) posts spread
+  along its centre line, by rank of id. A second `Dig` on a piece already
+  started joins it.
+* Client only: a soldier digging bends over a shovel facing a side wall and
+  throws the earth over it (`RigState.dig`, `render/shovels.ts`); a dozer
+  scoops (blade in, shove), lifts the blade full of earth, swings aside to
+  drop it and back, alternating sides (`dozerStroke`).
+* Inside a trench, shots and shells (any type not in `breaksWith`) do
+  `smallDamagePct` (10 %) of their damage, at least 1, to one soldier:
+  little, but never nothing; only sheltered soldiers take none.
+* Contact fire turns the shooter to his victim. Shelling a finished piece
+  bites a small crater into it; a destroyed piece is left a large crater and
+  is gone from the network (client `craterChanges`). A worn piece is drawn
+  battered (fewer sandbags, no stakes), not as a construction mark.
 
 ## 6. Assumptions
 
@@ -107,8 +229,20 @@ once repaired above that threshold, and the client draws it again.
 * **A2** Any player's workers may repair any bridge (bridges are neutral).
 * **A3** No repair animation or scaffolding yet; workers stand by the bank.
 * **A4** The AI does not repair bridges or dig trenches yet.
-* **A5** Trenches cannot be damaged or filled in; there is no limit on how
-  many a player digs.
+* **A5** Trenches cannot be filled in; there is no limit on how many a player
+  digs. (Damage: see A12 to A17.)
+* **A12** Trench garrison has no Zero Hour precedent (D3); it copies spec 31
+  block 2 and the numbers are owner decisions (§5c).
+* **A13** Only breaking damage types (`breaksWith`) wear a trench down; the rest
+  only graze one exposed occupant. Armour modifiers do not apply to either.
+* **A14** A shot that takes exactly the trench's remaining hit points leaves it
+  standing at zero; only more than that destroys it.
+* **A15** Contact fights ignore weapon range (the pieces touch) and the soldiers
+  stay put until one side is dead or leaves; there is no retreat.
+* **A16** The AI garrisons finished trenches next to approaching infantry like
+  any garrisonable building, and does not advance on purpose.
+* **A17** Soldiers of a destroyed or unloaded piece go to its own cells first;
+  those with no room left stand around it.
 
 ## 7. Acceptance criteria
 

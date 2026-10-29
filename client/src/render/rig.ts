@@ -28,6 +28,10 @@ export interface RigState {
    *  direction it is pushed. Spec 22 §6. */
   readonly flinch: number;
   readonly flinchPush: number;
+  /** 0 .. 1 bent over a shovel digging a trench (spec 35), and the stroke
+   *  position in turns: 0 blade in the ground, 0.5 earth thrown. */
+  readonly dig: number;
+  readonly digPhase: number;
 }
 
 export const REST_RIG: RigState = {
@@ -40,6 +44,8 @@ export const REST_RIG: RigState = {
   reloadMs: 0,
   flinch: 0,
   flinchPush: 0,
+  dig: 0,
+  digPhase: 0,
 };
 
 /** Offset of one limb from its neutral pose: tiles in the parent frame, then
@@ -340,33 +346,59 @@ function pose(
   const hand = man.feeds === true ? handing(f) : 0;
   // A hit that did not kill: arms jerk, knees give for a moment.
   const jolt = Math.min(1, Math.abs(s.flinch) / 0.4);
+  // Digging: a stroke bends over and drives the blade in (stroke -1), then
+  // straightens and throws the earth (stroke 1).
+  const stroke = -Math.cos(2 * Math.PI * (s.digPhase + man.phase));
+  const dig = s.dig;
   switch (part) {
     case "hips":
       out.y =
         (-KNEEL_DROP * k + STEP_BOB * s.walk * Math.cos(2 * turn)) * man.height;
-      out.rx = 0.06 * s.walk + KNEEL_LEAN[man.weapon] * k + 0.55 * bend;
+      out.rx =
+        0.06 * s.walk +
+        KNEEL_LEAN[man.weapon] * k +
+        0.55 * bend +
+        dig * (0.45 - 0.25 * stroke);
+      out.y -= dig * 0.04 * (1 - stroke) * man.height;
       out.ry =
         0.1 * s.walk * Math.sin(turn) + g.launcherTurn * bend - 0.8 * hand;
       break;
     case "thigh_l":
-      out.rx = -SWING * s.walk * Math.sin(turn) + KNEEL.thighL * k;
+      out.rx =
+        -SWING * s.walk * Math.sin(turn) +
+        KNEEL.thighL * k -
+        dig * (0.35 - 0.1 * stroke);
       break;
     case "thigh_r":
-      out.rx = SWING * s.walk * Math.sin(turn) + KNEEL.thighR * k;
+      out.rx = SWING * s.walk * Math.sin(turn) + KNEEL.thighR * k - dig * 0.15;
       break;
     case "shin_l":
       out.rx =
         FLEX * s.walk * Math.max(0, Math.cos(turn)) +
         KNEEL.shinL * k +
-        0.35 * jolt;
+        0.35 * jolt +
+        dig * (0.4 - 0.1 * stroke);
       break;
     case "shin_r":
       out.rx =
         FLEX * s.walk * Math.max(0, -Math.cos(turn)) +
         KNEEL.shinR * k +
-        0.35 * jolt;
+        0.35 * jolt +
+        dig * 0.2;
       break;
     case "arms": {
+      if (dig > 0) {
+        // The weapon is slung: the arms work the shovel down and up.
+        const base =
+          man.weapon === "rifle"
+            ? 0.1 * s.walk
+            : man.weapon === "rpg"
+              ? rpgPitch(s)
+              : 0.08 * s.walk;
+        out.rx = base * (1 - dig) + dig * (0.9 + 0.55 * stroke);
+        out.ry = dig * 0.25;
+        break;
+      }
       if (man.weapon === "rifle") {
         // Low ready, raised on a target; the walk swings it a little. The
         // assistant lifts his arms out to the gunner while he hands a round over.

@@ -104,6 +104,7 @@
         "cost": { "$ref": "#/$defs/count" },
         "buildTicks": { "$ref": "#/$defs/count" },
         "weapon": { "$ref": "#/$defs/id" },
+        "trenchWeapon": { "description": "Spec 35 §5c: weapon fired in a trench fight instead of an antiTank main weapon.", "$ref": "#/$defs/id" },
         "requires": { "$ref": "#/$defs/ids" },
         "builds": { "$ref": "#/$defs/ids" },
         "produces": { "$ref": "#/$defs/ids" },

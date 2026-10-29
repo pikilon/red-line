@@ -410,6 +410,8 @@ pub fn save_state(world: &World, seed: u64, ais: &[Ai]) -> Result<SimState, Stri
         nav_foot: _,
         terrain_water: _,
         nav_water: _,
+        terrain_wheels: _,
+        nav_wheels: _,
         players,
         entities,
         next_entity_id,
@@ -564,6 +566,7 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
     let terrain = features::with_blocks(&base, &features, &rules);
     let terrain_foot = features::foot_blocks(&base, &features, &rules);
     let terrain_water = features::water_blocks(&base, &features, &rules);
+    let terrain_wheels = features::wheels_blocks(&base, &features, &rules);
     let nav = terrain.clone();
 
     let players = state
@@ -601,6 +604,8 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
         nav_foot: None,
         terrain_water,
         nav_water: None,
+        terrain_wheels,
+        nav_wheels: None,
         players,
         entities,
         next_entity_id: state.next_entity_id,
@@ -1301,6 +1306,25 @@ pub struct Setup {
     /// Spec 35: map features damaged at tick 0 (e.g. a broken bridge to repair).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub features: Vec<SetupFeature>,
+    /// Spec 35 §5b: trenches already dug at tick 0 (rows past the map's).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub trenches: Vec<SetupTrench>,
+}
+
+/// A trench (2x1 earthwork) at `at`, at `hp_percent` of its hit points.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SetupTrench {
+    pub at: [i32; 2],
+    /// 0..=3, default 0.
+    #[serde(default)]
+    pub rot: u8,
+    /// 1..=100, default 100.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hp_percent: Option<u32>,
+    /// 0 open trench, 1 covered shelter; default 0.
+    #[serde(default)]
+    pub variant: u8,
 }
 
 /// A map feature, by a cell it covers, left at `hp_percent` of its hit points.
@@ -1504,6 +1528,31 @@ impl World {
                 return Err(at(format!("duplicate label {label}")));
             }
             placed.push(id);
+        }
+
+        // Trenches exist before orders resolve, so units can be told to garrison them.
+        for (index, entry) in setup.trenches.iter().enumerate() {
+            let percent = entry.hp_percent.unwrap_or(100);
+            if !(1..=100).contains(&percent) {
+                return Err(invalid(format!(
+                    "trenches[{index}]: hpPercent must be 1..=100"
+                )));
+            }
+            let cell = to_cell(entry.at);
+            let row = world
+                .dig_trench(cell, entry.rot, entry.variant)
+                .ok_or_else(|| {
+                    invalid(format!(
+                        "trenches[{index}]: cells at {},{} are not free",
+                        entry.at[0], entry.at[1]
+                    ))
+                })? as usize;
+            let def = &world.rules.feature_types[world.features[row].kind as usize];
+            let hp = ((u64::from(def.hp) * u64::from(percent) / 100) as u32).max(1);
+            let state =
+                crate::features::state_for(hp, def.hp, def.states.damaged, def.states.wrecked);
+            world.features[row].hp = hp;
+            world.features[row].state = state;
         }
 
         for (index, entry) in setup.entities.iter().enumerate() {

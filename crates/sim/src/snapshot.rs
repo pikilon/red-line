@@ -194,7 +194,12 @@ pub fn encode_match_snapshot_with_shots(
     let mut rows: Vec<(EntityId, [i32; ENTITY_STRIDE])> = Vec::new();
     for entity in world.entities() {
         // Occupants show to their owner and to a revealed (neutral) viewer.
-        let hidden = entity.contained() && viewer != NEUTRAL && entity.owner != viewer;
+        // Soldiers in a trench stand in plain sight (spec 35 §5c).
+        let in_trench = entity
+            .inside
+            .is_some_and(|feature| world.trench_def(feature).is_some());
+        let hidden =
+            entity.contained() && !in_trench && viewer != NEUTRAL && entity.owner != viewer;
         if !hidden && world.is_entity_visible(viewer, entity.id) {
             rows.push((entity.id, entity_row(world, entity, shots)));
         }
@@ -312,12 +317,12 @@ pub fn encode_features(world: &World) -> Vec<i32> {
         ]);
     }
     // Spec 35: rows past the map's were dug in the match; the client cannot
-    // know where, so they trail the table as `placed, (x, y, rot)...`.
+    // know where, so they trail the table as `placed, (x, y, rot, variant)...`.
     let placed = world.placed_feature_count();
     if rows.len() > placed {
         out.push(placed as i32);
         for row in &rows[placed..] {
-            out.extend_from_slice(&[row.x, row.y, i32::from(row.rot)]);
+            out.extend_from_slice(&[row.x, row.y, i32::from(row.rot), row.variant as i32]);
         }
     }
     out

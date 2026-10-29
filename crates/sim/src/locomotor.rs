@@ -102,7 +102,7 @@ pub(crate) fn drive(
             } else {
                 unit.pos + heading.scale(unit.speed)
             };
-            if nav.is_passable(cell_of(next)) {
+            if may_enter(nav, unit.pos, next) {
                 unit.pos = next;
             } else {
                 unit.speed = Fx::ZERO;
@@ -110,6 +110,13 @@ pub(crate) fn drive(
             false
         }
     }
+}
+
+/// A hull may move to `next` when its cell is open, or when it stays within
+/// the cell it already stands in: one caught by cells that just closed under
+/// it (a trench dug deep, spec 35 §5b) must be able to roll out.
+fn may_enter(nav: &MapGrid, from: FxVec2, next: FxVec2) -> bool {
+    nav.is_passable(cell_of(next)) || cell_of(next) == cell_of(from)
 }
 
 /// Wheels turn only while moving: `max(turn_step / 4, turn_step × min(speed,
@@ -142,7 +149,7 @@ pub(crate) fn coast(unit: &mut Entity, motion: &Motion, nav: &MapGrid) {
     } else {
         unit.pos + heading.scale(unit.speed)
     };
-    if nav.is_passable(cell_of(next)) {
+    if may_enter(nav, unit.pos, next) {
         unit.pos = next;
     } else {
         unit.speed = Fx::ZERO;

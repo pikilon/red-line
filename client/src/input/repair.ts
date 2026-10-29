@@ -55,6 +55,29 @@ export function withRepairState(
   });
 }
 
+/** Spec 35 §5b.3: trenches dug in the match and not finished yet (their
+ *  construction mark): a left click on one with workers selected digs on. */
+export function unfinishedTrenchJobs(
+  rows: readonly FeatureRow[] | null,
+  earthworkKinds: ReadonlySet<number>,
+): RepairJob[] {
+  const jobs: RepairJob[] = [];
+  for (const row of rows ?? []) {
+    if (row.at === undefined || !row.alive || row.hpPermille >= 1000) continue;
+    if (!earthworkKinds.has(row.kind)) continue;
+    const [w, h] = row.at.rot % 2 === 0 ? [2, 1] : [1, 2];
+    jobs.push({
+      index: row.index,
+      x0: row.at.x,
+      y0: row.at.y,
+      x1: row.at.x + w - 1,
+      y1: row.at.y + h - 1,
+      damaged: true,
+    });
+  }
+  return jobs;
+}
+
 /** Dozers and free infantry: the units that work on a repair. */
 export function isWorker(entity: EntityState): boolean {
   const def = typeDef(entity.kind);
@@ -65,7 +88,8 @@ export function isWorker(entity: EntityState): boolean {
   );
 }
 
-/** Right click on a damaged bridge with workers selected: they repair it. */
+/** Left click on a damaged bridge or an unfinished trench with workers
+ *  selected: they repair (dig) it. */
 export function resolveRepairClick(args: {
   player: number;
   selected: readonly number[];
@@ -334,6 +358,32 @@ export function resolveDigClick(args: {
   ];
 }
 
+/** Spec 35 §5b: marks (1) the cells of a map where nothing can be dug: every
+ *  road cell and every ground material listed in `hardGround` (ids of
+ *  `layerNames.ground`, the earthwork type's `hardGround`). `ground` and
+ *  `roads` are the map's hex layers, two digits per cell; a map without them
+ *  has no hard cells. */
+export function undiggableCells(
+  map: { width: number; height: number; ground?: string; roads?: string },
+  hardGround: readonly number[],
+): Uint8Array {
+  const cells = map.width * map.height;
+  const hard = new Uint8Array(cells);
+  const byteAt = (hex: string | undefined, i: number): number =>
+    hex === undefined || hex.length !== cells * 2
+      ? 0
+      : Number.parseInt(hex.slice(i * 2, i * 2 + 2), 16) || 0;
+  for (let i = 0; i < cells; i++) {
+    if (
+      byteAt(map.roads, i) !== 0 ||
+      hardGround.includes(byteAt(map.ground, i))
+    ) {
+      hard[i] = 1;
+    }
+  }
+  return hard;
+}
+
 /** One 2x1 trench of a line: top-left cell and turn (0 along x, 1 along y). */
 export interface TrenchSegment {
   x: number;
@@ -347,6 +397,7 @@ export interface TrenchSegment {
 export function trenchLineSegments(
   from: { x: number; y: number },
   to: { x: number; y: number },
+  extendAtStart = false,
 ): TrenchSegment[] {
   const x0 = Math.floor(from.x);
   const y0 = Math.floor(from.y);
@@ -356,11 +407,13 @@ export function trenchLineSegments(
   const [a0, b0, a1, b1] = horizontal ? [x0, y0, x1, y1] : [y0, x0, y1, x1];
   const sign = a1 >= a0 ? 1 : -1;
   const cells = Math.abs(a1 - a0) + 1;
+  // An odd line needs one more cell: past the end, or before the start when
+  // the end joins a trench (spec 35 §5b.3). Never back over its own cells.
+  const shift = cells % 2 === 1 && extendAtStart ? -sign : 0;
   const segments: TrenchSegment[] = [];
   for (let k = 0; k < cells; k += 2) {
-    const first = a0 + sign * k;
-    const second = k + 1 < cells ? first + sign : first;
-    const along = Math.min(first, second);
+    const first = a0 + shift + sign * k;
+    const along = sign > 0 ? first : first - 1;
     const across =
       cells === 1 ? b0 : Math.round(b0 + ((b1 - b0) * k) / (cells - 1));
     segments.push(
@@ -372,6 +425,165 @@ export function trenchLineSegments(
   return segments;
 }
 
+/** Answers whether cell (x, y) is something: a trench, or free to dig. */
+export type CellTest = (x: number, y: number) => boolean;
+
+/** Spec 35 §5b.3: how far (cells) a line end looks for a trench to join. */
+export const TRENCH_JOIN_REACH = 2;
+
+/** Free cells within `TRENCH_JOIN_REACH` of `point` that touch a trench
+ *  (8-neighbour, as the drawn network joins pieces), nearest first; empty
+ *  when no trench is near. */
+export function trenchJoinCells(
+  point: { x: number; y: number },
+  isTrench: CellTest,
+  isFree: CellTest,
+): { x: number; y: number }[] {
+  const cx = Math.floor(point.x);
+  const cy = Math.floor(point.y);
+  const touches = (x: number, y: number): boolean => {
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if ((dx !== 0 || dy !== 0) && isTrench(x + dx, y + dy)) return true;
+      }
+    }
+    return false;
+  };
+  const found: { x: number; y: number; d: number }[] = [];
+  for (let y = cy - TRENCH_JOIN_REACH; y <= cy + TRENCH_JOIN_REACH; y++) {
+    for (let x = cx - TRENCH_JOIN_REACH; x <= cx + TRENCH_JOIN_REACH; x++) {
+      if (isTrench(x, y) || !isFree(x, y) || !touches(x, y)) continue;
+      found.push({ x, y, d: Math.hypot(x + 0.5 - point.x, y + 0.5 - point.y) });
+    }
+  }
+  found.sort((a, b) => a.d - b.d || a.y - b.y || a.x - b.x);
+  return found.map(({ x, y }) => ({ x, y }));
+}
+
+/** Spec 35 §5b.3: the ends of a drawn line. An end that stops just short
+ *  of a trench (within `TRENCH_JOIN_REACH`) snaps onto it, unless the line
+ *  already reaches one there, so nothing is left unjoined. */
+export function trenchLineEnds(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  isTrench: CellTest,
+  isFree: CellTest,
+): {
+  start: { x: number; y: number };
+  end: { x: number; y: number };
+} {
+  // An end that already reaches a trench along the line stays where it is.
+  const reaches = (
+    point: { x: number; y: number },
+    toward: { x: number; y: number },
+  ): boolean => {
+    const length = Math.hypot(toward.x - point.x, toward.y - point.y);
+    for (let step = 0; step <= TRENCH_JOIN_REACH; step++) {
+      const t = length === 0 ? 0 : Math.min(1, step / length);
+      const x = Math.floor(point.x + (toward.x - point.x) * t);
+      const y = Math.floor(point.y + (toward.y - point.y) * t);
+      if (isTrench(x, y)) return true;
+    }
+    return false;
+  };
+  const snap = (
+    point: { x: number; y: number },
+    toward: { x: number; y: number },
+  ) => {
+    if (reaches(point, toward)) return point;
+    const cell = trenchJoinCells(point, isTrench, isFree)[0];
+    return cell === undefined ? point : { x: cell.x + 0.5, y: cell.y + 0.5 };
+  };
+  return { start: snap(from, to), end: snap(to, from) };
+}
+
+/** Spec 35 §5b.3: the whole drawn line as the ghost shows it while dragging,
+ *  from its snapped ends, over any trench it crosses (no gaps). */
+export function trenchLineGhost(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  isTrench: CellTest,
+  isFree: CellTest,
+): TrenchSegment[] {
+  const { start, end } = trenchLineEnds(from, to, isTrench, isFree);
+  return trenchLineSegments(start, end);
+}
+
+/** Spec 35 §5b.3: the trench pieces a drawn line adds to the network. The
+ *  line may run over trenches already dug or being dug: their cells are
+ *  left alone and only the gaps between them are cut into 2-cell pieces. A
+ *  gap of one cell gets a piece that runs on past it or, failing that, a
+ *  piece turned across the line. */
+export function joinedTrenchLine(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  isTrench: CellTest,
+  isFree: CellTest,
+): TrenchSegment[] {
+  const { start, end } = trenchLineEnds(from, to, isTrench, isFree);
+  const x0 = Math.floor(start.x);
+  const y0 = Math.floor(start.y);
+  const x1 = Math.floor(end.x);
+  const y1 = Math.floor(end.y);
+  const horizontal = Math.abs(x1 - x0) >= Math.abs(y1 - y0);
+  const [a0, b0, a1, b1] = horizontal ? [x0, y0, x1, y1] : [y0, x0, y1, x1];
+  const sign = a1 >= a0 ? 1 : -1;
+  const count = Math.abs(a1 - a0) + 1;
+  const at = (a: number, b: number) =>
+    horizontal ? { x: a, y: b } : { x: b, y: a };
+  const open = (a: number, b: number): boolean => {
+    const { x, y } = at(a, b);
+    return isFree(x, y) && !isTrench(x, y) && !taken.has(`${x},${y}`);
+  };
+  const taken = new Set<string>();
+  const take = (a: number, b: number) => {
+    const { x, y } = at(a, b);
+    taken.add(`${x},${y}`);
+  };
+  const segments: TrenchSegment[] = [];
+  const along = (a: number, b: number) => {
+    // A piece over cells a and a + sign, turned along the line.
+    const low = Math.min(a, a + sign);
+    take(a, b);
+    take(a + sign, b);
+    segments.push(
+      horizontal ? { x: low, y: b, rot: 0 } : { x: b, y: low, rot: 1 },
+    );
+  };
+  const across = (a: number, b: number): boolean => {
+    for (const side of [1, -1]) {
+      if (!open(a, b + side)) continue;
+      const low = Math.min(b, b + side);
+      take(a, b);
+      take(a, b + side);
+      segments.push(
+        horizontal ? { x: a, y: low, rot: 1 } : { x: low, y: a, rot: 0 },
+      );
+      return true;
+    }
+    return false;
+  };
+  let k = 0;
+  while (k < count) {
+    const a = a0 + sign * k;
+    const b = count === 1 ? b0 : Math.round(b0 + ((b1 - b0) * k) / (count - 1));
+    if (!open(a, b)) {
+      k++;
+      continue;
+    }
+    // Pair this cell with the next one (past the end of the line too).
+    const next = a + sign;
+    if (open(next, b)) {
+      along(a, b);
+      k += 2;
+      continue;
+    }
+    across(a, b);
+    k++;
+  }
+  return segments;
+}
+
 /** Spec 35 §5b.1: the line dig ordered for the selected workers. */
 export function resolveDigLine(args: {
   player: number;
@@ -379,8 +591,11 @@ export function resolveDigLine(args: {
   entities: readonly EntityState[];
   from: { x: number; y: number };
   to: { x: number; y: number };
+  /** Spec 35 §5b.3: with both, the line ends snap onto nearby trenches. */
+  isTrench?: CellTest;
+  isFree?: CellTest;
 }): SimCommand[] {
-  const { player, selected, entities, from, to } = args;
+  const { player, selected, entities, from, to, isTrench, isFree } = args;
   const wanted = new Set(selected);
   const units = entities
     .filter(
@@ -394,7 +609,10 @@ export function resolveDigLine(args: {
       kind: "digLine",
       player,
       units,
-      segments: trenchLineSegments(from, to).flatMap((s) => [s.x, s.y, s.rot]),
+      segments: (isTrench !== undefined && isFree !== undefined
+        ? joinedTrenchLine(from, to, isTrench, isFree)
+        : trenchLineSegments(from, to)
+      ).flatMap((s) => [s.x, s.y, s.rot]),
     },
   ];
 }

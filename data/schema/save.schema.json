@@ -61,6 +61,21 @@
         }
       }
     },
+    "trenches": {
+      "description": "Spec 35 5b: trenches already dug at tick 0 (2x1 earthwork rows).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["at"],
+        "properties": {
+          "at": { "$ref": "#/$defs/pair" },
+          "rot": { "type": "integer", "minimum": 0, "maximum": 3 },
+          "hpPercent": { "type": "integer", "minimum": 1, "maximum": 100 },
+          "variant": { "type": "integer", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
     "entities": {
       "type": "array",
       "items": {

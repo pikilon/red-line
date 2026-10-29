@@ -15,8 +15,8 @@ entities:
   - { player: 0, type: ua-rifleman, atCenti: [2600, 2500], order: { dig: [29, 26] } }
   - { player: 0, type: ua-rifleman, atCenti: [2700, 2500], order: { dig: [29, 26] } }
   - { player: 0, type: ua-rifleman, atCenti: [2800, 2500], order: { dig: [29, 26] } }
-  - { player: 0, type: ua-dozer, atCenti: [2600, 3500], order: { dig: [29, 34] } }
-  - { player: 0, type: ua-rifleman, atCenti: [2700, 3500], order: { dig: [29, 34] } }
+  - { player: 0, type: ua-dozer, atCenti: [2600, 3600], order: { dig: [26, 38] } }
+  - { player: 0, type: ua-rifleman, atCenti: [2800, 3600], order: { dig: [26, 38] } }
   - { player: 0, type: ua-rifleman, atCenti: [2500, 3000] }
   - { player: 0, type: ua-rifleman, atCenti: [2500, 3100] }
   - { player: 0, type: ua-rifleman, atCenti: [2600, 3050] }
