@@ -66,6 +66,8 @@ export interface SkirmishDebug {
   outcome(): { outcome: Outcome; winner: number | null };
   /** Ascending. */
   selectedIds(): number[];
+  /** Replaces the selection, as a click would. */
+  select(ids: number[]): void;
   /** Sim tiles -> page CSS px. */
   worldToScreen(x: number, y: number): { x: number; y: number };
   cameraTarget(): { x: number; y: number };

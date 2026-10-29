@@ -30,6 +30,10 @@ export interface Settings {
   audioMusic?: number;
   /** Absent means true: strong language enabled by default (spec 25 §5.3). */
   strongLanguage?: boolean;
+  /** Absent means false: the quick panel is folded to its tab (spec 41 §3.4). */
+  quickBarFolded?: boolean;
+  /** Absent means false: the zoom panel is folded to its tab (spec 41 §3.4). */
+  zoomBarFolded?: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = { gore: true };
@@ -91,6 +95,8 @@ export function loadSettings(storage?: Storage): Settings {
     const audioVoice = parseVolume(obj.audioVoice);
     const audioMusic = parseVolume(obj.audioMusic);
     const strongLanguage = obj.strongLanguage;
+    const quickBarFolded = obj.quickBarFolded;
+    const zoomBarFolded = obj.zoomBarFolded;
     return {
       gore,
       ...(generatedTextures === false ? { generatedTextures } : {}),
@@ -101,6 +107,8 @@ export function loadSettings(storage?: Storage): Settings {
       ...(audioVoice !== undefined ? { audioVoice } : {}),
       ...(audioMusic !== undefined ? { audioMusic } : {}),
       ...(strongLanguage === false ? { strongLanguage } : {}),
+      ...(quickBarFolded === true ? { quickBarFolded } : {}),
+      ...(zoomBarFolded === true ? { zoomBarFolded } : {}),
     };
   } catch {
     return { ...DEFAULT_SETTINGS };
@@ -136,6 +144,8 @@ export function saveSettings(settings: Settings, storage?: Storage): void {
           ? { audioMusic: parseVolume(settings.audioMusic) }
           : {}),
         ...(settings.strongLanguage === false ? { strongLanguage: false } : {}),
+        ...(settings.quickBarFolded === true ? { quickBarFolded: true } : {}),
+        ...(settings.zoomBarFolded === true ? { zoomBarFolded: true } : {}),
       }),
     );
   } catch {
