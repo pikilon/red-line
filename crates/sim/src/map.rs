@@ -330,6 +330,11 @@ pub fn line_all(from: FxVec2, to: FxVec2, clear: impl Fn(Cell) -> bool) -> bool 
         let dy = i64::from(to.y.raw()) - i64::from(from.y.raw());
         let (step_x, step_y) = (dx.signum() as i32, dy.signum() as i32);
         while cell != end {
+            // A segment ending exactly on a cell boundary can step past `end`
+            // (the walk only moves forward), which would never terminate.
+            if (cell.x - end.x) * step_x > 0 || (cell.y - end.y) * step_y > 0 {
+                break;
+            }
             // Distance along each axis from `from` to the next boundary; the
             // boundary reached first is the smaller distance over |d|.
             let next_x = i64::from(cell.x + i32::from(step_x > 0)) << 16;

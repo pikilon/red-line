@@ -69,3 +69,9 @@ AC-39-01..05: one vehicle finishes in exactly 75 ticks while production advances
 and the second waits; full/foot/wrong-pad cases are rejected; save/load preserves
 an active countdown; damage taken mid-cycle starts a fresh cycle; client filtering
 and worker dispatch are covered; real mouse input repairs a vehicle in the example.
+
+## Addendum: Repair button (owner request 2026-10-29)
+
+Selecting a damaged own vehicle while an own complete repair factory stands
+shows a Repair at factory button (Units section). It sends `repairVehicle` to the
+factory nearest the first selected vehicle; right click on the factory still works.

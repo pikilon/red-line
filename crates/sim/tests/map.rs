@@ -56,3 +56,24 @@ fn ac_02_07_unit_cap() {
     assert_eq!(MAX_UNITS, 2000);
     assert_eq!(World::tech_slice(1, 2000).unwrap().units().len(), 2000);
 }
+
+/// Regression: a segment ending exactly on a cell boundary used to step past
+/// its end cell and loop forever (match freeze). Every combination of whole
+/// and half-cell endpoints must terminate.
+#[test]
+fn line_all_terminates_on_cell_boundaries() {
+    use sim::fixed::{Fx, FxVec2};
+    use sim::map::line_all;
+    let at = |halves: i32| Fx::from_raw(halves << 15);
+    for fx in 0..12 {
+        for fy in 0..12 {
+            for tx in 0..12 {
+                for ty in 0..12 {
+                    let from = FxVec2::new(at(fx), at(fy));
+                    let to = FxVec2::new(at(tx), at(ty));
+                    assert!(line_all(from, to, |_| true));
+                }
+            }
+        }
+    }
+}
