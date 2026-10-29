@@ -737,3 +737,28 @@ test("AC-30-15: footprints may not stand on cliffs", () => {
   const { errors } = buildRuleset(sources);
   assert.ok(errors.some((e) => e.message.includes("overlaps a blocked cell")), JSON.stringify(errors));
 });
+
+test("AC-32-01: river-port is the mirrored default map with every landscape feature", () => {
+  const root = repoRoot();
+  const map = parse(readFileSync(join(root, "data/maps/river-port.yaml"), "utf8"));
+  const skirmish = readFileSync(join(root, "client/src/app/skirmish.ts"), "utf8");
+  assert.match(skirmish, /export const DEFAULT_MAP = "river-port";/);
+
+  // Left-right mirror: a 2-wide depot at x mirrors to 126 - x, a 4-wide HQ to 124 - x.
+  const depots = new Set(map.depots.map((d) => `${d.origin[0]},${d.origin[1]},${d.amount}`));
+  for (const d of map.depots) {
+    assert.ok(depots.has(`${126 - d.origin[0]},${d.origin[1]},${d.amount}`), `depot ${d.origin} has no mirror`);
+  }
+  const [s0, s1] = map.starts;
+  assert.deepEqual([s0.faction, s1.faction], ["ukraine", "russia"]);
+  assert.deepEqual(s1.hq, [124 - s0.hq[0], s0.hq[1]]);
+
+  const kinds = new Set(map.terrain.water.map((w) => w.kind));
+  assert.ok(kinds.has("sea") && kinds.has("river"), "sea and river");
+  assert.ok(map.terrain.water.some((w) => (w.fords ?? []).length > 0), "a ford");
+  const types = new Set(map.features.map((f) => f.type));
+  for (const type of ["road-bridge", "wooden-bridge", "stone-arch", "pier", "quay", "dock-crane", "cargo-ship", "pine", "oak"]) {
+    assert.ok(types.has(type), `has ${type}`);
+  }
+  assert.ok(map.elevation.plateaus.length === 2 && map.elevation.ramps.length === 2 && map.elevation.hills.length > 0);
+});

@@ -186,7 +186,7 @@ import { createSelectionBox } from "../ui/selectionBox";
 import { createTouchControls, isTouchDevice } from "../ui/touchControls";
 import { createCameraMemory, homeView } from "./cameraMemory";
 
-export const DEFAULT_MAP = "first-line";
+export const DEFAULT_MAP = "river-port";
 export const DEFAULT_SEED = 1;
 /** Opponent personality attached to player 1 by default (spec 05 §7). */
 export const DEFAULT_AI = "russia-balanced";

@@ -27,7 +27,7 @@ function collectErrors(page: Page): string[] {
 }
 
 async function boot(page: Page, query: string, debug: boolean): Promise<void> {
-  await page.goto(`/${query}`);
+  await page.goto(`/${query}&map=first-line`);
   if (debug) {
     await page.waitForFunction(
       () => (window as DebugWindow).__redline?.isReady() === true,

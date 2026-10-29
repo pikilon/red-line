@@ -1,0 +1,15 @@
+# Spec 32: the default river-port map with both bases, revealed, to look around before playing it.
+id: river-port
+map: river-port
+victory: false
+debug: true
+starts: true                  # the HQ and dozer of each start
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 64, y: 44, zoom: 1 }
+entities:
+  - { player: 0, type: ua-leopard-2a4, atCenti: [5400, 4100] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [5400, 4300] }
+  - { player: 1, type: ru-t-72b3, atCenti: [7400, 4100] }
+  - { player: 1, type: ru-t-72b3, atCenti: [7400, 4300] }

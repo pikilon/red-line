@@ -1,0 +1,123 @@
+id: river-port                       # required, equals the file name
+width: 128                           # required, 16..256
+height: 96                           # required, 16..256
+blocked: []                          # the water, cliffs and features below block cells
+# The default skirmish map (spec 32): mirrored left-right. A river runs north to south into the sea and splits
+# the two bases; it is crossed by a road bridge (north), a ford (centre), a wooden bridge and a stone arch
+# (south). Each side has a harbour on the south coast, a pine forest, two hills, a plateau with a rich depot
+# reached by one ramp, river groves and a farm hamlet.
+depots:                              # required; origin = top-left cell
+  - { origin: [12, 36], amount: 15000 }
+  - { origin: [114, 36], amount: 15000 }
+  - { origin: [47, 7], amount: 15000 }
+  - { origin: [79, 7], amount: 15000 }
+  - { origin: [30, 64], amount: 10000 }
+  - { origin: [96, 64], amount: 10000 }
+elevation:                           # heights in 1/16 tile steps at tile corners (spec 30)
+  plateaus:
+    - { rect: [44, 4, 51, 11], height: 40, slope: 1.5, rough: 1.5 }
+    - { rect: [76, 4, 83, 11], height: 40, slope: 1.5, rough: 1.5 }
+  ramps:
+    - { from: [47, 11], to: [47, 19], width: 4, height: 40 }
+    - { from: [80, 11], to: [80, 19], width: 4, height: 40 }
+  hills:
+    - { center: [32, 30], radius: 7, height: 24 }
+    - { center: [95, 30], radius: 7, height: 24 }
+    - { center: [40, 44], radius: 6, height: 18 }
+    - { center: [87, 44], radius: 6, height: 18 }
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: dirt, rect: [6, 32, 22, 52] }
+      - { material: dirt, rect: [105, 32, 121, 52] }
+      - { material: sand, rect: [0, 82, 127, 83] }
+      - { material: concrete, rect: [6, 74, 36, 81] }
+      - { material: concrete, rect: [91, 74, 121, 81] }
+      - { material: mud, rect: [55, 37, 72, 43] }
+      - { material: rock, rect: [43, 3, 52, 12] }
+      - { material: rock, rect: [75, 3, 84, 12] }
+  roads:
+    - { type: asphalt, path: [[20, 20], [59, 20]], width: 2 }
+    - { type: asphalt, path: [[68, 20], [107, 20]], width: 2 }
+    - { type: dirt, path: [[20, 58], [59, 58]], width: 2 }
+    - { type: dirt, path: [[68, 58], [107, 58]], width: 2 }
+    - { type: asphalt, path: [[20, 72], [59, 72]], width: 2 }
+    - { type: asphalt, path: [[68, 72], [107, 72]], width: 2 }
+    - { type: asphalt, path: [[20, 20], [20, 72]], width: 2 }
+    - { type: asphalt, path: [[107, 20], [107, 72]], width: 2 }
+  water:
+    - { kind: sea, depth: deep, rect: [0, 86, 127, 95] }
+    - { kind: sea, depth: shallow, rect: [0, 84, 127, 85] }
+    - { kind: river, depth: shallow, path: [[64, 0], [64, 84]], width: 6 }
+    - { kind: river, depth: deep, path: [[64, 0], [64, 84]], width: 4, fords: [[64, 40, 3]] }
+features:
+  # Crossings.
+  - { type: road-bridge, from: [60, 19], to: [67, 19], variant: 0 }
+  - { type: wooden-bridge, from: [60, 57], to: [67, 57], variant: 1 }
+  - { type: stone-arch, from: [60, 71], to: [67, 71], variant: 0 }
+  # Forests and groves.
+  - { type: pine, area: [2, 2, 40, 14], density: 30, seed: 3 }
+  - { type: fir, area: [87, 2, 125, 14], density: 30, seed: 5 }
+  - { type: birch, area: [50, 24, 58, 34], density: 25, seed: 7 }
+  - { type: birch, area: [69, 24, 77, 34], density: 25, seed: 9 }
+  - { type: oak, area: [48, 44, 58, 54], density: 20, seed: 11 }
+  - { type: oak, area: [69, 44, 79, 54], density: 20, seed: 13 }
+  - { type: bush, area: [24, 24, 44, 52], density: 4, seed: 15 }
+  - { type: bush, area: [83, 24, 103, 52], density: 4, seed: 17 }
+  - { type: poplar, area: [24, 60, 56, 62], density: 10, seed: 19 }
+  - { type: poplar, area: [71, 60, 103, 62], density: 10, seed: 21 }
+  # Farm hamlets by the dirt road.
+  - { type: farmhouse, at: [38, 54], rot: 0, variant: 0 }
+  - { type: house-small, at: [43, 54], rot: 0, variant: 1 }
+  - { type: warehouse-barn, at: [42, 61], rot: 0, variant: 0 }
+  - { type: farmhouse, at: [87, 54], rot: 0, variant: 2 }
+  - { type: house-small, at: [83, 54], rot: 0, variant: 2 }
+  - { type: warehouse-barn, at: [82, 61], rot: 0, variant: 1 }
+  - { type: hedge, at: [36, 53], rot: 0, variant: 0 }
+  - { type: hedge, at: [90, 53], rot: 0, variant: 1 }
+  # West harbour (Ukraine).
+  - { type: warehouse, at: [8, 74], rot: 0, variant: 0 }
+  - { type: warehouse, at: [13, 74], rot: 0, variant: 1 }
+  - { type: container-stack, at: [24, 75], rot: 0, variant: 0 }
+  - { type: container-stack, at: [28, 75], rot: 0, variant: 1 }
+  - { type: container-stack, at: [32, 77], rot: 1, variant: 2 }
+  - { type: dock-crane, at: [10, 79], rot: 0, variant: 0 }
+  - { type: dock-crane, at: [26, 79], rot: 0, variant: 1 }
+  - { type: quay, at: [8, 82], rot: 0, variant: 0 }
+  - { type: quay, at: [12, 82], rot: 0, variant: 1 }
+  - { type: quay, at: [16, 82], rot: 0, variant: 0 }
+  - { type: quay, at: [22, 82], rot: 0, variant: 1 }
+  - { type: quay, at: [26, 82], rot: 0, variant: 0 }
+  - { type: quay, at: [30, 82], rot: 0, variant: 1 }
+  - { type: pier, at: [20, 84], rot: 2, variant: 0 }
+  - { type: fishing-boat, at: [17, 86], rot: 2, variant: 0 }
+  - { type: fishing-boat, at: [23, 87], rot: 2, variant: 1 }
+  - { type: cargo-ship, at: [28, 85], rot: 0, variant: 0 }
+  - { type: buoy, at: [12, 92], variant: 0 }
+  - { type: buoy, at: [36, 90], variant: 1 }
+  - { type: lighthouse, at: [2, 80], variant: 0 }
+  # East harbour (Russia), the mirror of the west one.
+  - { type: warehouse, at: [116, 74], rot: 0, variant: 2 }
+  - { type: warehouse, at: [111, 74], rot: 0, variant: 1 }
+  - { type: container-stack, at: [101, 75], rot: 0, variant: 2 }
+  - { type: container-stack, at: [97, 75], rot: 0, variant: 0 }
+  - { type: container-stack, at: [94, 77], rot: 1, variant: 1 }
+  - { type: dock-crane, at: [115, 79], rot: 0, variant: 1 }
+  - { type: dock-crane, at: [99, 79], rot: 0, variant: 0 }
+  - { type: quay, at: [116, 82], rot: 0, variant: 1 }
+  - { type: quay, at: [112, 82], rot: 0, variant: 0 }
+  - { type: quay, at: [108, 82], rot: 0, variant: 1 }
+  - { type: quay, at: [102, 82], rot: 0, variant: 0 }
+  - { type: quay, at: [98, 82], rot: 0, variant: 1 }
+  - { type: quay, at: [94, 82], rot: 0, variant: 0 }
+  - { type: pier, at: [106, 84], rot: 2, variant: 1 }
+  - { type: fishing-boat, at: [109, 86], rot: 2, variant: 1 }
+  - { type: fishing-boat, at: [103, 87], rot: 2, variant: 0 }
+  - { type: cargo-ship, at: [97, 85], rot: 0, variant: 1 }
+  - { type: buoy, at: [115, 92], variant: 1 }
+  - { type: buoy, at: [91, 90], variant: 0 }
+  - { type: lighthouse, at: [124, 80], variant: 1 }
+starts:                              # required, exactly 2 entries; start i is player i
+  - { faction: ukraine, hq: [12, 42], dozerCenti: [1850, 4350] }
+  - { faction: russia, hq: [112, 42], dozerCenti: [10950, 4450] }

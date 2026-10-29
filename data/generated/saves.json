@@ -254,6 +254,12 @@
       "entities": 10
     },
     {
+      "id": "river-port",
+      "map": "river-port",
+      "form": "setup",
+      "entities": 4
+    },
+    {
       "id": "infantry-transport",
       "map": "demo-ground",
       "form": "setup",

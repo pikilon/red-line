@@ -128,7 +128,7 @@ test("AC-03-63: keeps 60 fps in a 400-unit skirmish @perf", async ({
   page,
 }) => {
   test.setTimeout(ms(120_000));
-  await page.goto("/?debug=1");
+  await page.goto("/?map=first-line&debug=1");
   await page.waitForFunction(
     () => (window as SkirmishDebugWindow).__redline?.isReady() === true,
     undefined,

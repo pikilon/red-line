@@ -195,5 +195,7 @@
   "saves.audio-fight.name": "Audio fight",
   "saves.audio-fight.description": "A close-range combined-arms fight between Ukrainian and Russian forces to test weapons, voices, impacts, explosions and EVA.",
   "saves.titleSave": "Save game",
-  "saves.titleLoad": "Load game"
+  "saves.titleLoad": "Load game",
+  "saves.river-port.name": "River port",
+  "saves.river-port.description": "The default map seen from above: a river into the sea with a road bridge, a ford, a wooden bridge and a stone arch, a harbour per side, forests, hills and plateaus with rich depots."
 }
