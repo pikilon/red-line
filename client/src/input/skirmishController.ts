@@ -16,7 +16,6 @@ import { resolveClickOrder, resolveForceFire, resolveRally } from "./intent";
 import { createPinchGesture } from "./pinch";
 import { canPlace, footprintOrigin } from "./placement";
 import {
-  joinedTrenchLine,
   type RepairJob,
   resolveBuildingRepairClick,
   resolveDigClick,
@@ -25,6 +24,7 @@ import {
   resolveRepairClick,
   resolveVehicleRepairClick,
   type TrenchSegment,
+  trenchLineGhost,
 } from "./repair";
 import {
   narrowToKind,
@@ -667,14 +667,15 @@ export function createSkirmishController(
       const from = groundAt(dragStart);
       const to = groundAt(lastPointer);
       if (from === null || to === null) return null;
-      return joinedTrenchLine(from, to, isTrench, isFree).map((segment) => {
+      // The ghost runs on over trenches already there: they join the line.
+      return trenchLineGhost(from, to, isTrench, isFree).map((segment) => {
         const [w, h] = segment.rot === 0 ? [2, 1] : [1, 2];
         let valid = true;
         for (let dy = 0; dy < h; dy++) {
           for (let dx = 0; dx < w; dx++) {
             const x = segment.x + dx;
             const y = segment.y + dy;
-            if (!isFree(x, y) || isTrench(x, y)) valid = false;
+            if (!isFree(x, y) && !isTrench(x, y)) valid = false;
           }
         }
         return { ...segment, valid };

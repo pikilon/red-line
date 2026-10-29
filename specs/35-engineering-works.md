@@ -131,8 +131,10 @@ once repaired above that threshold, and the client draws it again.
   line is dug in order with no extra saved state. Saves hold the command.
 * Assumptions: **A6** the whole squad digs one segment at a time (no
   splitting across segments). **A7** the client preview checks terrain only;
-  buildings and features are decided by the sim. **A8** the hand-on rule also
-  lets a finished digger help any unfinished trench within 8 cells.
+  buildings and features are decided by the sim. **A8** the hand-on rule only
+  follows the digger's own line (the next row made after the one it
+  finished, within 8 cells); an older unfinished trench nearby never draws it
+  away (owner request 2026-10-29).
 
 ### 5b.3 Joining and continuing (owner request 2026-10-29)
 
@@ -204,13 +206,17 @@ once repaired above that threshold, and the client draws it again.
 
 ### 5b.4 Digging and shelling, as seen (owner requests 2026-10-29)
 
-* Workers dig from inside the trench: they walk to within `DIG_STAND_CENTI`
-  (0.6 tiles) of a piece's centre (`stand_distance`); a second `Dig` on a
-  piece already started joins it.
+* Workers dig from inside the trench (`dig_post`): a dozer at the piece's
+  centre, turned to lie along it; soldiers at `DIG_POSTS` (3) posts spread
+  along its centre line, by rank of id. A second `Dig` on a piece already
+  started joins it.
 * Client only: a soldier digging bends over a shovel facing a side wall and
   throws the earth over it (`RigState.dig`, `render/shovels.ts`); a dozer
   scoops (blade in, shove), lifts the blade full of earth, swings aside to
   drop it and back, alternating sides (`dozerStroke`).
+* Inside a trench, shots and shells (any type not in `breaksWith`) do
+  `smallDamagePct` (10 %) of their damage, at least 1, to one soldier:
+  little, but never nothing; only sheltered soldiers take none.
 * Contact fire turns the shooter to his victim. Shelling a finished piece
   bites a small crater into it; a destroyed piece is left a large crater and
   is gone from the network (client `craterChanges`). A worn piece is drawn

@@ -1404,6 +1404,29 @@ impl World {
         );
     }
 
+    /// Drives the unit straight at `point` (a spot in its own reach, such as
+    /// a post inside the trench it digs), slowing to stop on it.
+    pub(crate) fn step_to_point(&mut self, index: usize, point: FxVec2) {
+        let layer = self.layer_of(index);
+        let map = match layer {
+            Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
+            Layer::Water => self.nav_water.as_ref().unwrap_or(&self.nav),
+            Layer::Wheels => self.nav_wheels.as_ref().unwrap_or(&self.nav),
+            Layer::Vehicle => &self.nav,
+        };
+        let motion = self.rules.ty(self.entities[index].kind).motion;
+        let delta = point - self.entities[index].pos;
+        locomotor::drive(
+            &mut self.entities[index],
+            &motion,
+            map,
+            delta.normalize(),
+            delta.length(),
+            true,
+            point,
+        );
+    }
+
     /// Phase 3: pushes apart units closer than `SEPARATION_DISTANCE`, per
     /// axis and only into passable cells.
     fn separate_units(&mut self) {

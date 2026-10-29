@@ -460,19 +460,18 @@ export function trenchJoinCells(
   return found.map(({ x, y }) => ({ x, y }));
 }
 
-/** Spec 35 §5b.3: the trench pieces a drawn line adds to the network. The
- *  line may run over trenches already dug or being dug: their cells are
- *  left alone and only the gaps between them are cut into 2-cell pieces. A
- *  gap of one cell gets a piece that runs on past it or, failing that, a
- *  piece turned across the line. A line end that stops just short of a
- *  trench (within `TRENCH_JOIN_REACH`) snaps onto it, so nothing is left
- *  unjoined. */
-export function joinedTrenchLine(
+/** Spec 35 §5b.3: the ends of a drawn line. An end that stops just short
+ *  of a trench (within `TRENCH_JOIN_REACH`) snaps onto it, unless the line
+ *  already reaches one there, so nothing is left unjoined. */
+export function trenchLineEnds(
   from: { x: number; y: number },
   to: { x: number; y: number },
   isTrench: CellTest,
   isFree: CellTest,
-): TrenchSegment[] {
+): {
+  start: { x: number; y: number };
+  end: { x: number; y: number };
+} {
   // An end that already reaches a trench along the line stays where it is.
   const reaches = (
     point: { x: number; y: number },
@@ -495,8 +494,33 @@ export function joinedTrenchLine(
     const cell = trenchJoinCells(point, isTrench, isFree)[0];
     return cell === undefined ? point : { x: cell.x + 0.5, y: cell.y + 0.5 };
   };
-  const start = snap(from, to);
-  const end = snap(to, from);
+  return { start: snap(from, to), end: snap(to, from) };
+}
+
+/** Spec 35 §5b.3: the whole drawn line as the ghost shows it while dragging,
+ *  from its snapped ends, over any trench it crosses (no gaps). */
+export function trenchLineGhost(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  isTrench: CellTest,
+  isFree: CellTest,
+): TrenchSegment[] {
+  const { start, end } = trenchLineEnds(from, to, isTrench, isFree);
+  return trenchLineSegments(start, end);
+}
+
+/** Spec 35 §5b.3: the trench pieces a drawn line adds to the network. The
+ *  line may run over trenches already dug or being dug: their cells are
+ *  left alone and only the gaps between them are cut into 2-cell pieces. A
+ *  gap of one cell gets a piece that runs on past it or, failing that, a
+ *  piece turned across the line. */
+export function joinedTrenchLine(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  isTrench: CellTest,
+  isFree: CellTest,
+): TrenchSegment[] {
+  const { start, end } = trenchLineEnds(from, to, isTrench, isFree);
   const x0 = Math.floor(start.x);
   const y0 = Math.floor(start.y);
   const x1 = Math.floor(end.x);

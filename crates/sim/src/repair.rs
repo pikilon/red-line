@@ -7,18 +7,21 @@
 
 use std::collections::BTreeMap;
 
+use crate::angle::atan2;
 use crate::entity::{EntityId, NEUTRAL, Order, PlayerId};
+use crate::features::footprint;
 use crate::features::{FeatureState, blocking_differs, distance_to_rect, extent, state_for};
-use crate::fixed::Fx;
+use crate::fixed::{Fx, FxVec2};
 use crate::map::{Cell, cell_of};
 use crate::rules::{Category, LocoKind, fx_centi};
 use crate::world::{TICK_RATE_HZ, World};
 
 /// How close (centi-tiles from the job's cells) a worker must stand to work.
 const WORK_RANGE_CENTI: u32 = 150;
-/// How far from a trench's centre a worker stands to dig it: in the middle
-/// of it (spec 35 §5b.3).
-const DIG_STAND_CENTI: u32 = 60;
+/// Soldiers dig a trench piece from this many posts along it (spec 35 §5b.3).
+const DIG_POSTS: u32 = 3;
+/// How close (centi-tiles) a digger gets to its post before it stands.
+const DIG_POST_CENTI: u32 = 8;
 /// Feature families that can be repaired: bridges, and earthworks, whose
 /// digging is their repair from one hit point.
 const REPAIRABLE_FAMILIES: [&str; 2] = ["bridge", EARTHWORK_FAMILY];
@@ -337,8 +340,11 @@ impl World {
         }
     }
 
-    /// The next unfinished trench after a worker finishes `done`: the lowest
-    /// row (the order the line was drawn in) within `DIG_NEXT_RANGE` cells.
+    /// The next unfinished trench after a worker finishes `done`: the next
+    /// row of its own line (rows are made in the order the line was drawn)
+    /// within `DIG_NEXT_RANGE` cells. Older trenches nearby, still being dug
+    /// by others, never draw the worker away from its line (owner request
+    /// 2026-10-29).
     fn next_trench(&self, done: u32) -> Option<u32> {
         let row = self.features.get(done as usize)?;
         let def = &self.rules.feature_types[row.kind as usize];
@@ -346,7 +352,7 @@ impl World {
             return None;
         }
         let (x, y) = (row.x, row.y);
-        (0..self.features.len() as u32).find(|&index| {
+        (done + 1..self.features.len() as u32).find(|&index| {
             let other = &self.features[index as usize];
             self.needs_repair(index)
                 && self.rules.feature_types[other.kind as usize].family == EARTHWORK_FAMILY
@@ -361,37 +367,79 @@ impl World {
         distance_to_rect(self.entities[index].pos, rect)
     }
 
-    /// How far the worker is from where it works: a trench's centre, or the
-    /// nearest cell of any other job.
-    fn stand_distance(&self, index: usize, feature: u32) -> Fx {
-        if self.stand_range(feature) == DIG_STAND_CENTI
-            && let Some(centre) = self.feature_center(feature)
-        {
-            return (centre - self.entities[index].pos).length();
-        }
-        self.job_distance(index, feature)
+    /// True when `feature` is a trench (dug, not repaired).
+    fn is_earthwork(&self, feature: u32) -> bool {
+        self.features.get(feature as usize).is_some_and(|row| {
+            self.rules.feature_types[row.kind as usize].family == EARTHWORK_FAMILY
+        })
     }
 
-    /// How close (centi-tiles) a worker walks to a job before it stops:
-    /// soldiers and dozers dig a trench from inside it (spec 35 §5b.3), every
-    /// other job is worked from `WORK_RANGE_CENTI`.
-    fn stand_range(&self, feature: u32) -> u32 {
-        let earthwork = self.features.get(feature as usize).is_some_and(|row| {
-            self.rules.feature_types[row.kind as usize].family == EARTHWORK_FAMILY
-        });
-        if earthwork {
-            DIG_STAND_CENTI
+    /// Where a worker digs trench piece `feature` (spec 35 §5b.3): a dozer
+    /// at its centre; soldiers at `DIG_POSTS` posts evenly spaced along its
+    /// centre line, by rank of id among the soldiers digging it.
+    pub(crate) fn dig_post(&self, index: usize, feature: u32) -> FxVec2 {
+        let row = &self.features[feature as usize];
+        let (w, h) = footprint(&self.rules.feature_types[row.kind as usize], row.rot);
+        let foot = |kind| self.rules.ty(kind).motion.kind == LocoKind::Foot;
+        let (post, posts) = if foot(self.entities[index].kind) {
+            let id = self.entities[index].id;
+            let rank = self
+                .entities
+                .iter()
+                .filter(|other| {
+                    other.id < id
+                        && foot(other.kind)
+                        && matches!(other.order, Order::Repair { feature: f, .. } if f == feature)
+                })
+                .count() as u32;
+            (rank % DIG_POSTS, DIG_POSTS)
         } else {
-            WORK_RANGE_CENTI
-        }
+            (0, 1)
+        };
+        let (w, h) = (w.max(1) as u32 * 100, h.max(1) as u32 * 100);
+        let along = |length: u32| length * (2 * post + 1) / (2 * posts);
+        let (dx, dy) = if w >= h {
+            (along(w), h / 2)
+        } else {
+            (w / 2, along(h))
+        };
+        FxVec2::new(
+            fx_centi(row.x as u32 * 100 + dx),
+            fx_centi(row.y as u32 * 100 + dy),
+        )
+    }
+
+    /// Turns a dozer at its post to lie along the trench it digs, whichever
+    /// way round is nearer.
+    fn line_up_with(&mut self, index: usize, feature: u32) {
+        let row = &self.features[feature as usize];
+        let (w, h) = footprint(&self.rules.feature_types[row.kind as usize], row.rot);
+        let one = Fx::from_int(1);
+        let (ax, ay) = if w >= h {
+            (one, Fx::ZERO)
+        } else {
+            (Fx::ZERO, one)
+        };
+        let ahead = atan2(ax, ay);
+        let back = atan2(-ax, -ay);
+        let entity = &self.entities[index];
+        let want = if entity.heading.delta(ahead).abs() <= entity.heading.delta(back).abs() {
+            ahead
+        } else {
+            back
+        };
+        let step = self.rules.ty(entity.kind).motion.turn_step;
+        let entity = &mut self.entities[index];
+        entity.heading = entity.heading.turn_towards(want, step);
     }
 
     /// `Repair` order step: walk to the job, then stand and work until it is
-    /// whole (the work itself is `repair_works`).
+    /// whole (the work itself is `repair_works`). A trench is dug from a post
+    /// inside it (`dig_post`); a finished one hands the digger on to the next
+    /// of its line.
     pub(crate) fn step_repair(&mut self, index: usize, order_id: u32, feature: u32) {
         let id = self.entities[index].id;
         if !self.can_repair(id, feature) {
-            // A finished trench hands the digger on to the next of its line.
             self.entities[index].order = match self.next_trench(feature) {
                 Some(next) if self.can_repair(id, next) => Order::Repair {
                     order_id,
@@ -403,7 +451,21 @@ impl World {
             };
             return;
         }
-        if self.stand_distance(index, feature) <= fx_centi(self.stand_range(feature)) {
+        if self.is_earthwork(feature) {
+            let post = self.dig_post(index, feature);
+            let gap = (post - self.entities[index].pos).length();
+            if gap <= fx_centi(DIG_POST_CENTI) {
+                self.entities[index].speed = Fx::ZERO;
+                if self.rules.ty(self.entities[index].kind).motion.kind != LocoKind::Foot {
+                    self.line_up_with(index, feature);
+                }
+                return;
+            }
+            if self.job_distance(index, feature) <= fx_centi(WORK_RANGE_CENTI) {
+                self.step_to_point(index, post);
+                return;
+            }
+        } else if self.job_distance(index, feature) <= fx_centi(WORK_RANGE_CENTI) {
             self.entities[index].speed = Fx::ZERO;
             return;
         }
@@ -750,15 +812,20 @@ mod tests {
         world.step();
         let xs: Vec<i32> = world.features[placed..].iter().map(|f| f.x).collect();
         assert_eq!(xs, vec![44, 40, 42, 46], "blocked and off-map ones skipped");
+        let line = placed + 1..placed + 4;
         for _ in 0..6000 {
             world.step();
-            if (placed..placed + 4).all(|i| !world.needs_repair(i as u32)) {
+            if line.clone().all(|i| !world.needs_repair(i as u32)) {
                 break;
             }
         }
         assert!(
-            (placed..placed + 4).all(|i| !world.needs_repair(i as u32)),
-            "the one soldier dug every segment"
+            line.clone().all(|i| !world.needs_repair(i as u32)),
+            "the one soldier dug every segment of his line"
+        );
+        assert!(
+            world.needs_repair(placed as u32),
+            "the older trench nearby does not draw him off his line"
         );
     }
 
@@ -818,7 +885,9 @@ mod tests {
             world.step();
         }
         let index = world.index_of(first).unwrap();
-        assert!(world.stand_distance(index, placed as u32) <= fx_centi(DIG_STAND_CENTI));
+        let post = world.dig_post(index, placed as u32);
+        let at = world.entity(first).unwrap().pos;
+        assert!((post - at).length() <= fx_centi(DIG_POST_CENTI));
     }
 
     #[test]
