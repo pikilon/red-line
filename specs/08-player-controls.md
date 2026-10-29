@@ -285,18 +285,21 @@ AC-08-16 are superseded by AC-08-18 and AC-08-19).
 
 ## 3.7 Attack orders (owner request 2026-10-15, issue #296)
 
-A HIMARS right-clicked onto an enemy building drove up to it although it was
-already in range: `resolveRightClick` only attacked enemy units and sent a
+Superseded by §3.9 for the mouse button: the rules below still hold, with
+`resolveRightClick` renamed to `resolveClickOrder` and reached by a left click.
+
+A HIMARS clicked onto an enemy building drove up to it although it was
+already in range: the order resolver only attacked enemy units and sent a
 plain `move` for anything else. Unarmed units in the selection also walked
 onto the clicked enemy. Generals precedent (issue #296, EA source
-`CnC_Generals_Zero_Hour@0a05454d`): a right-click on an enemy unit or
+`CnC_Generals_Zero_Hour@0a05454d`): a context click on an enemy unit or
 structure issues the same attack (`CommandXlat.cpp:1986`,
 `ActionManager.cpp:723`). An attacker already in range fires in place
 (`AIStates.cpp:315`). Out of range it stops at the first in-range cell of its
 route (`AIPathfind.cpp:10606-10740`). Units without a weapon issue no order
 (`CommandXlat.cpp:2262-2331`).
 
-* `resolveRightClick`: when the entity under the cursor (not a ghost) is a
+* `resolveClickOrder`: when the entity under the cursor (not a ghost) is a
   `unit` or `building` owned by neither `player` nor `NEUTRAL`, under
   construction or not, the result is `[attack { units: armed, target }]` where
   `armed` are the selected own units with a weapon (ascending), or `[]` when
@@ -369,6 +372,167 @@ scroll or overflow. This section amends §3.4 and §3.6.
   it draws three bars, is 56 x 56 CSS px in the top-right safe area, opens
   and closes the same menu as `Esc`, stays above the menu backdrop, and
   mirrors the state in `aria-expanded`/`aria-controls` (`#game-menu`).
+
+## 3.9 Left-click orders and inert right button (owner request 2026-10-29)
+
+The owner wants every map order on the left button: select a unit, click empty
+ground to move, click an enemy to attack. The right button must issue no order.
+This replaces the alternate scheme (left selects, right orders) of spec 20 §3.
+
+### Precedent (`generals-precedent`, Zero Hour)
+
+Source: `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`; `EnglishZH.big` 1.04.
+
+* `UseAlternateMouse` is client-only; both schemes send the same order messages.
+  The left click reaches `evaluateContextCommand` only when the alternate flag
+  is off (`CommandXlat.cpp:3767`; right click `:3678-3681`).
+* A drawable click first asks for a context order; if there is one, the click
+  is that order and the selection is unchanged; otherwise the click replaces
+  the selection (`SelectionInfo.cpp:91-247`; `SelectionXlat.cpp:632`).
+* Context priority: resume construction, dock, dozer repair, get-repaired-at,
+  get-healed-at, enter (garrison/transport), attack, rally, move
+  (`CommandXlat.cpp:1712-2225`). The move fallback refuses a friendly drawable.
+* Empty ground is one `MSG_DO_MOVETO` for the whole selection
+  (`CommandXlat.cpp:872,2294`).
+* In the regular scheme a short right click deselects
+  (`SelectionXlat.cpp:1027-1049`), cancels an armed command and build placement
+  (`:1031-1039`; `CommandXlat.cpp:3652`), and held it pans the camera
+  (`LookAtXlat.cpp:221-236`).
+* Producer + left click on empty ground is `SET_RALLY_POINT`
+  (`CommandXlat.cpp:2204-2225`).
+
+Red Line copies the context-order-then-selection rule and the move fallback,
+with three owner decisions:
+
+* **D1 — the right button is inert.** It does nothing on the map or the HUD,
+  not even deselect or cancel; `contextmenu` is prevented so the browser menu
+  never appears. Selection is replaced by selecting another own entity or by
+  an empty box drag; there is no explicit deselect gesture and no new button.
+  Build placement cancels with `Esc` (or the touch menu button), armed commands
+  with their own button (a second press), and Dig with its own button (a second
+  press, now a toggle). Queue cancel is the queue item click only; the
+  right-click on a build tile is removed.
+* **D2 (revised 2026-10-29) — Rally by ground click or button.** A left click
+  on empty ground with exactly one own complete producing building selected
+  sets its rally (a building cannot move, so there is no conflict); the Rally
+  button remains. Original text follows, superseded where it says button-only.
+* **D2 (original) — Rally point is button-only.** `resolveClickOrder` no longer returns a
+  rally for a selected producer; the Structure section's Rally button arms the
+  next left click and `resolveRally` accepts exactly one own complete producing
+  building. This deviates from Zero Hour's context click.
+* **D4 — deselect and feedback (owner 2026-10-29).** `Esc` (no placement or
+  armed mode open) clears the selection; a single click on the already
+  selected lone entity deselects it; an empty box drag still clears. Move and
+  context actions (repair, heal, board, resume, harvest) flash a short green
+  ring on the target, like the red attack ring; attack stays red.
+* **D6 — two-finger pan, never rotation (owner 2026-10-29).** Two fingers
+  sliding together move the map (the ground follows the midpoint) once the
+  midpoint has travelled 12 px; the pinch zoom is unchanged and both can
+  combine. Only the midpoint and the distance are read: the angle between the
+  fingers is never used, and the camera has no rotation, so a twist does
+  nothing.
+* **D7 — no joystick (owner 2026-10-29).** The virtual joystick
+  (`#touch-joystick`, `touch.joystick`, `setAnalogPan`) is removed; the touch
+  controls are only the menu button, and panning is the two-finger drag (D6) or
+  the keys. This supersedes the joystick parts of §3.6 and AC-08-15, AC-08-18
+  and AC-08-19, which now cover the menu button and the two-finger pan.
+* **D5 — production queue untouched.** Right-click cancel on build tiles keeps
+  working as today until the queue branch lands.
+* **D3 — no separate confirm/cancel.** A context action is one click; there is
+  no confirmation. Selecting an own object that is a valid context target for
+  the current selection performs the action and keeps the selection; to select
+  that object, first select another own entity or empty-box clear.
+
+### Rules
+
+On a left click that is not a drag (the existing `DRAG_THRESHOLD_PX` split):
+
+1. Force-fire armed, `Ctrl`, Dig armed, Rally armed and placement keep their
+   current priority (spec 20, 35, 41; spec 03 §6.5).
+2. Context actions, first non-empty wins: garrison, board, bridge repair,
+   vehicle repair at a factory, building repair by dozers, infirmary healing;
+   then an enemy unit/building under the order pick is attacked by the armed
+   units (unarmed units keep their orders); then an own incomplete building
+   with a selected builder resumes construction (and moves the rest, as today).
+3. If no order was issued and the click picks an own unit/building, the
+   selection becomes that entity (double click on a unit still selects its type
+   on screen). An own garrisoned feature with no order selects its occupants.
+4. Otherwise: a neutral depot harvests for carriers and moves the rest; empty
+   ground or any other non-own target moves the selected units; with no own
+   units the click changes nothing. In particular, a selected producer plus a
+   ground click does nothing (D2).
+5. The selection is never cleared by a plain ground click. An empty box drag
+   still clears it.
+
+`client/src/input/intent.ts`:
+
+```ts
+/** Commands for a left click at ground (x, y) when the click is not on an own
+ *  selectable entity: enemy attack, depot harvest, own incomplete resume, or
+ *  move. No rally (spec 08 §3.9 D2). */
+export function resolveClickOrder(args: { player: number; selected: readonly number[];
+  entities: readonly EntityState[]; x: number; y: number }): SimCommand[];
+/** Commands for the Rally button's armed left click: exactly one own complete
+ *  producing building, else []. */
+export function resolveRally(args: { player: number; selected: readonly number[];
+  entities: readonly EntityState[]; x: number; y: number }): SimCommand[];
+```
+
+The old name `resolveRightClick` disappears. `skirmishController` keeps a
+`contextmenu` listener that only calls `preventDefault`; the right-button force
+fire and its duplicate-suppression flag are removed. `Ctrl + left click` still
+force-fires (including macOS, where the same gesture also raises
+`contextmenu`). The command panel no longer cancels production on a build
+tile's `contextmenu`; the queue item click is the only cancel.
+
+The Phase 1 tech slice uses the same rule: a point click on a unit selects it;
+a point click on empty ground with a selection moves it; right click is inert.
+Spec 02's AC-02-41 is amended accordingly.
+
+### Acceptance criteria
+
+**AC-08-25 Left-click intents (unit).** `resolveClickOrder` with own dozer 7,
+rifleman 20 and supply truck 21 selected: empty ground (30, 30) →
+`[move { units [7, 20, 21] }]`; enemy rifleman 30 → `[attack { units [20] }]`;
+depot 0 → `[harvest { units [21] }, move { units [7, 20] }]`; own incomplete
+barracks 16 → `[resume { units [7] }, move { units [20, 21] }]`; with only a
+complete own barracks selected and a ground click → `[]` (no rally).
+`resolveRally` with that barracks returns one rally; with a power plant or
+three selected entities it returns `[]`.
+
+**AC-08-26 Left-click move, attack and selection (Playwright).** In
+`?debug=1&speed=4&ai=off`, a spawned owner-0 rifleman is selected with a left
+click; a left click on empty ground gives it a `move` order and keeps the
+selection; a left click on an enemy gives the `attack` order; a left click on
+another own unit selects that unit; a right click on empty ground does not
+change the order or the selection; a left drag over empty ground with no units
+clears the selection.
+
+**AC-08-27 Context actions on left click (Playwright).** With the example saves:
+select dozers + damaged building → left click repairs it; damaged riflemen +
+barracks → left click heals; infantry + own transport → left click boards;
+dozers + incomplete building → left click resumes; workers + damaged bridge →
+left click repairs. In every case the selection is unchanged.
+
+**AC-08-28 Rally is button-only (Playwright).** Select a barracks, left click
+empty ground → no rally command; press Rally point, left click the ground →
+the rally order is sent and the armed state clears; clicking the button again
+before the map click disarms it.
+
+**AC-08-29 Inert right button (Playwright).** Right click on a produce tile
+does not cancel the queue; right click on the map while placing does not leave
+placement; right click on a selected unit does not deselect it; right click
+during Dig/Rally/Force fire armed mode does not cancel it; `contextmenu` is
+default-prevented on the canvas and the panel.
+
+**AC-08-30 Touch left-click orders (Playwright).** With touch emulation, a tap
+on empty ground with units selected moves them; a tap on another own unit
+selects it; the `contextmenu` raised by a long press issues no order of its own
+(the release is still a left tap, spec 08 §3.9 D1).
+
+**AC-08-31 Tech-slice left click (Playwright).** `?mode=tech-slice&units=1`:
+left click selects the unit; left click empty ground moves it; right click
+does nothing.
 
 ## 4. Acceptance criteria
 
@@ -495,7 +659,7 @@ context `#touch-controls` is not in the DOM and `ArrowRight` still pans.
 
 **AC-08-20 Attack intents.** With the AC-03-49 entities plus an enemy
 `ru-barracks` 50 centred at `(25.5, 25.5)` and an incomplete enemy
-`ru-power-plant` 51 centred at `(31, 31)`, all for player 0: right click on 30
+`ru-power-plant` 51 centred at `(31, 31)`, all for player 0: left click on 30
 with `[7, 20, 21]` selected → `[attack { units [20], target 30 }]`; on 50 →
 `[attack { units [20], target 50 }]`; on 51 with `[20]` →
 `[attack { units [20], target 51 }]`; on 30 or 50 with only `[7, 21]` → `[]`.

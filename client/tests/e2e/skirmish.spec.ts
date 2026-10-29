@@ -1,4 +1,4 @@
-import { expect, type Locator, type Page, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import { ms } from "./timeouts";
 
 interface Point {
@@ -267,22 +267,6 @@ async function clickTiles(
   await page.mouse.click(point.x, point.y, { button });
 }
 
-/** Clicks a panel button on its live box with a real mouse event. The AC-03-57
- *  sequence must stay far inside the queued item's build time, and
- *  `locator.click()` waits for two stable animation frames plus a hit-target
- *  check, which a loaded runner can stretch past it. */
-async function clickButton(
-  page: Page,
-  locator: Locator,
-  button: "left" | "right" = "left",
-): Promise<void> {
-  const box = await locator.boundingBox();
-  if (box === null) throw new Error("panel button is not rendered");
-  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, {
-    button,
-  });
-}
-
 /** Sends a `construct` command for `dozer` (spec §5.8). */
 function constructAt(
   page: Page,
@@ -368,14 +352,20 @@ test("AC-03-56: builds a power plant through the UI", async ({ page }) => {
     timeout: ms(30_000),
   });
 
-  // A right click while placing cancels it, so the next ground click, which is
-  // a legal 3x3 site, must not start a second building.
+  // Escape while placing cancels it, so the next ground click, which is a legal
+  // 3x3 site, must not start a second building.
   const builder = await entityOf(page, 0, dozerKind);
   if (builder === null) throw new Error("missing ua-dozer");
-  await clickTiles(page, builder.x, builder.y);
+  // The dozer is usually still selected, and a click on it would deselect it.
+  if (!(await plantButton.isVisible())) {
+    await clickTiles(page, builder.x, builder.y);
+  }
   await expect(plantButton).toBeEnabled();
   await plantButton.click();
+  // The right button is inert: it does not cancel placement.
   await clickTiles(page, 25.5, 68.5, "right");
+  await expect(plantButton).toHaveAttribute("aria-pressed", "true");
+  await page.keyboard.press("Escape");
   await clickTiles(page, 19.5, 58.5);
   await page.waitForTimeout(1000);
   expect(await entityCount(page, 0, plantKind)).toBe(1);
@@ -410,7 +400,7 @@ test("AC-03-64: shows placement feedback", async ({ page }) => {
   );
   await page.mouse.move(legal.x, legal.y);
   await expect(hint).toHaveText(
-    "Left click on the ground to build · right click or Esc to cancel",
+    "Left click on the ground to build · Esc to cancel",
   );
 
   const overHq = await debugCall(
@@ -504,7 +494,7 @@ test("AC-03-57: produces and cancels through the UI", async ({ page }) => {
   // which is 1.25 s at speed 4 and 5 s at speed 1. Production advances on the
   // worker clock while Playwright drives the page, so at speed 4 a loaded
   // runner can take longer than 1.25 s between the produce clicks and the
-  // right click; the queued head then completes by itself, the cancel removes
+  // queue click; the queued head then completes by itself, the cancel removes
   // the only remaining item and the queue empties (CI flake). At speed 1 the
   // head cannot complete during the sequence, and the "within 20 s" check below
   // still holds (75 ticks = 5 s).
@@ -572,7 +562,8 @@ test("AC-03-57: produces and cancels through the UI", async ({ page }) => {
   // on the first step after resuming.
   await debugCall(page, (api) => api.setSimPaused(true));
   await expect(page.locator("#res-credits")).toHaveText("Credits 3700");
-  await clickButton(page, rifleButton, "right");
+  // Right click on a produce tile still cancels (queue untouched, D5).
+  await rifleButton.click({ button: "right" });
   await debugCall(page, (api) => api.setSimPaused(false));
   await expect(
     page.locator("#command-panel .tile .qn:not([hidden])"),
@@ -607,7 +598,7 @@ test("AC-03-58: harvests supplies", async ({ page }) => {
     .toBe(true);
 });
 
-test("AC-03-59: attacks with a right click", async ({ page }) => {
+test("AC-03-59: attacks with a left click", async ({ page }) => {
   await bootDebug(page, "debug=1&speed=4");
   const kozakKind = await kindOf(page, "ua-kozak-scout");
   const leopardKind = await kindOf(page, "ua-leopard-2a4");
@@ -643,7 +634,7 @@ test("AC-03-59: attacks with a right click", async ({ page }) => {
     )
     .toBe(true);
 
-  await clickTiles(page, tank.x, tank.y, "right");
+  await clickTiles(page, tank.x, tank.y);
   await expect
     .poll(() => entityCount(page, 0, leopardKind, FLAG_MOVING), {
       timeout: ms(2000),
@@ -655,7 +646,98 @@ test("AC-03-59: attacks with a right click", async ({ page }) => {
   expect(await entityCount(page, 0, leopardKind)).toBeGreaterThan(0);
 });
 
-test("AC-20-03: force-fires with Ctrl, the enemy pick and either button", async ({
+test("AC-08-26: left click moves, attacks and selects; right is inert", async ({
+  page,
+}) => {
+  await bootDebug(page, "debug=1&speed=4");
+  const rifleKind = await kindOf(page, "ua-rifleman");
+  const enemyKind = await kindOf(page, "ru-power-plant");
+  await spawnAt(page, 0, rifleKind, 30.5, 62.5);
+  await spawnAt(page, 0, rifleKind, 32.5, 62.5);
+  await spawnAt(page, 1, enemyKind, 34.5, 62.5);
+  await expect
+    .poll(() => entityCount(page, 0, rifleKind), { timeout: ms(5000) })
+    .toBe(2);
+  await expect
+    .poll(() => entityCount(page, 1, enemyKind), { timeout: ms(5000) })
+    .toBe(1);
+  await debugCall(page, (api) => api.setCameraTarget(35.5, 64.5));
+
+  const own = await debugCall(
+    page,
+    (api, kind: number) =>
+      api
+        .entities()
+        .filter((entity) => entity.owner === 0 && entity.kind === kind)
+        .sort((a, b) => a.x - b.x),
+    rifleKind,
+  );
+  const [first, second] = own;
+  if (first === undefined || second === undefined) {
+    throw new Error("missing own riflemen");
+  }
+  const enemy = await entityOf(page, 1, enemyKind);
+  if (enemy === null) throw new Error("missing enemy rifleman");
+
+  await clickTiles(page, first.x, first.y);
+  await expect
+    .poll(() => debugCall(page, (api) => api.selectedIds()))
+    .toEqual([first.id]);
+
+  // Empty ground moves the selection and keeps it.
+  await clickTiles(page, 35, 66);
+  await expect
+    .poll(async () => (await savedOrder(page, first.id))?.kind, {
+      timeout: ms(5000),
+    })
+    .toBe("move");
+  expect(await debugCall(page, (api) => api.selectedIds())).toEqual([first.id]);
+
+  // Another own unit is selected, not attacked or moved to.
+  await clickTiles(page, second.x, second.y);
+  await expect
+    .poll(() => debugCall(page, (api) => api.selectedIds()))
+    .toEqual([second.id]);
+
+  // The right button does nothing: no order and no deselection.
+  await clickTiles(page, 35, 66, "right");
+  await page.waitForTimeout(ms(300));
+  expect((await savedOrder(page, second.id))?.kind ?? null).not.toBe("move");
+  expect(await debugCall(page, (api) => api.selectedIds())).toEqual([
+    second.id,
+  ]);
+
+  // An enemy is attacked by a plain left click.
+  await clickTiles(page, enemy.x, enemy.y);
+  await expect
+    .poll(async () => (await savedOrder(page, second.id))?.kind, {
+      timeout: ms(5000),
+    })
+    .toBe("attack");
+
+  // Selecting the first unit again and dragging an empty box clears it.
+  const firstNow = await debugCall(
+    page,
+    (api, id: number) => api.entity(id),
+    first.id,
+  );
+  if (firstNow === null) throw new Error("missing moved rifleman");
+  await clickTiles(page, firstNow.x, firstNow.y);
+  await expect
+    .poll(() => debugCall(page, (api) => api.selectedIds()))
+    .toEqual([first.id]);
+  const from = await debugCall(page, (api) => api.worldToScreen(34, 68));
+  const to = await debugCall(page, (api) => api.worldToScreen(36, 70));
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move(to.x, to.y, { steps: 5 });
+  await page.mouse.up();
+  await expect
+    .poll(() => debugCall(page, (api) => api.selectedIds()))
+    .toEqual([]);
+});
+
+test("AC-20-03: force-fires with Ctrl and the left button", async ({
   page,
 }) => {
   await bootDebug(page, "debug=1&speed=4");
@@ -732,8 +814,8 @@ test("AC-20-03: force-fires with Ctrl, the enemy pick and either button", async 
     .toBe("attack");
   expect((await savedOrder(page, himars.id))?.target).toBe(plant.id);
 
-  // The right button is the plain order button, so Ctrl + right click must
-  // force-fire too (it is the contextmenu path on every platform).
+  // The right button is inert: Ctrl + right click neither force-fires nor
+  // clears the selection.
   await debugCall(
     page,
     (api, id: number) => {
@@ -741,14 +823,12 @@ test("AC-20-03: force-fires with Ctrl, the enemy pick and either button", async 
     },
     himars.id,
   );
+  await page.waitForTimeout(ms(300));
   await page.keyboard.down("Control");
   await clickTiles(page, 40, 58, "right");
   await page.keyboard.up("Control");
-  await expect
-    .poll(async () => (await savedOrder(page, himars.id))?.kind, {
-      timeout: ms(5000),
-    })
-    .toBe("attackGround");
+  await page.waitForTimeout(ms(500));
+  expect((await savedOrder(page, himars.id))?.kind).not.toBe("attackGround");
   expect(
     await debugCall(
       page,

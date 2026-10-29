@@ -57,8 +57,8 @@ damagePct, exitTicks }` on the unit type (`data/factions/*.yaml`).
   riders keep their hashes and saves.
 * Snapshot: a rider row has `FLAG_INSIDE | FLAG_ABOARD` and its `progress`
   holds the vehicle id; enemies get no row for it.
-* Client: right click an own transport with infantry selected boards it;
-  a selected transport with riders shows "Unload (n)". Riders are never picked
+* Client: left click an own transport with infantry selected boards it (spec
+  08 §3.9); a selected transport with riders shows "Unload (n)". Riders are never picked
   or box-selected. Example save `?load=infantry-transport`; setup order
   `{ board: <label> }`.
 

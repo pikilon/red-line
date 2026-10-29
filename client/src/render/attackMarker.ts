@@ -13,6 +13,7 @@ import { groundY } from "./elevation";
 export const ATTACK_MARKER_MS = 1300;
 /** Markers kept at once; a later order recycles the oldest. */
 export const ATTACK_MARKER_CAPACITY = 4;
+const ATTACK_COLOR = 0xff1c1c;
 
 export interface AttackMarkerTarget {
   /** Entity to follow, or null for a fixed point. */
@@ -22,6 +23,8 @@ export interface AttackMarkerTarget {
   y: number;
   /** Ring radius in tiles. */
   radius: number;
+  /** Hex colour; red (attack) when omitted, green for move/repair acks. */
+  color?: number;
 }
 
 export interface AttackMarker {
@@ -113,6 +116,9 @@ export function createAttackMarker(): AttackMarker {
       );
     }
     slot.target = { ...target };
+    const color = target.color ?? ATTACK_COLOR;
+    slot.disc.material.color.setHex(color);
+    slot.ring.material.color.setHex(color);
     slot.startMs = nowMs;
     slot.group.visible = true;
     place(slot, target);

@@ -76,7 +76,9 @@ test.describe("touch device", () => {
     viewport: { width: 844, height: 390 },
   });
 
-  test("AC-08-19: touch joystick in the skirmish", async ({ page }) => {
+  test("AC-08-19: touch menu button and two-finger pan in the skirmish", async ({
+    page,
+  }) => {
     test.setTimeout(ms(60_000));
     const errors: string[] = [];
     page.on("console", (message) => {
@@ -117,98 +119,48 @@ test.describe("touch device", () => {
       )
       .toBe(0);
 
-    // Layout: joystick bottom right, command panel bottom left, no overlap.
-    const joystick = await box(page, "#touch-joystick");
+    // Layout: command panel bottom left, menu button big enough, no overlap.
     const panel = await box(page, "#command-panel");
     const hud = await box(page, "#hud");
     const menu = await box(page, "#touch-menu");
-    expect(joystick.x).toBeGreaterThan(viewport.width / 2);
-    expect(joystick.y).toBeGreaterThan(viewport.height / 2);
+    expect(await page.locator("#touch-joystick").count()).toBe(0);
     expect(panel.x + panel.width / 2).toBeLessThan(viewport.width / 2);
     expect(panel.y + panel.height / 2).toBeGreaterThan(viewport.height / 2);
     expect(menu.width).toBeGreaterThanOrEqual(48);
     expect(menu.height).toBeGreaterThanOrEqual(48);
-    for (const other of [panel, hud, menu]) {
-      expect(overlaps(joystick, other)).toBe(false);
-    }
     expect(overlaps(panel, menu)).toBe(false);
     expect(overlaps(panel, hud)).toBe(false);
 
-    // Drag the knob with real touch events: proportional panning.
+    // Two fingers sliding together pan the map (spec 08 §3.9 D6).
     await page.evaluate(() =>
       (window as WorldWindow).__redline?.setCameraTarget(40, 40),
     );
-    const knob = await box(page, "#touch-joystick-knob");
-    const cx = knob.x + knob.width / 2;
-    const cy = knob.y + knob.height / 2;
-    const radius = joystick.width / 2;
+    const before = await cameraTarget(page);
     const client = await page.context().newCDPSession(page);
-    const touch = (type: "touchStart" | "touchMove" | "touchEnd", dy: number) =>
-      client.send("Input.dispatchTouchEvent", {
-        type,
-        touchPoints: type === "touchEnd" ? [] : [{ x: cx, y: cy + dy }],
+    // On the map, away from the HUD panels (as in the pinch test).
+    const mid = { x: viewport.width * 0.4, y: viewport.height * 0.35 };
+    const fingers = (dx: number) => [
+      { x: mid.x - 50 + dx, y: mid.y, id: 1 },
+      { x: mid.x + 50 + dx, y: mid.y, id: 2 },
+    ];
+    await client.send("Input.dispatchTouchEvent", {
+      type: "touchStart",
+      touchPoints: fingers(0),
+    });
+    for (const dx of [30, 60, 90]) {
+      await client.send("Input.dispatchTouchEvent", {
+        type: "touchMove",
+        touchPoints: fingers(dx),
       });
-    const hasPressed = () =>
-      page
-        .locator("#touch-joystick-knob")
-        .evaluate((element) => element.classList.contains("pressed"));
-
-    // Tiles per second the camera moves over at least 400 ms. Both samples are
-    // taken inside animation frames and timed with the frame timestamp, so the
-    // result does not depend on how slow the runner renders: the game's own
-    // frame callback (registered earlier) has already advanced the camera to
-    // that same timestamp.
-    const speed = (): Promise<{ rate: number; dx: number; dy: number }> =>
-      page.evaluate(
-        () =>
-          new Promise<{ rate: number; dx: number; dy: number }>((resolve) => {
-            const api = (window as WorldWindow).__redline;
-            if (api === undefined) throw new Error("no debug api");
-            let start: { t: number; x: number; y: number } | null = null;
-            const sample = (now: number): void => {
-              const at = api.cameraTarget();
-              if (start === null) {
-                start = { t: now, x: at.x, y: at.y };
-              } else if (now - start.t >= 400) {
-                const seconds = (now - start.t) / 1000;
-                const dx = at.x - start.x;
-                const dy = at.y - start.y;
-                resolve({ rate: Math.hypot(dx, dy) / seconds, dx, dy });
-                return;
-              }
-              requestAnimationFrame(sample);
-            };
-            requestAnimationFrame(sample);
-          }),
-      );
-
-    await touch("touchStart", 0);
-    await touch("touchMove", -radius / 2);
-    expect(await hasPressed()).toBe(true);
-    const half = await speed();
-    await touch("touchMove", -radius * 2);
-    const full = await speed();
-    await touch("touchEnd", 0);
-    // Up is the ArrowUp direction (-x, -y); a full push is the keyboard speed
-    // (20 tiles/s) and a half push about half of it.
-    expect(half.dx).toBeLessThan(-1);
-    expect(half.dy).toBeLessThan(-1);
-    expect(full.rate).toBeGreaterThan(14);
-    expect(full.rate).toBeLessThan(26);
-    expect(half.rate / full.rate).toBeGreaterThan(0.35);
-    expect(half.rate / full.rate).toBeLessThan(0.65);
-    expect(await hasPressed()).toBe(false);
-
-    // After release the camera stays put and the knob is back at the centre.
-    await page.waitForTimeout(300);
-    const settled = await cameraTarget(page);
-    await page.waitForTimeout(300);
-    const later = await cameraTarget(page);
-    expect(later.x).toBeCloseTo(settled.x, 5);
-    expect(later.y).toBeCloseTo(settled.y, 5);
-    const rest = await box(page, "#touch-joystick-knob");
-    expect(rest.x).toBeCloseTo(knob.x, 0);
-    expect(rest.y).toBeCloseTo(knob.y, 0);
+    }
+    await client.send("Input.dispatchTouchEvent", {
+      type: "touchEnd",
+      touchPoints: [],
+    });
+    const after = await cameraTarget(page);
+    expect(Math.hypot(after.x - before.x, after.y - before.y)).toBeGreaterThan(
+      1,
+    );
 
     // The menu button opens and closes the Esc menu.
     await page.locator("#touch-menu").tap();
@@ -218,7 +170,6 @@ test.describe("touch device", () => {
       "aria-expanded",
       "true",
     );
-    await expect(page.locator("#touch-joystick")).toBeHidden();
     await page.locator("#touch-menu").tap();
     await expect(page.locator("#game-menu")).toBeHidden();
     expect(await paused(page)).toBe(false);
@@ -226,7 +177,6 @@ test.describe("touch device", () => {
       "aria-expanded",
       "false",
     );
-    await expect(page.locator("#touch-joystick")).toBeVisible();
     expect(errors).toEqual([]);
   });
 });

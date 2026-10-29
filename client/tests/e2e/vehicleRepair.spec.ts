@@ -46,7 +46,7 @@ async function clickTiles(
   await page.mouse.click(point.x, point.y, { button });
 }
 
-test("AC-39-05: a damaged vehicle repairs at its factory through right click", async ({
+test("AC-39-05: a damaged vehicle repairs at its factory through left click", async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -77,7 +77,7 @@ test("AC-39-05: a damaged vehicle repairs at its factory through right click", a
   await expect
     .poll(() => call(page, (api) => api.selectedIds()))
     .toEqual([tank.id]);
-  await clickTiles(page, factory.x, factory.y, "right");
+  await clickTiles(page, factory.x, factory.y);
   await expect
     .poll(
       () => call(page, (api, id: number) => api.entity(id)?.hp ?? 0, tank.id),

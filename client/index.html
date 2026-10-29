@@ -104,10 +104,6 @@
       }
       #game-menu-panel h2 { margin: 0 0 8px; font-size: 22px; text-align: center; }
       #game-menu-panel button { cursor: pointer; padding: 6px 10px; }
-      #touch-joystick { position: fixed; right: calc(16px + env(safe-area-inset-right)); bottom: calc(16px + env(safe-area-inset-bottom)); width: 120px; height: 120px; border-radius: 50%; background: rgba(0, 0, 0, 0.4); border: 2px solid rgba(255, 255, 255, 0.35); box-sizing: border-box; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; z-index: 5; }
-      #touch-joystick[hidden] { display: none; }
-      #touch-joystick-knob { position: absolute; left: 38px; top: 38px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.75); pointer-events: none; transition: scale 0.1s ease-out; }
-      #touch-joystick-knob.pressed { scale: 1.25; background: rgba(250, 204, 21, 0.9); }
       #touch-menu { position: fixed; top: calc(8px + env(safe-area-inset-top)); right: calc(8px + env(safe-area-inset-right)); display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; padding: 0; border: 0; border-radius: 8px; background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 0; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; z-index: 40; }
       #touch-menu::before { content: ""; display: block; width: 24px; height: 2px; border-radius: 1px; background: currentColor; box-shadow: 0 -7px 0 currentColor, 0 7px 0 currentColor; }
       #touch-menu:active { background: rgba(250, 204, 21, 0.8); color: #000; }

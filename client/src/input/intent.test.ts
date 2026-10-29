@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { typeIndex } from "../rules";
 import { FX_ONE } from "../sim/fixed";
 import { ENTITY_FLAGS, type EntityState } from "../sim/matchSnapshot";
-import { resolveForceFire, resolveRightClick } from "./intent";
+import { resolveClickOrder, resolveForceFire, resolveRally } from "./intent";
 
 const entity = (args: {
   id: number;
@@ -46,10 +46,10 @@ const entities: EntityState[] = [
 
 const selected = [7, 20, 21];
 const click = (x: number, y: number, ids: readonly number[] = selected) =>
-  resolveRightClick({ player: 0, selected: ids, entities, x, y });
+  resolveClickOrder({ player: 0, selected: ids, entities, x, y });
 
-describe("right-click intents", () => {
-  it("AC-03-49: resolves right-click intents", () => {
+describe("left-click intents", () => {
+  it("AC-03-49: resolves left-click intents", () => {
     // The `move` of the unarmed units 7 and 21 is superseded by AC-08-20.
     expect(click(40, 40)).toEqual([
       { kind: "attack", player: 0, units: [20], target: 30 },
@@ -88,7 +88,7 @@ describe("right-click intents", () => {
     ]);
   });
 
-  it("AC-03-49: rallies a selected production building and ignores a plant", () => {
+  it("AC-08-25: a ground click never rallies; resolveRally does", () => {
     const barracks = entity({
       id: 40,
       owner: 0,
@@ -103,28 +103,55 @@ describe("right-click intents", () => {
       x: 40,
       y: 40,
     });
+    const withBarracks = [...entities, barracks];
+    const rally = {
+      kind: "rally",
+      player: 0,
+      building: 40,
+      xRaw: 30 * FX_ONE,
+      yRaw: 30 * FX_ONE,
+    } as const;
     expect(
-      resolveRightClick({
+      resolveClickOrder({
         player: 0,
         selected: [40],
-        entities: [...entities, barracks],
+        entities: withBarracks,
         x: 30,
         y: 30,
       }),
-    ).toEqual([
-      {
-        kind: "rally",
-        player: 0,
-        building: 40,
-        xRaw: 30 * FX_ONE,
-        yRaw: 30 * FX_ONE,
-      },
-    ]);
+    ).toEqual([rally]);
     expect(
-      resolveRightClick({
+      resolveClickOrder({
         player: 0,
         selected: [41],
         entities: [...entities, powerPlant],
+        x: 30,
+        y: 30,
+      }),
+    ).toEqual([]);
+    expect(
+      resolveRally({
+        player: 0,
+        selected: [40],
+        entities: withBarracks,
+        x: 30,
+        y: 30,
+      }),
+    ).toEqual([rally]);
+    expect(
+      resolveRally({
+        player: 0,
+        selected: [41],
+        entities: [...entities, powerPlant],
+        x: 30,
+        y: 30,
+      }),
+    ).toEqual([]);
+    expect(
+      resolveRally({
+        player: 0,
+        selected: [40, 20],
+        entities: withBarracks,
         x: 30,
         y: 30,
       }),
@@ -153,7 +180,7 @@ describe("right-click intents", () => {
       flags: ENTITY_FLAGS.ghost,
     });
     expect(
-      resolveRightClick({
+      resolveClickOrder({
         player: 0,
         selected: [7],
         entities: [...entities, ghost],
@@ -200,7 +227,7 @@ describe("attack intents", () => {
     }),
   ];
   const clickAt = (x: number, y: number, ids: readonly number[]) =>
-    resolveRightClick({
+    resolveClickOrder({
       player: 0,
       selected: ids,
       entities: withBuildings,
@@ -226,7 +253,7 @@ describe("attack intents", () => {
     ]);
   });
 
-  it("AC-08-20: unarmed units ignore a right click on an enemy", () => {
+  it("AC-08-20: unarmed units ignore a left click on an enemy", () => {
     expect(clickAt(40, 40, [7, 21])).toEqual([]);
     expect(clickAt(25.5, 25.5, [7, 21])).toEqual([]);
   });

@@ -47,12 +47,13 @@ Source: `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`; Zero Hour 1.04 INI.
   one-second healing and completion. It reuses `work_points`, `build_goal`,
   `entity_distance` and the repair balance; entity HP has its own small clamp
   helper because player buildings are not map features.
-* `client/src/input/repair.ts` resolves a right click on an own complete damaged
-  building and filters the selection to dozers. Existing health bars and dozer
-  blade work animation provide presentation; no new indicator is required.
+* `client/src/input/repair.ts` resolves a left click on an own complete damaged
+  building and filters the selection to dozers (spec 08 §3.9). Existing health
+  bars and dozer blade work animation provide presentation; no new indicator is
+  required.
 * Orders and pending commands join the existing deterministic save/hash paths.
 * Example save `?load=building-repair`: two dozers beside damaged power plant and
-  barracks. Select the dozers and right click a damaged building.
+  barracks. Select the dozers and click a damaged building.
 
 ## 5. Assumptions
 

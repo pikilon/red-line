@@ -84,7 +84,7 @@ test("AC-40-08: damaged infantry heal inside the barracks and walk out", async (
   await expect
     .poll(() => call(page, (api) => api.selectedIds()))
     .toEqual([patient.id]);
-  await clickTiles(page, barracks.x, barracks.y, "right");
+  await clickTiles(page, barracks.x, barracks.y);
   await expect
     .poll(
       () =>

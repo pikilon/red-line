@@ -57,8 +57,6 @@ export function createController(options: ControllerOptions): Controller {
   const target = { x: 0, y: 0 };
   const raycaster = new Raycaster();
   let dragStart: ScreenPoint | null = null;
-  // Pointer events carry sub-pixel coordinates; contextmenu may not.
-  let lastPointer: ScreenPoint | null = null;
 
   function setSelection(ids: Iterable<number>): void {
     selected.clear();
@@ -93,11 +91,7 @@ export function createController(options: ControllerOptions): Controller {
     return hit === null ? null : { x: hit.x, y: hit.z };
   }
 
-  canvas.addEventListener("pointermove", (event) => {
-    lastPointer = { x: event.clientX, y: event.clientY };
-  });
   canvas.addEventListener("pointerdown", (event) => {
-    lastPointer = { x: event.clientX, y: event.clientY };
     if (event.button !== LEFT_BUTTON) return;
     dragStart = { x: event.clientX, y: event.clientY };
   });
@@ -113,19 +107,20 @@ export function createController(options: ControllerOptions): Controller {
       return;
     }
     const ground = groundAt(end);
-    const id =
-      ground === null ? null : pickUnit(options.units(), ground.x, ground.y);
-    setSelection(id === null ? [] : [id]);
+    if (ground === null) return;
+    const id = pickUnit(options.units(), ground.x, ground.y);
+    if (id !== null) {
+      setSelection([id]);
+      return;
+    }
+    if (selected.size === 0) return;
+    const ids = [...selected].sort((a, b) => a - b);
+    options.move(ids, toRaw(ground.x), toRaw(ground.y));
   });
 
   canvas.addEventListener("contextmenu", (event) => {
+    // The right button is inert (spec 08 §3.9); only hide the browser menu.
     event.preventDefault();
-    if (selected.size === 0) return;
-    const point = lastPointer ?? { x: event.clientX, y: event.clientY };
-    const ground = groundAt(point);
-    if (ground === null) return;
-    const ids = [...selected].sort((a, b) => a - b);
-    options.move(ids, toRaw(ground.x), toRaw(ground.y));
   });
 
   options.keyTarget.addEventListener("keydown", (event) => {

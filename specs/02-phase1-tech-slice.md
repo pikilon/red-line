@@ -6,7 +6,7 @@ Status: approved for implementation. Depends on `00-vision.md` and
 ## 1. Context
 
 Phase 1 proves the technical foundation before any gameplay: an isometric map,
-unit selection, right-click movement driven by flow-field pathfinding, a
+unit selection, left-click movement driven by flow-field pathfinding, a
 deterministic fixed-point simulation compiled to WASM and running inside a Web
 Worker, 500 placeholder units rendered at 60 fps, and an identical state hash
 for the native and WASM builds.
@@ -27,7 +27,7 @@ In:
   the state hash.
 * `client/`: worker protocol and handler, sim client, snapshot decoding and
   interpolation, terrain and instanced unit rendering, click and box selection,
-  right-click move, keyboard camera pan, HUD with i18n, debug API for tests,
+  left-click move, keyboard camera pan, HUD with i18n, debug API for tests,
   performance test project, debug-only performance panel (AC-02-46).
 * Repository: rules checker (`scripts/check-rules.mjs`) and `clippy.toml`
   from spec 01.
@@ -648,18 +648,15 @@ export function panDelta(pressed: ReadonlySet<string>, dtSeconds: number): { x: 
 `client/src/input/controller.ts` wires pointer events on the canvas and
 keyboard events on `window` (covered by E2E): left press + release without
 drag → `pickUnit` on the ground point under the cursor (raycast to plane
-y = 0), selection = `{id}` or empty; left drag → selection = `unitsInRect`;
-`pointermove` and `pointerdown` record the last pointer position (sub-pixel
-`clientX`/`clientY`); right click (`contextmenu`, default prevented) with a
-non-empty selection raycasts that last pointer position (the `contextmenu`
-event's own coordinates only if no pointer event has been seen yet, because
-browsers round them to whole pixels, which exceeds AC-02-41's 0.01-tile
-tolerance) and, on a ground hit, calls `simClient.move([...selected].sort((a,
-b) => a - b), toRaw(groundX), toRaw(groundZ))` (numeric ascending order, not
-the default lexicographic `.sort()`); `keydown`/`keyup` on `window` maintain
-the pressed set used by `panDelta` each frame, so panning works without
-focusing the canvas, and a `window` `blur` clears it; the camera target is
-clamped to `[0, mapWidth] x [0, mapHeight]`. The `keydown` handler first
+y = 0); when a unit is picked the selection is `{id}`; when the ground is
+empty and the selection is non-empty, calls
+`simClient.move([...selected].sort((a, b) => a - b), toRaw(groundX),
+toRaw(groundZ))` (numeric ascending order, not the default lexicographic
+`.sort()`); left drag → selection = `unitsInRect`; right click
+(`contextmenu`, default prevented) does nothing (spec 08 §3.9);
+`keydown`/`keyup` on `window` maintain the pressed set used by `panDelta` each
+frame, so panning works without focusing the canvas, and a `window` `blur`
+clears it; the camera target is clamped to `[0, mapWidth] x [0, mapHeight]`. The `keydown` handler first
 checks `isSelectAllShortcut(event)`: if true it calls `event.preventDefault()`
 (no page text selection), sets selection = `selectAll(options.units())`
 through the same path as box selection (so `onSelectionChange` updates the
@@ -1010,17 +1007,19 @@ contains `sim.worker`, and `tick()` increases by at least 10 over 2 s.
 **AC-02-39 Click selection.** Given `/?debug=1&units=1`, when the user
 left-clicks at `worldToScreen` of unit 0, then `selectedIds()` is `[0]` and
 `#hud-selected` reads `Selected: 1`; clicking an empty passable ground point
-clears it to `Selected: 0`.
+now moves the unit and keeps `Selected: 1` (spec 08 §3.9). An empty box drag
+still clears the selection.
 
 **AC-02-40 Box selection.** Given `/?debug=1&units=20`, when the user drags
 from 20 px above-left of the screen point of `(4, 4)` to 20 px below-right of
 the screen point of `(24, 5)`, then `selectedIds()` contains every unit whose
 screen point falls inside the dragged rectangle and at least 2 units.
 
-**AC-02-41 Right-click move.** Given `/?debug=1&units=1` with unit 0 selected,
-when the user right-clicks at `worldToScreen(10.5, 10.5)`, then within 10 s
-`isMoving(0)` becomes true and later false with `unitPosition(0)` within 0.01
-tile of `(10.5, 10.5)`.
+**AC-02-41 Left-click move.** Given `/?debug=1&units=1` with unit 0 selected
+by a left click, when the user left-clicks at `worldToScreen(10.5, 10.5)`, then
+within 10 s `isMoving(0)` becomes true and later false with `unitPosition(0)`
+within 0.01 tile of `(10.5, 10.5)`; a right click at another point does not
+move it.
 
 **AC-02-42 Draw calls.** Given `/?debug=1` (500 units) after ready, then
 `drawCalls()` is between 1 and 4 inclusive.

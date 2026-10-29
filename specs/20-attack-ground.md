@@ -3,11 +3,10 @@
 ## 1. Behaviour
 
 * **Player input:** hold `Ctrl` and left click on the map with units selected
-  (Zero Hour's held force-attack mode, §3). `Ctrl` + right click does the same,
-  because in Red Line the right button is the plain order button. On macOS
-  `Ctrl` + left click also arrives as a context menu; the client treats that
-  gesture as force fire, never as the plain right click. A plain right click
-  keeps its normal action (spec 08 §3.7).
+  (Zero Hour's held force-attack mode, §3). On macOS `Ctrl` + left click also
+  arrives as a context menu; the client treats that gesture as force fire. The
+  right button is inert (spec 08 §3.9): `Ctrl` + right click does nothing, and
+  there is no plain right click.
 * Every selected own **armed unit** receives the order: an enemy unit or
   building under the cursor is attacked (so a moving target is followed,
   §3); any other point gets an `AttackGround` order at that point. Unarmed
@@ -18,9 +17,9 @@
 * A plain left click on an enemy unit or building with own armed units
   selected attacks it and keeps the selection (owner request 2026-10-24), so
   clicking the target works without holding a modifier. The original leaves
-  this click to its order button (§3); Red Line accepts both because the owner
-  expects click-to-attack. A left click on the ground still selects or
-  deselects; it never fires.
+  this click to its order button (§3); Red Line's only order button is the left
+  one (spec 08 §3.9). A left click on the ground moves or selects; it never
+  fires.
 * The unit walks until the point is inside `[minRange, range]` of its weapon,
   stops there, turns its turret (or hull) to the point and fires with the
   normal weapon rules (cooldown, salvo, scatter, splash). It keeps firing
@@ -96,15 +95,15 @@ source `electronicarts/CnC_Generals_Zero_Hour@0a05454d8` (paths under
   `W3DScene.cpp:351-377`), not a screen-space radius; only area selection
   projects centres.
 
-Red Line copies the input: Ctrl is held, and either Ctrl + left click or
-Ctrl + right click force-fires under the cursor, with the pick deciding object
-vs point as in the original. The plain right click keeps its context action,
-and a move never fires. An ordered attack on an enemy outside the player's fog
-is accepted and chased, matching Zero Hour; automatic targeting stays fog-gated
-(§1 and spec 03 §5.11). Deliberate deviations:
+Red Line copies the input: Ctrl is held, and Ctrl + left click force-fires
+under the cursor, with the pick deciding object vs point as in the original.
+The right button is inert (spec 08 §3.9), and a move never fires. An ordered
+attack on an enemy outside the player's fog is accepted and chased, matching
+Zero Hour; automatic targeting stays fog-gated (§1 and spec 03 §5.11).
+Deliberate deviations:
 
-* Red Line uses the alternate scheme but also accepts a plain left click on an
-  enemy as attack (owner request 2026-10-24), so the target can be clicked
+* Red Line uses the left-button scheme and also accepts a plain left click on
+  an enemy as attack (owner request 2026-10-24), so the target can be clicked
   without a modifier.
 * Own and neutral objects are not force-attacked directly (a click falls back
   to a ground shot); a ground shot can still catch own units with a direct
@@ -139,11 +138,11 @@ is accepted and chased, matching Zero Hour; automatic targeting stays fog-gated
   the ground at `(40, 58)` keeps it selected and, on the next tick, its saved
   order is `attackGround` toward `(40, 58)`; `Ctrl` + left click on an enemy
   building gives it an `attack` order on that building; after a `Stop`, `Ctrl`
-  + right click on the ground does the same as the left click; a plain left
-  click on the enemy building also gives it an `attack` order and keeps the
-  selection; with `Ctrl+A` selecting the HIMARS and the unarmed dozer, the
-  same click still gives the HIMARS the `attack` order (the unarmed unit does
-  not block it); no console error.
+  + left click on the ground does the same, while `Ctrl` + right click does
+  nothing; a plain left click on the enemy building also gives it an `attack`
+  order and keeps the selection; with `Ctrl+A` selecting the HIMARS and the
+  unarmed dozer, the same click still gives the HIMARS the `attack` order (the
+  unarmed unit does not block it); no console error.
 * AC-20-04 (`crates/sim/tests/combat.rs`): a HIMARS does not auto-target a
   truck 10 tiles away outside its sight; once ordered to attack it, it fires
   and damages the truck, and a new attack order on an in-range rifleman

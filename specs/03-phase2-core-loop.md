@@ -39,7 +39,7 @@ In:
 * `crates/headless`: match scripts in the `hash` subcommand.
 * `client/`: skirmish mode (default) next to the preserved tech-slice mode;
   ruleset module, match snapshot decoding, entity, fog, health bar and tracer
-  rendering, entity selection, right-click intents, building placement, command
+  rendering, entity selection, left-click intents, building placement, command
   panel, resource bar, outcome overlay, hot-seat and reveal debug keys, debug
   API v2, E2E and performance tests.
 
@@ -1315,17 +1315,22 @@ export function selectAllOwnUnits(entities: readonly EntityState[], player: numb
 `intent.ts`:
 
 ```ts
-/** Commands for a right click at ground (x, y) tiles; xRaw/yRaw = toRaw. */
-export function resolveRightClick(args: { player: number; selected: readonly number[];
+/** Commands for a left click at ground (x, y) when the click is not on an own
+ *  selectable entity: enemy attack, depot harvest, own incomplete resume, or
+ *  move. No rally (spec 08 §3.9). xRaw/yRaw = toRaw. */
+export function resolveClickOrder(args: { player: number; selected: readonly number[];
+  entities: readonly EntityState[]; x: number; y: number }): SimCommand[];
+/** Commands for the Rally button's armed left click: exactly one own complete
+ *  producing building, else []. */
+export function resolveRally(args: { player: number; selected: readonly number[];
   entities: readonly EntityState[]; x: number; y: number }): SimCommand[];
 ```
 
-Rules, in order (selected ids not owned by `player` or missing are dropped
-first):
+`resolveClickOrder` rules, in order (selected ids not owned by `player` or
+missing are dropped first):
 
 1. Empty selection → `[]`.
-2. A single building → `[rally]` if its type has `produces`, else `[]`.
-3. Units (ascending). `t = pickEntity(entities, x, y, ORDER_PICK_RADIUS_TILES)`,
+2. Units (ascending). `t = pickEntity(entities, x, y, ORDER_PICK_RADIUS_TILES)`,
    ignoring ghosts (spec 20 §1: the wider pick lets a click on any part of the
    unit model count as an order on it):
    * `t` owned by another player (not `NEUTRAL`): armed units (`weapon >= 0`)
@@ -1335,7 +1340,8 @@ first):
      → `resume`; the rest → `move`.
    * Otherwise all → `move`.
    The special command comes first, then `move`; empty unit lists produce no
-   command.
+   command. A single selected building (producing or not) returns `[]`: the
+   Rally button is the only rally path (spec 08 §3.9 D2).
 
 `placement.ts`:
 
@@ -1351,12 +1357,14 @@ export function canPlace(args: { kind: number; origin: { x: number; y: number };
 ```
 
 `skirmishController.ts` (E2E-covered): like the Phase 1 controller (pointer and
-key wiring, pan, clamp) plus: left click → placement mode ? (`canPlace` →
-`construct` with the lowest-id selected own dozer, then leave placement) :
-`clickSelect`; left drag → `boxSelect` on release, and while the pointer is
-down past `isDrag` the selection box is shown and resized every pointer move
-(`createSelectionBox`, below); right click → placement mode ?
-leave placement : send `resolveRightClick`; `Escape` leaves placement;
+key wiring, pan, clamp) plus the left-click order scheme of spec 08 §3.9: left
+click → force-fire, Dig, Rally or placement mode when armed; otherwise the
+context actions (garrison, board, bridge/vehicle/building repair, infirmary),
+an enemy attack, `resolveClickOrder` for a depot or empty target, and finally
+`clickSelect` for an own entity when no order applied. Left drag → `boxSelect`
+on release, and while the pointer is down past `isDrag` the selection box is
+shown and resized every pointer move (`createSelectionBox`, below). Right click
+is inert; `contextmenu` is only `preventDefault`ed. `Escape` leaves placement;
 `Ctrl/Meta+A` → `selectAllOwnUnits`; with `debug` only, `F2` toggles the
 controlled player 0 ↔ 1 (clears selection, viewer follows unless revealed) and
 `F3` toggles reveal (viewer `OBSERVER` ↔ controlled player); both call
@@ -1444,7 +1452,7 @@ i18n keys: `ui.credits` "Credits {credits}", `ui.power` "Power
 {produced}/{consumed}", `ui.buttonLabel` "{name} ({cost})", `ui.victory`
 "Victory", `ui.defeat` "Defeat", `ui.draw` "Draw", `hud.player` "Player
 {player}: {faction}" (`player` 1-based), `ui.placementHint` "Left click on
-the ground to build · right click or Esc to cancel", `ui.placementIllegal`
+the ground to build · Esc to cancel", `ui.placementIllegal`
 "Cannot build here".
 
 `client/index.html` styles: `#resource-bar` fixed top centre; `#command-panel`
@@ -1905,18 +1913,19 @@ and rejects with `api version mismatch: expected 2, got 3` otherwise;
 `(10, 10)` is `[5]`; `boxSelect` with an identity projection over
 `[0, 0]–[30, 30]` for player 0 is `[2]`; `selectAllOwnUnits(e, 0)` is `[2]`.
 
-**AC-03-49 Right-click intents.** Given own `ua-dozer` 7 at `(5, 5)`, `ua-rifleman` 20
+**AC-03-49 Left-click intents.** Given own `ua-dozer` 7 at `(5, 5)`, `ua-rifleman` 20
 at `(6, 5)` and `ua-supply-truck` 21 at `(7, 5)` selected by player 0, an enemy
 `ru-rifleman` 30 at `(40, 40)`, a depot 0 centred at `(13, 55)`, and an own
-incomplete `ua-barracks` 16 centred at `(13.5, 66.5)`: right click on 30 →
-`[attack { units [20], target 30 }]` (amended by spec 08 AC-08-20, #296; it was
-`[attack, move { units [7, 21] }]`); on the depot →
+incomplete `ua-barracks` 16 centred at `(13.5, 66.5)`: `resolveClickOrder` on
+30 → `[attack { units [20], target 30 }]` (spec 08 §3.9); on the depot →
 `[harvest { units [21], depot 0 }, move { units [7, 20] }]`; on 16 →
 `[resume { units [7], building 16 }, move { units [20, 21] }]`; on empty ground
-`(30, 30)` → `[move { units [7, 20, 21], xRaw: 1966080, yRaw: 1966080 }]`; with
-only a complete own `ua-barracks` selected → `[rally]`; only an own
-`ua-power-plant` → `[]`; an enemy ghost under the cursor → plain `move`; an
-empty selection → `[]`. Every command carries `player: 0`.
+`(30, 30)` → `[move { units [7, 20, 21], xRaw: 1966080, yRaw: 1966080 }]`; a
+single complete own `ua-barracks` or `ua-power-plant` and a ground click →
+`[]` (rally is the Rally button's job); an enemy ghost under the cursor → plain
+`move`; an empty selection → `[]`. Every command carries `player: 0`.
+`resolveRally` with the complete barracks → `[rally]`; with the power plant or
+three selected entities → `[]`.
 
 **AC-03-50 Placement predictor.** `footprintOrigin(<ua-power-plant>, 19.5,
 65.5)` is `(18, 64)` and `footprintOrigin(<ua-defense>, 10.7, 4.2)` is
@@ -1971,29 +1980,29 @@ clicks the dozer, then `#command-panel button[data-type="ua-power-plant"]` is
 enabled; when they click it and then click the ground at `worldToScreen(19.5,
 65.5)`, then within 2 s an owner-0 `ua-power-plant` with `underConstruction`
 exists and `#res-credits` reads `Credits 4400`; within 30 s it is complete and
-`#res-power` reads `Power 10/0`. Right click while placing cancels placement
-(no second building after another ground click).
+`#res-power` reads `Power 10/0`. `Escape` while placing cancels placement (no
+second building after another ground click).
 
 **AC-03-57 Produce and cancel through the UI.** Given `/?debug=1&speed=1` and,
 via `command`, a power plant at `(18, 64)` then (once complete) a barracks at
 `(12, 65)`, once the barracks is complete, when the user clicks it, then the
 panel shows `ua-rifleman` and `ua-stugna-team`; two clicks on `ua-rifleman`
-make `#queue .queue-item` count 2 and credits 3700; a right click on that button
-makes the count 1 and credits 3800; within 20 s an owner-0 `ua-rifleman` exists.
-Speed 1, unlike the other UI criteria: a `ua-rifleman` takes 75 ticks
+make `#queue .queue-item` count 2 and credits 3700; clicking the queue item
+makes the count 1 and credits 3800; within 20 s an owner-0 `ua-rifleman`
+exists. Speed 1, unlike the other UI criteria: a `ua-rifleman` takes 75 ticks
 (1.25 s at speed 4), and production advances on the worker clock while the
 test drives the page, so at speed 4 the queue head could finish between the
-produce clicks and the right click.
+produce clicks and the queue click.
 
 **AC-03-58 Harvest.** Given `/?debug=1&speed=4` and, via `command`, a
 `ua-supply-center` at `(15, 55)`, then within 30 s an owner-0 `ua-supply-truck`
 exists, and within 30 s after that `credits()` exceeds its value at that
 moment.
 
-**AC-03-59 Attack through right click.** Given `/?debug=1&speed=4` and, via
+**AC-03-59 Attack through left click.** Given `/?debug=1&speed=4` and, via
 `debugSpawn`, an owner-0 `ua-kozak-scout` at `(30.5, 62.5)`, an owner-0
 `ua-leopard-2a4` at `(30.5, 64.5)` and an owner-1 `ru-t-72b3` at
-`(40.5, 62.5)`, when the user selects the Leopard by clicking it and right
+`(40.5, 62.5)`, when the user selects the Leopard by clicking it and left
 clicks the T-72, then within 2 s the Leopard has the `moving` flag, and within
 30 s the T-72 no longer exists while the Leopard does.
 

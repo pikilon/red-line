@@ -43,7 +43,7 @@ Three docked panels, each with a fold tab. Touch targets are ≥ 44 px.
 |---|---|---|
 | Command (`#command-bar`) | bottom-left | selection strip, unit actions, structure actions, build grid, queue |
 | Quick (`#quick-bar`) | left edge, above the command panel | 10 group slots, structure shortcuts |
-| Zoom (`#zoom-bar`) | right edge, above the touch joystick | zoom in, slider, zoom out, reset |
+| Zoom (`#zoom-bar`) | right edge | zoom in, slider, zoom out, reset |
 
 ### 3.1 Command panel
 
@@ -54,8 +54,8 @@ Three docked panels, each with a fold tab. Touch targets are ≥ 44 px.
   button stays lit until it fires or is tapped again); Same type on screen;
   Same type everywhere; plus the contextual Garrison, Dig and Unload buttons.
 * **Structures section** (shown for one own building, a garrisoned building or
-  an occupied transport): Rally point (arms the next map tap as the rally
-  order, as a right-click does today); Sell (first tap turns it red and shows
+  an occupied transport): Rally point (the only way to set the rally: it arms
+  the next map tap, spec 08 §3.9 D2); Sell (first tap turns it red and shows
   the refund, a second tap within 3 s sells); Evacuate; Unload.
 * **Build grid:** construct/produce buttons as cameo tiles with the cost under
   the picture and a hotkey-free tooltip with the full name. Disabled tiles are

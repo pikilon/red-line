@@ -56,7 +56,7 @@ describe("spec 35 repair input", () => {
     unit(3, "ua-leopard-2a4", 3, 4),
   ];
 
-  it("workers right clicking a broken bridge repair it", () => {
+  it("workers clicking a broken bridge repair it", () => {
     const live = withRepairState(jobs, [row(0, true, 1000), row(1, false, 0)]);
     expect(
       resolveRepairClick({

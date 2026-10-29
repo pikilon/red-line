@@ -54,8 +54,8 @@ once repaired above that threshold, and the client draws it again.
   `features_step`. The order ends when the bridge is whole.
 * Example saves may damage features at tick 0: `features: [{ at, hpPercent }]`;
   setup order `{ repair: [x, y] }` (a deck cell). `?load=bridge-repair`.
-* Client: right click a damaged bridge with infantry or dozers selected
-  (`client/src/input/repair.ts`).
+* Client: left click a damaged bridge with infantry or dozers selected
+  (`client/src/input/repair.ts`; spec 08 §3.9).
 
 ## 5b. Trenches
 
@@ -74,7 +74,7 @@ once repaired above that threshold, and the client draws it again.
 * Rows past the map's (`placed_feature_count`) are dug rows: the feature table
   trails `placed, (x, y, rot)...` so the client can draw them; saves keep them.
 * Client: the "Dig trench" button arms the next left click (Shift turns the
-  trench, right click cancels); `client/src/render/features/renderers/earthworks.ts`
+  trench; a second press of the button cancels); `client/src/render/features/renderers/earthworks.ts`
   draws the floor, parapets that rise with the digging and sandbags when done.
   Example save `?load=trench-digging`; setup order `{ dig: [x, y] }`.
 
@@ -83,8 +83,8 @@ once repaired above that threshold, and the client draws it again.
 * **Drawing.** With Dig armed, press-drag-release (mouse, or one finger)
   draws a line on the ground; a plain tap still digs one trench. Ghost
   trenches follow the line while dragging, red where the client sees closed
-  terrain. One line per arming: Shift on release keeps Dig armed, right click
-  or the button again cancels.
+  terrain. One line per arming: Shift on release keeps Dig armed, the button
+  again cancels (the right button is inert, spec 08 §3.9).
 * **Split** (`trenchLineSegments`, `client/src/input/repair.ts`): the line
   runs along its longer axis, snapped to cells, cut into consecutive 2-cell
   trenches in drawing order; turn 0 along x, 1 along y; the cross coordinate

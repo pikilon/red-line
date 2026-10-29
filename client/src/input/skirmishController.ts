@@ -2,16 +2,16 @@ import { type OrthographicCamera, Raycaster, Vector2, Vector3 } from "three";
 import { setCameraTarget, zoomAfterWheel } from "../camera";
 import { groundY, pickGround } from "../render/elevation";
 import { typeDef } from "../rules";
-import type { EntityState } from "../sim/matchSnapshot";
+import { ENTITY_FLAGS, type EntityState, hasFlag } from "../sim/matchSnapshot";
 import type { SimCommand } from "../sim/protocol";
-import { PAN_SPEED_TILES_PER_SECOND, panDelta } from "./cameraPan";
+import { panDelta } from "./cameraPan";
 import { boxSelect, clickSelect, selectAllOwnUnits } from "./entitySelection";
 import {
   type GarrisonFeature,
   resolveGarrisonClick,
   selectOccupantsAt,
 } from "./garrison";
-import { resolveForceFire, resolveRightClick } from "./intent";
+import { resolveClickOrder, resolveForceFire, resolveRally } from "./intent";
 import { createPinchGesture } from "./pinch";
 import { canPlace, footprintOrigin } from "./placement";
 import {
@@ -83,13 +83,13 @@ export interface SkirmishController {
   readonly selected: ReadonlySet<number>;
   /** Spec 35: the next left click on the ground digs a trench there (Shift
    *  turns it); dragging draws a line of trenches (Shift keeps Dig armed); a
-   *  right click cancels. */
+   *  second press of the button cancels. */
   armDig(): void;
   /** Spec 35 §5b.1: the trench segments of the line being drawn, with whether
    *  the client sees their cells open; null when no line is being drawn. */
   digPreview(): (TrenchSegment & { valid: boolean })[] | null;
   /** Spec 41: the Force fire button; the next left tap/click force-fires, a
-   *  second press (or a right click) disarms. */
+   *  second press disarms. */
   toggleForceFire(): void;
   /** Spec 41: the Rally point button; the next left tap sets the rally of the
    *  selected producer. */
@@ -109,9 +109,6 @@ export interface SkirmishController {
   setSelection(ids: Iterable<number>): void;
   /** Wheel zoom of the camera, 1 by default (spec 08 §3.4). */
   zoom(): number;
-  /** Analog panning from the touch joystick (spec 08 §3.6): a screen vector in
-   *  [-1, 1] per axis (x right, y down), added to the keys' contribution. */
-  setAnalogPan(x: number, y: number): void;
   /** Applies keyboard panning for one frame. */
   update(dtSeconds: number): void;
   /** Sim tiles -> page CSS px. */
@@ -123,7 +120,6 @@ export interface SkirmishController {
 const LEFT_BUTTON = 0;
 /** Two clicks on the same unit within this window select its type (spec 41). */
 const DOUBLE_CLICK_MS = 400;
-const RIGHT_BUTTON = 2;
 
 /** Mouse, keyboard and placement wiring of the skirmish (spec §6.5). */
 export function createSkirmishController(
@@ -132,19 +128,17 @@ export function createSkirmishController(
   const { canvas, camera } = options;
   const selected = new Set<number>();
   const pressed = new Set<string>();
-  const analog = { x: 0, y: 0 };
   const target = { x: 0, y: 0 };
   const raycaster = new Raycaster();
   let dragStart: ScreenPoint | null = null;
-  // Pointer events carry sub-pixel coordinates; contextmenu may not.
+  // Pointer events carry sub-pixel coordinates; the previews use them.
   let lastPointer: ScreenPoint | null = null;
   // Zero Hour's held force-attack mode (spec 20 §3): while Ctrl is down the
-  // next click force-fires. Ctrl + left click also arrives as a context menu on
-  // macOS, so `forceFireIssued` keeps the two event paths from ordering twice.
+  // next click force-fires. On macOS the same gesture also raises contextmenu,
+  // which the canvas only prevents; the pointerup does the ordering.
   let forceFireArmed = false;
   /** Spec 35: the Dig button was pressed; the next left click digs there. */
   let digArmed = false;
-  let forceFireIssued = false;
   /** Spec 41: the panel's Force fire / Rally point buttons armed the next tap. */
   let armedMode: "force" | "rally" | null = null;
   /** Spec 41 A3: the last plain click, for the same-type double click. */
@@ -186,9 +180,7 @@ export function createSkirmishController(
 
   /**
    * Spec 20 §1: force fire under `point` with the armed selected units — an
-   * enemy under the cursor is attacked, any other point gets a ground shot. A
-   * context menu may not carry the pointer position, so the caller passes the
-   * last known one.
+   * enemy under the cursor is attacked, any other point gets a ground shot.
    */
   function forceFireAt(point: ScreenPoint): void {
     if (options.placementKind() !== null) return;
@@ -206,10 +198,10 @@ export function createSkirmishController(
   }
 
   /**
-   * Spec 20 §1: a plain left click on an enemy with own units selected attacks
-   * it, so clicking the target is enough (owner request 2026-10-24). A left
-   * click on anything else keeps the normal selection behaviour; it never
-   * ground-fires.
+   * Spec 20 §1 / spec 08 §3.9: a plain left click on an enemy with own units
+   * selected attacks it, so clicking the target is enough (owner request
+   * 2026-10-24). It never ground-fires; anything else falls through to the
+   * contextual orders or selection.
    */
   function attackUnderCursor(ground: { x: number; y: number }): boolean {
     if (selected.size === 0) return false;
@@ -223,6 +215,48 @@ export function createSkirmishController(
     if (attacks.length === 0) return false;
     for (const command of attacks) options.command(command);
     return true;
+  }
+
+  /** True when the selection holds an own unit that can build (spec 35/38). */
+  function selectionHasBuilder(): boolean {
+    return options.entities().some((entity) => {
+      if (!selected.has(entity.id) || entity.owner !== options.player()) {
+        return false;
+      }
+      const def = typeDef(entity.kind);
+      return def.category === "unit" && def.builds.length > 0;
+    });
+  }
+
+  /**
+   * Spec 08 §3.9: the contextual own/neutral object orders of a left click, in
+   * the order the old right-click path used. The first non-empty result wins.
+   */
+  function applyContextOrders(ground: { x: number; y: number }): boolean {
+    const args = {
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      x: ground.x,
+      y: ground.y,
+    };
+    const actions = [
+      resolveGarrisonClick({
+        ...args,
+        features: options.garrisonFeatures?.() ?? [],
+      }),
+      resolveBoardClick(args),
+      resolveRepairClick({ ...args, jobs: options.repairJobs?.() ?? [] }),
+      resolveVehicleRepairClick(args),
+      resolveBuildingRepairClick(args),
+      resolveInfirmaryClick(args),
+    ];
+    for (const commands of actions) {
+      if (commands.length === 0) continue;
+      for (const command of commands) options.command(command);
+      return true;
+    }
+    return false;
   }
 
   /** Lowest-id selected own unit whose type builds `kind`. */
@@ -305,6 +339,13 @@ export function createSkirmishController(
       forceFireArmed = false;
       options.selectionBox.show(null);
     },
+    pan(from, to) {
+      // Grab the ground: the point under the old midpoint ends under the new.
+      const before = groundAt(from);
+      const after = groundAt(to);
+      if (before === null || after === null) return;
+      setTarget(target.x + before.x - after.x, target.y + before.y - after.y);
+    },
   });
 
   canvas.addEventListener("pointermove", (event) => {
@@ -322,19 +363,17 @@ export function createSkirmishController(
     options.selectionBox.show(null);
   });
   // A release outside the canvas, or a focus change, must not leave force fire
-  // armed and turn the next right click into a ground shot.
+  // armed and turn the next click into a ground shot.
   window.addEventListener("blur", () => {
     pinch.cancel();
     dragStart = null;
     forceFireArmed = false;
-    forceFireIssued = false;
   });
   window.addEventListener("pointerup", () => {
     forceFireArmed = false;
   });
   canvas.addEventListener("pointerdown", (event) => {
     lastPointer = { x: event.clientX, y: event.clientY };
-    forceFireIssued = false;
     if (pinch.down(event)) {
       dragStart = null;
       options.selectionBox.show(null);
@@ -355,7 +394,6 @@ export function createSkirmishController(
     if (event.button !== LEFT_BUTTON) return;
     if (forceFireArmed) {
       forceFireArmed = false;
-      forceFireIssued = true;
       armedMode = null;
       dragStart = null;
       options.selectionBox.show(null);
@@ -395,9 +433,13 @@ export function createSkirmishController(
       return;
     }
     const ground = groundAt(end);
-    if (armedMode === "rally" && ground !== null) {
+    if (ground === null) {
+      lastClick = null;
+      return;
+    }
+    if (armedMode === "rally") {
       armedMode = null;
-      for (const command of resolveRightClick({
+      for (const command of resolveRally({
         player: options.player(),
         selected: [...selected],
         entities: options.entities(),
@@ -406,9 +448,10 @@ export function createSkirmishController(
       })) {
         options.command(command);
       }
+      lastClick = null;
       return;
     }
-    if (digArmed && ground !== null) {
+    if (digArmed) {
       digArmed = false;
       for (const command of resolveDigClick({
         player: options.player(),
@@ -420,17 +463,48 @@ export function createSkirmishController(
       })) {
         options.command(command);
       }
+      lastClick = null;
       return;
     }
-    if (ground !== null && tryPlace(ground.x, ground.y)) return;
-    if (ground !== null && attackUnderCursor(ground)) return;
-    const picked =
-      ground === null
-        ? []
-        : clickSelect(options.entities(), ground.x, ground.y, options.player());
+    if (tryPlace(ground.x, ground.y)) {
+      lastClick = null;
+      return;
+    }
+    if (applyContextOrders(ground)) {
+      lastClick = null;
+      return;
+    }
+    if (attackUnderCursor(ground)) {
+      lastClick = null;
+      return;
+    }
+    const picked = clickSelect(
+      options.entities(),
+      ground.x,
+      ground.y,
+      options.player(),
+    );
     const [only] = picked;
     if (picked.length === 1 && only !== undefined) {
       const entity = options.entities().find((e) => e.id === only);
+      if (
+        entity !== undefined &&
+        hasFlag(entity, ENTITY_FLAGS.underConstruction) &&
+        selectionHasBuilder()
+      ) {
+        const commands = resolveClickOrder({
+          player: options.player(),
+          selected: [...selected],
+          entities: options.entities(),
+          x: ground.x,
+          y: ground.y,
+        });
+        if (commands.length > 0) {
+          for (const command of commands) options.command(command);
+          lastClick = null;
+          return;
+        }
+      }
       const again =
         lastClick !== null &&
         lastClick.id === only &&
@@ -444,21 +518,34 @@ export function createSkirmishController(
         setSelection(sameOnScreen([entity.kind]));
         return;
       }
-    } else {
-      lastClick = null;
+      if (!again && selected.size === 1 && selected.has(only)) {
+        setSelection([]);
+        return;
+      }
+      setSelection(picked);
+      return;
+    }
+    lastClick = null;
+    const commands = resolveClickOrder({
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      x: ground.x,
+      y: ground.y,
+    });
+    if (commands.length > 0) {
+      for (const command of commands) options.command(command);
+      return;
     }
     // A click on an own garrisoned building selects the units inside it.
-    setSelection(
-      picked.length > 0 || ground === null
-        ? picked
-        : selectOccupantsAt({
-            player: options.player(),
-            entities: options.entities(),
-            features: options.garrisonFeatures?.() ?? [],
-            x: ground.x,
-            y: ground.y,
-          }),
-    );
+    const occupants = selectOccupantsAt({
+      player: options.player(),
+      entities: options.entities(),
+      features: options.garrisonFeatures?.() ?? [],
+      x: ground.x,
+      y: ground.y,
+    });
+    if (occupants.length > 0) setSelection(occupants);
   });
 
   // Non-passive so preventDefault keeps the page from scrolling (§3.4).
@@ -473,133 +560,24 @@ export function createSkirmishController(
   );
 
   canvas.addEventListener("contextmenu", (event) => {
+    // The right button is inert (spec 08 §3.9): only keep the browser menu out.
     event.preventDefault();
-    if (options.placementKind() !== null) {
-      // On macOS Ctrl + left click arrives here too; that gesture still places
-      // the building (the pointerup does), so only a right click cancels.
-      if (!(event.ctrlKey && event.button === LEFT_BUTTON)) {
-        options.exitPlacement();
-      }
-      return;
-    }
-    if (digArmed) {
-      digArmed = false;
-      return;
-    }
-    if (armedMode !== null) {
-      // A right click or long press cancels an armed panel button.
-      armedMode = null;
-      forceFireArmed = false;
-      return;
-    }
-    if (forceFireIssued) {
-      // The Ctrl + left click already force-fired in pointerup (macOS).
-      forceFireIssued = false;
-      return;
-    }
-    if (selected.size === 0) return;
-    if (forceFireArmed || (event.ctrlKey && event.button === RIGHT_BUTTON)) {
-      // Ctrl + either button force-fires: both clicks route to the force
-      // attack in Zero Hour (spec 20 §3). This path covers Ctrl + right click
-      // everywhere and Ctrl + left click on macOS when no pointerup arrives.
-      forceFireArmed = false;
-      forceFireIssued = true;
-      forceFireAt(lastPointer ?? { x: event.clientX, y: event.clientY });
-      return;
-    }
-    // A macOS Ctrl + left click must never become the plain right click.
-    if (event.ctrlKey && event.button === LEFT_BUTTON) return;
-    const point = lastPointer ?? { x: event.clientX, y: event.clientY };
-    const ground = groundAt(point);
-    if (ground === null) return;
-    // Infantry enter the garrisonable building under the cursor.
-    const entering = resolveGarrisonClick({
-      player: options.player(),
-      selected: [...selected],
-      entities: options.entities(),
-      features: options.garrisonFeatures?.() ?? [],
-      x: ground.x,
-      y: ground.y,
-    });
-    if (entering.length > 0) {
-      for (const command of entering) options.command(command);
-      return;
-    }
-    // Spec 34: infantry board the own transport under the cursor.
-    const boarding = resolveBoardClick({
-      player: options.player(),
-      selected: [...selected],
-      entities: options.entities(),
-      x: ground.x,
-      y: ground.y,
-    });
-    if (boarding.length > 0) {
-      for (const command of boarding) options.command(command);
-      return;
-    }
-    // Spec 35: workers repair the damaged bridge under the cursor.
-    const repairing = resolveRepairClick({
-      player: options.player(),
-      selected: [...selected],
-      entities: options.entities(),
-      jobs: options.repairJobs?.() ?? [],
-      x: ground.x,
-      y: ground.y,
-    });
-    if (repairing.length > 0) {
-      for (const command of repairing) options.command(command);
-      return;
-    }
-    // Spec 39: damaged vehicles dock at the own factory under the cursor.
-    const repairingVehicles = resolveVehicleRepairClick({
-      player: options.player(),
-      selected: [...selected],
-      entities: options.entities(),
-      x: ground.x,
-      y: ground.y,
-    });
-    if (repairingVehicles.length > 0) {
-      for (const command of repairingVehicles) options.command(command);
-      return;
-    }
-    // Spec 38: dozers repair the own damaged building under the cursor.
-    const repairingBuilding = resolveBuildingRepairClick({
-      player: options.player(),
-      selected: [...selected],
-      entities: options.entities(),
-      x: ground.x,
-      y: ground.y,
-    });
-    if (repairingBuilding.length > 0) {
-      for (const command of repairingBuilding) options.command(command);
-      return;
-    }
-    // Spec 40: damaged infantry heal in the own barracks under the cursor.
-    const healing = resolveInfirmaryClick({
-      player: options.player(),
-      selected: [...selected],
-      entities: options.entities(),
-      x: ground.x,
-      y: ground.y,
-    });
-    if (healing.length > 0) {
-      for (const command of healing) options.command(command);
-      return;
-    }
-    const commands = resolveRightClick({
-      player: options.player(),
-      selected: [...selected],
-      entities: options.entities(),
-      x: ground.x,
-      y: ground.y,
-    });
-    for (const command of commands) options.command(command);
   });
 
   options.keyTarget.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && options.placementKind() !== null) {
       event.preventDefault();
       options.exitPlacement();
+      return;
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      if (armedMode !== null || digArmed) {
+        armedMode = null;
+        digArmed = false;
+      } else {
+        setSelection([]);
+      }
       return;
     }
     if (isSelectAllShortcut(event)) {
@@ -628,7 +606,7 @@ export function createSkirmishController(
   return {
     selected,
     armDig() {
-      digArmed = true;
+      digArmed = !digArmed;
     },
     digPreview() {
       if (!digArmed || dragStart === null || lastPointer === null) return null;
@@ -682,16 +660,8 @@ export function createSkirmishController(
     clearSelection() {
       setSelection([]);
     },
-    setAnalogPan(x, y) {
-      analog.x = Math.max(-1, Math.min(1, x));
-      analog.y = Math.max(-1, Math.min(1, y));
-    },
     update(dtSeconds) {
       const delta = panDelta(pressed, dtSeconds);
-      // Pushing up is ArrowUp (-1, -1); a full push moves at the keys' speed.
-      const scale = (PAN_SPEED_TILES_PER_SECOND * dtSeconds) / Math.SQRT2;
-      delta.x += (analog.x + analog.y) * scale;
-      delta.y += (analog.y - analog.x) * scale;
       if (delta.x !== 0 || delta.y !== 0) {
         setTarget(target.x + delta.x, target.y + delta.y);
       }
