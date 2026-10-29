@@ -399,6 +399,14 @@ pub struct FeatureTypeDef {
     /// Spec 35: repair (or dig) speed of this type, percent of the base rate.
     #[serde(default = "hundred", rename = "repairPct")]
     pub repair_pct: u32,
+    /// Spec 35 §5b: ground material ids (indices of `layerNames.ground`) that
+    /// cannot be dug; roads always refuse. Empty means any ground.
+    #[serde(default, rename = "hardGround")]
+    pub hard_ground: Vec<u8>,
+    /// Spec 35 §5b: wheeled hulls cannot cross the feature while its damage
+    /// state is at most this (1 is half dug or more); `None` never stops them.
+    #[serde(default, rename = "wheelsBlockedState")]
+    pub wheels_blocked_state: Option<u8>,
 }
 
 fn hundred() -> u32 {

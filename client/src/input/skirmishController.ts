@@ -53,6 +53,8 @@ export interface SkirmishControllerOptions {
   entities(): readonly EntityState[];
   /** Map cells, tile-major; 0 is passable (spec §5.15). */
   tiles(): Uint8Array;
+  /** Spec 35 §5b: cells too hard to dig (hard ground, roads), 1 per cell. */
+  hardCells?(): Uint8Array | undefined;
   /** Latest fog: 0 unexplored, 1 explored, 2 visible (spec §5.15). */
   fog(): Uint8Array;
   /** Type index being placed, or null when not in placement mode. */
@@ -615,6 +617,7 @@ export function createSkirmishController(
       const to = groundAt(lastPointer);
       if (from === null || to === null) return null;
       const tiles = options.tiles();
+      const hard = options.hardCells?.();
       return trenchLineSegments(from, to).map((segment) => {
         const [w, h] = segment.rot === 0 ? [2, 1] : [1, 2];
         let valid = true;
@@ -627,7 +630,8 @@ export function createSkirmishController(
               y >= 0 &&
               x < options.mapWidth &&
               y < options.mapHeight &&
-              tiles[y * options.mapWidth + x] === 0;
+              tiles[y * options.mapWidth + x] === 0 &&
+              hard?.[y * options.mapWidth + x] !== 1;
             if (!open) valid = false;
           }
         }

@@ -37,6 +37,18 @@
             "type": "boolean"
           },
           "variants": { "type": "integer", "minimum": 1, "maximum": 16 },
+          "hardGround": {
+            "description": "Spec 35 §5b: ground materials (names of layerNames.ground) the feature cannot be dug on; any road refuses too.",
+            "type": "array",
+            "items": { "enum": ["grass", "dirt", "sand", "rock", "mud", "gravel", "asphalt", "concrete", "snow-field"] },
+            "uniqueItems": true
+          },
+          "wheelsBlockedState": {
+            "description": "Spec 35 §5b: wheeled hulls cannot cross the feature while its damage state is at most this (0 finished, 1 half, 2 just started). Omitted: never stops them.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2
+          },
           "repairPct": {
             "description": "Spec 35: repair or dig speed of the type, percent of the base rate (default 100).",
             "type": "integer",

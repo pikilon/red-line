@@ -2917,6 +2917,12 @@
       },
       "crushLevel": 0,
       "repairPct": 400,
+      "hardGround": [
+        3,
+        6,
+        7
+      ],
+      "wheelsBlockedState": 1,
       "render": {
         "kind": "trench"
       }

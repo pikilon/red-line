@@ -334,6 +334,32 @@ export function resolveDigClick(args: {
   ];
 }
 
+/** Spec 35 §5b: marks (1) the cells of a map where nothing can be dug: every
+ *  road cell and every ground material listed in `hardGround` (ids of
+ *  `layerNames.ground`, the earthwork type's `hardGround`). `ground` and
+ *  `roads` are the map's hex layers, two digits per cell; a map without them
+ *  has no hard cells. */
+export function undiggableCells(
+  map: { width: number; height: number; ground?: string; roads?: string },
+  hardGround: readonly number[],
+): Uint8Array {
+  const cells = map.width * map.height;
+  const hard = new Uint8Array(cells);
+  const byteAt = (hex: string | undefined, i: number): number =>
+    hex === undefined || hex.length !== cells * 2
+      ? 0
+      : Number.parseInt(hex.slice(i * 2, i * 2 + 2), 16) || 0;
+  for (let i = 0; i < cells; i++) {
+    if (
+      byteAt(map.roads, i) !== 0 ||
+      hardGround.includes(byteAt(map.ground, i))
+    ) {
+      hard[i] = 1;
+    }
+  }
+  return hard;
+}
+
 /** One 2x1 trench of a line: top-left cell and turn (0 along x, 1 along y). */
 export interface TrenchSegment {
   x: number;

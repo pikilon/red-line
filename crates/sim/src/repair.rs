@@ -220,10 +220,12 @@ impl World {
     }
 
     /// The cells feature type `kind` would cover at `origin` turned `rot`,
-    /// when they are on the map, open to infantry and free of other features.
+    /// when they are on the map, open to infantry, free of other features and
+    /// soft ground (no road, no `hardGround` material).
     fn dig_cells(&self, kind: usize, origin: Cell, rot: u8) -> Option<Vec<Cell>> {
         let (w, h) = crate::features::footprint(&self.rules.feature_types[kind], rot);
         let grid = self.grid(crate::world::Layer::Foot);
+        let hard = &self.rules.feature_types[kind].hard_ground;
         let mut cells = Vec::new();
         for y in origin.y..origin.y + h {
             for x in origin.x..origin.x + w {
@@ -232,6 +234,9 @@ impl World {
                     || !grid.is_passable(cell)
                     || self.feature_at(cell).is_some()
                     || self.repair_job_at(cell).is_some()
+                    // Spec 35 §5b: roads and hard ground cannot be dug.
+                    || self.terrain_base.road_at(cell) != 0
+                    || hard.contains(&self.terrain_base.ground_at(cell))
                 {
                     return None;
                 }
@@ -635,13 +640,13 @@ mod tests {
         let mut world = ground();
         let placed = world.features.len();
         let units: Vec<EntityId> = (0..3).map(|i| rifleman(&mut world, 28 + i, 30)).collect();
-        dig(&mut world, units.clone(), 30, 33);
+        dig(&mut world, units.clone(), 40, 38);
         world.step();
         assert_eq!(world.features.len(), placed + 1, "the trench row appears");
         let trench = placed as u32;
         assert!(world.needs_repair(trench), "it starts empty");
         let soldier = world.index_of(units[0]).unwrap();
-        world.entities[soldier].pos = crate::map::cell_center(Cell { x: 30, y: 33 });
+        world.entities[soldier].pos = crate::map::cell_center(Cell { x: 40, y: 38 });
         assert_eq!(
             world.unit_cover_pct(None, soldier),
             0,
@@ -655,11 +660,11 @@ mod tests {
         }
         assert!(!world.needs_repair(trench), "dug to full");
         let soldier = world.index_of(units[0]).unwrap();
-        world.entities[soldier].pos = crate::map::cell_center(Cell { x: 31, y: 33 });
+        world.entities[soldier].pos = crate::map::cell_center(Cell { x: 41, y: 38 });
         assert_eq!(world.unit_cover_pct(None, soldier), 50);
         // Vehicles get no trench cover.
         let tank = world.rules.type_index("ua-leopard-2a4").unwrap();
-        let tank = world.spawn(0, tank, crate::map::cell_center(Cell { x: 30, y: 33 }));
+        let tank = world.spawn(0, tank, crate::map::cell_center(Cell { x: 40, y: 38 }));
         let tank = world.index_of(tank).unwrap();
         assert_eq!(world.unit_cover_pct(None, tank), 0);
     }
@@ -669,16 +674,16 @@ mod tests {
         let mut world = ground();
         let placed = world.features.len();
         let unit = rifleman(&mut world, 28, 30);
-        dig(&mut world, vec![unit], 30, 33);
+        dig(&mut world, vec![unit], 40, 38);
         world.step();
-        dig(&mut world, vec![unit], 31, 33);
+        dig(&mut world, vec![unit], 41, 38);
         world.step();
         assert_eq!(
             world.features.len(),
             placed + 1,
             "overlapping trench refused"
         );
-        dig(&mut world, vec![unit], 63, 33);
+        dig(&mut world, vec![unit], 63, 38);
         world.step();
         assert_eq!(world.features.len(), placed + 1, "off the map refused");
     }
@@ -689,10 +694,10 @@ mod tests {
         let placed = world.features.len();
         let unit = rifleman(&mut world, 28, 30);
         // Block the middle segment with a trench already there.
-        dig(&mut world, vec![unit], 34, 33);
+        dig(&mut world, vec![unit], 44, 38);
         world.step();
-        let segments = [(30, 0), (32, 0), (34, 0), (36, 0), (63, 0)]
-            .map(|(x, rot)| (Cell { x, y: 33 }, rot))
+        let segments = [(40, 0), (42, 0), (44, 0), (46, 0), (63, 0)]
+            .map(|(x, rot)| (Cell { x, y: 38 }, rot))
             .to_vec();
         world.enqueue_as(
             0,
@@ -703,7 +708,7 @@ mod tests {
         );
         world.step();
         let xs: Vec<i32> = world.features[placed..].iter().map(|f| f.x).collect();
-        assert_eq!(xs, vec![34, 30, 32, 36], "blocked and off-map ones skipped");
+        assert_eq!(xs, vec![44, 40, 42, 46], "blocked and off-map ones skipped");
         for _ in 0..6000 {
             world.step();
             if (placed..placed + 4).all(|i| !world.needs_repair(i as u32)) {
@@ -725,8 +730,8 @@ mod tests {
             .map(|i| {
                 (
                     Cell {
-                        x: 30 + 2 * i,
-                        y: 33,
+                        x: 40 + 2 * i,
+                        y: 38,
                     },
                     0,
                 )
@@ -748,7 +753,7 @@ mod tests {
     fn dug_rows_trail_the_feature_table_and_survive_a_save() {
         let mut world = ground();
         let unit = rifleman(&mut world, 28, 30);
-        dig(&mut world, vec![unit], 30, 33);
+        dig(&mut world, vec![unit], 40, 38);
         for _ in 0..40 {
             world.step();
         }
@@ -756,7 +761,7 @@ mod tests {
         let table = encode_features(&world);
         let rows = table[0] as usize;
         let trailer = 1 + rows * FEATURE_STRIDE;
-        assert_eq!(&table[trailer..], &[placed as i32, 30, 33, 0, 0]);
+        assert_eq!(&table[trailer..], &[placed as i32, 40, 38, 0, 0]);
         let saved = save_state(&world, 3, &[]).unwrap();
         let (mut loaded, _, _) = load_state(&saved).unwrap();
         assert_eq!(state_hash(&loaded), state_hash(&world));
@@ -765,5 +770,170 @@ mod tests {
             loaded.step();
         }
         assert_eq!(state_hash(&loaded), state_hash(&world));
+    }
+
+    /// A finished (or `state`-deep) trench line along `y` from x 34 to 63: the
+    /// only gap on the map row is the road at x 31..33, which cannot be dug.
+    fn trench_wall(world: &mut World, y: i32, hp: u32, state: u8) -> Vec<u32> {
+        let mut rows = Vec::new();
+        for x in (34..64).step_by(2) {
+            rows.push(world.dig_trench(Cell { x, y }, 0, 0).unwrap());
+        }
+        for &row in &rows {
+            world.features[row as usize].hp = hp;
+            world.features[row as usize].state = state;
+        }
+        world.refresh_feature_blocks();
+        rows
+    }
+
+    fn move_to(world: &mut World, unit: EntityId, x: i32, y: i32) {
+        world.enqueue_as(
+            0,
+            Command::Move {
+                units: vec![unit],
+                target: crate::map::cell_center(Cell { x, y }),
+            },
+        );
+    }
+
+    /// Ticks until the unit is within one cell of `(x, y)`, noting whether it
+    /// ever stood on a trench row; `None` when it never arrives.
+    fn drive_and_watch(world: &mut World, unit: EntityId, x: i32, y: i32) -> Option<(u32, bool)> {
+        let mut on_trench = false;
+        for tick in 0..6000 {
+            world.step();
+            let at = cell_of(world.entity(unit).unwrap().pos);
+            on_trench |= world.features.iter().any(|row| {
+                let (x0, y0, x1, y1) = extent(&world.rules.feature_types[row.kind as usize], row);
+                (x0..=x1).contains(&at.x) && (y0..=y1).contains(&at.y)
+            });
+            if (at.x - x).abs() <= 1 && (at.y - y).abs() <= 1 {
+                return Some((tick, on_trench));
+            }
+        }
+        None
+    }
+
+    #[test]
+    fn hard_ground_and_roads_refuse_a_trench() {
+        let mut world = ground();
+        let placed = world.features.len();
+        let unit = rifleman(&mut world, 28, 30);
+        for (x, y, what) in [
+            (5, 17, "concrete"),
+            (18, 17, "asphalt apron"),
+            (52, 18, "rock"),
+            (16, 20, "half concrete half asphalt"),
+            (40, 32, "road"),
+            (20, 33, "road"),
+        ] {
+            dig(&mut world, vec![unit], x, y);
+            world.step();
+            assert_eq!(world.features.len(), placed, "{what} at {x},{y} refused");
+        }
+        // Grass, mud and sand are soft.
+        for (x, y) in [(40, 38), (30, 20), (43, 20)] {
+            dig(&mut world, vec![unit], x, y);
+            world.step();
+        }
+        assert_eq!(world.features.len(), placed + 3, "soft ground digs");
+        // A line skips the hard and road segments.
+        let segments = [(5, 17), (40, 41), (52, 18), (44, 41)]
+            .map(|(x, y)| (Cell { x, y }, 0))
+            .to_vec();
+        world.enqueue_as(
+            0,
+            Command::DigLine {
+                units: vec![unit],
+                segments,
+            },
+        );
+        world.step();
+        let xs: Vec<i32> = world.features[placed + 3..].iter().map(|f| f.x).collect();
+        assert_eq!(xs, vec![40, 44]);
+    }
+
+    #[test]
+    fn wheels_go_around_a_half_dug_trench_but_tracks_cross() {
+        let mut world = ground();
+        trench_wall(&mut world, 40, 150, 1);
+        let truck = world.rules.type_index("ua-supply-truck").unwrap();
+        let tank = world.rules.type_index("ua-leopard-2a4").unwrap();
+        let truck = world.spawn(0, truck, crate::map::cell_center(Cell { x: 50, y: 44 }));
+        let tank = world.spawn(0, tank, crate::map::cell_center(Cell { x: 50, y: 45 }));
+        move_to(&mut world, truck, 50, 36);
+        move_to(&mut world, tank, 56, 36);
+        let mut truck_on = false;
+        let mut tank_on = false;
+        let mut arrived = (None, None);
+        for tick in 0..8000u32 {
+            world.step();
+            for (unit, on, done, x, y) in [
+                (truck, &mut truck_on, &mut arrived.0, 50, 36),
+                (tank, &mut tank_on, &mut arrived.1, 56, 36),
+            ] {
+                let at = cell_of(world.entity(unit).unwrap().pos);
+                *on |= at.y == 40 && at.x >= 34;
+                if done.is_none() && (at.x - x).abs() <= 1 && (at.y - y).abs() <= 1 {
+                    *done = Some(tick);
+                }
+            }
+        }
+        let (truck_done, tank_done) = (
+            arrived.0.expect("truck arrives"),
+            arrived.1.expect("tank arrives"),
+        );
+        assert!(!truck_on, "wheels never stand on the trench");
+        assert!(tank_on, "tracks drive over it");
+        assert!(
+            truck_done > tank_done * 2,
+            "the truck took the long way round the gap"
+        );
+    }
+
+    #[test]
+    fn a_just_started_trench_blocks_nobody_and_wheels_stuck_in_one_get_out() {
+        let mut world = ground();
+        let rows = trench_wall(&mut world, 40, 1, 2);
+        assert!(world.terrain_wheels.is_none(), "state 2 stops no wheels");
+        let truck = world.rules.type_index("ua-supply-truck").unwrap();
+        let truck = world.spawn(0, truck, crate::map::cell_center(Cell { x: 50, y: 40 }));
+        move_to(&mut world, truck, 50, 36);
+        let (_, on) = drive_and_watch(&mut world, truck, 50, 36).expect("crosses a fresh trench");
+        assert!(on, "it drove across the just-started trench row");
+        // The trench is dug to half under the truck: it drives out and on.
+        let row = rows[8] as usize;
+        let (x0, y0) = (world.features[row].x, world.features[row].y);
+        let index = world.index_of(truck).unwrap();
+        world.entities[index].pos = crate::map::cell_center(Cell { x: x0, y: y0 });
+        for &row in &rows {
+            world.features[row as usize].state = 1;
+            world.features[row as usize].hp = 150;
+        }
+        world.refresh_feature_blocks();
+        assert!(
+            !world
+                .grid(crate::world::Layer::Wheels)
+                .is_passable(Cell { x: x0, y: y0 })
+        );
+        move_to(&mut world, truck, 36, 44);
+        assert!(
+            drive_and_watch(&mut world, truck, 36, 44).is_some(),
+            "a truck under a closing trench drives out"
+        );
+    }
+
+    #[test]
+    fn digging_to_half_depth_closes_the_grid_to_wheels_only() {
+        let mut world = ground();
+        let row = world.dig_trench(Cell { x: 44, y: 40 }, 0, 0).unwrap();
+        assert!(world.terrain_wheels.is_none());
+        let def_hp = world.rules.feature_types[world.features[row as usize].kind as usize].hp;
+        world.repair_feature(row as usize, def_hp / 2);
+        let cell = Cell { x: 44, y: 40 };
+        assert!(!world.grid(crate::world::Layer::Wheels).is_passable(cell));
+        assert!(world.grid(crate::world::Layer::Vehicle).is_passable(cell));
+        assert!(world.grid(crate::world::Layer::Foot).is_passable(cell));
     }
 }

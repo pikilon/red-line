@@ -12,6 +12,7 @@ import {
   resolveRepairClick,
   resolveVehicleRepairClick,
   trenchLineSegments,
+  undiggableCells,
   withRepairState,
 } from "./repair";
 
@@ -343,5 +344,20 @@ describe("spec 35 trench digging input", () => {
     const rows = decodeFeatures(table);
     expect(rows?.[0]?.at).toBeUndefined();
     expect(rows?.[1]?.at).toEqual({ x: 30, y: 33, rot: 1, variant: 1 });
+  });
+});
+
+describe("undiggableCells (spec 35 §5b)", () => {
+  it("marks road cells and hard ground, nothing else", () => {
+    const map = {
+      width: 2,
+      height: 2,
+      ground: "00070600",
+      roads: "00000100",
+    };
+    expect([...undiggableCells(map, [3, 6, 7])]).toEqual([0, 1, 1, 0]);
+    expect([...undiggableCells({ width: 2, height: 2 }, [3])]).toEqual([
+      0, 0, 0, 0,
+    ]);
   });
 });

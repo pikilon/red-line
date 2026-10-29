@@ -681,6 +681,9 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       ...(t.garrison === undefined ? {} : { garrison: t.garrison }),
       // Spec 35: repair or dig speed, percent of the base rate.
       ...(t.repairPct === undefined ? {} : { repairPct: t.repairPct }),
+      // Spec 35 §5b: undiggable ground (indices of layerNames.ground) and when wheels stop at it.
+      ...(t.hardGround === undefined ? {} : { hardGround: t.hardGround.map((name) => GROUND_MATERIALS.indexOf(name)) }),
+      ...(t.wheelsBlockedState === undefined ? {} : { wheelsBlockedState: t.wheelsBlockedState }),
       render: t.render,
     })),
     maps: maps.map((m, mi) => ({

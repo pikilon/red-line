@@ -40,6 +40,8 @@ pub(crate) enum Layer {
     Foot,
     /// Spec 36: amphibious vehicles, over land and deep water.
     Water,
+    /// Spec 35 §5b: wheeled hulls, which a half-dug trench stops.
+    Wheels,
 }
 
 /// Commands issued by a player, applied at the start of the next step (§5.8).
@@ -227,6 +229,10 @@ pub struct World {
     /// `None` without deep water.
     pub(crate) terrain_water: Option<MapGrid>,
     pub(crate) nav_water: Option<MapGrid>,
+    /// Spec 35 §5b: `terrain` plus the trenches dug to half depth or more,
+    /// for wheeled vehicles (derived); `None` while no such trench exists.
+    pub(crate) terrain_wheels: Option<MapGrid>,
+    pub(crate) nav_wheels: Option<MapGrid>,
     pub(crate) players: Vec<Player>,
     /// Ascending id; removed entities leave gaps.
     pub(crate) entities: Vec<Entity>,
@@ -289,6 +295,8 @@ impl World {
             nav_foot: None,
             terrain_water: None,
             nav_water: None,
+            terrain_wheels: None,
+            nav_wheels: None,
             players: vec![Player::new(0, 0, 0, cells)],
             entities: Vec::new(),
             next_entity_id: 0,
@@ -351,6 +359,7 @@ impl World {
         let mut world = World::sandbox(rules, terrain, &factions);
         world.terrain_foot = features::foot_blocks(&base, &features, &world.rules);
         world.terrain_water = features::water_blocks(&base, &features, &world.rules);
+        world.terrain_wheels = features::wheels_blocks(&base, &features, &world.rules);
         world.terrain_base = base;
         world.features = features;
         world.rebuild_nav();
@@ -629,6 +638,10 @@ impl World {
             .terrain_water
             .as_ref()
             .map(|water| self.with_sites(water));
+        self.nav_wheels = self
+            .terrain_wheels
+            .as_ref()
+            .map(|wheels| self.with_sites(wheels));
         self.fields.clear();
         for index in 0..self.entities.len() {
             let Order::Move { order_id, goal, .. } = self.entities[index].order else {
@@ -674,6 +687,8 @@ impl World {
             Layer::Foot
         } else if ty.amphibious && self.nav_water.is_some() {
             Layer::Water
+        } else if ty.motion.kind == LocoKind::Wheels && self.nav_wheels.is_some() {
+            Layer::Wheels
         } else {
             Layer::Vehicle
         }
@@ -684,8 +699,21 @@ impl World {
         match layer {
             Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
             Layer::Water => self.nav_water.as_ref().unwrap_or(&self.nav),
+            Layer::Wheels => self.nav_wheels.as_ref().unwrap_or(&self.nav),
             Layer::Vehicle => &self.nav,
         }
+    }
+
+    /// Spec 35 §5b: heading of a hull caught on cells that just closed under
+    /// it on its `layer` (a trench dug to half depth): straight to the nearest
+    /// open cell. `None` when its cell is open or nothing is.
+    fn way_out(&self, layer: Layer, cell: Cell, pos: FxVec2) -> Option<FxVec2> {
+        let map = self.grid(layer);
+        if map.is_passable(cell) {
+            return None;
+        }
+        map.nearest_passable(cell)
+            .map(|open| (cell_center(open) - pos).normalize())
     }
 
     /// Navigation grid unit `index` moves on.
@@ -698,6 +726,7 @@ impl World {
         let map = match layer {
             Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
             Layer::Water => self.nav_water.as_ref().unwrap_or(&self.nav),
+            Layer::Wheels => self.nav_wheels.as_ref().unwrap_or(&self.nav),
             Layer::Vehicle => &self.nav,
         };
         self.fields
@@ -1164,6 +1193,7 @@ impl World {
                 let nav = match self.layer_of(index) {
                     Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
                     Layer::Water => self.nav_water.as_ref().unwrap_or(&self.nav),
+                    Layer::Wheels => self.nav_wheels.as_ref().unwrap_or(&self.nav),
                     Layer::Vehicle => &self.nav,
                 };
                 locomotor::coast(&mut self.entities[index], &motion, nav);
@@ -1264,6 +1294,7 @@ impl World {
                 .and_then(|field| field.direction(cell));
             match direction {
                 Some(dir) => dir.unit_vector(),
+                None if let Some(out) = self.way_out(layer, cell, pos) => out,
                 None => {
                     self.entities[index].order = Order::Idle {
                         last_order_id: order_id,
@@ -1275,6 +1306,7 @@ impl World {
         let nav = match layer {
             Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
             Layer::Water => self.nav_water.as_ref().unwrap_or(&self.nav),
+            Layer::Wheels => self.nav_wheels.as_ref().unwrap_or(&self.nav),
             Layer::Vehicle => &self.nav,
         };
         let arrived = locomotor::drive(
@@ -1340,6 +1372,7 @@ impl World {
         let map = match layer {
             Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
             Layer::Water => self.nav_water.as_ref().unwrap_or(&self.nav),
+            Layer::Wheels => self.nav_wheels.as_ref().unwrap_or(&self.nav),
             Layer::Vehicle => &self.nav,
         };
         let field = &self.fields[&(layer, map.index(goal))];
@@ -1354,6 +1387,8 @@ impl World {
             delta.normalize()
         } else if let Some(dir) = field.direction(cell) {
             dir.unit_vector()
+        } else if let Some(out) = self.way_out(layer, cell, pos) {
+            out
         } else {
             return;
         };

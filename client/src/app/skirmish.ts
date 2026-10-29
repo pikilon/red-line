@@ -49,6 +49,7 @@ import {
   type RepairTypeInfo,
   repairJobsOf,
   resolveRepairButton,
+  undiggableCells,
   withRepairState,
 } from "../input/repair";
 import {
@@ -744,8 +745,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   const placedGarrisons = garrisonFeaturesOf(
     (
       ruleset.maps.find((entry) => entry.id === mapId) as
-        | { features?: readonly GarrisonMapFeature[] }
-        | undefined
+        { features?: readonly GarrisonMapFeature[] } | undefined
     )?.features ?? [],
     (ruleset as unknown as { featureTypes?: readonly GarrisonTypeInfo[] })
       .featureTypes ?? [],
@@ -757,8 +757,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   const placedBridges = repairJobsOf(
     (
       ruleset.maps.find((entry) => entry.id === mapId) as
-        | { features?: readonly RepairMapFeature[] }
-        | undefined
+        { features?: readonly RepairMapFeature[] } | undefined
     )?.features ?? [],
     (ruleset as unknown as { featureTypes?: readonly RepairTypeInfo[] })
       .featureTypes ?? [],
@@ -1223,6 +1222,16 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     // `?weather=none` requests silence; the reference pack supplies the loop.
     audioMixer.setAmbient(ambientEventFor(pageParams));
     scene.add(placementGhost.mesh);
+    // Spec 35 §5b: hard ground and roads refuse a trench; the ghost shows it.
+    const trenchType = (
+      ruleset as unknown as {
+        featureTypes?: readonly { family: string; hardGround?: number[] }[];
+      }
+    ).featureTypes?.find((type) => type.family === "earthwork");
+    const hardCells =
+      mapDefinition === undefined
+        ? undefined
+        : undiggableCells(mapDefinition, trenchType?.hardGround ?? []);
     controller = createSkirmishController({
       canvas: renderer.domElement,
       selectionBox: createSelectionBox(document.body),
@@ -1234,6 +1243,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       garrisonFeatures: () => garrisonFeatures,
       repairJobs: () => repairJobs,
       tiles: () => mapInfo.tiles,
+      hardCells: () => hardCells,
       fog: () => fog,
       placementKind: () => placementKind,
       exitPlacement: () => {

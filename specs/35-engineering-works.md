@@ -70,7 +70,7 @@ once repaired above that threshold, and the client draws it again.
   and free of features.
 * A finished trench gives foot units on its cells `cover.trench.pct` (50,
   `data/balance/environment.yaml`); the best cover applies. Vehicles drive over
-  it and get no cover.
+  it only while it is shallow and get no cover (see 5b.2).
 * Rows past the map's (`placed_feature_count`) are dug rows: the feature table
   trails `placed, (x, y, rot, variant)...` so the client can draw them; saves keep them.
 * **Shelters.** In a dug line every row created gets a running index `k`
@@ -85,6 +85,32 @@ once repaired above that threshold, and the client draws it again.
   trench; a second press of the button cancels); `client/src/render/features/renderers/earthworks.ts`
   draws the floor, parapets that rise with the digging and sandbags when done.
   Example save `?load=trench-digging`; setup order `{ dig: [x, y] }`.
+
+### 5b.2 Hard ground and wheels
+
+* **Hard ground.** `trench.hardGround: [rock, asphalt, concrete]`
+  (`data/features/earthworks.yaml`, compiled to ids of `layerNames.ground`)
+  and every road cell refuse a trench: `dig_cells` fails if any of its cells
+  has such a ground or a road. In a `DigLine` those segments are skipped like
+  other blocked ones. The Dig ghost reads the same ruleset data
+  (`undiggableCells`, `client/src/input/repair.ts`) and turns red there.
+* **Wheels.** `trench.wheelsBlockedState: 1` (data): wheeled hulls
+  (locomotor `kind: wheels`, the existing `LocoKind::Wheels`; no unit ids are
+  named) cannot cross a trench whose damage state is at most 1, that is dug to
+  half or more. A just-started trench (state 2) blocks nobody; tracks and
+  infantry always cross. The sim keeps a fourth derived grid beside the foot
+  and water ones (`terrain_wheels`/`nav_wheels`, `Layer::Wheels`, `None` while
+  no trench is that deep) and rebuilds it through `refresh_feature_blocks`
+  when a trench reaches half depth, so flow fields route wheels around it.
+* **Caught under it.** A wheeled unit on cells that close under it may move
+  within its cell and, with no flow value there, heads straight for the nearest
+  open cell (`way_out`) and then follows its order. Buildings placed under
+  units had no such rule; this one covers both.
+* Assumptions: **A9** amphibious wheeled hulls keep the water grid and ignore
+  trenches (no such unit exists). **A10** the saved flow-goal lists carry no
+  wheels entry; those fields are derived and recomputed on demand. **A11**
+  rock, asphalt and concrete are the hard materials; gravel, mud, sand, dirt
+  and snow dig.
 
 ### 5b.1 Trench lines
 

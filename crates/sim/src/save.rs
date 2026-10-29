@@ -410,6 +410,8 @@ pub fn save_state(world: &World, seed: u64, ais: &[Ai]) -> Result<SimState, Stri
         nav_foot: _,
         terrain_water: _,
         nav_water: _,
+        terrain_wheels: _,
+        nav_wheels: _,
         players,
         entities,
         next_entity_id,
@@ -564,6 +566,7 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
     let terrain = features::with_blocks(&base, &features, &rules);
     let terrain_foot = features::foot_blocks(&base, &features, &rules);
     let terrain_water = features::water_blocks(&base, &features, &rules);
+    let terrain_wheels = features::wheels_blocks(&base, &features, &rules);
     let nav = terrain.clone();
 
     let players = state
@@ -601,6 +604,8 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
         nav_foot: None,
         terrain_water,
         nav_water: None,
+        terrain_wheels,
+        nav_wheels: None,
         players,
         entities,
         next_entity_id: state.next_entity_id,
