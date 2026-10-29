@@ -77,7 +77,9 @@ test("AC-37-05: sells a producer and refunds its building and queue", async ({
   await expect.poll(() => call(page, (api) => api.credits())).toBe(4800);
   // Pause before the DOM assertions for the same reason.
   await call(page, (api) => api.setSimPaused(true));
-  await expect(page.locator("#queue .queue-item")).toHaveCount(2);
+  await expect(
+    page.locator("#command-panel .tile .qn:not([hidden])"),
+  ).toHaveText("2");
   const sell = page.locator('#command-panel button[data-type="sell"]');
   await expect(sell).toHaveText("Sell (250)");
   // Arm and confirm in one browser turn: on a slow runner two Playwright
@@ -97,6 +99,8 @@ test("AC-37-05: sells a producer and refunds its building and queue", async ({
     .poll(() => call(page, (api, id: number) => api.entity(id), barracks.id))
     .toBeNull();
   await expect.poll(() => call(page, (api) => api.credits())).toBe(5250);
-  await expect(page.locator("#queue .queue-item")).toHaveCount(0);
+  await expect(
+    page.locator("#command-panel .tile .qn:not([hidden])"),
+  ).toHaveCount(0);
   expect(errors).toEqual([]);
 });

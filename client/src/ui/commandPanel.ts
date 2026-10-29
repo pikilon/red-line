@@ -432,8 +432,6 @@ export function createCommandPanel(
   const unitsRow = el("div", "sec-row");
   const structureRow = el("div", "sec-row");
   const buildGrid = el("div", "build-grid");
-  const queueBox = el("div", "queue");
-  queueBox.id = "queue";
   const unitsSec = section("units", t("ui.section.units"), unitsRow);
   const structureSec = section(
     "structure",
@@ -443,7 +441,7 @@ export function createCommandPanel(
   const buildSec = section("build", t("ui.section.build"), buildGrid);
   const rowTop = el("div", "cb-row");
   rowTop.append(strip, unitsSec, structureSec);
-  body.append(rowTop, buildSec, queueBox);
+  body.append(rowTop, buildSec);
 
   // Taps on the panel never reach the map (AC-41-10).
   for (const type of [
@@ -601,14 +599,24 @@ export function createCommandPanel(
     return element;
   }
 
-  function tile(b: CommandButton, placing: number | null): HTMLButtonElement {
+  function tile(
+    b: CommandButton,
+    placing: number | null,
+    queue: QueueState | null,
+  ): HTMLButtonElement {
     const key = `${b.action}:${b.typeIndex}`;
     const def = RULES.types[b.typeIndex];
     const element = button(key, (e) => {
       e.classList.add("tile");
-      e.append(cameoBox(), el("span", "cost"));
+      const box = cameoBox();
+      box.append(el("span", "wipe"), el("span", "qn"));
+      e.append(box, el("span", "name"), el("span", "cost"));
     });
     element.dataset.type = def?.id ?? String(b.typeIndex);
+    const nameEl = element.querySelector(".name");
+    if (nameEl !== null && nameEl.textContent !== typeName(b.typeIndex))
+      nameEl.textContent = typeName(b.typeIndex);
+    paintTileQueue(element, b, queue);
     const costText = String(b.cost);
     const cost = element.querySelector(".cost");
     if (cost !== null && cost.textContent !== costText)
@@ -650,39 +658,32 @@ export function createCommandPanel(
     return element;
   }
 
-  const queueItems: HTMLButtonElement[] = [];
-  function paintQueue(queue: QueueState | null): void {
-    if (queue === null) {
-      for (const item of queueItems.splice(0)) item.remove();
-      queueBox.hidden = true;
-      return;
+  /**
+   * Queue state lives on the tile of the type being built: a number badge for
+   * how many of that type are queued and a clock wipe over the cameo while the
+   * head item is of that type.
+   */
+  function paintTileQueue(
+    element: HTMLElement,
+    b: CommandButton,
+    queue: QueueState | null,
+  ): void {
+    const queued =
+      b.action === "produce" && queue !== null
+        ? queue.items.filter((kind) => kind === b.typeIndex).length
+        : 0;
+    const head = queued > 0 && queue?.items[0] === b.typeIndex;
+    const badge = element.querySelector<HTMLElement>(".qn");
+    if (badge !== null) {
+      const text = queued > 0 ? String(queued) : "";
+      if (badge.textContent !== text) badge.textContent = text;
+      badge.hidden = queued === 0;
     }
-    queueBox.hidden = false;
-    for (let i = 0; i < queue.items.length; i++) {
-      let item = queueItems[i];
-      if (item === undefined) {
-        item = el("button", "queue-item");
-        item.type = "button";
-        item.append(cameoBox(), el("span", "wipe"));
-        item.addEventListener("click", () => handlers.onCancel());
-        queueItems[i] = item;
-      }
-      const kind = queue.items[i] ?? -1;
-      const id = RULES.types[kind]?.id ?? String(kind);
-      if (item.dataset.queued !== id) item.dataset.queued = id;
-      const label = t("ui.queueItem", { name: typeName(kind) });
-      if (item.title !== label) item.title = label;
-      item.setAttribute("aria-label", label);
-      const box = item.querySelector<HTMLElement>(".cameo");
-      if (box !== null) setCameo(box, id);
-      const head = i === 0;
-      item.classList.toggle("head", head);
-      const wipe = head ? `${(queue.headPermille * 360) / 1000}deg` : "0deg";
-      if (item.style.getPropertyValue("--p") !== wipe)
-        item.style.setProperty("--p", wipe);
-    }
-    while (queueItems.length > queue.items.length) queueItems.pop()?.remove();
-    syncChildren(queueBox, queueItems);
+    element.classList.toggle("building", head);
+    const wipe =
+      head && queue ? `${(queue.headPermille * 360) / 1000}deg` : "0deg";
+    if (element.style.getPropertyValue("--p") !== wipe)
+      element.style.setProperty("--p", wipe);
   }
 
   function paint(input: PanelInput): void {
@@ -797,11 +798,10 @@ export function createCommandPanel(
     // Build grid.
     const tiles = buttons
       .filter((b) => b.action === "construct" || b.action === "produce")
-      .map((b) => tile(b, input.placing));
+      .map((b) => tile(b, input.placing, input.queue));
     syncChildren(buildGrid, tiles);
     buildSec.hidden = tiles.length === 0;
 
-    paintQueue(input.queue);
     fold.setLit(input.queue !== null && input.queue.items.length > 0);
     panel.hidden =
       input.chips.length === 0 && buttons.length === 0 && input.queue === null;
