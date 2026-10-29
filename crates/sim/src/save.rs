@@ -159,6 +159,8 @@ pub struct LocomotionSaveState {
     pub reversing: bool,
     pub aim: Option<u32>,
     pub idle_aim_ticks: u32,
+    #[serde(default)]
+    pub stow: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -925,6 +927,7 @@ fn locomotion_save(entity: &Entity) -> Option<LocomotionSaveState> {
         reversing: entity.reversing,
         aim: entity.aim,
         idle_aim_ticks: entity.idle_aim_ticks,
+        stow: entity.stow,
     };
     let initial = LocomotionSaveState {
         heading: 0,
@@ -933,6 +936,7 @@ fn locomotion_save(entity: &Entity) -> Option<LocomotionSaveState> {
         reversing: false,
         aim: None,
         idle_aim_ticks: 0,
+        stow: 0,
     };
     (state != initial).then_some(state)
 }
@@ -1039,6 +1043,7 @@ fn load_entity(state: &EntityState, rules: &Ruleset) -> Result<Entity, String> {
         reversing: state.locomotion.is_some_and(|l| l.reversing),
         aim: state.locomotion.and_then(|l| l.aim),
         idle_aim_ticks: state.locomotion.map_or(0, |l| l.idle_aim_ticks),
+        stow: state.locomotion.map_or(0, |l| l.stow),
         inside: state.inside,
         aboard: state.aboard,
         unloading: state.unloading,

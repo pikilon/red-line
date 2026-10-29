@@ -359,7 +359,12 @@ when `speed == 0` (`stationaryFire`); `blade` (dozers) keeps the blade raised at
 rest, lowers it while driving and raises and lowers it in a cycle while the
 dozer works in place. A turreted vehicle with no target swings its turret ahead
 of the hull towards its `Move` goal at twice its aim rate; with a target it keeps
-aiming at it. Infantry animation stays deferred.
+aiming at it. Missile infantry (`stowTicks`: Stugna team 17, RPG gunner 8; owner request 2026-10-29)
+stay still while they stow the launcher before a walk (the move order only takes
+effect once `stow == stowTicks`) and while they set it up again after stopping;
+they fire only when fully set up. The Stugna operator slings the launcher on his
+back; the snapshot reports the stow progress in permille in `progress`.
+Infantry animation stays deferred.
 Assumption: Generals' tread and wheel texture animation
 (`TreadDriveSpeedFraction`, W3DTankDraw) is not reproduced yet.
 

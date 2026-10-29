@@ -51,8 +51,8 @@ rig.add("cable", cable, (tx + 0.02, ty + 0.03, top + 0.04))
 limbs = infantry.place(rig, "x", 1.0)
 op = infantry.operator("operator", m)
 limbs |= infantry.place(op, "o", 0.46, (0.11, 0.06))
-# Where the launcher rides when carried: on the operator's right shoulder.
-carry = (limbs["o_arms"][1] + Vector((0.05, 0.0, -0.045)))
+# Where the launcher rides when carried: slung across the operator's back.
+carry = (limbs["o_arms"][1] + Vector((0.0, 0.03, -0.06)))
 (carry,) = infantry.centre(limbs, [carry])
 root = infantry.assemble("ua-stugna-team", limbs, {"anchor_carry": carry})
 

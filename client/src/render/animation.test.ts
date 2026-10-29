@@ -163,13 +163,19 @@ describe("spec 21: soldier rig state", () => {
   it("holds the legs of a launcher team until the pick-up is done", () => {
     const animator = createAnimator();
     const unit = entity(6, 0, "ua-stugna-team", 5, 5, 100);
-    const early = run(animator, unit, 0, 500, 1.2);
-    expect(early?.carry).toBeGreaterThan(0);
-    expect(early?.carry).toBeLessThan(0.95);
+    // The simulation roots the team while it stows the launcher and reports
+    // the stow in `progress` (spec 11): the pose follows it, and the legs only
+    // start walking once the launcher is on the shoulder.
+    const stowing = { ...unit, progress: 500 };
+    const early = run(animator, stowing, 0, 500, 0);
+    expect(early?.carry).toBeCloseTo(0.5, 2);
     expect(early?.walk).toBe(0);
+    unit.progress = 1000;
     const later = run(animator, unit, 550, 2500, 1.2);
     expect(later?.carry).toBe(1);
     expect(later?.walk).toBe(1);
+    // Stopped, the team sets the launcher up again: the reported stow falls.
+    unit.progress = 0;
     const stopped = run(animator, unit, 2550, 4500, 0);
     expect(stopped?.carry).toBe(0);
   });

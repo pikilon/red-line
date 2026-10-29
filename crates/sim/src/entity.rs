@@ -149,6 +149,9 @@ pub struct Entity {
     /// Spec 34: on a transport that is unloading, ticks until the next rider
     /// leaves; `None` when it is not unloading.
     pub unloading: Option<u32>,
+    /// Missile teams: ticks spent stowing (rising while ordered to walk) or
+    /// setting up (falling at rest); `0` is deployed, `stow_ticks` is stowed.
+    pub stow: u32,
 }
 
 /// The locomotion and turret state of an entity (spec 11 §5.1). Read and written
@@ -161,6 +164,7 @@ pub struct LocomotionState {
     pub reversing: bool,
     pub aim: Option<EntityId>,
     pub idle_aim_ticks: u32,
+    pub stow: u32,
 }
 
 impl Entity {
@@ -179,6 +183,7 @@ impl Entity {
             reversing: self.reversing,
             aim: self.aim,
             idle_aim_ticks: self.idle_aim_ticks,
+            stow: self.stow,
         }
     }
 }

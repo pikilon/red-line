@@ -270,6 +270,10 @@ pub struct TypeDef {
     /// Launcher types fire only while standing still (they stow when moving).
     #[serde(default)]
     pub stationary_fire: bool,
+    /// Ticks a missile team needs to stow its launcher before walking and to
+    /// set it up again before firing; `0` for everything else.
+    #[serde(default)]
+    pub stow_ticks: u32,
     /// Spec 36: the vehicle drives over deep water as well as land (Zero Hour
     /// `Surfaces = GROUND WATER`), at the same speed.
     #[serde(default)]
