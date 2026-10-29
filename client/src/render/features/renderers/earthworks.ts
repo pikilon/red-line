@@ -1,6 +1,7 @@
 import { BoxGeometry, Group, Mesh, MeshLambertMaterial } from "three";
 import type { FeatureContext, FeatureInstance } from "../layers";
 import { registerFeatureRenderer } from "../registry";
+import { setFinishedTrenches } from "../trenchDepth";
 
 /** Spec 35: trenches soldiers dig (family `earthwork`). A dark trench floor
  *  between two earth parapets; the parapets rise with the digging (state 2
@@ -12,7 +13,7 @@ const SANDBAG = new MeshLambertMaterial({ color: 0xb9a57a });
 const box = new BoxGeometry(1, 1, 1);
 
 /** Parapet height in tiles per damage state (index = state). */
-const PARAPET = [0.16, 0.1, 0.04];
+const PARAPET = [0.26, 0.16, 0.06];
 
 function place(
   parent: Group,
@@ -37,6 +38,7 @@ function createEarthworks(
 ): Group {
   const group = new Group();
   group.name = "earthworks";
+  setFinishedTrenches(instances.filter((i) => i.state === 0));
   for (const instance of instances) {
     const cx = instance.x + instance.width / 2;
     const cz = instance.y + instance.height / 2;
@@ -54,7 +56,7 @@ function createEarthworks(
       const z = side * depth * 0.36;
       place(trench, EARTH, 0, 0, z, length * 0.96, parapet, depth * 0.22);
       if (instance.state === 0) {
-        place(trench, SANDBAG, 0, parapet, z, length * 0.9, 0.05, depth * 0.16);
+        place(trench, SANDBAG, 0, parapet, z, length * 0.9, 0.07, depth * 0.16);
       }
     }
     group.add(trench);

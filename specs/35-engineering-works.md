@@ -117,3 +117,11 @@ bridge; more workers and dozers finish faster, the cap holds; tanks and whole
 bridges take no work; repair survives a save. Trench unit tests in
 `crates/sim/src/repair.rs` (line: `a_dug_line_skips_blocked_cells_and_is_dug_in_order`): a dug trench covers infantry only once finished,
 needs free open cells, trails the feature table and survives a save.
+
+## Addendum: trench depth (owner request 2026-10-29)
+
+Infantry standing in a finished trench are drawn sunk 0.2 tiles (client only,
+`render/features/trenchDepth.ts`): the ground and trench floor hide their legs,
+so they read as inside it, like a garrisoned soldier. Finished parapets are
+taller (0.26 tiles plus sandbags). Assumption: no sim container; the soldier
+still walks in with a normal move order and keeps the trench cover.

@@ -1,7 +1,7 @@
 import ruleset from "@data/ruleset.json";
 import { type Group, Mesh } from "three";
 import { describe, expect, it } from "vitest";
-import { elevationOf } from "../elevation";
+import { elevationOf, groundY, setGroundElevation } from "../elevation";
 import {
   createMapFeatures,
   type FeatureMap,
@@ -48,5 +48,19 @@ describe("water and ports (spec 26 phase 4)", () => {
       data[(y * 4 * w + x * 4) * 4] ?? 0;
     expect(coverageAt(2, 2)).toBeGreaterThan(240);
     expect(coverageAt(2, 30)).toBeLessThan(10);
+  });
+
+  it("stands walkers on the pier planks, not in the water under them (spec 32)", () => {
+    const port = ruleset.maps.find((m) => m.id === "river-port") as FeatureMap;
+    const elevation = elevationOf(
+      port as unknown as Parameters<typeof elevationOf>[0],
+    );
+    setGroundElevation(elevation);
+    const water = groundY(19.5, 88.5);
+    createMapFeatures(rules, port, elevation);
+    // The west pier covers cells 20..21 x 84..89.
+    expect(groundY(20.5, 88.5)).toBeGreaterThan(water + 0.3);
+    expect(groundY(19.5, 88.5)).toBe(water);
+    setGroundElevation(null);
   });
 });

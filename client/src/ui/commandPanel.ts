@@ -32,6 +32,7 @@ export interface CommandButton {
     | "evacuate"
     | "disembark"
     | "dig"
+    | "repair"
     | "sell";
   /** Feature index the garrison and evacuate buttons act on; for Sell, the
    *  building's entity id (so a changed selection cancels an armed sale). */
@@ -70,6 +71,9 @@ export interface PanelInput {
   chips: SelectionChip[];
   /** The selection holds own units: show the Units section. */
   units: boolean;
+  /** The selection holds a unit with a weapon; unset counts as true. Without
+   *  one (trucks, dozers) Force fire is greyed out. */
+  canFire?: boolean;
   /** The selection is one own producer: the Rally point button shows. */
   rally: boolean;
   /** The armed mode that lights its button. */
@@ -81,6 +85,7 @@ export function samePanelInput(a: PanelInput, b: PanelInput): boolean {
   if (
     a.placing !== b.placing ||
     a.units !== b.units ||
+    a.canFire !== b.canFire ||
     a.rally !== b.rally ||
     a.armed !== b.armed ||
     a.buttons.length !== b.buttons.length ||
@@ -130,6 +135,8 @@ export interface CommandPanelArgs {
   disembark?: { carrier: number; riders: number } | null;
   /** Spec 35: the selection holds workers that can dig a trench. */
   dig?: boolean;
+  /** Spec 39: the selection holds damaged vehicles with a factory to dock at. */
+  repair?: boolean;
 }
 
 /** Builds the construct/produce buttons for the current selection (spec §6.6). */
@@ -141,6 +148,7 @@ export function commandButtons({
   garrison,
   disembark,
   dig,
+  repair,
 }: CommandPanelArgs): CommandButton[] {
   const buttons = productionButtons({
     selected,
@@ -181,6 +189,15 @@ export function commandButtons({
       cost: 0,
       enabled: true,
       action: "dig",
+    });
+  }
+  if (repair === true) {
+    extra.push({
+      typeIndex: -1,
+      label: t("ui.repairVehicle"),
+      cost: 0,
+      enabled: true,
+      action: "repair",
     });
   }
   if (disembark != null) {
@@ -321,6 +338,8 @@ const ICONS = {
   garrison:
     '<path d="M3 11l9-7 9 7v9H3z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 10v7M9 14l3 3 3-3" fill="none" stroke="currentColor" stroke-width="2"/>',
   dig: '<path d="M2 9h6l4 9 4-9h6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="miter"/>',
+  repair:
+    '<path d="M14 6a4 4 0 0 0-5 5L3 17l4 4 6-6a4 4 0 0 0 5-5l-3 3-3-1-1-3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
   disembark:
     '<path d="M4 10v10h16V10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 15V3M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2"/>',
   evacuate:
@@ -350,6 +369,8 @@ export interface CommandPanelHandlers {
   onDisembark?(carrier: number): void;
   /** Spec 35: the Dig trench button was pressed. */
   onDig?(): void;
+  /** Spec 39: the Repair button was pressed. */
+  onRepair?(): void;
   /** A disabled offer was pressed; the caller plays the error sound/EVA. */
   onDisabled?(button: CommandButton): void;
   /** Spec 41: stop the selected units. */
@@ -674,6 +695,7 @@ export function createCommandPanel(
     sellTarget = sell?.feature;
     const garrison = has("garrison");
     const dig = has("dig");
+    const repair = has("repair");
     const evacuate = has("evacuate");
     const disembark = has("disembark");
     actions.clear();
@@ -694,6 +716,7 @@ export function createCommandPanel(
           t("ui.forceFire"),
           () => handlers.onForceFire?.(),
           input.armed === "force",
+          input.canFire !== false,
         ),
         actionButton("same-screen", "screen", t("ui.sameScreen"), () =>
           handlers.onSameType?.("screen"),
@@ -713,6 +736,13 @@ export function createCommandPanel(
     if (dig !== undefined) {
       unitRows.push(
         actionButton("dig", "dig", dig.label, () => handlers.onDig?.()),
+      );
+    }
+    if (repair !== undefined) {
+      unitRows.push(
+        actionButton("repair", "repair", repair.label, () =>
+          handlers.onRepair?.(),
+        ),
       );
     }
     syncChildren(unitsRow, unitRows);
