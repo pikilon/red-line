@@ -81,6 +81,8 @@ test("AC-37-05: sells a producer and refunds its building and queue", async ({
   const sell = page.locator('#command-panel button[data-type="sell"]');
   await expect(sell).toHaveText("Sell (250)");
   await sell.click();
+  await expect(sell).toHaveText("Confirm (250)");
+  await sell.click();
   await call(page, (api) => api.setSimPaused(false));
 
   await expect

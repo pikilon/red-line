@@ -116,3 +116,17 @@ describe("settings", () => {
     ).toMatchObject({ audioMaster: 45, audioMusic: 0 });
   });
 });
+
+describe("folded panels (spec 41 §3.4)", () => {
+  it("round-trips the folded panel ids", () => {
+    const store = new Map<string, string>();
+    const storage = {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => void store.set(key, value),
+    } as unknown as Storage;
+    saveSettings({ gore: true, foldedPanels: ["command"] }, storage);
+    expect(loadSettings(storage).foldedPanels).toEqual(["command"]);
+    saveSettings({ gore: true, foldedPanels: [] }, storage);
+    expect(loadSettings(storage).foldedPanels).toBeUndefined();
+  });
+});

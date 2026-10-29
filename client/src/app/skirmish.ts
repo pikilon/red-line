@@ -174,9 +174,12 @@ import { MAX_SPEED } from "../sim/workerHandler";
 import {
   commandButtons,
   createCommandPanel,
+  isComplete,
   type PanelInput,
   samePanelInput,
+  selectionChips,
 } from "../ui/commandPanel";
+import { withFolded } from "../ui/foldable";
 import { createGameMenu } from "../ui/gameMenu";
 import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
@@ -760,6 +763,30 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   );
   let repairJobs = withRepairState(placedBridges, null);
   const commandPanel = createCommandPanel(document.body, {
+    onStop: () => {
+      uiClick();
+      const units = selectedEntities()
+        .filter((entity) => typeDef(entity.kind).category === "unit")
+        .map((entity) => entity.id);
+      if (units.length === 0) return;
+      interact.command({ kind: "stop", player: controlled, units });
+    },
+    onForceFire: () => {
+      uiClick();
+      controller?.toggleForceFire();
+    },
+    onRally: () => {
+      uiClick();
+      controller?.toggleRally();
+    },
+    onSameType: (scope) => {
+      uiClick();
+      controller?.selectSameType(scope);
+    },
+    onNarrow: (kind) => {
+      uiClick();
+      controller?.narrowTo(kind);
+    },
     onGarrison: (feature) => {
       uiClick();
       for (const command of garrisonCommand({
@@ -830,6 +857,19 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       }
     },
   });
+
+  const commandPanelElement = document.getElementById("command-panel");
+  if (commandPanelElement !== null) {
+    const syncCommandBarHeight = (): void => {
+      const height = commandPanelElement.getBoundingClientRect().height;
+      document.documentElement.style.setProperty(
+        "--command-bar-height",
+        `${height}px`,
+      );
+    };
+    new ResizeObserver(syncCommandBarHeight).observe(commandPanelElement);
+    syncCommandBarHeight();
+  }
   let animator: Animator;
   const corpses = createCorpses();
   const deathCauses = createDeathCauses();
@@ -1291,9 +1331,13 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     select: (ids) => controller?.setSelection(ids),
     centre: (x, y) => moveCamera(x, y),
     active: () => !paused,
-    folded: settings.quickBarFolded === true,
+    folded: settings.foldedPanels?.includes("quick") ?? false,
     onFold: (folded) => {
-      settings = { ...settings, quickBarFolded: folded };
+      const current = loadSettings();
+      settings = {
+        ...current,
+        foldedPanels: withFolded(current.foldedPanels ?? [], "quick", folded),
+      };
       saveSettings(settings);
     },
   });
@@ -1303,9 +1347,13 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       camera.zoom = zoom;
       camera.updateProjectionMatrix();
     },
-    folded: settings.zoomBarFolded === true,
+    folded: settings.foldedPanels?.includes("zoom") ?? false,
     onFold: (folded) => {
-      settings = { ...settings, zoomBarFolded: folded };
+      const current = loadSettings();
+      settings = {
+        ...current,
+        foldedPanels: withFolded(current.foldedPanels ?? [], "zoom", folded),
+      };
       saveSettings(settings);
     },
   });
@@ -1320,7 +1368,23 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     quickBar.refresh();
     outcome.render(next === null ? null : outcomeText(next, controlled));
     const queue = next === null ? null : selectedQueue();
+    const selection = selectedEntities();
     const panel: PanelInput = {
+      chips: selectionChips(selection),
+      units: selection.some(
+        (entity) => typeDef(entity.kind).category === "unit",
+      ),
+      rally:
+        selection.length === 1 &&
+        selection.every((entity) => {
+          const def = typeDef(entity.kind);
+          return (
+            def.category === "building" &&
+            def.produces.length > 0 &&
+            isComplete(entity)
+          );
+        }),
+      armed: controller?.armedMode() ?? null,
       buttons:
         next === null
           ? []
@@ -1350,7 +1414,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     if (lastPanel !== null && samePanelInput(lastPanel, panel)) return;
     lastPanel = panel;
     uiRenders++;
-    commandPanel.render(panel.buttons, panel.queue, panel.placing);
+    commandPanel.render(panel);
   }
 
   /** Positions and tints the footprint ghost while placing (spec §6.5). */

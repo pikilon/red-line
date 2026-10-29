@@ -7,6 +7,7 @@ import {
   GROUP_DIGITS,
   nextInCycle,
 } from "../input/controlGroups";
+import { type CameoStore, cameoInitials, gameCameos } from "../render/cameos";
 import { typeDef, typeName } from "../rules";
 import { ENTITY_FLAGS, type EntityState } from "../sim/matchSnapshot";
 
@@ -18,18 +19,33 @@ export function isolate(element: HTMLElement): void {
   element.addEventListener("contextmenu", (event) => event.preventDefault());
 }
 
-/** Placeholder cameo: the type's initials. The command-panel rework swaps
- *  this for the rendered model cameo (spec 41 §3.5). */
-export function cameoFor(kind: number): HTMLElement {
+type Cameos = Pick<CameoStore, "peek" | "request">;
+
+/** A cameo of the type: its rendered model, with the initials as the fallback
+ *  until the picture is ready or when it cannot be drawn (spec 41 §3.5). */
+export function cameoFor(
+  kind: number,
+  cameos: Cameos = gameCameos(),
+): HTMLElement {
   const element = document.createElement("span");
   element.className = "cameo";
-  const words = typeDef(kind)
-    .id.split("-")
-    .filter((_, index) => index > 0);
-  element.textContent = words
-    .slice(0, 2)
-    .map((word) => (word[0] ?? "").toUpperCase())
-    .join("");
+  const typeId = typeDef(kind).id;
+  element.dataset.cameo = typeId;
+  const img = document.createElement("img");
+  img.alt = "";
+  const initials = document.createElement("span");
+  initials.className = "ini";
+  initials.textContent = cameoInitials(typeId);
+  element.append(img, initials);
+  const apply = (url: string | null | undefined): void => {
+    if (url === undefined || url === null) return;
+    if (element.dataset.cameo !== typeId) return;
+    img.src = url;
+    element.classList.add("has-image");
+  };
+  const known = cameos.peek(typeId);
+  if (known !== undefined) apply(known);
+  else void cameos.request(typeId).then(apply);
   return element;
 }
 

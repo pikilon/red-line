@@ -207,5 +207,16 @@
   "zoom.in": "Zoom in",
   "zoom.out": "Zoom out",
   "zoom.reset": "Reset zoom",
-  "zoom.slider": "Zoom"
+  "zoom.slider": "Zoom",
+  "ui.panel.command": "Command",
+  "ui.section.units": "Units",
+  "ui.section.structure": "Structure",
+  "ui.section.build": "Build",
+  "ui.stop": "Stop",
+  "ui.forceFire": "Force fire",
+  "ui.sameScreen": "Same on screen",
+  "ui.sameMap": "Same everywhere",
+  "ui.rally": "Rally point",
+  "ui.sellConfirm": "Confirm ({refund})",
+  "ui.queueItem": "{name}: tap to cancel"
 }

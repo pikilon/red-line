@@ -30,10 +30,8 @@ export interface Settings {
   audioMusic?: number;
   /** Absent means true: strong language enabled by default (spec 25 §5.3). */
   strongLanguage?: boolean;
-  /** Absent means false: the quick panel is folded to its tab (spec 41 §3.4). */
-  quickBarFolded?: boolean;
-  /** Absent means false: the zoom panel is folded to its tab (spec 41 §3.4). */
-  zoomBarFolded?: boolean;
+  /** Ids of the HUD panels folded to their tab (spec 41 §3.4); absent: none. */
+  foldedPanels?: string[];
 }
 
 export const DEFAULT_SETTINGS: Settings = { gore: true };
@@ -72,6 +70,12 @@ function parseVolume(val: unknown): number | undefined {
   return Math.max(0, Math.min(100, Math.round(val)));
 }
 
+/** The strings of an array, or [] for anything else. */
+function parseIdList(val: unknown): string[] {
+  if (!Array.isArray(val)) return [];
+  return val.filter((item): item is string => typeof item === "string");
+}
+
 /** The stored settings, or the defaults when the storage is missing, the value
  *  is absent or invalid, or reading throws. */
 export function loadSettings(storage?: Storage): Settings {
@@ -95,8 +99,7 @@ export function loadSettings(storage?: Storage): Settings {
     const audioVoice = parseVolume(obj.audioVoice);
     const audioMusic = parseVolume(obj.audioMusic);
     const strongLanguage = obj.strongLanguage;
-    const quickBarFolded = obj.quickBarFolded;
-    const zoomBarFolded = obj.zoomBarFolded;
+    const foldedPanels = parseIdList(obj.foldedPanels);
     return {
       gore,
       ...(generatedTextures === false ? { generatedTextures } : {}),
@@ -107,8 +110,7 @@ export function loadSettings(storage?: Storage): Settings {
       ...(audioVoice !== undefined ? { audioVoice } : {}),
       ...(audioMusic !== undefined ? { audioMusic } : {}),
       ...(strongLanguage === false ? { strongLanguage } : {}),
-      ...(quickBarFolded === true ? { quickBarFolded } : {}),
-      ...(zoomBarFolded === true ? { zoomBarFolded } : {}),
+      ...(foldedPanels.length > 0 ? { foldedPanels } : {}),
     };
   } catch {
     return { ...DEFAULT_SETTINGS };
@@ -144,8 +146,10 @@ export function saveSettings(settings: Settings, storage?: Storage): void {
           ? { audioMusic: parseVolume(settings.audioMusic) }
           : {}),
         ...(settings.strongLanguage === false ? { strongLanguage: false } : {}),
-        ...(settings.quickBarFolded === true ? { quickBarFolded: true } : {}),
-        ...(settings.zoomBarFolded === true ? { zoomBarFolded: true } : {}),
+        ...(settings.foldedPanels !== undefined &&
+        settings.foldedPanels.length > 0
+          ? { foldedPanels: settings.foldedPanels }
+          : {}),
       }),
     );
   } catch {
