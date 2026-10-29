@@ -1,12 +1,14 @@
 import { t } from "../i18n";
+import { type CameoStore, cameoInitials, gameCameos } from "../render/cameos";
 import { RULES, typeDef, typeName } from "../rules";
 import type { EntityState, QueueState } from "../sim/matchSnapshot";
 import { appendDiv } from "./dom";
+import { createFoldable } from "./foldable";
 
 /** Snapshot progress is permille and a complete building is exactly full (spec §5.15). */
 const PROGRESS_FULL = 1000;
-/** Queue progress bar maximum (spec §6.6). */
-const QUEUE_PROGRESS_MAX = 1000;
+/** A second Sell tap within this window sells (spec 41 §3.1, AC-41-04). */
+export const SELL_CONFIRM_MS = 3000;
 
 /** A single construct/produce button offered by the command panel. */
 export interface CommandButton {
@@ -28,22 +30,63 @@ export interface CommandButton {
     | "disembark"
     | "dig"
     | "sell";
-  /** Feature index the garrison and evacuate buttons act on. */
+  /** Feature index the garrison and evacuate buttons act on; for Sell, the
+   *  building's entity id (so a changed selection cancels an armed sale). */
   feature?: number;
   /** Spec 34: vehicle the Unload button empties. */
   carrier?: number;
 }
+
+/** One selected type with its count (the selection strip, spec 41 §3.1). */
+export interface SelectionChip {
+  kind: number;
+  count: number;
+}
+
+/** The chips of `selected`: one per type, in type order. */
+export function selectionChips(
+  selected: readonly EntityState[],
+): SelectionChip[] {
+  const counts = new Map<number, number>();
+  for (const entity of selected)
+    counts.set(entity.kind, (counts.get(entity.kind) ?? 0) + 1);
+  return [...counts.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([kind, count]) => ({ kind, count }));
+}
+
+/** An armed map-tap mode of the command panel (spec 41 §3.1). */
+export type ArmedMode = "force" | "rally" | null;
 
 /** What one command panel render shows (spec §6.7). */
 export interface PanelInput {
   buttons: CommandButton[];
   queue: QueueState | null;
   placing: number | null;
+  /** The selection strip. */
+  chips: SelectionChip[];
+  /** The selection holds own units: show the Units section. */
+  units: boolean;
+  /** The selection is one own producer: the Rally point button shows. */
+  rally: boolean;
+  /** The armed mode that lights its button. */
+  armed: ArmedMode;
 }
 
 /** True when rendering `b` would show exactly what `a` showed (spec §6.7). */
 export function samePanelInput(a: PanelInput, b: PanelInput): boolean {
-  if (a.placing !== b.placing || a.buttons.length !== b.buttons.length)
+  if (
+    a.placing !== b.placing ||
+    a.units !== b.units ||
+    a.rally !== b.rally ||
+    a.armed !== b.armed ||
+    a.buttons.length !== b.buttons.length ||
+    a.chips.length !== b.chips.length ||
+    a.chips.some(
+      (chip, i) =>
+        chip.kind !== b.chips[i]?.kind || chip.count !== b.chips[i]?.count,
+    )
+  )
     return false;
   const sameButtons = a.buttons.every((button, i) => {
     const other = b.buttons[i];
@@ -119,6 +162,7 @@ export function commandButtons({
       cost: 0,
       enabled: true,
       action: "sell",
+      feature: subject.id,
     });
   }
   if (garrison?.garrison != null) {
@@ -259,156 +303,461 @@ function requiresSatisfied(
 }
 
 /** A building is complete when its permille progress reaches the total (spec §5.15). */
-function isComplete(entity: EntityState): boolean {
+export function isComplete(entity: EntityState): boolean {
   return entity.progress >= PROGRESS_FULL;
 }
 
-/** `#queue` view of one production building; items and progress update in place. */
-interface QueueView {
-  container: HTMLDivElement;
-  items: HTMLSpanElement[];
-  progress: HTMLProgressElement;
+/** Inline icons, 24 x 24, drawn with the current colour (spec 41 §3.5). */
+const ICONS = {
+  stop: '<rect x="6" y="6" width="12" height="12" fill="currentColor"/>',
+  force:
+    '<circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v6M12 16v6M2 12h6M16 12h6" stroke="currentColor" stroke-width="2"/>',
+  screen:
+    '<path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/>',
+  map: '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c4 3 4 15 0 18M12 3c-4 3-4 15 0 18" fill="none" stroke="currentColor" stroke-width="1.5"/>',
+  garrison:
+    '<path d="M3 11l9-7 9 7v9H3z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 10v7M9 14l3 3 3-3" fill="none" stroke="currentColor" stroke-width="2"/>',
+  dig: '<path d="M2 9h6l4 9 4-9h6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="miter"/>',
+  disembark:
+    '<path d="M4 10v10h16V10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 15V3M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2"/>',
+  evacuate:
+    '<path d="M10 4H4v16h6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 12h12M17 8l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2"/>',
+  rally:
+    '<path d="M6 21V3" stroke="currentColor" stroke-width="2.5"/><path d="M6 4h13l-3 4 3 4H6z" fill="currentColor"/>',
+  sell: '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 9c-1-1.500-5-1.500-5.500.500S14 12 14.500 14s-4 2-5.500.500M12 6v12" fill="none" stroke="currentColor" stroke-width="2"/>',
+} as const;
+type IconName = keyof typeof ICONS;
+
+function iconSvg(name: IconName): string {
+  return `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">${ICONS[name]}</svg>`;
 }
 
-/** `<div id="command-panel">` with one `.cmd` button per offer and, for a
- *  production building, `<div id="queue">` (spec §6.6). The panel re-renders
- *  every frame, so its nodes are reused: replacing them would detach the
- *  element under the pointer between frames. */
+/** Handlers the command panel calls (spec 41 §3.1). */
+export interface CommandPanelHandlers {
+  onConstruct(kind: number): void;
+  onProduce(kind: number): void;
+  onCancel(): void;
+  /** Spec 37: sell the selected complete building (after the second tap). */
+  onSell(): void;
+  /** Spec 31 block 2: the Garrison button was pressed for `feature`. */
+  onGarrison?(feature: number): void;
+  /** Spec 31 block 2: the Evacuate button was pressed for `feature`. */
+  onEvacuate?(feature: number): void;
+  /** Spec 34: the Unload button was pressed for vehicle `carrier`. */
+  onDisembark?(carrier: number): void;
+  /** Spec 35: the Dig trench button was pressed. */
+  onDig?(): void;
+  /** A disabled offer was pressed; the caller plays the error sound/EVA. */
+  onDisabled?(button: CommandButton): void;
+  /** Spec 41: stop the selected units. */
+  onStop?(): void;
+  /** Spec 41: arm or disarm the Force fire map tap. */
+  onForceFire?(): void;
+  /** Spec 41: arm or disarm the Rally point map tap. */
+  onRally?(): void;
+  /** Spec 41: select the same unit types on the screen or on the map. */
+  onSameType?(scope: "screen" | "map"): void;
+  /** Spec 41: a strip chip was tapped; narrow the selection to `kind`. */
+  onNarrow?(kind: number): void;
+}
+
+/** What the panel needs of the cameo store. */
+type Cameos = Pick<CameoStore, "peek" | "request">;
+
+function el<K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  className: string,
+): HTMLElementTagNameMap[K] {
+  const element = document.createElement(tag);
+  element.className = className;
+  return element;
+}
+
+/** Puts `nodes` in `parent` in order, moving a node only when it is out of
+ *  place and dropping the rest (a moved node cancels a click, #138). */
+function syncChildren(parent: HTMLElement, nodes: HTMLElement[]): void {
+  let previous: HTMLElement | null = null;
+  for (const node of nodes) {
+    placeAfter(parent, node, previous);
+    previous = node;
+  }
+  const keep = new Set<Node>(nodes);
+  for (const child of [...parent.children]) {
+    if (!keep.has(child)) child.remove();
+  }
+}
+
+/**
+ * `<div id="command-panel">`: fold tab, selection strip, Units and Structure
+ * sections, the build grid of cameo tiles and, for a production building, the
+ * `#queue` of cameos (spec 41 §3.1). The panel re-renders when its input
+ * changes, so its nodes are reused: replacing them would detach the element
+ * under the pointer between frames.
+ */
 export function createCommandPanel(
   root: HTMLElement,
-  handlers: {
-    onConstruct(kind: number): void;
-    onProduce(kind: number): void;
-    onCancel(): void;
-    /** Spec 37: sell the selected complete building. */
-    onSell(): void;
-    /** Spec 31 block 2: the Garrison button was pressed for `feature`. */
-    onGarrison?(feature: number): void;
-    /** Spec 31 block 2: the Evacuate button was pressed for `feature`. */
-    onEvacuate?(feature: number): void;
-    /** Spec 34: the Unload button was pressed for vehicle `carrier`. */
-    onDisembark?(carrier: number): void;
-    /** Spec 35: the Dig trench button was pressed. */
-    onDig?(): void;
-    /** A disabled offer was pressed; the caller plays the error sound/EVA. */
-    onDisabled?(button: CommandButton): void;
-  },
-): {
-  render(
-    buttons: CommandButton[],
-    queue: QueueState | null,
-    placing?: number | null,
-  ): void;
-} {
+  handlers: CommandPanelHandlers,
+  cameos: Cameos = gameCameos(),
+): { render(input: PanelInput): void } {
   const panel = appendDiv(root, "command-panel");
-  const elements: HTMLButtonElement[] = [];
-  let rendered: CommandButton[] = [];
-  let queueView: QueueView | null = null;
+  panel.hidden = true;
+  const fold = createFoldable(panel, "command", t("ui.panel.command"));
+  const body = el("div", "cb-body");
+  panel.appendChild(body);
+  const strip = el("div", "strip");
+  const unitsRow = el("div", "sec-row");
+  const structureRow = el("div", "sec-row");
+  const buildGrid = el("div", "build-grid");
+  const queueBox = el("div", "queue");
+  queueBox.id = "queue";
+  const unitsSec = section("units", t("ui.section.units"), unitsRow);
+  const structureSec = section(
+    "structure",
+    t("ui.section.structure"),
+    structureRow,
+  );
+  const buildSec = section("build", t("ui.section.build"), buildGrid);
+  const rowTop = el("div", "cb-row");
+  rowTop.append(strip, unitsSec, structureSec);
+  body.append(rowTop, buildSec, queueBox);
 
-  // Disabled buttons swallow `click`, but a capture-phase `pointerdown` still
-  // reaches the panel. This is how a press on "can't afford" becomes the
-  // Zero Hour error sound and the insufficient-funds EVA line.
-  panel.addEventListener("pointerdown", (event) => {
-    const target = event.target;
-    if (!(target instanceof Element)) return;
-    const element = target.closest<HTMLButtonElement>(".cmd");
-    if (!element) return;
-    const index = elements.indexOf(element);
-    const button = rendered[index];
-    if (button !== undefined && !button.enabled) {
-      handlers.onDisabled?.(button);
-    }
-  });
+  // Taps on the panel never reach the map (AC-41-10).
+  for (const type of [
+    "pointerdown",
+    "pointerup",
+    "pointermove",
+    "mousedown",
+    "mouseup",
+    "click",
+    "touchstart",
+    "touchend",
+    "wheel",
+    "contextmenu",
+  ]) {
+    panel.addEventListener(type, (event) => event.stopPropagation());
+  }
 
-  function buttonAt(index: number): HTMLButtonElement {
-    const existing = elements[index];
+  /** The buttons by key; each element is created once. */
+  const elements = new Map<string, HTMLButtonElement>();
+  /** What a button does now; replaced every paint. */
+  const actions = new Map<string, () => void>();
+  /** The offer behind a tile or action, for the disabled-press sound. */
+  const offers = new Map<string, CommandButton>();
+  let last: PanelInput | null = null;
+  let sellArmed = false;
+  let sellTarget: number | undefined;
+  let sellTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function disarmSell(): void {
+    sellArmed = false;
+    if (sellTimer !== null) clearTimeout(sellTimer);
+    sellTimer = null;
+  }
+
+  function section(
+    id: string,
+    title: string,
+    row: HTMLElement,
+  ): HTMLDivElement {
+    const sec = el("div", "sec");
+    sec.dataset.sec = id;
+    const heading = el("span", "sec-title");
+    heading.textContent = title;
+    sec.append(heading, row);
+    return sec;
+  }
+
+  // A disabled button swallows `click`, but `pointerdown` still reaches the
+  // panel: that press becomes the error sound and the insufficient-funds EVA.
+  panel.addEventListener(
+    "pointerdown",
+    (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const element = target.closest<HTMLButtonElement>(".cmd");
+      if (!element?.disabled) return;
+      const offer = offers.get(element.dataset.key ?? "");
+      if (offer !== undefined) handlers.onDisabled?.(offer);
+    },
+    true,
+  );
+
+  function button(key: string, make: (b: HTMLButtonElement) => void) {
+    const existing = elements.get(key);
     if (existing !== undefined) return existing;
-    const element = document.createElement("button");
-    element.className = "cmd";
-    element.addEventListener("click", () => {
-      const button = rendered[index];
-      if (button === undefined) return;
-      if (button.action === "construct") handlers.onConstruct(button.typeIndex);
-      else if (button.action === "garrison")
-        handlers.onGarrison?.(button.feature ?? -1);
-      else if (button.action === "evacuate")
-        handlers.onEvacuate?.(button.feature ?? -1);
-      else if (button.action === "dig") handlers.onDig?.();
-      else if (button.action === "sell") handlers.onSell();
-      else if (button.action === "disembark")
-        handlers.onDisembark?.(button.carrier ?? -1);
-      else handlers.onProduce(button.typeIndex);
-    });
+    const element = el("button", "cmd");
+    element.type = "button";
+    element.dataset.key = key;
+    make(element);
+    element.addEventListener("click", () => actions.get(key)?.());
     element.addEventListener("contextmenu", (event) => {
       event.preventDefault();
-      if (rendered[index]?.action === "produce") handlers.onCancel();
+      if (offers.get(key)?.action === "produce") handlers.onCancel();
     });
-    elements[index] = element;
+    elements.set(key, element);
     return element;
   }
 
-  function updateQueue(queue: QueueState): QueueView {
-    queueView ??= createQueueView();
-    const view = queueView;
+  function setCameo(host: HTMLElement, typeId: string): void {
+    if (host.dataset.cameo === typeId) return;
+    host.dataset.cameo = typeId;
+    const img = host.querySelector("img");
+    const initials = host.querySelector(".ini");
+    if (img === null || initials === null) return;
+    initials.textContent = cameoInitials(typeId);
+    img.removeAttribute("src");
+    host.classList.remove("has-image");
+    const apply = (url: string | null | undefined): void => {
+      if (url === undefined || url === null) return;
+      if (host.dataset.cameo !== typeId) return;
+      img.src = url;
+      host.classList.add("has-image");
+    };
+    const known = cameos.peek(typeId);
+    if (known !== undefined) apply(known);
+    else void cameos.request(typeId).then(apply);
+  }
+
+  function cameoBox(): HTMLSpanElement {
+    const box = el("span", "cameo");
+    const img = el("img", "");
+    img.alt = "";
+    img.draggable = false;
+    box.append(img, el("span", "ini"));
+    return box;
+  }
+
+  function actionButton(
+    key: string,
+    icon: IconName,
+    label: string,
+    run: () => void,
+    lit = false,
+    enabled = true,
+  ): HTMLButtonElement {
+    const element = button(key, (b) => {
+      b.classList.add("act");
+      b.dataset.type = key;
+      b.innerHTML = `${iconSvg(icon)}<span class="lbl"></span>`;
+    });
+    const text = element.querySelector(".lbl");
+    if (text !== null && text.textContent !== label) text.textContent = label;
+    if (element.title !== label) element.title = label;
+    element.setAttribute("aria-label", label);
+    element.disabled = !enabled;
+    element.classList.toggle("active", lit);
+    element.setAttribute("aria-pressed", String(lit));
+    actions.set(key, run);
+    return element;
+  }
+
+  function tile(b: CommandButton, placing: number | null): HTMLButtonElement {
+    const key = `${b.action}:${b.typeIndex}`;
+    const def = RULES.types[b.typeIndex];
+    const element = button(key, (e) => {
+      e.classList.add("tile");
+      e.append(cameoBox(), el("span", "cost"));
+    });
+    element.dataset.type = def?.id ?? String(b.typeIndex);
+    const costText = String(b.cost);
+    const cost = element.querySelector(".cost");
+    if (cost !== null && cost.textContent !== costText)
+      cost.textContent = costText;
+    if (element.title !== b.label) element.title = b.label;
+    element.setAttribute("aria-label", b.label);
+    const box = element.querySelector<HTMLElement>(".cameo");
+    if (box !== null && def !== undefined) setCameo(box, def.id);
+    element.disabled = !b.enabled;
+    element.classList.toggle("short", !b.enabled && b.cost > 0);
+    const active = b.action === "construct" && b.typeIndex === placing;
+    element.classList.toggle("active", active);
+    element.setAttribute("aria-pressed", String(active));
+    offers.set(key, b);
+    actions.set(key, () => {
+      if (b.action === "construct") handlers.onConstruct(b.typeIndex);
+      else handlers.onProduce(b.typeIndex);
+    });
+    return element;
+  }
+
+  function chip(c: SelectionChip): HTMLButtonElement {
+    const key = `chip:${c.kind}`;
+    const def = RULES.types[c.kind];
+    const element = button(key, (e) => {
+      e.classList.add("chip");
+      e.append(cameoBox(), el("span", "count"));
+    });
+    element.dataset.type = def?.id ?? String(c.kind);
+    const label = `${typeName(c.kind)} x${c.count}`;
+    if (element.title !== label) element.title = label;
+    element.setAttribute("aria-label", label);
+    const count = element.querySelector(".count");
+    if (count !== null && count.textContent !== String(c.count))
+      count.textContent = String(c.count);
+    const box = element.querySelector<HTMLElement>(".cameo");
+    if (box !== null && def !== undefined) setCameo(box, def.id);
+    actions.set(key, () => handlers.onNarrow?.(c.kind));
+    return element;
+  }
+
+  const queueItems: HTMLButtonElement[] = [];
+  function paintQueue(queue: QueueState | null): void {
+    if (queue === null) {
+      for (const item of queueItems.splice(0)) item.remove();
+      queueBox.hidden = true;
+      return;
+    }
+    queueBox.hidden = false;
     for (let i = 0; i < queue.items.length; i++) {
-      let item = view.items[i];
+      let item = queueItems[i];
       if (item === undefined) {
-        item = document.createElement("span");
-        item.className = "queue-item";
-        view.items[i] = item;
+        item = el("button", "queue-item");
+        item.type = "button";
+        item.append(cameoBox(), el("span", "wipe"));
+        item.addEventListener("click", () => handlers.onCancel());
+        queueItems[i] = item;
       }
       const kind = queue.items[i] ?? -1;
-      setData(item, RULES.types[kind]?.id ?? String(kind));
-      placeAfter(view.container, item, view.items[i - 1] ?? null);
+      const id = RULES.types[kind]?.id ?? String(kind);
+      if (item.dataset.queued !== id) item.dataset.queued = id;
+      const label = t("ui.queueItem", { name: typeName(kind) });
+      if (item.title !== label) item.title = label;
+      item.setAttribute("aria-label", label);
+      const box = item.querySelector<HTMLElement>(".cameo");
+      if (box !== null) setCameo(box, id);
+      const head = i === 0;
+      item.classList.toggle("head", head);
+      const wipe = head ? `${(queue.headPermille * 360) / 1000}deg` : "0deg";
+      if (item.style.getPropertyValue("--p") !== wipe)
+        item.style.setProperty("--p", wipe);
     }
-    while (view.items.length > queue.items.length) view.items.pop()?.remove();
-    if (view.progress.value !== queue.headPermille)
-      view.progress.value = queue.headPermille;
-    return view;
+    while (queueItems.length > queue.items.length) queueItems.pop()?.remove();
+    syncChildren(queueBox, queueItems);
+  }
+
+  function paint(input: PanelInput): void {
+    const { buttons } = input;
+    const has = (action: CommandButton["action"]) =>
+      buttons.find((b) => b.action === action);
+    const sell = has("sell");
+    // The armed sale belongs to one building: another selection starts over.
+    if (sell === undefined || sell.feature !== sellTarget) disarmSell();
+    sellTarget = sell?.feature;
+    const garrison = has("garrison");
+    const dig = has("dig");
+    const evacuate = has("evacuate");
+    const disembark = has("disembark");
+    actions.clear();
+    offers.clear();
+
+    // Selection strip.
+    syncChildren(strip, input.chips.map(chip));
+    strip.hidden = input.chips.length === 0;
+
+    // Units section.
+    const unitRows: HTMLElement[] = [];
+    if (input.units) {
+      unitRows.push(
+        actionButton("stop", "stop", t("ui.stop"), () => handlers.onStop?.()),
+        actionButton(
+          "force-fire",
+          "force",
+          t("ui.forceFire"),
+          () => handlers.onForceFire?.(),
+          input.armed === "force",
+        ),
+        actionButton("same-screen", "screen", t("ui.sameScreen"), () =>
+          handlers.onSameType?.("screen"),
+        ),
+        actionButton("same-map", "map", t("ui.sameMap"), () =>
+          handlers.onSameType?.("map"),
+        ),
+      );
+    }
+    if (garrison !== undefined) {
+      unitRows.push(
+        actionButton("garrison", "garrison", garrison.label, () =>
+          handlers.onGarrison?.(garrison.feature ?? -1),
+        ),
+      );
+    }
+    if (dig !== undefined) {
+      unitRows.push(
+        actionButton("dig", "dig", dig.label, () => handlers.onDig?.()),
+      );
+    }
+    syncChildren(unitsRow, unitRows);
+    unitsSec.hidden = unitRows.length === 0;
+
+    // Structure section.
+    const structureRows: HTMLElement[] = [];
+    if (input.rally) {
+      structureRows.push(
+        actionButton(
+          "rally",
+          "rally",
+          t("ui.rally"),
+          () => handlers.onRally?.(),
+          input.armed === "rally",
+        ),
+      );
+    }
+    if (sell !== undefined) {
+      const refund = sell.label.replace(/\D+/g, "");
+      const label = sellArmed ? t("ui.sellConfirm", { refund }) : sell.label;
+      const element = actionButton("sell", "sell", label, () => {
+        if (!sellArmed) {
+          sellArmed = true;
+          sellTimer = setTimeout(() => {
+            disarmSell();
+            if (last !== null) paint(last);
+          }, SELL_CONFIRM_MS);
+          if (last !== null) paint(last);
+          return;
+        }
+        disarmSell();
+        if (last !== null) paint(last);
+        handlers.onSell();
+      });
+      element.classList.toggle("danger", sellArmed);
+      structureRows.push(element);
+    }
+    if (evacuate !== undefined) {
+      structureRows.push(
+        actionButton("evacuate", "evacuate", evacuate.label, () =>
+          handlers.onEvacuate?.(evacuate.feature ?? -1),
+        ),
+      );
+    }
+    if (disembark !== undefined) {
+      structureRows.push(
+        actionButton("disembark", "disembark", disembark.label, () =>
+          handlers.onDisembark?.(disembark.carrier ?? -1),
+        ),
+      );
+    }
+    syncChildren(structureRow, structureRows);
+    structureSec.hidden = structureRows.length === 0;
+
+    // Build grid.
+    const tiles = buttons
+      .filter((b) => b.action === "construct" || b.action === "produce")
+      .map((b) => tile(b, input.placing));
+    syncChildren(buildGrid, tiles);
+    buildSec.hidden = tiles.length === 0;
+
+    paintQueue(input.queue);
+    fold.setLit(input.queue !== null && input.queue.items.length > 0);
+    panel.hidden =
+      input.chips.length === 0 && buttons.length === 0 && input.queue === null;
   }
 
   return {
-    render(buttons, queue, placing = null) {
-      rendered = buttons;
-      for (let i = 0; i < buttons.length; i++) {
-        const button = buttons[i];
-        if (button === undefined) continue;
-        const element = buttonAt(i);
-        const def = RULES.types[button.typeIndex];
-        setData(
-          element,
-          button.typeIndex < 0
-            ? button.action
-            : (def?.id ?? String(button.typeIndex)),
-        );
-        if (element.textContent !== button.label)
-          element.textContent = button.label;
-        if (element.disabled === button.enabled)
-          element.disabled = !button.enabled;
-        const active =
-          button.action === "construct" && button.typeIndex === placing;
-        if (element.classList.contains("active") !== active)
-          element.classList.toggle("active", active);
-        if (element.getAttribute("aria-pressed") !== String(active))
-          element.setAttribute("aria-pressed", String(active));
-        placeAfter(panel, element, elements[i - 1] ?? null);
-      }
-      while (elements.length > buttons.length) elements.pop()?.remove();
-      if (queue === null) {
-        queueView?.container.remove();
-        queueView = null;
-        return;
-      }
-      const view = updateQueue(queue);
-      if (view.container.parentNode !== panel)
-        panel.appendChild(view.container);
+    render(input) {
+      last = input;
+      paint(input);
     },
   };
-}
-
-/** Sets `data-type` only when it differs, so re-rendering mutates nothing. */
-function setData(element: HTMLElement, type: string): void {
-  if (element.dataset.type !== type) element.dataset.type = type;
 }
 
 /** Puts `node` right after `previous` (first when null) in `parent`, moving it
@@ -423,13 +772,4 @@ function placeAfter(
     previous === null ? parent.firstChild : previous.nextSibling;
   if (node === reference) return;
   parent.insertBefore(node, reference);
-}
-
-function createQueueView(): QueueView {
-  const container = appendDiv(document.createElement("div"), "queue");
-  const progress = document.createElement("progress");
-  progress.id = "queue-progress";
-  progress.max = QUEUE_PROGRESS_MAX;
-  container.appendChild(progress);
-  return { container, items: [], progress };
 }

@@ -32,13 +32,46 @@
       #perf-panel.perf-bad { color: #ff4d4d; }
       #resource-bar { position: fixed; top: calc(8px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); display: flex; gap: 16px; max-width: calc(100vw - 140px); padding: 4px 12px; border-radius: 4px; background: rgba(0, 0, 0, 0.5); pointer-events: none; color: #fff; font: 14px/1.4 system-ui, sans-serif; text-shadow: 0 1px 2px #000; }
       #res-power.power-low { color: #ff4d4d; }
-      #command-panel { position: fixed; bottom: calc(8px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 4px; background: rgba(0, 0, 0, 0.5); color: #fff; font: 14px/1.4 system-ui, sans-serif; }
-      #command-panel:empty { display: none; }
-      #command-panel .cmd { min-width: 120px; cursor: pointer; }
-      #command-panel .cmd[disabled] { opacity: 0.4; }
-      #command-panel .cmd.active { outline: 2px solid #facc15; background: #facc15; color: #000; }
+      #command-panel { --plate: #14181c; --plate-hi: #1d2329; --rim: #4a525a; --accent: #c62828; --amber: #facc15; position: fixed; z-index: 4; left: calc(8px + env(safe-area-inset-left)); bottom: calc(8px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; max-width: calc(100vw - 176px - env(safe-area-inset-left)); max-height: calc(100vh - 76px); box-sizing: border-box; color: #d8dde2; font: 600 12px/1.2 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; touch-action: manipulation; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6)); }
+      #command-panel[hidden] { display: none; }
+      #command-panel .cb-body { display: flex; flex-direction: column; gap: 6px; padding: 8px; overflow-y: auto; overscroll-behavior: contain; background: linear-gradient(180deg, var(--plate-hi), var(--plate)); border: 1px solid var(--rim); border-top: 2px solid var(--accent); clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); }
+      #command-panel.folded .cb-body { display: none; }
+      #command-panel .fold-tab { align-self: flex-start; display: flex; align-items: center; gap: 6px; min-height: 28px; padding: 0 12px 0 8px; border: 1px solid var(--rim); border-bottom: 0; background: var(--plate); color: #aeb6bd; font: inherit; cursor: pointer; clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%); }
+      #command-panel .fold-chevron { display: flex; transition: transform 0.15s; }
+      #command-panel.folded .fold-chevron { transform: rotate(180deg); }
+      #command-panel .fold-dot { width: 7px; height: 7px; border-radius: 50%; background: #3a4148; }
+      #command-panel .fold-tab.lit .fold-dot { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+      #command-panel .strip { display: flex; flex-wrap: wrap; align-content: flex-end; gap: 4px; }
+      #command-panel .cb-row { display: flex; flex-wrap: wrap; gap: 6px 12px; }
+      #command-panel .sec[hidden], #command-panel .strip[hidden], #command-panel #queue[hidden] { display: none; }
+      #command-panel .sec { display: flex; flex-direction: column; gap: 3px; padding-left: 6px; border-left: 2px solid var(--accent); }
+      #command-panel .sec-title { font-size: 10px; color: #8a939b; }
+      #command-panel .sec-row, #command-panel .build-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+      #command-panel button { margin: 0; padding: 0; font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; cursor: pointer; touch-action: manipulation; border: 1px solid var(--rim); background: linear-gradient(180deg, #2a3138, #1b2025); clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px)); }
+      #command-panel button:active:not([disabled]) { background: #3a434b; }
+      #command-panel button[disabled] { opacity: 0.45; cursor: default; }
+      #command-panel .cmd.act { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 52px; min-height: 46px; padding: 3px 6px; font-size: 10px; }
+      #command-panel .cmd.act svg { flex: none; }
+      #command-panel .cmd.active { border-color: var(--amber); background: linear-gradient(180deg, #8a6d0b, #5c4807); color: #fff3b0; box-shadow: 0 0 8px rgba(250, 204, 21, 0.55); }
+      #command-panel .cmd.danger { border-color: #ff5252; background: linear-gradient(180deg, #a31515, #6e0e0e); color: #fff; }
+      #command-panel .cameo { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; }
+      #command-panel .cameo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; display: none; }
+      #command-panel .cameo.has-image img { display: block; }
+      #command-panel .cameo .ini { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; color: #8a939b; background: radial-gradient(circle at 50% 40%, #2c343b, #1a1f24); }
+      #command-panel .cameo.has-image .ini { display: none; }
+      #command-panel .cmd.tile { position: relative; display: flex; flex-direction: column; width: 58px; height: 64px; }
+      #command-panel .cmd.tile .cameo { flex: 1; min-height: 0; background: radial-gradient(circle at 50% 45%, #39424a, #1a1f24); }
+      #command-panel .cmd.tile .cost { padding: 1px 0 2px; text-align: center; font-size: 11px; color: #e8edf0; background: #0d1013; }
+      #command-panel .cmd.tile.short .cost { color: #ff5252; }
+      #command-panel .cmd.chip { position: relative; width: 46px; height: 46px; }
+      #command-panel .cmd.chip .count { position: absolute; right: 8px; bottom: 1px; z-index: 1; min-width: 14px; padding: 0 3px; font-size: 11px; text-align: center; color: #fff; background: var(--accent); }
+      #command-panel #queue { display: flex; flex-wrap: wrap; gap: 4px; padding-top: 2px; border-top: 1px solid #2c343b; }
+      #command-panel .queue-item { position: relative; width: 44px; height: 44px; }
+      #command-panel .queue-item .cameo { background: radial-gradient(circle at 50% 45%, #39424a, #1a1f24); }
+      #command-panel .queue-item .wipe { position: absolute; inset: 0; pointer-events: none; }
+      #command-panel .queue-item.head .wipe { background: conic-gradient(rgba(0, 0, 0, 0.62) var(--p, 0deg), transparent 0); }
+      #command-panel .queue-item.head { border-color: var(--amber); }
       #placement-hint { position: fixed; top: calc(44px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); max-width: calc(100vw - 32px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 4px 12px; border-radius: 4px; background: rgba(0, 0, 0, 0.7); pointer-events: none; color: #fff; font: 14px/1.4 system-ui, sans-serif; }
-      #queue { display: flex; gap: 4px; }
       #outcome { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; color: #fff; font: 48px/1.2 system-ui, sans-serif; text-shadow: 0 2px 6px #000; }
       #toast { position: fixed; bottom: calc(96px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); max-width: calc(100vw - 32px); padding: 6px 14px; border-radius: 4px; background: rgba(0, 0, 0, 0.7); pointer-events: none; color: #fff; font: 16px/1.4 system-ui, sans-serif; opacity: 0; transition: opacity 0.15s; }
       #toast.visible { opacity: 1; }
@@ -75,7 +108,6 @@
       #touch-menu::before { content: ""; display: block; width: 24px; height: 2px; border-radius: 1px; background: currentColor; box-shadow: 0 -7px 0 currentColor, 0 7px 0 currentColor; }
       #touch-menu:active { background: rgba(250, 204, 21, 0.8); color: #000; }
       body.touch #perf-panel { top: calc(72px + env(safe-area-inset-top)); }
-      body.touch #command-panel { left: calc(8px + env(safe-area-inset-left)); transform: none; max-width: calc(100vw - 168px); box-sizing: border-box; }
       #rotate-device { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; box-sizing: border-box; padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom)); background: radial-gradient(circle at 50% 40%, #16202b, #05080c 70%); color: #fff; text-align: center; z-index: 100; touch-action: none; }
       #rotate-device h2 { margin: 0; font-size: 24px; line-height: 1.2; }
       #rotate-device p { margin: 0; opacity: 0.75; font-size: 15px; }

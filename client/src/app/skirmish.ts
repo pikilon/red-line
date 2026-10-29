@@ -174,8 +174,10 @@ import { MAX_SPEED } from "../sim/workerHandler";
 import {
   commandButtons,
   createCommandPanel,
+  isComplete,
   type PanelInput,
   samePanelInput,
+  selectionChips,
 } from "../ui/commandPanel";
 import { createGameMenu } from "../ui/gameMenu";
 import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
@@ -758,6 +760,30 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   );
   let repairJobs = withRepairState(placedBridges, null);
   const commandPanel = createCommandPanel(document.body, {
+    onStop: () => {
+      uiClick();
+      const units = selectedEntities()
+        .filter((entity) => typeDef(entity.kind).category === "unit")
+        .map((entity) => entity.id);
+      if (units.length === 0) return;
+      interact.command({ kind: "stop", player: controlled, units });
+    },
+    onForceFire: () => {
+      uiClick();
+      controller?.toggleForceFire();
+    },
+    onRally: () => {
+      uiClick();
+      controller?.toggleRally();
+    },
+    onSameType: (scope) => {
+      uiClick();
+      controller?.selectSameType(scope);
+    },
+    onNarrow: (kind) => {
+      uiClick();
+      controller?.narrowTo(kind);
+    },
     onGarrison: (feature) => {
       uiClick();
       for (const command of garrisonCommand({
@@ -1290,7 +1316,23 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     resourceBar.render(next);
     outcome.render(next === null ? null : outcomeText(next, controlled));
     const queue = next === null ? null : selectedQueue();
+    const selection = selectedEntities();
     const panel: PanelInput = {
+      chips: selectionChips(selection),
+      units: selection.some(
+        (entity) => typeDef(entity.kind).category === "unit",
+      ),
+      rally:
+        selection.length === 1 &&
+        selection.every((entity) => {
+          const def = typeDef(entity.kind);
+          return (
+            def.category === "building" &&
+            def.produces.length > 0 &&
+            isComplete(entity)
+          );
+        }),
+      armed: controller?.armedMode() ?? null,
       buttons:
         next === null
           ? []
@@ -1320,7 +1362,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     if (lastPanel !== null && samePanelInput(lastPanel, panel)) return;
     lastPanel = panel;
     uiRenders++;
-    commandPanel.render(panel.buttons, panel.queue, panel.placing);
+    commandPanel.render(panel);
   }
 
   /** Positions and tints the footprint ghost while placing (spec §6.5). */
