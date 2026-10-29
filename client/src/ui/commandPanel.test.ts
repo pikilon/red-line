@@ -97,9 +97,14 @@ describe("command panel", () => {
     expect(buttons.map((button) => button.typeIndex)).toEqual([
       RIFLEMAN,
       STUGNA_TEAM,
+      -1,
     ]);
-    expect(buttons.every((button) => button.action === "produce")).toBe(true);
-    expect(buttons.map((button) => button.enabled)).toEqual([true, true]);
+    expect(buttons.map((button) => button.action)).toEqual([
+      "produce",
+      "produce",
+      "sell",
+    ]);
+    expect(buttons.map((button) => button.enabled)).toEqual([true, true, true]);
   });
 
   it("AC-03-51: disables produce buttons when the queue is full", () => {
@@ -132,7 +137,45 @@ describe("command panel", () => {
       queue: fullQueue,
     });
 
-    expect(buttons.map((button) => button.enabled)).toEqual([false, false]);
+    expect(buttons.map((button) => button.enabled)).toEqual([
+      false,
+      false,
+      true,
+    ]);
+  });
+
+  it("AC-37-04: offers a 50 percent sale for any one complete own building", () => {
+    const plant = entity({
+      id: 9,
+      owner: 0,
+      kind: POWER_PLANT,
+      progress: 1000,
+      hp: 1,
+    });
+    const buttons = commandButtons({
+      selected: [plant],
+      ownEntities: [plant],
+      credits: 0,
+      queue: null,
+    });
+    expect(buttons).toEqual([
+      {
+        typeIndex: -1,
+        label: "Sell (300)",
+        cost: 0,
+        enabled: true,
+        action: "sell",
+      },
+    ]);
+
+    const barracks = entity({ id: 10, kind: BARRACKS, progress: 1000 });
+    const multiple = commandButtons({
+      selected: [plant, barracks],
+      ownEntities: [plant, barracks],
+      credits: 0,
+      queue: null,
+    });
+    expect(multiple.some((button) => button.action === "sell")).toBe(false);
   });
 
   it("AC-03-51: gives no buttons for an under-construction barracks", () => {
@@ -254,6 +297,7 @@ describe("command panel", () => {
     expect(produce.map((button) => button.typeIndex)).toEqual([
       RIFLEMAN,
       STUGNA_TEAM,
+      -1,
     ]);
 
     // Below the permille total the building is still under construction, even

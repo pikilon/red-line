@@ -32,6 +32,7 @@ const FAMILY_LOOK: Record<FeatureFamily, { color: string; height: number }> = {
   port: { color: "#6b7078", height: 0.8 },
   wall: { color: "#9a9a92", height: 0.8 },
   bridge: { color: "#8a8478", height: 0.3 },
+  earthwork: { color: "#5a4330", height: 0.1 },
 };
 
 /** Boxes leave a gap to their neighbours so footprints read apart. */

@@ -1,0 +1,18 @@
+# Spec 36: amphibious vehicles. You play Russia (west bank of the demo-bridges river): the BMP-2s and the BRDM-2 swim
+# straight across, while the T-72 has to drive round by a bridge. Select any vehicle and right click the far bank to try
+# it; the Ukrainian Bradley on the east bank cannot swim back.
+id: amphibious-crossing
+map: demo-bridges
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 32, y: 16, zoom: 0.8 }
+entities:
+  - { player: 1, type: ru-bmp-2, atCenti: [2200, 1500], order: { moveCenti: [4300, 1500] } }
+  - { player: 1, type: ru-bmp-2, atCenti: [2200, 1700], order: { moveCenti: [4300, 1700] } }
+  - { player: 1, type: ru-brdm-scout, atCenti: [2200, 1900], order: { moveCenti: [4300, 1900] } }
+  - { player: 1, type: ru-t-72b3, atCenti: [2000, 1700], order: { moveCenti: [4300, 1700] } }
+  - { player: 0, type: ua-bradley, atCenti: [4500, 1300] }

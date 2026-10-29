@@ -105,7 +105,7 @@ test("AC-06-06: models in the skirmish", async ({ page }) => {
   });
   page.on("pageerror", (error) => errors.push(String(error)));
 
-  await page.goto("/?debug=1&ai=off");
+  await page.goto("/?map=first-line&debug=1&ai=off");
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,

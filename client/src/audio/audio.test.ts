@@ -516,6 +516,7 @@ describe("AUDIO_CATALOG and snapshot derivation (Ukraine -> USA, Russia -> China
       winner: null,
       entities: [unit0],
       queues: [],
+      rallies: [],
     };
     const next = {
       ...prev,
@@ -607,6 +608,7 @@ describe("AUDIO_CATALOG and snapshot derivation (Ukraine -> USA, Russia -> China
       winner: null,
       entities: [prevEntity],
       queues: [],
+      rallies: [],
     };
     const next = {
       ...prev,

@@ -11,10 +11,11 @@ use sim::ai::step_with_ai;
 use sim::entity::OBSERVER;
 use sim::fixed::FxVec2;
 use sim::hash::state_hash;
+use sim::map::Cell;
 use sim::rules::{Category, fx_centi};
 use sim::save::save_state;
 use sim::snapshot::{encode_fog, encode_match_snapshot_with_shots};
-use sim::world::{Outcome, World};
+use sim::world::{Command, Order, Outcome, World};
 use std::collections::BTreeMap;
 
 fn kind(world: &World, id: &str) -> u16 {
@@ -225,6 +226,52 @@ fn ac_19_14_production() {
             ty.id
         );
     }
+}
+
+#[test]
+fn ac_33_05_rally_points() {
+    let (mut world, _, _) = load_example("rally-points");
+    let first = world.next_entity_id();
+    let mut pending = BTreeMap::new();
+    for (building, goal) in [
+        ("ua-barracks", Cell { x: 4, y: 75 }),
+        ("ua-vehicle-factory", Cell { x: 24, y: 74 }),
+    ] {
+        let building = kind(&world, building);
+        let id = world
+            .entities()
+            .iter()
+            .find(|entity| entity.owner == 0 && entity.kind == building)
+            .map(|entity| entity.id)
+            .expect("production building");
+        let produced = world.rules().ty(building).produces[0];
+        pending.insert(produced, goal);
+        world.enqueue(Command::Produce {
+            building: id,
+            kind: produced,
+        });
+    }
+    for _ in 0..600 {
+        world.step();
+        for entity in world.entities().iter().filter(|entity| entity.id >= first) {
+            if let (Some(goal), Order::Move { goal: actual, .. }) =
+                (pending.get(&entity.kind), &entity.order)
+            {
+                assert_eq!(actual, goal, "{} takes its producer's rally", entity.kind);
+            }
+            if matches!(&entity.order, Order::Move { goal, .. } if Some(goal) == pending.get(&entity.kind))
+            {
+                pending.remove(&entity.kind);
+            }
+        }
+        if pending.is_empty() {
+            break;
+        }
+    }
+    assert!(
+        pending.is_empty(),
+        "both built-in producers spawned: {pending:?}"
+    );
 }
 
 #[test]

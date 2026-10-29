@@ -2,5 +2,18 @@
 highGround: { minTiles: 2, rangePct: 115 }   # shooter >= minTiles above the target reaches rangePct percent of its range
 cover:                                       # pct = damage the target avoids; the best cover applies, never the sum (A3)
   crater: { pct: 30 }                        # read when the sim tracks craters (spec 24); not applied yet
+  trench: { pct: 50 }                        # spec 35: infantry standing in a finished trench (no Zero Hour precedent)
   forest: { pct: 25 }                        # target on or beside a living tree or hedge (stumps and bushes give none)
   wall:   { pct: 40, blocksShots: false }    # the shot crosses a wall or building footprint; reduces, does not stop (spec 31 section 9, question 2)
+# Spec 35: repair works. Zero Hour's dozer heals 2% of max health per second alone (RepairHealthPercentPerSecond);
+# here workers add up (owner request): each worker brings its work points, up to maxWorkers workers per job.
+repair:
+  permillePerSecondPerPoint: 7   # max hp permille one work point restores per second (dozer 3 points = 2.1%/s)
+  infantryPoints: 1
+  dozerPoints: 3
+  maxWorkers: 6
+  vehicleRepairTicks: 75   # spec 39: five seconds at 15 Hz, Zero Hour TimeForFullHeal = 5000 ms
+# Spec 40: damaged infantry heal inside an own barracks (Zero Hour HealContain).
+infirmary:
+  healTicks: 30   # 2000 ms at 15 Hz
+  slots: 10       # Zero Hour nominal capacity; Red Line enforces it

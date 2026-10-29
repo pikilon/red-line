@@ -31,6 +31,17 @@ export interface TypeDef {
   locomotor: number;
   /** Collision radius in centi-tiles; 0 uses the sim default. */
   radiusCenti?: number;
+  /** Spec 40: damaged infantry heal inside this building. */
+  healsInfantry?: boolean;
+  /** Spec 39: this building repairs damaged vehicles. */
+  repairsVehicles?: boolean;
+  /** Spec 34: infantry can ride this vehicle. */
+  transport?: {
+    slots: number;
+    fireFromInside?: boolean;
+    damagePct: number;
+    exitTicks: number;
+  };
   render: { size: [number, number, number] };
 }
 
@@ -51,6 +62,7 @@ export interface FactionDef {
 
 export interface Ruleset {
   maxQueue: number;
+  sellRefundPercent: number;
   locomotors: LocomotorDef[];
   types: TypeDef[];
   factions: FactionDef[];
@@ -58,6 +70,7 @@ export interface Ruleset {
 
 export const RULES: Ruleset = {
   maxQueue: ruleset.maxQueue,
+  sellRefundPercent: ruleset.sellRefundPercent,
   locomotors: ruleset.locomotors as LocomotorDef[],
   types: ruleset.types as unknown as TypeDef[],
   factions: ruleset.factions as FactionDef[],

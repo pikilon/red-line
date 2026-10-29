@@ -14,7 +14,7 @@ use crate::fixed::{Fx, FxVec2};
 use crate::map::{Cell, cell_center, cell_of};
 use crate::nav::{footprint_center, footprint_distance};
 use crate::rules::{Category, GarrisonDef, LocoKind, WeaponDef, fx_centi};
-use crate::world::World;
+use crate::world::{Layer, World};
 
 /// How close (centi-tiles from the footprint edge) a unit must be to enter.
 const ENTER_RANGE_CENTI: u32 = 150;
@@ -58,7 +58,7 @@ impl World {
         };
         if entity.hp == 0
             || entity.site.is_some()
-            || entity.inside.is_some()
+            || entity.contained()
             || entity.owner == NEUTRAL
             || self.rules.ty(entity.kind).category != Category::Unit
             || self.rules.ty(entity.kind).motion.kind != LocoKind::Foot
@@ -152,7 +152,7 @@ impl World {
             x: here.x.clamp(row.x, row.x + w - 1),
             y: here.y.clamp(row.y, row.y + h - 1),
         };
-        self.nav.nearest_passable(inner)
+        self.grid(Layer::Foot).nearest_passable(inner)
     }
 
     /// Takes every occupant out of `feature` onto free cells around its
@@ -188,7 +188,7 @@ impl World {
 
     /// First passable, unused cell in the rings around the rectangle, scanning
     /// each ring in ascending `(y, x)` order.
-    fn free_cell_around(
+    pub(crate) fn free_cell_around(
         &self,
         ox: i32,
         oy: i32,
@@ -204,9 +204,10 @@ impl World {
                         || y == oy - ring
                         || y == oy + h + ring - 1;
                     let cell = Cell { x, y };
+                    let nav = self.grid(Layer::Foot);
                     if on_ring
-                        && self.nav.in_bounds(cell)
-                        && self.nav.is_passable(cell)
+                        && nav.in_bounds(cell)
+                        && nav.is_passable(cell)
                         && !used.contains(&cell)
                     {
                         return Some(cell);

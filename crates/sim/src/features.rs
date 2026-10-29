@@ -94,12 +94,47 @@ fn bridge_broken(def: &FeatureTypeDef, row: &FeatureState) -> bool {
 
 /// `base` (terrain without features) plus the footprints of every living
 /// feature that blocks movement, and the deep-water deck cells of every
-/// broken bridge.
+/// broken bridge: the terrain vehicles drive on.
 pub fn with_blocks(base: &MapGrid, features: &[FeatureState], rules: &Ruleset) -> MapGrid {
+    blocks_for(base, features, rules, false, false)
+}
+
+/// Spec 31 A7: the terrain foot units walk on, `with_blocks` without the
+/// footprints of `blocks: vehicles` features (rubble: Zero Hour's
+/// `CELL_RUBBLE`, which infantry cross and vehicles do not). `None` while no
+/// living feature blocks vehicles only, when it would equal `with_blocks`.
+pub fn foot_blocks(base: &MapGrid, features: &[FeatureState], rules: &Ruleset) -> Option<MapGrid> {
+    let split = features.iter().any(|row| {
+        let def = &rules.feature_types[row.kind as usize];
+        row.alive && def.blocks == FeatureBlocks::Vehicles && def.family != BRIDGE_FAMILY
+    });
+    split.then(|| blocks_for(base, features, rules, true, false))
+}
+
+/// Spec 36: the terrain amphibious vehicles drive on, `with_blocks` with deep
+/// water open (a broken bridge does not stop them). `None` without deep water,
+/// when it would equal `with_blocks`.
+pub fn water_blocks(base: &MapGrid, features: &[FeatureState], rules: &Ruleset) -> Option<MapGrid> {
+    base.has_deep_water()
+        .then(|| blocks_for(&base.with_open_water(), features, rules, false, true))
+}
+
+/// `base` plus the blocking features; `foot` lets `blocks: vehicles` pass and
+/// `amphibious` leaves broken bridge decks open (the water under them is).
+fn blocks_for(
+    base: &MapGrid,
+    features: &[FeatureState],
+    rules: &Ruleset,
+    foot: bool,
+    amphibious: bool,
+) -> MapGrid {
     let mut terrain = base.clone();
     for row in features {
         let def = &rules.feature_types[row.kind as usize];
         if bridge_broken(def, row) {
+            if amphibious {
+                continue;
+            }
             let (x0, y0, x1, y1) = extent(def, row);
             for y in y0..=y1 {
                 for x in x0..=x1 {
@@ -111,7 +146,9 @@ pub fn with_blocks(base: &MapGrid, features: &[FeatureState], rules: &Ruleset) -
             }
             continue;
         }
-        if !row.alive || def.blocks == FeatureBlocks::None {
+        let passes =
+            def.blocks == FeatureBlocks::None || (foot && def.blocks == FeatureBlocks::Vehicles);
+        if !row.alive || passes {
             continue;
         }
         let (w, h) = footprint(def, row.rot);
@@ -141,7 +178,7 @@ pub fn distance_to_rect(pos: FxVec2, rect: (i32, i32, i32, i32)) -> Fx {
 }
 
 /// `true` when going from `old` to `new` can change which cells are blocked.
-fn blocking_differs(rules: &Ruleset, old: &FeatureState, new: &FeatureState) -> bool {
+pub(crate) fn blocking_differs(rules: &Ruleset, old: &FeatureState, new: &FeatureState) -> bool {
     old.kind != new.kind
         || old.alive != new.alive
         || (new.state != old.state
@@ -150,7 +187,7 @@ fn blocking_differs(rules: &Ruleset, old: &FeatureState, new: &FeatureState) -> 
 
 /// Damage state of `hp` out of `max` under the type's thresholds: 2 when at
 /// or below the wrecked threshold, 1 at or below the damaged one, else 0.
-fn state_for(hp: u32, max: u32, damaged: u32, wrecked: u32) -> u8 {
+pub(crate) fn state_for(hp: u32, max: u32, damaged: u32, wrecked: u32) -> u8 {
     let percent = hp * 100 / max;
     if percent <= wrecked {
         2
@@ -408,11 +445,14 @@ impl World {
         }
     }
 
-    /// Recomputes `terrain` from the base terrain and the living features, then
-    /// rebuilds `nav` (which also clears the flow fields). Every change of
-    /// blocking goes through here (spec 31 §4.1).
+    /// Recomputes `terrain` and `terrain_foot` from the base terrain and the
+    /// living features, then rebuilds `nav` and `nav_foot` (which also clears
+    /// the flow fields). Every change of blocking goes through here (spec 31
+    /// §4.1).
     pub(crate) fn refresh_feature_blocks(&mut self) {
         self.terrain = with_blocks(&self.terrain_base, &self.features, &self.rules);
+        self.terrain_foot = foot_blocks(&self.terrain_base, &self.features, &self.rules);
+        self.terrain_water = water_blocks(&self.terrain_base, &self.features, &self.rules);
         self.rebuild_nav();
     }
 }
@@ -421,9 +461,10 @@ impl World {
 mod tests {
     use super::*;
     use crate::hash::state_hash;
-    use crate::map::{Cell, MapGrid, WATER_DEEP, WATER_DEPTH_MASK};
+    use crate::map::{Cell, MapGrid, WATER_DEEP, WATER_DEPTH_MASK, cell_of};
     use crate::rules::FeatureDestroy;
     use crate::save::{load_state, save_state};
+    use crate::world::Layer;
 
     #[test]
     fn states_follow_the_thresholds() {
@@ -637,7 +678,7 @@ mod tests {
     }
 
     #[test]
-    fn a_wrecked_building_collapses_into_rubble_that_blocks() {
+    fn a_wrecked_building_collapses_into_rubble_that_blocks_vehicles() {
         let mut world = sandbox();
         let house = place(&mut world, "house-small", 10, 10);
         assert!(world.damage_feature(house, 250));
@@ -656,8 +697,111 @@ mod tests {
         assert_eq!(row.kind as usize, kind_of(&world, "rubble-2x2"));
         assert_eq!(row.collapse, 0);
         for (x, y) in [(10, 10), (11, 11)] {
-            assert!(!world.terrain.is_passable(Cell { x, y }), "rubble blocks");
+            assert!(
+                !world.nav.is_passable(Cell { x, y }),
+                "rubble blocks vehicles"
+            );
+            assert!(
+                world.grid(Layer::Foot).is_passable(Cell { x, y }),
+                "infantry walk on rubble"
+            );
         }
+    }
+
+    /// A rubble wall across the map at rows 18..=20, open only at x 36..=39.
+    fn rubble_wall() -> World {
+        let mut world = sandbox();
+        for x in (0..36).step_by(4) {
+            place(&mut world, "rubble-4x3", x, 18);
+        }
+        world
+    }
+
+    /// Moves a new `unit` from `from` to `to`; returns its cells along the
+    /// way and whether it arrived within `ticks`.
+    fn route(
+        world: &mut World,
+        unit: &str,
+        from: (i32, i32),
+        to: (i32, i32),
+        ticks: u32,
+    ) -> (Vec<Cell>, bool) {
+        let kind = world.rules.type_index(unit).unwrap();
+        let id = world.spawn(0, kind, centre(from.0, from.1));
+        world.enqueue(crate::world::Command::Move {
+            units: vec![id],
+            target: centre(to.0, to.1),
+        });
+        let mut cells = Vec::new();
+        for _ in 0..ticks {
+            world.step();
+            let unit = world.entity(id).unwrap();
+            cells.push(cell_of(unit.pos));
+            if matches!(unit.order, crate::world::Order::Idle { .. }) {
+                return (cells, cell_of(unit.pos) == Cell { x: to.0, y: to.1 });
+            }
+        }
+        (cells, false)
+    }
+
+    #[test]
+    fn infantry_walk_straight_across_rubble() {
+        let mut world = rubble_wall();
+        let (cells, arrived) = route(&mut world, "ua-rifleman", (10, 10), (10, 30), 1200);
+        assert!(arrived, "the rifleman reached the far side");
+        assert!(
+            cells
+                .iter()
+                .any(|cell| (18..=20).contains(&cell.y) && cell.x < 36)
+        );
+        assert!(
+            cells.iter().all(|cell| cell.x <= 12),
+            "no detour: {cells:?}"
+        );
+    }
+
+    #[test]
+    fn a_tank_routes_around_rubble() {
+        let mut world = rubble_wall();
+        let (cells, arrived) = route(&mut world, "ua-leopard-2a4", (10, 10), (10, 30), 2400);
+        assert!(arrived, "the tank reached the far side");
+        assert!(
+            cells
+                .iter()
+                .all(|cell| !(18..=20).contains(&cell.y) || cell.x >= 36),
+            "the tank never drove onto the rubble"
+        );
+    }
+
+    #[test]
+    fn foot_fields_survive_a_save() {
+        let mut world = World::skirmish_with(Ruleset::builtin(), "demo-town", false).unwrap();
+        let before = save_state(&world, 7, &[]).unwrap();
+        assert!(
+            before.foot_flow_goals.is_empty(),
+            "no rubble, no foot layer"
+        );
+        let house = world
+            .features()
+            .iter()
+            .position(|row| row.kind as usize == kind_of(&world, "house-small"))
+            .expect("demo-town has a small house");
+        world.features[house].kind = kind_of(&world, "rubble-2x2") as u32;
+        world.refresh_feature_blocks();
+        let rubble = Cell {
+            x: world.features[house].x,
+            y: world.features[house].y,
+        };
+        world.field(Layer::Foot, rubble);
+        let saved = save_state(&world, 7, &[]).unwrap();
+        assert_eq!(saved.foot_flow_goals, vec![[rubble.x, rubble.y]]);
+        let (loaded, _, _) = load_state(&saved).unwrap();
+        assert!(
+            loaded
+                .fields
+                .contains_key(&(Layer::Foot, loaded.nav.index(rubble)))
+        );
+        assert_eq!(state_hash(&loaded), state_hash(&world));
     }
 
     #[test]

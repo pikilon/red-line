@@ -151,6 +151,7 @@ impl World {
         let complete = entity.site.as_ref().is_some_and(|site| site.complete);
         let queue_len = entity.site.as_ref().map_or(0, |site| site.queue.len());
         if entity.owner != player
+            || entity.hp == 0
             || !complete
             || self.rules.ty(entity.kind).category != Category::Building
             || usize::from(kind) >= self.rules.types.len()
@@ -190,6 +191,43 @@ impl World {
             return;
         };
         let refund = self.rules.ty(item.kind).cost;
+        if let Some(owner) = self.players.get_mut(usize::from(player)) {
+            owner.credits = owner.credits.saturating_add(refund);
+        }
+    }
+
+    /// Spec 37: a sale refunds every queued item and half the building cost,
+    /// then ordinary death cleanup removes it in the same step.
+    pub(crate) fn apply_sell(&mut self, player: PlayerId, building: EntityId) {
+        let Some(index) = self.index_of(building) else {
+            return;
+        };
+        let entity = &self.entities[index];
+        let complete = entity.site.as_ref().is_some_and(|site| site.complete);
+        if entity.owner != player
+            || entity.hp == 0
+            || !complete
+            || self.rules.ty(entity.kind).category != Category::Building
+        {
+            return;
+        }
+        let kind = entity.kind;
+        let queue = std::mem::take(
+            &mut self.entities[index]
+                .site
+                .as_mut()
+                .expect("complete building site")
+                .queue,
+        );
+        let mut refund =
+            u64::from(self.rules.ty(kind).cost) * u64::from(self.rules.sell_refund_percent) / 100;
+        for item in queue {
+            refund = refund.saturating_add(u64::from(self.rules.ty(item.kind).cost));
+        }
+        let refund = refund.min(u64::from(u32::MAX)) as u32;
+        let entity = &mut self.entities[index];
+        entity.last_hit = None;
+        entity.hp = 0;
         if let Some(owner) = self.players.get_mut(usize::from(player)) {
             owner.credits = owner.credits.saturating_add(refund);
         }
@@ -374,7 +412,7 @@ impl World {
                 continue;
             };
             let unit = &mut self.entities[index];
-            if unit.owner != player || unit.site.is_some() {
+            if unit.owner != player || unit.site.is_some() || unit.contained() {
                 continue;
             }
             let last_order_id = match unit.order {
@@ -384,7 +422,12 @@ impl World {
                 | Order::AttackGround { order_id, .. }
                 | Order::Harvest { order_id, .. }
                 | Order::Build { order_id, .. }
-                | Order::Garrison { order_id, .. } => order_id,
+                | Order::Garrison { order_id, .. }
+                | Order::Board { order_id, .. }
+                | Order::Repair { order_id, .. }
+                | Order::RepairBuilding { order_id, .. }
+                | Order::Heal { order_id, .. }
+                | Order::RepairVehicle { order_id, .. } => order_id,
             };
             unit.order = Order::Idle { last_order_id };
         }
@@ -478,7 +521,11 @@ impl World {
                     }
                     if self.docked(index, depot) {
                         phase = HarvestPhase::Loading;
-                        timer = self.rules.ty(kind).load_ticks;
+                        // Spec 36: a port makes the truck wait its own load time too.
+                        let extra = self
+                            .entity(depot)
+                            .map_or(0, |d| self.rules.ty(d.kind).load_ticks);
+                        timer = self.rules.ty(kind).load_ticks + extra;
                     }
                 }
                 HarvestPhase::Loading => {
@@ -487,7 +534,13 @@ impl World {
                         let capacity = self.rules.ty(kind).capacity;
                         let cargo = self.entities[index].cargo;
                         let take = self.index_of(depot).map_or(0, |d| {
-                            let take = capacity.saturating_sub(cargo).min(self.entities[d].hp);
+                            let want = capacity.saturating_sub(cargo);
+                            // Spec 36: a port never runs out (owner request; no
+                            // Zero Hour warehouse regenerates).
+                            if self.rules.ty(self.entities[d].kind).infinite {
+                                return want;
+                            }
+                            let take = want.min(self.entities[d].hp);
                             self.entities[d].hp -= take;
                             take
                         });

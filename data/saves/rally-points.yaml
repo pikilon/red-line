@@ -1,0 +1,18 @@
+# Spec 33: select the barracks or vehicle factory to see its rally flag. Right click the ground to replace it,
+# then queue a unit: it spawns at the building exit and moves to the current flag. Deselecting hides only the flag.
+id: rally-points
+map: first-line
+victory: false
+debug: true
+starts: true
+credits: [50000, 50000]
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 13, y: 66, zoom: 1.1 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [6, 60] }
+  - { player: 0, type: ua-power-plant, origin: [6, 56] }
+  - { player: 0, type: ua-supply-center, origin: [17, 55] }
+  - { player: 0, type: ua-barracks, origin: [6, 65], order: { rally: [400, 7500] } }
+  - { player: 0, type: ua-vehicle-factory, origin: [12, 66], order: { rally: [2400, 7400] } }

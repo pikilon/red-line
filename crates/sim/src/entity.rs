@@ -59,6 +59,35 @@ pub enum Order {
         order_id: u32,
         feature: u32,
     },
+    /// Spec 34: walk to the own vehicle `carrier` and board it.
+    Board {
+        order_id: u32,
+        carrier: EntityId,
+    },
+    /// Spec 35: walk to the map feature `feature` and work on its repair.
+    Repair {
+        order_id: u32,
+        feature: u32,
+    },
+    /// Spec 38: walk to an own damaged entity building and repair it.
+    RepairBuilding {
+        order_id: u32,
+        building: EntityId,
+    },
+    /// Spec 40: enter an own `healsInfantry` building and heal inside it.
+    Heal {
+        order_id: u32,
+        building: EntityId,
+        missing: u32,
+        remaining: u32,
+    },
+    /// Spec 39: dock this damaged vehicle at its factory for a timed repair.
+    RepairVehicle {
+        order_id: u32,
+        factory: EntityId,
+        missing: u32,
+        remaining: u32,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -114,6 +143,12 @@ pub struct Entity {
     /// Spec 31 block 2: index of the feature this unit garrisons; it is hidden
     /// and fires from the building. `None` for everything on the map.
     pub inside: Option<u32>,
+    /// Spec 34: id of the vehicle this unit rides; it is hidden and moves with
+    /// it. `None` for everything on the map.
+    pub aboard: Option<EntityId>,
+    /// Spec 34: on a transport that is unloading, ticks until the next rider
+    /// leaves; `None` when it is not unloading.
+    pub unloading: Option<u32>,
 }
 
 /// The locomotion and turret state of an entity (spec 11 §5.1). Read and written
@@ -129,6 +164,12 @@ pub struct LocomotionState {
 }
 
 impl Entity {
+    /// True while the unit is inside a building or a vehicle: hidden, not
+    /// targetable, not moved or pushed (spec 31 block 2, spec 34).
+    pub fn contained(&self) -> bool {
+        self.inside.is_some() || self.aboard.is_some()
+    }
+
     /// The locomotion and turret state of this entity.
     pub fn locomotion(&self) -> LocomotionState {
         LocomotionState {

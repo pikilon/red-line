@@ -196,7 +196,7 @@ async function saveTo(page: Page, id: string, name: string): Promise<void> {
 test("AC-19-15: save and load a slot", async ({ page }) => {
   test.setTimeout(ms(90_000));
   const errors = collectErrors(page);
-  await page.goto("/?ai=off&debug=1");
+  await page.goto("/?map=first-line&ai=off&debug=1");
   await waitReady(page);
 
   // A second own unit next to the start dozer, then select both with Ctrl+A.
@@ -314,7 +314,7 @@ test("AC-19-16: overwrite, rename, delete, copy", async ({ page, context }) => {
   test.setTimeout(ms(90_000));
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   const errors = collectErrors(page);
-  await page.goto("/?ai=off&debug=1");
+  await page.goto("/?map=first-line&ai=off&debug=1");
   await waitReady(page);
   await openPanel(page, "save");
   await saveTo(page, "slot-1", "First");

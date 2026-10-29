@@ -1,0 +1,32 @@
+# Spec 34: infantry ride vehicles. Player 0: four riflemen board the west Bradley and three the Kozak (both on their way
+# at load); a free squad stands beside an empty Bradley: select it and right click the Bradley. Select a loaded vehicle
+# and press Unload: the riders leave one at a time. The Kozak has fire ports, so its riders shoot from it; the Bradley
+# does not. Drive the Kozak east toward player 1's squad to see it. Player 1 boards a BMP-2 in the east.
+id: infantry-transport
+map: demo-ground
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 26, y: 30, zoom: 1 }
+entities:
+  - { player: 0, type: ua-bradley, atCenti: [2000, 2600], label: bradley }
+  - { player: 0, type: ua-kozak-scout, atCenti: [2000, 3000], label: kozak }
+  - { player: 0, type: ua-bradley, atCenti: [2000, 3400] }
+  - { player: 0, type: ua-rifleman, atCenti: [1600, 2500], order: { board: bradley } }
+  - { player: 0, type: ua-rifleman, atCenti: [1600, 2600], order: { board: bradley } }
+  - { player: 0, type: ua-rifleman, atCenti: [1600, 2700], order: { board: bradley } }
+  - { player: 0, type: ua-stugna-team, atCenti: [1500, 2600], order: { board: bradley } }
+  - { player: 0, type: ua-rifleman, atCenti: [1600, 2950], order: { board: kozak } }
+  - { player: 0, type: ua-rifleman, atCenti: [1600, 3050], order: { board: kozak } }
+  - { player: 0, type: ua-rifleman, atCenti: [1500, 3000], order: { board: kozak } }
+  - { player: 0, type: ua-rifleman, atCenti: [1600, 3400] }
+  - { player: 0, type: ua-rifleman, atCenti: [1600, 3500] }
+  - { player: 0, type: ua-rifleman, atCenti: [1500, 3450] }
+  - { player: 1, type: ru-bmp-2, atCenti: [4400, 3000], label: bmp }
+  - { player: 1, type: ru-rifleman, atCenti: [4800, 2900], order: { board: bmp } }
+  - { player: 1, type: ru-rifleman, atCenti: [4800, 3100], order: { board: bmp } }
+  - { player: 1, type: ru-rifleman, atCenti: [3600, 2950] }
+  - { player: 1, type: ru-rifleman, atCenti: [3600, 3050] }

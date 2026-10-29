@@ -18,7 +18,7 @@ interface SkirmishDebugView {
 type DebugWindow = Window & { __redline?: SkirmishDebugView };
 
 async function boot(page: Page, query: string): Promise<void> {
-  await page.goto(`/?${query}`);
+  await page.goto(`/?map=first-line&${query}`);
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,

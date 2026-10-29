@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "environment.schema.json",
-  "description": "data/balance/environment.yaml: height and cover balance (spec 31 section 6).",
+  "description": "data/balance/environment.yaml: height, cover and repair balance (spec 31 section 6).",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -41,11 +41,72 @@
         "crater": {
           "$ref": "#/$defs/cover"
         },
+        "trench": {
+          "$ref": "#/$defs/cover"
+        },
         "forest": {
           "$ref": "#/$defs/cover"
         },
         "wall": {
           "$ref": "#/$defs/cover"
+        }
+      }
+    },
+    "repair": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Spec 35: repair works; workers add up.",
+      "required": [
+        "permillePerSecondPerPoint",
+        "infantryPoints",
+        "dozerPoints",
+        "maxWorkers"
+      ],
+      "properties": {
+        "permillePerSecondPerPoint": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "infantryPoints": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "dozerPoints": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "maxWorkers": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "vehicleRepairTicks": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "infirmary": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Spec 40: damaged infantry heal inside an own barracks.",
+      "required": [
+        "healTicks",
+        "slots"
+      ],
+      "properties": {
+        "healTicks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "slots": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
         }
       }
     }

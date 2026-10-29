@@ -14,7 +14,7 @@
         "required": ["id", "family", "footprint", "blocks"],
         "properties": {
           "id": { "$ref": "faction.schema.json#/$defs/id" },
-          "family": { "enum": ["vegetation", "building", "prop", "port", "wall", "bridge"] },
+          "family": { "enum": ["vegetation", "building", "prop", "port", "wall", "bridge", "earthwork"] },
           "footprint": {
             "description": "[width, height] in cells at rot 0; odd rot swaps them.",
             "type": "array",
@@ -33,6 +33,12 @@
             "maximum": 2
           },
           "variants": { "type": "integer", "minimum": 1, "maximum": 16 },
+          "repairPct": {
+            "description": "Spec 35: repair or dig speed of the type, percent of the base rate (default 100).",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
           "hp": {
             "description": "Spec 31: hit points. 0 (default) means the feature cannot be damaged.",
             "type": "integer",
