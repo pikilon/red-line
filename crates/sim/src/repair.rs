@@ -19,6 +19,11 @@ const WORK_RANGE_CENTI: u32 = 150;
 /// Feature families that can be repaired: bridges, and earthworks, whose
 /// digging is their repair from one hit point.
 const REPAIRABLE_FAMILIES: [&str; 2] = ["bridge", EARTHWORK_FAMILY];
+/// Longest line a `DigLine` command may dig, in segments.
+const MAX_LINE_SEGMENTS: usize = 64;
+/// How far (cells) the next unfinished trench of a line may lie from the one
+/// just dug; a gap for a blocked segment stays inside it.
+const DIG_NEXT_RANGE: i32 = 8;
 /// Family of the features soldiers dig during a match (spec 35).
 pub const EARTHWORK_FAMILY: &str = "earthwork";
 
@@ -232,29 +237,15 @@ impl World {
         Some(cells)
     }
 
-    /// `Dig` command: a new trench at `origin` (empty, one hit point) and the
-    /// listed workers of `player` dig it. Refused when the cells are not free.
-    pub(crate) fn apply_dig(
-        &mut self,
-        player: PlayerId,
-        units: &[EntityId],
-        origin: Cell,
-        rot: u8,
-    ) {
-        let Some(kind) = self
+    /// Pushes an empty trench (one hit point) at `origin` and returns its
+    /// feature index, or `None` when its cells are not free.
+    fn dig_trench(&mut self, origin: Cell, rot: u8) -> Option<u32> {
+        let kind = self
             .rules
             .feature_types
             .iter()
-            .position(|ty| ty.family == EARTHWORK_FAMILY)
-        else {
-            return;
-        };
-        if !units.iter().any(|&id| {
-            self.entity(id).is_some_and(|e| e.owner == player) && self.work_points(id) > 0
-        }) || self.dig_cells(kind, origin, rot % 4).is_none()
-        {
-            return;
-        }
+            .position(|ty| ty.family == EARTHWORK_FAMILY)?;
+        self.dig_cells(kind, origin, rot % 4)?;
         let def = &self.rules.feature_types[kind];
         self.features.push(FeatureState {
             kind: kind as u32,
@@ -269,8 +260,70 @@ impl World {
             burn: 0,
             collapse: 0,
         });
-        let index = (self.features.len() - 1) as u32;
-        self.apply_repair(player, units, index);
+        Some((self.features.len() - 1) as u32)
+    }
+
+    fn has_digger(&self, player: PlayerId, units: &[EntityId]) -> bool {
+        units.iter().any(|&id| {
+            self.entity(id).is_some_and(|e| e.owner == player) && self.work_points(id) > 0
+        })
+    }
+
+    /// `Dig` command: a new trench at `origin` (empty, one hit point) and the
+    /// listed workers of `player` dig it. Refused when the cells are not free.
+    pub(crate) fn apply_dig(
+        &mut self,
+        player: PlayerId,
+        units: &[EntityId],
+        origin: Cell,
+        rot: u8,
+    ) {
+        if !self.has_digger(player, units) {
+            return;
+        }
+        if let Some(index) = self.dig_trench(origin, rot) {
+            self.apply_repair(player, units, index);
+        }
+    }
+
+    /// `DigLine` command (spec 35 §5b.1): every segment whose cells are free
+    /// becomes an empty trench, in the given order; blocked ones are skipped.
+    /// The workers dig the first and `step_repair` hands them on to the next.
+    pub(crate) fn apply_dig_line(
+        &mut self,
+        player: PlayerId,
+        units: &[EntityId],
+        segments: &[(Cell, u8)],
+    ) {
+        if !self.has_digger(player, units) {
+            return;
+        }
+        let mut first = None;
+        for &(origin, rot) in segments.iter().take(MAX_LINE_SEGMENTS) {
+            if let Some(index) = self.dig_trench(origin, rot) {
+                first.get_or_insert(index);
+            }
+        }
+        if let Some(index) = first {
+            self.apply_repair(player, units, index);
+        }
+    }
+
+    /// The next unfinished trench after a worker finishes `done`: the lowest
+    /// row (the order the line was drawn in) within `DIG_NEXT_RANGE` cells.
+    fn next_trench(&self, done: u32) -> Option<u32> {
+        let row = self.features.get(done as usize)?;
+        let def = &self.rules.feature_types[row.kind as usize];
+        if def.family != EARTHWORK_FAMILY {
+            return None;
+        }
+        let (x, y) = (row.x, row.y);
+        (0..self.features.len() as u32).find(|&index| {
+            let other = &self.features[index as usize];
+            self.needs_repair(index)
+                && self.rules.feature_types[other.kind as usize].family == EARTHWORK_FAMILY
+                && (other.x - x).abs().max((other.y - y).abs()) <= DIG_NEXT_RANGE
+        })
     }
 
     /// Distance from the unit to the cells of `feature`.
@@ -285,8 +338,15 @@ impl World {
     pub(crate) fn step_repair(&mut self, index: usize, order_id: u32, feature: u32) {
         let id = self.entities[index].id;
         if !self.can_repair(id, feature) {
-            self.entities[index].order = Order::Idle {
-                last_order_id: order_id,
+            // A finished trench hands the digger on to the next of its line.
+            self.entities[index].order = match self.next_trench(feature) {
+                Some(next) if self.can_repair(id, next) => Order::Repair {
+                    order_id,
+                    feature: next,
+                },
+                _ => Order::Idle {
+                    last_order_id: order_id,
+                },
             };
             return;
         }
@@ -614,6 +674,39 @@ mod tests {
         dig(&mut world, vec![unit], 63, 33);
         world.step();
         assert_eq!(world.features.len(), placed + 1, "off the map refused");
+    }
+
+    #[test]
+    fn a_dug_line_skips_blocked_cells_and_is_dug_in_order() {
+        let mut world = ground();
+        let placed = world.features.len();
+        let unit = rifleman(&mut world, 28, 30);
+        // Block the middle segment with a trench already there.
+        dig(&mut world, vec![unit], 34, 33);
+        world.step();
+        let segments = [(30, 0), (32, 0), (34, 0), (36, 0), (63, 0)]
+            .map(|(x, rot)| (Cell { x, y: 33 }, rot))
+            .to_vec();
+        world.enqueue_as(
+            0,
+            Command::DigLine {
+                units: vec![unit],
+                segments,
+            },
+        );
+        world.step();
+        let xs: Vec<i32> = world.features[placed..].iter().map(|f| f.x).collect();
+        assert_eq!(xs, vec![34, 30, 32, 36], "blocked and off-map ones skipped");
+        for _ in 0..6000 {
+            world.step();
+            if (placed..placed + 4).all(|i| !world.needs_repair(i as u32)) {
+                break;
+            }
+        }
+        assert!(
+            (placed..placed + 4).all(|i| !world.needs_repair(i as u32)),
+            "the one soldier dug every segment"
+        );
     }
 
     #[test]

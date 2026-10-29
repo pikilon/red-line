@@ -7,9 +7,11 @@ import {
   repairJobsOf,
   resolveBuildingRepairClick,
   resolveDigClick,
+  resolveDigLine,
   resolveInfirmaryClick,
   resolveRepairClick,
   resolveVehicleRepairClick,
+  trenchLineSegments,
   withRepairState,
 } from "./repair";
 
@@ -291,6 +293,46 @@ describe("spec 35 trench digging input", () => {
       }),
     ).toEqual([]);
     expect(canDig(0, entities)).toBe(true);
+  });
+
+  it("a drawn line is cut into consecutive 2x1 trenches along its long axis", () => {
+    expect(
+      trenchLineSegments({ x: 10.5, y: 5.5 }, { x: 15.5, y: 5.5 }),
+    ).toEqual([
+      { x: 10, y: 5, rot: 0 },
+      { x: 12, y: 5, rot: 0 },
+      { x: 14, y: 5, rot: 0 },
+    ]);
+    // Drawn backwards: the order still follows the drawing.
+    expect(
+      trenchLineSegments({ x: 13.5, y: 8.5 }, { x: 10.5, y: 8.5 }),
+    ).toEqual([
+      { x: 12, y: 8, rot: 0 },
+      { x: 10, y: 8, rot: 0 },
+    ]);
+    // Mostly vertical lines turn the trench and drift across with the line.
+    expect(trenchLineSegments({ x: 4.5, y: 2.5 }, { x: 6.5, y: 7.5 })).toEqual([
+      { x: 4, y: 2, rot: 1 },
+      { x: 5, y: 4, rot: 1 },
+      { x: 6, y: 6, rot: 1 },
+    ]);
+    const entities = [unit(1, "ua-rifleman", 3, 2)];
+    expect(
+      resolveDigLine({
+        player: 0,
+        selected: [1],
+        entities,
+        from: { x: 10.5, y: 5.5 },
+        to: { x: 12.5, y: 5.5 },
+      }),
+    ).toEqual([
+      {
+        kind: "digLine",
+        player: 0,
+        units: [1],
+        segments: [10, 5, 0, 12, 5, 0],
+      },
+    ]);
   });
 
   it("the feature table trailer places rows dug in the match", () => {

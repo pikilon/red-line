@@ -259,6 +259,71 @@ export function resolveDigClick(args: {
   ];
 }
 
+/** One 2x1 trench of a line: top-left cell and turn (0 along x, 1 along y). */
+export interface TrenchSegment {
+  x: number;
+  y: number;
+  rot: number;
+}
+
+/** Spec 35 §5b.1: the trench segments along a line drawn from `from` to `to`
+ *  (tile coordinates). The line runs along its longer axis, snapped to cells
+ *  and cut into consecutive 2-cell trenches in drawing order. */
+export function trenchLineSegments(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+): TrenchSegment[] {
+  const x0 = Math.floor(from.x);
+  const y0 = Math.floor(from.y);
+  const x1 = Math.floor(to.x);
+  const y1 = Math.floor(to.y);
+  const horizontal = Math.abs(x1 - x0) >= Math.abs(y1 - y0);
+  const [a0, b0, a1, b1] = horizontal ? [x0, y0, x1, y1] : [y0, x0, y1, x1];
+  const sign = a1 >= a0 ? 1 : -1;
+  const cells = Math.abs(a1 - a0) + 1;
+  const segments: TrenchSegment[] = [];
+  for (let k = 0; k < cells; k += 2) {
+    const first = a0 + sign * k;
+    const second = k + 1 < cells ? first + sign : first;
+    const along = Math.min(first, second);
+    const across =
+      cells === 1 ? b0 : Math.round(b0 + ((b1 - b0) * k) / (cells - 1));
+    segments.push(
+      horizontal
+        ? { x: along, y: across, rot: 0 }
+        : { x: across, y: along, rot: 1 },
+    );
+  }
+  return segments;
+}
+
+/** Spec 35 §5b.1: the line dig ordered for the selected workers. */
+export function resolveDigLine(args: {
+  player: number;
+  selected: readonly number[];
+  entities: readonly EntityState[];
+  from: { x: number; y: number };
+  to: { x: number; y: number };
+}): SimCommand[] {
+  const { player, selected, entities, from, to } = args;
+  const wanted = new Set(selected);
+  const units = entities
+    .filter(
+      (entity) =>
+        wanted.has(entity.id) && entity.owner === player && isWorker(entity),
+    )
+    .map((entity) => entity.id);
+  if (units.length === 0) return [];
+  return [
+    {
+      kind: "digLine",
+      player,
+      units,
+      segments: trenchLineSegments(from, to).flatMap((s) => [s.x, s.y, s.rot]),
+    },
+  ];
+}
+
 /** True when the selection holds a worker of `player`: the Dig button shows. */
 export function canDig(
   player: number,

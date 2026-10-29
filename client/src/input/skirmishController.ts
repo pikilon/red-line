@@ -18,10 +18,19 @@ import {
   type RepairJob,
   resolveBuildingRepairClick,
   resolveDigClick,
+  resolveDigLine,
   resolveInfirmaryClick,
   resolveRepairClick,
   resolveVehicleRepairClick,
+  type TrenchSegment,
+  trenchLineSegments,
 } from "./repair";
+import {
+  narrowToKind,
+  sameTypeEverywhere,
+  sameTypeOnScreen,
+  selectedUnitKinds,
+} from "./sameType";
 import {
   isDrag,
   isSelectAllShortcut,
@@ -73,8 +82,24 @@ export interface PlacementPreview {
 export interface SkirmishController {
   readonly selected: ReadonlySet<number>;
   /** Spec 35: the next left click on the ground digs a trench there (Shift
-   *  turns it); a right click cancels. */
+   *  turns it); dragging draws a line of trenches (Shift keeps Dig armed); a
+   *  right click cancels. */
   armDig(): void;
+  /** Spec 35 §5b.1: the trench segments of the line being drawn, with whether
+   *  the client sees their cells open; null when no line is being drawn. */
+  digPreview(): (TrenchSegment & { valid: boolean })[] | null;
+  /** Spec 41: the Force fire button; the next left tap/click force-fires, a
+   *  second press (or a right click) disarms. */
+  toggleForceFire(): void;
+  /** Spec 41: the Rally point button; the next left tap sets the rally of the
+   *  selected producer. */
+  toggleRally(): void;
+  /** The armed map-tap mode of the command panel, if any. */
+  armedMode(): "force" | "rally" | null;
+  /** Spec 41: selects the selected unit types on the screen or the map. */
+  selectSameType(scope: "screen" | "map"): void;
+  /** Spec 41: narrows the selection to the entities of `kind`. */
+  narrowTo(kind: number): void;
   cameraTarget(): { x: number; y: number };
   /** Clamped to [0, mapWidth] x [0, mapHeight]. */
   setTarget(x: number, y: number): void;
@@ -96,6 +121,8 @@ export interface SkirmishController {
 }
 
 const LEFT_BUTTON = 0;
+/** Two clicks on the same unit within this window select its type (spec 41). */
+const DOUBLE_CLICK_MS = 400;
 const RIGHT_BUTTON = 2;
 
 /** Mouse, keyboard and placement wiring of the skirmish (spec §6.5). */
@@ -118,8 +145,13 @@ export function createSkirmishController(
   /** Spec 35: the Dig button was pressed; the next left click digs there. */
   let digArmed = false;
   let forceFireIssued = false;
+  /** Spec 41: the panel's Force fire / Rally point buttons armed the next tap. */
+  let armedMode: "force" | "rally" | null = null;
+  /** Spec 41 A3: the last plain click, for the same-type double click. */
+  let lastClick: { id: number; time: number } | null = null;
 
   function setSelection(ids: Iterable<number>): void {
+    armedMode = null;
     selected.clear();
     for (const id of ids) selected.add(id);
     options.onSelectionChange(selected);
@@ -246,6 +278,22 @@ export function createSkirmishController(
   // Pinch zoom (spec 08 §3.8): scales the orthographic camera around the fixed
   // target with the wheel's limits, never the page. The first two fingers
   // cancel a drag selection so a pinch cannot select or order.
+  function sameOnScreen(kinds: readonly number[]): number[] {
+    const rect = canvas.getBoundingClientRect();
+    return sameTypeOnScreen(
+      options.entities(),
+      kinds,
+      options.player(),
+      {
+        minX: rect.left,
+        minY: rect.top,
+        maxX: rect.right,
+        maxY: rect.bottom,
+      },
+      worldToScreen,
+    );
+  }
+
   const pinch = createPinchGesture({
     zoom: () => camera.zoom,
     setZoom(zoom) {
@@ -262,6 +310,7 @@ export function createSkirmishController(
   canvas.addEventListener("pointermove", (event) => {
     if (pinch.move(event)) return;
     lastPointer = { x: event.clientX, y: event.clientY };
+    if (digArmed && dragStart !== null) return;
     if (dragStart !== null && isDrag(dragStart, lastPointer)) {
       options.selectionBox.show(rectFromDrag(dragStart, lastPointer));
     }
@@ -295,7 +344,7 @@ export function createSkirmishController(
     // never starts a selection box.
     forceFireArmed =
       event.button === LEFT_BUTTON &&
-      event.ctrlKey &&
+      (event.ctrlKey || armedMode === "force") &&
       options.placementKind() === null;
     if (event.button !== LEFT_BUTTON || forceFireArmed) return;
     dragStart = { x: event.clientX, y: event.clientY };
@@ -307,6 +356,7 @@ export function createSkirmishController(
     if (forceFireArmed) {
       forceFireArmed = false;
       forceFireIssued = true;
+      armedMode = null;
       dragStart = null;
       options.selectionBox.show(null);
       forceFireAt({ x: event.clientX, y: event.clientY });
@@ -317,6 +367,22 @@ export function createSkirmishController(
     const start = dragStart;
     dragStart = null;
     options.selectionBox.show(null);
+    if (digArmed && isDrag(start, end)) {
+      const from = groundAt(start);
+      const to = groundAt(end);
+      digArmed = event.shiftKey;
+      if (from === null || to === null) return;
+      for (const command of resolveDigLine({
+        player: options.player(),
+        selected: [...selected],
+        entities: options.entities(),
+        from,
+        to,
+      })) {
+        options.command(command);
+      }
+      return;
+    }
     if (isDrag(start, end)) {
       setSelection(
         boxSelect(
@@ -329,6 +395,19 @@ export function createSkirmishController(
       return;
     }
     const ground = groundAt(end);
+    if (armedMode === "rally" && ground !== null) {
+      armedMode = null;
+      for (const command of resolveRightClick({
+        player: options.player(),
+        selected: [...selected],
+        entities: options.entities(),
+        x: ground.x,
+        y: ground.y,
+      })) {
+        options.command(command);
+      }
+      return;
+    }
     if (digArmed && ground !== null) {
       digArmed = false;
       for (const command of resolveDigClick({
@@ -349,6 +428,25 @@ export function createSkirmishController(
       ground === null
         ? []
         : clickSelect(options.entities(), ground.x, ground.y, options.player());
+    const [only] = picked;
+    if (picked.length === 1 && only !== undefined) {
+      const entity = options.entities().find((e) => e.id === only);
+      const again =
+        lastClick !== null &&
+        lastClick.id === only &&
+        event.timeStamp - lastClick.time <= DOUBLE_CLICK_MS;
+      lastClick = again ? null : { id: only, time: event.timeStamp };
+      if (
+        again &&
+        entity !== undefined &&
+        typeDef(entity.kind).category === "unit"
+      ) {
+        setSelection(sameOnScreen([entity.kind]));
+        return;
+      }
+    } else {
+      lastClick = null;
+    }
     // A click on an own garrisoned building selects the units inside it.
     setSelection(
       picked.length > 0 || ground === null
@@ -386,6 +484,12 @@ export function createSkirmishController(
     }
     if (digArmed) {
       digArmed = false;
+      return;
+    }
+    if (armedMode !== null) {
+      // A right click or long press cancels an armed panel button.
+      armedMode = null;
+      forceFireArmed = false;
       return;
     }
     if (forceFireIssued) {
@@ -525,6 +629,51 @@ export function createSkirmishController(
     selected,
     armDig() {
       digArmed = true;
+    },
+    digPreview() {
+      if (!digArmed || dragStart === null || lastPointer === null) return null;
+      if (!isDrag(dragStart, lastPointer)) return null;
+      const from = groundAt(dragStart);
+      const to = groundAt(lastPointer);
+      if (from === null || to === null) return null;
+      const tiles = options.tiles();
+      return trenchLineSegments(from, to).map((segment) => {
+        const [w, h] = segment.rot === 0 ? [2, 1] : [1, 2];
+        let valid = true;
+        for (let dy = 0; dy < h; dy++) {
+          for (let dx = 0; dx < w; dx++) {
+            const x = segment.x + dx;
+            const y = segment.y + dy;
+            const open =
+              x >= 0 &&
+              y >= 0 &&
+              x < options.mapWidth &&
+              y < options.mapHeight &&
+              tiles[y * options.mapWidth + x] === 0;
+            if (!open) valid = false;
+          }
+        }
+        return { ...segment, valid };
+      });
+    },
+    toggleForceFire() {
+      armedMode = armedMode === "force" ? null : "force";
+    },
+    toggleRally() {
+      armedMode = armedMode === "rally" ? null : "rally";
+    },
+    armedMode: () => armedMode,
+    selectSameType(scope) {
+      const kinds = selectedUnitKinds(options.entities(), selected);
+      if (kinds.length === 0) return;
+      setSelection(
+        scope === "map"
+          ? sameTypeEverywhere(options.entities(), kinds, options.player())
+          : sameOnScreen(kinds),
+      );
+    },
+    narrowTo(kind) {
+      setSelection(narrowToKind(options.entities(), selected, kind));
     },
     cameraTarget: () => ({ ...target }),
     setTarget,

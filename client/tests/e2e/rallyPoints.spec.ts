@@ -85,16 +85,16 @@ test("AC-33-08: sets, replaces and displays rally points for both producers", as
     y: 75,
   });
 
-  await clickTiles(page, 9, 76, "right");
+  await clickTiles(page, 20, 70, "right");
   await expect
     .poll(() => rallyPoint(page, barracks.id))
-    .toEqual({ building: barracks.id, x: 9, y: 76 });
-  await clickTiles(page, 9, 76);
+    .toEqual({ building: barracks.id, x: 20, y: 70 });
+  await clickTiles(page, 20, 70);
   await expect.poll(() => call(page, (api) => api.rallyMarkerCount())).toBe(0);
   expect(await rallyPoint(page, barracks.id)).toEqual({
     building: barracks.id,
-    x: 9,
-    y: 76,
+    x: 20,
+    y: 70,
   });
 
   const factory = await call(page, (api) => {

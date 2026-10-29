@@ -115,6 +115,11 @@ pub enum Command {
         origin: Cell,
         rot: u8,
     },
+    /// Spec 35 §5b.1: workers dig a line of trench segments `(origin, rot)`.
+    DigLine {
+        units: Vec<EntityId>,
+        segments: Vec<(Cell, u8)>,
+    },
     /// Spec 35: infantry and dozers walk to map feature `feature` and repair it.
     Repair {
         units: Vec<EntityId>,
@@ -839,6 +844,9 @@ impl World {
                     self.apply_repair_vehicle(player, &units, factory);
                 }
                 Command::Dig { units, origin, rot } => self.apply_dig(player, &units, origin, rot),
+                Command::DigLine { units, segments } => {
+                    self.apply_dig_line(player, &units, &segments)
+                }
                 Command::AttackGround { units, target } => {
                     self.apply_attack_ground(player, &units, target);
                 }

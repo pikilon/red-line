@@ -174,16 +174,21 @@ import { MAX_SPEED } from "../sim/workerHandler";
 import {
   commandButtons,
   createCommandPanel,
+  isComplete,
   type PanelInput,
   samePanelInput,
+  selectionChips,
 } from "../ui/commandPanel";
+import { withFolded } from "../ui/foldable";
 import { createGameMenu } from "../ui/gameMenu";
 import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
+import { createQuickBar } from "../ui/quickBar";
 import { createResourceBar } from "../ui/resourceBar";
 import { createSaveManager, type SlotView } from "../ui/saveManager";
 import { createSelectionBox } from "../ui/selectionBox";
 import { createTouchControls, isTouchDevice } from "../ui/touchControls";
+import { createZoomBar } from "../ui/zoomBar";
 import { createCameraMemory, homeView } from "./cameraMemory";
 
 export const DEFAULT_MAP = "river-port";
@@ -758,6 +763,30 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   );
   let repairJobs = withRepairState(placedBridges, null);
   const commandPanel = createCommandPanel(document.body, {
+    onStop: () => {
+      uiClick();
+      const units = selectedEntities()
+        .filter((entity) => typeDef(entity.kind).category === "unit")
+        .map((entity) => entity.id);
+      if (units.length === 0) return;
+      interact.command({ kind: "stop", player: controlled, units });
+    },
+    onForceFire: () => {
+      uiClick();
+      controller?.toggleForceFire();
+    },
+    onRally: () => {
+      uiClick();
+      controller?.toggleRally();
+    },
+    onSameType: (scope) => {
+      uiClick();
+      controller?.selectSameType(scope);
+    },
+    onNarrow: (kind) => {
+      uiClick();
+      controller?.narrowTo(kind);
+    },
     onGarrison: (feature) => {
       uiClick();
       for (const command of garrisonCommand({
@@ -828,6 +857,19 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       }
     },
   });
+
+  const commandPanelElement = document.getElementById("command-panel");
+  if (commandPanelElement !== null) {
+    const syncCommandBarHeight = (): void => {
+      const height = commandPanelElement.getBoundingClientRect().height;
+      document.documentElement.style.setProperty(
+        "--command-bar-height",
+        `${height}px`,
+      );
+    };
+    new ResizeObserver(syncCommandBarHeight).observe(commandPanelElement);
+    syncCommandBarHeight();
+  }
   let animator: Animator;
   const corpses = createCorpses();
   const deathCauses = createDeathCauses();
@@ -851,6 +893,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let fogOverlay: FogOverlay | null = null;
   let weather: Weather | null = null;
   const placementGhost = createPlacementGhost();
+  const digGhosts: Mesh[] = [];
   const placementHint = createPlacementHint(document.body);
   /** Models applied to the entity renderer; fallback boxes until they load. */
   let models: ModelRegistry | null = null;
@@ -995,6 +1038,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         ruleset as unknown as FeatureRules,
         mapDefinition as FeatureMap,
         elevation,
+        vehicleFx.particles,
       );
       scene.add(liveFeatures.object);
     }
@@ -1281,6 +1325,40 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     renderMenu();
   }
 
+  const quickBar = createQuickBar(document.body, {
+    entities: () => next?.entities ?? [],
+    player: () => controlled,
+    selected: () => controller?.selected ?? NO_SELECTION,
+    select: (ids) => controller?.setSelection(ids),
+    centre: (x, y) => moveCamera(x, y),
+    active: () => !paused,
+    folded: settings.foldedPanels?.includes("quick") ?? false,
+    onFold: (folded) => {
+      const current = loadSettings();
+      settings = {
+        ...current,
+        foldedPanels: withFolded(current.foldedPanels ?? [], "quick", folded),
+      };
+      saveSettings(settings);
+    },
+  });
+  const zoomBar = createZoomBar(document.body, {
+    zoom: () => camera.zoom,
+    setZoom: (zoom) => {
+      camera.zoom = zoom;
+      camera.updateProjectionMatrix();
+    },
+    folded: settings.foldedPanels?.includes("zoom") ?? false,
+    onFold: (folded) => {
+      const current = loadSettings();
+      settings = {
+        ...current,
+        foldedPanels: withFolded(current.foldedPanels ?? [], "zoom", folded),
+      };
+      saveSettings(settings);
+    },
+  });
+
   /** Last command panel input, to skip renders that would change nothing. */
   let lastPanel: PanelInput | null = null;
 
@@ -1288,9 +1366,26 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
    *  (spec §6.7, #140). */
   function refreshOverlay(): void {
     resourceBar.render(next);
+    quickBar.refresh();
     outcome.render(next === null ? null : outcomeText(next, controlled));
     const queue = next === null ? null : selectedQueue();
+    const selection = selectedEntities();
     const panel: PanelInput = {
+      chips: selectionChips(selection),
+      units: selection.some(
+        (entity) => typeDef(entity.kind).category === "unit",
+      ),
+      rally:
+        selection.length === 1 &&
+        selection.every((entity) => {
+          const def = typeDef(entity.kind);
+          return (
+            def.category === "building" &&
+            def.produces.length > 0 &&
+            isComplete(entity)
+          );
+        }),
+      armed: controller?.armedMode() ?? null,
       buttons:
         next === null
           ? []
@@ -1320,7 +1415,37 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     if (lastPanel !== null && samePanelInput(lastPanel, panel)) return;
     lastPanel = panel;
     uiRenders++;
-    commandPanel.render(panel.buttons, panel.queue, panel.placing);
+    commandPanel.render(panel);
+  }
+
+  /** Ghost trenches along the line being drawn (spec 35 §5b.1); red where the
+   *  cells are closed. */
+  function updateDigGhosts(): void {
+    const preview = controller?.digPreview() ?? [];
+    while (digGhosts.length < preview.length) {
+      const mesh = new Mesh(
+        new BoxGeometry(1, 1, 1),
+        new MeshBasicMaterial({
+          transparent: true,
+          opacity: PLACEMENT_GHOST_OPACITY,
+        }),
+      );
+      scene.add(mesh);
+      digGhosts.push(mesh);
+    }
+    digGhosts.forEach((mesh, i) => {
+      const segment = preview[i];
+      mesh.visible = segment !== undefined;
+      if (segment === undefined) return;
+      const [width, height] = segment.rot === 0 ? [2, 1] : [1, 2];
+      const cx = segment.x + width / 2;
+      const cy = segment.y + height / 2;
+      mesh.position.set(cx, footprintGround(cx, cy, width, height) + 0.1, cy);
+      mesh.scale.set(width, 0.2, height);
+      (mesh.material as MeshBasicMaterial).color.set(
+        segment.valid ? PLACEMENT_VALID_COLOR : PLACEMENT_INVALID_COLOR,
+      );
+    });
   }
 
   /** Positions and tints the footprint ghost while placing (spec §6.5). */
@@ -1356,7 +1481,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   interact.onSnapshot((snapshot, receivedFog, at, combat, features) => {
     initial ??= snapshot;
     if (features !== null) {
-      liveFeatures?.apply(features, performance.now());
+      liveFeatures?.apply(features, effectTime(performance.now()));
       garrisonFeatures = withLiveState(placedGarrisons, features);
       repairJobs = withRepairState(placedBridges, features);
     }
@@ -1618,7 +1743,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     }
     lastFrameMs = now;
     controller?.update(dtMs / 1000);
-    liveFeatures?.update(now);
+    zoomBar.sync(camera.zoom);
+    liveFeatures?.update(effectTime(now));
     const relief = terrain === null ? null : terrainDeformerOf(terrain);
     updateSun();
     if (next !== null && prev !== null && entities !== null) {
@@ -1647,6 +1773,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       }
     }
     updatePlacementGhost();
+    updateDigGhosts();
     effects?.update(effectTime(now));
     attackMarker?.update(effectTime(now), (id) => {
       const entity = next?.entities.find((row) => row.id === id);
@@ -1711,6 +1838,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       }),
       selectedIds: () =>
         [...(controller?.selected ?? [])].sort((a, b) => a - b),
+      select: (ids) => controller?.setSelection(ids),
       worldToScreen: (x, y) => {
         const ndc = new Vector3(x, 0, y).project(camera);
         const rect = renderer.domElement.getBoundingClientRect();

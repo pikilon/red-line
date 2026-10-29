@@ -438,6 +438,10 @@ test("AC-03-65: keeps the command panel stable under a held click", async ({
     '#command-panel button[data-type="ua-power-plant"]',
   );
   await expect(plantButton).toBeEnabled();
+  // Cameos arrive asynchronously (spec 41); the panel is idle once they are in.
+  await expect(
+    page.locator("#command-panel .tile .cameo:not(.has-image)"),
+  ).toHaveCount(0, { timeout: ms(20_000) });
 
   const mutations = await page.evaluate(
     () =>

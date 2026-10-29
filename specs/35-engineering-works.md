@@ -78,6 +78,28 @@ once repaired above that threshold, and the client draws it again.
   draws the floor, parapets that rise with the digging and sandbags when done.
   Example save `?load=trench-digging`; setup order `{ dig: [x, y] }`.
 
+### 5b.1 Trench lines
+
+* **Drawing.** With Dig armed, press-drag-release (mouse, or one finger)
+  draws a line on the ground; a plain tap still digs one trench. Ghost
+  trenches follow the line while dragging, red where the client sees closed
+  terrain. One line per arming: Shift on release keeps Dig armed, right click
+  or the button again cancels.
+* **Split** (`trenchLineSegments`, `client/src/input/repair.ts`): the line
+  runs along its longer axis, snapped to cells, cut into consecutive 2-cell
+  trenches in drawing order; turn 0 along x, 1 along y; the cross coordinate
+  follows the line.
+* `Command::DigLine { units, segments: Vec<(Cell, u8)> }`: every segment whose
+  cells are free becomes an empty trench row in order (blocked ones, water,
+  buildings, features, existing trenches, are skipped: a gap, no detour), at
+  most 64. The squad digs the first; a worker that finishes a trench moves to
+  the lowest-numbered unfinished trench within 8 cells (`next_trench`), so the
+  line is dug in order with no extra saved state. Saves hold the command.
+* Assumptions: **A6** the whole squad digs one segment at a time (no
+  splitting across segments). **A7** the client preview checks terrain only;
+  buildings and features are decided by the sim. **A8** the hand-on rule also
+  lets a finished digger help any unfinished trench within 8 cells.
+
 ## 6. Assumptions
 
 * **A1** Only bridges are jobs for now; building repair by dozers is backlog
@@ -93,5 +115,5 @@ once repaired above that threshold, and the client draws it again.
 AC-35-01..04 in `crates/sim/tests/repair.rs`: infantry reopen a broken
 bridge; more workers and dozers finish faster, the cap holds; tanks and whole
 bridges take no work; repair survives a save. Trench unit tests in
-`crates/sim/src/repair.rs`: a dug trench covers infantry only once finished,
+`crates/sim/src/repair.rs` (line: `a_dug_line_skips_blocked_cells_and_is_dug_in_order`): a dug trench covers infantry only once finished,
 needs free open cells, trails the feature table and survives a save.

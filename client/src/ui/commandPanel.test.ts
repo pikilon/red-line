@@ -3,7 +3,12 @@ import { describe, expect, it } from "vitest";
 import { RULES, typeDef } from "../rules";
 import type { EntityState, QueueState } from "../sim/matchSnapshot";
 import { ENTITY_FLAGS } from "../sim/matchSnapshot";
-import { commandButtons, samePanelInput } from "./commandPanel";
+import {
+  commandButtons,
+  type PanelInput,
+  samePanelInput,
+  selectionChips,
+} from "./commandPanel";
 
 // Type indices from the builtin ruleset.
 const RIFLEMAN = 2;
@@ -165,6 +170,7 @@ describe("command panel", () => {
         cost: 0,
         enabled: true,
         action: "sell",
+        feature: plant.id,
       },
     ]);
 
@@ -337,22 +343,28 @@ describe("samePanelInput", () => {
     action: "construct" as const,
   };
   const queue = { building: 4, headPermille: 100, items: [RIFLEMAN] };
+  const base: PanelInput = {
+    buttons: [button],
+    queue,
+    placing: null,
+    chips: [{ kind: RIFLEMAN, count: 2 }],
+    units: true,
+    rally: false,
+    armed: null,
+  };
 
   it("is true for equal content in fresh objects", () => {
     expect(
-      samePanelInput(
-        { buttons: [button], queue, placing: null },
-        {
-          buttons: [{ ...button }],
-          queue: { ...queue, items: [RIFLEMAN] },
-          placing: null,
-        },
-      ),
+      samePanelInput(base, {
+        ...base,
+        buttons: [{ ...button }],
+        queue: { ...queue, items: [RIFLEMAN] },
+        chips: [{ kind: RIFLEMAN, count: 2 }],
+      }),
     ).toBe(true);
   });
 
   it("is false when a button, the queue or placing changes", () => {
-    const base = { buttons: [button], queue, placing: null };
     expect(
       samePanelInput(base, {
         ...base,
@@ -364,5 +376,29 @@ describe("samePanelInput", () => {
     ).toBe(false);
     expect(samePanelInput(base, { ...base, queue: null })).toBe(false);
     expect(samePanelInput(base, { ...base, placing: POWER_PLANT })).toBe(false);
+  });
+
+  it("is false when the strip, the sections or the armed mode change", () => {
+    expect(
+      samePanelInput(base, { ...base, chips: [{ kind: RIFLEMAN, count: 3 }] }),
+    ).toBe(false);
+    expect(samePanelInput(base, { ...base, units: false })).toBe(false);
+    expect(samePanelInput(base, { ...base, rally: true })).toBe(false);
+    expect(samePanelInput(base, { ...base, armed: "force" })).toBe(false);
+  });
+});
+
+describe("selectionChips", () => {
+  it("AC-41-01: groups the selection by type with counts", () => {
+    const chips = selectionChips([
+      entity({ id: 1, kind: STUGNA_TEAM }),
+      entity({ id: 2, kind: RIFLEMAN }),
+      entity({ id: 3, kind: RIFLEMAN }),
+    ]);
+    expect(chips).toEqual([
+      { kind: RIFLEMAN, count: 2 },
+      { kind: STUGNA_TEAM, count: 1 },
+    ]);
+    expect(selectionChips([])).toEqual([]);
   });
 });
