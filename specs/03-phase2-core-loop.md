@@ -955,6 +955,7 @@ commands are not hashed.
 pub const MATCH_HEADER_LEN: usize = 8;
 pub const ENTITY_STRIDE: usize = 9;
 pub const QUEUE_STRIDE: usize = 12;    // 3 + QUEUE_SLOTS
+pub const RALLY_STRIDE: usize = 3;     // spec 33: building, x raw, y raw
 pub const FLAG_MOVING: i32 = 1;               // unit with a non-Idle order
 pub const FLAG_UNDER_CONSTRUCTION: i32 = 2;
 pub const FLAG_GHOST: i32 = 4;
@@ -978,6 +979,9 @@ A viewer that is not a player id is the observer. Layout:
 * Queues: `queue_count`, then per building owned by the viewer with a
   non-empty queue (ascending id): `building_id, head progress * 1000 / total,
   queue_len, kind_0 .. kind_8` (missing slots `-1`). Observer: `0`.
+* Rally points (spec 33): `rally_count`, then per building owned by the viewer
+  with a point (ascending id): `building_id, x raw, y raw`, independently of
+  whether its queue is empty. The observer receives every rally point.
 
 ### 5.16 WASM API v2 (`wasm_api.rs`)
 

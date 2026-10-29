@@ -878,7 +878,9 @@ entries:
     variants: 8
     seconds: 18.5
     loop: true
-    status: todo
+    status: draft
+    brief: A busy construction site while a structure goes up; hammering, drilling and machinery, never tonal.
+    prompt: field recording of a real construction site, workers hammering steel beams, power drill and angle grinder bursts, small diesel crane engine idling, metal clanks
   building.damage:
     category: building
     kind: sfx

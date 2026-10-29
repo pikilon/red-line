@@ -1,0 +1,17 @@
+# Spec 39: two damaged vehicles beside their repair factory. Select one or both and right click the factory.
+# The first docked vehicle repairs its initial deficit in five seconds; the second waits and production continues.
+id: vehicle-repair
+map: first-line
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 13, y: 64, zoom: 1.1 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [6, 60] }
+  - { player: 0, type: ua-supply-center, origin: [17, 55] }
+  - { player: 0, type: ua-vehicle-factory, origin: [12, 66] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [1100, 6600], hpPercent: 40 }
+  - { player: 0, type: ua-bradley, atCenti: [1100, 6700], hpPercent: 50 }

@@ -1,0 +1,80 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "infantry-healing",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "first-line",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 7,
+      "y": 64,
+      "zoom": 1.2
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "first-line",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          6,
+          60
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-barracks",
+        "origin": [
+          6,
+          65
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          500,
+          6400
+        ],
+        "hpPercent": 40
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          900,
+          6400
+        ],
+        "hpPercent": 70
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          500,
+          6600
+        ],
+        "hpPercent": 100
+      }
+    ]
+  }
+}

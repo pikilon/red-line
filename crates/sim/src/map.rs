@@ -32,6 +32,9 @@ pub struct MapGrid {
     /// Bridge decks, one byte per cell (0 none); empty without bridges
     /// (spec 26 section 17).
     bridges: Vec<u8>,
+    /// Spec 36: cells blocked only because they are deep water (empty without
+    /// deep water); the amphibious grid opens them.
+    water_blocked: Vec<bool>,
 }
 
 /// Low two bits of a water byte: 0 dry, 1 shallow, 2 deep (blocks ground movers).
@@ -61,6 +64,7 @@ impl MapGrid {
             roads: Vec::new(),
             water: Vec::new(),
             bridges: Vec::new(),
+            water_blocked: Vec::new(),
         }
     }
 
@@ -75,8 +79,13 @@ impl MapGrid {
                 "a terrain layer must cover every cell"
             );
         }
+        self.water_blocked = Vec::new();
         for (i, byte) in water.iter().enumerate() {
             if byte & WATER_DEPTH_MASK == WATER_DEEP {
+                if !self.blocked[i] {
+                    self.water_blocked.resize(cells, false);
+                    self.water_blocked[i] = true;
+                }
                 self.blocked[i] = true;
             }
         }
@@ -257,6 +266,23 @@ impl MapGrid {
 
     pub fn width(&self) -> u16 {
         self.width
+    }
+
+    /// Spec 36: whether some cell is blocked only by deep water.
+    pub fn has_deep_water(&self) -> bool {
+        self.water_blocked.iter().any(|&b| b)
+    }
+
+    /// Spec 36: this grid with every cell that only deep water blocked open,
+    /// the terrain an amphibious vehicle drives on.
+    pub fn with_open_water(&self) -> MapGrid {
+        let mut grid = self.clone();
+        for (i, &water) in self.water_blocked.iter().enumerate() {
+            if water {
+                grid.blocked[i] = false;
+            }
+        }
+        grid
     }
 
     pub fn height(&self) -> u16 {

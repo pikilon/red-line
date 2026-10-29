@@ -133,6 +133,7 @@ fn ac_03_37_match_snapshot_layout() {
             0, 0, 3, 65536, 65536, 400, 0, 1000, -1, 0, 0, // power plant
             1, 0, 9, 360448, 360448, 50, 0, 0, -1, 0, 0, // soldier
             0, // queue_count
+            0, // rally_count (spec 33)
         ]
     );
 
@@ -153,7 +154,7 @@ fn ac_03_37_match_snapshot_layout() {
     });
     world.step();
     let snapshot = encode_match_snapshot(&world, 0);
-    let queue = &snapshot[snapshot.len() - 13..];
+    let queue = &snapshot[snapshot.len() - 14..];
     assert_eq!(
         &queue[..9],
         &[1, 2, 100, 2, 9, 9, -1, -1, -1],
@@ -161,8 +162,8 @@ fn ac_03_37_match_snapshot_layout() {
     );
     assert_eq!(
         queue,
-        &[1, 2, 100, 2, 9, 9, -1, -1, -1, -1, -1, -1, -1],
-        "the nine kind slots pad the record to QUEUE_STRIDE"
+        &[1, 2, 100, 2, 9, 9, -1, -1, -1, -1, -1, -1, -1, 0],
+        "the nine kind slots pad the record to QUEUE_STRIDE, then no rallies"
     );
 
     // AC-03-33 world with a power deficit (10 produced / 14 consumed): the

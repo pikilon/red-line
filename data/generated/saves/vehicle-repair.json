@@ -1,0 +1,79 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "vehicle-repair",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "first-line",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 13,
+      "y": 64,
+      "zoom": 1.1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "first-line",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          6,
+          60
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-center",
+        "origin": [
+          17,
+          55
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-vehicle-factory",
+        "origin": [
+          12,
+          66
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          1100,
+          6600
+        ],
+        "hpPercent": 40
+      },
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          1100,
+          6700
+        ],
+        "hpPercent": 50
+      }
+    ]
+  }
+}

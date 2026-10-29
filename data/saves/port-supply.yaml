@@ -1,0 +1,17 @@
+# Spec 36: a port pays supply trucks and never runs out. Player 0's supply center stands by the harbour; two trucks load
+# at the port cargo yard (its stock never drops, but every load takes longer) and one at the supply depot to the south
+# (which empties as usual). Watch the credits: the port pays steadily, forever.
+id: port-supply
+map: demo-coast
+victory: false
+debug: true
+starts: true
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 22, y: 22, zoom: 0.9 }
+entities:
+  - { player: 0, type: ua-supply-center, origin: [20, 24] }
+  - { player: 0, type: ua-supply-truck, atCenti: [2400, 2300], order: { harvest: depot-2 } }
+  - { player: 0, type: ua-supply-truck, atCenti: [2500, 2400], order: { harvest: depot-2 } }
+  - { player: 0, type: ua-supply-truck, atCenti: [1500, 3800], order: { harvest: depot-0 } }

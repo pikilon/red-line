@@ -2,12 +2,12 @@
 
 export const SETTINGS_KEY = "redline.settings.v1";
 
-/** Master volume 0..100 (spec 25 §10). Back to full now that the game ships its
- *  own generated sounds (phase 3) instead of procedural placeholders. */
-export const DEFAULT_AUDIO_MASTER = 100;
-export const DEFAULT_AUDIO_SFX = 80;
-export const DEFAULT_AUDIO_AMBIENT = 50;
-export const DEFAULT_AUDIO_VOICE = 70;
+/** Master volume 0..100 (spec 25 §10). The game starts quiet (owner request,
+ *  2026-10-28); the player turns it up in the menu. */
+export const DEFAULT_AUDIO_MASTER = 50;
+export const DEFAULT_AUDIO_SFX = 60;
+export const DEFAULT_AUDIO_AMBIENT = 30;
+export const DEFAULT_AUDIO_VOICE = 60;
 /** Music starts off: the game's music made the first minutes of play hard to
  *  follow, so the player turns it up in the menu if they want it (owner request). */
 export const DEFAULT_AUDIO_MUSIC = 0;
@@ -18,18 +18,20 @@ export interface Settings {
   generatedTextures?: boolean;
   /** Absent means true: snow shows on snow maps (spec 22 §4). */
   weather?: boolean;
-  /** Master volume 0..100 (default 100, spec 25 §10). */
+  /** Master volume 0..100 (default 50, spec 25 §10). */
   audioMaster?: number;
-  /** Effects/UI volume 0..100 (default 80, spec 25 §10). */
+  /** Effects/UI volume 0..100 (default 60, spec 25 §10). */
   audioSfx?: number;
-  /** Ambient beds volume 0..100 (default 50, spec 25 §10). */
+  /** Ambient beds volume 0..100 (default 30, spec 25 §10). */
   audioAmbient?: number;
-  /** Voices/EVA volume 0..100 (default 70, spec 25 §10). */
+  /** Voices/EVA volume 0..100 (default 60, spec 25 §10). */
   audioVoice?: number;
   /** Music volume 0..100 (default 0, off, spec 25 §10). */
   audioMusic?: number;
   /** Absent means true: strong language enabled by default (spec 25 §5.3). */
   strongLanguage?: boolean;
+  /** Ids of the HUD panels folded to their tab (spec 41 §3.4); absent: none. */
+  foldedPanels?: string[];
 }
 
 export const DEFAULT_SETTINGS: Settings = { gore: true };
@@ -68,6 +70,12 @@ function parseVolume(val: unknown): number | undefined {
   return Math.max(0, Math.min(100, Math.round(val)));
 }
 
+/** The strings of an array, or [] for anything else. */
+function parseIdList(val: unknown): string[] {
+  if (!Array.isArray(val)) return [];
+  return val.filter((item): item is string => typeof item === "string");
+}
+
 /** The stored settings, or the defaults when the storage is missing, the value
  *  is absent or invalid, or reading throws. */
 export function loadSettings(storage?: Storage): Settings {
@@ -91,6 +99,7 @@ export function loadSettings(storage?: Storage): Settings {
     const audioVoice = parseVolume(obj.audioVoice);
     const audioMusic = parseVolume(obj.audioMusic);
     const strongLanguage = obj.strongLanguage;
+    const foldedPanels = parseIdList(obj.foldedPanels);
     return {
       gore,
       ...(generatedTextures === false ? { generatedTextures } : {}),
@@ -101,6 +110,7 @@ export function loadSettings(storage?: Storage): Settings {
       ...(audioVoice !== undefined ? { audioVoice } : {}),
       ...(audioMusic !== undefined ? { audioMusic } : {}),
       ...(strongLanguage === false ? { strongLanguage } : {}),
+      ...(foldedPanels.length > 0 ? { foldedPanels } : {}),
     };
   } catch {
     return { ...DEFAULT_SETTINGS };
@@ -136,6 +146,10 @@ export function saveSettings(settings: Settings, storage?: Storage): void {
           ? { audioMusic: parseVolume(settings.audioMusic) }
           : {}),
         ...(settings.strongLanguage === false ? { strongLanguage: false } : {}),
+        ...(settings.foldedPanels !== undefined &&
+        settings.foldedPanels.length > 0
+          ? { foldedPanels: settings.foldedPanels }
+          : {}),
       }),
     );
   } catch {

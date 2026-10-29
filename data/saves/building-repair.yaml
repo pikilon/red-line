@@ -1,0 +1,16 @@
+# Spec 38: two dozers beside a damaged power plant and barracks. Select them and right click either building.
+# Only the lowest-id active dozer repairs (2.1% of maximum HP per second); extra dozers do not stack speed.
+id: building-repair
+map: first-line
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 10, y: 63, zoom: 1.15 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [6, 60], hpPercent: 40 }
+  - { player: 0, type: ua-barracks, origin: [6, 65], hpPercent: 50 }
+  - { player: 0, type: ua-dozer, atCenti: [500, 6300] }
+  - { player: 0, type: ua-dozer, atCenti: [500, 6400] }

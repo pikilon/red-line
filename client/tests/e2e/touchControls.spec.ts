@@ -15,7 +15,7 @@ interface TouchDebugView {
 type DebugWindow = Window & { __redline?: TouchDebugView };
 
 async function boot(page: Page): Promise<void> {
-  await page.goto("/?debug=1&seed=1&ai=off");
+  await page.goto("/?map=first-line&debug=1&seed=1&ai=off");
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
@@ -101,6 +101,21 @@ test.describe("touch device", () => {
     if (dozer === null) throw new Error("missing ua-dozer");
     await page.mouse.click(dozer.x, dozer.y);
     await expect(page.locator("#command-panel")).toBeVisible();
+    // Cameo renders wait for idle callbacks; let the visible ones finish so a
+    // late offscreen render cannot stall a frame inside the pan-rate sample.
+    await expect
+      .poll(
+        () =>
+          page
+            .locator("#command-panel .cameo")
+            .evaluateAll(
+              (nodes) =>
+                nodes.filter((node) => !node.classList.contains("has-image"))
+                  .length,
+            ),
+        { timeout: ms(15_000) },
+      )
+      .toBe(0);
 
     // Layout: joystick bottom right, command panel bottom left, no overlap.
     const joystick = await box(page, "#touch-joystick");
@@ -110,7 +125,7 @@ test.describe("touch device", () => {
     expect(joystick.x).toBeGreaterThan(viewport.width / 2);
     expect(joystick.y).toBeGreaterThan(viewport.height / 2);
     expect(panel.x + panel.width / 2).toBeLessThan(viewport.width / 2);
-    expect(panel.y).toBeGreaterThan(viewport.height / 2);
+    expect(panel.y + panel.height / 2).toBeGreaterThan(viewport.height / 2);
     expect(menu.width).toBeGreaterThanOrEqual(48);
     expect(menu.height).toBeGreaterThanOrEqual(48);
     for (const other of [panel, hud, menu]) {

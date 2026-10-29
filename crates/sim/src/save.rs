@@ -12,14 +12,13 @@ use crate::entity::EntityId;
 use crate::entity::{Entity, Ghost, HarvestPhase, Order, Projectile, QueueItem, Site};
 use crate::features::{self, FeatureState};
 use crate::fixed::{Fx, FxVec2};
-use crate::flow::FlowField;
 use crate::map::Cell;
 use crate::map::cell_of;
 use crate::nav::footprint_cells;
 use crate::player::Player;
 use crate::rules::{Category, MapDef, fx_centi};
 use crate::rules::{Ruleset, TypeId, WeaponId};
-use crate::world::{Command, MAX_UNITS, Outcome, SimError, World, map_terrain};
+use crate::world::{Command, Layer, MAX_UNITS, Outcome, SimError, World, map_terrain};
 
 /// Version of the `SimState` format (spec 19 §3.6).
 pub const SAVE_FORMAT_VERSION: u32 = 1;
@@ -50,6 +49,14 @@ pub struct SimState {
     /// because `Move` orders never rebuild a missing field; the fields are
     /// recomputed from `nav` on load (spec 19 §3.3).
     pub flow_goals: Vec<[i32; 2]>,
+    /// Spec 31 A7: goal cells of the cached foot-layer fields, ascending cell
+    /// index; absent while no rubble splits the layers.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub foot_flow_goals: Vec<[i32; 2]>,
+    /// Spec 36: goal cells of the cached amphibious-layer fields; absent
+    /// without amphibious movers on a map with deep water.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub water_flow_goals: Vec<[i32; 2]>,
     /// Ascending player.
     pub ais: Vec<AiState>,
     /// Spec 31: one row per map feature in map order. Missing in saves from
@@ -134,6 +141,12 @@ pub struct EntityState {
     /// Spec 31 block 2: index of the feature this unit garrisons.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub inside: Option<u32>,
+    /// Spec 34: id of the vehicle this unit rides.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub aboard: Option<u32>,
+    /// Spec 34: ticks until an unloading vehicle lets its next rider out.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unloading: Option<u32>,
 }
 
 /// Saved locomotion and turret state of an entity (spec 11 §5.1).
@@ -193,6 +206,30 @@ pub enum OrderState {
     Garrison {
         order_id: u32,
         feature: u32,
+    },
+    Board {
+        order_id: u32,
+        carrier: u32,
+    },
+    Repair {
+        order_id: u32,
+        feature: u32,
+    },
+    RepairBuilding {
+        order_id: u32,
+        building: u32,
+    },
+    Heal {
+        order_id: u32,
+        building: u32,
+        missing: u32,
+        remaining: u32,
+    },
+    RepairVehicle {
+        order_id: u32,
+        factory: u32,
+        missing: u32,
+        remaining: u32,
     },
 }
 
@@ -276,6 +313,38 @@ pub enum CommandState {
     Unload {
         feature: u32,
     },
+    Board {
+        units: Vec<u32>,
+        carrier: u32,
+    },
+    Disembark {
+        carrier: u32,
+    },
+    Repair {
+        units: Vec<u32>,
+        feature: u32,
+    },
+    RepairBuilding {
+        units: Vec<u32>,
+        building: u32,
+    },
+    HealAt {
+        units: Vec<u32>,
+        building: u32,
+    },
+    RepairVehicle {
+        units: Vec<u32>,
+        factory: u32,
+    },
+    Dig {
+        units: Vec<u32>,
+        origin: [i32; 2],
+        rot: u8,
+    },
+    DigLine {
+        units: Vec<u32>,
+        segments: Vec<([i32; 2], u8)>,
+    },
     Construct {
         dozer: u32,
         kind: String,
@@ -290,6 +359,9 @@ pub enum CommandState {
         kind: String,
     },
     Cancel {
+        building: u32,
+    },
+    Sell {
         building: u32,
     },
     Rally {
@@ -332,6 +404,10 @@ pub fn save_state(world: &World, seed: u64, ais: &[Ai]) -> Result<SimState, Stri
         terrain_base: _,
         features,
         nav: _,
+        terrain_foot: _,
+        nav_foot: _,
+        terrain_water: _,
+        nav_water: _,
         players,
         entities,
         next_entity_id,
@@ -381,7 +457,18 @@ pub fn save_state(world: &World, seed: u64, ais: &[Ai]) -> Result<SimState, Stri
             .collect(),
         flow_goals: fields
             .keys()
-            .map(|&index| cell(world.nav.cell(index)))
+            .filter(|(layer, _)| *layer == Layer::Vehicle)
+            .map(|&(_, index)| cell(world.nav.cell(index)))
+            .collect(),
+        foot_flow_goals: fields
+            .keys()
+            .filter(|(layer, _)| *layer == Layer::Foot)
+            .map(|&(_, index)| cell(world.nav.cell(index)))
+            .collect(),
+        water_flow_goals: fields
+            .keys()
+            .filter(|(layer, _)| *layer == Layer::Water)
+            .map(|&(_, index)| cell(world.nav.cell(index)))
             .collect(),
         ais: sorted_ais.iter().map(|ai| ai.save(rules)).collect(),
         features: features
@@ -416,7 +503,8 @@ fn load_features(
     if saved.is_empty() {
         return Ok(features::from_map(rules, map));
     }
-    if saved.len() != map.features.len() {
+    // Spec 35: rows past the map's were dug during the match.
+    if saved.len() < map.features.len() {
         return Err(format!(
             "{} feature rows for {} map features",
             saved.len(),
@@ -425,8 +513,9 @@ fn load_features(
     }
     saved
         .iter()
-        .zip(&map.features)
-        .map(|(row, placed)| {
+        .enumerate()
+        .map(|(index, row)| {
+            let to = map.features.get(index).and_then(|placed| placed.to);
             let kind = rules
                 .feature_types
                 .iter()
@@ -441,7 +530,7 @@ fn load_features(
                 state: row.state,
                 hp: row.hp,
                 alive: row.alive,
-                to: placed.to,
+                to,
                 burn: row.burn,
                 collapse: row.collapse,
             })
@@ -471,6 +560,8 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
     let cells = usize::from(map.width) * usize::from(map.height);
     let features = load_features(&state.features, &rules, &map)?;
     let terrain = features::with_blocks(&base, &features, &rules);
+    let terrain_foot = features::foot_blocks(&base, &features, &rules);
+    let terrain_water = features::water_blocks(&base, &features, &rules);
     let nav = terrain.clone();
 
     let players = state
@@ -504,6 +595,10 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
         terrain_base: base,
         features,
         nav,
+        terrain_foot,
+        nav_foot: None,
+        terrain_water,
+        nav_water: None,
         players,
         entities,
         next_entity_id: state.next_entity_id,
@@ -524,13 +619,19 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
     };
     // Saved goals are never blocked, so the `Move` remap is a no-op.
     world.rebuild_nav();
-    for &goal in &state.flow_goals {
-        let goal = to_cell(goal);
-        if !world.nav.in_bounds(goal) {
-            return Err(format!("flow goal {goal:?} outside the map"));
+    let layers = [
+        (Layer::Vehicle, &state.flow_goals),
+        (Layer::Foot, &state.foot_flow_goals),
+        (Layer::Water, &state.water_flow_goals),
+    ];
+    for (layer, goals) in layers {
+        for &goal in goals {
+            let goal = to_cell(goal);
+            if !world.nav.in_bounds(goal) {
+                return Err(format!("flow goal {goal:?} outside the map"));
+            }
+            world.field(layer, goal);
         }
-        let field = FlowField::compute(&world.nav, goal);
-        world.fields.insert(world.nav.index(goal), field);
     }
     let ais = state
         .ais
@@ -718,6 +819,33 @@ fn save_order(order: Order) -> OrderState {
         },
         Order::Build { order_id, building } => OrderState::Build { order_id, building },
         Order::Garrison { order_id, feature } => OrderState::Garrison { order_id, feature },
+        Order::Board { order_id, carrier } => OrderState::Board { order_id, carrier },
+        Order::Repair { order_id, feature } => OrderState::Repair { order_id, feature },
+        Order::RepairBuilding { order_id, building } => {
+            OrderState::RepairBuilding { order_id, building }
+        }
+        Order::Heal {
+            order_id,
+            building,
+            missing,
+            remaining,
+        } => OrderState::Heal {
+            order_id,
+            building,
+            missing,
+            remaining,
+        },
+        Order::RepairVehicle {
+            order_id,
+            factory,
+            missing,
+            remaining,
+        } => OrderState::RepairVehicle {
+            order_id,
+            factory,
+            missing,
+            remaining,
+        },
     }
 }
 
@@ -758,6 +886,33 @@ fn load_order(order: OrderState) -> Order {
         },
         OrderState::Build { order_id, building } => Order::Build { order_id, building },
         OrderState::Garrison { order_id, feature } => Order::Garrison { order_id, feature },
+        OrderState::Board { order_id, carrier } => Order::Board { order_id, carrier },
+        OrderState::Repair { order_id, feature } => Order::Repair { order_id, feature },
+        OrderState::RepairBuilding { order_id, building } => {
+            Order::RepairBuilding { order_id, building }
+        }
+        OrderState::Heal {
+            order_id,
+            building,
+            missing,
+            remaining,
+        } => Order::Heal {
+            order_id,
+            building,
+            missing,
+            remaining,
+        },
+        OrderState::RepairVehicle {
+            order_id,
+            factory,
+            missing,
+            remaining,
+        } => Order::RepairVehicle {
+            order_id,
+            factory,
+            missing,
+            remaining,
+        },
     }
 }
 
@@ -814,6 +969,8 @@ fn save_entity(entity: &Entity, rules: &Ruleset) -> EntityState {
         site: site.as_ref().map(|site| save_site(site, rules)),
         locomotion: locomotion_save(entity),
         inside: entity.inside,
+        aboard: entity.aboard,
+        unloading: entity.unloading,
     }
 }
 
@@ -883,6 +1040,8 @@ fn load_entity(state: &EntityState, rules: &Ruleset) -> Result<Entity, String> {
         aim: state.locomotion.and_then(|l| l.aim),
         idle_aim_ticks: state.locomotion.map_or(0, |l| l.idle_aim_ticks),
         inside: state.inside,
+        aboard: state.aboard,
+        unloading: state.unloading,
     })
 }
 
@@ -963,6 +1122,9 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
         Command::Cancel { building } => CommandState::Cancel {
             building: *building,
         },
+        Command::Sell { building } => CommandState::Sell {
+            building: *building,
+        },
         Command::Rally { building, target } => CommandState::Rally {
             building: *building,
             target: vec2(*target),
@@ -975,6 +1137,36 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
             feature: *feature,
         },
         Command::Unload { feature } => CommandState::Unload { feature: *feature },
+        Command::Board { units, carrier } => CommandState::Board {
+            units: units.clone(),
+            carrier: *carrier,
+        },
+        Command::Disembark { carrier } => CommandState::Disembark { carrier: *carrier },
+        Command::Repair { units, feature } => CommandState::Repair {
+            units: units.clone(),
+            feature: *feature,
+        },
+        Command::RepairBuilding { units, building } => CommandState::RepairBuilding {
+            units: units.clone(),
+            building: *building,
+        },
+        Command::HealAt { units, building } => CommandState::HealAt {
+            units: units.clone(),
+            building: *building,
+        },
+        Command::RepairVehicle { units, factory } => CommandState::RepairVehicle {
+            units: units.clone(),
+            factory: *factory,
+        },
+        Command::Dig { units, origin, rot } => CommandState::Dig {
+            units: units.clone(),
+            origin: cell(*origin),
+            rot: *rot,
+        },
+        Command::DigLine { units, segments } => CommandState::DigLine {
+            units: units.clone(),
+            segments: segments.iter().map(|(c, rot)| (cell(*c), *rot)).collect(),
+        },
         Command::DebugSpawn { kind, pos } => CommandState::DebugSpawn {
             kind: type_id(rules, *kind),
             pos: vec2(*pos),
@@ -1024,6 +1216,9 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
         CommandState::Cancel { building } => Command::Cancel {
             building: *building,
         },
+        CommandState::Sell { building } => Command::Sell {
+            building: *building,
+        },
         CommandState::Rally { building, target } => Command::Rally {
             building: *building,
             target: fx_vec2(*target),
@@ -1036,6 +1231,39 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
             feature: *feature,
         },
         CommandState::Unload { feature } => Command::Unload { feature: *feature },
+        CommandState::Board { units, carrier } => Command::Board {
+            units: units.clone(),
+            carrier: *carrier,
+        },
+        CommandState::Disembark { carrier } => Command::Disembark { carrier: *carrier },
+        CommandState::Repair { units, feature } => Command::Repair {
+            units: units.clone(),
+            feature: *feature,
+        },
+        CommandState::RepairBuilding { units, building } => Command::RepairBuilding {
+            units: units.clone(),
+            building: *building,
+        },
+        CommandState::HealAt { units, building } => Command::HealAt {
+            units: units.clone(),
+            building: *building,
+        },
+        CommandState::RepairVehicle { units, factory } => Command::RepairVehicle {
+            units: units.clone(),
+            factory: *factory,
+        },
+        CommandState::Dig { units, origin, rot } => Command::Dig {
+            units: units.clone(),
+            origin: to_cell(*origin),
+            rot: *rot,
+        },
+        CommandState::DigLine { units, segments } => Command::DigLine {
+            units: units.clone(),
+            segments: segments
+                .iter()
+                .map(|(c, rot)| (to_cell(*c), *rot))
+                .collect(),
+        },
         CommandState::DebugSpawn { kind, pos } => Command::DebugSpawn {
             kind: type_index(rules, kind)?,
             pos: fx_vec2(*pos),
@@ -1065,6 +1293,18 @@ pub struct Setup {
     pub ai: Vec<SetupAi>,
     #[serde(default)]
     pub entities: Vec<SetupEntity>,
+    /// Spec 35: map features damaged at tick 0 (e.g. a broken bridge to repair).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub features: Vec<SetupFeature>,
+}
+
+/// A map feature, by a cell it covers, left at `hp_percent` of its hit points.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SetupFeature {
+    pub at: [i32; 2],
+    /// 0..=99; 0 destroys (or breaks) it.
+    pub hp_percent: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -1112,6 +1352,14 @@ pub enum SetupOrder {
     AttackGroundCenti([i32; 2]),
     /// Spec 31 block 2: a cell inside the footprint of a garrisonable feature.
     Garrison([i32; 2]),
+    /// Spec 34: label of an own transport to board.
+    Board(String),
+    /// Spec 35: a cell on the deck of the bridge to repair.
+    Repair([i32; 2]),
+    /// Spec 35: top-left cell of a trench to dig (turned 0).
+    Dig([i32; 2]),
+    /// Spec 33: a production building's rally point in centi-tiles.
+    Rally([i32; 2]),
 }
 
 /// World, seed and AIs of a setup (spec 19 §3.5). Errors are the `SimError`
@@ -1274,6 +1522,10 @@ impl World {
                     units,
                     target: FxVec2::new(signed_centi(*x), signed_centi(*y)),
                 },
+                SetupOrder::Rally([x, y]) => Command::Rally {
+                    building: placed[index],
+                    target: FxVec2::new(signed_centi(*x), signed_centi(*y)),
+                },
                 SetupOrder::Harvest(depot) => Command::Harvest {
                     units,
                     depot: label(depot)?,
@@ -1281,6 +1533,21 @@ impl World {
                 SetupOrder::AttackGroundCenti([x, y]) => Command::AttackGround {
                     units,
                     target: FxVec2::new(signed_centi(*x), signed_centi(*y)),
+                },
+                SetupOrder::Dig(cell) => Command::Dig {
+                    units,
+                    origin: to_cell(*cell),
+                    rot: 0,
+                },
+                SetupOrder::Repair(cell) => Command::Repair {
+                    units,
+                    feature: world
+                        .repair_job_at(to_cell(*cell))
+                        .ok_or_else(|| at(format!("no bridge at {},{}", cell[0], cell[1])))?,
+                },
+                SetupOrder::Board(carrier) => Command::Board {
+                    units,
+                    carrier: label(carrier)?,
                 },
                 SetupOrder::Garrison(cell) => Command::Garrison {
                     units,
@@ -1290,6 +1557,22 @@ impl World {
                 },
             };
             world.enqueue_as(entry.player, command);
+        }
+
+        for (index, entry) in setup.features.iter().enumerate() {
+            let cell = to_cell(entry.at);
+            let feature = world
+                .repair_job_at(cell)
+                .or_else(|| world.feature_at(cell))
+                .ok_or_else(|| {
+                    invalid(format!(
+                        "features[{index}]: no feature at {},{}",
+                        entry.at[0], entry.at[1]
+                    ))
+                })? as usize;
+            let hp = world.features[feature].hp;
+            let keep = (u64::from(hp) * u64::from(entry.hp_percent.min(100)) / 100) as u32;
+            world.damage_feature(feature, hp - keep);
         }
 
         world.victory_enabled = setup.victory;

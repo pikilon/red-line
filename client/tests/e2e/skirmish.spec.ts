@@ -53,7 +53,7 @@ type DebugWindow = Window & { __redline?: SkirmishDebugView };
 async function bootDebug(page: Page, query: string): Promise<void> {
   // Skirmish attaches the `russia-balanced` AI to player 1 by default
   // (spec 05 §7); these Phase 2/3 tests exercise Phase 2 hot-seat behaviour.
-  await page.goto(`/?${query}&ai=off`);
+  await page.goto(`/?map=first-line&${query}&ai=off`);
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
@@ -148,7 +148,7 @@ test("AC-03-60: switches player and reveals the map", async ({ page }) => {
 test("AC-03-60: ignores F2 without debug", async ({ page }) => {
   // Without debug=1 the skirmish app still boots (default mode) but installs no
   // debug API; F2 must stay inert, which the debug API's absence proves.
-  await page.goto("/?mode=skirmish");
+  await page.goto("/?map=first-line&mode=skirmish");
   await expect(page.locator("#res-credits")).toHaveText("Credits 5000", {
     timeout: ms(10_000),
   });
@@ -438,6 +438,10 @@ test("AC-03-65: keeps the command panel stable under a held click", async ({
     '#command-panel button[data-type="ua-power-plant"]',
   );
   await expect(plantButton).toBeEnabled();
+  // Cameos arrive asynchronously (spec 41); the panel is idle once they are in.
+  await expect(
+    page.locator("#command-panel .tile .cameo:not(.has-image)"),
+  ).toHaveCount(0, { timeout: ms(20_000) });
 
   const mutations = await page.evaluate(
     () =>

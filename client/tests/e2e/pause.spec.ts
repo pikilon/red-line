@@ -32,7 +32,7 @@ async function boot(
   page: Page,
   query = "?debug=1&seed=1&ai=off",
 ): Promise<void> {
-  await page.goto(`/${query}`);
+  await page.goto(`/${query}&map=first-line`);
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,

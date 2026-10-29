@@ -58,7 +58,7 @@ impl World {
             let entity = &self.entities[index];
             (entity.kind, entity.hp)
         };
-        if hp == 0 || !self.can_fire(index) {
+        if hp == 0 || !self.can_fire(index) || !self.rider_may_fire(index) {
             return;
         }
         let Some((weapon_id, weapon)) = self.weapon_data(kind) else {
@@ -445,7 +445,7 @@ impl World {
         for index in 0..self.entities.len() {
             let entity = &self.entities[index];
             if entity.hp == 0
-                || entity.inside.is_some()
+                || entity.contained()
                 || entity.id == shooter
                 || entity.owner == NEUTRAL
                 || self
@@ -499,7 +499,7 @@ impl World {
         let attacker = &self.entities[index];
         let target = &self.entities[target_index];
         if target.hp == 0
-            || target.inside.is_some()
+            || target.contained()
             || target.owner == attacker.owner
             || target.owner == NEUTRAL
             || self
@@ -541,7 +541,7 @@ impl World {
         if damage == 0 {
             return;
         }
-        let cover = self.cover_pct(self.entity(shooter).map(|e| e.pos), target.pos);
+        let cover = self.unit_cover_pct(self.entity(shooter).map(|e| e.pos), target_index);
         let damage = reduce_damage(damage, cover);
         self.entities[target_index].hp = self.entities[target_index].hp.saturating_sub(damage);
         self.entities[target_index].last_hit = Some((shooter, weapon_id));
@@ -619,7 +619,7 @@ impl World {
             // NEUTRAL out because here it only marks supply depots (owner
             // request 2026-10-25).
             if entity.hp == 0
-                || entity.inside.is_some()
+                || entity.contained()
                 || entity.id == shooter
                 || entity.owner == NEUTRAL
                 || self.entity_distance(impact, entity) > radius
@@ -634,7 +634,7 @@ impl World {
                 continue;
             }
             // The blast comes from the impact: a wall between them shields.
-            let cover = self.cover_pct(Some(impact), entity.pos);
+            let cover = self.unit_cover_pct(Some(impact), index);
             let damage = reduce_damage(damage, cover);
             self.entities[index].hp = self.entities[index].hp.saturating_sub(damage);
             self.entities[index].last_hit = Some((shooter, weapon_id));

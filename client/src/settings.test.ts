@@ -102,17 +102,31 @@ describe("settings", () => {
     });
   });
 
-  it("starts the mixer at full master volume until a volume is saved (spec 25 §10)", () => {
-    expect(DEFAULT_AUDIO_MASTER).toBe(100);
+  it("starts the mixer quiet until a volume is saved (spec 25 §10)", () => {
+    expect(DEFAULT_AUDIO_MASTER).toBe(50);
     expect(resolveAudioVolumes({ gore: true })).toEqual({
-      audioMaster: 100,
-      audioSfx: 80,
-      audioAmbient: 50,
-      audioVoice: 70,
+      audioMaster: 50,
+      audioSfx: 60,
+      audioAmbient: 30,
+      audioVoice: 60,
       audioMusic: 0,
     });
     expect(
       resolveAudioVolumes({ gore: true, audioMaster: 45, audioMusic: 0 }),
     ).toMatchObject({ audioMaster: 45, audioMusic: 0 });
+  });
+});
+
+describe("folded panels (spec 41 §3.4)", () => {
+  it("round-trips the folded panel ids", () => {
+    const store = new Map<string, string>();
+    const storage = {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => void store.set(key, value),
+    } as unknown as Storage;
+    saveSettings({ gore: true, foldedPanels: ["command"] }, storage);
+    expect(loadSettings(storage).foldedPanels).toEqual(["command"]);
+    saveSettings({ gore: true, foldedPanels: [] }, storage);
+    expect(loadSettings(storage).foldedPanels).toBeUndefined();
   });
 });

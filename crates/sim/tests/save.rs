@@ -131,6 +131,25 @@ fn ac_19_05_continuity() {
     }
 }
 
+#[test]
+fn ac_37_03_pending_sale_survives_a_save() {
+    let (mut world, mut ais) = ai_match();
+    let building = world
+        .entities()
+        .iter()
+        .find(|entity| entity.owner == 0 && entity.site.is_some())
+        .expect("player 0 has a building")
+        .id;
+    world.enqueue(Command::Sell { building });
+    let json = save_json(&world, SEED, &ais);
+    let (mut loaded, _, mut loaded_ais) = load_json(&json).expect("sale command loads");
+    step_with_ai(&mut world, &mut ais);
+    step_with_ai(&mut loaded, &mut loaded_ais);
+    assert_eq!(observe(&loaded), observe(&world));
+    assert!(world.entity(building).is_none());
+    assert!(loaded.entity(building).is_none());
+}
+
 /// A saved first-line state at tick 1000 as JSON, with at least one entity
 /// carrying `lastHit` for the weapon case.
 fn saved_value() -> Value {

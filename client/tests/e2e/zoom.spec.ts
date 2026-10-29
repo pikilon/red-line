@@ -74,7 +74,7 @@ test("AC-08-11: zoom in the skirmish", async ({ page }) => {
   });
   page.on("pageerror", (error) => errors.push(error.message));
 
-  await page.goto("/?debug=1&seed=1&ai=off");
+  await page.goto("/?map=first-line&debug=1&seed=1&ai=off");
   await page.waitForFunction(
     () =>
       (window as DebugWindow).__redline?.isReady() === true &&

@@ -219,7 +219,10 @@ function checkReferences(sources, globals, factions, fail) {
     if (registry.has(id)) fail(file, pointer, "duplicate-id", `duplicate id ${id}`);
     else registry.set(id, registry.size);
   };
-  const owners = [{ file: sources.globals.file, list: "commonTypes", types: globals.commonTypes, weapons: [] }];
+  const owners = [
+    { file: sources.globals.file, list: "commonTypes", types: globals.commonTypes, weapons: [] },
+    { file: sources.globals.file, list: "lateTypes", types: globals.lateTypes ?? [], weapons: [] },
+  ];
   factions.forEach((faction, i) => {
     owners.push({ file: sources.factions[i].file, list: "types", types: faction.types, weapons: faction.weapons });
   });
@@ -429,8 +432,16 @@ function checkMap(file, map, globals, factions, featureTypes, fail) {
     cells.forEach((cell) => occupied.add(cell));
   };
 
-  const depot = globals.commonTypes.find((t) => t.category === "depot");
-  map.depots.forEach((d, i) => place(`/depots/${i}/origin`, d.origin, depot.footprint, "depot"));
+  const depots = [...globals.commonTypes, ...(globals.lateTypes ?? [])].filter((t) => t.category === "depot");
+  map.depots.forEach((d, i) => {
+    // Spec 36: `type` picks a depot type (a port); absent is the first one.
+    const depot = d.type === undefined ? depots[0] : depots.find((t) => t.id === d.type);
+    if (!depot) {
+      fail(file, `/depots/${i}/type`, "unknown-reference", `${d.type} is not a depot type`);
+      return;
+    }
+    place(`/depots/${i}/origin`, d.origin, depot.footprint, "depot");
+  });
   map.starts.forEach((start, i) => {
     const faction = factions.find((f) => f.id === start.faction);
     if (!faction) {
@@ -507,6 +518,8 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
   const typeList = [
     ...globals.commonTypes.map((t) => ({ t, faction: -1 })),
     ...factions.flatMap((f, faction) => f.types.map((t) => ({ t, faction }))),
+    // Spec 36: common types added later go last, so earlier type indices stay.
+    ...(globals.lateTypes ?? []).map((t) => ({ t, faction: -1 })),
   ];
   const weaponIndex = new Map(weaponList.map((w, i) => [w.id, i]));
   const typeIndex = new Map(typeList.map(({ t }, i) => [t.id, i]));
@@ -523,6 +536,7 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
     armorClasses: globals.armorClasses,
     damageModifiers: globals.damageTypes.map((d) => globals.armorClasses.map((a) => globals.damageModifiers[d][a])),
     startingCredits: globals.startingCredits,
+    sellRefundPercent: globals.sellRefundPercent ?? 50,
     lowPowerMinSpeedPercent: globals.lowPowerMinSpeedPercent,
     lowPowerMaxSpeedPercent: globals.lowPowerMaxSpeedPercent,
     maxQueue: globals.maxQueue,
@@ -534,7 +548,15 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       ? {
           environment: {
             highGround: { minTiles: environment.highGround.minTiles, rangePct: environment.highGround.rangePct },
-            cover: { forestPct: environment.cover.forest.pct, wallPct: environment.cover.wall.pct },
+            cover: {
+              forestPct: environment.cover.forest.pct,
+              wallPct: environment.cover.wall.pct,
+              trenchPct: environment.cover.trench?.pct ?? 0,
+            },
+            // Spec 35: repair works.
+            ...(environment.repair === undefined ? {} : { repair: environment.repair }),
+            // Spec 40: infantry healing at the barracks.
+            ...(environment.infirmary === undefined ? {} : { infirmary: environment.infirmary }),
           },
         }
       : {}),
@@ -603,8 +625,18 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       dropOff: t.dropOff ?? false,
       capacity: t.capacity ?? 0,
       loadTicks: t.loadTicks ?? 0,
+      // Spec 36: a depot that never runs out (a port).
+      ...(t.infinite === undefined ? {} : { infinite: t.infinite }),
       unloadTicks: t.unloadTicks ?? 0,
       freeUnit: t.freeUnit === undefined ? -1 : typeIndex.get(t.freeUnit),
+      // Spec 39: a completed vehicle-repair pad.
+      ...(t.repairsVehicles === undefined ? {} : { repairsVehicles: t.repairsVehicles }),
+      // Spec 36: drives over deep water too.
+      ...(t.amphibious === undefined ? {} : { amphibious: t.amphibious }),
+      // Spec 40: damaged infantry heal inside this building.
+      ...(t.healsInfantry === undefined ? {} : { healsInfantry: t.healsInfantry }),
+      // Spec 34: infantry transport.
+      ...(t.transport === undefined ? {} : { transport: t.transport }),
       render: { size: renderSize(t) },
     })),
     factions: factions.map((f) => ({ id: f.id, hq: typeIndex.get(f.hq), dozer: typeIndex.get(f.dozer) })),
@@ -631,6 +663,8 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       crushLevel: t.crushLevel ?? 0,
       ...(t.flammable === undefined ? {} : { flammable: t.flammable }),
       ...(t.garrison === undefined ? {} : { garrison: t.garrison }),
+      // Spec 35: repair or dig speed, percent of the base rate.
+      ...(t.repairPct === undefined ? {} : { repairPct: t.repairPct }),
       render: t.render,
     })),
     maps: maps.map((m, mi) => ({

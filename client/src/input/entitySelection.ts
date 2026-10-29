@@ -42,6 +42,8 @@ export function pickEntity(
   let structureId: number | null = null;
 
   for (const entity of entities) {
+    // Spec 34: riders are hidden in their vehicle; the vehicle is picked.
+    if (hasFlag(entity, ENTITY_FLAGS.aboard)) continue;
     if (isUnit(entity)) {
       const distance = Math.hypot(entity.x - x, entity.y - y);
       if (distance > radiusTiles) continue;
@@ -91,7 +93,7 @@ export function boxSelect(
   const ids: number[] = [];
   for (const entity of entities) {
     if (entity.owner !== player) continue;
-    if (!isUnit(entity)) continue;
+    if (!isUnit(entity) || hasFlag(entity, ENTITY_FLAGS.aboard)) continue;
     const point = project(entity.x, entity.y);
     if (
       point.x >= rect.minX &&
@@ -113,7 +115,7 @@ export function selectAllOwnUnits(
   const ids = new Set<number>();
   for (const entity of entities) {
     if (entity.owner !== player) continue;
-    if (!isUnit(entity)) continue;
+    if (!isUnit(entity) || hasFlag(entity, ENTITY_FLAGS.aboard)) continue;
     ids.add(entity.id);
   }
   return [...ids].sort((a, b) => a - b);

@@ -72,6 +72,32 @@ export interface SkirmishSimLike {
   command_harvest(player: number, unitIds: Uint32Array, depot: number): void;
   command_garrison(player: number, unitIds: Uint32Array, feature: number): void;
   command_unload(player: number, feature: number): void;
+  command_board(player: number, unitIds: Uint32Array, carrier: number): void;
+  command_disembark(player: number, carrier: number): void;
+  command_repair(player: number, unitIds: Uint32Array, feature: number): void;
+  command_repair_building(
+    player: number,
+    unitIds: Uint32Array,
+    building: number,
+  ): void;
+  command_heal_at(player: number, unitIds: Uint32Array, building: number): void;
+  command_repair_vehicle(
+    player: number,
+    unitIds: Uint32Array,
+    factory: number,
+  ): void;
+  command_dig(
+    player: number,
+    unitIds: Uint32Array,
+    x: number,
+    y: number,
+    rot: number,
+  ): void;
+  command_dig_line(
+    player: number,
+    unitIds: Uint32Array,
+    segments: Int32Array,
+  ): void;
   command_construct(
     player: number,
     dozer: number,
@@ -82,6 +108,7 @@ export interface SkirmishSimLike {
   command_resume(player: number, unitIds: Uint32Array, building: number): void;
   command_produce(player: number, building: number, kind: number): void;
   command_cancel(player: number, building: number): void;
+  command_sell(player: number, building: number): void;
   command_rally(
     player: number,
     building: number,
@@ -177,6 +204,9 @@ const COMMANDS = {
   cancel: run((sim, command: Extract<SimCommand, { kind: "cancel" }>) => {
     sim.command_cancel(command.player, command.building);
   }),
+  sell: run((sim, command: Extract<SimCommand, { kind: "sell" }>) => {
+    sim.command_sell(command.player, command.building);
+  }),
   rally: run((sim, command: Extract<SimCommand, { kind: "rally" }>) => {
     sim.command_rally(
       command.player,
@@ -191,6 +221,64 @@ const COMMANDS = {
       Uint32Array.from(command.units),
       command.feature,
     );
+  }),
+  board: run((sim, command: Extract<SimCommand, { kind: "board" }>) => {
+    sim.command_board(
+      command.player,
+      Uint32Array.from(command.units),
+      command.carrier,
+    );
+  }),
+  repairBuilding: run(
+    (sim, command: Extract<SimCommand, { kind: "repairBuilding" }>) => {
+      sim.command_repair_building(
+        command.player,
+        Uint32Array.from(command.units),
+        command.building,
+      );
+    },
+  ),
+  healAt: run((sim, command: Extract<SimCommand, { kind: "healAt" }>) => {
+    sim.command_heal_at(
+      command.player,
+      Uint32Array.from(command.units),
+      command.building,
+    );
+  }),
+  repairVehicle: run(
+    (sim, command: Extract<SimCommand, { kind: "repairVehicle" }>) => {
+      sim.command_repair_vehicle(
+        command.player,
+        Uint32Array.from(command.units),
+        command.factory,
+      );
+    },
+  ),
+  dig: run((sim, command: Extract<SimCommand, { kind: "dig" }>) => {
+    sim.command_dig(
+      command.player,
+      Uint32Array.from(command.units),
+      command.x,
+      command.y,
+      command.rot,
+    );
+  }),
+  digLine: run((sim, command: Extract<SimCommand, { kind: "digLine" }>) => {
+    sim.command_dig_line(
+      command.player,
+      Uint32Array.from(command.units),
+      Int32Array.from(command.segments),
+    );
+  }),
+  repair: run((sim, command: Extract<SimCommand, { kind: "repair" }>) => {
+    sim.command_repair(
+      command.player,
+      Uint32Array.from(command.units),
+      command.feature,
+    );
+  }),
+  disembark: run((sim, command: Extract<SimCommand, { kind: "disembark" }>) => {
+    sim.command_disembark(command.player, command.carrier);
   }),
   unload: run((sim, command: Extract<SimCommand, { kind: "unload" }>) => {
     sim.command_unload(command.player, command.feature);

@@ -17,7 +17,7 @@ interface MobileDebugView {
 type DebugWindow = Window & { __redline?: MobileDebugView };
 
 async function boot(page: Page): Promise<void> {
-  await page.goto("/?debug=1&seed=1&ai=off");
+  await page.goto("/?map=first-line&debug=1&seed=1&ai=off");
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
@@ -96,7 +96,12 @@ test.describe("mobile web app", () => {
 
     const viewport = page.viewportSize();
     if (viewport === null) throw new Error("no viewport");
-    const centre = { x: viewport.width / 2, y: viewport.height / 2 };
+    // Away from the quick, zoom and command bars: the pinch must start on
+    // the map, not on a HUD panel that owns its touches.
+    const centre = {
+      x: viewport.width * 0.45,
+      y: viewport.height * 0.35,
+    };
     await page.evaluate(() =>
       (window as DebugWindow).__redline?.setCameraTarget(40, 40),
     );

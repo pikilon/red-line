@@ -1,0 +1,78 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "port-supply",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "demo-coast",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 22,
+      "y": 22,
+      "zoom": 0.9
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "demo-coast",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": true,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-supply-center",
+        "origin": [
+          20,
+          24
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-truck",
+        "atCenti": [
+          2400,
+          2300
+        ],
+        "order": {
+          "harvest": "depot-2"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-truck",
+        "atCenti": [
+          2500,
+          2400
+        ],
+        "order": {
+          "harvest": "depot-2"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-truck",
+        "atCenti": [
+          1500,
+          3800
+        ],
+        "order": {
+          "harvest": "depot-0"
+        }
+      }
+    ]
+  }
+}

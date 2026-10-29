@@ -1,5 +1,5 @@
 # Spec 26 phase 2: civilian buildings, walls and props. Spec 31: hit points, crush level, infantry garrison and collapse into
-# `rubble-<w>x<h>` (`blocks: vehicles` is `all` for the sim until the nav grid has layers: rubble stops infantry too).
+# `rubble-<w>x<h>` (`blocks: vehicles`: vehicles stop, infantry walk through at full speed, spec 31 A7).
 # `render.model` picks the procedural builder in client/src/render/features/civil/; the look follows `variant`
 # and the placed `state` (intact, damaged, wrecked, abandoned). Fences, walls and lamps are decoration (`none`).
 types:
