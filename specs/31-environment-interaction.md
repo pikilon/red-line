@@ -176,7 +176,18 @@ New optional keys on feature types, read by the schema in `data/schema/`:
 ### 4.3 Client (`client/`)
 
 Only receives and draws. Feature renderers read the snapshot section and show
-the state (damaged and wrecked models, fire, rubble, stump). Renderer files stay
+the state (damaged and wrecked models, fire, rubble, stump). Destruction is not
+a cut (owner feedback 2026-10-28, "demasiado de golpe", no fire or smoke):
+`client/src/render/features/fx.ts` puts fire, smoke, dust and debris in the
+particle pools of the vehicle effects (spec 27), and `live.ts` animates what
+falls. A damaged building smokes from its roof, a wrecked one burns in two
+windows, a collapsing one sinks into the ground over the sim's collapse time
+(Zero Hour `StructureCollapseUpdate`) in fire, black smoke and dust, and its
+rubble lands in a burst of dust and debris and smoulders for 40 s (embers for
+the first 20 s). A felled tree topples and lies for a moment before only the
+stump stays (Zero Hour `W3DTreeBuffer` topple); a burning tree burns in
+particles and its stump smokes for 15 s; flattened decor throws dust and bits;
+a broken bridge drops into the river in dust and debris. Renderer files stay
 under `client/src/render/features/renderers/` with **no test files there**
 (owner request: the game loads that folder in the browser). Tests go in
 `client/tests/` or `crates/sim`.
@@ -243,10 +254,13 @@ allowEnemies? }` on the feature type; the AI reads `garrisonRadiusCenti` from
   destroyed building, not a full one and not one another player holds. The
   holder is public, as in Zero Hour, where a garrisoned building shows its
   team colour.
-* **A12 — attacking a garrison.** Occupants cannot be targeted. Enemies clear
-  a building by damaging it (force fire or splash, block 1): at the wrecked
-  state the occupants are thrown out. Units do not pick a held building as an
-  automatic target yet (Zero Hour does); see open question 3.
+* **A12 — attacking a garrison (owner answer, open question 3).** As in Zero
+  Hour (`PartitionFilterRejectBuildings`, `PartitionManager.cpp:4922`), a
+  building garrisoned by another player is an enemy: a unit with no unit to
+  shoot fires on its own at the nearest one it sees and reaches, aiming at the
+  footprint cell nearest to it. An empty building is never a target. The shot
+  damages the building only (`GarrisonContain::onDamage` is empty); at the
+  wrecked state the occupants are thrown out and become targets.
 
 ### Block 3 — Cover and position
 
@@ -313,8 +327,9 @@ Blocks 2 and 3 depend on PR 1 only (and on block 1's snapshot and tick step). Bl
 * **A3 — cover does not stack.** The best cover applies, not the sum.
 * **A4 — garrison capacity.** `slots` is per building type; civilian values as
   in section 2.2 (10 for the apartment block).
-* **A5 — fire spread** uses the seeded RNG, one roll per burning neighbour per
-  tick.
+* **A5 — fire spread** rolls a SplitMix64 seeded from the tick and the two
+  rows, one roll per burning neighbour per tick: deterministic, and the same
+  in every match of the same map and orders.
 * **A6 — crusher level (block 1).** Tracked hulls have `crusherLevel: 1` in the
   data, so a feature's `crushLevel: 1` is what they flatten (the spec text said
   "above 1"). A hull flattens a feature within its radius plus a quarter tile
@@ -330,8 +345,8 @@ Blocks 2 and 3 depend on PR 1 only (and on block 1's snapshot and tick step). Bl
   garrison entry and eviction cells. Without rubble both layers are one, so
   the state hash and old saves are unchanged.
 * **A8 — bridges (block 1).** A bridge at the wrecked state (35% hp) or lower
-  blocks its deep-water deck cells and the client stops drawing it; units on
-  the deck at that moment are not harmed.
+  blocks its deep-water deck cells and the client drops it into the river;
+  units on the deck at that moment are not harmed.
 
 ## 9. Open questions for the owner
 
@@ -341,8 +356,8 @@ Blocks 2 and 3 depend on PR 1 only (and on block 1's snapshot and tick step). Bl
    missing text if it had more requirements.
 2. Should a shot that crosses a wall stop the shot (Difference 2 `blocksShots`)
    or only reduce the damage? This spec assumes "reduce".
-3. Should units attack an enemy-held building on their own, as in Zero Hour
-   (A12)? Today the player has to force fire on it.
+3. Answered 2026-10-28: yes, units attack an enemy-held building on their
+   own, as in Zero Hour (A12).
 
 ## 10. Acceptance criteria
 

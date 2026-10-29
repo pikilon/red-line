@@ -245,7 +245,7 @@
       "id": "environment-garrison",
       "map": "demo-town",
       "form": "setup",
-      "entities": 15
+      "entities": 16
     },
     {
       "id": "environment-cover",

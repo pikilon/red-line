@@ -1,7 +1,8 @@
 # Spec 31 block 2: infantry garrison civilian buildings. Player 0 has six riflemen walking into the west apartment block
 # (they fire from the windows with +33% range and +25% damage; click the block to select them and press Evacuate) and a
 # squad beside the house at (19, 24): select it and press Garrison, or right click the house. Player 1 garrisons the
-# east apartment block and sends a squad from the far east toward the house, which leaves time to garrison it.
+# east apartment block and sends a squad from the far east toward the house, which leaves time to garrison it. A Ukrainian tank south of the east block shells it on its own (it is held by
+# the enemy) until the riflemen are thrown out.
 id: environment-garrison
 map: demo-town
 victory: false
@@ -27,3 +28,4 @@ entities:
   - { player: 1, type: ru-rifleman, atCenti: [4600, 2650], order: { moveCenti: [2300, 2650] } }
   - { player: 1, type: ru-rifleman, atCenti: [4600, 2750], order: { moveCenti: [2300, 2750] } }
   - { player: 1, type: ru-rifleman, atCenti: [4700, 2700], order: { moveCenti: [2300, 2700] } }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [2850, 2950] }
