@@ -46,6 +46,7 @@ function skirmishSim(
     command_heal_at: vi.fn(),
     command_repair_vehicle: vi.fn(),
     command_dig: vi.fn(),
+    command_dig_line: vi.fn(),
     debug_spawn: vi.fn(),
     debug_set_hp: vi.fn(),
     ...overrides,

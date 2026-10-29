@@ -170,7 +170,7 @@
   "saves.bridge-repair.name": "Bridge repair",
   "saves.bridge-repair.description": "A broken and a damaged bridge. Riflemen and dozers repair them; right click a damaged bridge with workers selected. More workers finish faster, and the broken bridge reopens.",
   "saves.trench-digging.name": "Trench digging",
-  "saves.trench-digging.description": "Riflemen and a dozer dig two trenches. Select infantry, press Dig trench and click the ground to dig one; a finished trench halves the damage its soldiers take.",
+  "saves.trench-digging.description": "Riflemen and a dozer dig two trenches. Select infantry, press Dig trench, then click the ground to dig one or drag a line to dig a whole trench line; a finished trench halves the damage its soldiers take.",
   "saves.port-supply.name": "Port supply",
   "saves.port-supply.description": "Supply trucks load at the harbour's cargo yard, which never runs out but loads slowly, and at an ordinary supply depot that empties.",
   "saves.amphibious-crossing.name": "Amphibious crossing",

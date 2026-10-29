@@ -877,6 +877,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let fogOverlay: FogOverlay | null = null;
   let weather: Weather | null = null;
   const placementGhost = createPlacementGhost();
+  const digGhosts: Mesh[] = [];
   const placementHint = createPlacementHint(document.body);
   /** Models applied to the entity renderer; fallback boxes until they load. */
   let models: ModelRegistry | null = null;
@@ -1366,6 +1367,36 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     commandPanel.render(panel);
   }
 
+  /** Ghost trenches along the line being drawn (spec 35 §5b.1); red where the
+   *  cells are closed. */
+  function updateDigGhosts(): void {
+    const preview = controller?.digPreview() ?? [];
+    while (digGhosts.length < preview.length) {
+      const mesh = new Mesh(
+        new BoxGeometry(1, 1, 1),
+        new MeshBasicMaterial({
+          transparent: true,
+          opacity: PLACEMENT_GHOST_OPACITY,
+        }),
+      );
+      scene.add(mesh);
+      digGhosts.push(mesh);
+    }
+    digGhosts.forEach((mesh, i) => {
+      const segment = preview[i];
+      mesh.visible = segment !== undefined;
+      if (segment === undefined) return;
+      const [width, height] = segment.rot === 0 ? [2, 1] : [1, 2];
+      const cx = segment.x + width / 2;
+      const cy = segment.y + height / 2;
+      mesh.position.set(cx, footprintGround(cx, cy, width, height) + 0.1, cy);
+      mesh.scale.set(width, 0.2, height);
+      (mesh.material as MeshBasicMaterial).color.set(
+        segment.valid ? PLACEMENT_VALID_COLOR : PLACEMENT_INVALID_COLOR,
+      );
+    });
+  }
+
   /** Positions and tints the footprint ghost while placing (spec §6.5). */
   function updatePlacementGhost(): void {
     const preview = controller?.placementPreview() ?? null;
@@ -1690,6 +1721,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       }
     }
     updatePlacementGhost();
+    updateDigGhosts();
     effects?.update(effectTime(now));
     attackMarker?.update(effectTime(now), (id) => {
       const entity = next?.entities.find((row) => row.id === id);
