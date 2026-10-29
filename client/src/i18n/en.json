@@ -11,6 +11,7 @@
   "ui.evacuate": "Evacuate",
   "ui.disembark": "Unload",
   "ui.dig": "Dig trench",
+  "ui.repairVehicle": "Repair at factory",
   "ui.sell": "Sell ({refund})",
   "ui.victory": "Victory",
   "ui.defeat": "Defeat",

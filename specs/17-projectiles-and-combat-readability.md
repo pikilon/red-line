@@ -578,3 +578,5 @@ catches the half-second flight.
   muzzle, impact and absent-target cases stay.
 * AI-vs-AI outcomes (`crates/sim/tests/ai_match.rs`, `crates/headless/tests/cli.rs`)
   may change with the new builtin data.
+
+Addendum (2026-10-29): Force fire is greyed out when the selection holds no unit with a weapon (trucks, dozers).

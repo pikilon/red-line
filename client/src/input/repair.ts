@@ -186,6 +186,81 @@ export function resolveInfirmaryClick(args: {
   return [{ kind: "healAt", player, units, building: target.id }];
 }
 
+/** Ids of the selected own damaged vehicles that can dock for repair. */
+function repairableVehicles(
+  player: number,
+  selected: readonly number[],
+  entities: readonly EntityState[],
+): EntityState[] {
+  const wanted = new Set(selected);
+  return entities.filter((entity) => {
+    if (!wanted.has(entity.id) || entity.owner !== player) return false;
+    const def = typeDef(entity.kind);
+    return (
+      def.category === "unit" &&
+      RULES.locomotors[def.locomotor]?.kind !== "foot" &&
+      entity.hp > 0 &&
+      entity.hp < def.hp &&
+      !hasFlag(entity, ENTITY_FLAGS.inside)
+    );
+  });
+}
+
+/** Spec 39: the Repair button. Sends the selected damaged vehicles to the own
+ *  repair factory nearest the first one; empty when there is none. */
+export function resolveRepairButton(
+  player: number,
+  selected: readonly number[],
+  entities: readonly EntityState[],
+): SimCommand[] {
+  const vehicles = repairableVehicles(player, selected, entities);
+  const first = vehicles[0];
+  if (first === undefined) return [];
+  let best: EntityState | undefined;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (const entity of entities) {
+    const def = typeDef(entity.kind);
+    if (
+      entity.owner !== player ||
+      def.category !== "building" ||
+      def.repairsVehicles !== true ||
+      hasFlag(entity, ENTITY_FLAGS.underConstruction)
+    ) {
+      continue;
+    }
+    const distance = (entity.x - first.x) ** 2 + (entity.y - first.y) ** 2;
+    if (distance < bestDistance) {
+      best = entity;
+      bestDistance = distance;
+    }
+  }
+  if (best === undefined) return [];
+  return [
+    {
+      kind: "repairVehicle",
+      player,
+      units: vehicles.map((entity) => entity.id),
+      factory: best.id,
+    },
+  ];
+}
+
+/** True when the Repair button shows: a damaged vehicle is selected and an
+ *  own repair factory stands. */
+export function canRepairVehicles(
+  player: number,
+  selected: readonly EntityState[],
+  entities: readonly EntityState[],
+): boolean {
+  return (
+    resolveRepairButton(
+      player,
+      selected.map((entity) => entity.id),
+      entities,
+    ).length > 0
+  );
+}
+
 /** Right click an own repair factory with damaged vehicles selected (spec 39). */
 export function resolveVehicleRepairClick(args: {
   player: number;

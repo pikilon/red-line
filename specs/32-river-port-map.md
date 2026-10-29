@@ -39,6 +39,18 @@ skirmish on it against the default AI. `first-line` stays available with
 `?load=river-port` opens the map revealed, camera on the ford, with two tanks
 per side, to look around before playing.
 
+## 5. Walkable piers
+
+A feature type with `walkable: true` (the `pier`) is a deck like a bridge's
+(spec 26 section 17): the data compiler writes its deep-water footprint cells
+into the map's `bridges` layer, so the sim opens them and infantry and vehicles
+walk out on the pier. Shallow and land cells under it were already passable.
+
+The client stands units on the planks: the port renderer registers each pier's
+plank surface as a deck (`setDeckHeights(.., "pier")`, alongside the bridges),
+and a click picks the deck surface before the water under it, so an order on a
+pier or bridge lands where the cursor points.
+
 ## Acceptance criteria
 
 * AC-32-01 (data): `DEFAULT_MAP` is `river-port`; its depots and HQs mirror
@@ -46,6 +58,10 @@ per side, to look around before playing.
   props, forests, two plateaus with ramps and hills.
 * AC-32-02 (manual): opening the game shows river-port with both AIs able to
   build and play.
+* AC-32-03 (sim): the deep-water cells of a river-port pier are passable; the
+  deep water beside it stays blocked; a soldier ordered to the pier end walks
+  there.
+* AC-32-04 (client): a unit on a pier is drawn on the planks.
 
 Assumption (owner left it open): "main screen" means the map a new game opens
 on; there is no separate title screen.

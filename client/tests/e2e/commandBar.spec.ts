@@ -69,7 +69,7 @@ test("AC-41-01/05/10: a unit shows its sections, cameos, and panel taps stay off
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await open(page, "/?map=first-line&debug=1&seed=1&ai=off");
-  const dozer = await selectOwn(page, "ua-dozer");
+  await selectOwn(page, "ua-dozer");
   const panel = page.locator("#command-panel");
   await expect(panel).toBeVisible();
   for (const key of ["stop", "force-fire", "same-screen", "same-map"]) {
@@ -80,6 +80,12 @@ test("AC-41-01/05/10: a unit shows its sections, cameos, and panel taps stay off
   await expect(panel.locator(".tile .cameo.has-image").first()).toBeVisible({
     timeout: ms(15_000),
   });
+  // A dozer has no weapon: Force fire is greyed out.
+  await expect(panel.locator('button[data-type="force-fire"]')).toBeDisabled();
+  // An armed, damaged tank next to its factory offers Force fire and Repair.
+  await open(page, "/?load=vehicle-repair&ai=off");
+  const dozer = await selectOwn(page, "ua-leopard-2a4");
+  await expect(panel.locator('button[data-type="repair"]')).toBeVisible();
   // Force fire lights up and a panel tap never clears the selection (AC-41-10).
   const force = panel.locator('button[data-type="force-fire"]');
   await force.click();

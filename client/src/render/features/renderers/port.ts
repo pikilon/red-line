@@ -15,6 +15,7 @@ import {
   SphereGeometry,
 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { setDeckHeights } from "../../elevation";
 import type { FeatureContext, FeatureInstance } from "../layers";
 import { registerFeatureRenderer } from "../registry";
 
@@ -170,9 +171,13 @@ const CONTAINER_COLOURS = [
 const mix = (a: number, b: number): number =>
   (Math.imul(a + 1, 2654435761) ^ Math.imul(b + 7, 1597334677)) >>> 0;
 
+/** Pier plank top above its base (deck box top plus the seams). */
+const PIER_DECK_Y = 0.3;
+const PIER_SURFACE = PIER_DECK_Y + 0.05;
+
 function pier(parts: Parts, v: number): void {
   const len = 5.9;
-  const deckY = 0.3;
+  const deckY = PIER_DECK_Y;
   box(parts, WOOD, 0, deckY - 0.06, 0, 1.7, 0.1, len);
   // Plank seams.
   for (let i = 0; i < 12; i++) {
@@ -545,12 +550,39 @@ export function portGeometries(
   };
 }
 
+/** Spec 32: the plank surface of every pier, so units walking out on one
+ *  stand on the deck they see instead of in the water under it. */
+export function pierSurface(
+  instances: readonly FeatureInstance[],
+  ctx: FeatureContext,
+): ((x: number, y: number) => number | null) | null {
+  const decks = instances
+    .filter((instance) => kindOf(instance) === "pier")
+    .map((instance) => ({
+      x0: instance.x,
+      y0: instance.y,
+      x1: instance.x + instance.width,
+      y1: instance.y + instance.height,
+      top: baseHeight(instance, ctx) + PIER_SURFACE,
+    }));
+  if (decks.length === 0) return null;
+  return (x, y) => {
+    for (const deck of decks) {
+      if (x >= deck.x0 && y >= deck.y0 && x < deck.x1 && y < deck.y1) {
+        return deck.top;
+      }
+    }
+    return null;
+  };
+}
+
 export function createPorts(
   instances: readonly FeatureInstance[],
   ctx: FeatureContext,
 ): Object3D {
   const group = new Group();
   group.name = "features-port";
+  setDeckHeights(pierSurface(instances, ctx), "pier");
   const { solid, glow } = portGeometries(instances, ctx);
   if (solid !== null) {
     const mesh = new Mesh(

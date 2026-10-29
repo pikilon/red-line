@@ -44,9 +44,11 @@ import {
 } from "../input/garrison";
 import {
   canDig,
+  canRepairVehicles,
   type RepairMapFeature,
   type RepairTypeInfo,
   repairJobsOf,
+  resolveRepairButton,
   withRepairState,
 } from "../input/repair";
 import {
@@ -802,6 +804,16 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       uiClick();
       interact.command({ kind: "unload", player: controlled, feature });
     },
+    onRepair: () => {
+      uiClick();
+      for (const command of resolveRepairButton(
+        controlled,
+        selectedEntities().map((entity) => entity.id),
+        next?.entities ?? [],
+      )) {
+        interact.command(command);
+      }
+    },
     onDig: () => {
       uiClick();
       controller?.armDig();
@@ -1375,6 +1387,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       units: selection.some(
         (entity) => typeDef(entity.kind).category === "unit",
       ),
+      canFire: selection.some((entity) => {
+        const def = typeDef(entity.kind);
+        return def.category === "unit" && def.weapon >= 0;
+      }),
       rally:
         selection.length === 1 &&
         selection.every((entity) => {
@@ -1403,6 +1419,11 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
                 features: garrisonFeatures,
               }),
               dig: canDig(controlled, selectedEntities()),
+              repair: canRepairVehicles(
+                controlled,
+                selectedEntities(),
+                next.entities,
+              ),
               disembark: disembarkOffer({
                 player: controlled,
                 selected: [...(controller?.selected ?? [])],

@@ -80,9 +80,17 @@ test("AC-37-05: sells a producer and refunds its building and queue", async ({
   await expect(page.locator("#queue .queue-item")).toHaveCount(2);
   const sell = page.locator('#command-panel button[data-type="sell"]');
   await expect(sell).toHaveText("Sell (250)");
-  await sell.click();
-  await expect(sell).toHaveText("Confirm (250)");
-  await sell.click();
+  // Arm and confirm in one browser turn: on a slow runner two Playwright
+  // clicks can land more than SELL_CONFIRM_MS apart and the second re-arms.
+  const armedLabel = await page.evaluate(() => {
+    const button = (): HTMLButtonElement | null =>
+      document.querySelector('#command-panel button[data-type="sell"]');
+    button()?.click();
+    const label = button()?.textContent ?? null;
+    button()?.click();
+    return label;
+  });
+  expect(armedLabel).toBe("Confirm (250)");
   await call(page, (api) => api.setSimPaused(false));
 
   await expect

@@ -556,8 +556,14 @@ test("AC-03-57: produces and cancels through the UI", async ({ page }) => {
     page.locator('#command-panel button[data-type="ua-stugna-team"]'),
   ).toBeVisible();
 
-  await clickButton(page, rifleButton);
-  await clickButton(page, rifleButton);
+  // Queue both riflemen in one browser turn: on a slow runner the panel can
+  // repaint between two Playwright clicks and the second one is lost.
+  await rifleButton.evaluate((button) => {
+    const again = (): HTMLButtonElement | null =>
+      document.querySelector('#command-panel button[data-type="ua-rifleman"]');
+    (button as HTMLButtonElement).click();
+    again()?.click();
+  });
   await expect(page.locator("#queue .queue-item")).toHaveCount(2);
   // Hold the worker clock while the page checks the queue and cancels, so the
   // head cannot finish in between on a slow runner (#299). The cancel applies

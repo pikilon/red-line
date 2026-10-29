@@ -15,6 +15,7 @@ import {
   isDeepWater,
   layerHex,
   rasterizeTerrain,
+  rotatedFootprint,
 } from "./map-layers.mjs";
 import { expandBridges } from "./map-bridges.mjs";
 
@@ -463,6 +464,20 @@ function checkMap(file, map, globals, factions, featureTypes, fail) {
   if (terrain) snapRoadsToBridges(terrain, bridges.instances, map.width);
   const expanded = expandFeatures(map, featureTypes, solid);
   expanded.problems.forEach((p) => fail(file, p.pointer, p.code, p.message));
+  // Spec 32: a walkable feature (a pier) is a deck too: its deep-water cells join the bridge layer.
+  let deckLayer = bridges.layer;
+  for (const inst of expanded.instances) {
+    const type = featureTypes[inst.type];
+    if (!type.walkable || !terrain) continue;
+    const [w, h] = rotatedFootprint(type.footprint, inst.rot);
+    for (let y = inst.y; y < Math.min(map.height, inst.y + h); y++) {
+      for (let x = inst.x; x < Math.min(map.width, inst.x + w); x++) {
+        if (!isDeepWater(terrain.water[y * map.width + x])) continue;
+        deckLayer ??= new Uint8Array(map.width * map.height);
+        if (deckLayer[y * map.width + x] === 0) deckLayer[y * map.width + x] = inst.type + 1;
+      }
+    }
+  }
   const instances = [...expanded.instances, ...bridges.instances].sort((a, b) => a.y - b.y || a.x - b.x || a.type - b.type || a.rot - b.rot);
   // Maps that use the new keys must not start a dozer on a solid cell (legacy maps are left as they are).
   if (terrain || instances.length > 0) {
@@ -473,7 +488,7 @@ function checkMap(file, map, globals, factions, featureTypes, fail) {
       }
     });
   }
-  return { terrain, instances, bridges: bridges.layer };
+  return { terrain, instances, bridges: deckLayer };
 }
 
 /** Semantic checks for one AI personality file (specs/05 §4.1). */
