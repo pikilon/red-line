@@ -341,6 +341,10 @@ pub enum CommandState {
         origin: [i32; 2],
         rot: u8,
     },
+    DigLine {
+        units: Vec<u32>,
+        segments: Vec<([i32; 2], u8)>,
+    },
     Construct {
         dozer: u32,
         kind: String,
@@ -1159,6 +1163,10 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
             origin: cell(*origin),
             rot: *rot,
         },
+        Command::DigLine { units, segments } => CommandState::DigLine {
+            units: units.clone(),
+            segments: segments.iter().map(|(c, rot)| (cell(*c), *rot)).collect(),
+        },
         Command::DebugSpawn { kind, pos } => CommandState::DebugSpawn {
             kind: type_id(rules, *kind),
             pos: vec2(*pos),
@@ -1248,6 +1256,13 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
             units: units.clone(),
             origin: to_cell(*origin),
             rot: *rot,
+        },
+        CommandState::DigLine { units, segments } => Command::DigLine {
+            units: units.clone(),
+            segments: segments
+                .iter()
+                .map(|(c, rot)| (to_cell(*c), *rot))
+                .collect(),
         },
         CommandState::DebugSpawn { kind, pos } => Command::DebugSpawn {
             kind: type_index(rules, kind)?,

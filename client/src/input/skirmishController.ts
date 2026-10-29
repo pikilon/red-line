@@ -18,9 +18,12 @@ import {
   type RepairJob,
   resolveBuildingRepairClick,
   resolveDigClick,
+  resolveDigLine,
   resolveInfirmaryClick,
   resolveRepairClick,
   resolveVehicleRepairClick,
+  type TrenchSegment,
+  trenchLineSegments,
 } from "./repair";
 import {
   narrowToKind,
@@ -79,8 +82,12 @@ export interface PlacementPreview {
 export interface SkirmishController {
   readonly selected: ReadonlySet<number>;
   /** Spec 35: the next left click on the ground digs a trench there (Shift
-   *  turns it); a right click cancels. */
+   *  turns it); dragging draws a line of trenches (Shift keeps Dig armed); a
+   *  right click cancels. */
   armDig(): void;
+  /** Spec 35 §5b.1: the trench segments of the line being drawn, with whether
+   *  the client sees their cells open; null when no line is being drawn. */
+  digPreview(): (TrenchSegment & { valid: boolean })[] | null;
   /** Spec 41: the Force fire button; the next left tap/click force-fires, a
    *  second press (or a right click) disarms. */
   toggleForceFire(): void;
@@ -303,6 +310,7 @@ export function createSkirmishController(
   canvas.addEventListener("pointermove", (event) => {
     if (pinch.move(event)) return;
     lastPointer = { x: event.clientX, y: event.clientY };
+    if (digArmed && dragStart !== null) return;
     if (dragStart !== null && isDrag(dragStart, lastPointer)) {
       options.selectionBox.show(rectFromDrag(dragStart, lastPointer));
     }
@@ -359,6 +367,22 @@ export function createSkirmishController(
     const start = dragStart;
     dragStart = null;
     options.selectionBox.show(null);
+    if (digArmed && isDrag(start, end)) {
+      const from = groundAt(start);
+      const to = groundAt(end);
+      digArmed = event.shiftKey;
+      if (from === null || to === null) return;
+      for (const command of resolveDigLine({
+        player: options.player(),
+        selected: [...selected],
+        entities: options.entities(),
+        from,
+        to,
+      })) {
+        options.command(command);
+      }
+      return;
+    }
     if (isDrag(start, end)) {
       setSelection(
         boxSelect(
@@ -605,6 +629,32 @@ export function createSkirmishController(
     selected,
     armDig() {
       digArmed = true;
+    },
+    digPreview() {
+      if (!digArmed || dragStart === null || lastPointer === null) return null;
+      if (!isDrag(dragStart, lastPointer)) return null;
+      const from = groundAt(dragStart);
+      const to = groundAt(lastPointer);
+      if (from === null || to === null) return null;
+      const tiles = options.tiles();
+      return trenchLineSegments(from, to).map((segment) => {
+        const [w, h] = segment.rot === 0 ? [2, 1] : [1, 2];
+        let valid = true;
+        for (let dy = 0; dy < h; dy++) {
+          for (let dx = 0; dx < w; dx++) {
+            const x = segment.x + dx;
+            const y = segment.y + dy;
+            const open =
+              x >= 0 &&
+              y >= 0 &&
+              x < options.mapWidth &&
+              y < options.mapHeight &&
+              tiles[y * options.mapWidth + x] === 0;
+            if (!open) valid = false;
+          }
+        }
+        return { ...segment, valid };
+      });
     },
     toggleForceFire() {
       armedMode = armedMode === "force" ? null : "force";

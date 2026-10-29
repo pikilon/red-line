@@ -278,6 +278,27 @@ impl Sim {
         );
     }
 
+    /// Spec 35 §5b.1: `segments` is `x, y, rot` triples, in dig order.
+    pub fn command_dig_line(&mut self, player: u8, unit_ids: &[u32], segments: &[i32]) {
+        self.world.enqueue_as(
+            player,
+            Command::DigLine {
+                units: unit_ids.to_vec(),
+                segments: segments
+                    .as_chunks::<3>()
+                    .0
+                    .iter()
+                    .map(|s| {
+                        (
+                            crate::map::Cell { x: s[0], y: s[1] },
+                            s[2].clamp(0, 3) as u8,
+                        )
+                    })
+                    .collect(),
+            },
+        );
+    }
+
     pub fn command_harvest(&mut self, player: u8, unit_ids: &[u32], depot: u32) {
         self.world.enqueue_as(
             player,

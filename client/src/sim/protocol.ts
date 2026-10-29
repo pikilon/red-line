@@ -87,6 +87,8 @@ export type SimCommand =
       y: number;
       rot: number;
     }
+  /** Spec 35 §5b.1: workers dig a line; `segments` holds x, y, rot triples. */
+  | { kind: "digLine"; player: number; units: number[]; segments: number[] }
   | {
       kind: "debugSpawn";
       player: number;
