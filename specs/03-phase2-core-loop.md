@@ -2075,6 +2075,14 @@ survives the first volley. Zero Hour precedent: `TankArmor` gives `SMALL_ARMS`
 25 % and a zero-damage weapon is never a valid target (`Armor.ini:126`,
 `WeaponSet.cpp:726`, `generals-precedent` note 2026-10-26).
 
+**AC-03-70 Health bars face the camera (owner request 2026-10-29).** Given
+`createEntityRenderer` and the isometric camera's quaternion, when a damaged or
+under-construction entity is drawn, then its bar is a billboard whose long axis
+is the camera's right (world height 0) and whose short axis points up the
+screen, so the bar is horizontal in the player's view; billboarding changes the
+orientation only, and the bar keeps its place above the entity and its length
+follows the health ratio.
+
 ### Updated Phase 1 criteria
 
 * AC-01-05: the API version is now `2` (`ac_01_05_api_version_is_one` asserts

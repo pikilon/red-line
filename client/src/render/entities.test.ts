@@ -10,6 +10,7 @@ import {
   Vector3,
 } from "three";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { createIsometricCamera } from "../camera";
 import { typeDef, typeIndex } from "../rules";
 import { ENTITY_FLAGS, type EntityState, NEUTRAL } from "../sim/matchSnapshot";
 import { bobHeight, createAnimator, RECOIL_TILES } from "./animation";
@@ -225,6 +226,38 @@ describe("entity renderer", () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  it("AC-03-70: health bars face the camera and stay horizontal", () => {
+    const renderer = createEntityRenderer(100);
+    const camera = createIsometricCamera(16 / 9);
+    renderer.update(
+      [entity(0, 0, "ua-barracks", 10, 6, 10)],
+      new Set(),
+      0,
+      camera.quaternion,
+    );
+    expect(renderer.bars.count).toBe(1);
+
+    const matrix = new Matrix4();
+    const translation = new Vector3();
+    const rotation = new Quaternion();
+    const scale = new Vector3();
+    renderer.bars.getMatrixAt(0, matrix);
+    matrix.decompose(translation, rotation, scale);
+
+    // The bar's long axis is the camera's right, so it has no world height:
+    // it lies horizontally on screen instead of following the isometric floor.
+    const along = new Vector3(1, 0, 0).applyQuaternion(rotation);
+    expect(along.y).toBeCloseTo(0, 6);
+    // Its short axis points up the screen.
+    const up = new Vector3(0, 1, 0).applyQuaternion(rotation);
+    expect(up.y).toBeGreaterThan(0.8);
+    // Billboarding changes the orientation only.
+    expect(translation.x).toBeCloseTo(10, 6);
+    expect(translation.z).toBeCloseTo(6, 6);
+    const type = typeDef(typeIndex("ua-barracks"));
+    expect(scale.x).toBeCloseTo(Math.max(0.05, 10 / type.hp), 6);
   });
 
   it("rebuilds no id lookup Map per frame and keeps tracers", () => {
