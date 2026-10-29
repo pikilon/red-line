@@ -6,6 +6,7 @@ types:
     family: port
     footprint: [2, 6]
     blocks: none
+    walkable: true                   # spec 32: units walk out on the deck over deep water
     variants: 2
     render: { kind: pier }
   - id: quay
