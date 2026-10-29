@@ -101,6 +101,21 @@ test.describe("touch device", () => {
     if (dozer === null) throw new Error("missing ua-dozer");
     await page.mouse.click(dozer.x, dozer.y);
     await expect(page.locator("#command-panel")).toBeVisible();
+    // Cameo renders wait for idle callbacks; let the visible ones finish so a
+    // late offscreen render cannot stall a frame inside the pan-rate sample.
+    await expect
+      .poll(
+        () =>
+          page
+            .locator("#command-panel .cameo")
+            .evaluateAll(
+              (nodes) =>
+                nodes.filter((node) => !node.classList.contains("has-image"))
+                  .length,
+            ),
+        { timeout: ms(15_000) },
+      )
+      .toBe(0);
 
     // Layout: joystick bottom right, command panel bottom left, no overlap.
     const joystick = await box(page, "#touch-joystick");

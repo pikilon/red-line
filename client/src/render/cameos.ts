@@ -50,8 +50,30 @@ export interface CameoStore {
   request(typeId: string): Promise<string | null>;
 }
 
-/** Lazy, serial, caching cameo store over `rasterize`. */
-export function createCameoStore(rasterize: Rasterizer): CameoStore {
+/** Runs `run` when the browser has spare time. */
+export type IdleScheduler = (run: () => void) => void;
+
+/** Upper bound on waiting for idle time: a busy match still gets its cameo. */
+export const CAMEO_IDLE_TIMEOUT_MS = 1000;
+
+function scheduleIdle(run: () => void): void {
+  if (typeof requestIdleCallback === "function") {
+    requestIdleCallback(run, { timeout: CAMEO_IDLE_TIMEOUT_MS });
+  } else {
+    setTimeout(run, 0);
+  }
+}
+
+/**
+ * Lazy, serial, caching cameo store over `rasterize`. Each render waits for an
+ * idle callback, so the GLB load, offscreen render and `toDataURL` of one
+ * cameo never run back to back with another one and never occupy a gameplay
+ * frame twice.
+ */
+export function createCameoStore(
+  rasterize: Rasterizer,
+  idle: IdleScheduler = scheduleIdle,
+): CameoStore {
   const done = new Map<string, string | null>();
   const pending = new Map<string, Promise<string | null>>();
   let chain: Promise<unknown> = Promise.resolve();
@@ -61,6 +83,7 @@ export function createCameoStore(rasterize: Rasterizer): CameoStore {
       const known = pending.get(typeId);
       if (known !== undefined) return known;
       const job = chain.then(async () => {
+        await new Promise<void>((resolve) => idle(resolve));
         let url: string | null = null;
         try {
           url = await rasterize(typeId);
