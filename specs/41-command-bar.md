@@ -59,11 +59,13 @@ Three docked panels, each with a fold tab. Touch targets are ≥ 44 px.
   the refund, a second tap within 3 s sells); Evacuate; Unload.
 * **Build grid:** construct/produce buttons as cameo tiles with the cost under
   the picture and a hotkey-free tooltip with the full name. Disabled tiles are
-  grey; unaffordable ones show the cost in red. The right button is inert (spec
-  08 §3.9); the queue item is the cancel control.
-* **Queue:** the producing item and the waiting ones as small cameos, the
-  first with a clock-wipe of its progress. Tapping an item cancels it as the
-  current queue does.
+  grey; unaffordable ones show the cost in red. Right-click / long-press
+  cancels as today.
+* **Queue:** there is no separate queue row. Each produce tile shows its unit's
+  name as text, a "− 3 +" stepper on the cameo with how many of that type are
+  queued ("+" queues one more, "−" cancels the last queued unit and, with one
+  left, the whole queue), and a clock-wipe of progress inside the cameo while the head of
+  the queue is of that type. Right-click / long-press cancels as above.
 * Section headers are thin labels ("UNITS", "STRUCTURE"); a section with no
   buttons is not drawn.
 
@@ -116,7 +118,7 @@ transparent background) and cached; a type with no model shows its initials.
   Ctrl+click does.
 * AC-41-03: Rally point then a tap sets the building's rally point.
 * AC-41-04: Sell needs two taps; one tap and a wait does nothing.
-* AC-41-05: Build tiles and queue items show a cameo image of their type.
+* AC-41-05: Build tiles show a cameo image and the name of their type; queued units show as a count badge on their tile.
 * AC-41-06: Set + slot 1 stores the selection; tapping slot 1 reselects it;
   digit 1 does the same.
 * AC-41-07: Same type on screen selects only visible own units of that type;

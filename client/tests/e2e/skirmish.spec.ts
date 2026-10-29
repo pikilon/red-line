@@ -554,7 +554,9 @@ test("AC-03-57: produces and cancels through the UI", async ({ page }) => {
     (button as HTMLButtonElement).click();
     again()?.click();
   });
-  await expect(page.locator("#queue .queue-item")).toHaveCount(2);
+  await expect(
+    page.locator("#command-panel .tile .qn:not([hidden])"),
+  ).toHaveText("2");
   // Hold the worker clock while the page checks the queue and cancels, so the
   // head cannot finish in between on a slow runner (#299). The cancel applies
   // on the first step after resuming.
@@ -563,7 +565,9 @@ test("AC-03-57: produces and cancels through the UI", async ({ page }) => {
   // Right click on a produce tile still cancels (queue untouched, D5).
   await rifleButton.click({ button: "right" });
   await debugCall(page, (api) => api.setSimPaused(false));
-  await expect(page.locator("#queue .queue-item")).toHaveCount(1);
+  await expect(
+    page.locator("#command-panel .tile .qn:not([hidden])"),
+  ).toHaveText("1");
   await expect(page.locator("#res-credits")).toHaveText("Credits 3800");
   await expect
     .poll(() => entityCount(page, 0, riflemanKind), { timeout: ms(20_000) })
