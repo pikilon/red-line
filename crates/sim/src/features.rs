@@ -857,6 +857,27 @@ mod tests {
         assert!(!deep.is_empty());
         assert!(deep.iter().all(|&cell| world.terrain.is_passable(cell)));
         assert!(!world.terrain.is_passable(Cell { x: 19, y: 88 }));
+        assert!(deep.iter().all(|&cell| world.nav.is_passable(cell)));
+    }
+
+    #[test]
+    fn a_soldier_walks_to_the_end_of_a_pier() {
+        let mut world = World::skirmish_with(Ruleset::builtin(), "river-port", false).unwrap();
+        let kind = world.rules.type_index("ua-rifleman").unwrap();
+        let id = world.spawn(0, kind, centre(20, 79));
+        world.enqueue(crate::world::Command::Move {
+            units: vec![id],
+            target: centre(20, 89),
+        });
+        for _ in 0..900 {
+            world.step();
+        }
+        let pos = world.entity(id).unwrap().pos;
+        assert_eq!(
+            crate::map::cell_of(pos),
+            Cell { x: 20, y: 89 },
+            "at {pos:?}"
+        );
     }
 
     #[test]

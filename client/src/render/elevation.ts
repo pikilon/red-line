@@ -113,22 +113,45 @@ export function fromCorners(
 let current: Elevation = flatElevation(1, 1);
 /** Visual surface on top of the elevation (craters and tread press, spec 24). */
 let reliefAt: ((x: number, y: number) => number) | null = null;
-/** Bridge deck surface in tiles at a position, or null off the decks (spec 26 section 17). */
+/** Deck surface in tiles at a position, or null off the decks: bridges (spec
+ *  26 section 17) and piers (spec 32), each renderer under its own source. */
 let deckAt: ((x: number, y: number) => number | null) | null = null;
+/** Decks rise at most this far above the highest ground (the stone arch is 0.8). */
+const DECK_PICK_TOP = 1;
+const deckSources = new Map<string, (x: number, y: number) => number | null>();
+
+function combineDecks(): void {
+  const all = [...deckSources.values()];
+  deckAt =
+    all.length === 0
+      ? null
+      : (x, y) => {
+          let top: number | null = null;
+          for (const surface of all) {
+            const h = surface(x, y);
+            if (h !== null && (top === null || h > top)) top = h;
+          }
+          return top;
+        };
+}
 
 /** Makes `elevation` the ground every renderer stands things on. */
 export function setGroundElevation(elevation: Elevation | null): void {
   current = elevation ?? flatElevation(1, 1);
   reliefAt = null;
+  deckSources.clear();
   deckAt = null;
 }
 
-/** Makes `surfaceOf` the bridge deck units stand on: where it returns a
- *  height, `groundY` is at least that. `null` clears it. */
+/** Makes `surfaceOf` the decks of `source` units stand on: where any source
+ *  returns a height, `groundY` is at least that. `null` clears the source. */
 export function setDeckHeights(
   surfaceOf: ((x: number, y: number) => number | null) | null,
+  source = "bridge",
 ): void {
-  deckAt = surfaceOf;
+  if (surfaceOf === null) deckSources.delete(source);
+  else deckSources.set(source, surfaceOf);
+  combineDecks();
 }
 
 /** Makes `heightOf` the visual surface the renderer stands things on: the
@@ -212,12 +235,20 @@ const hit = new Vector3();
  *  plane. Marches down from the highest corner, then bisects. */
 export function pickGround(ray: Ray): { x: number; y: number } | null {
   const elevation = current;
+  const decks = deckAt;
   plane.constant = 0;
   const flat = ray.intersectPlane(plane, hit);
-  if (!elevation.raised || flat === null) {
+  if ((!elevation.raised && decks === null) || flat === null) {
     return flat === null ? null : { x: flat.x, y: flat.z };
   }
-  plane.constant = -elevation.top;
+  // Spec 32: a click on a bridge or pier deck lands on the planks, not on
+  // the water under them.
+  const surface = (x: number, z: number): number => {
+    const ground = elevation.at(x, z);
+    const deck = decks === null ? null : decks(x, z);
+    return deck === null ? ground : Math.max(ground, deck);
+  };
+  plane.constant = -(elevation.top + (decks === null ? 0 : DECK_PICK_TOP));
   const start = ray.intersectPlane(plane, new Vector3());
   if (start === null) return { x: flat.x, y: flat.z };
   const end = flat.clone();
@@ -227,12 +258,12 @@ export function pickGround(ray: Ray): { x: number; y: number } | null {
   let previous = start.clone();
   for (let i = 1; i <= steps; i++) {
     point.lerpVectors(start, end, i / steps);
-    if (point.y <= elevation.at(point.x, point.z)) {
+    if (point.y <= surface(point.x, point.z)) {
       let low = previous.clone();
       let high = point.clone();
       for (let k = 0; k < 12; k++) {
         const mid = low.clone().lerp(high, 0.5);
-        if (mid.y <= elevation.at(mid.x, mid.z)) high = mid;
+        if (mid.y <= surface(mid.x, mid.z)) high = mid;
         else low = mid;
       }
       return { x: high.x, y: high.z };
