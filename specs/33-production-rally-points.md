@@ -1,14 +1,17 @@
 # 33 — Production rally points
 
-Status: built (owner request 2026-10-29). Depends on `03-phase2-core-loop.md`
-(production and `Command::Rally`) and `19-save-games.md`.
-Decisions: D-02 (fixed-point deterministic simulation), D-05 (data driven).
+Status: built (owner request 2026-10-29; amended by spec 08 §3.9). Depends on
+`03-phase2-core-loop.md` (production and `Command::Rally`) and
+`19-save-games.md`. Decisions: D-02 (fixed-point deterministic simulation),
+D-05 (data driven).
 
 ## 1. Goal
 
-A player sets or replaces a barracks or vehicle factory rally point with a
-right click, sees it while that building is selected, and every subsequently
-produced unit leaves the building and moves there.
+A player sets or replaces a barracks or vehicle factory rally point with the
+Rally point button and a left click, sees it while that building is selected,
+and every subsequently produced unit leaves the building and moves there.
+Spec 08 §3.9 D2: a plain left click on the ground does not set the rally; the
+button is the only path.
 
 ## 2. Precedent (`generals-precedent`, Zero Hour)
 
@@ -28,8 +31,8 @@ Source: `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`; Zero Hour 1.04 INI.
 ## 3. Rules
 
 * An own production building accepts the command (keeping spec 03's existing
-  validation). A right click replaces its point; there is no separate clear
-  command.
+  validation). The Rally point button arms the next left click, which replaces
+  the point; there is no separate clear command.
 * The existing exit cell is Red Line's natural exit. A produced unit spawns
   there and immediately receives its own ordinary move order to the current
   rally point. Changing the point never reroutes a unit already produced.
@@ -42,7 +45,8 @@ Source: `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`; Zero Hour 1.04 INI.
 
 * Keep `Site.rally` and the production-exit `Move` in `crates/sim/src/economy.rs`;
   add rally coordinates to building snapshots and setup-command examples.
-* Reuse the existing right-click `rally` intent in `client/src/input/intent.ts`.
+* Reuse the existing `rally` intent through `resolveRally` in
+  `client/src/input/intent.ts`; only the armed Rally button calls it.
 * Render a small ground marker from snapshot state, selected-building only.
 * Example save `?load=rally-points`: both a barracks and a vehicle factory have
   distinct rally points and enough credits to queue units and watch both exit

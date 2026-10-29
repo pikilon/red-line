@@ -158,7 +158,7 @@ test("AC-17-16: HIMARS rockets in the skirmish", async ({ page }) => {
     .toBe(true);
 
   await centreOn(page, building.x, building.y);
-  await clickTiles(page, building.x, building.y, "right");
+  await clickTiles(page, building.x, building.y);
 
   const flew = await page.evaluate(
     () =>

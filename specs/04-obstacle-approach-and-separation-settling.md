@@ -26,7 +26,7 @@ gather every time, so that is what is implemented.
 
 ## 1. Context and Problem Statement
 
-When a player selects a group of units and right-clicks inside an impassable
+When a player selects a group of units and left-clicks inside an impassable
 building or terrain obstacle, two defects occur:
 
 1. **Perimeter Bottlenecking ("cubes gather around the building"):**

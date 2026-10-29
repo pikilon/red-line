@@ -46,7 +46,7 @@ async function clickTiles(
   await page.mouse.click(point.x, point.y, { button });
 }
 
-test("AC-38-05: dozers repair a damaged building through right click", async ({
+test("AC-38-05: dozers repair a damaged building through left click", async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -69,7 +69,7 @@ test("AC-38-05: dozers repair a damaged building through right click", async ({
   });
   if (building === undefined) throw new Error("missing damaged power plant");
   const before = building.hp;
-  await clickTiles(page, building.x, building.y, "right");
+  await clickTiles(page, building.x, building.y);
   await expect
     .poll(
       () =>

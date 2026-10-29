@@ -72,12 +72,14 @@ test("AC-02-39: selects a unit by clicking", async ({ page }) => {
     .toEqual([0]);
   await expect(page.locator("#hud-selected")).toHaveText("Selected: 1");
 
+  // Empty ground now moves the selection and keeps it (spec 08 §3.9).
   const empty = await screenOf(page, 10.5, 10.5);
   await page.mouse.click(empty.x, empty.y);
+  await expect.poll(() => debugCall(page, (api) => api.isMoving(0))).toBe(true);
   await expect
     .poll(() => debugCall(page, (api) => api.selectedIds()))
-    .toEqual([]);
-  await expect(page.locator("#hud-selected")).toHaveText("Selected: 0");
+    .toEqual([0]);
+  await expect(page.locator("#hud-selected")).toHaveText("Selected: 1");
 });
 
 test("AC-02-40: selects units with a box", async ({ page }) => {
@@ -119,7 +121,7 @@ test("AC-02-40: selects units with a box", async ({ page }) => {
   }
 });
 
-test("AC-02-41: moves selected units with right click", async ({ page }) => {
+test("AC-02-41: moves selected units with left click", async ({ page }) => {
   await bootDebug(page, "&units=1");
   const unit = await debugCall(page, (api) => api.unitPosition(0));
   const point = await screenOf(page, unit?.x ?? 0, unit?.y ?? 0);
@@ -130,6 +132,11 @@ test("AC-02-41: moves selected units with right click", async ({ page }) => {
 
   const target = await screenOf(page, 10.5, 10.5);
   await page.mouse.click(target.x, target.y, { button: "right" });
+  await page.waitForTimeout(ms(300));
+  expect(await debugCall(page, (api) => api.isMoving(0))).toBe(false);
+  expect(await debugCall(page, (api) => api.unitPosition(0))).toEqual(unit);
+
+  await page.mouse.click(target.x, target.y);
   await expect
     .poll(() => debugCall(page, (api) => api.isMoving(0)), {
       timeout: ms(10_000),

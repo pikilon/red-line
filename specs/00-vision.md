@@ -15,7 +15,7 @@ asymmetric armies. It runs fully offline in the browser once loaded (D-03).
 
 | # | Pillar | What it means in practice |
 |---|---|---|
-| P1 | Classic RTS feel | Base building, harvesting, production queues, box selection, right-click orders, fast pace. Readability over realism when they conflict on screen. |
+| P1 | Classic RTS feel | Base building, harvesting, production queues, box selection, left-click orders, fast pace. Readability over realism when they conflict on screen. |
 | P2 | Modern, real factions | Real countries grouped into blocks (D-04). Every country has at least one unique unit or ability. First matchup: Ukraine vs Russia. |
 | P3 | Fair by construction | Every advantage is paid for with a weakness. Balance is measured, not argued: headless bot-vs-bot tournaments (D-04, D-06). |
 | P4 | Deterministic core | One Rust simulation, fixed-point, identical results in the browser (WASM) and natively (headless, replays, tournaments). This enables lockstep multiplayer and reproducible balance (D-05). |

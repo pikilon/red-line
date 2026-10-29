@@ -53,7 +53,7 @@ describe("garrison interface (spec 31 block 2)", () => {
     expect(features[1]).toMatchObject({ width: 3, height: 3, slots: 2 });
   });
 
-  it("right click on a building sends the selected infantry in", () => {
+  it("click on a building sends the selected infantry in", () => {
     const entities = [
       unit(1, 0, "ua-rifleman", 9, 14),
       unit(2, 0, "ua-leopard-2a4", 8, 14),

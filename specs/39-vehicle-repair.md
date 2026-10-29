@@ -51,11 +51,11 @@ Source: `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`; Zero Hour 1.04 INI.
   reuses footprint approach, distance, entity HP clamp and repair balance.
 * Both vehicle factories set `repairsVehicles: true` in faction data; the schema
   and generated ruleset carry it to sim and client.
-* `client/src/input/repair.ts` resolves right-click factory repair. Existing HP
-  bars and receding damage effects show recovery; no containment or new renderer
-  is needed.
+* `client/src/input/repair.ts` resolves left-click factory repair (spec 08
+  §3.9). Existing HP bars and receding damage effects show recovery; no
+  containment or new renderer is needed.
 * Example save `?load=vehicle-repair`: two damaged vehicles beside their factory
-  and a supply center. Select a vehicle and right click the factory.
+  and a supply center. Select a vehicle and click the factory.
 
 ## 5. Assumptions
 
@@ -74,4 +74,5 @@ and worker dispatch are covered; real mouse input repairs a vehicle in the examp
 
 Selecting a damaged own vehicle while an own complete repair factory stands
 shows a Repair at factory button (Units section). It sends `repairVehicle` to the
-factory nearest the first selected vehicle; right click on the factory still works.
+factory nearest the first selected vehicle; a left click on the factory still works
+(spec 08 §3.9).

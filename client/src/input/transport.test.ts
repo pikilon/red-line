@@ -36,7 +36,7 @@ describe("spec 34 transport input", () => {
   const rider = unit(4, 0, "ua-rifleman", 10, 10, ABOARD, 1);
   const entities = [bradley, tank, rifleman, rider];
 
-  it("a right click on an own transport boards the selected infantry", () => {
+  it("a click on an own transport boards the selected infantry", () => {
     expect(
       resolveBoardClick({
         player: 0,

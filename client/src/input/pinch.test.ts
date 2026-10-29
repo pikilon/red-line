@@ -89,4 +89,23 @@ describe("pinch gesture", () => {
     expect(pinch.up(touch(1, 100, 100))).toBe(false);
     expect(zoom()).toBe(2);
   });
+
+  it("two fingers sliding together pan; a small pinch drift does not", () => {
+    const moves: Array<[number, number]> = [];
+    const pinch = createPinchGesture({
+      zoom: () => 1,
+      setZoom: () => {},
+      begin: () => {},
+      pan: (from, to) => moves.push([to.x - from.x, to.y - from.y]),
+    });
+    pinch.down(touch(1, 100, 200));
+    pinch.down(touch(2, 200, 200));
+    pinch.move(touch(1, 96, 200));
+    pinch.move(touch(2, 204, 200));
+    expect(moves).toEqual([]);
+    pinch.move(touch(1, 140, 230));
+    pinch.move(touch(2, 240, 230));
+    expect(moves.length).toBe(1);
+    expect(moves.at(-1)).toEqual([18, 15]);
+  });
 });

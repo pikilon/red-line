@@ -542,10 +542,9 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       window.location.reload();
     },
   });
-  // Joystick and menu button on touch screens only (spec 08 §3.6).
+  // Menu button on touch screens only (spec 08 §3.6).
   const touchControls = isTouchDevice()
     ? createTouchControls(document.body, {
-        pan: (x, y) => controller?.setAnalogPan(x, y),
         toggleMenu: () => {
           uiClick();
           toggleMenuLikeEsc();
@@ -918,6 +917,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     modelsReady = true;
   });
 
+  const ACK_COLOR = 0x35e05a;
   /** Spec 20 §4: a short red pulse acknowledges an attack order (client-only). */
   function markAttack(command: SimCommand): void {
     if (attackMarker === null) return;
@@ -933,6 +933,51 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
           : 0.9;
       attackMarker.show(
         { id: target.id, x: target.x, y: target.y, radius },
+        effectTime(performance.now()),
+      );
+    } else if (command.kind === "move") {
+      attackMarker.show(
+        {
+          id: null,
+          x: fromRaw(command.xRaw),
+          y: fromRaw(command.yRaw),
+          radius: 0.7,
+          color: ACK_COLOR,
+        },
+        effectTime(performance.now()),
+      );
+    } else if (
+      command.kind === "repairBuilding" ||
+      command.kind === "healAt" ||
+      command.kind === "repairVehicle" ||
+      command.kind === "resume" ||
+      command.kind === "board" ||
+      command.kind === "harvest"
+    ) {
+      const id =
+        command.kind === "repairBuilding" ||
+        command.kind === "healAt" ||
+        command.kind === "resume"
+          ? command.building
+          : command.kind === "repairVehicle"
+            ? command.factory
+            : command.kind === "board"
+              ? command.carrier
+              : command.depot;
+      const target = next?.entities.find((entity) => entity.id === id);
+      if (target === undefined) return;
+      const type = typeDef(target.kind);
+      attackMarker.show(
+        {
+          id: target.id,
+          x: target.x,
+          y: target.y,
+          radius:
+            type.category === "building"
+              ? Math.max(type.footprint[0], type.footprint[1]) / 2 + 0.6
+              : 0.9,
+          color: ACK_COLOR,
+        },
         effectTime(performance.now()),
       );
     } else if (command.kind === "attackGround") {

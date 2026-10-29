@@ -74,22 +74,44 @@ test("AC-33-08: sets, replaces and displays rally points for both producers", as
       .find((entity) => entity.owner === 0 && entity.kind === kind);
   });
   if (barracks === undefined) throw new Error("missing barracks");
+  const initial = { building: barracks.id, x: 4, y: 75 };
   await clickTiles(page, barracks.x, barracks.y);
   await expect
     .poll(() => call(page, (api) => api.selectedIds()))
     .toEqual([barracks.id]);
   await expect.poll(() => call(page, (api) => api.rallyMarkerCount())).toBe(1);
-  expect(await rallyPoint(page, barracks.id)).toEqual({
-    building: barracks.id,
-    x: 4,
-    y: 75,
-  });
+  expect(await rallyPoint(page, barracks.id)).toEqual(initial);
 
-  await clickTiles(page, 20, 70, "right");
+  // Spec 08 §3.9 D2 (revised): a ground click with a lone producer sets it.
+  await clickTiles(page, 18, 72);
+  await expect
+    .poll(() => rallyPoint(page, barracks.id))
+    .toEqual({ building: barracks.id, x: 18, y: 72 });
+  expect(await call(page, (api) => api.rallyMarkerCount())).toBe(1);
+
+  // The Rally button arms the next left click.
+  const panel = page.locator("#command-panel");
+  const rally = panel.locator('button[data-type="rally"]');
+  await rally.click();
+  await expect(rally).toHaveClass(/active/);
+  await clickTiles(page, 20, 70);
   await expect
     .poll(() => rallyPoint(page, barracks.id))
     .toEqual({ building: barracks.id, x: 20, y: 70 });
-  await clickTiles(page, 20, 70);
+  await expect(rally).not.toHaveClass(/active/);
+
+  // Selecting something else hides the marker but keeps the stored point.
+  const plant = await call(page, (api) => {
+    const kind = api.typeIndex("ua-power-plant");
+    return api
+      .entities()
+      .find((entity) => entity.owner === 0 && entity.kind === kind);
+  });
+  if (plant === undefined) throw new Error("missing power plant");
+  await clickTiles(page, plant.x, plant.y);
+  await expect
+    .poll(() => call(page, (api) => api.selectedIds()))
+    .toEqual([plant.id]);
   await expect.poll(() => call(page, (api) => api.rallyMarkerCount())).toBe(0);
   expect(await rallyPoint(page, barracks.id)).toEqual({
     building: barracks.id,
@@ -114,5 +136,11 @@ test("AC-33-08: sets, replaces and displays rally points for both producers", as
     x: 24,
     y: 74,
   });
+
+  await rally.click();
+  await clickTiles(page, 30, 70);
+  await expect
+    .poll(() => rallyPoint(page, factory.id))
+    .toEqual({ building: factory.id, x: 30, y: 70 });
   expect(errors).toEqual([]);
 });

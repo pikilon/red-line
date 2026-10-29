@@ -109,15 +109,16 @@ function isUnderConstruction(entity: EntityState): boolean {
 }
 
 /**
- * Commands for a right click at ground (x, y) tiles; xRaw/yRaw = toRaw.
- * Rules, in order (selected ids not owned by `player` or missing are dropped
- * first): empty selection -> []; a single building -> [rally] when its type
- * produces, else []; an enemy unit or building under the cursor -> attack by
- * the armed units only (unarmed ones keep their order, spec 08 §3.7); units
- * (ascending) -> the special command for the entity under the cursor (harvest
- * or resume) followed by a move of the rest.
+ * Commands for a left click at ground (x, y) tiles; xRaw/yRaw = toRaw. The
+ * caller uses it only when the click is not on an own selectable entity: an
+ * enemy unit or building under the cursor -> attack by the armed units only
+ * (unarmed ones keep their order, spec 08 §3.7); a depot -> harvest for the
+ * carriers and a move of the rest; an own incomplete building -> resume for
+ * the builders and a move of the rest; otherwise a move of the units. A
+ * selected building alone produces nothing: rally is the Rally button's job
+ * (spec 08 §3.9 D2).
  */
-export function resolveRightClick(args: {
+export function resolveClickOrder(args: {
   player: number;
   selected: readonly number[];
   entities: readonly EntityState[];
@@ -128,22 +129,11 @@ export function resolveRightClick(args: {
   const own = ownSelected(selected, entities, player);
   if (own.length === 0) return [];
 
-  if (own.length === 1) {
-    const only = own[0];
-    if (only === undefined) return [];
-    const type = typeDef(only.kind);
-    if (type.category !== "unit") {
-      if (type.category !== "building" || type.produces.length === 0) return [];
-      return [
-        {
-          kind: "rally",
-          player,
-          building: only.id,
-          xRaw: toRaw(x),
-          yRaw: toRaw(y),
-        },
-      ];
-    }
+  // A lone producer cannot move: a ground click sets its rally (owner
+  // 2026-10-29, spec 08 §3.9 D2).
+  const lone = own.length === 1 ? own[0] : undefined;
+  if (lone !== undefined && typeDef(lone.kind).category !== "unit") {
+    return resolveRally({ player, selected, entities, x, y });
   }
 
   const target = pickEntity(entities, x, y, ORDER_PICK_RADIUS_TILES);
@@ -201,4 +191,35 @@ export function resolveRightClick(args: {
   }
 
   return moveCommand(player, unitIds(own), x, y);
+}
+
+/**
+ * Commands for the Rally button's armed left click: exactly one own complete
+ * producing building -> rally at (x, y); anything else -> []. A plain left
+ * click on the ground never reaches this (spec 08 §3.9 D2).
+ */
+export function resolveRally(args: {
+  player: number;
+  selected: readonly number[];
+  entities: readonly EntityState[];
+  x: number;
+  y: number;
+}): SimCommand[] {
+  const { player, selected, entities, x, y } = args;
+  const own = ownSelected(selected, entities, player);
+  if (own.length !== 1) return [];
+  const only = own[0];
+  if (only === undefined) return [];
+  const type = typeDef(only.kind);
+  if (type.category !== "building" || type.produces.length === 0) return [];
+  if (isUnderConstruction(only)) return [];
+  return [
+    {
+      kind: "rally",
+      player,
+      building: only.id,
+      xRaw: toRaw(x),
+      yRaw: toRaw(y),
+    },
+  ];
 }

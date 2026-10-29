@@ -59,10 +59,10 @@ Precedent researched for the owner before building this slice (backlog item 7).
 * Data: `healsInfantry` on the barracks types and an `infirmary` block in
   `data/balance/environment.yaml` (`healTicks`, `slots`). The schema, generated
   ruleset and client type definitions carry both.
-* `client/src/input/repair.ts` resolves a right click on an own complete barracks
-  and filters the selection to damaged foot infantry.
+* `client/src/input/repair.ts` resolves a left click on an own complete barracks
+  and filters the selection to damaged foot infantry (spec 08 §3.9).
 * Example save `?load=infantry-healing`: two damaged riflemen and one whole
-  rifleman beside their barracks. Select the damaged ones and right click the
+  rifleman beside their barracks. Select the damaged ones and click the
   barracks.
 
 ## 5. Assumptions
