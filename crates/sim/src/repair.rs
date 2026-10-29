@@ -21,6 +21,10 @@ const WORK_RANGE_CENTI: u32 = 150;
 const REPAIRABLE_FAMILIES: [&str; 2] = ["bridge", EARTHWORK_FAMILY];
 /// Longest line a `DigLine` command may dig, in segments.
 const MAX_LINE_SEGMENTS: usize = 64;
+/// Every `SHELTER_EVERY`th row of a dug line (the third of each four) is a
+/// covered shelter (`variant` 1) instead of an open trench (spec 35 §5b).
+const SHELTER_EVERY: usize = 4;
+
 /// How far (cells) the next unfinished trench of a line may lie from the one
 /// just dug; a gap for a blocked segment stays inside it.
 const DIG_NEXT_RANGE: i32 = 8;
@@ -239,7 +243,7 @@ impl World {
 
     /// Pushes an empty trench (one hit point) at `origin` and returns its
     /// feature index, or `None` when its cells are not free.
-    fn dig_trench(&mut self, origin: Cell, rot: u8) -> Option<u32> {
+    pub(crate) fn dig_trench(&mut self, origin: Cell, rot: u8, variant: u8) -> Option<u32> {
         let kind = self
             .rules
             .feature_types
@@ -252,7 +256,7 @@ impl World {
             x: origin.x,
             y: origin.y,
             rot: rot % 4,
-            variant: 0,
+            variant: u32::from(variant),
             state: state_for(1, def.hp, def.states.damaged, def.states.wrecked),
             hp: 1,
             alive: true,
@@ -281,7 +285,7 @@ impl World {
         if !self.has_digger(player, units) {
             return;
         }
-        if let Some(index) = self.dig_trench(origin, rot) {
+        if let Some(index) = self.dig_trench(origin, rot, 0) {
             self.apply_repair(player, units, index);
         }
     }
@@ -299,9 +303,12 @@ impl World {
             return;
         }
         let mut first = None;
+        let mut created = 0;
         for &(origin, rot) in segments.iter().take(MAX_LINE_SEGMENTS) {
-            if let Some(index) = self.dig_trench(origin, rot) {
+            let variant = u8::from(created % SHELTER_EVERY == 2);
+            if let Some(index) = self.dig_trench(origin, rot, variant) {
                 first.get_or_insert(index);
+                created += 1;
             }
         }
         if let Some(index) = first {
@@ -710,6 +717,34 @@ mod tests {
     }
 
     #[test]
+    fn every_fourth_dug_row_is_a_covered_shelter() {
+        let mut world = ground();
+        let placed = world.features.len();
+        let unit = rifleman(&mut world, 28, 30);
+        let segments = (0..6)
+            .map(|i| {
+                (
+                    Cell {
+                        x: 30 + 2 * i,
+                        y: 33,
+                    },
+                    0,
+                )
+            })
+            .collect::<Vec<_>>();
+        world.enqueue_as(
+            0,
+            Command::DigLine {
+                units: vec![unit],
+                segments,
+            },
+        );
+        world.step();
+        let variants: Vec<u32> = world.features[placed..].iter().map(|f| f.variant).collect();
+        assert_eq!(variants, vec![0, 0, 1, 0, 0, 0]);
+    }
+
+    #[test]
     fn dug_rows_trail_the_feature_table_and_survive_a_save() {
         let mut world = ground();
         let unit = rifleman(&mut world, 28, 30);
@@ -721,7 +756,7 @@ mod tests {
         let table = encode_features(&world);
         let rows = table[0] as usize;
         let trailer = 1 + rows * FEATURE_STRIDE;
-        assert_eq!(&table[trailer..], &[placed as i32, 30, 33, 0]);
+        assert_eq!(&table[trailer..], &[placed as i32, 30, 33, 0, 0]);
         let saved = save_state(&world, 3, &[]).unwrap();
         let (mut loaded, _, _) = load_state(&saved).unwrap();
         assert_eq!(state_hash(&loaded), state_hash(&world));

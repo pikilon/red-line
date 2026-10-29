@@ -834,6 +834,8 @@ function setupSave(source, id, ruleset, validate, fail) {
     ...(data.credits === undefined ? {} : { credits: data.credits }),
     ai: data.ai ?? [],
     entities: data.entities ?? [],
+    ...(data.features === undefined ? {} : { features: data.features }),
+    ...(data.trenches === undefined ? {} : { trenches: data.trenches }),
   };
   return {
     format: SAVE_FILE_FORMAT,

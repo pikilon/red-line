@@ -101,6 +101,7 @@ import {
   type FeatureRules,
   type LiveMapFeatures,
 } from "../render/features";
+import { onTrenchStrokes } from "../render/features/trenchNetwork";
 import { createFogOverlay } from "../render/fog";
 import {
   type GeneratedTextures,
@@ -890,6 +891,9 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let terrain: Group | null = null;
   /** Map features that follow the snapshot's feature table (spec 31). */
   let liveFeatures: LiveMapFeatures | null = null;
+  /** The last feature table received: the sim sends it only when it changes,
+   *  and the first one can arrive before the scene is built. */
+  let lastFeatureRows: Parameters<LiveMapFeatures["apply"]>[0] | null = null;
   /** Generated PNGs, loaded the first time they are switched on (spec 12). */
   let generated: GeneratedTextures | null = null;
   let generatedLoading = false;
@@ -1098,11 +1102,18 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         vehicleFx.particles,
       );
       scene.add(liveFeatures.object);
+      if (lastFeatureRows !== null) {
+        liveFeatures.apply(lastFeatureRows, effectTime(performance.now()));
+      }
     }
     // Units, hulks and corpses stand on the visual surface, craters included
     // (spec 24 §3.6). The simulation keeps its flat 2D height.
     const relief = terrainDeformerOf(terrain);
     setGroundRelief(relief === null ? null : (x, y) => relief.heightAt(x, y));
+    // Spec 35: the earthwork renderer's trench network is carved in it.
+    onTrenchStrokes(
+      relief === null ? null : (strokes) => relief.trenches(strokes),
+    );
     const sun = new DirectionalLight(SUN_COLOR, SUN_INTENSITY);
     sun.castShadow = true;
     sun.shadow.mapSize.set(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
@@ -1547,6 +1558,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   interact.onSnapshot((snapshot, receivedFog, at, combat, features) => {
     initial ??= snapshot;
     if (features !== null) {
+      lastFeatureRows = features;
       liveFeatures?.apply(features, effectTime(performance.now()));
       garrisonFeatures = withLiveState(placedGarrisons, features);
       repairJobs = withRepairState(placedBridges, features);

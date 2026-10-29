@@ -264,7 +264,7 @@ export class LiveFeatures {
       x: row.at.x,
       y: row.at.y,
       rot: row.at.rot,
-      variant: 0,
+      variant: row.at.variant,
       state: row.state,
       width,
       height,
@@ -291,7 +291,8 @@ export class LiveFeatures {
           !this.detached.has(index) &&
           !(family === "bridge" && instance.state >= BRIDGE_BROKEN_STATE),
       );
-      if (instances.length === 0) continue;
+      // Earthworks always rebuild: an empty network un-carves the ground.
+      if (instances.length === 0 && family !== "earthwork") continue;
       const object = this.render(family, instances);
       if (object === null) continue;
       this.object.add(object);

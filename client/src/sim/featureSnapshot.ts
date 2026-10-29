@@ -33,6 +33,7 @@ export interface FeatureRow {
     readonly x: number;
     readonly y: number;
     readonly rot: number;
+    readonly variant: number;
   };
 }
 
@@ -57,17 +58,22 @@ export function decodeFeatures(data: Int32Array): FeatureRow[] | null {
       occupants: data[base + 6] ?? 0,
     });
   }
-  // Spec 35: `placed, (x, y, rot)...` for the rows dug during the match.
+  // Spec 35: `placed, (x, y, rot, variant)...` for the rows dug during the match.
   const trailer = 1 + count * FEATURE_STRIDE;
   if (data.length > trailer) {
     const placed = data[trailer] ?? count;
     for (let i = placed; i < count; i++) {
-      const at = trailer + 1 + (i - placed) * 3;
+      const at = trailer + 1 + (i - placed) * 4;
       const row = rows[i];
       if (row === undefined) continue;
       rows[i] = {
         ...row,
-        at: { x: data[at] ?? 0, y: data[at + 1] ?? 0, rot: data[at + 2] ?? 0 },
+        at: {
+          x: data[at] ?? 0,
+          y: data[at + 1] ?? 0,
+          rot: data[at + 2] ?? 0,
+          variant: data[at + 3] ?? 0,
+        },
       };
     }
   }

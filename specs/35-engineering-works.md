@@ -72,7 +72,15 @@ once repaired above that threshold, and the client draws it again.
   `data/balance/environment.yaml`); the best cover applies. Vehicles drive over
   it and get no cover.
 * Rows past the map's (`placed_feature_count`) are dug rows: the feature table
-  trails `placed, (x, y, rot)...` so the client can draw them; saves keep them.
+  trails `placed, (x, y, rot, variant)...` so the client can draw them; saves keep them.
+* **Shelters.** In a dug line every row created gets a running index `k`
+  (blocked segments do not count); `k % 4 == 2` is a covered shelter
+  (`variant` 1, `SHELTER_EVERY`), the rest open trenches. Single `Dig` trenches
+  are open.
+* **Setup.** `trenches: [{ at: [x, y], rot?, hpPercent? (1..=100), variant? }]`
+  creates finished (or part-dug) trenches at tick 0; refused if the cells are
+  not free. Example save `?load=trench-network` (straight line, L corner,
+  staircase, shelters, half-dug and barely started pieces).
 * Client: the "Dig trench" button arms the next left click (Shift turns the
   trench; a second press of the button cancels); `client/src/render/features/renderers/earthworks.ts`
   draws the floor, parapets that rise with the digging and sandbags when done.

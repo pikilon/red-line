@@ -278,6 +278,12 @@
       "entities": 11
     },
     {
+      "id": "trench-network",
+      "map": "demo-ground",
+      "form": "setup",
+      "entities": 6
+    },
+    {
       "id": "port-supply",
       "map": "demo-coast",
       "form": "setup",

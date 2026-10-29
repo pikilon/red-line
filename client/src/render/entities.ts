@@ -38,7 +38,6 @@ import {
 } from "./corpses";
 import { footprintGround, groundTilt, groundY } from "./elevation";
 import { applyFacade, enableFacades, facadeTextureIds } from "./facades";
-import { trenchSink } from "./features/trenchDepth";
 import {
   addBandAttribute,
   bandsOf,
@@ -910,10 +909,7 @@ export function createEntityRenderer(
         // point of their footprint (spec 30 §4).
         const ground =
           type.category === "unit"
-            ? groundY(entity.x, entity.y) -
-              (RULES.locomotors[type.locomotor]?.kind === "foot"
-                ? trenchSink(entity.x, entity.y)
-                : 0)
+            ? groundY(entity.x, entity.y)
             : footprintGround(entity.x, entity.y, w, d);
         const hex = isSelected ? SELECTED_COLOR : ownerColor(entity.owner);
         const isGhost = hasFlag(entity, ENTITY_FLAGS.ghost);

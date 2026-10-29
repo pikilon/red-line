@@ -1301,6 +1301,25 @@ pub struct Setup {
     /// Spec 35: map features damaged at tick 0 (e.g. a broken bridge to repair).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub features: Vec<SetupFeature>,
+    /// Spec 35 §5b: trenches already dug at tick 0 (rows past the map's).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub trenches: Vec<SetupTrench>,
+}
+
+/// A trench (2x1 earthwork) at `at`, at `hp_percent` of its hit points.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SetupTrench {
+    pub at: [i32; 2],
+    /// 0..=3, default 0.
+    #[serde(default)]
+    pub rot: u8,
+    /// 1..=100, default 100.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hp_percent: Option<u32>,
+    /// 0 open trench, 1 covered shelter; default 0.
+    #[serde(default)]
+    pub variant: u8,
 }
 
 /// A map feature, by a cell it covers, left at `hp_percent` of its hit points.
@@ -1578,6 +1597,30 @@ impl World {
             let hp = world.features[feature].hp;
             let keep = (u64::from(hp) * u64::from(entry.hp_percent.min(100)) / 100) as u32;
             world.damage_feature(feature, hp - keep);
+        }
+
+        for (index, entry) in setup.trenches.iter().enumerate() {
+            let percent = entry.hp_percent.unwrap_or(100);
+            if !(1..=100).contains(&percent) {
+                return Err(invalid(format!(
+                    "trenches[{index}]: hpPercent must be 1..=100"
+                )));
+            }
+            let cell = to_cell(entry.at);
+            let row = world
+                .dig_trench(cell, entry.rot, entry.variant)
+                .ok_or_else(|| {
+                    invalid(format!(
+                        "trenches[{index}]: cells at {},{} are not free",
+                        entry.at[0], entry.at[1]
+                    ))
+                })? as usize;
+            let def = &world.rules.feature_types[world.features[row].kind as usize];
+            let hp = ((u64::from(def.hp) * u64::from(percent) / 100) as u32).max(1);
+            let state =
+                crate::features::state_for(hp, def.hp, def.states.damaged, def.states.wrecked);
+            world.features[row].hp = hp;
+            world.features[row].state = state;
         }
 
         world.victory_enabled = setup.victory;

@@ -1,0 +1,35 @@
+# Spec 35 §5b: a finished trench network. A straight line, an L corner, a staircase diagonal (every fourth piece is a
+# covered shelter), one half-dug piece and one barely started piece, to check joins and curves. Riflemen stand in it and
+# a dozer waits nearby to dig more.
+id: trench-network
+map: demo-ground
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 44, y: 42, zoom: 1 }
+trenches:
+  - { at: [36, 37] }
+  - { at: [38, 37] }
+  - { at: [40, 37], variant: 1 }
+  - { at: [42, 37] }
+  - { at: [44, 37] }
+  - { at: [46, 37], rot: 1 }
+  - { at: [46, 39], rot: 1 }
+  - { at: [46, 41], rot: 1 }
+  - { at: [36, 43] }
+  - { at: [38, 44] }
+  - { at: [40, 45], variant: 1 }
+  - { at: [42, 46] }
+  - { at: [44, 47] }
+  - { at: [50, 38], hpPercent: 50 }
+  - { at: [50, 41], hpPercent: 1 }
+entities:
+  - { player: 0, type: ua-rifleman, atCenti: [3750, 3750] }
+  - { player: 0, type: ua-rifleman, atCenti: [3950, 3750] }
+  - { player: 0, type: ua-rifleman, atCenti: [4650, 4050] }
+  - { player: 0, type: ua-rifleman, atCenti: [3950, 4450] }
+  - { player: 0, type: ua-rifleman, atCenti: [4350, 4650] }
+  - { player: 0, type: ua-dozer, atCenti: [5300, 4500] }
