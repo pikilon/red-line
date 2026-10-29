@@ -9,6 +9,9 @@ import { createFoldable } from "./foldable";
 const PROGRESS_FULL = 1000;
 /** A second Sell tap within this window sells (spec 41 §3.1, AC-41-04). */
 export const SELL_CONFIRM_MS = 3000;
+/** A frame longer than this is a stall (a slow runner, a shader compile), not
+ *  time the player had to confirm, so it does not consume the window. */
+const SELL_MAX_FRAME_MS = 250;
 
 /** A single construct/produce button offered by the command panel. */
 export interface CommandButton {
@@ -446,12 +449,38 @@ export function createCommandPanel(
   let last: PanelInput | null = null;
   let sellArmed = false;
   let sellTarget: number | undefined;
-  let sellTimer: ReturnType<typeof setTimeout> | null = null;
+  let sellFrame: number | null = null;
+  let sellElapsedMs = 0;
+  let sellFrameAt = 0;
 
   function disarmSell(): void {
     sellArmed = false;
-    if (sellTimer !== null) clearTimeout(sellTimer);
-    sellTimer = null;
+    if (sellFrame !== null) cancelAnimationFrame(sellFrame);
+    sellFrame = null;
+  }
+
+  /** Arms the sale and closes it after three seconds of rendered time: a
+   *  stalled frame does not count, so a slow runner can still take the second
+   *  tap (spec 41 §3.1, AC-41-04). */
+  function armSell(): void {
+    sellArmed = true;
+    sellElapsedMs = 0;
+    sellFrameAt = performance.now();
+    const tick = (now: number): void => {
+      if (!sellArmed) return;
+      sellElapsedMs += Math.min(
+        Math.max(0, now - sellFrameAt),
+        SELL_MAX_FRAME_MS,
+      );
+      sellFrameAt = now;
+      if (sellElapsedMs >= SELL_CONFIRM_MS) {
+        disarmSell();
+        if (last !== null) paint(last);
+        return;
+      }
+      sellFrame = requestAnimationFrame(tick);
+    };
+    sellFrame = requestAnimationFrame(tick);
   }
 
   function section(
@@ -707,11 +736,7 @@ export function createCommandPanel(
       const label = sellArmed ? t("ui.sellConfirm", { refund }) : sell.label;
       const element = actionButton("sell", "sell", label, () => {
         if (!sellArmed) {
-          sellArmed = true;
-          sellTimer = setTimeout(() => {
-            disarmSell();
-            if (last !== null) paint(last);
-          }, SELL_CONFIRM_MS);
+          armSell();
           if (last !== null) paint(last);
           return;
         }
