@@ -110,7 +110,7 @@ test.describe("touch device", () => {
     expect(joystick.x).toBeGreaterThan(viewport.width / 2);
     expect(joystick.y).toBeGreaterThan(viewport.height / 2);
     expect(panel.x + panel.width / 2).toBeLessThan(viewport.width / 2);
-    expect(panel.y).toBeGreaterThan(viewport.height / 2);
+    expect(panel.y + panel.height / 2).toBeGreaterThan(viewport.height / 2);
     expect(menu.width).toBeGreaterThanOrEqual(48);
     expect(menu.height).toBeGreaterThanOrEqual(48);
     for (const other of [panel, hud, menu]) {

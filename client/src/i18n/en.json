@@ -197,5 +197,16 @@
   "saves.titleSave": "Save game",
   "saves.titleLoad": "Load game",
   "saves.river-port.name": "River port",
-  "saves.river-port.description": "The default map seen from above: a river into the sea with a road bridge, a ford, a wooden bridge and a stone arch, a harbour per side, forests, hills and plateaus with rich depots."
+  "saves.river-port.description": "The default map seen from above: a river into the sea with a road bridge, a ford, a wooden bridge and a stone arch, a harbour per side, forests, hills and plateaus with rich depots.",
+  "ui.panel.command": "Command",
+  "ui.section.units": "Units",
+  "ui.section.structure": "Structure",
+  "ui.section.build": "Build",
+  "ui.stop": "Stop",
+  "ui.forceFire": "Force fire",
+  "ui.sameScreen": "Same on screen",
+  "ui.sameMap": "Same everywhere",
+  "ui.rally": "Rally point",
+  "ui.sellConfirm": "Confirm ({refund})",
+  "ui.queueItem": "{name}: tap to cancel"
 }
