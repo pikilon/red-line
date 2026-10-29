@@ -194,7 +194,12 @@ pub fn encode_match_snapshot_with_shots(
     let mut rows: Vec<(EntityId, [i32; ENTITY_STRIDE])> = Vec::new();
     for entity in world.entities() {
         // Occupants show to their owner and to a revealed (neutral) viewer.
-        let hidden = entity.contained() && viewer != NEUTRAL && entity.owner != viewer;
+        // Soldiers in a trench stand in plain sight (spec 35 §5c).
+        let in_trench = entity
+            .inside
+            .is_some_and(|feature| world.trench_def(feature).is_some());
+        let hidden =
+            entity.contained() && !in_trench && viewer != NEUTRAL && entity.owner != viewer;
         if !hidden && world.is_entity_visible(viewer, entity.id) {
             rows.push((entity.id, entity_row(world, entity, shots)));
         }

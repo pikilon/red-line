@@ -6,7 +6,7 @@
 //! neutral when emptied (the owner is derived from the occupants, so nothing
 //! else is stored or hashed).
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::entity::{EntityId, NEUTRAL, Order, PlayerId};
 use crate::features::footprint;
@@ -49,22 +49,25 @@ impl World {
             .map_or(NEUTRAL, |entity| entity.owner)
     }
 
-    /// Zero Hour entry rules (`canEnterObject`, `GarrisonContain::isValidContainerFor`):
-    /// the rider is a free infantry unit, the building is standing, not
-    /// really damaged, has a free slot and its occupancy allows the rider.
-    pub fn can_garrison(&self, unit: EntityId, feature: u32) -> bool {
+    /// The rider half of Zero Hour's entry rules: a free, living infantry unit
+    /// of a player.
+    fn can_ride(&self, unit: EntityId) -> bool {
         let Some(entity) = self.entity(unit) else {
             return false;
         };
-        if entity.hp == 0
-            || entity.site.is_some()
-            || entity.contained()
-            || entity.owner == NEUTRAL
-            || self.rules.ty(entity.kind).category != Category::Unit
-            || self.rules.ty(entity.kind).motion.kind != LocoKind::Foot
-        {
-            return false;
-        }
+        entity.hp > 0
+            && entity.site.is_none()
+            && !entity.contained()
+            && entity.owner != NEUTRAL
+            && self.rules.ty(entity.kind).category == Category::Unit
+            && self.rules.ty(entity.kind).motion.kind == LocoKind::Foot
+    }
+
+    /// The building half (`GarrisonContain::isValidContainerFor`): standing,
+    /// not really damaged (a trench must be finished), with a free slot (less
+    /// `pending` riders already on their way) and an occupancy that allows
+    /// `owner`.
+    pub(crate) fn piece_accepts(&self, owner: PlayerId, feature: u32, pending: u32) -> bool {
         let Some(def) = self.garrison_def(feature) else {
             return false;
         };
@@ -73,14 +76,36 @@ impl World {
         if row.state >= 2 || (ty.hp > 0 && row.hp == 0) {
             return false;
         }
+        if ty.trench.is_some() && row.hp < ty.hp {
+            return false;
+        }
         let inside = self.occupants(feature);
-        if inside.len() as u32 >= def.slots {
+        if inside.len() as u32 + pending >= def.slots {
             return false;
         }
         if inside.is_empty() {
             def.allow_neutral
         } else {
-            self.feature_owner(feature) == entity.owner || def.allow_enemies
+            self.feature_owner(feature) == owner || def.allow_enemies
+        }
+    }
+
+    /// Zero Hour entry rules (`canEnterObject`, `GarrisonContain::isValidContainerFor`):
+    /// the rider is a free infantry unit, the building is standing, not
+    /// really damaged, has a free slot and its occupancy allows the rider. A
+    /// trench takes the rider when any piece of its network does (spec 35 §5c).
+    pub fn can_garrison(&self, unit: EntityId, feature: u32) -> bool {
+        if !self.can_ride(unit) {
+            return false;
+        }
+        let Some(owner) = self.entity(unit).map(|entity| entity.owner) else {
+            return false;
+        };
+        if self.trench_def(feature).is_some() {
+            self.trench_entry_piece(owner, feature, &BTreeMap::new())
+                .is_some()
+        } else {
+            self.piece_accepts(owner, feature, 0)
         }
     }
 
@@ -92,12 +117,28 @@ impl World {
         }
         let order_id = self.next_order_id;
         self.next_order_id += 1;
+        // Riders a trench piece cannot hold go to the nearest connected piece
+        // with room (spec 35 §5c); `pending` counts those already assigned.
+        let mut pending: BTreeMap<u32, u32> = BTreeMap::new();
+        let trench = self.trench_def(feature).is_some();
         for &id in units {
             let Some(index) = self.index_of(id) else {
                 continue;
             };
-            if self.entities[index].owner == player && self.can_garrison(id, feature) {
-                self.entities[index].order = Order::Garrison { order_id, feature };
+            if self.entities[index].owner != player || !self.can_ride(id) {
+                continue;
+            }
+            let target = if trench {
+                self.trench_entry_piece(player, feature, &pending)
+            } else {
+                self.piece_accepts(player, feature, 0).then_some(feature)
+            };
+            if let Some(target) = target {
+                *pending.entry(target).or_insert(0) += 1;
+                self.entities[index].order = Order::Garrison {
+                    order_id,
+                    feature: target,
+                };
             }
         }
     }
@@ -114,6 +155,16 @@ impl World {
     /// `Garrison` order step: walk toward the building, enter once close.
     pub(crate) fn step_garrison(&mut self, index: usize, order_id: u32, feature: u32) {
         let id = self.entities[index].id;
+        let mut feature = feature;
+        // A trench piece that filled up while the rider walked: next one on.
+        if self.trench_def(feature).is_some()
+            && !self.piece_accepts(self.entities[index].owner, feature, 0)
+            && let Some(next) =
+                self.trench_entry_piece(self.entities[index].owner, feature, &BTreeMap::new())
+        {
+            feature = next;
+            self.entities[index].order = Order::Garrison { order_id, feature };
+        }
         if !self.can_garrison(id, feature) {
             self.entities[index].order = Order::Idle {
                 last_order_id: order_id,
@@ -126,9 +177,14 @@ impl World {
         let origin = Cell { x: row.x, y: row.y };
         let pos = self.entities[index].pos;
         if footprint_distance(pos, origin, size) <= fx_centi(ENTER_RANGE_CENTI) {
+            let pos = if self.trench_def(feature).is_some() {
+                self.trench_free_slot_point(feature)
+            } else {
+                footprint_center(origin, size)
+            };
             let entity = &mut self.entities[index];
             entity.inside = Some(feature);
-            entity.pos = footprint_center(origin, size);
+            entity.pos = pos;
             entity.speed = Fx::ZERO;
             entity.reversing = false;
             entity.order = Order::Idle {
@@ -164,11 +220,29 @@ impl World {
     pub(crate) fn evict_feature(&mut self, feature: u32, destroyed: bool, (w, h): (i32, i32)) {
         let row = self.features[feature as usize];
         let mut used: BTreeSet<Cell> = BTreeSet::new();
+        // Soldiers leaving a trench climb out onto the ground around it, off
+        // every trench; only with no room there do they stay on its cells, and
+        // a destroyed one leaves them on its cells (spec 35 §5c).
+        let trench = self.rules.feature_types[row.kind as usize].trench.is_some();
+        let own: Vec<Cell> = if trench {
+            (row.y..row.y + h)
+                .flat_map(|y| (row.x..row.x + w).map(move |x| Cell { x, y }))
+                .collect()
+        } else {
+            Vec::new()
+        };
         for index in 0..self.entities.len() {
             if self.entities[index].inside != Some(feature) {
                 continue;
             }
-            match self.free_cell_around(row.x, row.y, w, h, &used) {
+            let on_own = || own.iter().copied().find(|cell| !used.contains(cell));
+            let spot = if trench && !destroyed {
+                self.free_cell_off_trenches(row.x, row.y, w, h, &used)
+                    .or_else(on_own)
+            } else {
+                on_own().or_else(|| self.free_cell_around(row.x, row.y, w, h, &used))
+            };
+            match spot {
                 Some(cell) => {
                     used.insert(cell);
                     let entity = &mut self.entities[index];
@@ -184,6 +258,33 @@ impl World {
                 None => {}
             }
         }
+    }
+
+    /// As `free_cell_around`, skipping cells of any trench.
+    fn free_cell_off_trenches(
+        &self,
+        ox: i32,
+        oy: i32,
+        w: i32,
+        h: i32,
+        used: &BTreeSet<Cell>,
+    ) -> Option<Cell> {
+        let mut taken = used.clone();
+        for ring in 1..=EVICT_RINGS {
+            for y in (oy - ring)..(oy + h + ring) {
+                for x in (ox - ring)..(ox + w + ring) {
+                    let cell = Cell { x, y };
+                    let trench = self.feature_at(cell).is_some_and(|index| {
+                        let row = &self.features[index as usize];
+                        self.rules.feature_types[row.kind as usize].trench.is_some()
+                    });
+                    if trench {
+                        taken.insert(cell);
+                    }
+                }
+            }
+        }
+        self.free_cell_around(ox, oy, w, h, &taken)
     }
 
     /// First passable, unused cell in the rings around the rectangle, scanning

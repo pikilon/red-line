@@ -16,6 +16,8 @@ use crate::world::{TICK_RATE_HZ, World};
 
 /// How close (centi-tiles from the job's cells) a worker must stand to work.
 const WORK_RANGE_CENTI: u32 = 150;
+/// How far from a trench's cells a soldier stands to dig it (spec 35 §5b.3).
+const DIG_STAND_CENTI: u32 = 35;
 /// Feature families that can be repaired: bridges, and earthworks, whose
 /// digging is their repair from one hit point.
 const REPAIRABLE_FAMILIES: [&str; 2] = ["bridge", EARTHWORK_FAMILY];
@@ -290,7 +292,20 @@ impl World {
         if !self.has_digger(player, units) {
             return;
         }
-        if let Some(index) = self.dig_trench(origin, rot, 0) {
+        // Digging where a trench is already being dug joins it (spec 35 §5b.3).
+        let started = (self.placed_feature_count()..self.features.len()).find(|&index| {
+            let row = &self.features[index];
+            row.alive
+                && row.x == origin.x
+                && row.y == origin.y
+                && row.rot == rot % 4
+                && self.rules.feature_types[row.kind as usize].family == EARTHWORK_FAMILY
+        });
+        let target = match started {
+            Some(index) => Some(index as u32),
+            None => self.dig_trench(origin, rot, 0),
+        };
+        if let Some(index) = target {
             self.apply_repair(player, units, index);
         }
     }
@@ -345,6 +360,21 @@ impl World {
         distance_to_rect(self.entities[index].pos, rect)
     }
 
+    /// How close (centi-tiles) a worker walks to a job before it stops: a
+    /// soldier digs a trench from its edge (spec 35 §5b.3), everything else
+    /// works from `WORK_RANGE_CENTI`.
+    fn stand_range(&self, index: usize, feature: u32) -> u32 {
+        let earthwork = self.features.get(feature as usize).is_some_and(|row| {
+            self.rules.feature_types[row.kind as usize].family == EARTHWORK_FAMILY
+        });
+        let foot = self.rules.ty(self.entities[index].kind).motion.kind == LocoKind::Foot;
+        if earthwork && foot {
+            DIG_STAND_CENTI
+        } else {
+            WORK_RANGE_CENTI
+        }
+    }
+
     /// `Repair` order step: walk to the job, then stand and work until it is
     /// whole (the work itself is `repair_works`).
     pub(crate) fn step_repair(&mut self, index: usize, order_id: u32, feature: u32) {
@@ -362,7 +392,7 @@ impl World {
             };
             return;
         }
-        if self.job_distance(index, feature) <= fx_centi(WORK_RANGE_CENTI) {
+        if self.job_distance(index, feature) <= fx_centi(self.stand_range(index, feature)) {
             self.entities[index].speed = Fx::ZERO;
             return;
         }
@@ -747,6 +777,37 @@ mod tests {
         world.step();
         let variants: Vec<u32> = world.features[placed..].iter().map(|f| f.variant).collect();
         assert_eq!(variants, vec![0, 0, 1, 0, 0, 0]);
+    }
+
+    #[test]
+    fn digging_a_started_trench_joins_it_and_soldiers_stand_at_its_edge() {
+        let mut world = ground();
+        let placed = world.features.len();
+        let first = rifleman(&mut world, 40, 36);
+        let second = rifleman(&mut world, 44, 36);
+        for unit in [first, second] {
+            world.enqueue_as(
+                0,
+                Command::Dig {
+                    units: vec![unit],
+                    origin: Cell { x: 42, y: 38 },
+                    rot: 0,
+                },
+            );
+        }
+        world.step();
+        assert_eq!(world.features.len(), placed + 1, "one trench, not two");
+        for unit in [first, second] {
+            assert!(matches!(
+                world.entity(unit).unwrap().order,
+                Order::Repair { .. }
+            ));
+        }
+        for _ in 0..120 {
+            world.step();
+        }
+        let index = world.index_of(first).unwrap();
+        assert!(world.job_distance(index, placed as u32) <= fx_centi(DIG_STAND_CENTI));
     }
 
     #[test]

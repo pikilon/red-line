@@ -187,7 +187,7 @@ fn blocks_for(
 }
 
 /// Chebyshev distance in cells between two cell rectangles; 1 when they touch.
-fn rect_gap(a: (i32, i32, i32, i32), b: (i32, i32, i32, i32)) -> i32 {
+pub(crate) fn rect_gap(a: (i32, i32, i32, i32), b: (i32, i32, i32, i32)) -> i32 {
     let dx = (b.0 - a.2).max(a.0 - b.2).max(0);
     let dy = (b.1 - a.3).max(a.1 - b.3).max(0);
     dx.max(dy)
@@ -370,6 +370,10 @@ impl World {
                 continue;
             }
             if distance_to_rect(impact, extent(def, &row)) > reach {
+                continue;
+            }
+            if def.trench.is_some() {
+                self.hit_trench(index, weapon);
                 continue;
             }
             self.damage_feature(index, weapon.damage);

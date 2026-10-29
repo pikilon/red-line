@@ -16,6 +16,8 @@ export interface TrenchPiece {
   readonly state: number;
   /** 1: a covered shelter over the middle of the piece. */
   readonly variant: number;
+  /** Finished once and worn down by fire since, not being dug. */
+  readonly battered?: boolean;
 }
 
 /** A point of a smoothed trench centreline, in tiles. */
@@ -24,6 +26,9 @@ export interface TrenchPoint {
   readonly z: number;
   /** Share of the full depth dug, 0..1. */
   readonly dug: number;
+  /** 1 where the trench was finished (sandbags, boards), even if shelling
+   *  has worn it down since; 0 where it is still being dug. */
+  readonly kept: number;
 }
 
 /** One straight run of a centreline the deformer carves. */
@@ -90,7 +95,10 @@ export function trenchLines(pieces: readonly TrenchPiece[]): TrenchPoint[][] {
   pieces.forEach((piece, index) => {
     for (const [x, y] of cellsOf(piece)) owner.set(key(x, y), index);
   });
-  const nodes = new Map<number, { x: number; y: number; dug: number }>();
+  const nodes = new Map<
+    number,
+    { x: number; y: number; dug: number; kept: number }
+  >();
   const links = new Map<number, Set<number>>();
   const link = (a: number, b: number): void => {
     if (a === b) return;
@@ -99,9 +107,10 @@ export function trenchLines(pieces: readonly TrenchPiece[]): TrenchPoint[][] {
   };
   for (const piece of pieces) {
     const dug = dugShare(piece.state);
+    const kept = piece.state === 0 || piece.battered === true ? 1 : 0;
     const cells = cellsOf(piece);
     for (const [x, y] of cells) {
-      nodes.set(key(x, y), { x, y, dug });
+      nodes.set(key(x, y), { x, y, dug, kept });
       if (!links.has(key(x, y))) links.set(key(x, y), new Set());
     }
     for (let i = 1; i < cells.length; i++) {
@@ -173,8 +182,18 @@ export function trenchLines(pieces: readonly TrenchPiece[]): TrenchPoint[][] {
   return paths.map((path) =>
     smooth(
       path.map((id) => {
-        const node = nodes.get(id) as { x: number; y: number; dug: number };
-        return { x: node.x + 0.5, z: node.y + 0.5, dug: node.dug };
+        const node = nodes.get(id) as {
+          x: number;
+          y: number;
+          dug: number;
+          kept: number;
+        };
+        return {
+          x: node.x + 0.5,
+          z: node.y + 0.5,
+          dug: node.dug,
+          kept: node.kept,
+        };
       }),
     ),
   );
@@ -193,6 +212,7 @@ function smooth(points: TrenchPoint[]): TrenchPoint[] {
         x: (before.x + 2 * point.x + after.x) / 4,
         z: (before.z + 2 * point.z + after.z) / 4,
         dug: point.dug,
+        kept: point.kept,
       };
     });
   }
@@ -205,6 +225,7 @@ function smooth(points: TrenchPoint[]): TrenchPoint[] {
         x: a.x + (b.x - a.x) * t,
         z: a.z + (b.z - a.z) * t,
         dug: a.dug + (b.dug - a.dug) * t,
+        kept: a.kept + (b.kept - a.kept) * t,
       });
       if (i > 0) next.push(mix(0.25));
       if (i < line.length - 2) next.push(mix(0.75));
@@ -288,12 +309,70 @@ export function trenchReliefAt(
 }
 
 let latest: readonly TrenchStroke[] = [];
+/** Cells (`y * 65536 + x`) a stroke of `latest` passes within reach of:
+ *  the cheap test before the exact distance. */
+let near = new Set<number>();
 let sink: ((strokes: readonly TrenchStroke[]) => void) | null = null;
+
+function nearCells(strokes: readonly TrenchStroke[]): Set<number> {
+  const cells = new Set<number>();
+  const reach = TRENCH_HALF_WIDTH * TRENCH_CREST;
+  for (const s of strokes) {
+    const x0 = Math.floor(Math.min(s.x0, s.x1) - reach);
+    const x1 = Math.floor(Math.max(s.x0, s.x1) + reach);
+    const z0 = Math.floor(Math.min(s.z0, s.z1) - reach);
+    const z1 = Math.floor(Math.max(s.z0, s.z1) + reach);
+    for (let z = z0; z <= z1; z++) {
+      for (let x = x0; x <= x1; x++) cells.add(key(x, z));
+    }
+  }
+  return cells;
+}
 
 /** The earthwork renderer publishes the strokes of every rebuild. */
 export function publishTrenchStrokes(strokes: readonly TrenchStroke[]): void {
   latest = strokes;
+  near = nearCells(strokes);
   sink?.(strokes);
+}
+
+/** Distance from (x, z) to the drawn trench centrelines and the depth dug
+ *  there; null away from every trench. */
+export function trenchAt(
+  x: number,
+  z: number,
+): { distance: number; depth: number } | null {
+  if (!near.has(key(Math.floor(x), Math.floor(z)))) return null;
+  return nearestStroke(latest, x, z);
+}
+
+/** Tiles a soldier crossing a trench rises above the untouched ground at
+ *  the middle of his jump (spec 35 §5c: an empty trench is jumped over). */
+export const TRENCH_HOP = 0.12;
+
+/** Height to draw a soldier walking over a trench at (x, z), given the
+ *  carved surface height `carved` there: the untouched ground plus a hop
+ *  arc over the channel and its berms. Null when not on a trench. */
+export function trenchHopY(
+  x: number,
+  z: number,
+  carved: number,
+): number | null {
+  const at = trenchAt(x, z);
+  if (at === null) return null;
+  const span = TRENCH_HALF_WIDTH * TRENCH_CREST;
+  if (at.distance >= span) return null;
+  const flat =
+    carved - trenchProfile(at.distance / TRENCH_HALF_WIDTH) * at.depth;
+  const t = at.distance / span;
+  return flat + TRENCH_HOP * (1 - t * t);
+}
+
+/** True when (x, z) is on the floor of a dug trench: a garrisoned soldier
+ *  there is drawn in it instead of hidden. */
+export function onTrenchFloor(x: number, z: number): boolean {
+  const at = trenchAt(x, z);
+  return at !== null && at.distance < TRENCH_HALF_WIDTH && at.depth > 0;
 }
 
 /** The skirmish hands the strokes to its terrain deformer; `null` detaches
@@ -302,6 +381,64 @@ export function onTrenchStrokes(
   listener: ((strokes: readonly TrenchStroke[]) => void) | null,
 ): void {
   sink = listener;
-  if (listener === null) latest = [];
-  else listener(latest);
+  if (listener === null) {
+    latest = [];
+    near = new Set();
+    digSites = [];
+    finishedOnce.clear();
+  } else listener(latest);
+}
+
+/** A trench still being dug, as a tile rectangle. */
+export interface DigSite {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/** How far (tiles) from an unfinished trench a worker counts as digging it. */
+export const DIG_REACH = 1.6;
+
+let digSites: readonly DigSite[] = [];
+
+/** The earthwork renderer publishes the unfinished trenches. */
+export function setDigSites(sites: readonly DigSite[]): void {
+  digSites = sites;
+}
+
+/** The nearest point of an unfinished trench within `DIG_REACH` of (x, y),
+ *  where a worker standing there digs; null when none is that close. */
+export function digSiteNear(
+  x: number,
+  y: number,
+): { x: number; y: number } | null {
+  let best: { x: number; y: number } | null = null;
+  let bestDistance = DIG_REACH;
+  for (const site of digSites) {
+    const px = Math.min(site.x + site.width, Math.max(site.x, x));
+    const py = Math.min(site.y + site.height, Math.max(site.y, y));
+    const distance = Math.hypot(px - x, py - y);
+    if (distance <= bestDistance) {
+      bestDistance = distance;
+      // A worker standing on the cells digs at his feet, a bit ahead.
+      best = { x: px, y: py };
+    }
+  }
+  return best;
+}
+
+/** Pieces seen finished this match (`x,y,rot`): a later damage state means
+ *  shelling wore them down, not that they are still being dug. */
+const finishedOnce = new Set<string>();
+
+/** Remembers the finished pieces and marks worn ones as battered. */
+export function withBattered<
+  T extends { x: number; y: number; rot: number; state: number },
+>(pieces: readonly T[]): (T & { battered: boolean })[] {
+  return pieces.map((piece) => {
+    const id = `${piece.x},${piece.y},${piece.rot}`;
+    if (piece.state === 0) finishedOnce.add(id);
+    return { ...piece, battered: piece.state > 0 && finishedOnce.has(id) };
+  });
 }

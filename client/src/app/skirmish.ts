@@ -35,11 +35,13 @@ import {
 import { createHud } from "../hud";
 import { t } from "../i18n";
 import {
+  evacuationOf,
   type GarrisonMapFeature,
   type GarrisonTypeInfo,
   garrisonCommand,
   garrisonFeaturesOf,
   garrisonOffers,
+  trenchGarrisons,
   withLiveState,
 } from "../input/garrison";
 import {
@@ -811,7 +813,19 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     },
     onEvacuate: (feature) => {
       uiClick();
-      interact.command({ kind: "unload", player: controlled, feature });
+      // Spec 35 §5c: a trench empties as one block, every piece at once.
+      for (const piece of evacuationOf(
+        feature,
+        garrisonFeatures,
+        next?.entities ?? [],
+        controlled,
+      )) {
+        interact.command({
+          kind: "unload",
+          player: controlled,
+          feature: piece,
+        });
+      }
     },
     onRepair: () => {
       uiClick();
@@ -1603,7 +1617,14 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     if (features !== null) {
       lastFeatureRows = features;
       liveFeatures?.apply(features, effectTime(performance.now()));
-      garrisonFeatures = withLiveState(placedGarrisons, features);
+      garrisonFeatures = [
+        ...withLiveState(placedGarrisons, features),
+        ...trenchGarrisons(
+          features,
+          (ruleset as unknown as { featureTypes?: readonly GarrisonTypeInfo[] })
+            .featureTypes ?? [],
+        ),
+      ];
       repairJobs = [
         ...withRepairState(placedBridges, features),
         ...unfinishedTrenchJobs(features, earthworkKinds),

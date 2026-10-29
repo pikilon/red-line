@@ -284,6 +284,12 @@
       "entities": 6
     },
     {
+      "id": "trench-assault",
+      "map": "demo-ground",
+      "form": "setup",
+      "entities": 8
+    },
+    {
       "id": "port-supply",
       "map": "demo-coast",
       "form": "setup",

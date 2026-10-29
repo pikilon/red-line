@@ -61,6 +61,14 @@ impl World {
         if hp == 0 || !self.can_fire(index) || !self.rider_may_fire(index) {
             return;
         }
+        // Spec 35 §5c: soldiers in touching, opposing trench pieces fight each other.
+        if self.entities[index].inside.is_some()
+            && !held.is_empty()
+            && let Some(foe) = self.trench_contact_target(index, held)
+        {
+            self.fire_in_trench(index, foe);
+            return;
+        }
         let Some((weapon_id, weapon)) = self.weapon_data(kind) else {
             return;
         };

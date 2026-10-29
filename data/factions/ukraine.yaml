@@ -8,6 +8,7 @@ weapons:                             # required
   - { id: ua-bushmaster, damageType: autocannon, damage: 18, rangeCenti: 600, cooldownTicks: 8, speedCenti: 500, delivery: homing, render: { model: tracerHeavy, flight: straight, apexCenti: 0, launch: muzzle, trail: none } }
   - { id: ua-rh120, damageType: antiTank, damage: 100, rangeCenti: 700, cooldownTicks: 30, speedCenti: 900, delivery: ballistic, render: { model: shell, flight: straight, apexCenti: 0, launch: cannon, trail: none } }
   - { id: ua-gmlrs, damageType: highExplosive, damage: 125, rangeCenti: 2400, minRangeCenti: 600, cooldownTicks: 150, splashCenti: 150, speedCenti: 40, delivery: ballistic, salvo: 2, salvoIntervalTicks: 8, render: { model: rocket, flight: topAttack, apexCenti: 600, launch: rocketLaunch, trail: smoke } }
+  - { id: ua-sidearm, damageType: smallArms, damage: 4, rangeCenti: 300, cooldownTicks: 20, speedCenti: 400, delivery: homing }   # spec 35 §5c: trench fights
   - { id: ua-stugna-emplacement, damageType: antiTank, damage: 110, rangeCenti: 1000, cooldownTicks: 60, speedCenti: 45, delivery: homing, render: { model: atgm, flight: loft, apexCenti: 40, launch: softLaunch, trail: smoke } }
 types:                               # required
   - id: ua-rifleman
@@ -34,6 +35,7 @@ types:                               # required
     turnRateDeg: 540
     weapon: ua-stugna-p
     stowTicks: 17                      # stows the launcher and tripod before walking
+    trenchWeapon: ua-sidearm
     radiusCenti: 25
     render: { size: [40, 50, 40] }
   - id: ua-kozak-scout

@@ -1,0 +1,31 @@
+# Spec 35 §5c: soldiers fight from a trench line. A Ukrainian squad (a Stugna team and two riflemen) holds the covered
+# shelter piece at (40, 40): the first two soldiers inside take no damage at all, the third is exposed. A Russian squad
+# walks into the far empty end of the same line (the fourth soldier overflows to the next piece), then every second the
+# two sides close in piece by piece until they touch and fight with pistols (the RPG gunner and the Stugna team leave
+# their launchers out of it). A Russian TOS-1 shells the line: thermobaric blasts wear the trench down and hurt the
+# soldiers who are not sheltered, rifles only graze one man at a time.
+id: trench-assault
+map: demo-ground
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 43, y: 42, zoom: 1 }
+trenches:
+  - { at: [36, 40] }
+  - { at: [38, 40] }
+  - { at: [40, 40], variant: 1 }
+  - { at: [42, 40] }
+  - { at: [44, 40] }
+  - { at: [46, 40] }
+entities:
+  - { player: 0, type: ua-stugna-team, atCenti: [4000, 4350], order: { garrison: [40, 40] } }
+  - { player: 0, type: ua-rifleman, atCenti: [4100, 4350], order: { garrison: [40, 40] } }
+  - { player: 0, type: ua-rifleman, atCenti: [4200, 4350], order: { garrison: [40, 40] } }
+  - { player: 1, type: ru-rifleman, atCenti: [5100, 4350], order: { garrison: [46, 40] } }
+  - { player: 1, type: ru-rifleman, atCenti: [5200, 4350], order: { garrison: [46, 40] } }
+  - { player: 1, type: ru-rifleman, atCenti: [5300, 4350], order: { garrison: [46, 40] } }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [5200, 4450], order: { garrison: [46, 40] } }
+  - { player: 1, type: ru-tos-1a, atCenti: [4700, 4800] }

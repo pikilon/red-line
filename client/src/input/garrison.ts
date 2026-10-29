@@ -23,6 +23,8 @@ export interface GarrisonFeature {
   occupants?: number;
   /** Wrecked or collapsing: occupants may still be inside, nobody enters. */
   closed?: boolean;
+  /** Spec 35 §5c: a trench piece; pieces that touch form one trench. */
+  trench?: boolean;
 }
 
 /** The parts of the ruleset feature types read here. */
@@ -84,6 +86,37 @@ export function withLiveState(
     });
   }
   return live;
+}
+
+/** Spec 35 §5c: trench pieces dug in the match are garrisoned like
+ *  buildings; only a finished one takes riders (an unfinished one is a
+ *  construction mark, `closed`). */
+export function trenchGarrisons(
+  rows: readonly FeatureRow[] | null,
+  types: readonly GarrisonTypeInfo[],
+): GarrisonFeature[] {
+  const found: GarrisonFeature[] = [];
+  for (const row of rows ?? []) {
+    const info = types[row.kind];
+    if (row.at === undefined || !row.alive || info?.garrison === undefined) {
+      continue;
+    }
+    const swap = row.at.rot % 2 === 1;
+    found.push({
+      index: row.index,
+      kind: row.kind,
+      x: row.at.x,
+      y: row.at.y,
+      width: swap ? info.footprint[1] : info.footprint[0],
+      height: swap ? info.footprint[0] : info.footprint[1],
+      slots: info.garrison.slots,
+      owner: row.owner,
+      occupants: row.occupants,
+      closed: row.collapsing || row.hpPermille < 1000,
+      trench: true,
+    });
+  }
+  return found;
 }
 
 /** The feature whose footprint covers the point (tiles). */
@@ -256,5 +289,78 @@ export function selectOccupantsAt(args: {
   return occupantsOf(feature, entities)
     .filter((entity) => entity.owner === player)
     .map((entity) => entity.id)
+    .sort((a, b) => a - b);
+}
+
+/** Spec 35 §5c: every trench piece connected to `feature` (cells touching,
+ *  diagonals too, as the sim joins them); just `feature` for a building. */
+export function trenchOf(
+  feature: GarrisonFeature,
+  features: readonly GarrisonFeature[],
+): GarrisonFeature[] {
+  if (feature.trench !== true) return [feature];
+  const pieces = features.filter((other) => other.trench === true);
+  const touches = (a: GarrisonFeature, b: GarrisonFeature): boolean =>
+    a.x - 1 < b.x + b.width &&
+    b.x - 1 < a.x + a.width &&
+    a.y - 1 < b.y + b.height &&
+    b.y - 1 < a.y + a.height;
+  const found = [feature];
+  const seen = new Set([feature.index]);
+  for (let i = 0; i < found.length; i++) {
+    const current = found[i] as GarrisonFeature;
+    for (const other of pieces) {
+      if (seen.has(other.index) || !touches(current, other)) continue;
+      seen.add(other.index);
+      found.push(other);
+    }
+  }
+  return found;
+}
+
+/** Spec 35 §5c: a trench is selected as one block, never soldier by soldier.
+ *  Any of `player`'s soldiers inside a trench in `ids` brings in all of his
+ *  soldiers in that whole trench. */
+export function blockSelection(
+  ids: Iterable<number>,
+  entities: readonly EntityState[],
+  features: readonly GarrisonFeature[],
+  player: number,
+): number[] {
+  const result = new Set(ids);
+  const byId = new Map(entities.map((entity) => [entity.id, entity]));
+  const done = new Set<number>();
+  for (const id of [...result]) {
+    const entity = byId.get(id);
+    if (entity === undefined || !isInside(entity)) continue;
+    const piece = featureUnder(features, entity.x, entity.y);
+    if (piece?.trench !== true || done.has(piece.index)) continue;
+    for (const part of trenchOf(piece, features)) {
+      done.add(part.index);
+      for (const occupant of occupantsOf(part, entities)) {
+        if (occupant.owner === player) result.add(occupant.id);
+      }
+    }
+  }
+  return [...result].sort((a, b) => a - b);
+}
+
+/** The features the Evacuate button empties for `feature`: the whole trench
+ *  it belongs to (its pieces with `player`'s soldiers in), or the building. */
+export function evacuationOf(
+  feature: number,
+  features: readonly GarrisonFeature[],
+  entities: readonly EntityState[],
+  player: number,
+): number[] {
+  const start = features.find((candidate) => candidate.index === feature);
+  if (start === undefined) return [feature];
+  return trenchOf(start, features)
+    .filter(
+      (part) =>
+        part === start ||
+        occupantsOf(part, entities).some((entity) => entity.owner === player),
+    )
+    .map((part) => part.index)
     .sort((a, b) => a - b);
 }

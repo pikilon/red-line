@@ -245,6 +245,9 @@ pub struct TypeDef {
     pub build_ticks: u32,
     pub speed_centi: u32,
     pub weapon: i32,
+    /// Spec 35 §5c: weapon fired in a trench fight; `-1` uses the main weapon.
+    #[serde(default = "no_locomotor")]
+    pub trench_weapon: i32,
     pub requires: Vec<TypeId>,
     pub produces: Vec<TypeId>,
     pub builds: Vec<TypeId>,
@@ -396,6 +399,9 @@ pub struct FeatureTypeDef {
     /// Spec 31 block 2: infantry can garrison this feature; `None` means it cannot.
     #[serde(default)]
     pub garrison: Option<GarrisonDef>,
+    /// Spec 35 §5c: trench rules of a garrisonable earthwork.
+    #[serde(default)]
+    pub trench: Option<TrenchDef>,
     /// Spec 35: repair (or dig) speed of this type, percent of the base rate.
     #[serde(default = "hundred", rename = "repairPct")]
     pub repair_pct: u32,
@@ -449,6 +455,20 @@ pub struct GarrisonDef {
     /// Zero Hour `AllowEnemiesInside`: riders may join a building held by another player.
     #[serde(default)]
     pub allow_enemies: bool,
+}
+
+/// Spec 35 §5c: trench rules (no Zero Hour precedent, decision D3).
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrenchDef {
+    /// Percent of a shot's damage one occupant takes when it does not break the trench.
+    pub small_damage_pct: u32,
+    /// Damage types (indices of `Ruleset::damage_types`) that wear the trench itself down.
+    pub breaks_with: Vec<u8>,
+    /// Occupants of a covered (`variant` 1) piece that take no damage at all.
+    pub shelter_slots: u32,
+    /// Ticks between two advance steps of soldiers fighting along a network.
+    pub advance_ticks: u32,
 }
 
 /// Spec 34: transport data of a vehicle type (Zero Hour `TransportContain`).
@@ -844,6 +864,12 @@ impl Ruleset {
             }
             if !is_in_range(t.weapon, n_weapons as i32) {
                 return Err(format!("types[{}].weapon {} is out of range", i, t.weapon));
+            }
+            if !is_in_range(t.trench_weapon, n_weapons as i32) {
+                return Err(format!(
+                    "types[{}].trenchWeapon {} is out of range",
+                    i, t.trench_weapon
+                ));
             }
             for (key, list) in [
                 ("requires", &t.requires),

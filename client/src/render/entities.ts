@@ -39,6 +39,11 @@ import {
 import { footprintGround, groundTilt, groundY } from "./elevation";
 import { applyFacade, enableFacades, facadeTextureIds } from "./facades";
 import {
+  digSiteNear,
+  onTrenchFloor,
+  trenchHopY,
+} from "./features/trenchNetwork";
+import {
   addBandAttribute,
   bandsOf,
   createFlagRenderer,
@@ -84,6 +89,7 @@ import type {
   TypeModel,
 } from "./models";
 import { type LimbPose, limbPose, resetPose } from "./rig";
+import { createShovels } from "./shovels";
 import { createSuspension, LEVEL_POSE } from "./suspension";
 import type { VehicleBodies } from "./vehicleFx";
 
@@ -212,6 +218,29 @@ function finish(mesh: InstancedMesh, count: number): void {
   if (mesh.instanceColor !== null) {
     mesh.instanceColor.needsUpdate = true;
   }
+}
+
+/** Tiles a dozer rocks forward and back while it pushes earth at a trench. */
+const DOZER_SHOVE = 0.08;
+
+/** `from` turned towards `to` by `share` (0..1) the short way round. */
+function turnTowards(from: number, to: number, share: number): number {
+  const delta = Math.atan2(Math.sin(to - from), Math.cos(to - from));
+  return from + delta * Math.min(1, share);
+}
+
+/** Height a unit stands at: the visual ground, except free infantry on the
+ *  move over a trench, who jump it instead of climbing through (spec 35 §5c). */
+function unitGround(entity: EntityState, type: TypeDef): number {
+  const ground = groundY(entity.x, entity.y);
+  if (
+    !hasFlag(entity, ENTITY_FLAGS.moving) ||
+    hasFlag(entity, ENTITY_FLAGS.inside) ||
+    RULES.locomotors[type.locomotor]?.kind !== "foot"
+  ) {
+    return ground;
+  }
+  return trenchHopY(entity.x, entity.y, ground) ?? ground;
 }
 
 function ownerColor(owner: number): number {
@@ -400,8 +429,17 @@ export function createEntityRenderer(
   tracers.visible = false;
 
   const flags = createFlagRenderer(capacity);
+  const shovels = createShovels(capacity);
   const group = new Group();
-  group.add(units, buildings, ghosts, bars, scaffolds, flags.group);
+  group.add(
+    units,
+    buildings,
+    ghosts,
+    bars,
+    scaffolds,
+    flags.group,
+    shovels.group,
+  );
 
   const matrix = new Matrix4();
   const turretMatrix = new Matrix4();
@@ -894,10 +932,18 @@ export function createEntityRenderer(
       for (const slot of slots) slot.count = 0;
       let tracerCount = 0;
       let scaffoldCount = 0;
+      shovels.begin();
 
       for (const entity of entities) {
-        // Garrisoned units are hidden: the building stands for them.
-        if (hasFlag(entity, ENTITY_FLAGS.inside)) continue;
+        // Garrisoned units are hidden: the building stands for them. Trench
+        // occupants stay in view, standing in the trench (spec 35 §5c).
+        if (
+          hasFlag(entity, ENTITY_FLAGS.inside) &&
+          (hasFlag(entity, ENTITY_FLAGS.aboard) ||
+            !onTrenchFloor(entity.x, entity.y))
+        ) {
+          continue;
+        }
         const type = typeDef(entity.kind);
         const [w, h, d] = type.render.size.map((size) => size / 100) as [
           number,
@@ -909,7 +955,7 @@ export function createEntityRenderer(
         // point of their footprint (spec 30 §4).
         const ground =
           type.category === "unit"
-            ? groundY(entity.x, entity.y)
+            ? unitGround(entity, type)
             : footprintGround(entity.x, entity.y, w, d);
         const hex = isSelected ? SELECTED_COLOR : ownerColor(entity.owner);
         const isGhost = hasFlag(entity, ENTITY_FLAGS.ghost);
@@ -937,7 +983,15 @@ export function createEntityRenderer(
           turretYaw: angleToYaw(entity.turretAngle),
         };
 
-        const pose = animator.pose(entity, nowMs);
+        // Spec 35: a worker with an order, standing by an unfinished trench
+        // and shooting at nothing, is digging it.
+        const digSite =
+          type.category === "unit" &&
+          hasFlag(entity, ENTITY_FLAGS.moving) &&
+          entity.target === null
+            ? digSiteNear(entity.x, entity.y)
+            : null;
+        const pose = animator.pose(entity, nowMs, digSite !== null);
         const recoil = pose.recoil;
         const body =
           type.category === "unit" && type.armor !== 0
@@ -971,6 +1025,15 @@ export function createEntityRenderer(
           working,
           nowMs,
         );
+        // A dozer at a trench pushes earth: it rocks back and forth on the
+        // spot in step with its blade.
+        const shove =
+          working && digSite !== null && type.articulation === "blade"
+            ? DOZER_SHOVE *
+              Math.sin((nowMs / 1000) * BLADE_WORK_HZ * 2 * Math.PI)
+            : 0;
+        const shoveX = Math.sin(heading.yaw) * shove;
+        const shoveZ = Math.cos(heading.yaw) * shove;
 
         if (isFallback || model === null) {
           if (type.category === "unit") {
@@ -994,7 +1057,18 @@ export function createEntityRenderer(
             ? 0.2 + (0.8 * entity.progress) / PROGRESS_FULL
             : 1;
           const typeSlots = slotsFor(type.id, model);
-          const hullYaw = type.category === "unit" ? heading.yaw : 0;
+          const rigDig = pose.rig?.dig ?? 0;
+          // A digging soldier turns to the trench he digs.
+          const hullYaw =
+            type.category !== "unit"
+              ? 0
+              : rigDig > 0 && digSite !== null
+                ? turnTowards(
+                    heading.yaw,
+                    Math.atan2(digSite.x - entity.x, digSite.y - entity.y),
+                    rigDig,
+                  )
+                : heading.yaw;
           const turretYaw = heading.turretYaw;
           const rig = pose.rig;
           if (rig !== null && model.limbs !== undefined) {
@@ -1023,10 +1097,19 @@ export function createEntityRenderer(
               (name, out) => limbPose(type.id, model, name, rig, out),
               { fade: 1, blood: bloodOf(entity.hp, type.hp) },
             );
+            shovels.add(
+              entity.x,
+              ground,
+              entity.y,
+              hullYaw,
+              h,
+              rig.dig,
+              -Math.cos(2 * Math.PI * rig.digPhase),
+            );
           }
           for (const slot of typeSlots.hull) {
             if (slot.count >= capacity) continue;
-            position.set(entity.x, ground + lift, entity.y);
+            position.set(entity.x + shoveX, ground + lift, entity.y + shoveZ);
             rotation.setFromEuler(tilt.set(pitch, hullYaw, roll, "YXZ"));
             scale.set(1, f, 1);
             matrix.compose(position, rotation, scale);
@@ -1035,7 +1118,7 @@ export function createEntityRenderer(
           for (const slot of typeSlots.turret) {
             if (slot.count >= capacity) continue;
             const composeTurret = (): Matrix4 => {
-              position.set(entity.x, ground + lift, entity.y);
+              position.set(entity.x + shoveX, ground + lift, entity.y + shoveZ);
               rotation.setFromEuler(tilt.set(pitch, hullYaw, roll, "YXZ"));
               scale.set(1, f, 1);
               turretMatrix.compose(position, rotation, scale);
@@ -1108,6 +1191,7 @@ export function createEntityRenderer(
       finish(ghosts, counts.ghosts);
       finish(bars, counts.bars);
       finish(scaffolds, scaffoldCount);
+      shovels.finish();
       for (const slot of slots) {
         finish(slot.mesh, slot.count);
         if (slot.fx !== undefined) {

@@ -4,6 +4,9 @@ import { FEATURE_NO_OWNER, type FeatureRow } from "../sim/featureSnapshot";
 import { ENTITY_FLAGS, type EntityState } from "../sim/matchSnapshot";
 import { commandButtons } from "../ui/commandPanel";
 import {
+  blockSelection,
+  evacuationOf,
+  type GarrisonFeature,
   garrisonFeaturesOf,
   garrisonOffers,
   resolveGarrisonClick,
@@ -182,5 +185,38 @@ describe("garrison interface (spec 31 block 2)", () => {
       ["garrison", 1],
       ["evacuate", 2],
     ]);
+  });
+});
+
+describe("spec 35 §5c: a trench is one block", () => {
+  const piece = (index: number, x: number, y: number): GarrisonFeature => ({
+    index,
+    kind: 0,
+    x,
+    y,
+    width: 2,
+    height: 1,
+    slots: 3,
+    trench: true,
+  });
+  // Two touching pieces and one apart.
+  const features = [piece(1, 10, 10), piece(2, 12, 11), piece(3, 20, 10)];
+  const inside = ENTITY_FLAGS.inside;
+  const entities = [
+    unit(1, 0, "ua-rifleman", 10.5, 10.5, inside),
+    unit(2, 0, "ua-rifleman", 12.5, 11.5, inside),
+    unit(3, 0, "ua-rifleman", 20.5, 10.5, inside),
+    unit(4, 1, "ru-rifleman", 13.5, 11.5, inside),
+    unit(5, 0, "ua-rifleman", 30, 30),
+  ];
+
+  it("picking one soldier in it picks all of ours in the whole trench", () => {
+    expect(blockSelection([1], entities, features, 0)).toEqual([1, 2]);
+    expect(blockSelection([5], entities, features, 0)).toEqual([5]);
+  });
+
+  it("evacuate empties every piece of the trench we hold", () => {
+    expect(evacuationOf(1, features, entities, 0)).toEqual([1, 2]);
+    expect(evacuationOf(3, features, entities, 0)).toEqual([3]);
   });
 });

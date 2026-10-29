@@ -759,6 +759,7 @@ impl World {
         self.separate_units();
         self.arrive_on_contact();
         self.update_visibility();
+        self.advance_in_trenches();
         self.update_combat();
         self.unload_transports();
         self.empty_dead_transports();

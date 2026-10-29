@@ -7,6 +7,7 @@ import type { SimCommand } from "../sim/protocol";
 import { panDelta } from "./cameraPan";
 import { boxSelect, clickSelect, selectAllOwnUnits } from "./entitySelection";
 import {
+  blockSelection,
   type GarrisonFeature,
   resolveGarrisonClick,
   selectOccupantsAt,
@@ -151,7 +152,15 @@ export function createSkirmishController(
   function setSelection(ids: Iterable<number>): void {
     armedMode = null;
     selected.clear();
-    for (const id of ids) selected.add(id);
+    // Spec 35 §5c: soldiers in a trench are picked as the whole trench.
+    for (const id of blockSelection(
+      ids,
+      options.entities(),
+      options.garrisonFeatures?.() ?? [],
+      options.player(),
+    )) {
+      selected.add(id);
+    }
     options.onSelectionChange(selected);
   }
 

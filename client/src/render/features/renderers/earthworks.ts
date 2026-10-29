@@ -14,6 +14,7 @@ import { registerFeatureRenderer } from "../registry";
 import {
   nearestStroke,
   publishTrenchStrokes,
+  setDigSites,
   TRENCH_CREST,
   TRENCH_DEPTH,
   TRENCH_HALF_WIDTH,
@@ -21,6 +22,7 @@ import {
   trenchLines,
   trenchReliefAt,
   trenchStrokes,
+  withBattered,
 } from "../trenchNetwork";
 
 /** Spec 35: trenches soldiers dig (family `earthwork`). The channel itself
@@ -68,9 +70,22 @@ function along(
   line: readonly TrenchPoint[],
   step: number,
   phase = 0,
-): { x: number; z: number; dug: number; dx: number; dz: number }[] {
-  const out: { x: number; z: number; dug: number; dx: number; dz: number }[] =
-    [];
+): {
+  x: number;
+  z: number;
+  dug: number;
+  kept: number;
+  dx: number;
+  dz: number;
+}[] {
+  const out: {
+    x: number;
+    z: number;
+    dug: number;
+    kept: number;
+    dx: number;
+    dz: number;
+  }[] = [];
   let carry = phase;
   for (let i = 1; i < line.length; i++) {
     const a = line[i - 1] as TrenchPoint;
@@ -86,6 +101,7 @@ function along(
         x: a.x + dx * s,
         z: a.z + dz * s,
         dug: a.dug + (b.dug - a.dug) * t,
+        kept: a.kept + (b.kept - a.kept) * t,
         dx,
         dz,
       });
@@ -137,9 +153,11 @@ function createEarthworks(
 ): Group {
   const group = new Group();
   group.name = "earthworks";
-  const lines = trenchLines(instances);
+  const pieces = withBattered(instances);
+  const lines = trenchLines(pieces);
   const strokes = trenchStrokes(lines);
   publishTrenchStrokes(strokes);
+  setDigSites(pieces.filter((piece) => piece.state > 0 && !piece.battered));
   const surface = (x: number, z: number): number =>
     ctx.elevation.at(x, z) + trenchReliefAt(strokes, x, z);
 
@@ -149,7 +167,7 @@ function createEarthworks(
     // Sandbags: two staggered courses on each berm where the trench is done.
     for (const course of [0, 1]) {
       for (const p of along(line, BAG_STEP, course * BAG_STEP * 0.5)) {
-        if (p.dug < 0.9) continue;
+        if (p.kept < 0.5) continue;
         for (const side of [-1, 1]) {
           const offset = BAG_OFFSET + (course === 1 ? -0.02 : 0.03);
           const x = p.x - p.dz * side * offset;
@@ -162,6 +180,8 @@ function createEarthworks(
             continue;
           }
           const jitter = hash(x, z, course);
+          // Shelling has knocked bags off a worn-down stretch.
+          if (p.dug < 0.9 && hash(x, z, 11) < 0.45) continue;
           bags.push({
             x,
             y:
@@ -180,7 +200,7 @@ function createEarthworks(
     }
     // Duckboards across the floor of the finished stretches.
     for (const p of along(line, BOARD_STEP)) {
-      if (p.dug < 0.9) continue;
+      if (p.kept < 0.5) continue;
       boards.push({
         x: p.x,
         y: surface(p.x, p.z) + 0.006,
@@ -197,12 +217,13 @@ function createEarthworks(
   const tape: Placement[] = [];
   const roofs: Placement[] = [];
   const logs: Placement[] = [];
-  for (const piece of instances) {
+  for (const piece of pieces) {
     const cx = piece.x + piece.width / 2;
     const cz = piece.y + piece.height / 2;
     const alongX = piece.width >= piece.height;
     const yaw = alongX ? 0 : Math.PI / 2;
     const length = alongX ? piece.width : piece.height;
+    if (piece.state > 0 && piece.battered) continue;
     if (piece.state > 0) {
       // Construction mark: four stakes and a tape on each long side.
       const half = length / 2 - 0.08;

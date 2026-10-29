@@ -119,6 +119,18 @@
               "allowEnemies": { "description": "Riders may join a building held by another player (default false).", "type": "boolean" }
             }
           },
+          "trench": {
+            "description": "Spec 35 §5c: trench rules of a garrisonable earthwork. Hits of damage types not in breaksWith leave the trench alone and hurt one occupant for smallDamagePct percent; breaksWith damage wears the trench down and the overflow hurts the occupants. In a variant 1 piece the first shelterSlots occupants take nothing. Every advanceTicks ticks soldiers of opposing sides in one connected trench network advance piece by piece towards contact.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["smallDamagePct", "breaksWith", "shelterSlots", "advanceTicks"],
+            "properties": {
+              "smallDamagePct": { "type": "integer", "minimum": 0, "maximum": 100 },
+              "breaksWith": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+              "shelterSlots": { "type": "integer", "minimum": 0, "maximum": 32 },
+              "advanceTicks": { "type": "integer", "minimum": 1, "maximum": 600 }
+            }
+          },
           "render": {
             "description": "Free-form hints for the client renderer of the family (model id, colours, scale...); the sim ignores it.",
             "type": "object"

@@ -11,4 +11,7 @@ types:
     variants: 1
     hp: 300
     repairPct: 400                 # digs four times faster than a bridge repairs: one soldier ~36 s, three ~12 s
+    # Spec 35 §5c: soldiers garrison a finished trench; a rifle only grazes them, high explosives break it.
+    garrison: { slots: 3, rangePct: 100, damagePct: 100, evictOnWrecked: false, allowNeutral: true, allowEnemies: false }
+    trench: { smallDamagePct: 10, breaksWith: [highExplosive, thermobaric], shelterSlots: 2, advanceTicks: 15 }
     render: { kind: trench }

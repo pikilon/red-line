@@ -1530,6 +1530,31 @@ impl World {
             placed.push(id);
         }
 
+        // Trenches exist before orders resolve, so units can be told to garrison them.
+        for (index, entry) in setup.trenches.iter().enumerate() {
+            let percent = entry.hp_percent.unwrap_or(100);
+            if !(1..=100).contains(&percent) {
+                return Err(invalid(format!(
+                    "trenches[{index}]: hpPercent must be 1..=100"
+                )));
+            }
+            let cell = to_cell(entry.at);
+            let row = world
+                .dig_trench(cell, entry.rot, entry.variant)
+                .ok_or_else(|| {
+                    invalid(format!(
+                        "trenches[{index}]: cells at {},{} are not free",
+                        entry.at[0], entry.at[1]
+                    ))
+                })? as usize;
+            let def = &world.rules.feature_types[world.features[row].kind as usize];
+            let hp = ((u64::from(def.hp) * u64::from(percent) / 100) as u32).max(1);
+            let state =
+                crate::features::state_for(hp, def.hp, def.states.damaged, def.states.wrecked);
+            world.features[row].hp = hp;
+            world.features[row].state = state;
+        }
+
         for (index, entry) in setup.entities.iter().enumerate() {
             let Some(order) = &entry.order else {
                 continue;
@@ -1602,30 +1627,6 @@ impl World {
             let hp = world.features[feature].hp;
             let keep = (u64::from(hp) * u64::from(entry.hp_percent.min(100)) / 100) as u32;
             world.damage_feature(feature, hp - keep);
-        }
-
-        for (index, entry) in setup.trenches.iter().enumerate() {
-            let percent = entry.hp_percent.unwrap_or(100);
-            if !(1..=100).contains(&percent) {
-                return Err(invalid(format!(
-                    "trenches[{index}]: hpPercent must be 1..=100"
-                )));
-            }
-            let cell = to_cell(entry.at);
-            let row = world
-                .dig_trench(cell, entry.rot, entry.variant)
-                .ok_or_else(|| {
-                    invalid(format!(
-                        "trenches[{index}]: cells at {},{} are not free",
-                        entry.at[0], entry.at[1]
-                    ))
-                })? as usize;
-            let def = &world.rules.feature_types[world.features[row].kind as usize];
-            let hp = ((u64::from(def.hp) * u64::from(percent) / 100) as u32).max(1);
-            let state =
-                crate::features::state_for(hp, def.hp, def.states.damaged, def.states.wrecked);
-            world.features[row].hp = hp;
-            world.features[row].state = state;
         }
 
         world.victory_enabled = setup.victory;

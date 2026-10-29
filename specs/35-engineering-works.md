@@ -152,6 +152,48 @@ once repaired above that threshold, and the client draws it again.
   stretches get sandbags and duckboards, `variant` 1 pieces a log-and-sandbag
   roof. Infantry stand on the carved floor, so they are drawn sunk.
 
+## 5c. Trench garrison (owner request 2026-10-29)
+
+* **Precedent.** Trenches have no Zero Hour precedent (D3); the garrison base
+  copies spec 31 block 2 (`garrison.rs`: `Garrison`/`Unload`, `inside`,
+  `GarrisonDef`). Everything below is Red Line's own.
+* **Data.** `trench` in `data/features/earthworks.yaml` gets a `garrison:` block
+  (3 slots, range and damage 100 percent, `evictOnWrecked: false`, neutral
+  allowed, enemies not) and `trench: { smallDamagePct: 10, breaksWith:
+  [highExplosive, thermobaric], shelterSlots: 2, advanceTicks: 15 }`. Unit types
+  may name a `trenchWeapon`; both factions get a weak `smallArms` sidearm (4
+  damage, 3 tiles, 20 ticks) set on every infantry type whose main weapon is
+  `antiTank` (Stugna team, RPG gunner).
+* **Entry.** Only a finished (full hit points) piece takes riders. Riders that
+  do not fit go to the nearest connected piece that is empty or held by the same
+  player. The network is the pieces whose cells are 8-adjacent, transitively
+  (breadth first, neighbours in ascending feature index). A rider that finds its
+  piece full on arrival moves on to the next one. Vehicles never enter.
+* **Visible.** Occupants keep `FLAG_INSIDE` but are not hidden from other
+  players' snapshots. They stand at slot points of the piece (slot `i` of `n` at
+  `(2i+1)/2n` of the long axis, on the centre line).
+* **Damage.** A shot or splash reaching a piece (`hit_features`) goes through
+  `hit_trench`. Damage types in `breaksWith` wear the trench down; going below
+  zero destroys the row and the overflow hits every exposed occupant, who are
+  then put out on the piece's own cells or around it. Any other type leaves the
+  trench alone and hurts the lowest-id exposed occupant for `smallDamagePct`
+  percent (at least 1). In a `variant` 1 piece the first `shelterSlots`
+  occupants by id take nothing. Empty trenches break the same way.
+* **Advance to contact.** Every `advanceTicks`, in a network holding two or more
+  players, an occupant whose piece does not touch an enemy-held piece moves one
+  piece along the shortest path to the nearest enemy-held one, if the next piece
+  has room and is not enemy-held. An occupant in a piece touching an enemy-held
+  one shoots the lowest-id enemy occupant there directly (no trench or cover
+  reduction), with its `trenchWeapon` or, lacking one, its main weapon; never an
+  `antiTank` one.
+* **Outward fire.** Otherwise occupants fire out like building garrisons do
+  (range and damage 100 percent), launchers with their normal weapon.
+* **Evacuate.** `Unload` puts the occupants out; the piece's own cells count as
+  free for them.
+* **State.** Nothing new is stored: occupants are `inside` and their slot
+  position is the entity position, both already hashed and saved.
+* Example save `?load=trench-assault`.
+
 ## 6. Assumptions
 
 * **A1** Only bridges are jobs for now; building repair by dozers is backlog
@@ -159,8 +201,20 @@ once repaired above that threshold, and the client draws it again.
 * **A2** Any player's workers may repair any bridge (bridges are neutral).
 * **A3** No repair animation or scaffolding yet; workers stand by the bank.
 * **A4** The AI does not repair bridges or dig trenches yet.
-* **A5** Trenches cannot be damaged or filled in; there is no limit on how
-  many a player digs.
+* **A5** Trenches cannot be filled in; there is no limit on how many a player
+  digs. (Damage: see A12 to A17.)
+* **A12** Trench garrison has no Zero Hour precedent (D3); it copies spec 31
+  block 2 and the numbers are owner decisions (§5c).
+* **A13** Only breaking damage types (`breaksWith`) wear a trench down; the rest
+  only graze one exposed occupant. Armour modifiers do not apply to either.
+* **A14** A shot that takes exactly the trench's remaining hit points leaves it
+  standing at zero; only more than that destroys it.
+* **A15** Contact fights ignore weapon range (the pieces touch) and the soldiers
+  stay put until one side is dead or leaves; there is no retreat.
+* **A16** The AI garrisons finished trenches next to approaching infantry like
+  any garrisonable building, and does not advance on purpose.
+* **A17** Soldiers of a destroyed or unloaded piece go to its own cells first;
+  those with no room left stand around it.
 
 ## 7. Acceptance criteria
 
