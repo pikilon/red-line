@@ -997,6 +997,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         ruleset as unknown as FeatureRules,
         mapDefinition as FeatureMap,
         elevation,
+        vehicleFx.particles,
       );
       scene.add(liveFeatures.object);
     }
@@ -1385,7 +1386,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   interact.onSnapshot((snapshot, receivedFog, at, combat, features) => {
     initial ??= snapshot;
     if (features !== null) {
-      liveFeatures?.apply(features, performance.now());
+      liveFeatures?.apply(features, effectTime(performance.now()));
       garrisonFeatures = withLiveState(placedGarrisons, features);
       repairJobs = withRepairState(placedBridges, features);
     }
@@ -1648,7 +1649,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     lastFrameMs = now;
     controller?.update(dtMs / 1000);
     zoomBar.sync(camera.zoom);
-    liveFeatures?.update(now);
+    liveFeatures?.update(effectTime(now));
     const relief = terrain === null ? null : terrainDeformerOf(terrain);
     updateSun();
     if (next !== null && prev !== null && entities !== null) {

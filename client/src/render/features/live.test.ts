@@ -63,7 +63,35 @@ const row = (
   ...patch,
 });
 
-function setup() {
+/** Counts the particles the features ask for, by kind. */
+function fakeParticles() {
+  const counts = { fire: 0, smoke: 0, chunks: 0 };
+  return {
+    counts,
+    particles: {
+      fire: () => {
+        counts.fire++;
+      },
+      smoke: () => {
+        counts.smoke++;
+      },
+      chunks: (_x: number, _y: number, _z: number, n: number) => {
+        counts.chunks += n;
+      },
+    },
+  };
+}
+
+/** Plays frames of 50 ms from `from` to `to`. */
+function frames(live: LiveFeatures, from: number, to: number): void {
+  for (let t = from; t <= to; t += 50) live.update(t);
+}
+
+/** Whether a family is drawn as a whole (not a feature drawn on its own). */
+const familyDrawn = (live: LiveFeatures, family: string) =>
+  live.object.children.some((child) => child.name === family);
+
+function setup(particles: ReturnType<typeof fakeParticles> | null = null) {
   const drawn: Record<string, FeatureInstance[]> = {};
   const ctx: FeatureContext = {
     elevation: flatElevation(20, 20),
@@ -81,6 +109,7 @@ function setup() {
       group.name = family;
       return group;
     },
+    particles?.particles ?? null,
   );
   return { live, drawn };
 }
@@ -109,7 +138,7 @@ describe("LiveFeatures", () => {
     live.apply([row({ index: 1, kind: 2, state: 1 })], 1000);
     expect(drawn.building?.[0]?.state).toBe(1);
     live.apply([row({ index: 2, kind: 4, state: 2 })], 2000);
-    expect(live.object.getObjectByName("bridge")).toBeUndefined();
+    expect(familyDrawn(live, "bridge")).toBe(false);
   });
 
   it("puts flames on burning features and removes them when the fire is out", () => {
@@ -122,10 +151,69 @@ describe("LiveFeatures", () => {
 
   it("rebuilds a family at most every quarter second", () => {
     const { live, drawn } = setup();
-    live.apply([row({ index: 0, kind: 1 })], 1000);
-    live.apply([row({ index: 0, kind: 0 })], 1100);
-    expect(drawn.vegetation?.[0]?.type.id).toBe("tree-stump");
+    live.apply([row({ index: 1, kind: 2, state: 1 })], 1000);
+    live.apply([row({ index: 1, kind: 2, state: 2 })], 1100);
+    expect(drawn.building?.[0]?.state).toBe(1);
     live.update(1300);
-    expect(drawn.vegetation?.[0]?.type.id).toBe("pine");
+    expect(drawn.building?.[0]?.state).toBe(2);
+  });
+
+  it("sinks a collapsing building on its own, then leaves smoking rubble", () => {
+    const fx = fakeParticles();
+    const { live, drawn } = setup(fx);
+    live.apply([row({ index: 1, kind: 2, state: 2, collapsing: true })], 1000);
+    expect(drawn.building).toHaveLength(1);
+    expect(live.object.getObjectByName("feature-collapse")).toBeDefined();
+    expect(familyDrawn(live, "building")).toBe(false);
+    frames(live, 1000, 2000);
+    expect(fx.counts.fire).toBeGreaterThan(5);
+    expect(fx.counts.smoke).toBeGreaterThan(5);
+    const smokeBefore = fx.counts.smoke;
+    live.apply([row({ index: 1, kind: 3 })], 4000);
+    expect(live.object.getObjectByName("feature-collapse")).toBeUndefined();
+    expect(drawn.prop?.map((i) => i.type.id)).toEqual(["rubble-2x2"]);
+    expect(fx.counts.chunks).toBeGreaterThan(10);
+    frames(live, 4000, 9000);
+    expect(fx.counts.smoke).toBeGreaterThan(smokeBefore + 20);
+  });
+
+  it("topples a felled tree beside its stump and then lets it go", () => {
+    const { live, drawn } = setup(fakeParticles());
+    live.apply([row({ index: 0, kind: 1 })], 1000);
+    expect(drawn.vegetation?.map((i) => i.type.id)).toEqual(["tree-stump"]);
+    expect(live.fallingCount()).toBe(1);
+    live.update(1500);
+    const tree = live.object.getObjectByName("feature-topple");
+    expect(
+      Math.hypot(tree?.rotation.x ?? 0, tree?.rotation.z ?? 0),
+    ).toBeGreaterThan(0.2);
+    live.update(6000);
+    expect(live.fallingCount()).toBe(0);
+  });
+
+  it("smokes a damaged building and burns a wrecked one, with particles not cones", () => {
+    const fx = fakeParticles();
+    const { live } = setup(fx);
+    live.apply([row({ index: 1, kind: 2, state: 1 })], 1000);
+    frames(live, 1000, 3000);
+    expect(fx.counts.smoke).toBeGreaterThan(0);
+    expect(fx.counts.fire).toBe(0);
+    live.apply([row({ index: 1, kind: 2, state: 2 })], 3000);
+    frames(live, 3000, 5000);
+    expect(fx.counts.fire).toBeGreaterThan(0);
+    live.apply([row({ index: 0, kind: 0, burning: true })], 5000);
+    expect(live.object.getObjectByName("feature-fire")).toBeUndefined();
+  });
+
+  it("drops a broken bridge into the river instead of removing it at once", () => {
+    const fx = fakeParticles();
+    const { live } = setup(fx);
+    live.apply([row({ index: 2, kind: 4, state: 2 })], 1000);
+    expect(familyDrawn(live, "bridge")).toBe(false);
+    expect(live.object.getObjectByName("feature-collapse")).toBeDefined();
+    expect(fx.counts.chunks).toBeGreaterThan(0);
+    frames(live, 1000, 14_000);
+    expect(live.object.getObjectByName("feature-collapse")).toBeUndefined();
+    expect(familyDrawn(live, "bridge")).toBe(false);
   });
 });

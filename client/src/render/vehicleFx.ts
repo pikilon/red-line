@@ -21,6 +21,7 @@ import { typeDef } from "../rules";
 import type { EntityState } from "../sim/matchSnapshot";
 import type { DeathCauses } from "./deaths";
 import { groundY } from "./elevation";
+import type { FeatureParticles } from "./features/fx";
 import { angleToYaw } from "./heading";
 import {
   BURN_OUT_MS,
@@ -109,6 +110,8 @@ export interface VehicleBodies {
 export interface VehicleFx extends VehicleBodies {
   readonly group: Group;
   readonly meshes: Readonly<Record<ParticleKind, InstancedMesh>>;
+  /** The same fire, smoke and debris for map features (spec 31 block 1). */
+  readonly particles: FeatureParticles;
   /** Sparks or a blast on the armour, and the rock of the hull. */
   hit(impacts: readonly VehicleImpact[], nowMs: number): void;
   /** Sparks of bullets striking armour, hurt or not. */
@@ -824,6 +827,7 @@ export function createVehicleFx(seed = 0x7a11): VehicleFx {
   return {
     group,
     meshes,
+    particles: { fire, smoke, chunks },
     hit(impacts, nowMs) {
       hit(impacts, nowMs);
       // Bullets spark from `ricochet`, whether or not they hurt.
