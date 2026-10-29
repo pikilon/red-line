@@ -89,8 +89,13 @@ test("AC-41-06: a second tap within 400 ms centres the camera", async ({
   await page.evaluate(() =>
     (window as DebugWindow).__redline?.setCameraTarget(2, 2),
   );
-  await page.keyboard.press("Digit3");
-  await page.keyboard.press("Digit3");
+  // Both taps in one browser turn: on a slow runner two separate Playwright
+  // presses can land more than DOUBLE_TAP_MS apart.
+  await page.evaluate(() => {
+    for (let i = 0; i < 2; i++) {
+      window.dispatchEvent(new KeyboardEvent("keydown", { code: "Digit3" }));
+    }
+  });
   await expect
     .poll(() =>
       page.evaluate(() => (window as DebugWindow).__redline?.cameraTarget()),
