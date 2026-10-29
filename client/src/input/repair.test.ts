@@ -372,6 +372,29 @@ describe("spec 35 trench digging input", () => {
     expect(cells.some((x) => trench.has(`${x},5`))).toBe(false);
   });
 
+  it("a line over trenches leaves them alone and fills only the gaps", () => {
+    // Trench cells at x 12..13 and 17..18 on row 5; the line runs 10..20.
+    const trench = new Set(["12,5", "13,5", "17,5", "18,5"]);
+    const isTrench = (x: number, y: number) => trench.has(`${x},${y}`);
+    const segments = joinedTrenchLine(
+      { x: 10.5, y: 5.5 },
+      { x: 20.5, y: 5.5 },
+      isTrench,
+      () => true,
+    );
+    const cells = segments.flatMap((s) =>
+      s.rot === 0
+        ? [`${s.x},${s.y}`, `${s.x + 1},${s.y}`]
+        : [`${s.x},${s.y}`, `${s.x},${s.y + 1}`],
+    );
+    // Nothing is dug twice, and every free cell of the line is covered.
+    expect(cells.some((cell) => trench.has(cell))).toBe(false);
+    expect(new Set(cells).size).toBe(cells.length);
+    for (const x of [10, 11, 14, 15, 16, 19, 20]) {
+      expect(cells).toContain(`${x},5`);
+    }
+  });
+
   it("unfinished dug trenches are construction marks workers can click", () => {
     const rows = [
       {

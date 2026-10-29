@@ -100,7 +100,8 @@ export interface SkirmishController {
    *  selected producer. */
   toggleRally(): void;
   /** The armed map-tap mode of the command panel, if any. */
-  armedMode(): "force" | "rally" | null;
+  /** The armed mode that lights its button; Dig trench counts (spec 35). */
+  armedMode(): "force" | "rally" | "dig" | null;
   /** Spec 41: selects the selected unit types on the screen or the map. */
   selectSameType(scope: "screen" | "map"): void;
   /** Spec 41: narrows the selection to the entities of `kind`. */
@@ -423,7 +424,7 @@ export function createSkirmishController(
       const to = groundAt(end);
       digArmed = event.shiftKey;
       if (from === null || to === null) return;
-      for (const command of resolveDigLine({
+      const line = resolveDigLine({
         player: options.player(),
         selected: [...selected],
         entities: options.entities(),
@@ -431,9 +432,14 @@ export function createSkirmishController(
         to,
         isTrench,
         isFree,
-      })) {
-        options.command(command);
-      }
+      });
+      const adds = line.some(
+        (command) => command.kind === "digLine" && command.segments.length > 0,
+      );
+      // A line drawn only over trenches adds nothing: the workers dig on the
+      // unfinished one under its end instead (spec 35 §5b.3).
+      const commands = adds ? line : digOnAt(to);
+      for (const command of commands) options.command(command);
       return;
     }
     if (isDrag(start, end)) {
@@ -468,6 +474,13 @@ export function createSkirmishController(
     }
     if (digArmed) {
       digArmed = false;
+      // Dig on a trench being dug: the workers join it (spec 35 §5b.3).
+      const join = digOnAt(ground);
+      if (join.length > 0) {
+        for (const command of join) options.command(command);
+        lastClick = null;
+        return;
+      }
       for (const command of resolveDigClick({
         player: options.player(),
         selected: [...selected],
@@ -618,6 +631,18 @@ export function createSkirmishController(
   });
   options.keyTarget.addEventListener("blur", () => pressed.clear());
 
+  /** Spec 35 §5b.3: the selected workers dig on the unfinished trench at
+   *  `point`, if there is one. */
+  const digOnAt = (point: { x: number; y: number }) =>
+    resolveRepairClick({
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      jobs: options.repairJobs?.() ?? [],
+      x: point.x,
+      y: point.y,
+    });
+
   /** Spec 35 §5b.3: a dug trench covers cell (x, y). */
   const isTrench = (x: number, y: number): boolean =>
     options.trenchCells?.().has(y * options.mapWidth + x) ?? false;
@@ -661,7 +686,7 @@ export function createSkirmishController(
     toggleRally() {
       armedMode = armedMode === "rally" ? null : "rally";
     },
-    armedMode: () => armedMode,
+    armedMode: () => (digArmed ? "dig" : armedMode),
     selectSameType(scope) {
       const kinds = selectedUnitKinds(options.entities(), selected);
       if (kinds.length === 0) return;

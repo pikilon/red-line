@@ -60,7 +60,7 @@ export function selectionChips(
 }
 
 /** An armed map-tap mode of the command panel (spec 41 §3.1). */
-export type ArmedMode = "force" | "rally" | null;
+export type ArmedMode = "force" | "rally" | "dig" | null;
 
 /** What one command panel render shows (spec §6.7). */
 export interface PanelInput {
@@ -757,7 +757,13 @@ export function createCommandPanel(
     }
     if (dig !== undefined) {
       unitRows.push(
-        actionButton("dig", "dig", dig.label, () => handlers.onDig?.()),
+        actionButton(
+          "dig",
+          "dig",
+          dig.label,
+          () => handlers.onDig?.(),
+          input.armed === "dig",
+        ),
       );
     }
     if (repair !== undefined) {

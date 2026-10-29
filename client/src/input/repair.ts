@@ -460,41 +460,104 @@ export function trenchJoinCells(
   return found.map(({ x, y }) => ({ x, y }));
 }
 
-/** Spec 35 §5b.3: the segments of a drawn line whose ends snap onto the
- *  nearest trench, so a new line joins the network instead of leaving a gap.
- *  With both ends joining, the end cell is chosen to give an even line when
- *  one is near, so no extra cell runs into a trench. */
+/** Spec 35 §5b.3: the trench pieces a drawn line adds to the network. The
+ *  line may run over trenches already dug or being dug: their cells are
+ *  left alone and only the gaps between them are cut into 2-cell pieces. A
+ *  gap of one cell gets a piece that runs on past it or, failing that, a
+ *  piece turned across the line. A line end that stops just short of a
+ *  trench (within `TRENCH_JOIN_REACH`) snaps onto it, so nothing is left
+ *  unjoined. */
 export function joinedTrenchLine(
   from: { x: number; y: number },
   to: { x: number; y: number },
   isTrench: CellTest,
   isFree: CellTest,
 ): TrenchSegment[] {
-  const center = (cell: { x: number; y: number }) => ({
-    x: cell.x + 0.5,
-    y: cell.y + 0.5,
-  });
-  const starts = trenchJoinCells(from, isTrench, isFree);
-  const ends = trenchJoinCells(to, isTrench, isFree);
-  const start = starts[0] === undefined ? from : center(starts[0]);
-  const even = (end: { x: number; y: number }): boolean => {
-    const dx = Math.abs(Math.floor(end.x) - Math.floor(start.x));
-    const dy = Math.abs(Math.floor(end.y) - Math.floor(start.y));
-    return (Math.max(dx, dy) + 1) % 2 === 0;
+  // An end that already reaches a trench along the line stays where it is.
+  const reaches = (
+    point: { x: number; y: number },
+    toward: { x: number; y: number },
+  ): boolean => {
+    const length = Math.hypot(toward.x - point.x, toward.y - point.y);
+    for (let step = 0; step <= TRENCH_JOIN_REACH; step++) {
+      const t = length === 0 ? 0 : Math.min(1, step / length);
+      const x = Math.floor(point.x + (toward.x - point.x) * t);
+      const y = Math.floor(point.y + (toward.y - point.y) * t);
+      if (isTrench(x, y)) return true;
+    }
+    return false;
   };
-  let end = to;
-  if (ends[0] !== undefined) {
-    const pick =
-      starts[0] === undefined
-        ? ends[0]
-        : (ends.find((cell) => even(center(cell))) ?? ends[0]);
-    end = center(pick);
+  const snap = (
+    point: { x: number; y: number },
+    toward: { x: number; y: number },
+  ) => {
+    if (reaches(point, toward)) return point;
+    const cell = trenchJoinCells(point, isTrench, isFree)[0];
+    return cell === undefined ? point : { x: cell.x + 0.5, y: cell.y + 0.5 };
+  };
+  const start = snap(from, to);
+  const end = snap(to, from);
+  const x0 = Math.floor(start.x);
+  const y0 = Math.floor(start.y);
+  const x1 = Math.floor(end.x);
+  const y1 = Math.floor(end.y);
+  const horizontal = Math.abs(x1 - x0) >= Math.abs(y1 - y0);
+  const [a0, b0, a1, b1] = horizontal ? [x0, y0, x1, y1] : [y0, x0, y1, x1];
+  const sign = a1 >= a0 ? 1 : -1;
+  const count = Math.abs(a1 - a0) + 1;
+  const at = (a: number, b: number) =>
+    horizontal ? { x: a, y: b } : { x: b, y: a };
+  const open = (a: number, b: number): boolean => {
+    const { x, y } = at(a, b);
+    return isFree(x, y) && !isTrench(x, y) && !taken.has(`${x},${y}`);
+  };
+  const taken = new Set<string>();
+  const take = (a: number, b: number) => {
+    const { x, y } = at(a, b);
+    taken.add(`${x},${y}`);
+  };
+  const segments: TrenchSegment[] = [];
+  const along = (a: number, b: number) => {
+    // A piece over cells a and a + sign, turned along the line.
+    const low = Math.min(a, a + sign);
+    take(a, b);
+    take(a + sign, b);
+    segments.push(
+      horizontal ? { x: low, y: b, rot: 0 } : { x: b, y: low, rot: 1 },
+    );
+  };
+  const across = (a: number, b: number): boolean => {
+    for (const side of [1, -1]) {
+      if (!open(a, b + side)) continue;
+      const low = Math.min(b, b + side);
+      take(a, b);
+      take(a, b + side);
+      segments.push(
+        horizontal ? { x: a, y: low, rot: 1 } : { x: low, y: a, rot: 0 },
+      );
+      return true;
+    }
+    return false;
+  };
+  let k = 0;
+  while (k < count) {
+    const a = a0 + sign * k;
+    const b = count === 1 ? b0 : Math.round(b0 + ((b1 - b0) * k) / (count - 1));
+    if (!open(a, b)) {
+      k++;
+      continue;
+    }
+    // Pair this cell with the next one (past the end of the line too).
+    const next = a + sign;
+    if (open(next, b)) {
+      along(a, b);
+      k += 2;
+      continue;
+    }
+    across(a, b);
+    k++;
   }
-  return trenchLineSegments(
-    start,
-    end,
-    ends[0] !== undefined && starts[0] === undefined,
-  );
+  return segments;
 }
 
 /** Spec 35 §5b.1: the line dig ordered for the selected workers. */

@@ -194,6 +194,14 @@ once repaired above that threshold, and the client draws it again.
   position is the entity position, both already hashed and saved.
 * Example save `?load=trench-assault`.
 
+* **Over trenches.** A line may cross trenches dug or being dug: their cells
+  are left alone and only the gaps are cut into pieces; a one-cell gap gets a
+  piece running on past it or turned across the line. A line end snaps onto
+  a trench only when it does not already reach one along the line. Dig armed
+  on an unfinished trench (tap, or a line that adds nothing) sends the
+  workers to dig on it. The Dig trench button stays lit while armed and goes
+  out when the line is drawn (Shift keeps it), or on a second press or Esc.
+
 ### 5b.4 Digging and shelling, as seen (owner requests 2026-10-29)
 
 * Workers dig from inside the trench: they walk to within `DIG_STAND_CENTI`
