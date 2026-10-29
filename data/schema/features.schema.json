@@ -32,6 +32,10 @@
             "minimum": 1,
             "maximum": 2
           },
+          "walkable": {
+            "description": "Spec 32: units walk on it over deep water, like a bridge deck (piers).",
+            "type": "boolean"
+          },
           "variants": { "type": "integer", "minimum": 1, "maximum": 16 },
           "repairPct": {
             "description": "Spec 35: repair or dig speed of the type, percent of the base rate (default 100).",
