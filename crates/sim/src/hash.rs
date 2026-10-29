@@ -123,6 +123,15 @@ fn put_entity(out: &mut Vec<u8>, entity: &Entity) {
         out.push(1);
         put_u32(out, feature);
     }
+    // Spec 34: written only for riders and unloading vehicles, likewise.
+    if let Some(carrier) = entity.aboard {
+        out.push(2);
+        put_u32(out, carrier);
+    }
+    if let Some(wait) = entity.unloading {
+        out.push(3);
+        put_u32(out, wait);
+    }
 }
 
 fn put_order(out: &mut Vec<u8>, order: &Order) {
@@ -178,6 +187,45 @@ fn put_order(out: &mut Vec<u8>, order: &Order) {
             out.push(6);
             put_u32(out, order_id);
             put_u32(out, feature);
+        }
+        Order::Board { order_id, carrier } => {
+            out.push(7);
+            put_u32(out, order_id);
+            put_u32(out, carrier);
+        }
+        Order::Repair { order_id, feature } => {
+            out.push(8);
+            put_u32(out, order_id);
+            put_u32(out, feature);
+        }
+        Order::RepairBuilding { order_id, building } => {
+            out.push(9);
+            put_u32(out, order_id);
+            put_u32(out, building);
+        }
+        Order::Heal {
+            order_id,
+            building,
+            missing,
+            remaining,
+        } => {
+            out.push(11);
+            put_u32(out, order_id);
+            put_u32(out, building);
+            put_u32(out, missing);
+            put_u32(out, remaining);
+        }
+        Order::RepairVehicle {
+            order_id,
+            factory,
+            missing,
+            remaining,
+        } => {
+            out.push(10);
+            put_u32(out, order_id);
+            put_u32(out, factory);
+            put_u32(out, missing);
+            put_u32(out, remaining);
         }
     }
 }

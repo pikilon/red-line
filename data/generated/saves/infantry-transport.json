@@ -1,0 +1,211 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "infantry-transport",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "demo-ground",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 26,
+      "y": 30,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "demo-ground",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          2000,
+          2600
+        ],
+        "label": "bradley"
+      },
+      {
+        "player": 0,
+        "type": "ua-kozak-scout",
+        "atCenti": [
+          2000,
+          3000
+        ],
+        "label": "kozak"
+      },
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          2000,
+          3400
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1600,
+          2500
+        ],
+        "order": {
+          "board": "bradley"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1600,
+          2600
+        ],
+        "order": {
+          "board": "bradley"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1600,
+          2700
+        ],
+        "order": {
+          "board": "bradley"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-stugna-team",
+        "atCenti": [
+          1500,
+          2600
+        ],
+        "order": {
+          "board": "bradley"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1600,
+          2950
+        ],
+        "order": {
+          "board": "kozak"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1600,
+          3050
+        ],
+        "order": {
+          "board": "kozak"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1500,
+          3000
+        ],
+        "order": {
+          "board": "kozak"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1600,
+          3400
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1600,
+          3500
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1500,
+          3450
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          4400,
+          3000
+        ],
+        "label": "bmp"
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4800,
+          2900
+        ],
+        "order": {
+          "board": "bmp"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4800,
+          3100
+        ],
+        "order": {
+          "board": "bmp"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          3600,
+          2950
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          3600,
+          3050
+        ]
+      }
+    ]
+  }
+}

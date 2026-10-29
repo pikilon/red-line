@@ -140,6 +140,8 @@ pub const ENTITY_STRIDE: usize = 11;
 /// One production queue record: `building_id, head permille, queue_len` plus
 /// `QUEUE_SLOTS` kinds.
 pub const QUEUE_STRIDE: usize = 12;
+/// One rally record: `building_id, target.x raw, target.y raw` (spec 33).
+pub const RALLY_STRIDE: usize = 3;
 
 pub const FLAG_UNDER_CONSTRUCTION: i32 = 2;
 pub const FLAG_GHOST: i32 = 4;
@@ -148,6 +150,9 @@ pub const FLAG_FIRED: i32 = 8;
 pub const FLAG_POWERED_OFF: i32 = 16;
 /// Spec 31 block 2: the unit is garrisoned in a building (shown to its owner only).
 pub const FLAG_INSIDE: i32 = 32;
+/// Spec 34: the unit rides a vehicle (with `FLAG_INSIDE`); its `progress`
+/// field holds the vehicle id.
+pub const FLAG_ABOARD: i32 = 64;
 
 /// Phase 2 match snapshot (§5.15): header, then every entity visible to
 /// `viewer` plus, for a player viewer, its ghosts, then the viewer's
@@ -189,7 +194,7 @@ pub fn encode_match_snapshot_with_shots(
     let mut rows: Vec<(EntityId, [i32; ENTITY_STRIDE])> = Vec::new();
     for entity in world.entities() {
         // Occupants show to their owner and to a revealed (neutral) viewer.
-        let hidden = entity.inside.is_some() && viewer != NEUTRAL && entity.owner != viewer;
+        let hidden = entity.contained() && viewer != NEUTRAL && entity.owner != viewer;
         if !hidden && world.is_entity_visible(viewer, entity.id) {
             rows.push((entity.id, entity_row(world, entity, shots)));
         }
@@ -240,6 +245,26 @@ pub fn encode_match_snapshot_with_shots(
     }
     out.push(queue_count);
     out.extend_from_slice(&queues);
+
+    // Rally points outlive empty queues. A player sees only their own; the
+    // observer sees all, matching entity visibility (spec 33).
+    let mut rallies = Vec::new();
+    let mut rally_count = 0;
+    for entity in world.entities() {
+        if player.is_some_and(|player| entity.owner != player.id) {
+            continue;
+        }
+        let Some(site) = &entity.site else {
+            continue;
+        };
+        let Some(target) = site.rally else {
+            continue;
+        };
+        rally_count += 1;
+        rallies.extend_from_slice(&[entity.id as i32, target.x.raw(), target.y.raw()]);
+    }
+    out.push(rally_count);
+    out.extend_from_slice(&rallies);
     out
 }
 
@@ -285,6 +310,15 @@ pub fn encode_features(world: &World) -> Vec<i32> {
             i32::from(owners[index]),
             counts[index] as i32,
         ]);
+    }
+    // Spec 35: rows past the map's were dug in the match; the client cannot
+    // know where, so they trail the table as `placed, (x, y, rot)...`.
+    let placed = world.placed_feature_count();
+    if rows.len() > placed {
+        out.push(placed as i32);
+        for row in &rows[placed..] {
+            out.extend_from_slice(&[row.x, row.y, i32::from(row.rot)]);
+        }
     }
     out
 }
@@ -401,6 +435,9 @@ fn entity_flags(world: &World, entity: &Entity) -> i32 {
     if entity.inside.is_some() {
         flags |= FLAG_INSIDE;
     }
+    if entity.aboard.is_some() {
+        flags |= FLAG_INSIDE | FLAG_ABOARD;
+    }
     if world.rules().ty(entity.kind).requires_power && power_deficit(world, entity.owner) {
         flags |= FLAG_POWERED_OFF;
     }
@@ -410,6 +447,9 @@ fn entity_flags(world: &World, entity: &Entity) -> i32 {
 /// Incomplete buildings show how far they are; every other entity is either
 /// finished (1000) or has no progress (0).
 fn entity_progress(world: &World, entity: &Entity) -> i32 {
+    if let Some(carrier) = entity.aboard {
+        return carrier as i32;
+    }
     let Some(site) = &entity.site else {
         return 0;
     };

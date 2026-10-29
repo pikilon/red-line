@@ -15,6 +15,7 @@ function snapshot(overrides: Partial<MatchSnapshot>): MatchSnapshot {
     winner: null,
     entities: [],
     queues: [],
+    rallies: [],
     ...overrides,
   };
 }

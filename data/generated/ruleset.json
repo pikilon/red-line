@@ -46,6 +46,7 @@
     ]
   ],
   "startingCredits": 5000,
+  "sellRefundPercent": 50,
   "lowPowerMinSpeedPercent": 25,
   "lowPowerMaxSpeedPercent": 75,
   "maxQueue": 9,
@@ -59,7 +60,19 @@
     },
     "cover": {
       "forestPct": 25,
-      "wallPct": 40
+      "wallPct": 40,
+      "trenchPct": 50
+    },
+    "repair": {
+      "permillePerSecondPerPoint": 7,
+      "infantryPoints": 1,
+      "dozerPoints": 3,
+      "maxWorkers": 6,
+      "vehicleRepairTicks": 75
+    },
+    "infirmary": {
+      "healTicks": 30,
+      "slots": 10
     }
   },
   "locomotors": [
@@ -621,6 +634,12 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "transport": {
+        "slots": 5,
+        "fireFromInside": true,
+        "damagePct": 100,
+        "exitTicks": 4
+      },
       "render": {
         "size": [
           60,
@@ -660,6 +679,11 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "transport": {
+        "slots": 6,
+        "damagePct": 10,
+        "exitTicks": 4
+      },
       "render": {
         "size": [
           70,
@@ -987,6 +1011,7 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "healsInfantry": true,
       "render": {
         "size": [
           300,
@@ -1033,6 +1058,7 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "repairsVehicles": true,
       "render": {
         "size": [
           400,
@@ -1191,6 +1217,13 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "amphibious": true,
+      "transport": {
+        "slots": 4,
+        "fireFromInside": true,
+        "damagePct": 100,
+        "exitTicks": 4
+      },
       "render": {
         "size": [
           60,
@@ -1230,6 +1263,12 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "amphibious": true,
+      "transport": {
+        "slots": 6,
+        "damagePct": 10,
+        "exitTicks": 4
+      },
       "render": {
         "size": [
           70,
@@ -1557,6 +1596,7 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "healsInfantry": true,
       "render": {
         "size": [
           300,
@@ -1603,6 +1643,7 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "repairsVehicles": true,
       "render": {
         "size": [
           400,
@@ -1648,6 +1689,46 @@
         "size": [
           200,
           80,
+          200
+        ]
+      }
+    },
+    {
+      "id": "port-depot",
+      "faction": -1,
+      "category": "depot",
+      "armor": 3,
+      "hp": 0,
+      "sightCenti": 0,
+      "cost": 0,
+      "buildTicks": 0,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        3,
+        2
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 90,
+      "infinite": true,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "render": {
+        "size": [
+          300,
+          60,
           200
         ]
       }
@@ -2787,6 +2868,26 @@
       "render": {
         "kind": "stone-arch",
         "deckHeight": 0.8
+      }
+    },
+    {
+      "id": "trench",
+      "family": "earthwork",
+      "footprint": [
+        2,
+        1
+      ],
+      "blocks": "none",
+      "variants": 1,
+      "hp": 300,
+      "states": {
+        "damaged": 70,
+        "wrecked": 35
+      },
+      "crushLevel": 0,
+      "repairPct": 400,
+      "render": {
+        "kind": "trench"
       }
     }
   ],
@@ -15744,6 +15845,14 @@
             44
           ],
           "amount": 10000
+        },
+        {
+          "origin": [
+            26,
+            19
+          ],
+          "amount": 10000,
+          "type": "port-depot"
         }
       ],
       "heights": "",

@@ -48,6 +48,8 @@ types:                               # required
     turretTurnRateDeg: 240
     weapon: ru-kpvt
     radiusCenti: 34
+    transport: { slots: 4, fireFromInside: true, damagePct: 100, exitTicks: 4 }   # spec 34: Humvee-like
+    amphibious: true                   # spec 36: the real BMP-2 and BRDM-2 swim
     render: { size: [60, 50, 90] }
   - id: ru-bmp-2
     category: unit
@@ -62,6 +64,8 @@ types:                               # required
     turretTurnRateDeg: 150
     weapon: ru-2a42
     radiusCenti: 41
+    transport: { slots: 6, damagePct: 10, exitTicks: 4 }   # spec 34: Troop Crawler-like
+    amphibious: true                   # spec 36: the real BMP-2 and BRDM-2 swim
     render: { size: [70, 55, 110] }
   - id: ru-t-72b3
     category: unit
@@ -164,6 +168,7 @@ types:                               # required
     footprint: [3, 3]
     power: -2
     produces: [ru-rifleman, ru-rpg-gunner]
+    healsInfantry: true
     requires: [ru-power-plant]
     render: { height: 90 }
   - id: ru-vehicle-factory
@@ -176,6 +181,7 @@ types:                               # required
     footprint: [4, 4]
     power: -4
     produces: [ru-brdm-scout, ru-bmp-2, ru-t-72b3, ru-tos-1a]
+    repairsVehicles: true
     requires: [ru-supply-center]
     render: { height: 110 }
   - id: ru-defense

@@ -270,6 +270,23 @@ pub struct TypeDef {
     /// Launcher types fire only while standing still (they stow when moving).
     #[serde(default)]
     pub stationary_fire: bool,
+    /// Spec 36: the vehicle drives over deep water as well as land (Zero Hour
+    /// `Surfaces = GROUND WATER`), at the same speed.
+    #[serde(default)]
+    pub amphibious: bool,
+    /// Spec 36: a depot that never runs out (a port); trucks still pay its
+    /// `load_ticks` on top of their own each time they load.
+    #[serde(default)]
+    pub infinite: bool,
+    /// Spec 40: this completed building heals damaged infantry that enters it.
+    #[serde(default)]
+    pub heals_infantry: bool,
+    /// Spec 39: this completed building is a vehicle repair pad.
+    #[serde(default)]
+    pub repairs_vehicles: bool,
+    /// Spec 34: infantry can ride this vehicle; `None` means it carries nobody.
+    #[serde(default)]
+    pub transport: Option<TransportDef>,
     /// Precomputed at load (`Ruleset::from_json`), never read from the wire.
     #[serde(skip)]
     pub motion: Motion,
@@ -288,6 +305,9 @@ pub struct FactionDef {
 pub struct DepotDef {
     pub origin: [i32; 2],
     pub amount: u32,
+    /// Spec 36: depot type id; absent is the first depot type (`supply-depot`).
+    #[serde(default, rename = "type")]
+    pub kind: Option<String>,
 }
 
 /// A starting position for a map. `render` is ignored by the sim.
@@ -372,6 +392,13 @@ pub struct FeatureTypeDef {
     /// Spec 31 block 2: infantry can garrison this feature; `None` means it cannot.
     #[serde(default)]
     pub garrison: Option<GarrisonDef>,
+    /// Spec 35: repair (or dig) speed of this type, percent of the base rate.
+    #[serde(default = "hundred", rename = "repairPct")]
+    pub repair_pct: u32,
+}
+
+fn hundred() -> u32 {
+    100
 }
 
 /// Spec 31 block 1: fire on a feature. Everything is an integer.
@@ -410,6 +437,22 @@ pub struct GarrisonDef {
     /// Zero Hour `AllowEnemiesInside`: riders may join a building held by another player.
     #[serde(default)]
     pub allow_enemies: bool,
+}
+
+/// Spec 34: transport data of a vehicle type (Zero Hour `TransportContain`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TransportDef {
+    /// Infantry the vehicle holds, one slot each (`Slots`).
+    pub slots: u32,
+    /// `PassengersAllowedToFire`: riders fire from the vehicle.
+    #[serde(default)]
+    pub fire_from_inside: bool,
+    /// `DamagePercentToUnits`: share of each rider's maximum hit points lost
+    /// when the vehicle dies; 100 kills them, less ejects the survivors.
+    pub damage_pct: u32,
+    /// `ExitDelay` in ticks: riders leave one at a time.
+    pub exit_ticks: u32,
 }
 
 fn default_true() -> bool {
@@ -532,6 +575,10 @@ pub struct AiDef {
     pub triggers: Vec<TriggerDef>,
 }
 
+fn default_sell_refund_percent() -> u32 {
+    50
+}
+
 /// The full ruleset: weapons, types, factions and maps.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -541,6 +588,9 @@ pub struct Ruleset {
     pub armor_classes: Vec<String>,
     pub damage_modifiers: Vec<Vec<u32>>,
     pub starting_credits: u32,
+    /// Spec 37: integer percentage of a sold building's cost refunded.
+    #[serde(default = "default_sell_refund_percent")]
+    pub sell_refund_percent: u32,
     pub low_power_min_speed_percent: u32,
     pub low_power_max_speed_percent: u32,
     pub max_queue: u32,
@@ -569,6 +619,12 @@ pub struct Ruleset {
 pub struct EnvironmentDef {
     pub high_ground: HighGroundDef,
     pub cover: CoverDef,
+    /// Spec 35: repair works; `None` (no balance entry) means nothing repairs.
+    #[serde(default)]
+    pub repair: Option<RepairDef>,
+    /// Spec 40: infantry heal inside an own barracks; `None` disables it.
+    #[serde(default)]
+    pub infirmary: Option<InfirmaryDef>,
 }
 
 impl Default for EnvironmentDef {
@@ -581,9 +637,21 @@ impl Default for EnvironmentDef {
             cover: CoverDef {
                 forest_pct: 0,
                 wall_pct: 0,
+                trench_pct: 0,
             },
+            repair: None,
+            infirmary: None,
         }
     }
+}
+
+/// Spec 40: a `healsInfantry` building takes in damaged infantry, heals each
+/// deficit over `heal_ticks` and lets it out; at most `slots` patients.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InfirmaryDef {
+    pub heal_ticks: u32,
+    pub slots: u32,
 }
 
 /// A shooter at least `min_tiles` above its target gets `range_pct` percent range.
@@ -594,6 +662,25 @@ pub struct HighGroundDef {
     pub range_pct: u32,
 }
 
+fn default_vehicle_repair_ticks() -> u32 {
+    75
+}
+
+/// Spec 35: how fast workers repair. Each worker on a job adds its points, up
+/// to `max_workers` workers; one point restores `permille_per_second_per_point`
+/// of the maximum hit points per second.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairDef {
+    pub permille_per_second_per_point: u32,
+    pub infantry_points: u32,
+    pub dozer_points: u32,
+    pub max_workers: u32,
+    /// Spec 39: ticks a repair pad spends on the initial missing HP.
+    #[serde(default = "default_vehicle_repair_ticks")]
+    pub vehicle_repair_ticks: u32,
+}
+
 /// Percent of damage a target in cover does not take; the best cover applies.
 /// Craters are not tracked by the sim yet, so they have no entry here.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
@@ -601,6 +688,9 @@ pub struct HighGroundDef {
 pub struct CoverDef {
     pub forest_pct: u32,
     pub wall_pct: u32,
+    /// Spec 35: infantry in a finished trench.
+    #[serde(default)]
+    pub trench_pct: u32,
 }
 
 impl Ruleset {

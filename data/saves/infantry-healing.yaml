@@ -1,0 +1,17 @@
+# Spec 40: damaged riflemen beside their barracks. Select them and right click the barracks.
+# They walk in, heal for two seconds for free while production continues, then walk out whole.
+id: infantry-healing
+map: first-line
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 7, y: 64, zoom: 1.2 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [6, 60] }
+  - { player: 0, type: ua-barracks, origin: [6, 65] }
+  - { player: 0, type: ua-rifleman, atCenti: [500, 6400], hpPercent: 40 }
+  - { player: 0, type: ua-rifleman, atCenti: [900, 6400], hpPercent: 70 }
+  - { player: 0, type: ua-rifleman, atCenti: [500, 6600], hpPercent: 100 }

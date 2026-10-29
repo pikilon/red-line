@@ -206,6 +206,78 @@ impl Sim {
         self.world.enqueue_as(player, Command::Unload { feature });
     }
 
+    /// Spec 34: `unit_ids` walk to the own vehicle `carrier` and board it.
+    pub fn command_board(&mut self, player: u8, unit_ids: &[u32], carrier: u32) {
+        self.world.enqueue_as(
+            player,
+            Command::Board {
+                units: unit_ids.to_vec(),
+                carrier,
+            },
+        );
+    }
+
+    /// Spec 34: the riders of `carrier` leave it, one at a time.
+    pub fn command_disembark(&mut self, player: u8, carrier: u32) {
+        self.world
+            .enqueue_as(player, Command::Disembark { carrier });
+    }
+
+    /// Spec 35: `unit_ids` walk to map feature `feature` and repair it.
+    pub fn command_repair(&mut self, player: u8, unit_ids: &[u32], feature: u32) {
+        self.world.enqueue_as(
+            player,
+            Command::Repair {
+                units: unit_ids.to_vec(),
+                feature,
+            },
+        );
+    }
+
+    /// Spec 35: `unit_ids` dig a trench with its top-left cell at `(x, y)`.
+    pub fn command_repair_building(&mut self, player: u8, unit_ids: &[u32], building: u32) {
+        self.world.enqueue_as(
+            player,
+            Command::RepairBuilding {
+                units: unit_ids.to_vec(),
+                building,
+            },
+        );
+    }
+
+    /// Spec 40: `unit_ids` walk to `building` and heal inside it.
+    pub fn command_heal_at(&mut self, player: u8, unit_ids: &[u32], building: u32) {
+        self.world.enqueue_as(
+            player,
+            Command::HealAt {
+                units: unit_ids.to_vec(),
+                building,
+            },
+        );
+    }
+
+    /// Spec 39: `unit_ids` dock at their own repair factory.
+    pub fn command_repair_vehicle(&mut self, player: u8, unit_ids: &[u32], factory: u32) {
+        self.world.enqueue_as(
+            player,
+            Command::RepairVehicle {
+                units: unit_ids.to_vec(),
+                factory,
+            },
+        );
+    }
+
+    pub fn command_dig(&mut self, player: u8, unit_ids: &[u32], x: i32, y: i32, rot: u8) {
+        self.world.enqueue_as(
+            player,
+            Command::Dig {
+                units: unit_ids.to_vec(),
+                origin: crate::map::Cell { x, y },
+                rot,
+            },
+        );
+    }
+
     pub fn command_harvest(&mut self, player: u8, unit_ids: &[u32], depot: u32) {
         self.world.enqueue_as(
             player,
@@ -254,6 +326,10 @@ impl Sim {
 
     pub fn command_cancel(&mut self, player: u8, building: u32) {
         self.world.enqueue_as(player, Command::Cancel { building });
+    }
+
+    pub fn command_sell(&mut self, player: u8, building: u32) {
+        self.world.enqueue_as(player, Command::Sell { building });
     }
 
     pub fn command_rally(&mut self, player: u8, building: u32, x_raw: i32, y_raw: i32) {

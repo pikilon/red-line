@@ -1,0 +1,12 @@
+# Spec 35: earthworks soldiers dig during a match (no map places them). A trench starts empty and workers dig it to full
+# hit points with the repair works (dozers help, workers add up); a finished trench gives the infantry in it the
+# environment's trench cover. Vehicles drive over it.
+types:
+  - id: trench
+    family: earthwork
+    footprint: [2, 1]
+    blocks: none
+    variants: 1
+    hp: 300
+    repairPct: 400                 # digs four times faster than a bridge repairs: one soldier ~36 s, three ~12 s
+    render: { kind: trench }

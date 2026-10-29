@@ -102,6 +102,10 @@ export interface SkirmishDebug {
   effectCounts(): Record<EffectKind, number>;
   /** Live red attack markers on the ground (spec 20 AC-20-05). */
   attackMarkerCount(): number;
+  /** Selected producer's persistent rally marker (spec 33). */
+  rallyMarkerCount(): number;
+  /** Authoritative rally points in the latest snapshot (spec 33). */
+  rallyPoints(): { building: number; x: number; y: number }[];
   /** Ground marks alive: tracks plus scorches (spec 24). */
   decalCount(): number;
   /** Drawn projectiles per model of the last frame (spec 17 §7.7). */

@@ -29,6 +29,33 @@ impl World {
         Fx::from_raw(scaled.min(i64::from(i32::MAX)) as i32)
     }
 
+    /// `cover_pct` for entity `index`, plus the trench cover when it is
+    /// infantry standing in a finished trench (spec 35); the best applies.
+    pub(crate) fn unit_cover_pct(&self, shooter: Option<FxVec2>, index: usize) -> u32 {
+        let entity = &self.entities[index];
+        let cover = self.cover_pct(shooter, entity.pos);
+        let trench = self.rules.environment.cover.trench_pct;
+        if trench > cover
+            && self.rules.ty(entity.kind).motion.kind == crate::rules::LocoKind::Foot
+            && self.in_trench(cell_of(entity.pos))
+        {
+            trench.min(100)
+        } else {
+            cover
+        }
+    }
+
+    /// Whether `cell` lies in a finished (full hit points) earthwork.
+    fn in_trench(&self, cell: Cell) -> bool {
+        self.features.iter().any(|row| {
+            let def = &self.rules.feature_types[row.kind as usize];
+            row.alive
+                && def.family == "earthwork"
+                && row.hp >= def.hp
+                && self.row_covers(row, cell, 0)
+        })
+    }
+
     /// Percent of damage a target at `target` avoids against a shot from
     /// `shooter` (`None` when the shooter is gone: only static cover counts).
     /// The best of the forest and wall covers, never their sum.

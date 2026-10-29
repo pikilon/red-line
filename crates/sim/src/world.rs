@@ -38,6 +38,8 @@ pub const DIRECT_HIT_CENTI: u32 = 45;
 pub(crate) enum Layer {
     Vehicle,
     Foot,
+    /// Spec 36: amphibious vehicles, over land and deep water.
+    Water,
 }
 
 /// Commands issued by a player, applied at the start of the next step (§5.8).
@@ -77,6 +79,10 @@ pub enum Command {
     Cancel {
         building: EntityId,
     },
+    /// Spec 37: sell a complete own building and refund its queue.
+    Sell {
+        building: EntityId,
+    },
     Rally {
         building: EntityId,
         target: FxVec2,
@@ -93,6 +99,41 @@ pub enum Command {
     /// Spec 31 block 2: the garrisoned building's owner evacuates it.
     Unload {
         feature: u32,
+    },
+    /// Spec 34: infantry walk to the own vehicle `carrier` and board it.
+    Board {
+        units: Vec<EntityId>,
+        carrier: EntityId,
+    },
+    /// Spec 34: the vehicle's riders leave it, one at a time.
+    Disembark {
+        carrier: EntityId,
+    },
+    /// Spec 35: infantry and dozers dig a trench at `origin`, turned `rot`.
+    Dig {
+        units: Vec<EntityId>,
+        origin: Cell,
+        rot: u8,
+    },
+    /// Spec 35: infantry and dozers walk to map feature `feature` and repair it.
+    Repair {
+        units: Vec<EntityId>,
+        feature: u32,
+    },
+    /// Spec 38: dozers repair an own damaged entity building.
+    RepairBuilding {
+        units: Vec<EntityId>,
+        building: EntityId,
+    },
+    /// Spec 40: damaged infantry heal inside an own barracks.
+    HealAt {
+        units: Vec<EntityId>,
+        building: EntityId,
+    },
+    /// Spec 39: damaged vehicles dock at their own repair factory.
+    RepairVehicle {
+        units: Vec<EntityId>,
+        factory: EntityId,
     },
     DebugSpawn {
         kind: TypeId,
@@ -177,6 +218,10 @@ pub struct World {
     /// foot units then use `terrain` and `nav`, and the `Vehicle` fields.
     pub(crate) terrain_foot: Option<MapGrid>,
     pub(crate) nav_foot: Option<MapGrid>,
+    /// Spec 36: `terrain` with deep water open, for amphibious vehicles;
+    /// `None` without deep water.
+    pub(crate) terrain_water: Option<MapGrid>,
+    pub(crate) nav_water: Option<MapGrid>,
     pub(crate) players: Vec<Player>,
     /// Ascending id; removed entities leave gaps.
     pub(crate) entities: Vec<Entity>,
@@ -237,6 +282,8 @@ impl World {
             nav: map,
             terrain_foot: None,
             nav_foot: None,
+            terrain_water: None,
+            nav_water: None,
             players: vec![Player::new(0, 0, 0, cells)],
             entities: Vec::new(),
             next_entity_id: 0,
@@ -298,17 +345,27 @@ impl World {
         let factions: Vec<FactionId> = map.starts.iter().map(|start| start.faction).collect();
         let mut world = World::sandbox(rules, terrain, &factions);
         world.terrain_foot = features::foot_blocks(&base, &features, &world.rules);
+        world.terrain_water = features::water_blocks(&base, &features, &world.rules);
         world.terrain_base = base;
         world.features = features;
         world.rebuild_nav();
 
         for depot in &map.depots {
-            world.place_depot(
+            let kind = depot
+                .kind
+                .as_deref()
+                .and_then(|id| world.rules.type_index(id))
+                .unwrap_or_else(|| world.rules.depot_type());
+            world.place_site(
+                NEUTRAL,
+                kind,
                 Cell {
                     x: depot.origin[0],
                     y: depot.origin[1],
                 },
                 depot.amount,
+                0,
+                true,
             );
         }
 
@@ -519,6 +576,8 @@ impl World {
             aim: None,
             idle_aim_ticks: 0,
             inside: None,
+            aboard: None,
+            unloading: None,
         });
         id
     }
@@ -559,6 +618,10 @@ impl World {
     pub(crate) fn rebuild_nav(&mut self) {
         self.nav = self.with_sites(&self.terrain);
         self.nav_foot = self.terrain_foot.as_ref().map(|foot| self.with_sites(foot));
+        self.nav_water = self
+            .terrain_water
+            .as_ref()
+            .map(|water| self.with_sites(water));
         self.fields.clear();
         for index in 0..self.entities.len() {
             let Order::Move { order_id, goal, .. } = self.entities[index].order else {
@@ -598,9 +661,12 @@ impl World {
     /// Layer unit `index` moves on: `Foot` for a foot locomotor while rubble
     /// splits the layers, otherwise `Vehicle` (one shared grid and fields).
     pub(crate) fn layer_of(&self, index: usize) -> Layer {
-        let foot = self.rules.ty(self.entities[index].kind).motion.kind == LocoKind::Foot;
+        let ty = self.rules.ty(self.entities[index].kind);
+        let foot = ty.motion.kind == LocoKind::Foot;
         if foot && self.nav_foot.is_some() {
             Layer::Foot
+        } else if ty.amphibious && self.nav_water.is_some() {
+            Layer::Water
         } else {
             Layer::Vehicle
         }
@@ -610,6 +676,7 @@ impl World {
     pub(crate) fn grid(&self, layer: Layer) -> &MapGrid {
         match layer {
             Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
+            Layer::Water => self.nav_water.as_ref().unwrap_or(&self.nav),
             Layer::Vehicle => &self.nav,
         }
     }
@@ -623,6 +690,7 @@ impl World {
     pub(crate) fn field(&mut self, layer: Layer, goal: Cell) -> &FlowField {
         let map = match layer {
             Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
+            Layer::Water => self.nav_water.as_ref().unwrap_or(&self.nav),
             Layer::Vehicle => &self.nav,
         };
         self.fields
@@ -646,12 +714,19 @@ impl World {
         self.update_economy();
         self.yield_to_movers();
         self.move_units();
+        self.carry_riders();
         self.run_over();
         self.features_step();
+        self.repair_works();
+        self.repair_vehicles();
+        self.heal_infirmaries();
         self.separate_units();
         self.arrive_on_contact();
         self.update_visibility();
         self.update_combat();
+        self.unload_transports();
+        self.empty_dead_transports();
+        self.empty_dead_infirmaries();
         self.remove_dead();
         self.update_memory();
         self.update_victory();
@@ -736,6 +811,7 @@ impl World {
                 Command::Move { units, target } => self.apply_move(player, &units, target),
                 Command::Produce { building, kind } => self.apply_produce(player, building, kind),
                 Command::Cancel { building } => self.apply_cancel(player, building),
+                Command::Sell { building } => self.apply_sell(player, building),
                 Command::Rally { building, target } => self.apply_rally(player, building, target),
                 Command::Construct {
                     dozer,
@@ -750,6 +826,19 @@ impl World {
                     self.apply_garrison(player, &units, feature);
                 }
                 Command::Unload { feature } => self.apply_unload(player, feature),
+                Command::Board { units, carrier } => self.apply_board(player, &units, carrier),
+                Command::Disembark { carrier } => self.apply_disembark(player, carrier),
+                Command::Repair { units, feature } => self.apply_repair(player, &units, feature),
+                Command::RepairBuilding { units, building } => {
+                    self.apply_repair_building(player, &units, building);
+                }
+                Command::HealAt { units, building } => {
+                    self.apply_heal_at(player, &units, building);
+                }
+                Command::RepairVehicle { units, factory } => {
+                    self.apply_repair_vehicle(player, &units, factory);
+                }
+                Command::Dig { units, origin, rot } => self.apply_dig(player, &units, origin, rot),
                 Command::AttackGround { units, target } => {
                     self.apply_attack_ground(player, &units, target);
                 }
@@ -847,7 +936,7 @@ impl World {
             .filter_map(|&id| self.index_of(id))
             .filter(|&index| {
                 let entity = &self.entities[index];
-                entity.owner == player && entity.site.is_none() && entity.inside.is_none()
+                entity.owner == player && entity.site.is_none() && !entity.contained()
             })
             .collect::<BTreeSet<usize>>()
             .into_iter()
@@ -1008,7 +1097,7 @@ impl World {
     fn move_units(&mut self) {
         for index in 0..self.entities.len() {
             // A garrisoned unit stays in its building (spec 31 block 2).
-            if self.entities[index].inside.is_some() {
+            if self.entities[index].contained() {
                 continue;
             }
             let before = self.entities[index].pos;
@@ -1021,6 +1110,19 @@ impl World {
                 Order::Build { order_id, building } => self.step_build(index, order_id, building),
                 Order::Garrison { order_id, feature } => {
                     self.step_garrison(index, order_id, feature);
+                }
+                Order::Board { order_id, carrier } => self.step_board(index, order_id, carrier),
+                Order::Repair { order_id, feature } => self.step_repair(index, order_id, feature),
+                Order::RepairBuilding { order_id, building } => {
+                    self.step_repair_building(index, order_id, building);
+                }
+                Order::Heal {
+                    order_id, building, ..
+                } => self.step_heal(index, order_id, building),
+                Order::RepairVehicle {
+                    order_id, factory, ..
+                } => {
+                    self.step_repair_vehicle(index, order_id, factory);
                 }
                 Order::Harvest { .. } => self.step_harvest(index),
                 Order::Attack { order_id, target } => self.step_attack(index, order_id, target),
@@ -1037,6 +1139,7 @@ impl World {
                 let motion = self.rules.ty(unit.kind).motion;
                 let nav = match self.layer_of(index) {
                     Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
+                    Layer::Water => self.nav_water.as_ref().unwrap_or(&self.nav),
                     Layer::Vehicle => &self.nav,
                 };
                 locomotor::coast(&mut self.entities[index], &motion, nav);
@@ -1147,6 +1250,7 @@ impl World {
         };
         let nav = match layer {
             Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
+            Layer::Water => self.nav_water.as_ref().unwrap_or(&self.nav),
             Layer::Vehicle => &self.nav,
         };
         let arrived = locomotor::drive(
@@ -1211,6 +1315,7 @@ impl World {
         self.field(layer, goal);
         let map = match layer {
             Layer::Foot => self.nav_foot.as_ref().unwrap_or(&self.nav),
+            Layer::Water => self.nav_water.as_ref().unwrap_or(&self.nav),
             Layer::Vehicle => &self.nav,
         };
         let field = &self.fields[&(layer, map.index(goal))];
@@ -1249,7 +1354,7 @@ impl World {
         let is_unit: Vec<bool> = self
             .entities
             .iter()
-            .map(|e| e.site.is_none() && e.inside.is_none())
+            .map(|e| e.site.is_none() && !e.contained())
             .collect();
         let is_idle: Vec<bool> = self
             .entities
@@ -1407,6 +1512,18 @@ impl World {
                     Order::Garrison { feature, .. } => self
                         .garrison_goal(self.entities[index].pos, feature)
                         .map(|goal| self.nav.index(goal)),
+                    Order::Board { carrier, .. } => {
+                        self.board_goal(carrier).map(|goal| self.nav.index(goal))
+                    }
+                    Order::Repair { feature, .. } => self
+                        .repair_goal(index, feature)
+                        .map(|goal| self.nav.index(goal)),
+                    Order::RepairBuilding { building, .. } => {
+                        self.build_goal(building).map(|goal| self.nav.index(goal))
+                    }
+                    Order::RepairVehicle { factory, .. } => {
+                        self.build_goal(factory).map(|goal| self.nav.index(goal))
+                    }
                     _ => None,
                 };
                 goal.map(|goal| (self.layer_of(index), goal))

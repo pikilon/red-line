@@ -74,6 +74,36 @@
       "entities": 6
     },
     {
+      "id": "rally-points",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "selling",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "building-repair",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "vehicle-repair",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "infantry-healing",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 5
+    },
+    {
       "id": "construction",
       "map": "showcase",
       "form": "setup",
@@ -228,6 +258,36 @@
       "map": "river-port",
       "form": "setup",
       "entities": 4
+    },
+    {
+      "id": "infantry-transport",
+      "map": "demo-ground",
+      "form": "setup",
+      "entities": 18
+    },
+    {
+      "id": "bridge-repair",
+      "map": "demo-bridges",
+      "form": "setup",
+      "entities": 8
+    },
+    {
+      "id": "trench-digging",
+      "map": "demo-ground",
+      "form": "setup",
+      "entities": 11
+    },
+    {
+      "id": "port-supply",
+      "map": "demo-coast",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "amphibious-crossing",
+      "map": "demo-bridges",
+      "form": "setup",
+      "entities": 5
     }
   ]
 }

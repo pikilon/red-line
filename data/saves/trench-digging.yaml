@@ -1,0 +1,25 @@
+# Spec 35: soldiers dig trenches. Three riflemen dig the north trench and a dozer with one rifleman the south one (both
+# under way at load; a dozer works like three soldiers). A free squad waits in the middle: select it, press Dig trench
+# and left click the ground (Shift turns the trench). A finished trench halves the damage its infantry take. A Russian
+# squad walks in from the east later to test it.
+id: trench-digging
+map: demo-ground
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 30, y: 30, zoom: 1 }
+entities:
+  - { player: 0, type: ua-rifleman, atCenti: [2600, 2500], order: { dig: [29, 26] } }
+  - { player: 0, type: ua-rifleman, atCenti: [2700, 2500], order: { dig: [29, 26] } }
+  - { player: 0, type: ua-rifleman, atCenti: [2800, 2500], order: { dig: [29, 26] } }
+  - { player: 0, type: ua-dozer, atCenti: [2600, 3500], order: { dig: [29, 34] } }
+  - { player: 0, type: ua-rifleman, atCenti: [2700, 3500], order: { dig: [29, 34] } }
+  - { player: 0, type: ua-rifleman, atCenti: [2500, 3000] }
+  - { player: 0, type: ua-rifleman, atCenti: [2500, 3100] }
+  - { player: 0, type: ua-rifleman, atCenti: [2600, 3050] }
+  - { player: 1, type: ru-rifleman, atCenti: [6000, 2650], order: { moveCenti: [3700, 2650] } }
+  - { player: 1, type: ru-rifleman, atCenti: [6100, 2750], order: { moveCenti: [3800, 2750] } }
+  - { player: 1, type: ru-rifleman, atCenti: [6200, 2700], order: { moveCenti: [3900, 2700] } }

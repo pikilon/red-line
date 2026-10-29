@@ -9,6 +9,7 @@ import {
   OUTCOMES,
   QUEUE_SLOTS,
   QUEUE_STRIDE,
+  RALLY_STRIDE,
 } from "./matchSnapshot";
 
 describe("matchSnapshot", () => {
@@ -28,6 +29,8 @@ describe("matchSnapshot", () => {
       // queue (QUEUE_STRIDE = 12): building_id, headPermille, queue_len, kind_0..kind_8 (-1 slots dropped)
       12,
       500, 2, 3, 4, -1, -1, -1, -1, -1, -1, -1,
+      // rally_count = 1: building 12 -> (30, 40), independent of its queue
+      1, 12, 1966080, 2621440,
     ]);
 
     expect(decodeMatchSnapshot(player)).toEqual({
@@ -67,6 +70,7 @@ describe("matchSnapshot", () => {
         },
       ],
       queues: [{ building: 12, headPermille: 500, items: [3, 4] }],
+      rallies: [{ building: 12, x: 30, y: 40 }],
     });
 
     // Observer viewer (255): credits and power are 0, no queues.
@@ -91,6 +95,7 @@ describe("matchSnapshot", () => {
       0,
       0,
       0, // queue_count = 0
+      0, // rally_count = 0
     ]);
 
     expect(decodeMatchSnapshot(observer)).toEqual({
@@ -117,6 +122,7 @@ describe("matchSnapshot", () => {
         },
       ],
       queues: [],
+      rallies: [],
     });
 
     // Layout constants.
@@ -124,6 +130,7 @@ describe("matchSnapshot", () => {
     expect(ENTITY_STRIDE).toBe(11);
     expect(QUEUE_SLOTS).toBe(9);
     expect(QUEUE_STRIDE).toBe(12);
+    expect(RALLY_STRIDE).toBe(3);
     expect(OUTCOMES).toEqual(["ongoing", "winner", "draw"]);
   });
 
@@ -165,6 +172,7 @@ describe("matchSnapshot", () => {
         },
       ],
       queues: [],
+      rallies: [],
     };
     const next: MatchSnapshot = {
       tick: 11,
@@ -203,6 +211,7 @@ describe("matchSnapshot", () => {
         },
       ],
       queues: [],
+      rallies: [],
     };
 
     const mid = interpolateEntities(prev, next, 0.5);

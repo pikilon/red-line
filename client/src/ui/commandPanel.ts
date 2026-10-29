@@ -20,9 +20,18 @@ export interface CommandButton {
   enabled: boolean;
   /** Whether the button constructs a building, produces a unit, or (spec 31
    *  block 2) garrisons the selection / evacuates a garrisoned building. */
-  action: "construct" | "produce" | "garrison" | "evacuate";
+  action:
+    | "construct"
+    | "produce"
+    | "garrison"
+    | "evacuate"
+    | "disembark"
+    | "dig"
+    | "sell";
   /** Feature index the garrison and evacuate buttons act on. */
   feature?: number;
+  /** Spec 34: vehicle the Unload button empties. */
+  carrier?: number;
 }
 
 /** What one command panel render shows (spec §6.7). */
@@ -45,7 +54,8 @@ export function samePanelInput(a: PanelInput, b: PanelInput): boolean {
       button.cost === other.cost &&
       button.enabled === other.enabled &&
       button.action === other.action &&
-      button.feature === other.feature
+      button.feature === other.feature &&
+      button.carrier === other.carrier
     );
   });
   if (!sameButtons) return false;
@@ -70,6 +80,10 @@ export interface CommandPanelArgs {
   queue: QueueState | null;
   /** Spec 31 block 2: garrison and evacuate offers for the selection. */
   garrison?: { garrison: number | null; evacuate: number | null };
+  /** Spec 34: the selected transport with riders, for the Unload button. */
+  disembark?: { carrier: number; riders: number } | null;
+  /** Spec 35: the selection holds workers that can dig a trench. */
+  dig?: boolean;
 }
 
 /** Builds the construct/produce buttons for the current selection (spec §6.6). */
@@ -79,6 +93,8 @@ export function commandButtons({
   credits,
   queue,
   garrison,
+  disembark,
+  dig,
 }: CommandPanelArgs): CommandButton[] {
   const buttons = productionButtons({
     selected,
@@ -87,11 +103,48 @@ export function commandButtons({
     queue,
   });
   const extra: CommandButton[] = [];
+  const subject = selected.length === 1 ? selected[0] : undefined;
+  if (
+    subject !== undefined &&
+    ownEntities.some((entity) => entity.id === subject.id) &&
+    typeDef(subject.kind).category === "building" &&
+    isComplete(subject)
+  ) {
+    const refund = Math.floor(
+      (typeDef(subject.kind).cost * RULES.sellRefundPercent) / 100,
+    );
+    extra.push({
+      typeIndex: -1,
+      label: t("ui.sell", { refund }),
+      cost: 0,
+      enabled: true,
+      action: "sell",
+    });
+  }
   if (garrison?.garrison != null) {
     extra.push(garrisonButton("garrison", garrison.garrison));
   }
   if (garrison?.evacuate != null) {
     extra.push(garrisonButton("evacuate", garrison.evacuate));
+  }
+  if (dig === true) {
+    extra.push({
+      typeIndex: -1,
+      label: t("ui.dig"),
+      cost: 0,
+      enabled: true,
+      action: "dig",
+    });
+  }
+  if (disembark != null) {
+    extra.push({
+      typeIndex: -1,
+      label: `${t("ui.disembark")} (${disembark.riders})`,
+      cost: 0,
+      enabled: true,
+      action: "disembark",
+      carrier: disembark.carrier,
+    });
   }
   return [...buttons, ...extra];
 }
@@ -227,10 +280,16 @@ export function createCommandPanel(
     onConstruct(kind: number): void;
     onProduce(kind: number): void;
     onCancel(): void;
+    /** Spec 37: sell the selected complete building. */
+    onSell(): void;
     /** Spec 31 block 2: the Garrison button was pressed for `feature`. */
     onGarrison?(feature: number): void;
     /** Spec 31 block 2: the Evacuate button was pressed for `feature`. */
     onEvacuate?(feature: number): void;
+    /** Spec 34: the Unload button was pressed for vehicle `carrier`. */
+    onDisembark?(carrier: number): void;
+    /** Spec 35: the Dig trench button was pressed. */
+    onDig?(): void;
     /** A disabled offer was pressed; the caller plays the error sound/EVA. */
     onDisabled?(button: CommandButton): void;
   },
@@ -274,6 +333,10 @@ export function createCommandPanel(
         handlers.onGarrison?.(button.feature ?? -1);
       else if (button.action === "evacuate")
         handlers.onEvacuate?.(button.feature ?? -1);
+      else if (button.action === "dig") handlers.onDig?.();
+      else if (button.action === "sell") handlers.onSell();
+      else if (button.action === "disembark")
+        handlers.onDisembark?.(button.carrier ?? -1);
       else handlers.onProduce(button.typeIndex);
     });
     element.addEventListener("contextmenu", (event) => {

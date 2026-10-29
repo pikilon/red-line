@@ -15,12 +15,21 @@ import { resolveForceFire, resolveRightClick } from "./intent";
 import { createPinchGesture } from "./pinch";
 import { canPlace, footprintOrigin } from "./placement";
 import {
+  type RepairJob,
+  resolveBuildingRepairClick,
+  resolveDigClick,
+  resolveInfirmaryClick,
+  resolveRepairClick,
+  resolveVehicleRepairClick,
+} from "./repair";
+import {
   isDrag,
   isSelectAllShortcut,
   rectFromDrag,
   type ScreenPoint,
   type ScreenRect,
 } from "./selection";
+import { resolveBoardClick } from "./transport";
 
 export interface SkirmishControllerOptions {
   canvas: HTMLCanvasElement;
@@ -46,6 +55,8 @@ export interface SkirmishControllerOptions {
   command(command: SimCommand): void;
   /** Garrisonable features of the map (spec 31 block 2); none when absent. */
   garrisonFeatures?(): readonly GarrisonFeature[];
+  /** Spec 35: the map's bridges with their live damage; none when absent. */
+  repairJobs?(): readonly RepairJob[];
   onSelectionChange(selected: ReadonlySet<number>): void;
   /** Enables the debug-only F2/F3 keys (spec §6.5). */
   debug: boolean;
@@ -61,6 +72,9 @@ export interface PlacementPreview {
 
 export interface SkirmishController {
   readonly selected: ReadonlySet<number>;
+  /** Spec 35: the next left click on the ground digs a trench there (Shift
+   *  turns it); a right click cancels. */
+  armDig(): void;
   cameraTarget(): { x: number; y: number };
   /** Clamped to [0, mapWidth] x [0, mapHeight]. */
   setTarget(x: number, y: number): void;
@@ -101,6 +115,8 @@ export function createSkirmishController(
   // next click force-fires. Ctrl + left click also arrives as a context menu on
   // macOS, so `forceFireIssued` keeps the two event paths from ordering twice.
   let forceFireArmed = false;
+  /** Spec 35: the Dig button was pressed; the next left click digs there. */
+  let digArmed = false;
   let forceFireIssued = false;
 
   function setSelection(ids: Iterable<number>): void {
@@ -313,6 +329,20 @@ export function createSkirmishController(
       return;
     }
     const ground = groundAt(end);
+    if (digArmed && ground !== null) {
+      digArmed = false;
+      for (const command of resolveDigClick({
+        player: options.player(),
+        selected: [...selected],
+        entities: options.entities(),
+        x: ground.x,
+        y: ground.y,
+        turned: event.shiftKey,
+      })) {
+        options.command(command);
+      }
+      return;
+    }
     if (ground !== null && tryPlace(ground.x, ground.y)) return;
     if (ground !== null && attackUnderCursor(ground)) return;
     const picked =
@@ -354,6 +384,10 @@ export function createSkirmishController(
       }
       return;
     }
+    if (digArmed) {
+      digArmed = false;
+      return;
+    }
     if (forceFireIssued) {
       // The Ctrl + left click already force-fired in pointerup (macOS).
       forceFireIssued = false;
@@ -385,6 +419,67 @@ export function createSkirmishController(
     });
     if (entering.length > 0) {
       for (const command of entering) options.command(command);
+      return;
+    }
+    // Spec 34: infantry board the own transport under the cursor.
+    const boarding = resolveBoardClick({
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      x: ground.x,
+      y: ground.y,
+    });
+    if (boarding.length > 0) {
+      for (const command of boarding) options.command(command);
+      return;
+    }
+    // Spec 35: workers repair the damaged bridge under the cursor.
+    const repairing = resolveRepairClick({
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      jobs: options.repairJobs?.() ?? [],
+      x: ground.x,
+      y: ground.y,
+    });
+    if (repairing.length > 0) {
+      for (const command of repairing) options.command(command);
+      return;
+    }
+    // Spec 39: damaged vehicles dock at the own factory under the cursor.
+    const repairingVehicles = resolveVehicleRepairClick({
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      x: ground.x,
+      y: ground.y,
+    });
+    if (repairingVehicles.length > 0) {
+      for (const command of repairingVehicles) options.command(command);
+      return;
+    }
+    // Spec 38: dozers repair the own damaged building under the cursor.
+    const repairingBuilding = resolveBuildingRepairClick({
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      x: ground.x,
+      y: ground.y,
+    });
+    if (repairingBuilding.length > 0) {
+      for (const command of repairingBuilding) options.command(command);
+      return;
+    }
+    // Spec 40: damaged infantry heal in the own barracks under the cursor.
+    const healing = resolveInfirmaryClick({
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      x: ground.x,
+      y: ground.y,
+    });
+    if (healing.length > 0) {
+      for (const command of healing) options.command(command);
       return;
     }
     const commands = resolveRightClick({
@@ -428,6 +523,9 @@ export function createSkirmishController(
 
   return {
     selected,
+    armDig() {
+      digArmed = true;
+    },
     cameraTarget: () => ({ ...target }),
     setTarget,
     zoom: () => camera.zoom,

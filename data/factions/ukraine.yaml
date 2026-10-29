@@ -48,6 +48,7 @@ types:                               # required
     turretTurnRateDeg: 270
     weapon: ua-kozak-hmg
     radiusCenti: 34
+    transport: { slots: 5, fireFromInside: true, damagePct: 100, exitTicks: 4 }   # spec 34: Humvee-like
     render: { size: [60, 50, 90] }
   - id: ua-bradley
     category: unit
@@ -62,6 +63,7 @@ types:                               # required
     turretTurnRateDeg: 180
     weapon: ua-bushmaster
     radiusCenti: 41
+    transport: { slots: 6, damagePct: 10, exitTicks: 4 }   # spec 34: Troop Crawler-like
     render: { size: [70, 60, 110] }
   - id: ua-leopard-2a4
     category: unit
@@ -165,6 +167,7 @@ types:                               # required
     footprint: [3, 3]
     power: -2
     produces: [ua-rifleman, ua-stugna-team]
+    healsInfantry: true
     requires: [ua-power-plant]
     render: { height: 90 }
   - id: ua-vehicle-factory
@@ -177,6 +180,7 @@ types:                               # required
     footprint: [4, 4]
     power: -4
     produces: [ua-kozak-scout, ua-bradley, ua-leopard-2a4, ua-himars]
+    repairsVehicles: true
     requires: [ua-supply-center]
     render: { height: 110 }
   - id: ua-defense

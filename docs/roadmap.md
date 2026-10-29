@@ -69,3 +69,41 @@ postponement.
 
 Campaigns, more blocks and countries, LAN multiplayer (WebRTC lockstep),
 offline PWA release on GitHub Pages.
+
+## Backlog — mechanics beyond Zero Hour (owner ideas, 2026-10-28)
+
+Owner order: build 1-3, then 4-7; keep drones in the pool for later.
+
+1. **Infantry transport.** Infantry board vehicles, ride, fire from some of
+   them and unload (spec 34).
+2. **Engineering works.** Infantry dig trenches and repair destroyed bridges;
+   dozers help; more workers finish faster (spec 35).
+3. **Ports and amphibious vehicles.** Ports pay supply trucks; some vehicles
+   cross water (spec 36).
+
+4. **Sell buildings.** The owner sells a building for part of its cost (spec 37).
+5. **Repair buildings.** Dozers repair damaged buildings (spec 38).
+6. **Repair vehicles.** Damaged vehicles repair at their vehicle factory (spec 39).
+7. **Heal infantry.** Damaged infantry heal inside the barracks and walk out
+   whole (spec 40).
+
+### Pool: drones (not scheduled)
+
+Core idea: a drone is ammunition, not a produced unit. A soldier or vehicle
+carries drone charges, launching one spawns a short-lived drone, and charges
+refill at the base, a supply truck or a carrier vehicle (Zero Hour precedent:
+the American vehicle drones). Kinds and their counters:
+
+| Kind | Role | Counter |
+|---|---|---|
+| Radio FPV | Cheap kamikaze, strong against armour | Jammer area: it crashes or drifts |
+| Fibre-optic FPV | Immune to jamming | Short tether; the operator stays exposed |
+| Recon | Reveals the map, no attack | Light anti-air, infantry fire |
+| Repeater | Extends radio FPV control range | Priority target: its FPVs drop |
+| Shahed | Slow base-to-base strike from a launcher building | Anti-air, interceptor drones, net balloons |
+| Interceptor | Automatic base defence against slow drones | Saturation |
+| Net zeppelin | Static zone that catches slow drones | Artillery, routing around it |
+
+Counter loop: FPV beats tanks, jammer beats radio FPV, fibre beats the jammer
+but has short reach, infantry and anti-air beat fibre. First slice when
+scheduled: radio FPV charges plus the jammer.

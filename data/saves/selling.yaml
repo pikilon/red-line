@@ -1,0 +1,16 @@
+# Spec 37: select any building and click Sell (half its cost). Queue units first to see the whole queue refunded too.
+# Incomplete, enemy and repeated sales are rejected; selling the last building can defeat its owner.
+id: selling
+map: first-line
+victory: false
+debug: true
+starts: true
+credits: [5000, 5000]
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 13, y: 63, zoom: 1.15 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [6, 60] }
+  - { player: 0, type: ua-barracks, origin: [6, 65] }
+  - { player: 0, type: ua-vehicle-factory, origin: [12, 66] }

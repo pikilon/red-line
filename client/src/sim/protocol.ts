@@ -43,6 +43,7 @@ export type SimCommand =
   | { kind: "resume"; player: number; units: number[]; building: number }
   | { kind: "produce"; player: number; building: number; typeIndex: number }
   | { kind: "cancel"; player: number; building: number }
+  | { kind: "sell"; player: number; building: number }
   | {
       kind: "rally";
       player: number;
@@ -55,6 +56,37 @@ export type SimCommand =
   | { kind: "garrison"; player: number; units: number[]; feature: number }
   /** Spec 31 block 2: evacuate the garrisoned feature `feature`. */
   | { kind: "unload"; player: number; feature: number }
+  /** Spec 34: infantry walk to the own vehicle `carrier` and board it. */
+  | { kind: "board"; player: number; units: number[]; carrier: number }
+  /** Spec 34: the riders of vehicle `carrier` leave it, one at a time. */
+  | { kind: "disembark"; player: number; carrier: number }
+  /** Spec 35: infantry and dozers walk to feature `feature` and repair it. */
+  | { kind: "repair"; player: number; units: number[]; feature: number }
+  /** Spec 38: dozers repair an own damaged entity building. */
+  | {
+      kind: "repairBuilding";
+      player: number;
+      units: number[];
+      building: number;
+    }
+  /** Spec 40: damaged infantry walk into an own barracks and heal there. */
+  | {
+      kind: "healAt";
+      player: number;
+      units: number[];
+      building: number;
+    }
+  /** Spec 39: damaged vehicles dock at their own repair factory. */
+  | { kind: "repairVehicle"; player: number; units: number[]; factory: number }
+  /** Spec 35: workers dig a trench with its top-left cell at (x, y). */
+  | {
+      kind: "dig";
+      player: number;
+      units: number[];
+      x: number;
+      y: number;
+      rot: number;
+    }
   | {
       kind: "debugSpawn";
       player: number;

@@ -96,7 +96,7 @@ fn bridge_broken(def: &FeatureTypeDef, row: &FeatureState) -> bool {
 /// feature that blocks movement, and the deep-water deck cells of every
 /// broken bridge: the terrain vehicles drive on.
 pub fn with_blocks(base: &MapGrid, features: &[FeatureState], rules: &Ruleset) -> MapGrid {
-    blocks_for(base, features, rules, false)
+    blocks_for(base, features, rules, false, false)
 }
 
 /// Spec 31 A7: the terrain foot units walk on, `with_blocks` without the
@@ -108,14 +108,33 @@ pub fn foot_blocks(base: &MapGrid, features: &[FeatureState], rules: &Ruleset) -
         let def = &rules.feature_types[row.kind as usize];
         row.alive && def.blocks == FeatureBlocks::Vehicles && def.family != BRIDGE_FAMILY
     });
-    split.then(|| blocks_for(base, features, rules, true))
+    split.then(|| blocks_for(base, features, rules, true, false))
 }
 
-fn blocks_for(base: &MapGrid, features: &[FeatureState], rules: &Ruleset, foot: bool) -> MapGrid {
+/// Spec 36: the terrain amphibious vehicles drive on, `with_blocks` with deep
+/// water open (a broken bridge does not stop them). `None` without deep water,
+/// when it would equal `with_blocks`.
+pub fn water_blocks(base: &MapGrid, features: &[FeatureState], rules: &Ruleset) -> Option<MapGrid> {
+    base.has_deep_water()
+        .then(|| blocks_for(&base.with_open_water(), features, rules, false, true))
+}
+
+/// `base` plus the blocking features; `foot` lets `blocks: vehicles` pass and
+/// `amphibious` leaves broken bridge decks open (the water under them is).
+fn blocks_for(
+    base: &MapGrid,
+    features: &[FeatureState],
+    rules: &Ruleset,
+    foot: bool,
+    amphibious: bool,
+) -> MapGrid {
     let mut terrain = base.clone();
     for row in features {
         let def = &rules.feature_types[row.kind as usize];
         if bridge_broken(def, row) {
+            if amphibious {
+                continue;
+            }
             let (x0, y0, x1, y1) = extent(def, row);
             for y in y0..=y1 {
                 for x in x0..=x1 {
@@ -159,7 +178,7 @@ pub fn distance_to_rect(pos: FxVec2, rect: (i32, i32, i32, i32)) -> Fx {
 }
 
 /// `true` when going from `old` to `new` can change which cells are blocked.
-fn blocking_differs(rules: &Ruleset, old: &FeatureState, new: &FeatureState) -> bool {
+pub(crate) fn blocking_differs(rules: &Ruleset, old: &FeatureState, new: &FeatureState) -> bool {
     old.kind != new.kind
         || old.alive != new.alive
         || (new.state != old.state
@@ -168,7 +187,7 @@ fn blocking_differs(rules: &Ruleset, old: &FeatureState, new: &FeatureState) -> 
 
 /// Damage state of `hp` out of `max` under the type's thresholds: 2 when at
 /// or below the wrecked threshold, 1 at or below the damaged one, else 0.
-fn state_for(hp: u32, max: u32, damaged: u32, wrecked: u32) -> u8 {
+pub(crate) fn state_for(hp: u32, max: u32, damaged: u32, wrecked: u32) -> u8 {
     let percent = hp * 100 / max;
     if percent <= wrecked {
         2
@@ -433,6 +452,7 @@ impl World {
     pub(crate) fn refresh_feature_blocks(&mut self) {
         self.terrain = with_blocks(&self.terrain_base, &self.features, &self.rules);
         self.terrain_foot = foot_blocks(&self.terrain_base, &self.features, &self.rules);
+        self.terrain_water = water_blocks(&self.terrain_base, &self.features, &self.rules);
         self.rebuild_nav();
     }
 }

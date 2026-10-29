@@ -43,9 +43,17 @@ import {
   withLiveState,
 } from "../input/garrison";
 import {
+  canDig,
+  type RepairMapFeature,
+  type RepairTypeInfo,
+  repairJobsOf,
+  withRepairState,
+} from "../input/repair";
+import {
   createSkirmishController,
   type SkirmishController,
 } from "../input/skirmishController";
+import { disembarkOffer } from "../input/transport";
 import { createPerfPanel } from "../perfPanel";
 import { type Animator, createAnimator } from "../render/animation";
 import { type AttackMarker, createAttackMarker } from "../render/attackMarker";
@@ -80,7 +88,11 @@ import {
   setGroundElevation,
   setGroundRelief,
 } from "../render/elevation";
-import { createEntityRenderer, type EntityRenderer } from "../render/entities";
+import {
+  createEntityRenderer,
+  type EntityRenderer,
+  OWNER_COLORS,
+} from "../render/entities";
 import {
   createLiveMapFeatures,
   type FeatureMap,
@@ -103,6 +115,7 @@ import {
   type ProjectileModel,
   type Projectiles,
 } from "../render/projectiles";
+import { createRallyMarker, type RallyMarker } from "../render/rallyMarker";
 import { poseOnDeath } from "../render/rig";
 import {
   createTerrain,
@@ -733,6 +746,17 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   /** The placed buildings the sim still accepts riders in, with their holder
    *  and occupants, from the latest feature table (spec 31 block 2). */
   let garrisonFeatures = withLiveState(placedGarrisons, null);
+  /** The map's bridges, in the sim's feature row order (spec 35). */
+  const placedBridges = repairJobsOf(
+    (
+      ruleset.maps.find((entry) => entry.id === mapId) as
+        | { features?: readonly RepairMapFeature[] }
+        | undefined
+    )?.features ?? [],
+    (ruleset as unknown as { featureTypes?: readonly RepairTypeInfo[] })
+      .featureTypes ?? [],
+  );
+  let repairJobs = withRepairState(placedBridges, null);
   const commandPanel = createCommandPanel(document.body, {
     onGarrison: (feature) => {
       uiClick();
@@ -748,6 +772,14 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     onEvacuate: (feature) => {
       uiClick();
       interact.command({ kind: "unload", player: controlled, feature });
+    },
+    onDig: () => {
+      uiClick();
+      controller?.armDig();
+    },
+    onDisembark: (carrier) => {
+      uiClick();
+      interact.command({ kind: "disembark", player: controlled, carrier });
     },
     onConstruct: (kind) => {
       uiClick();
@@ -765,6 +797,18 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         player: controlled,
         building: building.id,
         typeIndex: kind,
+      });
+    },
+    onSell: () => {
+      uiClick();
+      const building = selectedEntities().find(
+        (entity) => typeDef(entity.kind).category === "building",
+      );
+      if (building === undefined) return;
+      interact.command({
+        kind: "sell",
+        player: controlled,
+        building: building.id,
       });
     },
     onCancel: () => {
@@ -798,6 +842,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let generatedLoading = false;
   let effects: Effects | null = null;
   let attackMarker: AttackMarker | null = null;
+  let rallyMarker: RallyMarker | null = null;
   let decals: Decals | null = null;
   let groundImpacts: GroundImpacts | null = null;
   let projectiles: Projectiles | null = null;
@@ -991,6 +1036,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     scene.add(effects.group);
     attackMarker = createAttackMarker();
     scene.add(attackMarker.group);
+    rallyMarker = createRallyMarker();
+    scene.add(rallyMarker.group);
     decals = createDecals(
       createTerrainSurface(
         mapInfo.mapWidth,
@@ -1073,6 +1120,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       mapHeight: mapInfo.mapHeight,
       entities: () => next?.entities ?? [],
       garrisonFeatures: () => garrisonFeatures,
+      repairJobs: () => repairJobs,
       tiles: () => mapInfo.tiles,
       fog: () => fog,
       placementKind: () => placementKind,
@@ -1259,6 +1307,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
                 entities: next.entities,
                 features: garrisonFeatures,
               }),
+              dig: canDig(controlled, selectedEntities()),
+              disembark: disembarkOffer({
+                player: controlled,
+                selected: [...(controller?.selected ?? [])],
+                entities: next.entities,
+              }),
             }),
       queue,
       placing: placementKind,
@@ -1304,6 +1358,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     if (features !== null) {
       liveFeatures?.apply(features, performance.now());
       garrisonFeatures = withLiveState(placedGarrisons, features);
+      repairJobs = withRepairState(placedBridges, features);
     }
     const previous = next;
     flying = combat.projectiles;
@@ -1597,6 +1652,23 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       const entity = next?.entities.find((row) => row.id === id);
       return entity === undefined ? null : { x: entity.x, y: entity.y };
     });
+    const rally = next?.rallies.find(
+      (point) =>
+        controller?.selected.has(point.building) === true &&
+        (next?.entities ?? []).some(
+          (entity) =>
+            entity.id === point.building && entity.owner === controlled,
+        ),
+    );
+    rallyMarker?.show(
+      rally === undefined
+        ? null
+        : {
+            x: rally.x,
+            y: rally.y,
+            color: OWNER_COLORS[controlled] ?? 0xffffff,
+          },
+    );
     decals?.update(effectTime(now));
     relief?.update(effectTime(now));
     fogOverlay?.update(fog);
@@ -1681,6 +1753,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       stateHash: () => interact.requestHash(),
       effectCounts: () => effects?.counts() ?? NO_EFFECT_COUNTS,
       attackMarkerCount: () => attackMarker?.activeCount() ?? 0,
+      rallyMarkerCount: () => rallyMarker?.activeCount() ?? 0,
+      rallyPoints: () => next?.rallies ?? [],
       decalCount: () => decals?.count() ?? 0,
       projectileCounts: () => projectiles?.counts() ?? NO_PROJECTILE_COUNTS,
       projectileSamples: () => projectiles?.samples() ?? [],

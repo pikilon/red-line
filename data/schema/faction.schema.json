@@ -120,6 +120,22 @@
         "requiresPower": { "type": "boolean" },
         "dropOff": { "type": "boolean" },
         "freeUnit": { "$ref": "#/$defs/id" },
+        "repairsVehicles": { "description": "Spec 39: this building is a vehicle repair pad.", "type": "boolean" },
+        "amphibious": { "description": "Spec 36: the vehicle drives over deep water too (Zero Hour Surfaces = GROUND WATER).", "type": "boolean" },
+        "infinite": { "description": "Spec 36: a depot that never runs out (a port).", "type": "boolean" },
+        "healsInfantry": { "description": "Spec 40: damaged infantry heal inside this building (Zero Hour HealContain).", "type": "boolean" },
+        "transport": {
+          "description": "Spec 34: infantry can ride this vehicle (Zero Hour TransportContain).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["slots", "damagePct", "exitTicks"],
+          "properties": {
+            "slots": { "type": "integer", "minimum": 1, "maximum": 12 },
+            "fireFromInside": { "type": "boolean" },
+            "damagePct": { "type": "integer", "minimum": 0, "maximum": 100 },
+            "exitTicks": { "type": "integer", "minimum": 0 }
+          }
+        },
         "render": {
           "type": "object",
           "additionalProperties": false,
@@ -163,7 +179,7 @@
             "properties": {
               "hp": false, "sightCenti": false, "speedCenti": false, "cost": false, "buildTicks": false,
               "weapon": false, "requires": false, "builds": false, "produces": false, "capacity": false,
-              "loadTicks": false, "unloadTicks": false, "power": false, "requiresPower": false,
+              "unloadTicks": false, "power": false, "requiresPower": false,
               "dropOff": false, "freeUnit": false,
               "render": { "required": ["height"], "properties": { "size": false } }
             }
