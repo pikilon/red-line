@@ -99,6 +99,7 @@
         "turnRateDeg": { "$ref": "#/$defs/positive" },
         "turretTurnRateDeg": { "$ref": "#/$defs/positive" },
         "articulation": { "enum": ["launcher", "blade"] },
+        "firesStill": { "type": "boolean" },
         "locomotor": { "$ref": "#/$defs/id" },
         "cost": { "$ref": "#/$defs/count" },
         "buildTicks": { "$ref": "#/$defs/count" },

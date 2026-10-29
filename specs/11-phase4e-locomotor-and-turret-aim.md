@@ -359,7 +359,10 @@ when `speed == 0` (`stationaryFire`); `blade` (dozers) keeps the blade raised at
 rest, lowers it while driving and raises and lowers it in a cycle while the
 dozer works in place. A turreted vehicle with no target swings its turret ahead
 of the hull towards its `Move` goal at twice its aim rate; with a target it keeps
-aiming at it. Infantry animation stays deferred.
+aiming at it. Missile infantry (`firesStill`: RPG gunner, Stugna team; owner request 2026-10-29) fire only
+while standing still and stay rooted until the launcher has reloaded (`cooldown`
+> 0) before obeying a move order.
+Infantry animation stays deferred.
 Assumption: Generals' tread and wheel texture animation
 (`TreadDriveSpeedFraction`, W3DTankDraw) is not reproduced yet.
 

@@ -1108,6 +1108,13 @@ impl World {
             if self.entities[index].contained() {
                 continue;
             }
+            // Missile teams stand still until the launcher is reloaded.
+            if self.entities[index].cooldown > 0
+                && self.rules.ty(self.entities[index].kind).reload_root
+            {
+                self.entities[index].speed = Fx::ZERO;
+                continue;
+            }
             let before = self.entities[index].pos;
             match self.entities[index].order {
                 Order::Move {
