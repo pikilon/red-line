@@ -33,7 +33,7 @@ types:                               # required
     speedCenti: 8
     turnRateDeg: 540
     weapon: ru-rpg7
-    firesStill: true                   # fires and reloads standing still
+    stowTicks: 8                       # shoulders the launcher before walking
     radiusCenti: 25
     render: { size: [40, 55, 40] }
   - id: ru-brdm-scout

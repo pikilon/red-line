@@ -42,6 +42,8 @@ const KNEEL_EASE = 1.6;
 /** Seconds-based rates of the launcher pick-up and put-down (per second). */
 const PICKUP_EASE = 0.85;
 const PUT_DOWN_EASE = 1.2;
+/** Rate at which a team's carry follows the stowing the simulation reports. */
+const STOW_FOLLOW = 3;
 /** Pick-up progress at which the team may walk off. */
 const PICKUP_DONE = 0.95;
 /** Ground speed above which a soldier walks, tiles per second, and the rate
@@ -180,10 +182,16 @@ export function createAnimator(): Animator {
       entry.x = entity.x;
       entry.y = entity.y;
     }
-    const moving = entry.speed > WALK_SPEED;
+    const walking = entry.speed > WALK_SPEED;
+    // A missile team stows its launcher before it walks and sets it up after
+    // it stops; the simulation holds it still meanwhile and reports how far
+    // along it is in `progress` (permille).
+    const stows = type.stowTicks > 0;
+    const stowed = stows ? entity.progress / 1000 : 0;
+    const moving = walking || stowed > 0;
     // A team that picks something up stays put until it has it.
     const ready = !picksUp(type.id) || entry.carry >= PICKUP_DONE;
-    entry.walk = ease(entry.walk, moving && ready ? 1 : 0, WALK_EASE, dt);
+    entry.walk = ease(entry.walk, walking && ready ? 1 : 0, WALK_EASE, dt);
     entry.phase += dt * entry.walk * WALK_CYCLES_PER_SECOND;
     entry.stance = ease(
       entry.stance,
@@ -196,12 +204,14 @@ export function createAnimator(): Animator {
     const firing = nowMs - entry.shotAt < AIM_HOLD_MS;
     const aiming = (entity.target !== null || firing) && !moving;
     entry.aim = ease(entry.aim, aiming ? 1 : 0, AIM_EASE, dt);
-    entry.carry = ease(
-      entry.carry,
-      moving ? 1 : 0,
-      moving ? PICKUP_EASE : PUT_DOWN_EASE,
-      dt,
-    );
+    entry.carry = stows
+      ? ease(entry.carry, walking ? 1 : stowed, STOW_FOLLOW, dt)
+      : ease(
+          entry.carry,
+          moving ? 1 : 0,
+          moving ? PICKUP_EASE : PUT_DOWN_EASE,
+          dt,
+        );
     const weapon = type.weapon >= 0 ? WEAPONS[type.weapon] : undefined;
     const reloadMs =
       weapon !== undefined && VISIBLE_RELOADS.has(weapon.render.launch)

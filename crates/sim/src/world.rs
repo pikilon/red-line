@@ -515,6 +515,7 @@ impl World {
             entity.reversing = state.reversing;
             entity.aim = state.aim;
             entity.idle_aim_ticks = state.idle_aim_ticks;
+            entity.stow = state.stow;
         }
     }
 
@@ -580,6 +581,7 @@ impl World {
             reversing: false,
             aim: None,
             idle_aim_ticks: 0,
+            stow: 0,
             inside: None,
             aboard: None,
             unloading: None,
@@ -1108,13 +1110,6 @@ impl World {
             if self.entities[index].contained() {
                 continue;
             }
-            // Missile teams stand still until the launcher is reloaded.
-            if self.entities[index].cooldown > 0
-                && self.rules.ty(self.entities[index].kind).reload_root
-            {
-                self.entities[index].speed = Fx::ZERO;
-                continue;
-            }
             let before = self.entities[index].pos;
             match self.entities[index].order {
                 Order::Move {
@@ -1150,6 +1145,20 @@ impl World {
             if !matches!(unit.order, Order::Move { .. }) {
                 unit.reversing = false;
             }
+            // Missile teams stand still while they stow the launcher before a
+            // walk and while they set it up again after one.
+            let stow_ticks = self.rules.ty(self.entities[index].kind).stow_ticks;
+            if stow_ticks > 0 {
+                let unit = &mut self.entities[index];
+                if unit.pos != before && unit.stow < stow_ticks {
+                    unit.pos = before;
+                    unit.speed = Fx::ZERO;
+                    unit.stow += 1;
+                } else if unit.pos == before && unit.stow > 0 {
+                    unit.stow -= 1;
+                }
+            }
+            let unit = &mut self.entities[index];
             if unit.pos == before {
                 let motion = self.rules.ty(unit.kind).motion;
                 let nav = match self.layer_of(index) {

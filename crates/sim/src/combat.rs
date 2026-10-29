@@ -84,7 +84,8 @@ impl World {
             true
         } else {
             let entity = &self.entities[index];
-            let stowed = self.rules.ty(kind).stationary_fire && entity.speed > Fx::ZERO;
+            let stowed =
+                self.rules.ty(kind).stationary_fire && (entity.speed > Fx::ZERO || entity.stow > 0);
             let aim = target_index.map(|i| self.entities[i].pos).or(building);
             self.aim_turret(index, &weapon, aim) && !stowed
         };
@@ -143,8 +144,8 @@ impl World {
         let aligned = if self.rules.ty(kind).motion.kind == LocoKind::Immediate {
             true
         } else {
-            let stowed =
-                self.rules.ty(kind).stationary_fire && self.entities[index].speed > Fx::ZERO;
+            let stowed = self.rules.ty(kind).stationary_fire
+                && (self.entities[index].speed > Fx::ZERO || self.entities[index].stow > 0);
             self.aim_turret(index, weapon, in_range.then_some(point)) && !stowed
         };
         let cooldown = self.entities[index].cooldown;

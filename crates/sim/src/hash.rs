@@ -117,6 +117,10 @@ fn put_entity(out: &mut Vec<u8>, entity: &Entity) {
     out.push(u8::from(entity.reversing));
     put_u32(out, entity.aim.unwrap_or(u32::MAX));
     put_u32(out, entity.idle_aim_ticks);
+    // Only stowing missile teams write it, so other worlds keep their hashes.
+    if entity.stow > 0 {
+        put_u32(out, entity.stow);
+    }
     // Spec 31 block 2: written only for garrisoned units, so worlds without
     // garrisons keep their hashes.
     if let Some(feature) = entity.inside {

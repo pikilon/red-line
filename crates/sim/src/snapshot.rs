@@ -451,7 +451,11 @@ fn entity_progress(world: &World, entity: &Entity) -> i32 {
         return carrier as i32;
     }
     let Some(site) = &entity.site else {
-        return 0;
+        // A missile team reports how far its launcher is stowed.
+        let stow_ticks = world.rules().ty(entity.kind).stow_ticks;
+        return (u64::from(entity.stow) * 1000)
+            .checked_div(u64::from(stow_ticks))
+            .unwrap_or(0) as i32;
     };
     if site.complete {
         return 1000;

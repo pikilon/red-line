@@ -15,6 +15,8 @@ export interface TypeDef {
   turretTurnRateDeg: number;
   /** Moving part of the model: `launcher` stows while driving, `blade` is a dozer blade. */
   articulation: "none" | "launcher" | "blade";
+  /** Ticks a missile team needs to stow or set up its launcher, 0 otherwise. */
+  stowTicks: number;
   weapon: number;
   requires: number[];
   produces: number[];

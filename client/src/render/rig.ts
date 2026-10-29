@@ -161,6 +161,8 @@ const ROUND_FRONT = { y: 0.04, z: 0.22 } as const;
 const ROUND_ARC = 0.1;
 /** Height of the launcher's arc while it is lifted, in tiles. */
 const CARRY_ARC = 0.07;
+/** Tilt of the launcher slung on the back, radians (muzzle up). */
+const LAUNCHER_SLING = 1.15;
 
 function clamp01(v: number): number {
   return v < 0 ? 0 : v > 1 ? 1 : v;
@@ -392,6 +394,8 @@ function pose(
         out.x = g.carry.x * c;
         out.y = g.carry.y * c + CARRY_ARC * Math.sin(Math.PI * c);
         out.z = g.carry.z * c;
+        // Slung on the back, muzzle up.
+        out.rx = -LAUNCHER_SLING * c;
       }
       break;
     }
