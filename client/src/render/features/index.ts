@@ -1,6 +1,7 @@
 import { Group, type Object3D } from "three";
 import type { FeatureRow } from "../../sim/featureSnapshot";
 import type { Elevation } from "../elevation";
+import type { FeatureParticles } from "./fx";
 import {
   FEATURE_FAMILIES,
   type FeatureContext,
@@ -70,6 +71,7 @@ export function createLiveMapFeatures(
   rules: FeatureRules,
   map: FeatureMap,
   elevation: Elevation,
+  particles: FeatureParticles | null = null,
 ): LiveMapFeatures {
   const layers = terrainLayersOf(map, rules.layerNames);
   const ctx: FeatureContext = {
@@ -91,6 +93,7 @@ export function createLiveMapFeatures(
     rules.featureTypes ?? [],
     ctx,
     (family, instances) => featureRendererFor(family)(instances, ctx),
+    particles,
   );
   group.add(live.object);
   return {
