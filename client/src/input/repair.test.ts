@@ -336,12 +336,12 @@ describe("spec 35 trench digging input", () => {
   });
 
   it("the feature table trailer places rows dug in the match", () => {
-    // Two rows of 7 ints, then placed = 1 and (x, y, rot) for row 1.
+    // Two rows of 7 ints, then placed = 1 and (x, y, rot, variant) for row 1.
     const table = Int32Array.from([
-      2, 0, 0, 0, 1, 1000, 255, 0, 1, 5, 2, 1, 3, 255, 0, 1, 30, 33, 1,
+      2, 0, 0, 0, 1, 1000, 255, 0, 1, 5, 2, 1, 3, 255, 0, 1, 30, 33, 1, 1,
     ]);
     const rows = decodeFeatures(table);
     expect(rows?.[0]?.at).toBeUndefined();
-    expect(rows?.[1]?.at).toEqual({ x: 30, y: 33, rot: 1 });
+    expect(rows?.[1]?.at).toEqual({ x: 30, y: 33, rot: 1, variant: 1 });
   });
 });
