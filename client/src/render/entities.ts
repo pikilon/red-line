@@ -107,6 +107,8 @@ const charColor = new Color();
 const BAR_HEIGHT = 0.12;
 const BAR_GAP = 0.3;
 const BAR_MIN_SCALE = 0.05;
+/** No rotation: a bar that keeps the isometric view's perspective. */
+const BAR_UNFACED = new Quaternion();
 const TRACER_Y = 0.5;
 const PROGRESS_FULL = 1000;
 const SCAFFOLD_BEAM = 0.03;
@@ -166,10 +168,13 @@ export interface EntityRenderer {
   readonly scaffolds: InstancedMesh;
   /** Applies (or, with null, removes) the generated model textures. */
   setGeneratedTextures(textures: GeneratedTextures | null): void;
+  /** `facing` is the camera orientation: health bars are billboards, so they
+   *  stay horizontal on screen instead of following the isometric floor. */
   update(
     entities: readonly EntityState[],
     selected: ReadonlySet<number>,
     nowMs?: number,
+    facing?: Quaternion,
   ): void;
 }
 
@@ -866,8 +871,13 @@ export function createEntityRenderer(
     slot.count = index + 1;
   }
 
-  function placeBox(mesh: InstancedMesh, index: number, hex: number): void {
-    matrix.compose(position, rotation.identity(), scale);
+  function placeBox(
+    mesh: InstancedMesh,
+    index: number,
+    hex: number,
+    orientation: Quaternion = BAR_UNFACED,
+  ): void {
+    matrix.compose(position, orientation, scale);
     mesh.setMatrixAt(index, matrix);
     mesh.setColorAt(index, color.setHex(hex));
   }
@@ -887,7 +897,7 @@ export function createEntityRenderer(
       generated = textures;
       for (const slot of slots) texturize(slot);
     },
-    update(entities, selected, nowMs = 0) {
+    update(entities, selected, nowMs = 0, facing = BAR_UNFACED) {
       const counts = { units: 0, buildings: 0, ghosts: 0, bars: 0 };
       byId.clear();
       for (const entity of entities) byId.set(entity.id, entity);
@@ -1082,7 +1092,7 @@ export function createEntityRenderer(
           const ratio = type.hp > 0 ? entity.hp / type.hp : 0;
           position.set(entity.x, ground + h + BAR_GAP, entity.y);
           scale.set(Math.max(BAR_MIN_SCALE, ratio), 1, 1);
-          placeBox(bars, counts.bars++, healthColor(ratio));
+          placeBox(bars, counts.bars++, healthColor(ratio), facing);
         }
 
         if (

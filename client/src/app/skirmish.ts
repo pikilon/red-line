@@ -1822,6 +1822,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         drawn,
         controller?.selected ?? NO_SELECTION,
         effectTime(now),
+        camera.quaternion,
       );
       vehicleFx.update(drawn, effectTime(now), camera.quaternion);
       // Entities are drawn between the previous and the latest tick, so the

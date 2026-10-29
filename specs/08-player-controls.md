@@ -192,8 +192,9 @@ only scales the view.
   (today's view), is shared by both hot-seat players and is not persisted.
   `SkirmishController` gains `zoom(): number`.
 * Picking, box selection, placement and `worldToScreen` use the camera
-  projection and keep working at any zoom; health bars are world-space and
-  scale with the models. Window resize keeps the zoom.
+  projection and keep working at any zoom; health bars are world-space
+  billboards that face the camera, scale with the models and stay horizontal
+  on screen (owner request 2026-10-29). Window resize keeps the zoom.
 * Shadows (amends spec 10 §3): the sun's shadow camera half-size becomes
   `SHADOW_EXTENT / min(zoom, 1)`, so zooming out keeps the whole view shadowed;
   at zoom ≥ 1 it is today's 24 tiles.
