@@ -218,6 +218,5 @@
   "ui.sameScreen": "Same on screen",
   "ui.sameMap": "Same everywhere",
   "ui.rally": "Rally point",
-  "ui.sellConfirm": "Confirm ({refund})",
-  "ui.queueItem": "{name}: tap to cancel"
+  "ui.sellConfirm": "Confirm ({refund})"
 }
