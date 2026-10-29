@@ -219,12 +219,14 @@ They were keyboard-only (`F2`, `F3`) and needed `?debug=1`.
   They are created once (AC-03-65).
 * Switch side does what `F2` does (spec 03 AC-03-60, §3.2): the selection is
   cleared, the controlled player becomes the other one, the camera goes to that
-  player's last view or base and `#hud-player` reads `Player N: <faction>`.
+  player's last view or base and `#res-player` reads `Player N: <faction>`.
   Reveal map does what `F3` does. Both work in every skirmish, without
   `?debug=1`.
 * FPS panel shows or hides `#perf-panel` (`PerfPanel.setVisible(visible)`,
   `hidden` attribute). It is created in every skirmish; hidden by default,
-  shown with `?debug=1`.
+  shown with `?debug=1`. The panel holds the frame readout and `#perf-tick`
+  (the simulation tick, moved here from the old top-left HUD by owner request
+  2026-10-29), so this one switch hides both.
 * `F2`, `F3` and `window.__redline` stay debug-only.
 
 ## 3.6 Touch controls (owner request 2026-10-13, issues #251 and #253)
@@ -613,7 +615,7 @@ not exist.
 
 **AC-08-13 Switch side in the skirmish (Playwright).** (a) In `?seed=1&ai=off`
 (no debug, `window.__redline` is undefined), `Esc` and a real click on "Switch
-side" make `#hud-player` read "Player 2: Russia"; a second click returns it to
+side" make `#res-player` read "Player 2: Russia"; a second click returns it to
 "Player 1: Ukraine"; no console error. (b) In `?debug=1&seed=1&ai=off` with
 `Ctrl+A` selecting own units, the same click empties `selectedIds()`, sets
 `controlledPlayer()` to 1, moves `cameraTarget()` by more than 10 cells, and

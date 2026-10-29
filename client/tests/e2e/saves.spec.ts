@@ -91,7 +91,7 @@ test("AC-19-17: example saves and load errors", async ({ page }) => {
   await page.mouse.move(bradley?.x ?? 0, (bradley?.y ?? 0) - 4, { steps: 5 });
   await page.mouse.down();
   await page.mouse.up();
-  await expect(page.locator("#hud-selected-type")).toHaveText("M2 Bradley");
+  await expect(page.locator("#picked")).toHaveText("M2 Bradley");
 
   // The close-up example restores its own camera and zoom.
   await page.goto("/?load=showcase-units");
@@ -105,7 +105,7 @@ test("AC-19-17: example saves and load errors", async ({ page }) => {
   // An empty slot shows the load error and runs the default skirmish.
   await page.goto("/?load=slot-9&debug=1");
   await expect(page.locator("#load-error")).toBeVisible();
-  await expect(page.locator("#hud-tick")).not.toHaveText("Tick 0", {
+  await expect(page.locator("#perf-tick")).not.toHaveText("Tick 0", {
     timeout: ms(15_000),
   });
 

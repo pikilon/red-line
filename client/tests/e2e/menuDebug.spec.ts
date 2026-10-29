@@ -35,7 +35,7 @@ async function boot(page: Page, query: string, debug: boolean): Promise<void> {
       { timeout: ms(10_000) },
     );
   } else {
-    await expect(page.locator("#hud-player")).toHaveText(/^Player 1/, {
+    await expect(page.locator("#res-player")).toHaveText(/^Player 1/, {
       timeout: ms(10_000),
     });
     // Let the first snapshot and the scene settle.
@@ -54,9 +54,9 @@ test("AC-08-13: switch side in the skirmish", async ({ page }) => {
   ).toBe(true);
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Switch side" }).click();
-  await expect(page.locator("#hud-player")).toHaveText("Player 2: Russia");
+  await expect(page.locator("#res-player")).toHaveText("Player 2: Russia");
   await page.getByRole("button", { name: "Switch side" }).click();
-  await expect(page.locator("#hud-player")).toHaveText("Player 1: Ukraine");
+  await expect(page.locator("#res-player")).toHaveText("Player 1: Ukraine");
 
   // (b) With debug: selection cleared, camera moved, the game keeps running.
   await boot(page, "?debug=1&seed=1&ai=off", true);
@@ -119,6 +119,8 @@ test("AC-08-14: reveal and FPS panel in the skirmish", async ({ page }) => {
   await fps.click();
   await expect(fps).toHaveText("FPS panel: on");
   await expect(panel).toBeVisible();
+  // The tick reads with the FPS and the same switch hides it (spec 03 §6.7).
+  await expect(page.locator("#perf-tick")).toHaveText(/^Tick \d+$/);
   await fps.click();
   await expect(fps).toHaveText("FPS panel: off");
   await expect(panel).toBeHidden();

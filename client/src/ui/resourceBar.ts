@@ -2,6 +2,7 @@
 // delta into Zero Hour's `ui.cashUp` / `ui.cashDown` without the sim knowing
 // anything about audio.
 import { t } from "../i18n";
+import { factionName } from "../rules";
 import type { MatchSnapshot } from "../sim/matchSnapshot";
 import { appendDiv, setText } from "./dom";
 
@@ -27,7 +28,11 @@ export function resourceText(snapshot: MatchSnapshot): ResourceText {
   };
 }
 
-/** `<div id="resource-bar">` with `#res-credits` and `#res-power` (spec §6.6). */
+/**
+ * `<div id="resource-bar" class="bar-panel">`: the player's own panel, with
+ * `#res-player` (who you are), `#res-credits` and `#res-power` (spec §6.6,
+ * spec 03 §6.7).
+ */
 export function createResourceBar(
   root: HTMLElement,
   options: {
@@ -36,10 +41,15 @@ export function createResourceBar(
   } = {},
 ): {
   render(snapshot: MatchSnapshot | null): void;
+  /** `#res-player`: 1-based player number and its faction (spec 08 §3.5). */
+  setPlayer(player: number, faction: number): void;
 } {
   const bar = appendDiv(root, "resource-bar");
-  const credits = appendDiv(bar, "res-credits");
-  const power = appendDiv(bar, "res-power");
+  bar.className = "bar-panel";
+  const player = appendDiv(bar, "res-player");
+  const row = appendDiv(bar, "res-row");
+  const credits = appendDiv(row, "res-credits");
+  const power = appendDiv(row, "res-power");
   let lastCredits: number | null = null;
   return {
     render(snapshot) {
@@ -57,6 +67,12 @@ export function createResourceBar(
       setText(power, text.power);
       if (power.classList.contains("power-low") !== text.low)
         power.classList.toggle("power-low", text.low);
+    },
+    setPlayer(n, faction) {
+      setText(
+        player,
+        t("hud.player", { player: n, faction: factionName(faction) }),
+      );
     },
   };
 }

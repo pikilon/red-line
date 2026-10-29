@@ -6,7 +6,7 @@ commands, §5.14 hash, §5.15 snapshot, §5.16 WASM API, §5.17 headless, §6.3
 protocol, §6.7 app), `08-player-controls.md` (§3 game menu, camera, switch
 side, reveal), `17-projectiles-and-combat-readability.md` (projectiles,
 events). Supersedes `14-showcase.md` except its §2 (`DebugSpawn` of buildings)
-and the `#hud-selected-type` label (see §5.7). Roadmap: Phase 5.
+and the `#picked` selection label (see §5.7). Roadmap: Phase 5.
 Decisions: D-02 (deterministic fixed-point simulation), D-05 (architecture).
 
 ## 1. Context
@@ -649,7 +649,7 @@ rest.
 Removed: `client/src/app/showcase.ts`, `client/src/app/showcase.test.ts`,
 `client/tests/e2e/showcase.spec.ts`, `SHOWCASE_MAP`, `SHOWCASE_VIEWS` and the
 `?showcase` branch of `startSkirmish`. Kept: the `showcase` map, `DebugSpawn`
-of buildings (spec 14 §2, AC-14-01), `#hud-selected-type` and `selectionLabel`
+of buildings (spec 14 §2, AC-14-01), `#picked` and `selectionLabel`
 (AC-14-03).
 
 ## 6. Agent tooling
@@ -838,7 +838,7 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
   that `parseSaveFile` accepts with the slot's `world`.
 * AC-19-17: Given `/?load=showcase`, When ready, Then 28 entities exist, the
   viewer is the observer, and clicking a unit with the real mouse shows its
-  name in `#hud-selected-type` (ports AC-14-04). Given
+  name in `#picked` (ports AC-14-04). Given
   `/?load=showcase-units`, Then the camera zoom and target match its
   `client.camera`. Given `/?load=slot-9` with slot 9 empty, Then
   `#load-error` is visible and the default skirmish runs. Given
@@ -847,7 +847,7 @@ constraints. The build rejects overlaps and blocked cells. "AI off" means
 
 ## 9. Amendments
 
-* Spec 14: superseded by this spec except §2 and the `#hud-selected-type`
+* Spec 14: superseded by this spec except §2 and the `#picked`
   label. By owner decision (2026-10-15) the showcase mode is removed. Its
   tests `client/src/app/showcase.test.ts` (AC-14-02) and
   `client/tests/e2e/showcase.spec.ts` (AC-14-04) are deleted in P5-11. AC-19-02 and AC-19-17

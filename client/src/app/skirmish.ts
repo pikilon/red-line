@@ -180,6 +180,7 @@ import {
   type PanelInput,
   samePanelInput,
   selectionChips,
+  selectionLabel,
 } from "../ui/commandPanel";
 import { withFolded } from "../ui/foldable";
 import { createGameMenu } from "../ui/gameMenu";
@@ -438,7 +439,6 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   const camera = createIsometricCamera(1);
   const hud = createHud(hudRoot);
   const outcome = createOutcomeOverlay(document.body);
-  hud.setSelectedCount(0);
 
   let settings: Settings = loadSettings();
   if (restored !== null && boot.applySettings) {
@@ -1058,9 +1058,9 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     moveCamera(home.x, home.y);
   }
 
-  /** `#hud-player`, 1-based (spec §6.6). */
+  /** `#res-player`, 1-based (spec §6.6, spec 08 §3.5). */
   function setHudPlayer(): void {
-    hud.setPlayer(controlled + 1, controlled);
+    resourceBar.setPlayer(controlled + 1, controlled);
   }
 
   /** Builds the scene once the map and the first snapshot are known. */
@@ -1264,12 +1264,6 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         interact.command(command);
       },
       onSelectionChange: (ids) => {
-        hud.setSelectedCount(ids.size);
-        hud.setSelectedTypes(
-          (next?.entities ?? [])
-            .filter((entity) => ids.has(entity.id))
-            .map((entity) => typeName(entity.kind)),
-        );
         if (ready && ids.size > 0) {
           const leader = resolveCommandVoiceEvent(
             [...ids],
@@ -1419,6 +1413,18 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   /** Last command panel input, to skip renders that would change nothing. */
   let lastPanel: PanelInput | null = null;
 
+  /** `#picked`: the names of everything the player picked, own or not, with
+   *  the size of each type (spec 14 §5). */
+  function selectionName(): string {
+    const active = controller;
+    if (next === null || active === null) return "";
+    return selectionLabel(
+      next.entities
+        .filter((entity) => active.selected.has(entity.id))
+        .map((entity) => typeName(entity.kind)),
+    );
+  }
+
   /** Refreshes the DOM overlay; called on events only, never per frame
    *  (spec §6.7, #140). */
   function refreshOverlay(): void {
@@ -1428,6 +1434,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     const queue = next === null ? null : selectedQueue();
     const selection = selectedEntities();
     const panel: PanelInput = {
+      selection: selectionName(),
       chips: selectionChips(selection),
       units: selection.some(
         (entity) => typeDef(entity.kind).category === "unit",
@@ -1558,7 +1565,6 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     // The worker transfers a fresh ArrayBuffer per snapshot (spec §6.3).
     fog = receivedFog as Uint8Array<ArrayBuffer>;
     receivedAt = at;
-    hud.setTick(snapshot.tick);
     // Only the first snapshot of a controlled player re-centres the camera.
     if (!ready) centreOnOwnHq(snapshot);
     centreOnHomeIfPending(snapshot);
@@ -1806,6 +1812,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     if (lastFrameMs !== null) {
       frameStats.record(dtMs);
       perfPanel.record(dtMs, now);
+      // The tick reads next to the FPS and hides with it (spec 03 §6.7).
+      if (next !== null) perfPanel.setTick(next.tick);
     }
     lastFrameMs = now;
     controller?.update(dtMs / 1000);

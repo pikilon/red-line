@@ -78,11 +78,25 @@ export interface PanelInput {
   rally: boolean;
   /** The armed mode that lights its button. */
   armed: ArmedMode;
+  /** `#picked`: "Bradley" or "Rifleman x 3, RPG gunner" for the selection
+   *  (spec 14 §5); empty when nothing is selected. */
+  selection?: string;
+}
+
+/** "", "Name", or "Name x 2, Other" for the type names of the selection
+ *  (spec 14 §5). */
+export function selectionLabel(names: readonly string[]): string {
+  const counts = new Map<string, number>();
+  for (const name of names) counts.set(name, (counts.get(name) ?? 0) + 1);
+  return [...counts]
+    .map(([name, count]) => (count > 1 ? `${name} x ${count}` : name))
+    .join(", ");
 }
 
 /** True when rendering `b` would show exactly what `a` showed (spec §6.7). */
 export function samePanelInput(a: PanelInput, b: PanelInput): boolean {
   if (
+    a.selection !== b.selection ||
     a.placing !== b.placing ||
     a.units !== b.units ||
     a.canFire !== b.canFire ||
@@ -441,7 +455,10 @@ export function createCommandPanel(
   const buildSec = section("build", t("ui.section.build"), buildGrid);
   const rowTop = el("div", "cb-row");
   rowTop.append(strip, unitsSec, structureSec);
-  body.append(rowTop, buildSec);
+  // What the player picked, when the old top-left HUD said it (spec 14 §5).
+  const picked = el("div", "picked");
+  picked.id = "picked";
+  body.append(picked, rowTop, buildSec);
 
   // Taps on the panel never reach the map (AC-41-10).
   for (const type of [
@@ -723,6 +740,11 @@ export function createCommandPanel(
     actions.clear();
     offers.clear();
 
+    // What is selected, in words, so the name lives with the commands.
+    const label = input.selection ?? "";
+    if (picked.textContent !== label) picked.textContent = label;
+    picked.hidden = label === "";
+
     // Selection strip.
     syncChildren(strip, input.chips.map(chip));
     strip.hidden = input.chips.length === 0;
@@ -825,7 +847,10 @@ export function createCommandPanel(
 
     fold.setLit(input.queue !== null && input.queue.items.length > 0);
     panel.hidden =
-      input.chips.length === 0 && buttons.length === 0 && input.queue === null;
+      label === "" &&
+      input.chips.length === 0 &&
+      buttons.length === 0 &&
+      input.queue === null;
   }
 
   return {

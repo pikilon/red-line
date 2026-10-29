@@ -94,7 +94,7 @@ test("AC-03-55: boots a skirmish with fog", async ({ page }) => {
 
   await expect(page.locator("#res-credits")).toHaveText("Credits 5000");
   await expect(page.locator("#res-power")).toHaveText("Power 0/0");
-  await expect(page.locator("#hud-player")).toHaveText("Player 1: Ukraine");
+  await expect(page.locator("#res-player")).toHaveText("Player 1: Ukraine");
 
   const before = await debugCall(page, (api) => api.tick());
   await page.waitForTimeout(1000);
@@ -109,7 +109,7 @@ test("AC-03-60: switches player and reveals the map", async ({ page }) => {
   await expect
     .poll(() => debugCall(page, (api) => api.controlledPlayer()))
     .toBe(1);
-  await expect(page.locator("#hud-player")).toHaveText("Player 2: Russia");
+  await expect(page.locator("#res-player")).toHaveText("Player 2: Russia");
   await expect(page.locator("#res-credits")).toHaveText("Credits 5000");
   const russia = await debugCall(
     page,
@@ -683,6 +683,10 @@ test("AC-08-26: left click moves, attacks and selects; right is inert", async ({
   await expect
     .poll(() => debugCall(page, (api) => api.selectedIds()))
     .toEqual([first.id]);
+  // The command panel names the pick (spec 14 §5).
+  await expect(page.locator("#picked")).toHaveText(
+    "Territorial Defense rifleman",
+  );
 
   // Empty ground moves the selection and keeps it.
   await clickTiles(page, 35, 66);
@@ -735,6 +739,8 @@ test("AC-08-26: left click moves, attacks and selects; right is inert", async ({
   await expect
     .poll(() => debugCall(page, (api) => api.selectedIds()))
     .toEqual([]);
+  // Nothing picked, nothing named: the panel folds away with the name.
+  await expect(page.locator("#picked")).toBeHidden();
 });
 
 test("AC-20-03: force-fires with Ctrl and the left button", async ({
@@ -1103,4 +1109,8 @@ test("AC-03-67: draws the selection box while dragging", async ({ page }) => {
       (await debugCall(page, (api) => api.selectedIds())).sort(),
     )
     .toEqual([...owned].sort());
+  // A group is named with its size (spec 14 §5).
+  await expect(page.locator("#picked")).toHaveText(
+    "Territorial Defense rifleman x 2",
+  );
 });
