@@ -13,7 +13,6 @@ interface DebugView {
   typeIndex(id: string): number;
   select(ids: number[]): void;
   selectedIds(): number[];
-  zoom(): number;
   cameraTarget(): { x: number; y: number };
   setCameraTarget(x: number, y: number): void;
 }
@@ -103,41 +102,18 @@ test("AC-41-06: a second tap within 400 ms centres the camera", async ({
     .not.toEqual({ x: 2, y: 2 });
 });
 
-test("AC-41-08: zoom + / - / slider / reset change the camera zoom", async ({
-  page,
-}) => {
-  await boot(page);
-  const zoom = (): Promise<number> =>
-    page.evaluate(() => (window as DebugWindow).__redline?.zoom() ?? -1);
-  await page.click("#zoom-in");
-  expect(await zoom()).toBeCloseTo(1.15, 2);
-  await page.click("#zoom-reset");
-  expect(await zoom()).toBe(1);
-  await page.click("#zoom-out");
-  expect(await zoom()).toBeCloseTo(1 / 1.15, 2);
-  await page.locator("#zoom-slider").fill("1000");
-  expect(await zoom()).toBeCloseTo(3, 2);
-  for (let i = 0; i < 3; i++) await page.click("#zoom-in");
-  expect(await zoom()).toBeCloseTo(3, 2);
-  await page.locator("#zoom-slider").fill("0");
-  expect(await zoom()).toBeCloseTo(0.6, 2);
-});
-
-test("AC-41-09: the quick and zoom panels fold and stay folded after a reload", async ({
+test("AC-41-09: the quick panel folds and stays folded after a reload", async ({
   page,
 }) => {
   await boot(page);
   await expect(page.locator("#quick-bar-body")).toBeVisible();
   await page.click("#quick-bar-tab");
-  await page.click("#zoom-bar-tab");
   await expect(page.locator("#quick-bar-body")).toBeHidden();
-  await expect(page.locator("#zoom-bar-body")).toBeHidden();
   await page.reload();
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
   );
   await expect(page.locator("#quick-bar-body")).toBeHidden();
-  await expect(page.locator("#zoom-bar-body")).toBeHidden();
   await page.click("#quick-bar-tab");
   await expect(page.locator("#quick-bar-body")).toBeVisible();
 });

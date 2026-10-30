@@ -199,7 +199,6 @@ import { createResourceBar } from "../ui/resourceBar";
 import { createSaveManager, type SlotView } from "../ui/saveManager";
 import { createSelectionBox } from "../ui/selectionBox";
 import { createTouchControls, isTouchDevice } from "../ui/touchControls";
-import { createZoomBar } from "../ui/zoomBar";
 import { createCameraMemory, homeView } from "./cameraMemory";
 
 export const DEFAULT_MAP = "river-port";
@@ -1475,22 +1474,6 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       saveSettings(settings);
     },
   });
-  const zoomBar = createZoomBar(document.body, {
-    zoom: () => camera.zoom,
-    setZoom: (zoom) => {
-      camera.zoom = zoom;
-      camera.updateProjectionMatrix();
-    },
-    folded: settings.foldedPanels?.includes("zoom") ?? false,
-    onFold: (folded) => {
-      const current = loadSettings();
-      settings = {
-        ...current,
-        foldedPanels: withFolded(current.foldedPanels ?? [], "zoom", folded),
-      };
-      saveSettings(settings);
-    },
-  });
 
   /** Last command panel input, to skip renders that would change nothing. */
   let lastPanel: PanelInput | null = null;
@@ -1910,7 +1893,6 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     }
     lastFrameMs = now;
     controller?.update(dtMs / 1000);
-    zoomBar.sync(camera.zoom);
     liveFeatures?.update(effectTime(now));
     const relief = terrain === null ? null : terrainDeformerOf(terrain);
     updateSun();
