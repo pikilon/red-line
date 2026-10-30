@@ -220,7 +220,7 @@ test("AC-19-15: save and load a slot", async ({ page }) => {
       ),
     )
     .toBeGreaterThanOrEqual(3);
-  const canvas = page.locator("canvas");
+  const canvas = page.locator("#app canvas");
   const box = await canvas.boundingBox();
   const centre = {
     x: (box?.x ?? 0) + (box?.width ?? 0) / 2,
