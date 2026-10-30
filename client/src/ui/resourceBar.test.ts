@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { MatchSnapshot } from "../sim/matchSnapshot";
 import { outcomeText } from "./outcome";
-import { resourceText } from "./resourceBar";
+import { resourceText, teamColors } from "./resourceBar";
 
 function snapshot(overrides: Partial<MatchSnapshot>): MatchSnapshot {
   return {
@@ -53,5 +53,16 @@ describe("resource bar and outcome", () => {
       "Defeat",
     );
     expect(outcomeText(snapshot({ outcome: "draw" }), 0)).toBe("Draw");
+  });
+});
+
+describe("teamColors", () => {
+  it("AC-42-05: paints each side's flag, stripe by stripe", () => {
+    const ua = teamColors("ukraine");
+    expect(ua?.flag.match(/#[0-9a-f]{6}/g)).toHaveLength(2);
+    const ru = teamColors("russia");
+    expect(ru?.flag.match(/#[0-9a-f]{6}/g)).toHaveLength(3);
+    expect(ru?.accent).toBe("#d52b1e");
+    expect(teamColors("nobody")).toBeNull();
   });
 });

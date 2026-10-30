@@ -3,6 +3,7 @@ import { ms } from "./timeouts";
 
 interface RallyDebug {
   isReady(): boolean;
+  setCameraTarget(x: number, y: number): void;
   entities(): {
     id: number;
     owner: number;
@@ -138,6 +139,8 @@ test("AC-33-08: sets, replaces and displays rally points for both producers", as
   });
 
   await rally.click();
+  // Centred, so the tile is not under the HUD bar.
+  await call(page, (api) => api.setCameraTarget(30, 70));
   await clickTiles(page, 30, 70);
   await expect
     .poll(() => rallyPoint(page, factory.id))

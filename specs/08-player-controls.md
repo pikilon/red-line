@@ -232,6 +232,8 @@ They were keyboard-only (`F2`, `F3`) and needed `?debug=1`.
 
 ## 3.6 Touch controls (owner request 2026-10-13, issues #251 and #253)
 
+The menu button now lives in the HUD bar on every device (spec 42 §3.1).
+
 On touch screens panning needed the arrow keys / WASD and the menu needed
 `Esc`. Touch devices get a virtual joystick and a menu button. Issue #253
 replaced the four-button D-pad of #251 with the joystick (AC-08-15 and

@@ -244,7 +244,7 @@ test.describe("mobile web app", () => {
     expect(menuLayout.scrollHeight).toBeLessThanOrEqual(
       menuLayout.clientHeight,
     );
-    await page.locator("#touch-menu").tap();
+    await page.locator("#game-menu-resume").tap();
     await expect(page.locator("#game-menu")).toBeHidden();
 
     // Rotating to portrait shows the landscape-only guard instead.

@@ -288,7 +288,7 @@ function unitGround(entity: EntityState, type: TypeDef): number {
   return trenchHopY(entity.x, entity.y, ground) ?? ground;
 }
 
-function ownerColor(owner: number): number {
+export function ownerColor(owner: number): number {
   return owner === NEUTRAL
     ? NEUTRAL_COLOR
     : (OWNER_COLORS[owner] ?? NEUTRAL_COLOR);

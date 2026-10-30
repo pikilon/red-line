@@ -137,7 +137,7 @@ test("AC-06-06: models in the skirmish", async ({ page }) => {
     return { drawCalls: api.drawCalls(), types: onScreen.size };
   });
 
-  const live = await page.locator("canvas").screenshot();
+  const live = await page.locator("#app canvas").screenshot();
   const diff = await pixelDiff(page, BOX_BASELINE, live, BASE_REGION);
   console.log(
     `AC-06-06 types=${types} drawCalls=${drawCalls} diff=${diff.toFixed(4)}`,

@@ -58,8 +58,8 @@ export interface QuickBarDeps {
   centre(x: number, y: number): void;
   /** False while a menu covers the game: keys do nothing. */
   active(): boolean;
-  folded: boolean;
-  onFold(folded: boolean): void;
+  /** A group slot or digit is about to select. */
+  onGroupSelect?(): void;
   now?(): number;
 }
 
@@ -70,7 +70,6 @@ export interface QuickBar {
 
 const SVG = (body: string): string =>
   `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" aria-hidden="true">${body}</svg>`;
-const ICON_CHEVRON = SVG('<path d="M6 9l6 6 6-6"/>');
 const ICON_SET = SVG('<path d="M5 12l5 5 9-10"/>');
 
 /** Production buildings the player owns, grouped by kind (spec 41 §3.2). */
@@ -109,27 +108,15 @@ export function createQuickBar(
 
   const root = document.createElement("div");
   root.id = "quick-bar";
-  root.className = "bar-panel";
   isolate(root);
 
-  const head = document.createElement("div");
-  head.className = "bar-head";
-  const tab = document.createElement("button");
-  tab.type = "button";
-  tab.id = "quick-bar-tab";
-  tab.className = "bar-tab";
-  tab.innerHTML = `${ICON_CHEVRON}<span>${t("bar.quick")}</span>`;
   const setButton = document.createElement("button");
   setButton.type = "button";
   setButton.id = "group-set";
   setButton.className = "bar-btn wide";
   setButton.innerHTML = `${ICON_SET}<span>${t("quick.set")}</span>`;
   setButton.title = t("quick.setHint");
-  head.append(tab, setButton);
 
-  const body = document.createElement("div");
-  body.className = "bar-body";
-  body.id = "quick-bar-body";
   const grid = document.createElement("div");
   grid.id = "group-grid";
   const slots = new Map<number, HTMLButtonElement>();
@@ -144,22 +131,8 @@ export function createQuickBar(
   }
   const shortcuts = document.createElement("div");
   shortcuts.id = "structure-shortcuts";
-  body.append(grid, shortcuts);
-  root.append(head, body);
+  root.append(setButton, grid, shortcuts);
   parent.appendChild(root);
-
-  function applyFold(folded: boolean): void {
-    root.classList.toggle("folded", folded);
-    tab.setAttribute("aria-expanded", String(!folded));
-    body.hidden = folded;
-    setButton.hidden = folded;
-  }
-  applyFold(deps.folded);
-  tab.addEventListener("click", () => {
-    const folded = !root.classList.contains("folded");
-    applyFold(folded);
-    deps.onFold(folded);
-  });
 
   function setArmed(on: boolean): void {
     armed = on;
@@ -183,6 +156,7 @@ export function createQuickBar(
     const ids = groups.get(digit);
     if (ids.length === 0) return;
     const action = groups.press(digit, now());
+    deps.onGroupSelect?.();
     deps.select(ids);
     if (action === "centre" && mayCentre) {
       const point = centreOf(ids, deps.entities());
