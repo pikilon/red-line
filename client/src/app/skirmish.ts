@@ -190,8 +190,8 @@ import {
   selectionChips,
   selectionLabel,
 } from "../ui/commandPanel";
-import { withFolded } from "../ui/foldable";
 import { createGameMenu } from "../ui/gameMenu";
+import { createHudBar } from "../ui/hudBar";
 import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
 import { createQuickBar } from "../ui/quickBar";
@@ -484,7 +484,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     audioMixer.play({ eventId: "ui.click", relation: "self" });
   };
   let lastCashSoundAt = -Infinity;
-  const resourceBar = createResourceBar(document.body, {
+  const hudBar = createHudBar(document.body);
+  const resourceBar = createResourceBar(hudBar.status, {
     onCreditsChange(delta) {
       const now = performance.now();
       if (now - lastCashSoundAt < 300) return;
@@ -549,16 +550,14 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       window.location.reload();
     },
   });
-  // Menu button on touch screens only (spec 08 §3.6).
-  const touchControls = isTouchDevice()
-    ? createTouchControls(document.body, {
-        toggleMenu: () => {
-          uiClick();
-          toggleMenuLikeEsc();
-        },
-      })
-    : null;
-  if (touchControls !== null) document.body.classList.add("touch");
+  // The menu button lives in the HUD bar on every device (spec 42 §3.1).
+  const touchControls = createTouchControls(hudBar.menu, {
+    toggleMenu: () => {
+      uiClick();
+      toggleMenuLikeEsc();
+    },
+  });
+  if (isTouchDevice()) document.body.classList.add("touch");
   /** Whether the save manager is open over the game menu (spec 19 §5.5). */
   let savesOpen = false;
   /** Which menu button opened it. */
@@ -684,7 +683,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       audioVoice: settings.audioVoice,
       audioMusic: settings.audioMusic,
     });
-    touchControls?.render({ menuOpen: paused });
+    touchControls.render({ menuOpen: paused });
   }
 
   /** Shows `message` in `#toast` for `TOAST_MS` (spec 07 §5). */
@@ -777,135 +776,137 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         .featureTypes ?? []
     ).flatMap((type, index) => (type.family === "earthwork" ? [index] : [])),
   );
-  const commandPanel = createCommandPanel(document.body, {
-    onStop: () => {
-      uiClick();
-      const units = selectedEntities()
-        .filter((entity) => typeDef(entity.kind).category === "unit")
-        .map((entity) => entity.id);
-      if (units.length === 0) return;
-      interact.command({ kind: "stop", player: controlled, units });
-    },
-    onForceFire: () => {
-      uiClick();
-      controller?.toggleForceFire();
-    },
-    onRally: () => {
-      uiClick();
-      controller?.toggleRally();
-    },
-    onSameType: (scope) => {
-      uiClick();
-      controller?.selectSameType(scope);
-    },
-    onNarrow: (kind) => {
-      uiClick();
-      controller?.narrowTo(kind);
-    },
-    onGarrison: (feature) => {
-      uiClick();
-      for (const command of garrisonCommand({
-        player: controlled,
-        selected: [...(controller?.selected ?? [])],
-        entities: next?.entities ?? [],
-        feature,
-      })) {
-        interact.command(command);
-      }
-    },
-    onEvacuate: (feature) => {
-      uiClick();
-      // Spec 35 §5c: a trench empties as one block, every piece at once.
-      for (const piece of evacuationOf(
-        feature,
-        garrisonFeatures,
-        next?.entities ?? [],
-        controlled,
-      )) {
-        interact.command({
-          kind: "unload",
+  const commandPanel = createCommandPanel(
+    hudBar.content,
+    {
+      onStop: () => {
+        uiClick();
+        const units = selectedEntities()
+          .filter((entity) => typeDef(entity.kind).category === "unit")
+          .map((entity) => entity.id);
+        if (units.length === 0) return;
+        interact.command({ kind: "stop", player: controlled, units });
+      },
+      onForceFire: () => {
+        uiClick();
+        controller?.toggleForceFire();
+      },
+      onRally: () => {
+        uiClick();
+        controller?.toggleRally();
+      },
+      onSameType: (scope) => {
+        uiClick();
+        controller?.selectSameType(scope);
+      },
+      onNarrow: (kind) => {
+        uiClick();
+        controller?.narrowTo(kind);
+      },
+      onGarrison: (feature) => {
+        uiClick();
+        for (const command of garrisonCommand({
           player: controlled,
-          feature: piece,
+          selected: [...(controller?.selected ?? [])],
+          entities: next?.entities ?? [],
+          feature,
+        })) {
+          interact.command(command);
+        }
+      },
+      onEvacuate: (feature) => {
+        uiClick();
+        // Spec 35 §5c: a trench empties as one block, every piece at once.
+        for (const piece of evacuationOf(
+          feature,
+          garrisonFeatures,
+          next?.entities ?? [],
+          controlled,
+        )) {
+          interact.command({
+            kind: "unload",
+            player: controlled,
+            feature: piece,
+          });
+        }
+      },
+      onRepair: () => {
+        uiClick();
+        for (const command of resolveRepairButton(
+          controlled,
+          selectedEntities().map((entity) => entity.id),
+          next?.entities ?? [],
+        )) {
+          interact.command(command);
+        }
+      },
+      onDig: () => {
+        uiClick();
+        controller?.armDig();
+      },
+      onDisembark: (carrier) => {
+        uiClick();
+        interact.command({ kind: "disembark", player: controlled, carrier });
+      },
+      onConstruct: (kind) => {
+        uiClick();
+        // Zero Hour's "building ready / select target" EVA line while placing.
+        audioMixer.triggerEva("buildingReady", localFactionId());
+        placementKind = kind;
+        refreshOverlay();
+      },
+      onProduce: (kind) => {
+        uiClick();
+        const building = selectedProductionBuilding(kind);
+        if (building === null) return;
+        interact.command({
+          kind: "produce",
+          player: controlled,
+          building: building.id,
+          typeIndex: kind,
         });
-      }
+      },
+      onSell: () => {
+        uiClick();
+        const building = selectedEntities().find(
+          (entity) => typeDef(entity.kind).category === "building",
+        );
+        if (building === undefined) return;
+        interact.command({
+          kind: "sell",
+          player: controlled,
+          building: building.id,
+        });
+      },
+      onCancel: () => {
+        uiClick();
+        const queue = selectedQueue();
+        if (queue === null) return;
+        interact.command({
+          kind: "cancel",
+          player: controlled,
+          building: queue.building,
+        });
+      },
+      onDisabled: (button) => {
+        audioMixer.play({ eventId: "ui.error", relation: "self" });
+        if (next !== null && button.cost > next.credits) {
+          audioMixer.triggerEva("insufficientFunds", localFactionId());
+        }
+      },
     },
-    onRepair: () => {
-      uiClick();
-      for (const command of resolveRepairButton(
-        controlled,
-        selectedEntities().map((entity) => entity.id),
-        next?.entities ?? [],
-      )) {
-        interact.command(command);
-      }
-    },
-    onDig: () => {
-      uiClick();
-      controller?.armDig();
-    },
-    onDisembark: (carrier) => {
-      uiClick();
-      interact.command({ kind: "disembark", player: controlled, carrier });
-    },
-    onConstruct: (kind) => {
-      uiClick();
-      // Zero Hour's "building ready / select target" EVA line while placing.
-      audioMixer.triggerEva("buildingReady", localFactionId());
-      placementKind = kind;
-      refreshOverlay();
-    },
-    onProduce: (kind) => {
-      uiClick();
-      const building = selectedProductionBuilding(kind);
-      if (building === null) return;
-      interact.command({
-        kind: "produce",
-        player: controlled,
-        building: building.id,
-        typeIndex: kind,
-      });
-    },
-    onSell: () => {
-      uiClick();
-      const building = selectedEntities().find(
-        (entity) => typeDef(entity.kind).category === "building",
-      );
-      if (building === undefined) return;
-      interact.command({
-        kind: "sell",
-        player: controlled,
-        building: building.id,
-      });
-    },
-    onCancel: () => {
-      uiClick();
-      const queue = selectedQueue();
-      if (queue === null) return;
-      interact.command({
-        kind: "cancel",
-        player: controlled,
-        building: queue.building,
-      });
-    },
-    onDisabled: (button) => {
-      audioMixer.play({ eventId: "ui.error", relation: "self" });
-      if (next !== null && button.cost > next.credits) {
-        audioMixer.triggerEva("insufficientFunds", localFactionId());
-      }
-    },
-  });
+    undefined,
+    hudBar.selection,
+  );
 
-  const commandPanelElement = document.getElementById("command-panel");
-  if (commandPanelElement !== null) {
-    const syncCommandBarHeight = (): void => {
-      const height = commandPanelElement.getBoundingClientRect().height;
-      document.documentElement.style.setProperty(
-        "--command-bar-height",
-        `${height}px`,
-      );
+  const hudBarElement = document.getElementById("hud-bar");
+  if (hudBarElement !== null) {
+    const syncHudHeight = (): void => {
+      const height = hudBarElement.getBoundingClientRect().height;
+      document.documentElement.style.setProperty("--hud-height", `${height}px`);
     };
-    new ResizeObserver(syncCommandBarHeight).observe(commandPanelElement);
-    syncCommandBarHeight();
+    new ResizeObserver(syncHudHeight).observe(hudBarElement);
+    syncHudHeight();
   }
   let animator: Animator;
   const corpses = createCorpses();
@@ -1457,22 +1458,14 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     renderMenu();
   }
 
-  const quickBar = createQuickBar(document.body, {
+  const quickBar = createQuickBar(hudBar.content, {
     entities: () => next?.entities ?? [],
     player: () => controlled,
     selected: () => controller?.selected ?? NO_SELECTION,
     select: (ids) => controller?.setSelection(ids),
     centre: (x, y) => moveCamera(x, y),
     active: () => !paused,
-    folded: settings.foldedPanels?.includes("quick") ?? false,
-    onFold: (folded) => {
-      const current = loadSettings();
-      settings = {
-        ...current,
-        foldedPanels: withFolded(current.foldedPanels ?? [], "quick", folded),
-      };
-      saveSettings(settings);
-    },
+    onGroupSelect: () => hudBar.keepTabOnce(),
   });
 
   /** Last command panel input, to skip renders that would change nothing. */
@@ -1554,6 +1547,13 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     lastPanel = panel;
     uiRenders++;
     commandPanel.render(panel);
+    hudBar.sync(
+      [...(controller?.selected ?? [])].sort((a, b) => a - b).join(),
+      panel.buttons.some(
+        (b) => b.action === "construct" || b.action === "produce",
+      ),
+    );
+    hudBar.setLit("build", queue !== null && queue.items.length > 0);
   }
 
   /** Ghost trenches along the line being drawn (spec 35 §5b.1); red where the

@@ -57,6 +57,7 @@ test("AC-41-06: Set + slot stores a group; tap and digit reselect it", async ({
     (list) => (window as DebugWindow).__redline?.select(list),
     ids,
   );
+  await page.click("#hud-tab-groups");
   await page.click("#group-set");
   await page.click("#group-1");
   await page.evaluate(() => (window as DebugWindow).__redline?.select([]));
@@ -100,20 +101,4 @@ test("AC-41-06: a second tap within 400 ms centres the camera", async ({
       page.evaluate(() => (window as DebugWindow).__redline?.cameraTarget()),
     )
     .not.toEqual({ x: 2, y: 2 });
-});
-
-test("AC-41-09: the quick panel folds and stays folded after a reload", async ({
-  page,
-}) => {
-  await boot(page);
-  await expect(page.locator("#quick-bar-body")).toBeVisible();
-  await page.click("#quick-bar-tab");
-  await expect(page.locator("#quick-bar-body")).toBeHidden();
-  await page.reload();
-  await page.waitForFunction(
-    () => (window as DebugWindow).__redline?.isReady() === true,
-  );
-  await expect(page.locator("#quick-bar-body")).toBeHidden();
-  await page.click("#quick-bar-tab");
-  await expect(page.locator("#quick-bar-body")).toBeVisible();
 });

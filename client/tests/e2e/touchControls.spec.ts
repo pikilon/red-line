@@ -119,16 +119,14 @@ test.describe("touch device", () => {
       )
       .toBe(0);
 
-    // Layout: command panel bottom left, menu button big enough, no overlap.
-    const panel = await box(page, "#command-panel");
+    // Layout: the bar sits at the bottom, menu button big enough, no overlap.
+    const panel = await box(page, "#hud-bar");
     const hud = await box(page, "#hud");
     const menu = await box(page, "#touch-menu");
     expect(await page.locator("#touch-joystick").count()).toBe(0);
-    expect(panel.x + panel.width / 2).toBeLessThan(viewport.width / 2);
     expect(panel.y + panel.height / 2).toBeGreaterThan(viewport.height / 2);
-    expect(menu.width).toBeGreaterThanOrEqual(48);
-    expect(menu.height).toBeGreaterThanOrEqual(48);
-    expect(overlaps(panel, menu)).toBe(false);
+    expect(menu.width).toBeGreaterThanOrEqual(44);
+    expect(menu.height).toBeGreaterThanOrEqual(44);
     expect(overlaps(panel, hud)).toBe(false);
 
     // Two fingers sliding together pan the map (spec 08 §3.9 D6).
@@ -167,7 +165,7 @@ test.describe("touch device", () => {
       1,
     );
 
-    // The menu button opens and closes the Esc menu.
+    // The menu button opens the Esc menu; Resume closes it.
     await page.locator("#touch-menu").tap();
     await expect(page.locator("#game-menu")).toBeVisible();
     expect(await paused(page)).toBe(true);
@@ -175,7 +173,7 @@ test.describe("touch device", () => {
       "aria-expanded",
       "true",
     );
-    await page.locator("#touch-menu").tap();
+    await page.locator("#game-menu-resume").tap();
     await expect(page.locator("#game-menu")).toBeHidden();
     expect(await paused(page)).toBe(false);
     await expect(page.locator("#touch-menu")).toHaveAttribute(
@@ -186,9 +184,11 @@ test.describe("touch device", () => {
   });
 });
 
-test("AC-08-17: no touch controls without touch", async ({ page }) => {
+test("AC-08-17: the mouse gets the same menu button in the bar", async ({
+  page,
+}) => {
   await boot(page);
-  await expect(page.locator("#touch-controls")).toHaveCount(0);
+  await expect(page.locator("#hud-bar #touch-menu")).toBeVisible();
   const before = await cameraTarget(page);
   await page.keyboard.down("ArrowRight");
   await page.waitForTimeout(400);

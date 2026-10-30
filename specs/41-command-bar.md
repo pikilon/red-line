@@ -37,6 +37,9 @@ need sim orders that do not exist yet: out of scope (assumption A1).
 
 ## 3. Layout
 
+Spec 42 moves these panels into one bar: its §3 wins over the docking, fold and
+position rules here.
+
 Two docked panels, each with a fold tab. Touch targets are ≥ 44 px.
 
 | Panel | Where | Holds |

@@ -3,7 +3,6 @@ import { type CameoStore, cameoInitials, gameCameos } from "../render/cameos";
 import { RULES, typeDef, typeName } from "../rules";
 import type { EntityState, QueueState } from "../sim/matchSnapshot";
 import { appendDiv } from "./dom";
-import { createFoldable } from "./foldable";
 
 /** Snapshot progress is permille and a complete building is exactly full (spec §5.15). */
 const PROGRESS_FULL = 1000;
@@ -436,10 +435,11 @@ export function createCommandPanel(
   root: HTMLElement,
   handlers: CommandPanelHandlers,
   cameos: Cameos = gameCameos(),
+  /** Where the name of the selection shows; `root` when absent. */
+  selectionHost: HTMLElement = root,
 ): { render(input: PanelInput): void } {
   const panel = appendDiv(root, "command-panel");
   panel.hidden = true;
-  const fold = createFoldable(panel, "command", t("ui.panel.command"));
   const body = el("div", "cb-body");
   panel.appendChild(body);
   const strip = el("div", "strip");
@@ -458,7 +458,8 @@ export function createCommandPanel(
   // What the player picked, when the old top-left HUD said it (spec 14 §5).
   const picked = el("div", "picked");
   picked.id = "picked";
-  body.append(picked, rowTop, buildSec);
+  selectionHost.appendChild(picked);
+  body.append(rowTop, buildSec);
 
   // Taps on the panel never reach the map (AC-41-10).
   for (const type of [
@@ -851,7 +852,6 @@ export function createCommandPanel(
     syncChildren(buildGrid, tiles);
     buildSec.hidden = tiles.length === 0;
 
-    fold.setLit(input.queue !== null && input.queue.items.length > 0);
     panel.hidden =
       label === "" &&
       input.chips.length === 0 &&

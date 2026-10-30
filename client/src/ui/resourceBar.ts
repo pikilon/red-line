@@ -2,7 +2,8 @@
 // delta into Zero Hour's `ui.cashUp` / `ui.cashDown` without the sim knowing
 // anything about audio.
 import { t } from "../i18n";
-import { factionName } from "../rules";
+import { FLAGS } from "../render/flags";
+import { factionName, RULES } from "../rules";
 import type { MatchSnapshot } from "../sim/matchSnapshot";
 import { appendDiv, setText } from "./dom";
 
@@ -28,8 +29,30 @@ export function resourceText(snapshot: MatchSnapshot): ResourceText {
   };
 }
 
+/** A hard-edged top-to-bottom gradient of a faction's flag, with its accent:
+ *  the last stripe, which reads on the dark plate (spec 42 §3.1). */
+export function teamColors(
+  factionId: string,
+): { flag: string; accent: string } | null {
+  const stripes: readonly number[] | undefined =
+    FLAGS[factionId as keyof typeof FLAGS];
+  if (stripes === undefined) return null;
+  const css = stripes.map(
+    (stripe) => `#${stripe.toString(16).padStart(6, "0")}`,
+  );
+  const stops = css.map((color, i) => {
+    const from = (i * 100) / css.length;
+    const to = ((i + 1) * 100) / css.length;
+    return `${color} ${from}% ${to}%`;
+  });
+  return {
+    flag: `linear-gradient(180deg, ${stops.join(", ")})`,
+    accent: css[css.length - 1] ?? "",
+  };
+}
+
 /**
- * `<div id="resource-bar" class="bar-panel">`: the player's own panel, with
+ * `<div id="resource-bar">`: the player's own panel, with
  * `#res-player` (who you are), `#res-credits` and `#res-power` (spec §6.6,
  * spec 03 §6.7).
  */
@@ -45,8 +68,9 @@ export function createResourceBar(
   setPlayer(player: number, faction: number): void;
 } {
   const bar = appendDiv(root, "resource-bar");
-  bar.className = "bar-panel";
-  const player = appendDiv(bar, "res-player");
+  const playerRow = appendDiv(bar, "res-player-row");
+  appendDiv(playerRow, "res-flag").setAttribute("aria-hidden", "true");
+  const player = appendDiv(playerRow, "res-player");
   const row = appendDiv(bar, "res-row");
   const credits = appendDiv(row, "res-credits");
   const power = appendDiv(row, "res-power");
@@ -73,6 +97,10 @@ export function createResourceBar(
         player,
         t("hud.player", { player: n, faction: factionName(faction) }),
       );
+      const team = teamColors(RULES.factions[faction]?.id ?? "");
+      const style = document.documentElement.style;
+      style.setProperty("--team-flag", team?.flag ?? "none");
+      style.setProperty("--team-accent", team?.accent ?? "#c62828");
     },
   };
 }

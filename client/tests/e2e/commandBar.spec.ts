@@ -72,14 +72,16 @@ test("AC-41-01/05/10: a unit shows its sections, cameos, and panel taps stay off
   await selectOwn(page, "ua-dozer");
   const panel = page.locator("#command-panel");
   await expect(panel).toBeVisible();
+  // A dozer opens on Build (AC-42-02): every tile gets a picture of its type
+  // (AC-41-05).
+  await expect(panel.locator(".tile .cameo.has-image").first()).toBeVisible({
+    timeout: ms(15_000),
+  });
+  await page.click("#hud-tab-orders");
   for (const key of ["stop", "force-fire", "same-screen", "same-map"]) {
     await expect(panel.locator(`button[data-type="${key}"]`)).toBeVisible();
   }
   await expect(panel.locator('.chip[data-type="ua-dozer"]')).toBeVisible();
-  // Every build tile gets a picture of its type (AC-41-05).
-  await expect(panel.locator(".tile .cameo.has-image").first()).toBeVisible({
-    timeout: ms(15_000),
-  });
   // A dozer has no weapon: Force fire is greyed out.
   await expect(panel.locator('button[data-type="force-fire"]')).toBeDisabled();
   // An armed, damaged tank next to its factory offers Force fire and Repair.
@@ -140,23 +142,4 @@ test("AC-41-03/04: rally point by tap, and sell needs two taps", async ({
   expect(
     await call(page, (api, id: number) => api.entity(id), barracks.id),
   ).not.toBeNull();
-});
-
-test("AC-41-09: the panel folds and stays folded after a reload", async ({
-  page,
-}) => {
-  await open(page, "/?map=first-line&debug=1&seed=1&ai=off");
-  await selectOwn(page, "ua-dozer");
-  const panel = page.locator("#command-panel");
-  await panel.locator(".fold-tab").click();
-  await expect(panel).toHaveClass(/folded/);
-  await expect(panel.locator(".cb-body")).toBeHidden();
-  await page.reload();
-  await page.waitForFunction(
-    () => (window as DebugWindow).__redline?.isReady() === true,
-  );
-  await selectOwn(page, "ua-dozer");
-  await expect(panel).toHaveClass(/folded/);
-  await panel.locator(".fold-tab").click();
-  await expect(panel.locator(".cb-body")).toBeVisible();
 });
