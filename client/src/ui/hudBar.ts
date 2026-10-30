@@ -25,6 +25,8 @@ export function autoTab(current: HudTab, offer: TabOffer): HudTab {
 }
 
 export interface HudBar {
+  /** `#hud-radar`: holds the minimap, left of the bar or above it. */
+  readonly radar: HTMLElement;
   /** `#hud-menu`: holds the menu button. */
   readonly menu: HTMLElement;
   /** `#hud-status`: holds the player, credits and power. */
@@ -72,6 +74,7 @@ export function createHudBar(parent: HTMLElement, storage?: Storage): HudBar {
   }
   root.addEventListener("contextmenu", (event) => event.preventDefault());
 
+  const radar = appendDiv(root, "hud-radar");
   const main = appendDiv(root, "hud-main");
   const top = appendDiv(main, "hud-top");
   const menu = appendDiv(top, "hud-menu");
@@ -168,6 +171,7 @@ export function createHudBar(parent: HTMLElement, storage?: Storage): HudBar {
   select(current);
 
   return {
+    radar,
     menu,
     status,
     selection,

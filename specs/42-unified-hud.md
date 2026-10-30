@@ -1,7 +1,6 @@
 # 42 — Unified HUD
 
-Status: §3.1–§3.6 built; §3.7 minimap follows in its own change (owner request
-2026-10-30). Replaces the docked panels of spec 41 §3 and §3.4 and the top
+Status: all of §3 is built (§3.7 minimap, owner request 2026-10-30). Replaces the docked panels of spec 41 §3 and §3.4 and the top
 resource panel of spec 03 §6.7; keeps their buttons, cameos and look (spec 41
 §3.1, §3.2, §3.5). Touches `08` §3.6 (menu button). Client only: no sim, save
 or rules change.
@@ -80,6 +79,28 @@ expanded bar stays at or under 110 px: top row 40 px, content row 68 px, tiles
 54 × 58 px with their names at 10 px. Touch targets on that size are ≥ 40 px,
 below the 44 px of spec 41 §3 on purpose: the owner asked for a smaller bar.
 
+### 3.7 Minimap
+
+`#hud-radar` is the first child of the bar: a square as high as the bar at the
+bottom edge, a strip across the top of the column when docked left (150 px; 106
+px on a phone). It folds away with the bar's minimal size. One canvas draws,
+about five times a second and never per frame:
+
+* The terrain, one pixel per cell scaled up and built once per map: land
+  shaded by height, shallow and deep water, rock tiles. A map that is not square
+  is fitted whole, centred, aspect kept.
+* The fog over it: black where unexplored, half dark where explored, clear
+  where visible.
+* One small dot per unit or building in its owner's colour: always the
+  player's own, the rest only on visible cells.
+* The view: the ground the screen shows, an amber outline (a trapezoid under
+  the isometric camera) clipped to the map.
+
+Tapping, clicking or dragging on it moves the camera to that point and keeps
+following the pointer while pressed (mouse or one finger; a second finger and
+non-primary buttons are ignored). It never gives an order and none of its
+events reach the map (A3).
+
 ## 4. Assumptions
 
 * A1: Three tabs. Structure shortcuts live with the groups: both are "go to
@@ -107,3 +128,5 @@ below the 44 px of spec 41 §3 on purpose: the owner asked for a smaller bar.
 * AC-42-07: Docked left, the bar is a column and its content scrolls vertically.
 * AC-42-08: At 844 × 390 the expanded bar is at most 110 px high and every
   button at least 40 px.
+* AC-42-09: Tapping the minimap, then dragging across it, moves the camera each
+  time; it is hidden while the bar is minimal.

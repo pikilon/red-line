@@ -205,6 +205,7 @@
   "hud.tab.orders": "Orders",
   "hud.tab.build": "Build",
   "hud.tab.groups": "Groups",
+  "hud.minimap": "Minimap",
   "hud.empty": "Select a unit or a building",
   "hud.dockLeft": "Dock to the left",
   "hud.dockBottom": "Dock to the bottom",

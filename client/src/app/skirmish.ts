@@ -10,7 +10,10 @@ import {
   HemisphereLight,
   Mesh,
   MeshBasicMaterial,
+  Plane,
+  Raycaster,
   Scene,
+  Vector2,
   Vector3,
   WebGLRenderer,
 } from "three";
@@ -98,6 +101,7 @@ import {
   createEntityRenderer,
   type EntityRenderer,
   OWNER_COLORS,
+  ownerColor,
 } from "../render/entities";
 import {
   createLiveMapFeatures,
@@ -105,6 +109,7 @@ import {
   type FeatureRules,
   type LiveMapFeatures,
 } from "../render/features";
+import { terrainLayersOf } from "../render/features/layers";
 import {
   onTrenchCraters,
   onTrenchStrokes,
@@ -192,6 +197,7 @@ import {
 } from "../ui/commandPanel";
 import { createGameMenu } from "../ui/gameMenu";
 import { createHudBar } from "../ui/hudBar";
+import { createMinimap, type MinimapTerrain } from "../ui/minimap";
 import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
 import { createQuickBar } from "../ui/quickBar";
@@ -908,6 +914,37 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     new ResizeObserver(syncHudHeight).observe(hudBarElement);
     syncHudHeight();
   }
+  /** Terrain of the running map for the minimap, set once the map is known. */
+  let minimapTerrain: MinimapTerrain | null = null;
+  const viewRaycaster = new Raycaster();
+  const groundPlane = new Plane(new Vector3(0, 1, 0), 0);
+  const minimap = createMinimap(hudBar.radar, {
+    terrain: () => minimapTerrain,
+    fog: () => fog,
+    entities: () => next?.entities ?? [],
+    player: () => controlled,
+    color: (owner) => `#${ownerColor(owner).toString(16).padStart(6, "0")}`,
+    // The four screen corners on the ground plane (spec 42 §3.7).
+    view: () => {
+      camera.updateMatrixWorld();
+      const hit = new Vector3();
+      const corners: { x: number; y: number }[] = [];
+      for (const [x, y] of [
+        [-1, 1],
+        [1, 1],
+        [1, -1],
+        [-1, -1],
+      ] as const) {
+        viewRaycaster.setFromCamera(new Vector2(x, y), camera);
+        if (viewRaycaster.ray.intersectPlane(groundPlane, hit) === null) {
+          return [];
+        }
+        corners.push({ x: hit.x, y: hit.z });
+      }
+      return corners;
+    },
+    moveCamera: (x, y) => moveCamera(x, y),
+  });
   let animator: Animator;
   const corpses = createCorpses();
   const deathCauses = createDeathCauses();
@@ -1110,6 +1147,27 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         ? flatElevation(mapInfo.mapWidth, mapInfo.mapHeight)
         : elevationOf(mapDefinition);
     setGroundElevation(elevation);
+    const layers =
+      mapDefinition === undefined
+        ? null
+        : terrainLayersOf(mapDefinition as FeatureMap);
+    const cellCount = mapInfo.mapWidth * mapInfo.mapHeight;
+    const heights = elevation.raised ? new Float32Array(cellCount) : null;
+    if (heights !== null) {
+      for (let cell = 0; cell < cellCount; cell++) {
+        heights[cell] = elevation.at(
+          (cell % mapInfo.mapWidth) + 0.5,
+          Math.floor(cell / mapInfo.mapWidth) + 0.5,
+        );
+      }
+    }
+    minimapTerrain = {
+      width: mapInfo.mapWidth,
+      height: mapInfo.mapHeight,
+      rock: rockCells,
+      water: layers?.water ?? new Uint8Array(cellCount),
+      relief: heights,
+    };
     terrain = createTerrain(
       mapInfo.mapWidth,
       mapInfo.mapHeight,
@@ -1888,6 +1946,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     if (lastFrameMs !== null) {
       frameStats.record(dtMs);
       perfPanel.record(dtMs, now);
+      minimap.update(now);
       // The tick reads next to the FPS and hides with it (spec 03 §6.7).
       if (next !== null) perfPanel.setTick(next.tick);
     }

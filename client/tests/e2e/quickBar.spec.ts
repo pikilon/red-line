@@ -127,3 +127,28 @@ test("AC-42-06/07/08: the bar folds, docks left and fits a phone", async ({
   const phone = await bar.boundingBox();
   expect(phone?.height).toBeLessThanOrEqual(110);
 });
+
+test("AC-42-09: tapping and dragging the minimap moves the camera", async ({
+  page,
+}) => {
+  await boot(page);
+  const camera = (): Promise<{ x: number; y: number } | undefined> =>
+    page.evaluate(() => (window as DebugWindow).__redline?.cameraTarget());
+  const map = page.locator("#minimap");
+  await expect(map).toBeVisible();
+  const box = await map.boundingBox();
+  if (box === null) throw new Error("no minimap box");
+  const start = await camera();
+  await page.mouse.click(box.x + box.width * 0.8, box.y + box.height * 0.8);
+  await expect.poll(camera).not.toEqual(start);
+  const tapped = await camera();
+  await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.5);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.3, {
+    steps: 4,
+  });
+  await page.mouse.up();
+  await expect.poll(camera).not.toEqual(tapped);
+  await page.click("#hud-size");
+  await expect(map).toBeHidden();
+});

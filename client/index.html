@@ -31,8 +31,11 @@
       #perf-panel { position: fixed; top: calc(8px + env(safe-area-inset-top)); right: calc(8px + env(safe-area-inset-right)); pointer-events: none; color: #fff; font: 14px/1.4 system-ui, sans-serif; text-shadow: 0 1px 2px #000; }
       #perf-panel.perf-bad { color: #ff4d4d; }
       #perf-tick { margin-top: 2px; color: #9fb0bd; }
-      #hud-bar { --plate: #14181c; --plate-hi: #1d2329; --rim: #4a525a; --accent: var(--team-accent, #c62828); --amber: #facc15; --hud-top: 44px; --hud-tile-w: 64px; --hud-tile-h: 78px; --hud-side: 212px; position: fixed; z-index: 6; left: 0; right: 0; bottom: 0; display: flex; box-sizing: border-box; padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); background: linear-gradient(180deg, var(--plate-hi), var(--plate)); box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.6); color: #d8dde2; font: 600 12px/1.2 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; touch-action: manipulation; }
+      #hud-bar { --plate: #14181c; --plate-hi: #1d2329; --rim: #4a525a; --accent: var(--team-accent, #c62828); --amber: #facc15; --hud-top: 44px; --hud-tile-w: 64px; --hud-tile-h: 78px; --hud-side: 212px; --hud-radar: 149px; position: fixed; z-index: 6; left: 0; right: 0; bottom: 0; display: flex; box-sizing: border-box; padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); background: linear-gradient(180deg, var(--plate-hi), var(--plate)); box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.6); color: #d8dde2; font: 600 12px/1.2 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; touch-action: manipulation; }
       #hud-bar::before { content: ""; position: absolute; left: 0; right: 0; top: -4px; height: 4px; background: var(--team-flag, var(--accent)); }
+      #hud-radar { flex: none; display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: var(--hud-radar); border-right: 1px solid #2c343b; background: #000; }
+      #minimap { width: 100%; height: 100%; touch-action: none; cursor: pointer; }
+      #hud-bar[data-size="min"] #hud-radar { display: none; }
       #hud-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
       #hud-top { display: flex; align-items: stretch; min-height: var(--hud-top); border-bottom: 1px solid #2c343b; }
       #hud-menu { flex: none; }
@@ -69,7 +72,9 @@
       #hud-bar[data-size="min"] #hud-content, #hud-bar[data-size="min"] #hud-tabs, #hud-bar[data-size="min"] #hud-selection { display: none; }
       #hud-bar[data-dock="left"] { right: auto; top: 0; width: var(--hud-side); padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) env(safe-area-inset-left); }
       #hud-bar[data-dock="left"]::before { left: auto; right: -4px; top: 0; bottom: 0; width: 4px; height: auto; }
-      #hud-bar[data-dock="left"] #hud-main { height: 100%; }
+      #hud-bar[data-dock="left"] { flex-direction: column; }
+      #hud-bar[data-dock="left"] #hud-radar { width: 100%; height: 150px; border-right: 0; border-bottom: 1px solid #2c343b; }
+      #hud-bar[data-dock="left"] #hud-main { flex: 1; min-height: 0; }
       #hud-bar[data-dock="left"] #hud-top { flex-wrap: wrap; align-content: flex-start; flex: none; border-bottom: 1px solid #2c343b; }
       #hud-bar[data-dock="left"] #hud-status { order: 5; flex: 1 0 100%; box-sizing: border-box; padding: 6px 10px; border-right: 0; border-top: 1px solid #2c343b; }
       #hud-bar[data-dock="left"] #hud-selection { order: 6; flex: 1 0 100%; box-sizing: border-box; padding: 4px 10px; }
@@ -167,7 +172,8 @@
       #quick-bar .bar-btn .cameo .ini { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #e6edf2; }
       #quick-bar .bar-btn .cameo.has-image .ini { display: none; }
       @media (max-height: 500px) {
-        #hud-bar { --hud-top: 40px; --hud-tile-w: 54px; --hud-tile-h: 58px; --hud-side: 176px; }
+        #hud-bar { --hud-top: 40px; --hud-tile-w: 54px; --hud-tile-h: 58px; --hud-side: 176px; --hud-radar: 109px; }
+        #hud-bar[data-dock="left"] #hud-radar { height: 96px; }
         #hud-content { height: calc(var(--hud-tile-h) + 10px); padding: 3px 6px; }
         #hud-bar .sec-title { display: none; }
         #hud-bar .sec { gap: 0; padding-left: 4px; }
