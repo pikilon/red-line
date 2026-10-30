@@ -1,6 +1,6 @@
 # 41 — Command bar
 
-Status: built (§3.1, §3.4 for the command panel, §3.5 and cameos; §3.2/§3.3 follow in their own change) (owner request 2026-10-29). Replaces the plain text buttons of
+Status: built (§3.1, §3.4 for the command panel, §3.5 and cameos; §3.2 follows in its own change) (owner request 2026-10-29). Replaces the plain text buttons of
 `#command-panel` (spec 06 §6.6–6.7). Touches `08` (camera zoom, touch
 controls), `31` (garrison), `33` (rally points), `34` (transport), `35` (dig),
 `37` (sell). Client only: no sim, save or rules change.
@@ -37,13 +37,12 @@ need sim orders that do not exist yet: out of scope (assumption A1).
 
 ## 3. Layout
 
-Three docked panels, each with a fold tab. Touch targets are ≥ 44 px.
+Two docked panels, each with a fold tab. Touch targets are ≥ 44 px.
 
 | Panel | Where | Holds |
 |---|---|---|
 | Command (`#command-bar`) | bottom-left | selection strip, unit actions, structure actions, build grid, queue |
 | Quick (`#quick-bar`) | left edge, above the command panel | 10 group slots, structure shortcuts |
-| Zoom (`#zoom-bar`) | right edge | zoom in, slider, zoom out, reset |
 
 ### 3.1 Command panel
 
@@ -85,12 +84,6 @@ Three docked panels, each with a fold tab. Touch targets are ≥ 44 px.
   (HQ, barracks, factory, port…), with a count badge. Tap selects one of them
   (cycling through them on repeated taps) and centres the camera on it.
 
-### 3.3 Zoom panel
-
-`+` and `−` step the zoom by the wheel step; the slider spans the wheel limits
-(spec 08 §3.4); the reset button returns to zoom 1. All three keep the wheel
-clamps.
-
 ### 3.4 Folding
 
 Each panel folds to its tab (a small bar with a chevron and the panel name);
@@ -115,6 +108,8 @@ transparent background) and cached; a type with no model shows its initials.
 
 * A5: The command panel keeps the id `#command-panel` (not `#command-bar`) so existing hooks keep working; the Rally point and Sell buttons sit in the Structure section, Unload with them.
 
+* A6: The zoom panel was removed on 2026-10-30 (owner request): the wheel and the pinch already zoom.
+
 ## 5. Acceptance
 
 * AC-41-01: Selecting a unit shows the Units section with Stop, Force fire and
@@ -128,6 +123,5 @@ transparent background) and cached; a type with no model shows its initials.
   digit 1 does the same.
 * AC-41-07: Same type on screen selects only visible own units of that type;
   everywhere selects all of them.
-* AC-41-08: Zoom + / − / slider / reset change the camera zoom within limits.
 * AC-41-09: Each panel folds and unfolds, and the state survives a reload.
 * AC-41-10: Taps on any panel never reach the map.
