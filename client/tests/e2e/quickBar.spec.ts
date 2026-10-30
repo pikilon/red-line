@@ -102,3 +102,28 @@ test("AC-41-06: a second tap within 400 ms centres the camera", async ({
     )
     .not.toEqual({ x: 2, y: 2 });
 });
+
+test("AC-42-06/07/08: the bar folds, docks left and fits a phone", async ({
+  page,
+}) => {
+  await boot(page);
+  const bar = page.locator("#hud-bar");
+  await page.click("#hud-size");
+  await expect(page.locator("#hud-content")).toBeHidden();
+  await page.click("#hud-dock");
+  await expect(bar).toHaveAttribute("data-dock", "left");
+  await page.reload();
+  await page.waitForFunction(
+    () => (window as DebugWindow).__redline?.isReady() === true,
+  );
+  await expect(page.locator("#hud-content")).toBeHidden();
+  await expect(bar).toHaveAttribute("data-dock", "left");
+  await page.click("#hud-size");
+  await expect(page.locator("#hud-content")).toBeVisible();
+  const column = await bar.boundingBox();
+  expect(column?.height).toBeGreaterThan(column?.width ?? 0);
+  await page.click("#hud-dock");
+  await page.setViewportSize({ width: 844, height: 390 });
+  const phone = await bar.boundingBox();
+  expect(phone?.height).toBeLessThanOrEqual(110);
+});

@@ -1,6 +1,6 @@
 # 42 — Unified HUD
 
-Status: §3.1–§3.3 built; §3.4–§3.6 follow in their own change (owner request
+Status: §3.1–§3.6 built; §3.7 minimap follows in its own change (owner request
 2026-10-30). Replaces the docked panels of spec 41 §3 and §3.4 and the top
 resource panel of spec 03 §6.7; keeps their buttons, cameos and look (spec 41
 §3.1, §3.2, §3.5). Touches `08` §3.6 (menu button). Client only: no sim, save
@@ -61,6 +61,25 @@ A content row that does not fit scrolls: sideways by finger or by wheel, which
 is turned sideways over the row. The zoom gestures are not taken: the wheel
 zooms over the map and pinch zooms on the map.
 
+### 3.4 Minimal and expanded
+
+A button in the top row folds the bar to that row alone: menu, status, tools.
+Pressing it again expands it. The choice survives a reload. Zero Hour's full
+and low stages, spec 41 §2.
+
+### 3.5 Bottom or left
+
+A second button docks the bar to the left edge, as a full-height column with
+its rows wrapped and scrolling up and down, or back to the bottom edge. The
+choice survives a reload.
+
+### 3.6 Sizes
+
+Rows follow the screen height. On a phone in landscape (height ≤ 500 px) the
+expanded bar stays at or under 110 px: top row 40 px, content row 68 px, tiles
+54 × 58 px with their names at 10 px. Touch targets on that size are ≥ 40 px,
+below the 44 px of spec 41 §3 on purpose: the owner asked for a smaller bar.
+
 ## 4. Assumptions
 
 * A1: Three tabs. Structure shortcuts live with the groups: both are "go to
@@ -69,6 +88,9 @@ zooms over the map and pinch zooms on the map.
 * A3: The minimap only moves the camera (tap, click or drag, with or without a
   selection), because the owner asked for it to navigate and every order now
   goes through the left button on the map.
+
+* A4: "Vertical" means the HUD's own orientation; portrait phones still show
+  the rotate guard of spec 08 §3.8. Left is the only side edge offered.
 
 ## 5. Acceptance
 
@@ -80,3 +102,8 @@ zooms over the map and pinch zooms on the map.
 * AC-42-05: The flag and the top edge use the stripes of the side played.
 * AC-42-04: A row wider than the bar scrolls sideways and its last item can be
   reached.
+* AC-42-06: The bar folds to its top row and expands, and both that and the
+  dock survive a reload.
+* AC-42-07: Docked left, the bar is a column and its content scrolls vertically.
+* AC-42-08: At 844 × 390 the expanded bar is at most 110 px high and every
+  button at least 40 px.

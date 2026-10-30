@@ -30,8 +30,10 @@ export interface Settings {
   audioMusic?: number;
   /** Absent means true: strong language enabled by default (spec 25 §5.3). */
   strongLanguage?: boolean;
-  /** Ids of the HUD panels folded to their tab (spec 41 §3.4); absent: none. */
-  foldedPanels?: string[];
+  /** The HUD bar folded to its top row (spec 42 §3.4); absent: expanded. */
+  hudMinimal?: boolean;
+  /** The HUD bar docked to the left edge (spec 42 §3.5); absent: bottom. */
+  hudVertical?: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = { gore: true };
@@ -70,12 +72,6 @@ function parseVolume(val: unknown): number | undefined {
   return Math.max(0, Math.min(100, Math.round(val)));
 }
 
-/** The strings of an array, or [] for anything else. */
-function parseIdList(val: unknown): string[] {
-  if (!Array.isArray(val)) return [];
-  return val.filter((item): item is string => typeof item === "string");
-}
-
 /** The stored settings, or the defaults when the storage is missing, the value
  *  is absent or invalid, or reading throws. */
 export function loadSettings(storage?: Storage): Settings {
@@ -99,7 +95,6 @@ export function loadSettings(storage?: Storage): Settings {
     const audioVoice = parseVolume(obj.audioVoice);
     const audioMusic = parseVolume(obj.audioMusic);
     const strongLanguage = obj.strongLanguage;
-    const foldedPanels = parseIdList(obj.foldedPanels);
     return {
       gore,
       ...(generatedTextures === false ? { generatedTextures } : {}),
@@ -110,7 +105,8 @@ export function loadSettings(storage?: Storage): Settings {
       ...(audioVoice !== undefined ? { audioVoice } : {}),
       ...(audioMusic !== undefined ? { audioMusic } : {}),
       ...(strongLanguage === false ? { strongLanguage } : {}),
-      ...(foldedPanels.length > 0 ? { foldedPanels } : {}),
+      ...(obj.hudMinimal === true ? { hudMinimal: true } : {}),
+      ...(obj.hudVertical === true ? { hudVertical: true } : {}),
     };
   } catch {
     return { ...DEFAULT_SETTINGS };
@@ -146,10 +142,8 @@ export function saveSettings(settings: Settings, storage?: Storage): void {
           ? { audioMusic: parseVolume(settings.audioMusic) }
           : {}),
         ...(settings.strongLanguage === false ? { strongLanguage: false } : {}),
-        ...(settings.foldedPanels !== undefined &&
-        settings.foldedPanels.length > 0
-          ? { foldedPanels: settings.foldedPanels }
-          : {}),
+        ...(settings.hudMinimal === true ? { hudMinimal: true } : {}),
+        ...(settings.hudVertical === true ? { hudVertical: true } : {}),
       }),
     );
   } catch {

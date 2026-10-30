@@ -31,7 +31,7 @@
       #perf-panel { position: fixed; top: calc(8px + env(safe-area-inset-top)); right: calc(8px + env(safe-area-inset-right)); pointer-events: none; color: #fff; font: 14px/1.4 system-ui, sans-serif; text-shadow: 0 1px 2px #000; }
       #perf-panel.perf-bad { color: #ff4d4d; }
       #perf-tick { margin-top: 2px; color: #9fb0bd; }
-      #hud-bar { --plate: #14181c; --plate-hi: #1d2329; --rim: #4a525a; --accent: var(--team-accent, #c62828); --amber: #facc15; --hud-top: 44px; --hud-tile-w: 64px; --hud-tile-h: 78px; position: fixed; z-index: 6; left: 0; right: 0; bottom: 0; display: flex; box-sizing: border-box; padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); background: linear-gradient(180deg, var(--plate-hi), var(--plate)); box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.6); color: #d8dde2; font: 600 12px/1.2 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; touch-action: manipulation; }
+      #hud-bar { --plate: #14181c; --plate-hi: #1d2329; --rim: #4a525a; --accent: var(--team-accent, #c62828); --amber: #facc15; --hud-top: 44px; --hud-tile-w: 64px; --hud-tile-h: 78px; --hud-side: 212px; position: fixed; z-index: 6; left: 0; right: 0; bottom: 0; display: flex; box-sizing: border-box; padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); background: linear-gradient(180deg, var(--plate-hi), var(--plate)); box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.6); color: #d8dde2; font: 600 12px/1.2 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; touch-action: manipulation; }
       #hud-bar::before { content: ""; position: absolute; left: 0; right: 0; top: -4px; height: 4px; background: var(--team-flag, var(--accent)); }
       #hud-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
       #hud-top { display: flex; align-items: stretch; min-height: var(--hud-top); border-bottom: 1px solid #2c343b; }
@@ -51,6 +51,14 @@
       .hud-tab[aria-selected="true"] { border-top-color: var(--accent); background: #262e35; color: #fff; }
       .hud-tab i { display: none; width: 7px; height: 7px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 6px var(--amber); }
       .hud-tab.lit i { display: block; }
+      #hud-tools { flex: none; display: flex; margin-left: auto; }
+      .hud-tool { position: relative; width: var(--hud-top); min-height: var(--hud-top); padding: 0; border: 0; border-left: 1px solid #2c343b; background: none; color: #aeb6bd; cursor: pointer; touch-action: manipulation; }
+      .hud-tool:active { background: #3a434b; }
+      .hud-tool::before { content: ""; position: absolute; inset: 0; margin: auto; box-sizing: border-box; }
+      #hud-dock::before { width: 18px; height: 16px; border: 2px solid currentColor; border-top-width: 6px; }
+      #hud-dock[aria-pressed="false"]::before { border-top-width: 2px; border-left-width: 6px; }
+      #hud-size::before { width: 10px; height: 10px; border-right: 2.5px solid currentColor; border-bottom: 2.5px solid currentColor; transform: translateY(-2px) rotate(45deg); }
+      #hud-size[aria-expanded="false"]::before { transform: translateY(2px) rotate(225deg); }
       #hud-selection { flex: 1; min-width: 0; display: flex; align-items: center; padding: 0 12px; }
       #picked { color: #fff; font-size: 13px; letter-spacing: 0.02em; text-transform: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       #picked[hidden] { display: none; }
@@ -58,6 +66,23 @@
       #hud-content::after { content: ""; flex: none; width: 1px; }
       #hud-bar[data-tab="groups"] #command-panel, #hud-bar:not([data-tab="groups"]) #quick-bar { display: none; }
       #hud-bar[data-tab="orders"] [data-sec="build"], #hud-bar[data-tab="build"] [data-sec="units"], #hud-bar[data-tab="build"] .strip { display: none; }
+      #hud-bar[data-size="min"] #hud-content, #hud-bar[data-size="min"] #hud-tabs, #hud-bar[data-size="min"] #hud-selection { display: none; }
+      #hud-bar[data-dock="left"] { right: auto; top: 0; width: var(--hud-side); padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) env(safe-area-inset-left); }
+      #hud-bar[data-dock="left"]::before { left: auto; right: -4px; top: 0; bottom: 0; width: 4px; height: auto; }
+      #hud-bar[data-dock="left"] #hud-main { height: 100%; }
+      #hud-bar[data-dock="left"] #hud-top { flex-wrap: wrap; align-content: flex-start; flex: none; border-bottom: 1px solid #2c343b; }
+      #hud-bar[data-dock="left"] #hud-status { order: 5; flex: 1 0 100%; box-sizing: border-box; padding: 6px 10px; border-right: 0; border-top: 1px solid #2c343b; }
+      #hud-bar[data-dock="left"] #hud-selection { order: 6; flex: 1 0 100%; box-sizing: border-box; padding: 4px 10px; }
+      #hud-bar[data-dock="left"] #hud-tabs { order: 7; flex: 1 0 100%; border-top: 1px solid #2c343b; min-height: var(--hud-top); }
+      #hud-bar[data-dock="left"] .hud-tab { flex: 1; justify-content: center; padding: 0 2px; font-size: 11px; }
+      #hud-bar[data-dock="left"] .hud-tab:last-child { border-right: 0; }
+      #hud-bar[data-dock="left"] #res-row { flex-wrap: wrap; gap: 2px 10px; }
+      #hud-bar[data-dock="left"] #hud-content { flex: 1; min-height: 0; height: auto; flex-direction: column; align-items: stretch; overflow: hidden auto; touch-action: pan-y; }
+      #hud-bar[data-dock="left"] #command-panel, #hud-bar[data-dock="left"] #quick-bar { touch-action: pan-y; }
+      #hud-bar[data-dock="left"] .cb-body, #hud-bar[data-dock="left"] .cb-row, #hud-bar[data-dock="left"] #quick-bar { flex-direction: column; align-items: stretch; }
+      #hud-bar[data-dock="left"] .strip, #hud-bar[data-dock="left"] .sec-row, #hud-bar[data-dock="left"] .build-grid, #hud-bar[data-dock="left"] #group-grid, #hud-bar[data-dock="left"] #structure-shortcuts { flex-wrap: wrap; }
+      #hud-bar[data-dock="left"][data-size="min"] { --hud-side: 124px; bottom: auto; }
+      #hud-bar[data-dock="left"][data-size="min"] #hud-top { border-bottom: 0; }
       #hud-empty { display: none; align-self: center; padding: 0 8px; color: #8a939b; white-space: nowrap; }
       #hud-bar:not([data-tab="groups"]) #hud-content:has(> #command-panel[hidden]) #hud-empty { display: block; }
       #command-panel { flex: none; touch-action: pan-x; }
@@ -141,6 +166,28 @@
       #quick-bar .bar-btn .cameo.has-image img { display: block; }
       #quick-bar .bar-btn .cameo .ini { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #e6edf2; }
       #quick-bar .bar-btn .cameo.has-image .ini { display: none; }
+      @media (max-height: 500px) {
+        #hud-bar { --hud-top: 40px; --hud-tile-w: 54px; --hud-tile-h: 58px; --hud-side: 176px; }
+        #hud-content { height: calc(var(--hud-tile-h) + 10px); padding: 3px 6px; }
+        #hud-bar .sec-title { display: none; }
+        #hud-bar .sec { gap: 0; padding-left: 4px; }
+        #hud-status { padding: 0 8px; }
+        #resource-bar { font-size: 12px; }
+        #res-player { font-size: 9px; }
+        #res-row { gap: 10px; }
+        .hud-tab { padding: 0 9px; font-size: 11px; }
+        #hud-selection { padding: 0 8px; }
+        #picked { font-size: 12px; }
+        #command-panel .cmd.tile { width: var(--hud-tile-w); height: var(--hud-tile-h); }
+        #command-panel .cmd.act { min-width: 50px; min-height: var(--hud-tile-h); padding: 2px 3px; font-size: 10px; }
+        #command-panel .cmd.chip { width: var(--hud-tile-h); height: var(--hud-tile-h); }
+        #quick-bar .bar-btn { min-width: 42px; min-height: var(--hud-tile-h); }
+      }
+      @media (max-width: 760px) {
+        #res-player { display: none; }
+        #res-row { flex-direction: column; gap: 1px; }
+        #hud-bar[data-dock="bottom"] #hud-selection { display: none; }
+      }
       #rotate-device { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; box-sizing: border-box; padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom)); background: radial-gradient(circle at 50% 40%, #16202b, #05080c 70%); color: #fff; text-align: center; z-index: 100; touch-action: none; }
       #rotate-device h2 { margin: 0; font-size: 24px; line-height: 1.2; }
       #rotate-device p { margin: 0; opacity: 0.75; font-size: 15px; }

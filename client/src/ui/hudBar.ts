@@ -1,4 +1,5 @@
 import { t } from "../i18n";
+import { loadSettings, saveSettings } from "../settings";
 import { appendDiv } from "./dom";
 
 /** The tabs of the unified HUD bar (spec 42 §3.2). */
@@ -63,7 +64,7 @@ const ISOLATED = [
  * edge and owns the menu button, the status, the tabs and the scrolling row
  * the command and quick panels render into.
  */
-export function createHudBar(parent: HTMLElement): HudBar {
+export function createHudBar(parent: HTMLElement, storage?: Storage): HudBar {
   const root = appendDiv(parent, "hud-bar");
   root.dataset.tab = "orders";
   for (const type of ISOLATED) {
@@ -78,6 +79,7 @@ export function createHudBar(parent: HTMLElement): HudBar {
   const tabList = appendDiv(top, "hud-tabs");
   tabList.setAttribute("role", "tablist");
   const selection = appendDiv(top, "hud-selection");
+  const tools = appendDiv(top, "hud-tools");
   const content = appendDiv(main, "hud-content");
   appendDiv(content, "hud-empty").textContent = t("hud.empty");
 
@@ -85,13 +87,56 @@ export function createHudBar(parent: HTMLElement): HudBar {
   content.addEventListener(
     "wheel",
     (event) => {
-      if (content.scrollWidth <= content.clientWidth) return;
+      if (vertical || content.scrollWidth <= content.clientWidth) return;
       if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
       content.scrollLeft += event.deltaY;
       event.preventDefault();
     },
     { passive: false },
   );
+
+  const saved = loadSettings(storage);
+  let minimal = saved.hudMinimal === true;
+  let vertical = saved.hudVertical === true;
+
+  function tool(id: string, onPress: () => void): HTMLButtonElement {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.id = id;
+    button.className = "hud-tool";
+    button.addEventListener("click", onPress);
+    tools.appendChild(button);
+    return button;
+  }
+  const remember = (): void =>
+    saveSettings(
+      { ...loadSettings(storage), hudMinimal: minimal, hudVertical: vertical },
+      storage,
+    );
+  const dock = tool("hud-dock", () => {
+    vertical = !vertical;
+    remember();
+    apply();
+  });
+  const size = tool("hud-size", () => {
+    minimal = !minimal;
+    remember();
+    apply();
+  });
+  function apply(): void {
+    root.dataset.size = minimal ? "min" : "full";
+    root.dataset.dock = vertical ? "left" : "bottom";
+    document.documentElement.dataset.hudDock = root.dataset.dock;
+    dock.setAttribute("aria-pressed", String(vertical));
+    const dockLabel = t(vertical ? "hud.dockBottom" : "hud.dockLeft");
+    dock.setAttribute("aria-label", dockLabel);
+    dock.title = dockLabel;
+    size.setAttribute("aria-expanded", String(!minimal));
+    const sizeLabel = t(minimal ? "hud.expand" : "hud.minimise");
+    size.setAttribute("aria-label", sizeLabel);
+    size.title = sizeLabel;
+  }
+  apply();
 
   const buttons = new Map<HudTab, HTMLButtonElement>();
   for (const tab of HUD_TABS) {

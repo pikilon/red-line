@@ -125,8 +125,8 @@ test.describe("touch device", () => {
     const menu = await box(page, "#touch-menu");
     expect(await page.locator("#touch-joystick").count()).toBe(0);
     expect(panel.y + panel.height / 2).toBeGreaterThan(viewport.height / 2);
-    expect(menu.width).toBeGreaterThanOrEqual(44);
-    expect(menu.height).toBeGreaterThanOrEqual(44);
+    expect(menu.width).toBeGreaterThanOrEqual(40);
+    expect(menu.height).toBeGreaterThanOrEqual(40);
     expect(overlaps(panel, hud)).toBe(false);
 
     // Two fingers sliding together pan the map (spec 08 §3.9 D6).

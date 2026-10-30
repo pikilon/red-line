@@ -124,9 +124,10 @@ describe("folded panels (spec 41 §3.4)", () => {
       getItem: (key: string) => store.get(key) ?? null,
       setItem: (key: string, value: string) => void store.set(key, value),
     } as unknown as Storage;
-    saveSettings({ gore: true, foldedPanels: ["command"] }, storage);
-    expect(loadSettings(storage).foldedPanels).toEqual(["command"]);
-    saveSettings({ gore: true, foldedPanels: [] }, storage);
-    expect(loadSettings(storage).foldedPanels).toBeUndefined();
+    saveSettings({ gore: true, hudMinimal: true, hudVertical: true }, storage);
+    expect(loadSettings(storage).hudMinimal).toBe(true);
+    expect(loadSettings(storage).hudVertical).toBe(true);
+    saveSettings({ gore: true }, storage);
+    expect(loadSettings(storage).hudMinimal).toBeUndefined();
   });
 });
