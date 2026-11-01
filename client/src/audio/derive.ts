@@ -98,7 +98,9 @@ function resolveExplosionEvent(weaponIdx: number): string | null {
 function locomotorKindOf(typeIdx: number): "foot" | "wheels" | "tracks" | null {
   const t = RULES.types[typeIdx];
   if (!t || t.locomotor < 0) return null;
-  return RULES.locomotors[t.locomotor]?.kind ?? null;
+  const kind = RULES.locomotors[t.locomotor]?.kind;
+  // Flyers have no ground voice or engine fallback category (spec 43).
+  return kind === undefined || kind === "air" ? null : kind;
 }
 
 /**

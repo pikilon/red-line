@@ -147,6 +147,28 @@ pub struct EntityState {
     /// Spec 34: ticks until an unloading vehicle lets its next rider out.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub unloading: Option<u32>,
+    /// Spec 43 §4.3: rounds left in the clip of a sortie flyer.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub ammo: u32,
+    /// Spec 43 §4.3: ticks spent reloading at a base.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub reload: u32,
+    /// Spec 43 §4.4: the entity that launched this unit.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub master: Option<u32>,
+    /// Spec 43 §4.2: ticks a one-way unit has been under way.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub fuel: u32,
+    /// Spec 43 §4.4: charges left of a launcher; absent means full.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub charges: Option<u32>,
+    /// Spec 43 §4.4: ticks towards the next charge.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub charge_clock: u32,
+}
+
+fn is_zero(value: &u32) -> bool {
+    *value == 0
 }
 
 /// Saved locomotion and turret state of an entity (spec 11 §5.1).
@@ -232,6 +254,9 @@ pub enum OrderState {
         factory: u32,
         missing: u32,
         remaining: u32,
+    },
+    ReturnToBase {
+        order_id: u32,
     },
 }
 
@@ -393,6 +418,9 @@ pub struct AiState {
     pub force: Option<u16>,
     pub attackers: Vec<u32>,
     pub active: bool,
+    /// Spec 43 §5: indices of the `once` triggers already taken.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub opened: Vec<u16>,
 }
 
 /// The state of `world` and its AIs. Errors with
@@ -853,6 +881,7 @@ fn save_order(order: Order) -> OrderState {
             missing,
             remaining,
         },
+        Order::ReturnToBase { order_id } => OrderState::ReturnToBase { order_id },
     }
 }
 
@@ -920,6 +949,7 @@ fn load_order(order: OrderState) -> Order {
             missing,
             remaining,
         },
+        OrderState::ReturnToBase { order_id } => Order::ReturnToBase { order_id },
     }
 }
 
@@ -980,6 +1010,12 @@ fn save_entity(entity: &Entity, rules: &Ruleset) -> EntityState {
         inside: entity.inside,
         aboard: entity.aboard,
         unloading: entity.unloading,
+        ammo: entity.ammo,
+        reload: entity.reload,
+        master: entity.master,
+        fuel: entity.fuel,
+        charges: rules.ty(entity.kind).charges.map(|_| entity.charges),
+        charge_clock: entity.charge_clock,
     }
 }
 
@@ -1030,10 +1066,11 @@ fn load_entity(state: &EntityState, rules: &Ruleset) -> Result<Entity, String> {
             rally: site.rally.map(fx_vec2),
         }),
     };
+    let kind = type_index(rules, &state.kind)?;
     Ok(Entity {
         id: state.id,
         owner: state.owner,
-        kind: type_index(rules, &state.kind)?,
+        kind,
         pos: fx_vec2(state.pos),
         hp: state.hp,
         order: load_order(state.order),
@@ -1052,6 +1089,14 @@ fn load_entity(state: &EntityState, rules: &Ruleset) -> Result<Entity, String> {
         inside: state.inside,
         aboard: state.aboard,
         unloading: state.unloading,
+        ammo: state.ammo,
+        reload: state.reload,
+        master: state.master,
+        fuel: state.fuel,
+        charges: rules.ty(kind).charges.map_or(0, |charges| {
+            state.charges.unwrap_or(charges.max).min(charges.max)
+        }),
+        charge_clock: state.charge_clock,
     })
 }
 
@@ -1511,7 +1556,7 @@ impl World {
                     if !world.terrain.in_bounds(cell) {
                         return Err(at("outside the map".to_owned()));
                     }
-                    if !world.nav.is_passable(cell) {
+                    if !ty.is_air() && !world.nav.is_passable(cell) {
                         return Err(at("cell blocked".to_owned()));
                     }
                     if world.entities.len() as u32 >= MAX_UNITS {

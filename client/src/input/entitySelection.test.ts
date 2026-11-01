@@ -98,3 +98,35 @@ describe("entity selection", () => {
     expect(selectAllOwnUnits([], 0)).toEqual([]);
   });
 });
+
+describe("spec 43: boxing flyers where they are drawn", () => {
+  it("selects a flyer by its screen point above its position", () => {
+    const jet = entity({
+      id: 8,
+      owner: 0,
+      kind: "ru-su-34",
+      x: 5,
+      y: 5,
+      flags: ENTITY_FLAGS.airborne,
+    });
+    const tank = entity({
+      id: 9,
+      owner: 0,
+      kind: "ua-leopard-2a4",
+      x: 5,
+      y: 5,
+    });
+    // The screen draws a point `height` tiles up as `height * 10` pixels higher.
+    const project = (x: number, y: number, height = 0) => ({
+      x: x * 10,
+      y: y * 10 - height * 10,
+    });
+    const box = { minX: 0, minY: 0, maxX: 100, maxY: 20 };
+    // The tank at y = 50 px is outside; the jet 37 px higher is inside.
+    expect(
+      boxSelect([jet, tank], box, project, 0, (e) => (e.id === 8 ? 3.7 : 0)),
+    ).toEqual([8]);
+    // Without the altitude it is boxed at its ground point, outside the box.
+    expect(boxSelect([jet, tank], box, project, 0)).toEqual([]);
+  });
+});

@@ -123,10 +123,12 @@ export interface VehicleFx extends VehicleBodies {
     nowMs: number,
   ): void;
   /** Emits damage smoke and fire of `living`, moves the particles. */
+  /** `altitudeOf` lifts the smoke of a damaged flyer to its height (spec 43). */
   update(
     living: readonly EntityState[],
     nowMs: number,
     camera: Quaternion,
+    altitudeOf?: (entity: EntityState) => number,
   ): void;
   clear(): void;
   counts(): Record<ParticleKind, number>;
@@ -608,10 +610,12 @@ export function createVehicleFx(seed = 0x7a11): VehicleFx {
     living: readonly EntityState[],
     nowMs: number,
     dt: number,
+    altitudeOf?: (entity: EntityState) => number,
   ): void {
     for (const entity of living) {
       const type = typeDef(entity.kind);
       if (!isVehicle(type)) continue;
+      const lift = altitudeOf?.(entity) ?? 0;
       const state = damageState(entity.hp, type.hp);
       if (state === "pristine") continue;
       const [, h, d] = type.render.size.map((s) => s / 100) as [
@@ -627,7 +631,7 @@ export function createVehicleFx(seed = 0x7a11): VehicleFx {
         smoke(
           deckX,
           deckY,
-          h * 0.85,
+          h * 0.85 + lift,
           burning ? 0.2 : 0.13,
           nowMs,
           burning ? 0.9 : 0.35,
@@ -640,7 +644,7 @@ export function createVehicleFx(seed = 0x7a11): VehicleFx {
         fire(
           deckX + between(-0.12, 0.12),
           deckY + between(-0.12, 0.12),
-          h * 0.75,
+          h * 0.75 + lift,
           between(0.12, 0.2),
           nowMs,
           0.8,
@@ -840,7 +844,7 @@ export function createVehicleFx(seed = 0x7a11): VehicleFx {
       lastImpacts = [...lastImpacts, ...impacts];
     },
     kill,
-    update(living, nowMs, camera) {
+    update(living, nowMs, camera, altitudeOf) {
       const dt =
         lastMs === null
           ? 0
@@ -858,7 +862,7 @@ export function createVehicleFx(seed = 0x7a11): VehicleFx {
       }
       // Debts of units long gone are dropped now and then.
       if (debt.size > 4096) debt.clear();
-      emitDamage(living, nowMs, dt);
+      emitDamage(living, nowMs, dt, altitudeOf);
       emitHulks(nowMs, dt);
       draw(nowMs, camera);
     },

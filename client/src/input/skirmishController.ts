@@ -52,6 +52,9 @@ export interface SkirmishControllerOptions {
   mapHeight: number;
   /** Latest snapshot entities (not interpolated). */
   entities(): readonly EntityState[];
+  /** Height a flyer is drawn at, tiles (spec 43); 0 for everything else, and
+   *  when absent. Clicks and boxes meet a flyer where it is drawn. */
+  altitudeOf?(entity: EntityState): number;
   /** Map cells, tile-major; 0 is passable (spec §5.15). */
   tiles(): Uint8Array;
   /** Spec 35 §5b: cells too hard to dig (hard ground, roads), 1 per cell. */
@@ -118,12 +121,16 @@ export interface SkirmishController {
   /** Applies keyboard panning for one frame. */
   update(dtSeconds: number): void;
   /** Sim tiles -> page CSS px. */
-  worldToScreen(x: number, y: number): ScreenPoint;
+  worldToScreen(x: number, y: number, height?: number): ScreenPoint;
   /** Footprint ghost under the cursor while placing (spec §6.5). */
   placementPreview(): PlacementPreview | null;
 }
 
 const LEFT_BUTTON = 0;
+/** A flyer is picked within this many tiles of its drawn centre, at least
+ *  `FLYER_PICK_MIN_PX` pixels (spec 43). */
+const FLYER_PICK_TILES = 0.7;
+const FLYER_PICK_MIN_PX = 16;
 /** Two clicks on the same unit within this window select its type (spec 41). */
 const DOUBLE_CLICK_MS = 400;
 
@@ -172,8 +179,8 @@ export function createSkirmishController(
     camera.updateMatrixWorld();
   }
 
-  function worldToScreen(x: number, y: number): ScreenPoint {
-    const ndc = new Vector3(x, groundY(x, y), y).project(camera);
+  function worldToScreen(x: number, y: number, height = 0): ScreenPoint {
+    const ndc = new Vector3(x, groundY(x, y) + height, y).project(camera);
     const rect = canvas.getBoundingClientRect();
     return {
       x: rect.left + ((ndc.x + 1) / 2) * rect.width,
@@ -192,6 +199,38 @@ export function createSkirmishController(
     return pickGround(raycaster.ray);
   }
 
+  /** The flyer drawn under `point`, as the ground point below it (spec 43): a
+   *  flyer hangs above its position, so the ground ray misses it. The nearest
+   *  one within a few pixels of its drawn centre wins. */
+  function flyerAt(point: ScreenPoint): { x: number; y: number } | null {
+    const altitudeOf = options.altitudeOf;
+    if (altitudeOf === undefined) return null;
+    let best: { x: number; y: number } | null = null;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    for (const entity of options.entities()) {
+      if (entity.flags & ENTITY_FLAGS.aboard) continue;
+      const height = altitudeOf(entity);
+      if (height <= 0) continue;
+      const at = worldToScreen(entity.x, entity.y, height);
+      const tile = worldToScreen(entity.x + 1, entity.y, height);
+      const reach = Math.max(
+        FLYER_PICK_MIN_PX,
+        Math.hypot(tile.x - at.x, tile.y - at.y) * FLYER_PICK_TILES,
+      );
+      const distance = Math.hypot(at.x - point.x, at.y - point.y);
+      if (distance <= reach && distance < bestDistance) {
+        best = { x: entity.x, y: entity.y };
+        bestDistance = distance;
+      }
+    }
+    return best;
+  }
+
+  /** The point a click means: a flyer under the cursor, else the ground. */
+  function pickAt(point: ScreenPoint): { x: number; y: number } | null {
+    return flyerAt(point) ?? groundAt(point);
+  }
+
   /**
    * Spec 20 §1: force fire under `point` with the armed selected units — an
    * enemy under the cursor is attacked, any other point gets a ground shot.
@@ -199,7 +238,7 @@ export function createSkirmishController(
   function forceFireAt(point: ScreenPoint): void {
     if (options.placementKind() !== null) return;
     if (selected.size === 0) return;
-    const ground = groundAt(point);
+    const ground = pickAt(point);
     if (ground === null) return;
     const commands = resolveForceFire({
       player: options.player(),
@@ -449,11 +488,12 @@ export function createSkirmishController(
           rectFromDrag(start, end),
           worldToScreen,
           options.player(),
+          options.altitudeOf,
         ),
       );
       return;
     }
-    const ground = groundAt(end);
+    const ground = pickAt(end);
     if (ground === null) {
       lastClick = null;
       return;

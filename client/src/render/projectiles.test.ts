@@ -2,7 +2,11 @@ import { type InstancedMesh, Matrix4, Quaternion, Vector3 } from "three";
 import { describe, expect, it } from "vitest";
 import { typeDef, typeIndex, WEAPONS } from "../rules";
 import type { ProjectileState } from "../sim/combatSnapshot";
-import type { EntityState, MatchSnapshot } from "../sim/matchSnapshot";
+import {
+  ENTITY_FLAGS,
+  type EntityState,
+  type MatchSnapshot,
+} from "../sim/matchSnapshot";
 import { createEffects } from "./effects";
 import { type FlightProfile, flightPoint } from "./flight";
 import { createProjectiles, PROJECTILE_MODELS } from "./projectiles";
@@ -288,5 +292,35 @@ describe("AC-17-14: launch effects and trails", () => {
     projectiles.spawnEffects([missile], 0.5, missileView, 80, effects);
     effects.update(80);
     expect(effects.counts().trail).toBe(4);
+  });
+});
+
+describe("spec 43: the glide bomb", () => {
+  it("draws the winged bomb dropped from a jet's altitude", () => {
+    const bomb = weaponIndex("ru-kab-glide-bomb");
+    const jet = entity(3, 1, "ru-su-34", 0, 0);
+    jet.flags = ENTITY_FLAGS.airborne;
+    const view = snapshot(20, [jet]);
+    const dropped = projectile({
+      weapon: bomb,
+      shooter: jet.id,
+      originX: 0,
+      originY: 0,
+      impactX: 8,
+      impactY: 0,
+      launchTick: 15,
+      impactTick: 25,
+    });
+    const projectiles = createProjectiles();
+    projectiles.sync([dropped], 15, view);
+    expect(projectiles.counts().glideBomb).toBe(1);
+    expect(projectiles.meshes.glideBomb.count).toBe(1);
+    // It leaves the jet high and only falls from there.
+    const [start] = projectiles.samples();
+    expect(start?.z).toBeGreaterThan(3);
+    projectiles.sync([dropped], 20, view);
+    expect(projectiles.samples()[0]?.z).toBeLessThan(start?.z ?? 0);
+    projectiles.sync([dropped], 24.99, view);
+    expect(projectiles.samples()[0]?.z).toBeLessThan(0.2);
   });
 });

@@ -24,6 +24,11 @@
       "type": "array",
       "minItems": 1,
       "items": { "$ref": "#/$defs/trigger" }
+    },
+    "guards": {
+      "description": "Spec 43 §5: units the AI keeps built at home and never launches (anti-air vehicles, jammers); wanted from minTick on, or at once while enemy flyers are over the base.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/guard" }
     }
   },
   "$defs": {
@@ -40,6 +45,16 @@
         }
       }
     },
+    "guard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit", "count", "minTick"],
+      "properties": {
+        "unit": { "$ref": "faction.schema.json#/$defs/id" },
+        "count": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "minTick": { "type": "integer", "minimum": 0 }
+      }
+    },
     "trigger": {
       "type": "object",
       "additionalProperties": false,
@@ -47,7 +62,8 @@
       "properties": {
         "taskForce": { "$ref": "faction.schema.json#/$defs/id" },
         "weight": { "type": "integer", "minimum": 1, "maximum": 1000 },
-        "minTick": { "type": "integer", "minimum": 0 }
+        "minTick": { "type": "integer", "minimum": 0 },
+        "once": { "description": "Spec 43 §5: an opening move, taken once per match before any weighted roll, as soon as minTick has passed (file order).", "type": "boolean" }
       }
     }
   }

@@ -2,13 +2,13 @@ id: ukraine                          # required, must equal the file name
 hq: ua-hq                            # required, a building type of this file
 dozer: ua-dozer                      # required, a unit type of this file
 weapons:                             # required
-  - { id: ua-rifle, damageType: smallArms, damage: 10, rangeCenti: 450, cooldownTicks: 15, speedCenti: 400, delivery: homing, aimToleranceDeg: 15 }
+  - { id: ua-rifle, damageType: smallArms, damage: 10, rangeCenti: 450, cooldownTicks: 15, speedCenti: 400, antiAir: low, delivery: homing, aimToleranceDeg: 15 }
   - { id: ua-stugna-p, damageType: antiTank, damage: 120, rangeCenti: 900, minRangeCenti: 200, cooldownTicks: 75, speedCenti: 45, delivery: homing, render: { model: atgm, flight: loft, apexCenti: 40, launch: softLaunch, trail: smoke }, aimToleranceDeg: 15 }
-  - { id: ua-kozak-hmg, damageType: smallArms, damage: 12, rangeCenti: 550, cooldownTicks: 10, speedCenti: 450, delivery: homing }
-  - { id: ua-bushmaster, damageType: autocannon, damage: 18, rangeCenti: 600, cooldownTicks: 8, speedCenti: 500, delivery: homing, render: { model: tracerHeavy, flight: straight, apexCenti: 0, launch: muzzle, trail: none } }
+  - { id: ua-kozak-hmg, damageType: smallArms, damage: 12, rangeCenti: 550, cooldownTicks: 10, speedCenti: 450, antiAir: low, delivery: homing }
+  - { id: ua-bushmaster, damageType: autocannon, damage: 18, rangeCenti: 600, cooldownTicks: 8, speedCenti: 500, antiAir: low, delivery: homing, render: { model: tracerHeavy, flight: straight, apexCenti: 0, launch: muzzle, trail: none } }
   - { id: ua-rh120, damageType: antiTank, damage: 100, rangeCenti: 700, cooldownTicks: 30, speedCenti: 900, delivery: ballistic, render: { model: shell, flight: straight, apexCenti: 0, launch: cannon, trail: none } }
   - { id: ua-gmlrs, damageType: highExplosive, damage: 125, rangeCenti: 2400, minRangeCenti: 600, cooldownTicks: 150, splashCenti: 150, speedCenti: 40, delivery: ballistic, salvo: 2, salvoIntervalTicks: 8, render: { model: rocket, flight: topAttack, apexCenti: 600, launch: rocketLaunch, trail: smoke } }
-  - { id: ua-sidearm, damageType: smallArms, damage: 4, rangeCenti: 300, cooldownTicks: 20, speedCenti: 400, delivery: homing }   # spec 35 §5c: trench fights
+  - { id: ua-sidearm, damageType: smallArms, damage: 4, rangeCenti: 300, cooldownTicks: 20, speedCenti: 400, antiAir: low, delivery: homing }   # spec 35 §5c: trench fights
   - { id: ua-stugna-emplacement, damageType: antiTank, damage: 110, rangeCenti: 1000, cooldownTicks: 60, speedCenti: 45, delivery: homing, render: { model: atgm, flight: loft, apexCenti: 40, launch: softLaunch, trail: smoke } }
 types:                               # required
   - id: ua-rifleman
@@ -107,7 +107,7 @@ types:                               # required
     buildTicks: 200
     speedCenti: 15
     turnRateDeg: 150
-    builds: [ua-power-plant, ua-supply-center, ua-barracks, ua-vehicle-factory, ua-defense]
+    builds: [ua-power-plant, ua-supply-center, ua-barracks, ua-vehicle-factory, ua-defense, ua-drone-workshop, ua-sting-nest, ua-patriot, ua-missile-site]
     articulation: blade
     radiusCenti: 38
     render: { size: [80, 60, 100] }
@@ -116,6 +116,7 @@ types:                               # required
     locomotor: wheeled
     armor: light
     hp: 250
+    resupplies: true                 # launcher crews refill their drone charges next to it (spec 43 §4.4)
     sightCenti: 500
     cost: 600
     buildTicks: 150
@@ -151,6 +152,7 @@ types:                               # required
     category: building
     armor: structure
     hp: 1500
+    resupplies: true                 # launcher crews refill their drone charges next to it (spec 43 §4.4)
     sightCenti: 500
     cost: 1500
     buildTicks: 225
@@ -164,12 +166,13 @@ types:                               # required
     category: building
     armor: structure
     hp: 1000
+    resupplies: true                 # launcher crews refill their drone charges next to it (spec 43 §4.4)
     sightCenti: 500
     cost: 500
     buildTicks: 150
     footprint: [3, 3]
     power: -2
-    produces: [ua-rifleman, ua-stugna-team]
+    produces: [ua-rifleman, ua-stugna-team, ua-fpv-team]
     healsInfantry: true
     requires: [ua-power-plant]
     render: { height: 90 }
@@ -182,7 +185,7 @@ types:                               # required
     buildTicks: 300
     footprint: [4, 4]
     power: -4
-    produces: [ua-kozak-scout, ua-bradley, ua-leopard-2a4, ua-himars]
+    produces: [ua-kozak-scout, ua-bradley, ua-leopard-2a4, ua-himars, ua-gepard]
     repairsVehicles: true
     requires: [ua-supply-center]
     render: { height: 110 }
@@ -200,3 +203,193 @@ types:                               # required
     weapon: ua-stugna-emplacement
     turretTurnRateDeg: 120
     render: { height: 80 }
+lateWeapons:                         # spec 43: after every faction's weapons, so earlier weapon indices stay
+  - { id: ua-ratel-warhead, damageType: highExplosive, damage: 700, rangeCenti: 100, cooldownTicks: 1, splashCenti: 250 }
+  - { id: ua-tw-hmg, damageType: smallArms, damage: 13, rangeCenti: 550, cooldownTicks: 9, speedCenti: 450, antiAir: low, delivery: homing }
+  - { id: ua-baba-yaga-bomb, damageType: highExplosive, damage: 90, rangeCenti: 60, cooldownTicks: 20, splashCenti: 120, speedCenti: 25, delivery: ballistic, scatterCenti: 25, render: { model: rocket, flight: ballistic, apexCenti: 0, launch: softLaunch, trail: none } }   # dropped on what the hexacopter hangs over
+  - { id: ua-fpv-launcher, damageType: antiTank, damage: 1, rangeCenti: 1000, cooldownTicks: 150, launches: ua-fpv, aimToleranceDeg: 15 }
+  - { id: ua-fpv-warhead, damageType: antiTank, damage: 130, rangeCenti: 100, cooldownTicks: 1, splashCenti: 60 }
+  - { id: ua-sting-launcher, damageType: flak, damage: 1, rangeCenti: 1200, cooldownTicks: 40, launches: ua-sting, antiAir: low, antiGround: false }
+  - { id: ua-sting-warhead, damageType: flak, damage: 120, rangeCenti: 100, cooldownTicks: 1, splashCenti: 100, antiAir: low, antiGround: false }
+  - { id: ua-gepard-gun, damageType: flak, damage: 14, rangeCenti: 700, cooldownTicks: 3, speedCenti: 600, delivery: homing, antiAir: all, antiGround: false, render: { model: tracerHeavy, flight: straight, apexCenti: 0, launch: muzzle, trail: none } }
+  - { id: ua-patriot-missile, damageType: flak, damage: 260, rangeCenti: 1800, cooldownTicks: 90, speedCenti: 120, delivery: homing, antiAir: all, antiGround: false, render: { model: rocket, flight: boost, apexCenti: 0, launch: rocketLaunch, trail: smoke } }
+  - { id: ua-flamingo-warhead, damageType: highExplosive, damage: 1400, rangeCenti: 100, cooldownTicks: 1, splashCenti: 500, delivery: ballistic, scatterCenti: 250 }
+  - { id: ua-storm-shadow-warhead, damageType: highExplosive, damage: 900, rangeCenti: 100, cooldownTicks: 1 }   # no splash: a precise penetrator
+lateTypes:                           # spec 43: after the common late types, so earlier type indices stay
+  - id: ua-drone-workshop            # builds robots and the heavy bomber; static
+    category: building
+    armor: structure
+    hp: 1000
+    sightCenti: 500
+    cost: 1400
+    buildTicks: 270
+    footprint: [3, 3]
+    power: -3
+    produces: [ua-ratel, ua-tw-12-7, ua-baba-yaga]
+    requires: [ua-barracks]
+    render: { height: 115 }
+  - id: ua-sting-nest                # automatic interceptor launcher: low flyers only; saturated by waves
+    category: building
+    armor: structure
+    hp: 700
+    sightCenti: 1200
+    cost: 900
+    buildTicks: 180
+    footprint: [2, 2]
+    power: -2
+    requires: [ua-supply-center]
+    requiresPower: true
+    weapon: ua-sting-launcher         # launches Stings: nothing to aim, so no turret
+    charges: { max: 6, refillTicks: 60 }    # refills by itself, so only saturation beats it (spec 43 §4.4)
+    render: { height: 95 }
+  - id: ua-patriot                   # long-range anti-air: the only answer to a Su-34; very expensive, slow to reload
+    category: building
+    armor: structure
+    hp: 900
+    sightCenti: 1800
+    cost: 3500
+    buildTicks: 360
+    footprint: [3, 3]
+    power: -6
+    requires: [ua-supply-center]
+    requiresPower: true
+    weapon: ua-patriot-missile
+    turretTurnRateDeg: 120
+    render: { height: 160 }
+  - id: ua-missile-site              # launch pad for deep-strike missiles; static
+    category: building
+    armor: structure
+    hp: 1100
+    sightCenti: 500
+    cost: 1600
+    buildTicks: 270
+    footprint: [3, 4]
+    power: -4
+    produces: [ua-flamingo, ua-storm-shadow]
+    requires: [ua-vehicle-factory]
+    render: { height: 95 }
+  - id: ua-ratel                     # ground kamikaze: huge damage to armour and trenches; slow; radio-guided
+    category: unit
+    locomotor: tracked
+    armor: light
+    hp: 140
+    sightCenti: 500
+    cost: 450
+    buildTicks: 120
+    speedCenti: 12
+    turnRateDeg: 200
+    radiusCenti: 30
+    oneWay: { warhead: ua-ratel-warhead }
+    link: radio
+    render: { size: [40, 26, 56] }
+  - id: ua-tw-12-7                   # crewless machine gun: radio-guided, stops under a jammer
+    category: unit
+    locomotor: tracked
+    armor: light
+    hp: 200
+    sightCenti: 700
+    cost: 500
+    buildTicks: 120
+    speedCenti: 18
+    turnRateDeg: 240
+    turretTurnRateDeg: 200
+    weapon: ua-tw-hmg
+    radiusCenti: 30
+    link: radio
+    render: { size: [46, 62, 70] }
+  - id: ua-baba-yaga                 # heavy hexacopter bomber: slow, drops on what it hangs over, any low weapon downs it
+    category: unit
+    locomotor: airLow
+    hover: true                      # rotorcraft: may stop and hang in the air (spec 43 §4.1)
+    armor: drone
+    hp: 160
+    sightCenti: 500
+    cost: 700
+    buildTicks: 150
+    speedCenti: 18
+    turnRateDeg: 240
+    weapon: ua-baba-yaga-bomb
+    sortie: { clip: 4, reloadTicks: 360 }
+    render: { size: [124, 36, 124] }
+  - id: ua-fpv-team                  # launches radio-guided FPV drones from far; strong against armour
+    category: unit
+    locomotor: foot
+    armor: infantry
+    hp: 80
+    sightCenti: 1000                 # watches through the drone feed, so the launcher range is usable
+    cost: 300
+    buildTicks: 100
+    speedCenti: 8
+    turnRateDeg: 540
+    weapon: ua-fpv-launcher
+    charges: { max: 4, refillTicks: 300, refillRadiusCenti: 500 }   # drones are ammunition: 4 launches, then resupply by a truck, supply center or barracks (spec 43 §4.4)
+    trenchWeapon: ua-sidearm
+    radiusCenti: 25
+    render: { size: [40, 50, 40] }
+  - id: ua-fpv                       # racing quad: a jammer kills them all, small arms too
+    category: unit
+    locomotor: airLow
+    hover: true                      # rotorcraft: may stop and hang in the air (spec 43 §4.1)
+    armor: drone
+    hp: 20
+    sightCenti: 300
+    speedCenti: 50
+    turnRateDeg: 540
+    oneWay: { warhead: ua-fpv-warhead, fuelTicks: 300 }
+    link: radio
+    render: { size: [46, 15, 46] }
+  - id: ua-sting                     # autonomous interceptor ram: cannot reach class high
+    category: unit
+    locomotor: airLow
+    hover: true                      # rotorcraft: may stop and hang in the air (spec 43 §4.1)
+    armor: drone
+    hp: 30
+    sightCenti: 400
+    speedCenti: 90
+    turnRateDeg: 540
+    oneWay: { warhead: ua-sting-warhead, fuelTicks: 150 }
+    link: autonomous
+    render: { size: [36, 12, 46] }
+  - id: ua-gepard                    # mobile gun anti-air, both classes; short range, outranged by the Su-34
+    category: unit
+    locomotor: wheeled
+    armor: light
+    hp: 380
+    sightCenti: 900
+    cost: 1100
+    buildTicks: 220
+    speedCenti: 20
+    turnRateDeg: 200
+    turretTurnRateDeg: 240
+    weapon: ua-gepard-gun
+    radiusCenti: 41
+    render: { size: [84, 80, 130] }
+  - id: ua-flamingo                  # huge warhead, map-wide, inaccurate, gnss; big and easy to hit
+    category: unit
+    locomotor: airHigh
+    armor: aircraft
+    hp: 260
+    sightCenti: 400
+    cost: 2200
+    buildTicks: 360
+    speedCenti: 70
+    turnRateDeg: 200
+    oneWay: { warhead: ua-flamingo-warhead, fuelTicks: 3000, armTiles: 3 }
+    link: gnss
+    gnssScatterCenti: 600
+    render: { size: [130, 60, 240] }
+  - id: ua-storm-shadow              # precise penetrator for buildings: low observable, slow to build, costly
+    category: unit
+    locomotor: airHigh
+    armor: aircraft
+    hp: 120
+    sightCenti: 400
+    cost: 1800
+    buildTicks: 540
+    speedCenti: 60
+    turnRateDeg: 300
+    oneWay: { warhead: ua-storm-shadow-warhead, fuelTicks: 3000, armTiles: 3 }
+    link: gnss
+    gnssScatterCenti: 300
+    lowObservable: true
+    render: { size: [100, 28, 140] }

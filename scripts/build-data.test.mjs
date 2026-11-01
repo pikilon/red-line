@@ -201,7 +201,9 @@ test("AC-03-04: rosters and the first-line map follow the design", () => {
 
   // Per-faction roster: exactly the shape specs/03 §4.5 prescribes.
   ruleset.factions.forEach((faction, fi) => {
-    const mine = ruleset.types.filter((t) => t.faction === fi);
+    // The original roster: the late types of spec 43 come after the port depot.
+    const lateStart = ruleset.types.findIndex((t) => t.id === "port-depot") + 1;
+    const mine = ruleset.types.filter((t, i) => t.faction === fi && i < lateStart);
     const units = mine.filter((t) => t.category === "unit");
     const buildings = mine.filter((t) => t.category === "building");
     const dozerType = ruleset.types[faction.dozer];
@@ -220,8 +222,8 @@ test("AC-03-04: rosters and the first-line map follow the design", () => {
     assert.ok(hqType.produces.includes(faction.dozer), "HQ produces the dozer");
     assert.ok(buildings.some((b) => b.power > 0), "a building produces power");
     assert.ok(buildings.some((b) => b.dropOff && b.freeUnit === truckIndex), "supply center frees the truck");
-    assert.ok(buildings.some((b) => infantryProduceCount(b, ruleset) === 2), "barracks produces 2 infantry");
-    assert.ok(buildings.some((b) => vehicleProduceCount(b, ruleset) === 4), "factory produces 4 vehicles");
+    assert.ok(buildings.some((b) => infantryProduceCount(b, ruleset) === 3), "barracks produces 2 infantry and, from spec 43, a drone crew");
+    assert.ok(buildings.some((b) => vehicleProduceCount(b, ruleset) >= 5), "factory produces 4 vehicles and, from spec 43, an anti-air vehicle (and a jammer)");
     assert.ok(buildings.some((b) => b.requiresPower && (b.weapon ?? -1) >= 0), "defense is powered and armed");
 
     // Every requires/produces/builds/freeUnit entry stays inside the faction.
@@ -285,7 +287,16 @@ test("AC-05-01: personality sources build", () => {
       ...(source.garrisonRadiusCenti === undefined ? {} : { garrisonRadiusCenti: source.garrisonRadiusCenti }),
       buildOrder: buildOrder(source.buildOrder),
       taskForces: source.taskForces.map((force) => ({ id: force.id, units: kinds(Object.entries(force.units)) })),
-      triggers: source.triggers.map((t) => ({ taskForce: forceIds.indexOf(t.taskForce), weight: t.weight, minTick: t.minTick })),
+      // Spec 43 §5: units kept at home, only when the personality has them.
+      ...((source.guards ?? []).length === 0
+        ? {}
+        : { guards: source.guards.map((g) => ({ unit: typeIndex.get(g.unit), count: g.count, minTick: g.minTick })) }),
+      triggers: source.triggers.map((t) => ({
+        taskForce: forceIds.indexOf(t.taskForce),
+        weight: t.weight,
+        minTick: t.minTick,
+        ...(t.once === true ? { once: true } : {}),
+      })),
     });
   });
 });
@@ -470,12 +481,14 @@ test("AC-17-17: builtin weapons", () => {
     "ru-kornet-emplacement": [45, 0, 0, 1, 0, 120, "atgm", "loft", 40, "softLaunch", "smoke"],
     "ru-sidearm": [400, 0, 0, 1, 0, 4, "tracer", "straight", 0, "muzzle", "none"],
   };
+  // Spec 43: later weapons come after these, so the first sixteen keep their indices.
+  const original = builtin.weapons.slice(0, Object.keys(expected).length);
   assert.deepEqual(
-    builtin.weapons.map((w) => w.id).sort(),
+    original.map((w) => w.id).sort(),
     Object.keys(expected).sort(),
     "the builtin weapon roster",
   );
-  for (const w of builtin.weapons) {
+  for (const w of original) {
     assert.equal(w.projectileTicks, 0, `${w.id} still has projectileTicks`);
     const values = expected[w.id];
     assert.deepEqual(
@@ -672,7 +685,7 @@ test("AC-19-02: showcase example", () => {
       .sort();
     const placed = setup.entities.filter((e) => e.player === player).map((e) => e.type).sort();
     assert.deepEqual(placed, expected, `player ${player} has every type exactly once`);
-    assert.equal(placed.length + 2, 14, "14 entities per faction with the start HQ and dozer");
+    assert.equal(placed.length + 2, own.length, "every type once, plus the start HQ and dozer");
   });
   // The camera follows spec 14 §5: zoom 1 at (x0 + 14, 12) of player 0.
   assert.deepEqual(showcase.client.camera, { x: map.starts[0].hq[0] + 14, y: 12, zoom: 1 });
@@ -689,7 +702,7 @@ test("AC-11-02: locomotors in the data", async () => {
   const root = repoRoot();
   const ruleset = JSON.parse(readFileSync(join(root, "data/generated/ruleset.json"), "utf8"));
   const typeOf = (id) => ruleset.types.find((t) => t.id === id);
-  assert.deepEqual(ruleset.locomotors.map((l) => l.id), ["foot", "tracked", "wheeled"]);
+  assert.deepEqual(ruleset.locomotors.map((l) => l.id), ["foot", "tracked", "wheeled", "airLow", "airHigh"]);
   assert.equal(ruleset.locomotors[typeOf("ua-bradley").locomotor].kind, "tracks");
   assert.equal(ruleset.locomotors[typeOf("ua-supply-truck").locomotor].kind, "wheels");
   assert.equal(ruleset.locomotors[typeOf("ua-rifleman").locomotor].kind, "foot");

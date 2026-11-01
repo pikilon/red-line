@@ -2,15 +2,16 @@ factions: [ukraine, russia]          # required; file order of data/factions/<id
 features: [vegetation, buildings, props, port, bridges, earthworks]   # optional; file order of data/features/<id>.yaml (spec 26)
 maps: [first-line, river-port, showcase, landscape-lab, demo-town, demo-forest, demo-ground, demo-coast, demo-bridges, demo-destruction, demo-cover]       # required; file order of data/maps/<id>.yaml
 ai: [ukraine-balanced, ukraine-rush, russia-balanced, russia-rush]   # required; file order of data/ai/<id>.yaml
-saves: [showcase, showcase-units, armor-duel, infantry-vs-armor, rpg-ambush, artillery-range, force-fire-demo, defenses, base-assault, economy, low-power, production, rally-points, selling, building-repair, vehicle-repair, infantry-healing, construction, damaged-base, pathfinding-river, tank-through-group, crowd, gore, victory-near, ai-attack, run-over, vehicle-deaths, weapon-impacts, hills-and-cliffs, crater-crossing, friendly-fire, tank-friendly-fire, audio-fight, landscape-lab, demo-town, demo-forest, demo-ground, demo-coast, demo-bridges, environment-destruction, environment-garrison, environment-cover, river-port, infantry-transport, bridge-repair, trench-digging, trench-network, trench-assault, port-supply, amphibious-crossing]   # optional; menu order of data/saves/<id>.yaml|json (spec 19 §4)
-damageTypes: [smallArms, autocannon, antiTank, highExplosive, thermobaric]   # required, ids
-armorClasses: [infantry, light, armored, structure]                           # required, ids
+saves: [showcase, showcase-units, armor-duel, infantry-vs-armor, rpg-ambush, artillery-range, force-fire-demo, defenses, base-assault, economy, low-power, production, rally-points, selling, building-repair, vehicle-repair, infantry-healing, construction, damaged-base, pathfinding-river, tank-through-group, crowd, gore, victory-near, ai-attack, run-over, vehicle-deaths, weapon-impacts, hills-and-cliffs, crater-crossing, friendly-fire, tank-friendly-fire, audio-fight, landscape-lab, demo-town, demo-forest, demo-ground, demo-coast, demo-bridges, environment-destruction, environment-garrison, environment-cover, river-port, infantry-transport, bridge-repair, trench-digging, trench-network, trench-assault, port-supply, amphibious-crossing, air-war, robots-vs-jammer, deep-strike]   # optional; menu order of data/saves/<id>.yaml|json (spec 19 §4)
+damageTypes: [smallArms, autocannon, antiTank, highExplosive, thermobaric, flak]   # required, ids (spec 43: flak is last)
+armorClasses: [infantry, light, armored, structure, drone, aircraft]               # required, ids (spec 43: drone, aircraft are last)
 damageModifiers:                     # required: one entry per damage type, one key per armour class, 0..1000
-  smallArms: { infantry: 100, light: 30, armored: 25, structure: 10 }
-  autocannon: { infantry: 75, light: 100, armored: 20, structure: 40 }
-  antiTank: { infantry: 30, light: 100, armored: 100, structure: 60 }
-  highExplosive: { infantry: 100, light: 80, armored: 60, structure: 100 }
-  thermobaric: { infantry: 150, light: 70, armored: 20, structure: 120 }
+  smallArms: { infantry: 100, light: 30, armored: 25, structure: 10, drone: 100, aircraft: 20 }
+  autocannon: { infantry: 75, light: 100, armored: 20, structure: 40, drone: 100, aircraft: 40 }
+  antiTank: { infantry: 30, light: 100, armored: 100, structure: 60, drone: 40, aircraft: 30 }
+  highExplosive: { infantry: 100, light: 80, armored: 60, structure: 100, drone: 60, aircraft: 25 }
+  thermobaric: { infantry: 150, light: 70, armored: 20, structure: 120, drone: 60, aircraft: 25 }
+  flak: { infantry: 20, light: 25, armored: 10, structure: 5, drone: 150, aircraft: 100 }   # spec 43: anti-air damage, shreds flyers, barely scratches the ground
 startingCredits: 5000                # required, >= 0
 sellRefundPercent: 50                # optional, 1..100, default 50: Zero Hour building sale refund (spec 37)
 lowPowerMinSpeedPercent: 25          # required, 1..100
@@ -23,6 +24,10 @@ locomotors:                          # required, ids referenced by unit types (s
   foot: { kind: foot }
   tracked: { kind: tracks, pivotAngleDeg: 45, accelCenti: 2, brakingCenti: 4, reverseAngleDeg: 120, reverseMaxCenti: 300, reverseSpeedPercent: 50, crusherLevel: 1 }   # crushes enemy infantry (spec 28)
   wheeled: { kind: wheels, minTurnSpeedPercent: 40, slowTurnAngleDeg: 9, accelCenti: 2, brakingCenti: 3, reverseAngleDeg: 120, reverseMaxCenti: 300, reverseSpeedPercent: 40, shoveDamage: 20, shovePushCenti: 40 }   # shoves enemy infantry aside (spec 28)
+  # Spec 43 §4.1: flyers ignore the nav grids. `low` flyers are reached by `antiAir: low` weapons, `high` ones by `all` only.
+  # Fixed-wing flyers (every flyer without `hover: true`) never drop below minSpeedPercent of their speed and fire inside noseConeDeg of their heading.
+  airLow: { kind: air, class: low, altitudeCenti: 140, minSpeedPercent: 60, noseConeDeg: 20 }
+  airHigh: { kind: air, class: high, altitudeCenti: 320, minSpeedPercent: 60, noseConeDeg: 20 }
 commonTypes:                       # required; type objects with no faction (placeholder, depot)
   - id: tech-slice-placeholder
     category: unit

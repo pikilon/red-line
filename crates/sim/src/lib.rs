@@ -3,6 +3,7 @@
 use wasm_bindgen::prelude::wasm_bindgen;
 
 pub mod ai;
+pub mod air;
 pub mod angle;
 pub mod combat;
 pub mod crush;

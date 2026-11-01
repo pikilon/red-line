@@ -2301,3 +2301,67 @@ entries:
     seconds: 1.31
     loop: false
     status: needs-script
+  weapon.ua-gepard-gun.fire:
+    category: weapon
+    kind: sfx
+    target: audio/sfx/weapon.ua-gepard-gun.fire_<n>.webm
+    variants: 4
+    seconds: 4.6
+    loop: false
+    status: draft
+    brief: A high-intensity, rapid-fire burst of mechanical kinetic energy characterized by a dense wall of sound and heavy low-end impact. The texture should feel gritty and continuous, simulating a high-rate-of-fire heavy rotary cannon.
+    prompt: heavy mechanical rotary cannon burst, rapid kinetic impacts, dense textured machine gun fire, aggressive low-end thud, high-frequency metallic grit, continuous rapid firing, 1.15 seconds
+    tags:
+      - mechanical
+      - kinetic
+      - rapid-fire
+      - heavy
+      - weapon
+  weapon.ua-sting-launcher.fire:
+    category: weapon
+    kind: sfx
+    target: audio/sfx/weapon.ua-sting-launcher.fire_<n>.webm
+    variants: 3
+    seconds: 3.53
+    loop: false
+    status: draft
+    brief: A heavy, high-energy ignition burst that starts with a sharp, explosive transient and transitions into a dense, roaring thermal wash. The sound should feel powerful and pressurized, conveying the sudden release of massive propellant energy.
+    prompt: heavy missile ignition, explosive transient, high-pressure combustion roar, dense white noise texture, cinematic mechanical launch, 1.2 seconds
+    tags:
+      - explosion
+      - combustion
+      - launch
+      - mechanical
+      - heavy
+  weapon.ua-fpv-launcher.fire:
+    category: weapon
+    kind: sfx
+    target: audio/sfx/weapon.ua-fpv-launcher.fire_<n>.webm
+    variants: 3
+    seconds: 3.53
+    loop: false
+    status: draft
+    brief: A heavy, high-energy ignition burst that starts with a sharp, explosive transient and transitions into a dense, roaring thermal wash. The sound should feel powerful and pressurized, conveying the sudden release of massive propellant energy.
+    prompt: heavy missile ignition, explosive transient, high-pressure combustion roar, dense white noise texture, cinematic mechanical launch, 1.2 seconds
+    tags:
+      - explosion
+      - combustion
+      - launch
+      - mechanical
+      - heavy
+  weapon.ru-molniya-launcher.fire:
+    category: weapon
+    kind: sfx
+    target: audio/sfx/weapon.ru-molniya-launcher.fire_<n>.webm
+    variants: 3
+    seconds: 3.53
+    loop: false
+    status: draft
+    brief: A heavy, high-energy ignition burst that starts with a sharp, explosive transient and transitions into a dense, roaring thermal wash. The sound should feel powerful and pressurized, conveying the sudden release of massive propellant energy.
+    prompt: heavy missile ignition, explosive transient, high-pressure combustion roar, dense white noise texture, cinematic mechanical launch, 1.2 seconds
+    tags:
+      - explosion
+      - combustion
+      - launch
+      - mechanical
+      - heavy

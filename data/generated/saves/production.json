@@ -83,6 +83,38 @@
           20,
           64
         ]
+      },
+      {
+        "player": 0,
+        "type": "ua-drone-workshop",
+        "origin": [
+          2,
+          69
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-sting-nest",
+        "origin": [
+          20,
+          58
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-patriot",
+        "origin": [
+          24,
+          60
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-missile-site",
+        "origin": [
+          16,
+          70
+        ]
       }
     ]
   }

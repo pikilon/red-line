@@ -13,11 +13,15 @@ export const TURRETED = [
   "ua-himars",
   "ua-kozak-scout",
   "ua-defense",
+  "ua-tw-12-7",
+  "ua-gepard",
+  "ua-patriot",
   "ru-bmp-2",
   "ru-t-72b3",
   "ru-tos-1a",
   "ru-brdm-scout",
   "ru-defense",
+  "ru-pantsir",
 ];
 export const BUDGETS = { unit: 1500, building: 3000, depot: 1000 };
 const FILL = 0.7;

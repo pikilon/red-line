@@ -33,7 +33,7 @@ pub fn state_hash(world: &World) -> u64 {
     }
     put_u32(&mut out, world.entities.len() as u32);
     for entity in &world.entities {
-        put_entity(&mut out, entity);
+        put_entity(&mut out, entity, world);
     }
     put_u32(&mut out, world.projectiles.len() as u32);
     // Spec 31: written only when the map has features, so worlds without them
@@ -99,7 +99,7 @@ fn put_player(out: &mut Vec<u8>, player: &Player) {
     }
 }
 
-fn put_entity(out: &mut Vec<u8>, entity: &Entity) {
+fn put_entity(out: &mut Vec<u8>, entity: &Entity, world: &World) {
     put_u32(out, entity.id);
     out.push(entity.owner);
     put_u16(out, entity.kind);
@@ -135,6 +135,38 @@ fn put_entity(out: &mut Vec<u8>, entity: &Entity) {
     if let Some(wait) = entity.unloading {
         out.push(3);
         put_u32(out, wait);
+    }
+    // Spec 43: air state, written only when set, so worlds without flyers keep
+    // their hashes.
+    if entity.ammo > 0 {
+        out.push(4);
+        put_u32(out, entity.ammo);
+    }
+    if entity.reload > 0 {
+        out.push(5);
+        put_u32(out, entity.reload);
+    }
+    if let Some(master) = entity.master {
+        out.push(6);
+        put_u32(out, master);
+    }
+    if entity.fuel > 0 {
+        out.push(7);
+        put_u32(out, entity.fuel);
+    }
+    // Spec 43 §4.4: a launcher's charges, written only once it has spent one.
+    let full = world
+        .rules
+        .ty(entity.kind)
+        .charges
+        .map_or(0, |charges| charges.max);
+    if entity.charges != full {
+        out.push(8);
+        put_u32(out, entity.charges);
+    }
+    if entity.charge_clock > 0 {
+        out.push(9);
+        put_u32(out, entity.charge_clock);
     }
 }
 
@@ -218,6 +250,10 @@ fn put_order(out: &mut Vec<u8>, order: &Order) {
             put_u32(out, building);
             put_u32(out, missing);
             put_u32(out, remaining);
+        }
+        Order::ReturnToBase { order_id } => {
+            out.push(12);
+            put_u32(out, order_id);
         }
         Order::RepairVehicle {
             order_id,

@@ -5,7 +5,8 @@ import { readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const NOT_MODELS = ["lib.py", "preview.py"];
+// Helper modules the model scripts import; they build nothing.
+const NOT_MODELS = ["lib.py", "preview.py", "airframe.py", "drones.py"];
 const dir = dirname(fileURLToPath(import.meta.url));
 const scripts = readdirSync(dir)
   .filter((f) => f.endsWith(".py") && !NOT_MODELS.includes(f))

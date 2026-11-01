@@ -37,6 +37,8 @@ pub struct Ai {
     attackers: Vec<EntityId>,
     /// Inactive AIs skip `think` (spec 08 §3.3).
     active: bool,
+    /// Spec 43 §5: indices of the `once` triggers already taken.
+    opened: Vec<u16>,
 }
 
 impl core::fmt::Debug for Ai {
@@ -78,6 +80,7 @@ impl Ai {
             force: None,
             attackers: Vec::new(),
             active: true,
+            opened: Vec::new(),
         })
     }
 
@@ -91,6 +94,7 @@ impl Ai {
             force,
             attackers,
             active,
+            opened,
         } = self;
         AiState {
             player: *player,
@@ -99,6 +103,7 @@ impl Ai {
             force: *force,
             attackers: attackers.clone(),
             active: *active,
+            opened: opened.clone(),
         }
     }
 
@@ -118,6 +123,7 @@ impl Ai {
             force: state.force,
             attackers: state.attackers.clone(),
             active: state.active,
+            opened: state.opened.clone(),
         })
     }
 
@@ -263,7 +269,10 @@ impl Ai {
 
         // 5. Defense: visible enemy units inside the defense radius of an own
         // building. A defense attack skips task-force production and launch.
-        let threats = threats(world, player, def.defense_radius_centi);
+        let threats = threats_in(world, player, def.defense_radius_centi, false);
+        // Spec 43 §5: flyers over the base call the anti-air guards; they do not
+        // stop production, since ground units cannot answer them.
+        let air_threats = threats_in(world, player, def.defense_radius_centi, true);
         let defending = !threats.is_empty();
         if defending {
             let center = anchor_center(world, player, faction).unwrap_or(FxVec2::ZERO);
@@ -286,6 +295,57 @@ impl Ai {
             }
         }
 
+        // 5a. Guards: keep the anti-air and jammers wanted at home built, sooner
+        // when enemy flyers show up, and point the idle ones at the intruder.
+        let alert = !air_threats.is_empty();
+        let mut guard_extra: BTreeMap<EntityId, u32> = BTreeMap::new();
+        for guard in &def.guards {
+            if world.tick() < guard.min_tick && !alert {
+                continue;
+            }
+            let have = count_kind(world, player, guard.unit) + queued(world, player, guard.unit);
+            for _ in have..guard.count {
+                let Some(producer) = producer_of_with(world, player, guard.unit, &guard_extra)
+                else {
+                    break;
+                };
+                let cost = rules.ty(guard.unit).cost;
+                if budget < cost {
+                    break;
+                }
+                budget -= cost;
+                *guard_extra.entry(producer).or_insert(0) += 1;
+                commands.push(Command::Produce {
+                    building: producer,
+                    kind: guard.unit,
+                });
+            }
+        }
+        let center = anchor_center(world, player, faction).unwrap_or(FxVec2::ZERO);
+        if let Some(&target) = air_threats
+            .iter()
+            .min_by_key(|&&id| squared_distance(entity_pos(world, id), center))
+        {
+            let guards: Vec<EntityId> = world
+                .entities()
+                .iter()
+                .filter(|entity| {
+                    entity.owner == player
+                        && def.guards.iter().any(|guard| guard.unit == entity.kind)
+                        && rules.ty(entity.kind).is_armed()
+                        && !entity.contained()
+                        && matches!(entity.order, Order::Idle { .. })
+                })
+                .map(|entity| entity.id)
+                .collect();
+            if !guards.is_empty() {
+                commands.push(Command::Attack {
+                    units: guards,
+                    target,
+                });
+            }
+        }
+
         // 5b. Garrison: infantry take civilian buildings enemy infantry approach.
         commands.extend(garrison_orders(
             world,
@@ -299,11 +359,15 @@ impl Ai {
         // target them twice.
         let mut launched: Vec<EntityId> = Vec::new();
 
-        if !defending {
+        // Spec 43 §5 (a fix to §5.4 step 5): with intruders in the base and nobody
+        // left to answer them, production goes on, or the AI would sit on its
+        // credits for the rest of the match.
+        let stranded = defending && pool(world, player, faction, &self.attackers).is_empty();
+        if !defending || stranded {
             // 6. Production: select a task force, then produce its missing
             // units, stopping when the budget or the producers run out.
             if self.force.is_none() {
-                self.force = choose_force(def, world.tick(), &mut self.rng);
+                self.force = choose_force(def, world.tick(), &mut self.rng, &mut self.opened);
             }
             if let Some(force_index) = self.force {
                 let force = &def.task_forces[usize::from(force_index)];
@@ -331,7 +395,7 @@ impl Ai {
             }
 
             // 7. Launch: once the whole force waits in the pool, commit it.
-            if let Some(force_index) = self.force {
+            if !defending && let Some(force_index) = self.force {
                 let force = &def.task_forces[usize::from(force_index)];
                 let ready = force.units.iter().all(|&(kind, count)| {
                     pool_of_kind(world, player, faction, &self.attackers, kind) >= count
@@ -351,18 +415,15 @@ impl Ai {
                     }
                     self.attackers.extend(launched.iter().copied());
                     self.force = None;
-                    if !launched.is_empty()
-                        && let Some(target) =
-                            target_from_centroid(world, player, centroid(world, &launched))
-                    {
-                        commands.push(order_for(target, launched.clone()));
-                    }
+                    commands.extend(launch_orders(world, player, &launched));
                 }
             }
         }
 
-        // 8. Retarget: attackers whose order finished go on the offensive.
-        let idle: Vec<EntityId> = self
+        // 8. Retarget: attackers whose order finished go on the offensive. A
+        // launcher crew short of drones goes back to a supply building first
+        // (spec 43 §4.4) and rejoins once it has charges again.
+        let (empty, idle): (Vec<EntityId>, Vec<EntityId>) = self
             .attackers
             .iter()
             .copied()
@@ -372,12 +433,21 @@ impl Ai {
                     .entity(id)
                     .is_some_and(|entity| matches!(entity.order, Order::Idle { .. }))
             })
+            .partition(|&id| {
+                world
+                    .entity(id)
+                    .is_some_and(|entity| low_on_charges(world, entity))
+            });
+        let idle: Vec<EntityId> = idle
+            .into_iter()
+            .filter(|&id| {
+                world
+                    .entity(id)
+                    .is_some_and(|entity| ready_to_fly(world, entity))
+            })
             .collect();
-        if !idle.is_empty()
-            && let Some(target) = target_from_centroid(world, player, centroid(world, &idle))
-        {
-            commands.push(order_for(target, idle));
-        }
+        commands.extend(launch_orders(world, player, &idle));
+        commands.extend(resupply_orders(world, &empty));
 
         debug_assert!(budget <= state.credits);
         commands
@@ -642,14 +712,145 @@ fn pool(
         .filter(|entity| {
             entity.owner == player
                 && rules.ty(entity.kind).category == Category::Unit
-                && rules.weapon_of(entity.kind).is_some()
+                && rules.ty(entity.kind).is_armed()
                 && entity.kind != dozer
                 && Some(entity.kind) != truck
                 && !entity.contained()
+                // Spec 43: a launched drone belongs to its launcher, a guard stays home.
+                && entity.master.is_none()
+                && !is_guard(rules, faction, entity.kind)
                 && !attackers.contains(&entity.id)
         })
         .map(|entity| entity.id)
         .collect()
+}
+
+/// Whether some personality of `faction` keeps `kind` at home (spec 43 §5).
+fn is_guard(rules: &Ruleset, faction: FactionId, kind: TypeId) -> bool {
+    rules
+        .ai
+        .iter()
+        .filter(|def| def.faction == faction)
+        .any(|def| def.guards.iter().any(|guard| guard.unit == kind))
+}
+
+/// Spec 43 §5: whether the unit flies its own attacks: a flyer or a one-way
+/// unit. Their orders are an attack on a building or a ground point, never a
+/// `Move` (a one-way unit on `Move` would never detonate).
+fn is_strike(world: &World, entity: &Entity) -> bool {
+    let ty = world.rules().ty(entity.kind);
+    ty.is_air() || ty.one_way.is_some()
+}
+
+/// A sortie aircraft goes out again only with a full clip; everything else
+/// is always ready.
+fn ready_to_fly(world: &World, entity: &Entity) -> bool {
+    world
+        .rules()
+        .ty(entity.kind)
+        .sortie
+        .is_none_or(|sortie| entity.ammo >= sortie.clip)
+}
+
+/// Spec 43 §4.4: whether a launcher crew has fewer than half its charges, so
+/// the AI pulls it back to be resupplied instead of sending it on.
+fn low_on_charges(world: &World, entity: &Entity) -> bool {
+    world
+        .rules()
+        .ty(entity.kind)
+        .charges
+        .is_some_and(|charges| entity.charges * 2 < charges.max)
+}
+
+/// Spec 43 §4.4: sends each low launcher crew in `units` to the nearest own
+/// complete building that resupplies, unless it already stands within the
+/// refill radius (then it waits there to be refilled).
+fn resupply_orders(world: &World, units: &[EntityId]) -> Vec<Command> {
+    let mut commands = Vec::new();
+    for &id in units {
+        let (Some(index), Some(entity)) = (world.index_of(id), world.entity(id)) else {
+            continue;
+        };
+        let Some(charges) = world.rules().ty(entity.kind).charges else {
+            continue;
+        };
+        if world.resupplied(index, charges.refill_radius_centi) {
+            continue;
+        }
+        let source = world
+            .entities()
+            .iter()
+            .filter(|source| {
+                source.owner == entity.owner
+                    && source.hp > 0
+                    && world.rules().ty(source.kind).resupplies
+                    && source.site.as_ref().is_some_and(|site| site.complete)
+            })
+            .min_by_key(|source| (squared_distance(source.pos, entity.pos), source.id));
+        if let Some(source) = source {
+            commands.push(Command::Move {
+                units: vec![id],
+                target: source.pos,
+            });
+        }
+    }
+    commands
+}
+
+/// The commands that send `units` out: an attack or a move for the ground
+/// units, a strike for the flyers and one-way units.
+fn launch_orders(world: &World, player: PlayerId, units: &[EntityId]) -> Vec<Command> {
+    let (strike, ground): (Vec<EntityId>, Vec<EntityId>) = units.iter().copied().partition(|&id| {
+        world
+            .entity(id)
+            .is_some_and(|entity| is_strike(world, entity))
+    });
+    let mut commands = Vec::new();
+    if !ground.is_empty()
+        && let Some(target) = target_from_centroid(world, player, centroid(world, &ground))
+    {
+        commands.push(order_for(target, ground));
+    }
+    if !strike.is_empty()
+        && let Some(command) = strike_order(world, player, strike)
+    {
+        commands.push(command);
+    }
+    commands
+}
+
+/// Spec 43 §5: the nearest enemy building the player has seen (an `Attack`,
+/// which fog does not invalidate), or failing that a ground strike on the
+/// remembered building or the enemy start.
+fn strike_order(world: &World, player: PlayerId, units: Vec<EntityId>) -> Option<Command> {
+    let c = centroid(world, &units);
+    if let Some(target) = nearest_visible(world, player, c, |entity| {
+        entity.owner != player
+            && entity.owner != NEUTRAL
+            && world.rules().ty(entity.kind).category == Category::Building
+    }) {
+        return Some(Command::Attack { units, target });
+    }
+    let state = world.player(player)?;
+    let mut remembered: Option<(i64, EntityId, FxVec2)> = None;
+    for (&id, ghost) in state.ghosts() {
+        let center = footprint_center(ghost.origin, world.rules().ty(ghost.kind).footprint);
+        let distance = squared_distance(center, c);
+        if remembered.is_none_or(|(d, _, _)| distance < d) {
+            remembered = Some((distance, id, center));
+        }
+    }
+    if let Some((_, id, center)) = remembered {
+        return Some(if world.entity(id).is_some() {
+            Command::Attack { units, target: id }
+        } else {
+            Command::AttackGround {
+                units,
+                target: center,
+            }
+        });
+    }
+    enemy_start_center(world, player).map(|target| Command::AttackGround { units, target })
 }
 
 /// Spec 31 block 2: for each garrisonable building with room that enemy
@@ -748,9 +949,9 @@ fn pool_of_kind(
         .count() as u32
 }
 
-/// Enemy unit threats inside the defense radius of any own building (§5.4
-/// step 5), ascending id.
-fn threats(world: &World, player: PlayerId, radius_centi: u32) -> Vec<EntityId> {
+/// Visible enemy units inside the defense radius of any own building, ascending
+/// id: the ground ones (§5.4 step 5) or the airborne ones (spec 43).
+fn threats_in(world: &World, player: PlayerId, radius_centi: u32, airborne: bool) -> Vec<EntityId> {
     let radius = i64::from(fx_centi(radius_centi).raw());
     let threshold = radius * radius;
     let centers: Vec<FxVec2> = world
@@ -776,6 +977,7 @@ fn threats(world: &World, player: PlayerId, radius_centi: u32) -> Vec<EntityId> 
                 && entity.owner != NEUTRAL
                 && world.rules().ty(entity.kind).category == Category::Unit
                 && world.is_entity_visible(player, entity.id)
+                && world.is_airborne(entity.id) == airborne
                 && centers
                     .iter()
                     .any(|&center| squared_distance(entity.pos, center) <= threshold)
@@ -784,24 +986,33 @@ fn threats(world: &World, player: PlayerId, radius_centi: u32) -> Vec<EntityId> 
         .collect()
 }
 
-/// Picks the eligible trigger of the weighted §5.4 step 6 roll.
-fn choose_force(def: &AiDef, tick: u32, rng: &mut SplitMix64) -> Option<u16> {
-    let total: u64 = def
-        .triggers
-        .iter()
-        .filter(|trigger| trigger.min_tick <= tick)
-        .map(|trigger| u64::from(trigger.weight))
-        .sum();
+/// Picks the next task force: an eligible opening (`once`) trigger not yet
+/// taken, else the eligible trigger of the weighted §5.4 step 6 roll.
+fn choose_force(
+    def: &AiDef,
+    tick: u32,
+    rng: &mut SplitMix64,
+    opened: &mut Vec<u16>,
+) -> Option<u16> {
+    let opening = def.triggers.iter().enumerate().find(|&(index, trigger)| {
+        trigger.once && trigger.min_tick <= tick && !opened.contains(&(index as u16))
+    });
+    if let Some((index, trigger)) = opening {
+        opened.push(index as u16);
+        return Some(trigger.task_force);
+    }
+    let weighted = || {
+        def.triggers
+            .iter()
+            .filter(|trigger| !trigger.once && trigger.min_tick <= tick)
+    };
+    let total: u64 = weighted().map(|trigger| u64::from(trigger.weight)).sum();
     if total == 0 {
         return None;
     }
     let roll = rng.next_u64() % total;
     let mut cumulative = 0u64;
-    for trigger in def
-        .triggers
-        .iter()
-        .filter(|trigger| trigger.min_tick <= tick)
-    {
+    for trigger in weighted() {
         cumulative += u64::from(trigger.weight);
         if cumulative > roll {
             return Some(trigger.task_force);
@@ -961,4 +1172,74 @@ fn enemy_start_center(world: &World, player: PlayerId) -> Option<FxVec2> {
         },
         world.rules().ty(hq).footprint,
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    //! Spec 43 §4.4: the AI pulls an empty launcher crew back to be resupplied.
+
+    use super::*;
+    use crate::map::MapGrid;
+    use crate::rules::Ruleset;
+
+    fn world() -> World {
+        World::sandbox(Ruleset::builtin(), MapGrid::open(80, 40), &[0, 1])
+    }
+
+    fn kind(world: &World, id: &str) -> TypeId {
+        world.rules().type_index(id).unwrap()
+    }
+
+    #[test]
+    fn a_low_crew_walks_to_the_nearest_supply_building_and_waits_there() {
+        let mut world = world();
+        let barracks =
+            world.place_building(0, kind(&world, "ua-barracks"), Cell { x: 30, y: 10 }, true);
+        world.place_building(0, kind(&world, "ua-barracks"), Cell { x: 5, y: 30 }, true);
+        let team = world.spawn(
+            0,
+            kind(&world, "ua-fpv-team"),
+            FxVec2::new(fx_centi(1800), fx_centi(1200)),
+        );
+        // Full: nothing to do about charges.
+        let entity = world.entity(team).unwrap();
+        assert!(!low_on_charges(&world, entity));
+        world.set_charges(team, 1);
+        let entity = world.entity(team).unwrap();
+        assert!(low_on_charges(&world, entity));
+        let commands = resupply_orders(&world, &[team]);
+        let barracks_pos = world.entity(barracks).unwrap().pos;
+        assert_eq!(
+            commands,
+            vec![Command::Move {
+                units: vec![team],
+                target: barracks_pos
+            }],
+            "the nearest barracks"
+        );
+        // Standing by the barracks it stays and waits for the refill.
+        let near = world.spawn(
+            0,
+            kind(&world, "ua-fpv-team"),
+            FxVec2::new(fx_centi(3000), fx_centi(1500)),
+        );
+        world.set_charges(near, 0);
+        assert!(resupply_orders(&world, &[near]).is_empty());
+        // Half full is enough to rejoin.
+        world.set_charges(near, 2);
+        let entity = world.entity(near).unwrap();
+        assert!(!low_on_charges(&world, entity));
+    }
+
+    #[test]
+    fn with_no_supply_building_there_is_nowhere_to_go() {
+        let mut world = world();
+        let team = world.spawn(
+            0,
+            kind(&world, "ua-fpv-team"),
+            FxVec2::new(fx_centi(2500), fx_centi(1200)),
+        );
+        world.set_charges(team, 0);
+        assert!(resupply_orders(&world, &[team]).is_empty());
+    }
 }

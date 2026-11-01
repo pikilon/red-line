@@ -38,7 +38,7 @@ pub(crate) fn drive(
 ) -> bool {
     let reversing = unit.reversing && matches!(motion.kind, LocoKind::Tracks | LocoKind::Wheels);
     match motion.kind {
-        LocoKind::Immediate | LocoKind::Foot => {
+        LocoKind::Immediate | LocoKind::Foot | LocoKind::Air => {
             unit.heading = unit
                 .heading
                 .turn_towards(atan2(desired.x, desired.y), motion.turn_step);

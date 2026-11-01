@@ -44,12 +44,37 @@ export interface TypeDef {
     damagePct: number;
     exitTicks: number;
   };
+  /** Spec 43 §4.2: attacks by detonating `warhead` on arrival. */
+  oneWay?: { warhead: number; fuelTicks?: number; armTiles?: number };
+  /** Spec 43 §4.3: a flyer's clip and the ticks a reload takes. */
+  sortie?: { clip: number; reloadTicks: number };
+  /** Spec 43 §4.5: how the unit is steered; absent is unjammable. */
+  link?: "radio" | "fibre" | "gnss" | "autonomous";
+  /** Spec 43 §4.5: enemy radio and GNSS links fail inside this radius. */
+  jammer?: { radiusCenti: number };
+  gnssScatterCenti?: number;
+  /** Spec 43 §4.1: an enemy weapon engages it only inside a third of its range. */
+  lowObservable?: boolean;
+  /** Spec 43 §4.1: a rotorcraft; every other flyer is fixed-wing and never stops. */
+  hover?: boolean;
+  /** Spec 43 §4.4: a launcher's drone charges and how they refill (radius 0: by itself). */
+  charges?: { max: number; refillTicks: number; refillRadiusCenti: number };
+  /** Spec 43 §4.4: launcher crews refill their charges next to this unit or building. */
+  resupplies?: boolean;
   render: { size: [number, number, number] };
 }
 
 export interface LocomotorDef {
   id: string;
-  kind: "foot" | "tracks" | "wheels";
+  kind: "foot" | "tracks" | "wheels" | "air";
+  /** Air only: which anti-air weapons reach it (spec 43 §4.1). */
+  class?: "low" | "high";
+  /** Air only: cruise height in centi-tiles. */
+  altitudeCenti?: number;
+  /** Air only: percent of top speed a fixed-wing flyer never drops below. */
+  minSpeedPercent?: number;
+  /** Air only: half-angle of the firing cone of a fixed-wing flyer, degrees. */
+  noseConeDeg?: number;
   /** Zero Hour `CrusherLevel`: 1 crushes infantry (spec 28). */
   crusherLevel?: number;
   /** Damage dealt to an enemy soldier shoved aside (spec 28). */
@@ -101,6 +126,12 @@ export interface WeaponDef {
   scatterCenti: number;
   salvo: number;
   salvoIntervalTicks: number;
+  /** Spec 43 §4.1: which airborne units it reaches; absent is `none`. */
+  antiAir?: "none" | "low" | "all";
+  /** Spec 43 §4.1: absent is true. */
+  antiGround?: boolean;
+  /** Spec 43 §4.4: type index of the drone firing it launches. */
+  launches?: number;
   render: WeaponRender;
 }
 

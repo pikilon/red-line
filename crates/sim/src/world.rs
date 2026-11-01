@@ -460,8 +460,9 @@ impl World {
     pub fn spawn(&mut self, owner: PlayerId, kind: TypeId, pos: FxVec2) -> EntityId {
         let ty = self.rules.ty(kind);
         assert_eq!(ty.category, Category::Unit, "type {kind} is not a unit");
+        // Flyers hover over anything (spec 43 §4.1).
         assert!(
-            self.nav.is_passable(cell_of(pos)),
+            ty.is_air() || self.nav.is_passable(cell_of(pos)),
             "spawn position {pos:?} is not in a passable cell"
         );
         assert!(
@@ -514,6 +515,16 @@ impl World {
         }
     }
 
+    /// Test seam (like `set_hp`): the charges left of the launcher `id` (spec 43
+    /// §4.4), clamped to its type's maximum.
+    pub fn set_charges(&mut self, id: EntityId, charges: u32) {
+        if let Some(index) = self.index_of(id) {
+            let max = self.rules.ty(self.entities[index].kind).charges;
+            self.entities[index].charges = charges.min(max.map_or(0, |c| c.max));
+            self.entities[index].charge_clock = 0;
+        }
+    }
+
     /// Test seam (like `set_hp`): overwrites the locomotion state of `id`.
     pub fn set_locomotion_state(&mut self, id: EntityId, state: LocomotionState) {
         if let Some(index) = self.index_of(id) {
@@ -562,7 +573,7 @@ impl World {
         id
     }
 
-    fn push_entity(
+    pub(crate) fn push_entity(
         &mut self,
         owner: PlayerId,
         kind: TypeId,
@@ -594,6 +605,12 @@ impl World {
             inside: None,
             aboard: None,
             unloading: None,
+            ammo: self.rules.ty(kind).sortie.map_or(0, |sortie| sortie.clip),
+            reload: 0,
+            master: None,
+            fuel: 0,
+            charges: self.rules.ty(kind).charges.map_or(0, |charges| charges.max),
+            charge_clock: 0,
         });
         id
     }
@@ -647,6 +664,9 @@ impl World {
             let Order::Move { order_id, goal, .. } = self.entities[index].order else {
                 continue;
             };
+            if self.is_flyer(index) {
+                continue;
+            }
             let map = self.nav_of(index);
             if map.is_passable(goal) {
                 continue;
@@ -748,6 +768,7 @@ impl World {
         self.events.clear();
         self.apply_commands();
         self.update_economy();
+        self.air_pass();
         self.yield_to_movers();
         self.move_units();
         self.carry_riders();
@@ -902,7 +923,7 @@ impl World {
         }
         match self.rules.ty(kind).category {
             Category::Unit => {
-                if !self.nav.is_passable(cell_of(pos)) {
+                if !self.rules.ty(kind).is_air() && !self.nav.is_passable(cell_of(pos)) {
                     return;
                 }
                 let hp = self.rules.ty(kind).hp;
@@ -930,6 +951,9 @@ impl World {
     /// Only units owned by `player` receive the order.
     pub(crate) fn apply_move(&mut self, player: PlayerId, units: &[EntityId], target: FxVec2) {
         let target = self.clamp_to_map(target);
+        // Spec 43 §4.1: flyers go straight to the point; the rest follow the nav grid.
+        let ground = self.send_flyers(player, units, target);
+        let units = &ground[..];
         let goal = cell_of(target);
         let commanded = self.commanded_units(player, units);
         let layer = commanded
@@ -967,6 +991,43 @@ impl World {
                 }
             }
         }
+    }
+
+    /// Gives every flyer of `player` in `units` a straight `Move` to `target`
+    /// and returns the other units, which still need the nav grid.
+    fn send_flyers(
+        &mut self,
+        player: PlayerId,
+        units: &[EntityId],
+        target: FxVec2,
+    ) -> Vec<EntityId> {
+        let mut ground = Vec::with_capacity(units.len());
+        let mut order = None;
+        for &id in units {
+            let Some(index) = self.index_of(id) else {
+                continue;
+            };
+            let entity = &self.entities[index];
+            if entity.owner != player
+                || entity.site.is_some()
+                || entity.contained()
+                || !self.rules.ty(entity.kind).is_air()
+            {
+                ground.push(id);
+                continue;
+            }
+            let order_id = *order.get_or_insert_with(|| {
+                let order_id = self.next_order_id;
+                self.next_order_id += 1;
+                order_id
+            });
+            self.entities[index].order = Order::Move {
+                order_id,
+                target,
+                goal: cell_of(target),
+            };
+        }
+        ground
     }
 
     /// Entity indices of the distinct units of `player` in `units`, ascending.
@@ -1086,12 +1147,13 @@ impl World {
         let order = Order::Attack { order_id, target };
         for &id in units {
             if let Some(index) = self.index_of(id) {
-                let entity = &mut self.entities[index];
+                let entity = &self.entities[index];
                 if entity.owner == player
                     && entity.site.is_none()
-                    && self.rules.weapon_of(entity.kind).is_some()
+                    && self.rules.ty(entity.kind).is_armed()
+                    && self.can_attack_kind(index, target)
                 {
-                    entity.order = order;
+                    self.entities[index].order = order;
                 }
             }
         }
@@ -1115,11 +1177,25 @@ impl World {
                 let entity = &mut self.entities[index];
                 if entity.owner == player
                     && entity.site.is_none()
-                    && self.rules.weapon_of(entity.kind).is_some()
+                    && self.rules.ty(entity.kind).is_armed()
                 {
                     entity.order = order;
                 }
             }
+        }
+    }
+
+    /// Spec 43 §4.1: whether the weapon (or warhead) of entity `index` can
+    /// ever engage `target` by height; an order it cannot carry out is ignored.
+    fn can_attack_kind(&self, index: usize, target: EntityId) -> bool {
+        let ty = self.rules.ty(self.entities[index].kind);
+        let weapon = self.rules.weapon_of(self.entities[index].kind).or_else(|| {
+            ty.one_way
+                .and_then(|one_way| self.rules.weapons.get(usize::from(one_way.warhead)))
+        });
+        match (weapon, self.index_of(target)) {
+            (Some(weapon), Some(target)) => self.can_engage(weapon, target),
+            _ => false,
         }
     }
 
@@ -1138,6 +1214,16 @@ impl World {
         for index in 0..self.entities.len() {
             // A garrisoned unit stays in its building (spec 31 block 2).
             if self.entities[index].contained() {
+                continue;
+            }
+            // Spec 43 §4.5: a jammed `radio` ground unit stands still.
+            if self.jam_stopped(index) {
+                self.entities[index].speed = Fx::ZERO;
+                continue;
+            }
+            // Spec 43 §4.1: flyers ignore the nav grids.
+            if self.is_flyer(index) {
+                self.fly(index);
                 continue;
             }
             let before = self.entities[index].pos;
@@ -1220,6 +1306,13 @@ impl World {
             };
             return;
         }
+        // Spec 43 §4.2: a ground one-way unit drives into its target.
+        if self.rules.ty(kind).one_way.is_some() {
+            self.ground_contact(index, Some(target), pos);
+            if self.entities[index].hp == 0 {
+                return;
+            }
+        }
         let base_range = self
             .rules
             .weapon_of(kind)
@@ -1227,6 +1320,9 @@ impl World {
         let range = self.entity(target).map_or(base_range, |entity| {
             self.effective_range(base_range, pos, entity.pos)
         });
+        let range = self
+            .index_of(target)
+            .map_or(range, |victim| self.reach_against(range, victim));
         let distance = self
             .entity(target)
             .map(|entity| self.entity_distance(pos, entity));
@@ -1245,6 +1341,12 @@ impl World {
             let unit = &self.entities[index];
             (unit.pos, unit.kind)
         };
+        if self.rules.ty(kind).one_way.is_some() {
+            self.ground_contact(index, None, target);
+            if self.entities[index].hp == 0 {
+                return;
+            }
+        }
         let range = self
             .rules
             .weapon_of(kind)
@@ -1271,7 +1373,15 @@ impl World {
             Some(site) => {
                 approach_cell(&self.nav, site.origin, self.rules.ty(entity.kind).footprint)
             }
-            None => Some(cell_of(entity.pos)),
+            None => {
+                // A flyer can hang over cells no ground unit can enter.
+                let cell = cell_of(entity.pos);
+                if self.nav.is_passable(cell) {
+                    Some(cell)
+                } else {
+                    self.nav.nearest_passable(cell)
+                }
+            }
         }
     }
 
@@ -1437,7 +1547,7 @@ impl World {
         let is_unit: Vec<bool> = self
             .entities
             .iter()
-            .map(|e| e.site.is_none() && !e.contained())
+            .map(|e| e.site.is_none() && !e.contained() && !self.rules.ty(e.kind).is_air())
             .collect();
         let is_idle: Vec<bool> = self
             .entities
@@ -1525,10 +1635,16 @@ impl World {
             let Order::Move { order_id, goal, .. } = orders[a] else {
                 continue;
             };
+            if self.is_flyer(a) {
+                continue;
+            }
             let in_goal = cell_of(positions[a]) == goal;
             let touches = self.neighbours(&buckets, cell_of(positions[a])).any(|b| {
                 if b == a || (positions[a] - positions[b]).length() > radius[a] + radius[b] + margin
                 {
+                    return false;
+                }
+                if self.is_flyer(b) {
                     return false;
                 }
                 match orders[b] {

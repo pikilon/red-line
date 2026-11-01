@@ -5,44 +5,65 @@
     "autocannon",
     "antiTank",
     "highExplosive",
-    "thermobaric"
+    "thermobaric",
+    "flak"
   ],
   "armorClasses": [
     "infantry",
     "light",
     "armored",
-    "structure"
+    "structure",
+    "drone",
+    "aircraft"
   ],
   "damageModifiers": [
     [
       100,
       30,
       25,
-      10
+      10,
+      100,
+      20
     ],
     [
       75,
       100,
       20,
+      40,
+      100,
       40
     ],
     [
       30,
       100,
       100,
-      60
+      60,
+      40,
+      30
     ],
     [
       100,
       80,
       60,
-      100
+      100,
+      60,
+      25
     ],
     [
       150,
       70,
       20,
-      120
+      120,
+      60,
+      25
+    ],
+    [
+      20,
+      25,
+      10,
+      5,
+      150,
+      100
     ]
   ],
   "startingCredits": 5000,
@@ -120,6 +141,44 @@
       "crusherLevel": 0,
       "shoveDamage": 20,
       "shovePushCenti": 40
+    },
+    {
+      "id": "airLow",
+      "kind": "air",
+      "pivotAngleDeg": 0,
+      "minTurnSpeedPercent": 0,
+      "slowTurnAngleDeg": 0,
+      "accelCenti": 0,
+      "brakingCenti": 0,
+      "reverseAngleDeg": 0,
+      "reverseMaxCenti": 0,
+      "reverseSpeedPercent": 0,
+      "crusherLevel": 0,
+      "shoveDamage": 0,
+      "shovePushCenti": 0,
+      "class": "low",
+      "altitudeCenti": 140,
+      "minSpeedPercent": 60,
+      "noseConeDeg": 20
+    },
+    {
+      "id": "airHigh",
+      "kind": "air",
+      "pivotAngleDeg": 0,
+      "minTurnSpeedPercent": 0,
+      "slowTurnAngleDeg": 0,
+      "accelCenti": 0,
+      "brakingCenti": 0,
+      "reverseAngleDeg": 0,
+      "reverseMaxCenti": 0,
+      "reverseSpeedPercent": 0,
+      "crusherLevel": 0,
+      "shoveDamage": 0,
+      "shovePushCenti": 0,
+      "class": "high",
+      "altitudeCenti": 320,
+      "minSpeedPercent": 60,
+      "noseConeDeg": 20
     }
   ],
   "weapons": [
@@ -138,6 +197,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
+      "antiAir": "low",
       "render": {
         "model": "tracer",
         "flight": "straight",
@@ -184,6 +244,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
+      "antiAir": "low",
       "render": {
         "model": "tracer",
         "flight": "straight",
@@ -207,6 +268,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
+      "antiAir": "low",
       "render": {
         "model": "tracerHeavy",
         "flight": "straight",
@@ -276,6 +338,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
+      "antiAir": "low",
       "render": {
         "model": "tracer",
         "flight": "straight",
@@ -322,6 +385,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
+      "antiAir": "low",
       "render": {
         "model": "tracer",
         "flight": "straight",
@@ -368,6 +432,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
+      "antiAir": "low",
       "render": {
         "model": "tracer",
         "flight": "straight",
@@ -391,6 +456,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
+      "antiAir": "low",
       "render": {
         "model": "tracerHeavy",
         "flight": "straight",
@@ -460,6 +526,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
+      "antiAir": "low",
       "render": {
         "model": "tracer",
         "flight": "straight",
@@ -488,6 +555,411 @@
         "flight": "loft",
         "apexCenti": 40,
         "launch": "softLaunch",
+        "trail": "smoke"
+      }
+    },
+    {
+      "id": "ua-ratel-warhead",
+      "damageType": 3,
+      "damage": 700,
+      "rangeCenti": 100,
+      "minRangeCenti": 0,
+      "cooldownTicks": 1,
+      "splashCenti": 250,
+      "projectileTicks": 0,
+      "speedCenti": 0,
+      "aimToleranceDeg": 2,
+      "delivery": 1,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "ua-tw-hmg",
+      "damageType": 0,
+      "damage": 13,
+      "rangeCenti": 550,
+      "minRangeCenti": 0,
+      "cooldownTicks": 9,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 450,
+      "aimToleranceDeg": 2,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "antiAir": "low",
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "ua-baba-yaga-bomb",
+      "damageType": 3,
+      "damage": 90,
+      "rangeCenti": 60,
+      "minRangeCenti": 0,
+      "cooldownTicks": 20,
+      "splashCenti": 120,
+      "projectileTicks": 0,
+      "speedCenti": 25,
+      "aimToleranceDeg": 2,
+      "delivery": 1,
+      "scatterCenti": 25,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "rocket",
+        "flight": "ballistic",
+        "apexCenti": 0,
+        "launch": "softLaunch",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "ua-fpv-launcher",
+      "damageType": 2,
+      "damage": 1,
+      "rangeCenti": 1000,
+      "minRangeCenti": 0,
+      "cooldownTicks": 150,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 0,
+      "aimToleranceDeg": 15,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "launches": 39,
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "ua-fpv-warhead",
+      "damageType": 2,
+      "damage": 130,
+      "rangeCenti": 100,
+      "minRangeCenti": 0,
+      "cooldownTicks": 1,
+      "splashCenti": 60,
+      "projectileTicks": 0,
+      "speedCenti": 0,
+      "aimToleranceDeg": 2,
+      "delivery": 1,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "ua-sting-launcher",
+      "damageType": 5,
+      "damage": 1,
+      "rangeCenti": 1200,
+      "minRangeCenti": 0,
+      "cooldownTicks": 40,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 0,
+      "aimToleranceDeg": 2,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "antiAir": "low",
+      "antiGround": false,
+      "launches": 40,
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "ua-sting-warhead",
+      "damageType": 5,
+      "damage": 120,
+      "rangeCenti": 100,
+      "minRangeCenti": 0,
+      "cooldownTicks": 1,
+      "splashCenti": 100,
+      "projectileTicks": 0,
+      "speedCenti": 0,
+      "aimToleranceDeg": 2,
+      "delivery": 1,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "antiAir": "low",
+      "antiGround": false,
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "ua-gepard-gun",
+      "damageType": 5,
+      "damage": 14,
+      "rangeCenti": 700,
+      "minRangeCenti": 0,
+      "cooldownTicks": 3,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 600,
+      "aimToleranceDeg": 2,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "antiAir": "all",
+      "antiGround": false,
+      "render": {
+        "model": "tracerHeavy",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "ua-patriot-missile",
+      "damageType": 5,
+      "damage": 260,
+      "rangeCenti": 1800,
+      "minRangeCenti": 0,
+      "cooldownTicks": 90,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 120,
+      "aimToleranceDeg": 2,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "antiAir": "all",
+      "antiGround": false,
+      "render": {
+        "model": "rocket",
+        "flight": "boost",
+        "apexCenti": 0,
+        "launch": "rocketLaunch",
+        "trail": "smoke"
+      }
+    },
+    {
+      "id": "ua-flamingo-warhead",
+      "damageType": 3,
+      "damage": 1400,
+      "rangeCenti": 100,
+      "minRangeCenti": 0,
+      "cooldownTicks": 1,
+      "splashCenti": 500,
+      "projectileTicks": 0,
+      "speedCenti": 0,
+      "aimToleranceDeg": 2,
+      "delivery": 1,
+      "scatterCenti": 250,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "ua-storm-shadow-warhead",
+      "damageType": 3,
+      "damage": 900,
+      "rangeCenti": 100,
+      "minRangeCenti": 0,
+      "cooldownTicks": 1,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 0,
+      "aimToleranceDeg": 2,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "ru-kab-glide-bomb",
+      "damageType": 3,
+      "damage": 200,
+      "rangeCenti": 1400,
+      "minRangeCenti": 0,
+      "cooldownTicks": 3,
+      "splashCenti": 220,
+      "projectileTicks": 0,
+      "speedCenti": 50,
+      "aimToleranceDeg": 2,
+      "delivery": 1,
+      "scatterCenti": 120,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "glideBomb",
+        "flight": "ballistic",
+        "apexCenti": 0,
+        "launch": "softLaunch",
+        "trail": "smoke"
+      }
+    },
+    {
+      "id": "ru-geran-2-warhead",
+      "damageType": 3,
+      "damage": 170,
+      "rangeCenti": 100,
+      "minRangeCenti": 0,
+      "cooldownTicks": 1,
+      "splashCenti": 160,
+      "projectileTicks": 0,
+      "speedCenti": 0,
+      "aimToleranceDeg": 2,
+      "delivery": 1,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "ru-geran-3-warhead",
+      "damageType": 3,
+      "damage": 320,
+      "rangeCenti": 100,
+      "minRangeCenti": 0,
+      "cooldownTicks": 1,
+      "splashCenti": 220,
+      "projectileTicks": 0,
+      "speedCenti": 0,
+      "aimToleranceDeg": 2,
+      "delivery": 1,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "ru-molniya-warhead",
+      "damageType": 2,
+      "damage": 150,
+      "rangeCenti": 100,
+      "minRangeCenti": 0,
+      "cooldownTicks": 1,
+      "splashCenti": 80,
+      "projectileTicks": 0,
+      "speedCenti": 0,
+      "aimToleranceDeg": 2,
+      "delivery": 1,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "ru-molniya-launcher",
+      "damageType": 2,
+      "damage": 1,
+      "rangeCenti": 600,
+      "minRangeCenti": 0,
+      "cooldownTicks": 240,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 0,
+      "aimToleranceDeg": 15,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "launches": 51,
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "ru-pantsir-missile",
+      "damageType": 5,
+      "damage": 90,
+      "rangeCenti": 1000,
+      "minRangeCenti": 0,
+      "cooldownTicks": 24,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 150,
+      "aimToleranceDeg": 15,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 2,
+      "salvoIntervalTicks": 4,
+      "antiAir": "all",
+      "antiGround": false,
+      "render": {
+        "model": "rocket",
+        "flight": "boost",
+        "apexCenti": 0,
+        "launch": "rocketLaunch",
         "trail": "smoke"
       }
     }
@@ -850,7 +1322,11 @@
         12,
         13,
         14,
-        15
+        15,
+        31,
+        32,
+        33,
+        34
       ],
       "footprint": [
         0,
@@ -903,6 +1379,7 @@
       "loadTicks": 45,
       "unloadTicks": 15,
       "freeUnit": -1,
+      "resupplies": true,
       "render": {
         "size": [
           60,
@@ -1027,6 +1504,7 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": 9,
+      "resupplies": true,
       "render": {
         "size": [
           400,
@@ -1058,7 +1536,8 @@
       ],
       "produces": [
         2,
-        3
+        3,
+        38
       ],
       "builds": [],
       "footprint": [
@@ -1073,6 +1552,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "healsInfantry": true,
+      "resupplies": true,
       "render": {
         "size": [
           300,
@@ -1106,7 +1586,8 @@
         4,
         5,
         6,
-        7
+        7,
+        41
       ],
       "builds": [],
       "footprint": [
@@ -1450,7 +1931,9 @@
         26,
         27,
         28,
-        29
+        29,
+        44,
+        45
       ],
       "footprint": [
         0,
@@ -1503,6 +1986,7 @@
       "loadTicks": 45,
       "unloadTicks": 15,
       "freeUnit": -1,
+      "resupplies": true,
       "render": {
         "size": [
           60,
@@ -1627,6 +2111,7 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": 23,
+      "resupplies": true,
       "render": {
         "size": [
           400,
@@ -1658,7 +2143,8 @@
       ],
       "produces": [
         16,
-        17
+        17,
+        50
       ],
       "builds": [],
       "footprint": [
@@ -1673,6 +2159,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "healsInfantry": true,
+      "resupplies": true,
       "render": {
         "size": [
           300,
@@ -1706,7 +2193,9 @@
         18,
         19,
         20,
-        21
+        21,
+        52,
+        53
       ],
       "builds": [],
       "footprint": [
@@ -1809,6 +2298,1036 @@
           300,
           60,
           200
+        ]
+      }
+    },
+    {
+      "id": "ua-drone-workshop",
+      "faction": 0,
+      "category": "building",
+      "armor": 3,
+      "hp": 1000,
+      "sightCenti": 500,
+      "cost": 1400,
+      "buildTicks": 270,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [
+        13
+      ],
+      "produces": [
+        35,
+        36,
+        37
+      ],
+      "builds": [],
+      "footprint": [
+        3,
+        3
+      ],
+      "power": -3,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "render": {
+        "size": [
+          300,
+          115,
+          300
+        ]
+      }
+    },
+    {
+      "id": "ua-sting-nest",
+      "faction": 0,
+      "category": "building",
+      "armor": 3,
+      "hp": 700,
+      "sightCenti": 1200,
+      "cost": 900,
+      "buildTicks": 180,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": 21,
+      "requires": [
+        12
+      ],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        2,
+        2
+      ],
+      "power": -2,
+      "requiresPower": true,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "charges": {
+        "max": 6,
+        "refillTicks": 60,
+        "refillRadiusCenti": 0
+      },
+      "render": {
+        "size": [
+          200,
+          95,
+          200
+        ]
+      }
+    },
+    {
+      "id": "ua-patriot",
+      "faction": 0,
+      "category": "building",
+      "armor": 3,
+      "hp": 900,
+      "sightCenti": 1800,
+      "cost": 3500,
+      "buildTicks": 360,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 120,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": 24,
+      "requires": [
+        12
+      ],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        3,
+        3
+      ],
+      "power": -6,
+      "requiresPower": true,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "render": {
+        "size": [
+          300,
+          160,
+          300
+        ]
+      }
+    },
+    {
+      "id": "ua-missile-site",
+      "faction": 0,
+      "category": "building",
+      "armor": 3,
+      "hp": 1100,
+      "sightCenti": 500,
+      "cost": 1600,
+      "buildTicks": 270,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [
+        14
+      ],
+      "produces": [
+        42,
+        43
+      ],
+      "builds": [],
+      "footprint": [
+        3,
+        4
+      ],
+      "power": -4,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "render": {
+        "size": [
+          300,
+          95,
+          400
+        ]
+      }
+    },
+    {
+      "id": "ua-ratel",
+      "faction": 0,
+      "category": "unit",
+      "armor": 1,
+      "hp": 140,
+      "sightCenti": 500,
+      "cost": 450,
+      "buildTicks": 120,
+      "speedCenti": 12,
+      "turnRateDeg": 200,
+      "radiusCenti": 30,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "oneWay": {
+        "warhead": 16,
+        "fuelTicks": 0,
+        "armTiles": 0
+      },
+      "link": "radio",
+      "render": {
+        "size": [
+          40,
+          26,
+          56
+        ]
+      }
+    },
+    {
+      "id": "ua-tw-12-7",
+      "faction": 0,
+      "category": "unit",
+      "armor": 1,
+      "hp": 200,
+      "sightCenti": 700,
+      "cost": 500,
+      "buildTicks": 120,
+      "speedCenti": 18,
+      "turnRateDeg": 240,
+      "radiusCenti": 30,
+      "turretTurnRateDeg": 200,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 1,
+      "weapon": 17,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "link": "radio",
+      "render": {
+        "size": [
+          46,
+          62,
+          70
+        ]
+      }
+    },
+    {
+      "id": "ua-baba-yaga",
+      "faction": 0,
+      "category": "unit",
+      "armor": 4,
+      "hp": 160,
+      "sightCenti": 500,
+      "cost": 700,
+      "buildTicks": 150,
+      "speedCenti": 18,
+      "turnRateDeg": 240,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 3,
+      "weapon": 18,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "sortie": {
+        "clip": 4,
+        "reloadTicks": 360
+      },
+      "hover": true,
+      "render": {
+        "size": [
+          124,
+          36,
+          124
+        ]
+      }
+    },
+    {
+      "id": "ua-fpv-team",
+      "faction": 0,
+      "category": "unit",
+      "armor": 0,
+      "hp": 80,
+      "sightCenti": 1000,
+      "cost": 300,
+      "buildTicks": 100,
+      "speedCenti": 8,
+      "turnRateDeg": 540,
+      "radiusCenti": 25,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 0,
+      "weapon": 19,
+      "trenchWeapon": 6,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "charges": {
+        "max": 4,
+        "refillTicks": 300,
+        "refillRadiusCenti": 500
+      },
+      "render": {
+        "size": [
+          40,
+          50,
+          40
+        ]
+      }
+    },
+    {
+      "id": "ua-fpv",
+      "faction": 0,
+      "category": "unit",
+      "armor": 4,
+      "hp": 20,
+      "sightCenti": 300,
+      "cost": 0,
+      "buildTicks": 0,
+      "speedCenti": 50,
+      "turnRateDeg": 540,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 3,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "oneWay": {
+        "warhead": 20,
+        "fuelTicks": 300,
+        "armTiles": 0
+      },
+      "link": "radio",
+      "hover": true,
+      "render": {
+        "size": [
+          46,
+          15,
+          46
+        ]
+      }
+    },
+    {
+      "id": "ua-sting",
+      "faction": 0,
+      "category": "unit",
+      "armor": 4,
+      "hp": 30,
+      "sightCenti": 400,
+      "cost": 0,
+      "buildTicks": 0,
+      "speedCenti": 90,
+      "turnRateDeg": 540,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 3,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "oneWay": {
+        "warhead": 22,
+        "fuelTicks": 150,
+        "armTiles": 0
+      },
+      "link": "autonomous",
+      "hover": true,
+      "render": {
+        "size": [
+          36,
+          12,
+          46
+        ]
+      }
+    },
+    {
+      "id": "ua-gepard",
+      "faction": 0,
+      "category": "unit",
+      "armor": 1,
+      "hp": 380,
+      "sightCenti": 900,
+      "cost": 1100,
+      "buildTicks": 220,
+      "speedCenti": 20,
+      "turnRateDeg": 200,
+      "radiusCenti": 41,
+      "turretTurnRateDeg": 240,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 2,
+      "weapon": 23,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "render": {
+        "size": [
+          84,
+          80,
+          130
+        ]
+      }
+    },
+    {
+      "id": "ua-flamingo",
+      "faction": 0,
+      "category": "unit",
+      "armor": 5,
+      "hp": 260,
+      "sightCenti": 400,
+      "cost": 2200,
+      "buildTicks": 360,
+      "speedCenti": 70,
+      "turnRateDeg": 200,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 4,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "oneWay": {
+        "warhead": 25,
+        "fuelTicks": 3000,
+        "armTiles": 3
+      },
+      "link": "gnss",
+      "gnssScatterCenti": 600,
+      "render": {
+        "size": [
+          130,
+          60,
+          240
+        ]
+      }
+    },
+    {
+      "id": "ua-storm-shadow",
+      "faction": 0,
+      "category": "unit",
+      "armor": 5,
+      "hp": 120,
+      "sightCenti": 400,
+      "cost": 1800,
+      "buildTicks": 540,
+      "speedCenti": 60,
+      "turnRateDeg": 300,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 4,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "oneWay": {
+        "warhead": 26,
+        "fuelTicks": 3000,
+        "armTiles": 3
+      },
+      "link": "gnss",
+      "gnssScatterCenti": 300,
+      "lowObservable": true,
+      "render": {
+        "size": [
+          100,
+          28,
+          140
+        ]
+      }
+    },
+    {
+      "id": "ru-airfield",
+      "faction": 1,
+      "category": "building",
+      "armor": 3,
+      "hp": 2200,
+      "sightCenti": 600,
+      "cost": 3000,
+      "buildTicks": 360,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [
+        28
+      ],
+      "produces": [
+        46,
+        47
+      ],
+      "builds": [],
+      "footprint": [
+        6,
+        4
+      ],
+      "power": -5,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "render": {
+        "size": [
+          600,
+          120,
+          400
+        ]
+      }
+    },
+    {
+      "id": "ru-geran-site",
+      "faction": 1,
+      "category": "building",
+      "armor": 3,
+      "hp": 900,
+      "sightCenti": 500,
+      "cost": 1200,
+      "buildTicks": 240,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [
+        26
+      ],
+      "produces": [
+        48,
+        49
+      ],
+      "builds": [],
+      "footprint": [
+        3,
+        2
+      ],
+      "power": -3,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "render": {
+        "size": [
+          300,
+          90,
+          200
+        ]
+      }
+    },
+    {
+      "id": "ru-su-34",
+      "faction": 1,
+      "category": "unit",
+      "armor": 5,
+      "hp": 420,
+      "sightCenti": 900,
+      "cost": 2200,
+      "buildTicks": 360,
+      "speedCenti": 110,
+      "turnRateDeg": 180,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 4,
+      "weapon": 27,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "sortie": {
+        "clip": 2,
+        "reloadTicks": 450
+      },
+      "render": {
+        "size": [
+          170,
+          50,
+          240
+        ]
+      }
+    },
+    {
+      "id": "ru-orlan",
+      "faction": 1,
+      "category": "unit",
+      "armor": 4,
+      "hp": 60,
+      "sightCenti": 1800,
+      "cost": 350,
+      "buildTicks": 90,
+      "speedCenti": 25,
+      "turnRateDeg": 150,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 3,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "render": {
+        "size": [
+          130,
+          30,
+          80
+        ]
+      }
+    },
+    {
+      "id": "ru-geran-2",
+      "faction": 1,
+      "category": "unit",
+      "armor": 4,
+      "hp": 70,
+      "sightCenti": 300,
+      "cost": 200,
+      "buildTicks": 40,
+      "speedCenti": 30,
+      "turnRateDeg": 150,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 3,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "oneWay": {
+        "warhead": 28,
+        "fuelTicks": 1800,
+        "armTiles": 3
+      },
+      "link": "gnss",
+      "gnssScatterCenti": 250,
+      "render": {
+        "size": [
+          100,
+          27,
+          105
+        ]
+      }
+    },
+    {
+      "id": "ru-geran-3",
+      "faction": 1,
+      "category": "unit",
+      "armor": 5,
+      "hp": 160,
+      "sightCenti": 400,
+      "cost": 700,
+      "buildTicks": 120,
+      "speedCenti": 60,
+      "turnRateDeg": 360,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 4,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "oneWay": {
+        "warhead": 29,
+        "fuelTicks": 1500,
+        "armTiles": 3
+      },
+      "link": "gnss",
+      "gnssScatterCenti": 200,
+      "render": {
+        "size": [
+          100,
+          30,
+          110
+        ]
+      }
+    },
+    {
+      "id": "ru-molniya-crew",
+      "faction": 1,
+      "category": "unit",
+      "armor": 0,
+      "hp": 90,
+      "sightCenti": 700,
+      "cost": 250,
+      "buildTicks": 100,
+      "speedCenti": 8,
+      "turnRateDeg": 540,
+      "radiusCenti": 25,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 0,
+      "weapon": 31,
+      "trenchWeapon": 14,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "charges": {
+        "max": 3,
+        "refillTicks": 360,
+        "refillRadiusCenti": 500
+      },
+      "render": {
+        "size": [
+          50,
+          55,
+          50
+        ]
+      }
+    },
+    {
+      "id": "ru-molniya",
+      "faction": 1,
+      "category": "unit",
+      "armor": 4,
+      "hp": 25,
+      "sightCenti": 400,
+      "cost": 0,
+      "buildTicks": 0,
+      "speedCenti": 55,
+      "turnRateDeg": 270,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 3,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "oneWay": {
+        "warhead": 30,
+        "fuelTicks": 240,
+        "armTiles": 0
+      },
+      "link": "fibre",
+      "render": {
+        "size": [
+          80,
+          30,
+          60
+        ]
+      }
+    },
+    {
+      "id": "ru-pantsir",
+      "faction": 1,
+      "category": "unit",
+      "armor": 1,
+      "hp": 380,
+      "sightCenti": 1100,
+      "cost": 1500,
+      "buildTicks": 270,
+      "speedCenti": 24,
+      "turnRateDeg": 240,
+      "radiusCenti": 41,
+      "turretTurnRateDeg": 200,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 2,
+      "weapon": 32,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "render": {
+        "size": [
+          80,
+          90,
+          135
+        ]
+      }
+    },
+    {
+      "id": "ru-pole-21",
+      "faction": 1,
+      "category": "unit",
+      "armor": 1,
+      "hp": 260,
+      "sightCenti": 900,
+      "cost": 900,
+      "buildTicks": 200,
+      "speedCenti": 22,
+      "turnRateDeg": 200,
+      "radiusCenti": 38,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 2,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "jammer": {
+        "radiusCenti": 900
+      },
+      "render": {
+        "size": [
+          75,
+          110,
+          110
         ]
       }
     }
@@ -17816,7 +19335,7 @@
     {
       "id": "ukraine-balanced",
       "faction": 0,
-      "harvesters": 3,
+      "harvesters": 4,
       "defenseRadiusCenti": 2000,
       "garrisonRadiusCenti": 800,
       "buildOrder": [
@@ -17827,7 +19346,13 @@
         14,
         15,
         11,
-        15
+        15,
+        32,
+        34,
+        11,
+        31,
+        33,
+        11
       ],
       "taskForces": [
         {
@@ -17885,6 +19410,66 @@
               3
             ]
           ]
+        },
+        {
+          "id": "robots",
+          "units": [
+            [
+              35,
+              3
+            ],
+            [
+              36,
+              2
+            ]
+          ]
+        },
+        {
+          "id": "fpv",
+          "units": [
+            [
+              38,
+              3
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        },
+        {
+          "id": "flamingo",
+          "units": [
+            [
+              42,
+              1
+            ]
+          ]
+        },
+        {
+          "id": "storm-shadow",
+          "units": [
+            [
+              43,
+              1
+            ]
+          ]
+        },
+        {
+          "id": "bombers",
+          "units": [
+            [
+              37,
+              2
+            ]
+          ]
+        }
+      ],
+      "guards": [
+        {
+          "unit": 41,
+          "count": 1,
+          "minTick": 3600
         }
       ],
       "triggers": [
@@ -17907,6 +19492,61 @@
           "taskForce": 3,
           "weight": 20,
           "minTick": 6300
+        },
+        {
+          "taskForce": 5,
+          "weight": 1,
+          "minTick": 3000,
+          "once": true
+        },
+        {
+          "taskForce": 6,
+          "weight": 1,
+          "minTick": 3600,
+          "once": true
+        },
+        {
+          "taskForce": 8,
+          "weight": 1,
+          "minTick": 4800,
+          "once": true
+        },
+        {
+          "taskForce": 7,
+          "weight": 1,
+          "minTick": 5400,
+          "once": true
+        },
+        {
+          "taskForce": 4,
+          "weight": 1,
+          "minTick": 6000,
+          "once": true
+        },
+        {
+          "taskForce": 5,
+          "weight": 15,
+          "minTick": 3000
+        },
+        {
+          "taskForce": 6,
+          "weight": 15,
+          "minTick": 3600
+        },
+        {
+          "taskForce": 7,
+          "weight": 15,
+          "minTick": 5400
+        },
+        {
+          "taskForce": 8,
+          "weight": 15,
+          "minTick": 4800
+        },
+        {
+          "taskForce": 4,
+          "weight": 15,
+          "minTick": 6000
         }
       ]
     },
@@ -17922,7 +19562,8 @@
         12,
         14,
         13,
-        11
+        11,
+        32
       ],
       "taskForces": [
         {
@@ -17972,6 +19613,22 @@
               2
             ]
           ]
+        },
+        {
+          "id": "fpv",
+          "units": [
+            [
+              38,
+              3
+            ]
+          ]
+        }
+      ],
+      "guards": [
+        {
+          "unit": 41,
+          "count": 1,
+          "minTick": 5400
         }
       ],
       "triggers": [
@@ -17994,13 +19651,18 @@
           "taskForce": 3,
           "weight": 40,
           "minTick": 3600
+        },
+        {
+          "taskForce": 4,
+          "weight": 20,
+          "minTick": 3600
         }
       ]
     },
     {
       "id": "russia-balanced",
       "faction": 1,
-      "harvesters": 3,
+      "harvesters": 4,
       "defenseRadiusCenti": 2000,
       "garrisonRadiusCenti": 800,
       "buildOrder": [
@@ -18009,6 +19671,9 @@
         27,
         25,
         28,
+        25,
+        45,
+        44,
         25
       ],
       "taskForces": [
@@ -18063,6 +19728,53 @@
               2
             ]
           ]
+        },
+        {
+          "id": "waves",
+          "units": [
+            [
+              48,
+              6
+            ]
+          ]
+        },
+        {
+          "id": "air-strike",
+          "units": [
+            [
+              46,
+              1
+            ],
+            [
+              49,
+              2
+            ]
+          ]
+        },
+        {
+          "id": "fibre",
+          "units": [
+            [
+              50,
+              2
+            ],
+            [
+              16,
+              3
+            ]
+          ]
+        }
+      ],
+      "guards": [
+        {
+          "unit": 52,
+          "count": 2,
+          "minTick": 4800
+        },
+        {
+          "unit": 53,
+          "count": 1,
+          "minTick": 6000
         }
       ],
       "triggers": [
@@ -18085,13 +19797,46 @@
           "taskForce": 3,
           "weight": 20,
           "minTick": 6300
+        },
+        {
+          "taskForce": 4,
+          "weight": 1,
+          "minTick": 3000,
+          "once": true
+        },
+        {
+          "taskForce": 6,
+          "weight": 1,
+          "minTick": 4200,
+          "once": true
+        },
+        {
+          "taskForce": 5,
+          "weight": 1,
+          "minTick": 4800,
+          "once": true
+        },
+        {
+          "taskForce": 4,
+          "weight": 40,
+          "minTick": 3000
+        },
+        {
+          "taskForce": 6,
+          "weight": 15,
+          "minTick": 4200
+        },
+        {
+          "taskForce": 5,
+          "weight": 25,
+          "minTick": 4800
         }
       ]
     },
     {
       "id": "russia-rush",
       "faction": 1,
-      "harvesters": 4,
+      "harvesters": 6,
       "defenseRadiusCenti": 1500,
       "garrisonRadiusCenti": 800,
       "buildOrder": [
@@ -18099,8 +19844,10 @@
         27,
         26,
         28,
+        27,
         25,
         29,
+        45,
         25
       ],
       "taskForces": [
@@ -18155,6 +19902,22 @@
               3
             ]
           ]
+        },
+        {
+          "id": "waves",
+          "units": [
+            [
+              48,
+              8
+            ]
+          ]
+        }
+      ],
+      "guards": [
+        {
+          "unit": 52,
+          "count": 1,
+          "minTick": 5400
         }
       ],
       "triggers": [
@@ -18177,6 +19940,11 @@
           "taskForce": 3,
           "weight": 40,
           "minTick": 4200
+        },
+        {
+          "taskForce": 4,
+          "weight": 50,
+          "minTick": 2400
         }
       ]
     }

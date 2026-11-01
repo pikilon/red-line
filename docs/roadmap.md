@@ -89,21 +89,5 @@ Owner order: build 1-3, then 4-7; keep drones in the pool for later.
 
 ### Pool: drones (not scheduled)
 
-Core idea: a drone is ammunition, not a produced unit. A soldier or vehicle
-carries drone charges, launching one spawns a short-lived drone, and charges
-refill at the base, a supply truck or a carrier vehicle (Zero Hour precedent:
-the American vehicle drones). Kinds and their counters:
-
-| Kind | Role | Counter |
-|---|---|---|
-| Radio FPV | Cheap kamikaze, strong against armour | Jammer area: it crashes or drifts |
-| Fibre-optic FPV | Immune to jamming | Short tether; the operator stays exposed |
-| Recon | Reveals the map, no attack | Light anti-air, infantry fire |
-| Repeater | Extends radio FPV control range | Priority target: its FPVs drop |
-| Shahed | Slow base-to-base strike from a launcher building | Anti-air, interceptor drones, net balloons |
-| Interceptor | Automatic base defence against slow drones | Saturation |
-| Net zeppelin | Static zone that catches slow drones | Artillery, routing around it |
-
-Counter loop: FPV beats tanks, jammer beats radio FPV, fibre beats the jammer
-but has short reach, infantry and anti-air beat fibre. First slice when
-scheduled: radio FPV charges plus the jammer.
+The air war is built in spec 43. Only what remains stays in the pool: Lancet,
+naval drones, repeater drones and the net zeppelin.

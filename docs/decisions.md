@@ -153,3 +153,15 @@ Owner answers to the Phase 2 design questions; elaborated in
   recording. Its `brief` and `prompt` text is original. Drafts may be produced
   by a local model from spectrograms; the owner approves each brief by ear
   before it becomes `approved`.
+
+## D-14 Asymmetric air war (2026-11-01)
+
+* Russia and Ukraine never share a unit design: Russia has aviation, glide
+  bombs, Shahed-type waves and electronic warfare; Ukraine has no aircraft and
+  fights with ground robots, workshop drones, interceptors and scarce
+  deep-strike missiles (spec 43). New units for one side need a different job
+  or counter from anything on the other side.
+* Flying missiles and drones are entities, so they can be shot down.
+  `Projectile`s stay unintercepted (spec 17).
+* This supersedes the "ground only" line of D-10 and the roster of six combat
+  units per faction.

@@ -13,6 +13,7 @@ import impactData from "../../../data/render/impacts.json";
 import { typeDef } from "../rules";
 import type { EntityState } from "../sim/matchSnapshot";
 import { ATLAS_CELLS, createDecalAtlas, DECAL_CELLS } from "./decalTextures";
+import { isFlyerType } from "./flyers";
 import { createRng, valueNoise } from "./terrainTexture";
 
 /** Balance values for the ground marks (`data/render/decals.json`, spec 24). */
@@ -321,6 +322,8 @@ export function createDecals(
     for (const entity of entities) {
       const type = typeDef(entity.kind);
       if (type.category !== "unit" || type.locomotor < 0) continue;
+      // Flyers leave no tracks (spec 43).
+      if (isFlyerType(type)) continue;
       seen.add(entity.id);
       const walker = walkers.get(entity.id);
       if (walker === undefined) {

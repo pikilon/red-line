@@ -36,7 +36,7 @@ impl World {
             else {
                 continue;
             };
-            if mover.site.is_some() {
+            if mover.site.is_some() || self.is_flyer(m) {
                 continue;
             }
             let owner = mover.owner;
@@ -54,6 +54,7 @@ impl World {
                     && other.owner == owner
                     && other.site.is_none()
                     && !other.contained()
+                    && !self.is_flyer(b)
                     && other.last_target.is_none()
                     && matches!(other.order, Order::Idle { last_order_id } if last_order_id != order_id)
                     && !(mover_foot && self.is_foot(b));
@@ -107,7 +108,7 @@ impl World {
             else {
                 return false;
             };
-            if j == index || other.site.is_some() || newer <= order_id {
+            if j == index || other.site.is_some() || newer <= order_id || self.is_flyer(j) {
                 return false;
             }
             let at = other.pos;

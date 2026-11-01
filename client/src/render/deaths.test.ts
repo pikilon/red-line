@@ -10,6 +10,7 @@ import {
 import { createCorpses } from "./corpses";
 import {
   createDeathCauses,
+  deathEventEntity,
   detectDeaths,
   detectHits,
   spawnDeathEffects,
@@ -17,6 +18,7 @@ import {
   splashesFor,
 } from "./deaths";
 import { createEffects } from "./effects";
+import { isAirDeath, isSelfDestruct } from "./flyers";
 
 function entity(
   id: number,
@@ -60,16 +62,16 @@ function snapshot(tick: number, entities: EntityState[]): MatchSnapshot {
 
 describe("death detection", () => {
   it("AC-07-03: death detection", () => {
-    // Full hp (250 > the 200 largest hit against light armor) but targeted:
-    // only the `fired` target marks it as a death.
+    // A targeted unit that vanished died, whatever its hp.
     const killed = entity(1, 1, "ua-kozak-scout", 10, 10, 250);
     const shooter = entity(2, 0, "ru-rifleman", 12, 10, 90, {
       flags: ENTITY_FLAGS.fired,
       target: 1,
     });
-    // Full hp and untargeted: its hp (250) exceeds the largest single hit
-    // against light armor (200), so leaving vision is not a death.
-    const walker = entity(3, 0, "ua-kozak-scout", 3, 3, 250);
+    // Untargeted and healthy: leaving vision is not a death. The "dies in one
+    // hit" guess depends on the strongest warhead in the ruleset, which the
+    // air war keeps raising (spec 43), so the Death events decide this case
+    // (see the next test); a unit at hp 0 never counts.
     const ghost = entity(4, 1, "ru-hq", 30, 30, 3000, {
       flags: ENTITY_FLAGS.ghost,
     });
@@ -80,7 +82,6 @@ describe("death detection", () => {
     const prev = snapshot(10, [
       killed,
       shooter,
-      walker,
       ghost,
       depot,
       building,
@@ -92,6 +93,46 @@ describe("death detection", () => {
 
     // A non-advancing tick reports nothing.
     expect(detectDeaths(prev, snapshot(10, [shooter]), 0)).toEqual([]);
+  });
+
+  it("spec 43: the combat Death events, not the guess, decide a death", () => {
+    const walker = entity(3, 0, "ua-kozak-scout", 3, 3, 250);
+    const killed = entity(1, 1, "ua-kozak-scout", 10, 10, 250);
+    const prev = snapshot(10, [killed, walker]);
+    // Both left the snapshot; only the killed one has a Death event.
+    const events = [
+      {
+        kind: "death" as const,
+        victim: 1,
+        victimKind: killed.kind,
+        killer: null,
+        weapon: null,
+        x: 10,
+        y: 10,
+      },
+    ];
+    expect(events.map((event) => deathEventEntity(event, prev).id)).toEqual([
+      1,
+    ]);
+    // A flyer's Death with no killer is a shot-down unit, one that killed
+    // itself is a detonation: neither is a body.
+    const jet = entity(8, 1, "ru-su-34", 6, 6, 400, {
+      flags: ENTITY_FLAGS.airborne,
+    });
+    const air = snapshot(10, [jet]);
+    const shotDown = {
+      kind: "death" as const,
+      victim: 8,
+      victimKind: jet.kind,
+      killer: null,
+      weapon: null,
+      x: 6,
+      y: 6,
+    };
+    expect(isAirDeath(shotDown, air)).toBe(true);
+    expect(isSelfDestruct(shotDown)).toBe(false);
+    expect(isSelfDestruct({ ...shotDown, killer: 8 })).toBe(true);
+    expect(isAirDeath({ ...shotDown, victim: 1 }, prev)).toBe(false);
   });
 });
 
