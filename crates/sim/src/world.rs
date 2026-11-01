@@ -515,6 +515,16 @@ impl World {
         }
     }
 
+    /// Test seam (like `set_hp`): the charges left of the launcher `id` (spec 43
+    /// §4.4), clamped to its type's maximum.
+    pub fn set_charges(&mut self, id: EntityId, charges: u32) {
+        if let Some(index) = self.index_of(id) {
+            let max = self.rules.ty(self.entities[index].kind).charges;
+            self.entities[index].charges = charges.min(max.map_or(0, |c| c.max));
+            self.entities[index].charge_clock = 0;
+        }
+    }
+
     /// Test seam (like `set_hp`): overwrites the locomotion state of `id`.
     pub fn set_locomotion_state(&mut self, id: EntityId, state: LocomotionState) {
         if let Some(index) = self.index_of(id) {
@@ -599,6 +609,8 @@ impl World {
             reload: 0,
             master: None,
             fuel: 0,
+            charges: self.rules.ty(kind).charges.map_or(0, |charges| charges.max),
+            charge_clock: 0,
         });
         id
     }

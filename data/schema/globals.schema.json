@@ -50,6 +50,8 @@
       "properties": {
         "kind": { "enum": ["foot", "tracks", "wheels", "air"] },
         "class": { "description": "Spec 43 §4.1: altitude band of an air locomotor.", "enum": ["low", "high"] },
+        "minSpeedPercent": { "description": "Spec 43 §4.1: percent of the top speed a fixed-wing flyer never drops below while airborne.", "type": "integer", "minimum": 1, "maximum": 100 },
+        "noseConeDeg": { "description": "Spec 43 §4.1: half-angle of the cone a fixed-wing flyer fires through.", "type": "integer", "minimum": 1, "maximum": 90 },
         "altitudeCenti": { "description": "Spec 43 §4.1: flight height, for rendering.", "type": "integer", "minimum": 0 },
         "pivotAngleDeg": { "type": "integer", "minimum": 1, "maximum": 180 },
         "minTurnSpeedPercent": { "type": "integer", "minimum": 25, "maximum": 100 },

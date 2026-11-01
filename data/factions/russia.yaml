@@ -117,6 +117,7 @@ types:                               # required
     locomotor: wheeled
     armor: light
     hp: 250
+    resupplies: true                 # launcher crews refill their drone charges next to it (spec 43 §4.4)
     sightCenti: 500
     cost: 600
     buildTicks: 150
@@ -152,6 +153,7 @@ types:                               # required
     category: building
     armor: structure
     hp: 1500
+    resupplies: true                 # launcher crews refill their drone charges next to it (spec 43 §4.4)
     sightCenti: 500
     cost: 1500
     buildTicks: 225
@@ -165,6 +167,7 @@ types:                               # required
     category: building
     armor: structure
     hp: 1000
+    resupplies: true                 # launcher crews refill their drone charges next to it (spec 43 §4.4)
     sightCenti: 500
     cost: 500
     buildTicks: 150
@@ -202,8 +205,8 @@ types:                               # required
     turretTurnRateDeg: 120
     render: { height: 80 }
 lateWeapons:                         # spec 43: after every faction's weapons, so earlier weapon indices stay
-  # Glide bomb: dropped from beyond Pantsir (1000) and Gepard (700) range; only Patriot (1800) reaches the jet. Slow, wide, scattered.
-  - { id: ru-kab-glide-bomb, damageType: highExplosive, damage: 200, rangeCenti: 1400, cooldownTicks: 45, splashCenti: 220, speedCenti: 50, delivery: ballistic, scatterCenti: 120, render: { model: glideBomb, flight: ballistic, apexCenti: 0, launch: softLaunch, trail: smoke } }
+  # Glide bomb (short cooldown: both bombs of the clip are a stick released in one pass): dropped from beyond Pantsir (1000) and Gepard (700) range; only Patriot (1800) reaches the jet. Slow, wide, scattered.
+  - { id: ru-kab-glide-bomb, damageType: highExplosive, damage: 200, rangeCenti: 1400, cooldownTicks: 3, splashCenti: 220, speedCenti: 50, delivery: ballistic, scatterCenti: 120, render: { model: glideBomb, flight: ballistic, apexCenti: 0, launch: softLaunch, trail: smoke } }
   # Warheads of one-way units: the unit is the projectile (rangeCenti and cooldownTicks are unused).
   - { id: ru-geran-2-warhead, damageType: highExplosive, damage: 170, rangeCenti: 100, cooldownTicks: 1, splashCenti: 160 }
   - { id: ru-geran-3-warhead, damageType: highExplosive, damage: 320, rangeCenti: 100, cooldownTicks: 1, splashCenti: 220 }
@@ -298,6 +301,7 @@ lateTypes:                           # spec 43: after the common late types, so 
     speedCenti: 8
     turnRateDeg: 540
     weapon: ru-molniya-launcher
+    charges: { max: 3, refillTicks: 360, refillRadiusCenti: 500 }   # fewer charges than the FPV team: fibre drones are jam-proof (spec 43 §4.4)
     trenchWeapon: ru-sidearm
     radiusCenti: 25
     render: { size: [50, 55, 50] }

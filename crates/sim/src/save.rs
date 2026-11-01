@@ -159,6 +159,12 @@ pub struct EntityState {
     /// Spec 43 §4.2: ticks a one-way unit has been under way.
     #[serde(default, skip_serializing_if = "is_zero")]
     pub fuel: u32,
+    /// Spec 43 §4.4: charges left of a launcher; absent means full.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub charges: Option<u32>,
+    /// Spec 43 §4.4: ticks towards the next charge.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub charge_clock: u32,
 }
 
 fn is_zero(value: &u32) -> bool {
@@ -1008,6 +1014,8 @@ fn save_entity(entity: &Entity, rules: &Ruleset) -> EntityState {
         reload: entity.reload,
         master: entity.master,
         fuel: entity.fuel,
+        charges: rules.ty(entity.kind).charges.map(|_| entity.charges),
+        charge_clock: entity.charge_clock,
     }
 }
 
@@ -1058,10 +1066,11 @@ fn load_entity(state: &EntityState, rules: &Ruleset) -> Result<Entity, String> {
             rally: site.rally.map(fx_vec2),
         }),
     };
+    let kind = type_index(rules, &state.kind)?;
     Ok(Entity {
         id: state.id,
         owner: state.owner,
-        kind: type_index(rules, &state.kind)?,
+        kind,
         pos: fx_vec2(state.pos),
         hp: state.hp,
         order: load_order(state.order),
@@ -1084,6 +1093,10 @@ fn load_entity(state: &EntityState, rules: &Ruleset) -> Result<Entity, String> {
         reload: state.reload,
         master: state.master,
         fuel: state.fuel,
+        charges: rules.ty(kind).charges.map_or(0, |charges| {
+            state.charges.unwrap_or(charges.max).min(charges.max)
+        }),
+        charge_clock: state.charge_clock,
     })
 }
 

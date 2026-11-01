@@ -76,6 +76,10 @@ impl World {
         let Some((weapon_id, weapon)) = self.weapon_data(kind) else {
             return;
         };
+        // Spec 43 §4.4: a launcher with no charge left shoots nothing.
+        if self.out_of_charges(index) {
+            return;
+        }
         let weapon = self.garrison_weapon(self.entities[index].id, weapon);
         if let Order::AttackGround { target, .. } = self.entities[index].order {
             self.fire_ground(index, weapon_id, &weapon, target);
@@ -94,8 +98,13 @@ impl World {
         } else {
             self.held_building_target(index, &weapon, held)
         };
-        let aligned = if legacy || flyer {
+        let aligned = if legacy {
             true
+        } else if flyer {
+            // A fixed-wing flyer shoots on the move, through its nose cone;
+            // it never turns a turret or stops to aim (spec 43 §4.1).
+            let aim = target_index.map(|i| self.entities[i].pos).or(building);
+            aim.is_none_or(|point| self.flyer_aligned(index, point))
         } else {
             let entity = &self.entities[index];
             let stowed =
@@ -155,11 +164,10 @@ impl World {
             point,
         );
         let in_range = distance >= fx_centi(weapon.min_range_centi) && distance <= range;
-        let aligned = if matches!(
-            self.rules.ty(kind).motion.kind,
-            LocoKind::Immediate | LocoKind::Air
-        ) {
+        let aligned = if self.rules.ty(kind).motion.kind == LocoKind::Immediate {
             true
+        } else if self.is_flyer(index) {
+            self.flyer_aligned(index, point)
         } else {
             let stowed = self.rules.ty(kind).stationary_fire
                 && (self.entities[index].speed > Fx::ZERO || self.entities[index].stow > 0);

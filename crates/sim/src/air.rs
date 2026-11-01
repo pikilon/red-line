@@ -31,8 +31,57 @@ const GROUND_CONTACT_CENTI: u32 = 100;
 /// hit points a flyer with no base to land at loses every second.
 pub const STARVE_PERCENT_PER_SECOND: u32 = 5;
 /// A flyer whose heading is further than this (angle units, 45 degrees) from
-/// its goal flies at a quarter of its speed, so it always closes in.
+/// its goal flies slowly (a quarter of its speed for a rotorcraft, its minimum
+/// speed for a fixed-wing flyer), so it always closes in.
 const SHARP_TURN: i32 = 8192;
+/// A quarter turn in angle units.
+const QUARTER_TURN: i32 = 16384;
+/// `65536 / (2 pi)`: turning radius = speed * this / turn step per tick.
+const RADIUS_PER_STEP: i64 = 10430;
+/// Angle units in a full turn.
+const TURN_UNITS: i32 = 65536;
+
+/// A fixed-wing flyer's pursuit of a goal (spec 43 §4.1).
+#[derive(Clone, Copy)]
+struct Chase {
+    /// An entity whose footprint distance replaces the distance to the goal.
+    entity: Option<usize>,
+    /// Arrival distance.
+    within: Fx,
+}
+
+impl Chase {
+    /// Distance from `pos` to the goal.
+    fn distance(&self, world: &World, pos: FxVec2, goal: FxVec2) -> Fx {
+        match self.entity {
+            Some(other) => world.entity_distance(pos, &world.entities[other]),
+            None => (goal - pos).length(),
+        }
+    }
+}
+
+/// The heading and speed of a fixed-wing flyer at `pos` and `heading` pursuing
+/// `goal`: turned towards it by at most the turn step, at its top speed or, in
+/// a sharp turn (a tighter circle), at its minimum.
+fn wing_steer(
+    motion: &crate::rules::Motion,
+    pos: FxVec2,
+    heading: Angle,
+    goal: FxVec2,
+) -> (Angle, Fx) {
+    let offset = goal - pos;
+    let bearing = if offset == FxVec2::ZERO {
+        heading
+    } else {
+        atan2(offset.x, offset.y)
+    };
+    let speed = if heading.delta(bearing).abs() > SHARP_TURN {
+        motion.min_speed
+    } else {
+        motion.max_speed
+    };
+    (heading.turn_towards(bearing, motion.turn_step), speed)
+}
 
 /// What a flyer does with its tick.
 enum Plan {
@@ -56,8 +105,11 @@ enum Arrival {
     Done(u32),
     /// The warhead goes off (when armed), against the ordered target if any.
     Detonate(Option<EntityId>),
-    /// The flyer stops there and keeps its order (it fires from there).
+    /// The flyer stops there and keeps its order (it fires from there). A
+    /// fixed-wing flyer never stops: it flies on past the target and comes round.
     Stay,
+    /// A fixed-wing flyer circles the goal until it gets another order.
+    Orbit,
 }
 
 impl World {
@@ -77,6 +129,13 @@ impl World {
                 Order::Attack { .. } | Order::AttackGround { .. }
             );
         if matches!(entity.order, Order::Idle { .. }) || waiting {
+            // A drone no launcher fired and no building produces (a save placed
+            // it) waits on the ground for an order instead of burning its fuel.
+            let ty = self.rules.ty(entity.kind);
+            if ty.one_way.is_some() && entity.master.is_none() && self.nearest_base(index).is_none()
+            {
+                return false;
+            }
             return self.dock_of(index).is_none();
         }
         true
@@ -188,6 +247,7 @@ impl World {
     /// drones looking for a new target, and sortie bookkeeping.
     pub(crate) fn air_pass(&mut self) {
         for index in 0..self.entities.len() {
+            self.charges_step(index);
             if self.entities[index].hp == 0 || self.entities[index].site.is_some() {
                 continue;
             }
@@ -232,6 +292,65 @@ impl World {
             if sortie.is_some() {
                 self.sortie_step(index);
             }
+        }
+    }
+
+    /// Spec 43 §4.4: whether the launcher at `index` has no charge to launch
+    /// with. Only types with `charges` can be empty.
+    pub(crate) fn out_of_charges(&self, index: usize) -> bool {
+        let entity = &self.entities[index];
+        self.rules.ty(entity.kind).charges.is_some() && entity.charges == 0
+    }
+
+    /// Spec 43 §4.4: whether an own `resupplies` unit or building is within
+    /// `radius_centi` of the entity at `index`.
+    pub(crate) fn resupplied(&self, index: usize, radius_centi: u32) -> bool {
+        let entity = &self.entities[index];
+        self.entities.iter().any(|source| {
+            source.hp > 0
+                && source.owner == entity.owner
+                && source.id != entity.id
+                && !source.contained()
+                && source.site.as_ref().is_none_or(|site| site.complete)
+                && self.rules.ty(source.kind).resupplies
+                && self.entity_distance(entity.pos, source) <= fx_centi(radius_centi)
+        })
+    }
+
+    /// Spec 43 §4.4: a launcher refills one charge every `refillTicks`, next to
+    /// an own supply source (`refillRadiusCenti`) or by itself (a nest). An empty
+    /// unit drops its attack order: it idles, and can still be ordered about.
+    fn charges_step(&mut self, index: usize) {
+        let entity = &self.entities[index];
+        let Some(charges) = self.rules.ty(entity.kind).charges else {
+            return;
+        };
+        if entity.hp == 0 || entity.contained() || entity.site.as_ref().is_some_and(|s| !s.complete)
+        {
+            return;
+        }
+        if entity.charges == 0
+            && entity.site.is_none()
+            && let Order::Attack { order_id, .. } | Order::AttackGround { order_id, .. } =
+                entity.order
+        {
+            self.entities[index].order = Order::Idle {
+                last_order_id: order_id,
+            };
+        }
+        let entity = &self.entities[index];
+        let supplied = entity.charges < charges.max
+            && (charges.refill_radius_centi == 0
+                || self.resupplied(index, charges.refill_radius_centi));
+        let entity = &mut self.entities[index];
+        if !supplied {
+            entity.charge_clock = 0;
+            return;
+        }
+        entity.charge_clock += 1;
+        if entity.charge_clock >= charges.refill_ticks {
+            entity.charges = (entity.charges + 1).min(charges.max);
+            entity.charge_clock = 0;
         }
     }
 
@@ -404,6 +523,9 @@ impl World {
             let entity = &self.entities[shooter];
             (entity.owner, entity.pos, entity.id)
         };
+        // Spec 43 §4.4: the drone is the launcher's ammunition.
+        let launcher = &mut self.entities[shooter];
+        launcher.charges = launcher.charges.saturating_sub(1);
         let order_id = self.next_order_id;
         self.next_order_id += 1;
         let order = match target {
@@ -429,6 +551,10 @@ impl World {
 
     /// One tick of flight for the flyer at `index` (spec 43 §4.1).
     pub(crate) fn fly(&mut self, index: usize) {
+        if self.rules.ty(self.entities[index].kind).is_fixed_wing() {
+            self.fly_wing(index);
+            return;
+        }
         match self.plan_flight(index) {
             Plan::Hold => self.entities[index].speed = Fx::ZERO,
             Plan::Finish(order_id) => {
@@ -464,6 +590,20 @@ impl World {
             return self.plan_home(index, None);
         }
         match entity.order {
+            Order::Move {
+                order_id, target, ..
+            } if ty.is_fixed_wing() => Plan::Go {
+                goal: target,
+                entity: None,
+                // A sortie flyer ends the order near the point and goes home; any
+                // other circles the point until it is ordered elsewhere.
+                within: loiter_radius(&ty.motion),
+                arrival: if ty.sortie.is_some() {
+                    Arrival::Done(order_id)
+                } else {
+                    Arrival::Orbit
+                },
+            },
             Order::Move {
                 order_id, target, ..
             } => Plan::Go {
@@ -584,6 +724,7 @@ impl World {
                         return;
                     }
                 }
+                Arrival::Orbit => {}
             }
         }
         // Terminal approach: within two steps it flies straight at the goal.
@@ -610,6 +751,185 @@ impl World {
         );
     }
 
+    /// One tick of a fixed-wing flyer (spec 43 §4.1). It is never still while
+    /// airborne: it turns at a limited rate, flies at no less than its minimum
+    /// speed, circles when it has nothing to do and shoots on the move.
+    fn fly_wing(&mut self, index: usize) {
+        match self.plan_flight(index) {
+            Plan::Hold => self.wing_loiter(index),
+            Plan::Finish(order_id) => {
+                self.entities[index].order = Order::Idle {
+                    last_order_id: order_id,
+                };
+                self.wing_loiter(index);
+            }
+            Plan::Go {
+                goal,
+                entity,
+                within,
+                arrival,
+            } => {
+                let pos = self.entities[index].pos;
+                let distance = match entity {
+                    Some(other) => self.entity_distance(pos, &self.entities[other]),
+                    None => (goal - pos).length(),
+                };
+                match arrival {
+                    Arrival::Done(order_id) if distance <= within => {
+                        self.entities[index].order = Order::Idle {
+                            last_order_id: order_id,
+                        };
+                        self.wing_loiter(index);
+                    }
+                    Arrival::Detonate(target)
+                        if distance <= within && self.armed_warhead(index) =>
+                    {
+                        self.detonate(index, target);
+                    }
+                    Arrival::Orbit => self.wing_orbit(index, goal),
+                    // An armed pass has no arrival: the weapon fires through the
+                    // nose cone and the flyer flies on.
+                    Arrival::Stay => self.wing_chase(
+                        index,
+                        goal,
+                        Chase {
+                            entity,
+                            within: fx_centi(CONTACT_CENTI),
+                        },
+                    ),
+                    _ => self.wing_chase(index, goal, Chase { entity, within }),
+                }
+            }
+        }
+    }
+
+    /// A fixed-wing flyer with nothing to fly to: parked flyers stay still,
+    /// airborne ones circle where they are.
+    fn wing_loiter(&mut self, index: usize) {
+        if !self.airborne(index) {
+            self.entities[index].speed = Fx::ZERO;
+            return;
+        }
+        let motion = self.rules.ty(self.entities[index].kind).motion;
+        let heading = Angle(
+            self.entities[index]
+                .heading
+                .0
+                .wrapping_add(motion.turn_step as u16),
+        );
+        self.wing_advance(index, heading, motion.min_speed);
+    }
+
+    /// A fixed-wing flyer circling `center` on a circle derived from its
+    /// minimum speed and turn rate; far away it flies in at top speed.
+    fn wing_orbit(&mut self, index: usize, center: FxVec2) {
+        let motion = self.rules.ty(self.entities[index].kind).motion;
+        let radius = loiter_radius(&motion);
+        let unit = &self.entities[index];
+        let rel = unit.pos - center;
+        let distance = rel.length();
+        let outward = if distance == Fx::ZERO {
+            unit.heading
+        } else {
+            atan2(rel.x, rel.y)
+        };
+        // Tangent when on the circle, towards the centre from further out and
+        // away from it from further in.
+        let error = i64::from(distance.raw()) - i64::from(radius.raw());
+        let lean = (error * i64::from(QUARTER_TURN) / i64::from(radius.raw().max(1)))
+            .clamp(-i64::from(QUARTER_TURN), i64::from(QUARTER_TURN)) as i32;
+        let desired = Angle((i32::from(outward.0) + QUARTER_TURN + lean) as u16);
+        let heading = unit.heading.turn_towards(desired, motion.turn_step);
+        let speed = if distance > radius + radius + radius {
+            motion.max_speed
+        } else {
+            motion.min_speed
+        };
+        self.wing_advance(index, heading, speed);
+    }
+
+    /// A fixed-wing flyer flying at `goal` (the footprint of `entity` when it is
+    /// one), arriving inside `within`. It steers at the goal at its turn rate
+    /// and slows to its minimum speed in a sharp turn (a tighter circle). A goal inside the turning circle cannot be
+    /// reached by turning, so it flies straight on, overshoots, and comes round
+    /// once pursuit would get there: it never circles a target forever.
+    fn wing_chase(&mut self, index: usize, goal: FxVec2, wing: Chase) {
+        let unit = &self.entities[index];
+        let motion = self.rules.ty(unit.kind).motion;
+        let (turned, speed) = wing_steer(&motion, unit.pos, unit.heading, goal);
+        // Pursuit is exactly what the flyer would do next tick, so a "yes"
+        // stays a "yes" while it turns and the answer cannot flip-flop.
+        let ahead = unit.pos + unit.heading.dir().scale(speed + speed);
+        let inside_map = ahead.x.raw() >= 0
+            && ahead.y.raw() >= 0
+            && ahead.x.raw() < i32::from(self.nav.width()) * 65536
+            && ahead.y.raw() < i32::from(self.nav.height()) * 65536;
+        let heading =
+            if !inside_map || self.pursuit_arrives(&motion, unit.pos, unit.heading, goal, wing) {
+                turned
+            } else {
+                unit.heading
+            };
+        self.wing_advance(index, heading, speed);
+    }
+
+    /// Whether pure pursuit of `goal` from `pos` and `heading`, at the turn
+    /// rate, gets inside `wing.within` of it within one full circle.
+    fn pursuit_arrives(
+        &self,
+        motion: &crate::rules::Motion,
+        mut pos: FxVec2,
+        mut heading: Angle,
+        goal: FxVec2,
+        wing: Chase,
+    ) -> bool {
+        // Further out than two of its widest turning circles every goal is
+        // reachable, so only a near goal needs the look ahead.
+        let widest = turn_radius(motion.max_speed, motion.turn_step);
+        if wing.distance(self, pos, goal) > widest + widest + wing.within {
+            return true;
+        }
+        let steps = (TURN_UNITS / motion.turn_step.max(1) + 4).min(72);
+        for _ in 0..steps {
+            let (turned, speed) = wing_steer(motion, pos, heading, goal);
+            heading = turned;
+            pos = pos + heading.dir().scale(speed);
+            if wing.distance(self, pos, goal) <= wing.within {
+                return true;
+            }
+        }
+        false
+    }
+
+    /// Sets a fixed-wing flyer's heading and speed and moves it one step.
+    fn wing_advance(&mut self, index: usize, heading: Angle, speed: Fx) {
+        let max_x = i32::from(self.nav.width()) * 65536 - 1;
+        let max_y = i32::from(self.nav.height()) * 65536 - 1;
+        let unit = &mut self.entities[index];
+        unit.heading = heading;
+        unit.speed = speed;
+        let next = unit.pos + heading.dir().scale(speed);
+        unit.pos = FxVec2::new(
+            Fx::from_raw(next.x.raw().clamp(0, max_x)),
+            Fx::from_raw(next.y.raw().clamp(0, max_y)),
+        );
+    }
+
+    /// Spec 43 §4.1: whether a weapon of entity `index` may fire at `point`:
+    /// a fixed-wing flyer only through its nose cone, everything else always.
+    pub(crate) fn flyer_aligned(&self, index: usize, point: FxVec2) -> bool {
+        let entity = &self.entities[index];
+        let ty = self.rules.ty(entity.kind);
+        if !ty.is_fixed_wing() {
+            return true;
+        }
+        let offset = point - entity.pos;
+        if offset == FxVec2::ZERO {
+            return true;
+        }
+        entity.heading.delta(atan2(offset.x, offset.y)).abs() <= ty.motion.nose_cone
+    }
+
     /// Spec 43 §4.2 for a ground one-way unit (and the point it drives to):
     /// detonates when armed and within contact of `target`.
     pub(crate) fn ground_contact(&mut self, index: usize, target: Option<EntityId>, point: FxVec2) {
@@ -629,6 +949,20 @@ impl World {
     pub(crate) fn is_flyer(&self, index: usize) -> bool {
         self.rules.ty(self.entities[index].kind).is_air()
     }
+}
+
+/// Turning radius of a flyer at `speed` with `turn_step` angle units a tick:
+/// `speed / angular rate` in fixed point.
+pub fn turn_radius(speed: Fx, turn_step: i32) -> Fx {
+    let raw = i64::from(speed.raw()) * RADIUS_PER_STEP / i64::from(turn_step.max(1));
+    Fx::from_raw(raw.min(i64::from(i32::MAX)) as i32)
+}
+
+/// Radius of the circle a fixed-wing flyer holds: its turning circle at the
+/// minimum speed with a quarter to spare, so the turn rate can always follow it.
+pub fn loiter_radius(motion: &crate::rules::Motion) -> Fx {
+    let radius = turn_radius(motion.min_speed, motion.turn_step);
+    Fx::from_raw(radius.raw() + radius.raw() / 4)
 }
 
 /// A seeded point in the disc of `radius_centi` around the origin.

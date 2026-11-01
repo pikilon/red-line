@@ -105,6 +105,19 @@ pub struct SortieDef {
     pub reload_ticks: u32,
 }
 
+/// Spec 43 §4.4: a launcher's drones are its ammunition. It holds up to `max`
+/// charges, spends one per launch and gets one back every `refill_ticks`: next
+/// to an own `resupplies` source (`refill_radius_centi > 0`, a team on foot) or
+/// by itself (`refill_radius_centi == 0`, a nest).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChargesDef {
+    pub max: u32,
+    pub refill_ticks: u32,
+    #[serde(default)]
+    pub refill_radius_centi: u32,
+}
+
 /// Spec 43 §4.5: an electronic-warfare vehicle.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -137,6 +150,11 @@ pub struct Motion {
     pub shove_push: Fx,
     /// Spec 43: altitude band of a `LocoKind::Air` hull.
     pub air_class: AirClass,
+    /// Spec 43 §4.1: slowest speed a fixed-wing hull flies while airborne.
+    pub min_speed: Fx,
+    /// Spec 43 §4.1: half-angle (angle units) of the nose cone a fixed-wing
+    /// hull fires through.
+    pub nose_cone: i32,
 }
 
 /// A locomotor from `globals.locomotors` (spec 11 §4.1). `id` is its key.
@@ -160,6 +178,10 @@ pub struct LocomotorDef {
     pub class: AirClass,
     /// Spec 43 §4.1: flight height; presentation only.
     pub altitude_centi: u32,
+    /// Spec 43 §4.1: percent of the top speed a fixed-wing hull never drops below.
+    pub min_speed_percent: u32,
+    /// Spec 43 §4.1: half-angle of a fixed-wing hull's firing cone, in degrees.
+    pub nose_cone_deg: u32,
 }
 
 fn no_locomotor() -> i32 {
@@ -195,6 +217,19 @@ fn motion_of(ty: &TypeDef, locomotor: Option<&LocomotorDef>) -> Motion {
         motion.shove_damage = l.shove_damage;
         motion.shove_push = fx_centi(l.shove_push_centi);
         motion.air_class = l.class;
+        // Spec 43 §4.1: rulesets that predate the flight model get its defaults.
+        let min_percent = if l.min_speed_percent == 0 {
+            60
+        } else {
+            l.min_speed_percent
+        };
+        let cone_deg = if l.nose_cone_deg == 0 {
+            20
+        } else {
+            l.nose_cone_deg
+        };
+        motion.min_speed = percent_of(max_speed, min_percent);
+        motion.nose_cone = deg_to_units(cone_deg);
     }
     motion
 }
@@ -404,6 +439,16 @@ pub struct TypeDef {
     /// Spec 43 §4.1: an enemy weapon engages it only inside a third of its range.
     #[serde(default)]
     pub low_observable: bool,
+    /// Spec 43 §4.4: the charges a launching unit or building holds.
+    #[serde(default)]
+    pub charges: Option<ChargesDef>,
+    /// Spec 43 §4.4: units with charges refill next to this one (own side only).
+    #[serde(default)]
+    pub resupplies: bool,
+    /// Spec 43 §4.1: a rotorcraft, the only flyer that may hover. Every other
+    /// flyer is fixed-wing and never stops while airborne.
+    #[serde(default)]
+    pub hover: bool,
     /// Precomputed at load (`Ruleset::from_json`), never read from the wire.
     #[serde(skip)]
     pub motion: Motion,
@@ -857,6 +902,11 @@ impl TypeDef {
     /// Spec 43: the type flies (`LocoKind::Air`).
     pub fn is_air(&self) -> bool {
         self.motion.kind == LocoKind::Air
+    }
+
+    /// Spec 43 §4.1: a flyer that cannot hover (everything but `hover: true`).
+    pub fn is_fixed_wing(&self) -> bool {
+        self.is_air() && !self.hover
     }
 
     /// Spec 43: the type can be ordered to attack: it fires a weapon or is

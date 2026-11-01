@@ -164,6 +164,19 @@
           "properties": { "radiusCenti": { "$ref": "#/$defs/positive" } }
         },
         "gnssScatterCenti": { "description": "Spec 43 §4.5: how far off a jammed gnss warhead lands.", "$ref": "#/$defs/positive" },
+        "charges": {
+          "description": "Spec 43 §4.4: a launcher's drones are its ammunition. Up to max launches, one charge back every refillTicks next to an own resupplies unit or building within refillRadiusCenti; without a radius it refills by itself.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max", "refillTicks"],
+          "properties": {
+            "max": { "$ref": "#/$defs/positive" },
+            "refillTicks": { "$ref": "#/$defs/positive" },
+            "refillRadiusCenti": { "$ref": "#/$defs/positive" }
+          }
+        },
+        "resupplies": { "description": "Spec 43 §4.4: launcher units of the same side refill their charges next to this one.", "type": "boolean" },
+        "hover": { "description": "Spec 43 §4.1: a rotorcraft. Only these flyers may hover; every other flyer is fixed-wing and never stops while airborne.", "type": "boolean" },
         "lowObservable": { "description": "Spec 43 §4.1: enemy weapons engage it only inside a third of their range.", "type": "boolean" },
         "transport": {
           "description": "Spec 34: infantry can ride this vehicle (Zero Hour TransportContain).",

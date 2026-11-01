@@ -3,7 +3,7 @@
 use std::collections::BTreeMap;
 
 use crate::entity::{Entity, EntityId, Ghost, NEUTRAL, Order, PlayerId, Projectile};
-use crate::fixed::FxVec2;
+use crate::fixed::{Fx, FxVec2};
 use crate::map::{Cell, cell_of};
 use crate::nav::footprint_center;
 use crate::rules::QUEUE_SLOTS;
@@ -280,13 +280,19 @@ pub fn encode_match_snapshot_with_shots(
     out.push(rally_count);
     out.extend_from_slice(&rallies);
 
-    // Spec 43: ammo, fuel and master of the flyers and launched drones listed above.
+    // Spec 43: ammo (or launcher charges), fuel and master of the flyers, launchers
+    // and launched drones listed above.
     let mut air = Vec::new();
     let mut air_count = 0;
     for entity in world.entities() {
         let ty = world.rules().ty(entity.kind);
         let listed = rows_ids.contains(&entity.id);
-        if !listed || !(ty.sortie.is_some() || ty.one_way.is_some() || entity.master.is_some()) {
+        if !listed
+            || !(ty.sortie.is_some()
+                || ty.one_way.is_some()
+                || ty.charges.is_some()
+                || entity.master.is_some())
+        {
             continue;
         }
         air_count += 1;
@@ -297,10 +303,15 @@ pub fn encode_match_snapshot_with_shots(
             }
             _ => 1000,
         };
+        // Spec 43 §4.4: a launcher's charges are shown like a clip.
+        let (ammo, clip) = match ty.charges {
+            Some(charges) => (entity.charges, charges.max),
+            None => (entity.ammo, ty.sortie.map_or(0, |sortie| sortie.clip)),
+        };
         air.extend_from_slice(&[
             entity.id as i32,
-            entity.ammo as i32,
-            ty.sortie.map_or(0, |sortie| sortie.clip) as i32,
+            ammo as i32,
+            clip as i32,
             fuel,
             entity.master.map_or(-1, |master| master as i32),
         ]);
@@ -468,7 +479,9 @@ fn ghost_row(world: &World, id: EntityId, ghost: &Ghost) -> [i32; ENTITY_STRIDE]
 
 fn entity_flags(world: &World, entity: &Entity) -> i32 {
     let mut flags = 0;
-    if entity.site.is_none() && !matches!(entity.order, Order::Idle { .. }) {
+    // A fixed-wing flyer circling with no order is moving too (spec 43 §4.1).
+    let flying = entity.speed > Fx::ZERO && world.rules().ty(entity.kind).is_air();
+    if entity.site.is_none() && (flying || !matches!(entity.order, Order::Idle { .. })) {
         flags |= FLAG_MOVING;
     }
     if entity.site.as_ref().is_some_and(|site| !site.complete) {

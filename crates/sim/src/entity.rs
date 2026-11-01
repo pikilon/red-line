@@ -166,6 +166,11 @@ pub struct Entity {
     pub master: Option<EntityId>,
     /// Spec 43 §4.2: ticks a `oneWay` unit has been under way (fuel burnt).
     pub fuel: u32,
+    /// Spec 43 §4.4: charges left of a launcher (`charges` types); `0` for
+    /// everything else.
+    pub charges: u32,
+    /// Spec 43 §4.4: ticks towards the next charge.
+    pub charge_clock: u32,
 }
 
 /// The locomotion and turret state of an entity (spec 11 §5.1). Read and written

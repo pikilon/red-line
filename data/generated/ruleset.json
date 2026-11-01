@@ -157,7 +157,9 @@
       "shoveDamage": 0,
       "shovePushCenti": 0,
       "class": "low",
-      "altitudeCenti": 140
+      "altitudeCenti": 140,
+      "minSpeedPercent": 60,
+      "noseConeDeg": 20
     },
     {
       "id": "airHigh",
@@ -174,7 +176,9 @@
       "shoveDamage": 0,
       "shovePushCenti": 0,
       "class": "high",
-      "altitudeCenti": 320
+      "altitudeCenti": 320,
+      "minSpeedPercent": 60,
+      "noseConeDeg": 20
     }
   ],
   "weapons": [
@@ -824,7 +828,7 @@
       "damage": 200,
       "rangeCenti": 1400,
       "minRangeCenti": 0,
-      "cooldownTicks": 45,
+      "cooldownTicks": 3,
       "splashCenti": 220,
       "projectileTicks": 0,
       "speedCenti": 50,
@@ -1375,6 +1379,7 @@
       "loadTicks": 45,
       "unloadTicks": 15,
       "freeUnit": -1,
+      "resupplies": true,
       "render": {
         "size": [
           60,
@@ -1499,6 +1504,7 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": 9,
+      "resupplies": true,
       "render": {
         "size": [
           400,
@@ -1546,6 +1552,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "healsInfantry": true,
+      "resupplies": true,
       "render": {
         "size": [
           300,
@@ -1979,6 +1986,7 @@
       "loadTicks": 45,
       "unloadTicks": 15,
       "freeUnit": -1,
+      "resupplies": true,
       "render": {
         "size": [
           60,
@@ -2103,6 +2111,7 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": 23,
+      "resupplies": true,
       "render": {
         "size": [
           400,
@@ -2150,6 +2159,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "healsInfantry": true,
+      "resupplies": true,
       "render": {
         "size": [
           300,
@@ -2371,6 +2381,11 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "charges": {
+        "max": 6,
+        "refillTicks": 60,
+        "refillRadiusCenti": 0
+      },
       "render": {
         "size": [
           200,
@@ -2589,6 +2604,7 @@
         "clip": 4,
         "reloadTicks": 360
       },
+      "hover": true,
       "render": {
         "size": [
           124,
@@ -2630,6 +2646,11 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "charges": {
+        "max": 4,
+        "refillTicks": 300,
+        "refillRadiusCenti": 500
+      },
       "render": {
         "size": [
           40,
@@ -2676,6 +2697,7 @@
         "armTiles": 0
       },
       "link": "radio",
+      "hover": true,
       "render": {
         "size": [
           46,
@@ -2722,6 +2744,7 @@
         "armTiles": 0
       },
       "link": "autonomous",
+      "hover": true,
       "render": {
         "size": [
           36,
@@ -3166,6 +3189,11 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "charges": {
+        "max": 3,
+        "refillTicks": 360,
+        "refillRadiusCenti": 500
+      },
       "render": {
         "size": [
           50,

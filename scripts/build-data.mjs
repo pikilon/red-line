@@ -194,6 +194,13 @@ export function checkLocomotorCoverage(sources) {
       if (t.category === "building" && t.weapon !== undefined && !launches.has(t.weapon) && !(t.turretTurnRateDeg > 0)) {
         errors.push({ file: source.file, pointer: `/types/${i}/turretTurnRateDeg`, code: "invalid-value", message: `armed building ${t.id} has no turretTurnRateDeg` });
       }
+      // Spec 43 §4.4: charges are the ammunition of a weapon that launches a unit.
+      if (t.charges !== undefined && !launches.has(t.weapon)) {
+        errors.push({ file: source.file, pointer: `/types/${i}/charges`, code: "invalid-value", message: `${t.id} has charges but its weapon launches nothing` });
+      }
+      if (t.hover !== undefined && globals.locomotors?.[t.locomotor]?.kind !== "air") {
+        errors.push({ file: source.file, pointer: `/types/${i}/hover`, code: "invalid-value", message: `${t.id} hovers but is not a flyer` });
+      }
       if (t.category !== "unit") return;
       if (t.locomotor === undefined) {
         errors.push({ file: source.file, pointer: `/types/${i}/locomotor`, code: "missing-value", message: `unit ${t.id} has no locomotor` });
@@ -624,7 +631,7 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       shoveDamage: l.shoveDamage ?? 0,
       shovePushCenti: l.shovePushCenti ?? 0,
       // Spec 43 §4.1: altitude band and flight height of an air locomotor.
-      ...(l.kind === "air" ? { class: l.class ?? "low", altitudeCenti: l.altitudeCenti ?? 0 } : {}),
+      ...(l.kind === "air" ? { class: l.class ?? "low", altitudeCenti: l.altitudeCenti ?? 0, minSpeedPercent: l.minSpeedPercent ?? 60, noseConeDeg: l.noseConeDeg ?? 20 } : {}),
     })),
     weapons: weaponList.map((w) => ({
       id: w.id,
@@ -702,6 +709,9 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       ...(t.jammer === undefined ? {} : { jammer: t.jammer }),
       ...(t.gnssScatterCenti === undefined ? {} : { gnssScatterCenti: t.gnssScatterCenti }),
       ...(t.lowObservable === undefined ? {} : { lowObservable: t.lowObservable }),
+      ...(t.hover === undefined ? {} : { hover: t.hover }),
+      ...(t.charges === undefined ? {} : { charges: { max: t.charges.max, refillTicks: t.charges.refillTicks, refillRadiusCenti: t.charges.refillRadiusCenti ?? 0 } }),
+      ...(t.resupplies === undefined ? {} : { resupplies: t.resupplies }),
       render: { size: renderSize(t) },
     })),
     factions: factions.map((f) => ({ id: f.id, hq: typeIndex.get(f.hq), dozer: typeIndex.get(f.dozer) })),

@@ -116,6 +116,7 @@ types:                               # required
     locomotor: wheeled
     armor: light
     hp: 250
+    resupplies: true                 # launcher crews refill their drone charges next to it (spec 43 §4.4)
     sightCenti: 500
     cost: 600
     buildTicks: 150
@@ -151,6 +152,7 @@ types:                               # required
     category: building
     armor: structure
     hp: 1500
+    resupplies: true                 # launcher crews refill their drone charges next to it (spec 43 §4.4)
     sightCenti: 500
     cost: 1500
     buildTicks: 225
@@ -164,6 +166,7 @@ types:                               # required
     category: building
     armor: structure
     hp: 1000
+    resupplies: true                 # launcher crews refill their drone charges next to it (spec 43 §4.4)
     sightCenti: 500
     cost: 500
     buildTicks: 150
@@ -237,6 +240,7 @@ lateTypes:                           # spec 43: after the common late types, so 
     requires: [ua-supply-center]
     requiresPower: true
     weapon: ua-sting-launcher         # launches Stings: nothing to aim, so no turret
+    charges: { max: 6, refillTicks: 60 }    # refills by itself, so only saturation beats it (spec 43 §4.4)
     render: { height: 95 }
   - id: ua-patriot                   # long-range anti-air: the only answer to a Su-34; very expensive, slow to reload
     category: building
@@ -296,6 +300,7 @@ lateTypes:                           # spec 43: after the common late types, so 
   - id: ua-baba-yaga                 # heavy hexacopter bomber: slow, drops on what it hangs over, any low weapon downs it
     category: unit
     locomotor: airLow
+    hover: true                      # rotorcraft: may stop and hang in the air (spec 43 §4.1)
     armor: drone
     hp: 160
     sightCenti: 500
@@ -317,12 +322,14 @@ lateTypes:                           # spec 43: after the common late types, so 
     speedCenti: 8
     turnRateDeg: 540
     weapon: ua-fpv-launcher
+    charges: { max: 4, refillTicks: 300, refillRadiusCenti: 500 }   # drones are ammunition: 4 launches, then resupply by a truck, supply center or barracks (spec 43 §4.4)
     trenchWeapon: ua-sidearm
     radiusCenti: 25
     render: { size: [40, 50, 40] }
   - id: ua-fpv                       # racing quad: a jammer kills them all, small arms too
     category: unit
     locomotor: airLow
+    hover: true                      # rotorcraft: may stop and hang in the air (spec 43 §4.1)
     armor: drone
     hp: 20
     sightCenti: 300
@@ -334,6 +341,7 @@ lateTypes:                           # spec 43: after the common late types, so 
   - id: ua-sting                     # autonomous interceptor ram: cannot reach class high
     category: unit
     locomotor: airLow
+    hover: true                      # rotorcraft: may stop and hang in the air (spec 43 §4.1)
     armor: drone
     hp: 30
     sightCenti: 400

@@ -7,7 +7,7 @@ mod common;
 
 use common::saves::load_example;
 use sim::entity::EntityId;
-use sim::fixed::FxVec2;
+use sim::fixed::{Fx, FxVec2};
 use sim::hash::state_hash;
 use sim::map::{Cell, MapGrid};
 use sim::rules::{Ruleset, fx_centi};
@@ -170,17 +170,19 @@ fn a_missile_on_its_rail_is_not_airborne_until_launched() {
 #[test]
 fn low_observable_missiles_are_engaged_only_inside_a_third_of_the_range() {
     // Gepard range 700: a normal high flyer at 5 tiles is hit, the stealth
-    // missile only inside 2.33 tiles.
+    // missile only inside 2.33 tiles. The flyer cannot hover, so it flies away
+    // from the Gepard along its line of fire.
     let hit_at = |target: &str, distance: u32| {
         let mut world = sandbox();
-        put(&mut world, 0, "ua-gepard", 1000, 2000);
-        let flyer = put(&mut world, 1, target, 1000 + distance, 2000);
+        put(&mut world, 0, "ua-gepard", 1000, 1000);
+        let flyer = put(&mut world, 1, target, 1000, 1000 + distance);
+        fly_to(&mut world, 1, flyer, 1000, 3800);
         steps(&mut world, 15);
         hp(&world, flyer) < max_hp(&world, target)
     };
     assert!(hit_at("ru-geran-3", 500), "a high drone at 5 tiles is hit");
     assert!(!hit_at("ua-storm-shadow", 500), "stealth at 5 tiles is not");
-    assert!(hit_at("ua-storm-shadow", 200), "stealth at 2 tiles is");
+    assert!(hit_at("ua-storm-shadow", 150), "stealth at 1.5 tiles is");
 }
 
 #[test]
@@ -340,18 +342,26 @@ fn the_warhead_is_unarmed_until_the_arming_distance_is_flown() {
 #[test]
 fn a_one_way_drone_out_of_fuel_falls_and_detonates_where_it_is() {
     let mut world = sandbox();
-    // Molniya: fuelTicks 240. It flies a few steps, then idles in the air.
+    // Molniya: fuelTicks 240. It is ordered to a point away from the vehicle,
+    // circles it (a fixed-wing flyer cannot hang there), and falls at 240.
     let victim = put(&mut world, 0, "ua-leopard-2a4", 2000, 2000);
     let molniya = put(&mut world, 1, "ru-molniya", 1900, 2000);
-    fly_to(&mut world, 1, molniya, 2020, 2000);
+    fly_to(&mut world, 1, molniya, 2600, 2000);
     steps(&mut world, 200);
     assert!(world.entity(molniya).is_some(), "still fuel left");
     assert_eq!(hp(&world, victim), max_hp(&world, "ua-leopard-2a4"));
-    steps(&mut world, 80);
+    let mut blast = None;
+    for _ in 0..80 {
+        world.step();
+        if let Some(&(_, pos)) = detonations(&world).first() {
+            blast = Some(pos);
+        }
+    }
     assert!(world.entity(molniya).is_none(), "out of fuel at 240 ticks");
+    let pos = blast.expect("it came down and went off where it was");
     assert!(
-        hp(&world, victim) < max_hp(&world, "ua-leopard-2a4"),
-        "it came down on the vehicle below"
+        (pos - at(2600, 2000)).length() <= fx_centi(300),
+        "over its ordered point"
     );
 }
 
@@ -1062,4 +1072,616 @@ fn air_war_has_sortie_waves_and_interceptors() {
     assert!(stings, "the nest launched Stings");
     assert!(bombs, "the jets dropped bombs");
     assert!(find(&world, "ru-geran-2").is_empty(), "the wave is spent");
+}
+
+// ---------------------------------------------------------------------------
+// §4.1 flight model: fixed-wing flyers never stop, rotorcraft may hover
+// ---------------------------------------------------------------------------
+
+fn motion(world: &World, id: &str) -> sim::rules::Motion {
+    world.rules().ty(kind(world, id)).motion
+}
+
+fn speed_of(world: &World, id: EntityId) -> Fx {
+    world.entity(id).unwrap().speed
+}
+
+#[test]
+fn only_the_rotorcraft_may_hover() {
+    let world = sandbox();
+    for id in ["ua-baba-yaga", "ua-fpv", "ua-sting"] {
+        assert!(world.rules().ty(kind(&world, id)).hover, "{id} hovers");
+    }
+    let rules = world.rules();
+    for ty in rules.types.iter().filter(|ty| ty.is_air()) {
+        let rotor = matches!(ty.id.as_str(), "ua-baba-yaga" | "ua-fpv" | "ua-sting");
+        assert_eq!(ty.is_fixed_wing(), !rotor, "{}", ty.id);
+        if ty.is_fixed_wing() {
+            assert!(ty.motion.min_speed > Fx::ZERO, "{}", ty.id);
+            assert!(ty.motion.turn_step > 0, "{}", ty.id);
+        }
+    }
+}
+
+#[test]
+fn a_fixed_wing_flyer_never_drops_below_its_minimum_speed_while_airborne() {
+    let mut world = sandbox();
+    // No base: an idle flyer stays up. An Orlan, a Su-34, a Geran and a
+    // Storm Shadow, each with a different job.
+    let orlan = put(&mut world, 1, "ru-orlan", 3000, 2000);
+    let jet = put(&mut world, 1, "ru-su-34", 5000, 1000);
+    let geran = put(&mut world, 1, "ru-geran-2", 6000, 3000);
+    let target = put(&mut world, 0, "ua-leopard-2a4", 1000, 3000);
+    fly_to(&mut world, 1, orlan, 3500, 2500);
+    fly_to(&mut world, 1, jet, 1000, 1000);
+    order(
+        &mut world,
+        1,
+        Command::Attack {
+            units: vec![geran],
+            target,
+        },
+    );
+    let ids = [orlan, jet, geran];
+    for tick in 0..400 {
+        world.step();
+        for &id in &ids {
+            let Some(entity) = world.entity(id) else {
+                continue;
+            };
+            let floor = world.rules().ty(entity.kind).motion.min_speed;
+            assert!(world.is_airborne(id));
+            assert!(
+                entity.speed >= floor,
+                "tick {tick}: {} stopped",
+                entity.kind
+            );
+        }
+    }
+    assert!(world.entity(orlan).is_some(), "the spotter still circles");
+}
+
+#[test]
+fn a_fixed_wing_flyer_turns_at_its_rate_and_never_in_place() {
+    let mut world = sandbox();
+    let jet = put(&mut world, 1, "ru-su-34", 4000, 2000);
+    fly_to(&mut world, 1, jet, 4000, 600);
+    steps(&mut world, 3);
+    let step = motion(&world, "ru-su-34").turn_step;
+    // Order it back the way it came: a U-turn, not a spin.
+    fly_to(&mut world, 1, jet, 4000, 3500);
+    let mut last = world.entity(jet).unwrap().clone();
+    let mut travelled = Fx::ZERO;
+    for _ in 0..60 {
+        world.step();
+        let now = world.entity(jet).unwrap().clone();
+        assert!(last.heading.delta(now.heading).abs() <= step, "turn rate");
+        assert!(now.speed >= motion(&world, "ru-su-34").min_speed);
+        travelled = travelled + (now.pos - last.pos).length();
+        last = now;
+    }
+    assert!(
+        travelled > fx_centi(2000),
+        "it kept flying through the turn"
+    );
+}
+
+#[test]
+fn an_idle_flyer_with_no_base_circles_inside_a_circle_of_its_speed_and_turn_rate() {
+    let mut world = sandbox();
+    let jet = put(&mut world, 1, "ru-su-34", 4000, 2000);
+    let m = motion(&world, "ru-su-34");
+    let radius = sim::air::turn_radius(m.min_speed, m.turn_step);
+    let start = world.entity(jet).unwrap().pos;
+    let mut farthest = Fx::ZERO;
+    for _ in 0..200 {
+        world.step();
+        let e = world.entity(jet).unwrap();
+        assert!(e.speed >= m.min_speed);
+        farthest = farthest.max((e.pos - start).length());
+    }
+    // A full circle of radius r is at most 2 r across.
+    assert!(farthest <= radius + radius + fx_centi(20), "{farthest:?}");
+    assert!(farthest > radius, "it really circles");
+}
+
+#[test]
+fn a_spotter_circles_over_its_ordered_point() {
+    let mut world = sandbox();
+    let orlan = put(&mut world, 1, "ru-orlan", 1000, 1000);
+    fly_to(&mut world, 1, orlan, 4000, 2500);
+    let m = motion(&world, "ru-orlan");
+    let ring = sim::air::loiter_radius(&m);
+    steps(&mut world, 300);
+    let centre = at(4000, 2500);
+    let (mut nearest, mut farthest) = (fx_centi(10_000), Fx::ZERO);
+    for _ in 0..300 {
+        world.step();
+        let e = world.entity(orlan).unwrap();
+        assert!(e.speed >= m.min_speed);
+        assert!(
+            matches!(e.order, Order::Move { .. }),
+            "the circle is its order"
+        );
+        let d = (e.pos - centre).length();
+        nearest = nearest.min(d);
+        farthest = farthest.max(d);
+    }
+    assert!(
+        farthest <= ring + Fx::from_raw(ring.raw() / 2),
+        "inside its circle: {farthest:?}"
+    );
+    assert!(
+        nearest >= Fx::from_raw(ring.raw() / 2),
+        "and not parked on the point: {nearest:?}"
+    );
+}
+
+#[test]
+fn a_one_way_flyer_reaches_a_target_inside_its_turning_circle() {
+    // Offsets all around a target well inside every flyer's turning circle.
+    for id in ["ru-geran-2", "ru-geran-3", "ru-molniya", "ua-flamingo"] {
+        for (dx, dy) in [
+            (0, 80),
+            (0, -80),
+            (80, 0),
+            (-80, 0),
+            (120, 120),
+            (-100, -60),
+            (30, -30),
+        ] {
+            let mut world = sandbox();
+            let (side, other) = if id.starts_with("ua-") {
+                (0, 1)
+            } else {
+                (1, 0)
+            };
+            let victim = put(&mut world, other, "ua-leopard-2a4", 4000, 2000);
+            let flyer = put(&mut world, side, id, (4000 + dx) as u32, (2000 + dy) as u32);
+            order(
+                &mut world,
+                side,
+                Command::Attack {
+                    units: vec![flyer],
+                    target: victim,
+                },
+            );
+            let mut done = false;
+            for _ in 0..300 {
+                world.step();
+                if !detonations(&world).is_empty() {
+                    done = true;
+                    break;
+                }
+            }
+            assert!(done, "{id} from ({dx}, {dy}) never arrived");
+            assert!(world.entity(flyer).is_none());
+        }
+    }
+}
+
+#[test]
+fn a_one_way_flyer_whose_target_is_behind_it_turns_round_and_gets_there() {
+    let mut world = sandbox();
+    let victim = put(&mut world, 0, "ua-leopard-2a4", 4000, 2000);
+    let geran = put(&mut world, 1, "ru-geran-3", 4000, 2150);
+    // Heading 0 is +y, away from the target.
+    order(
+        &mut world,
+        1,
+        Command::Attack {
+            units: vec![geran],
+            target: victim,
+        },
+    );
+    steps(&mut world, 200);
+    assert!(world.entity(geran).is_none());
+    assert!(hp(&world, victim) < max_hp(&world, "ua-leopard-2a4"));
+}
+
+/// An airfield, a bomber and a target, with the pass recorded tick by tick:
+/// `(airborne, speed ok, released this tick)`.
+fn bombing_pass() -> (World, Vec<(bool, bool, bool)>) {
+    let mut world = sandbox();
+    build(&mut world, 1, "ru-airfield", 10, 10);
+    let target = build(&mut world, 0, "ua-power-plant", 40, 12);
+    let jet = put(&mut world, 1, "ru-su-34", 1250, 900);
+    let floor = motion(&world, "ru-su-34").min_speed;
+    order(
+        &mut world,
+        1,
+        Command::Attack {
+            units: vec![jet],
+            target,
+        },
+    );
+    let mut log = Vec::new();
+    let mut ammo = world.entity(jet).unwrap().ammo;
+    for _ in 0..300 {
+        world.step();
+        let e = world.entity(jet).unwrap();
+        log.push((
+            world.is_airborne(jet),
+            !world.is_airborne(jet) || e.speed >= floor,
+            e.ammo < ammo,
+        ));
+        ammo = e.ammo;
+    }
+    (world, log)
+}
+
+#[test]
+fn a_bomber_releases_during_a_pass_without_ever_slowing_below_minimum_speed() {
+    let (_, log) = bombing_pass();
+    assert!(log.iter().all(|&(_, speed_ok, _)| speed_ok), "never slower");
+    let releases: Vec<usize> = (0..log.len()).filter(|&i| log[i].2).collect();
+    assert_eq!(releases.len(), 2, "both bombs of the clip dropped");
+    for &i in &releases {
+        assert!(log[i].0 && log[i].1, "released in flight at speed");
+    }
+    assert!(
+        releases[1] - releases[0] < 30,
+        "one pass: {releases:?}, not a second approach"
+    );
+}
+
+#[test]
+fn a_bomber_breaks_away_and_lands_after_its_pass() {
+    let (world, log) = bombing_pass();
+    // After the last release it is airborne for a while, then parked again.
+    let last = (0..log.len()).rev().find(|&i| log[i].2).unwrap();
+    assert!(log[last + 1].0, "it flew on after releasing");
+    assert!(!log[log.len() - 1].0, "and landed at its airfield");
+    let _ = world;
+}
+
+#[test]
+fn a_bomber_comes_round_when_it_misses_the_window() {
+    let mut world = sandbox();
+    build(&mut world, 1, "ru-airfield", 10, 10);
+    let target = build(&mut world, 0, "ua-power-plant", 40, 12);
+    // Level with the target and beside it: the target is far outside the
+    // nose cone for the first moments.
+    let jet = put(&mut world, 1, "ru-su-34", 4000, 600);
+    order(
+        &mut world,
+        1,
+        Command::Attack {
+            units: vec![jet],
+            target,
+        },
+    );
+    let floor = motion(&world, "ru-su-34").min_speed;
+    let mut released = false;
+    for _ in 0..300 {
+        world.step();
+        let e = world.entity(jet).unwrap();
+        if e.ammo > 0 {
+            assert!(e.speed >= floor);
+        }
+        released |= e.ammo < 2;
+    }
+    assert!(released, "it came round into the window and dropped");
+}
+
+#[test]
+fn rotorcraft_may_hover_and_fixed_wing_flyers_may_not() {
+    let mut world = sandbox();
+    let target = put(&mut world, 0, "ua-leopard-2a4", 3000, 2000);
+    let hexa = put(&mut world, 0, "ua-baba-yaga", 2000, 2000);
+    world.set_hp(target, 10_000);
+    fly_to(&mut world, 0, hexa, 2200, 2000);
+    steps(&mut world, 60);
+    assert_eq!(speed_of(&world, hexa), Fx::ZERO, "hangs there");
+    assert!(world.is_airborne(hexa));
+    // The Baba Yaga drops on what it hangs over, holding in range.
+    let foe = put(&mut world, 1, "ru-t-72b3", 2600, 2000);
+    order(
+        &mut world,
+        0,
+        Command::Attack {
+            units: vec![hexa],
+            target: foe,
+        },
+    );
+    steps(&mut world, 120);
+    assert_eq!(speed_of(&world, hexa), Fx::ZERO, "holds to bomb");
+    assert!(world.entity(hexa).unwrap().ammo < 4, "and bombed");
+}
+
+#[test]
+fn parked_aircraft_and_missiles_on_a_rail_stay_still() {
+    let mut world = sandbox();
+    build(&mut world, 1, "ru-airfield", 10, 10);
+    build(&mut world, 0, "ua-missile-site", 50, 10);
+    let jet = put(&mut world, 1, "ru-su-34", 1250, 900);
+    let missile = put(&mut world, 0, "ua-flamingo", 5150, 1450);
+    let before = (
+        world.entity(jet).unwrap().pos,
+        world.entity(missile).unwrap().pos,
+    );
+    steps(&mut world, 100);
+    assert!(!world.is_airborne(jet) && !world.is_airborne(missile));
+    assert_eq!(speed_of(&world, jet), Fx::ZERO);
+    assert_eq!(speed_of(&world, missile), Fx::ZERO);
+    assert_eq!(
+        (
+            world.entity(jet).unwrap().pos,
+            world.entity(missile).unwrap().pos
+        ),
+        before
+    );
+}
+
+#[test]
+fn flight_is_deterministic_and_the_heading_is_part_of_the_hash() {
+    let run = || {
+        let (world, _) = bombing_pass();
+        state_hash(&world)
+    };
+    assert_eq!(run(), run());
+    let mut a = sandbox();
+    let mut b = sandbox();
+    put(&mut a, 1, "ru-orlan", 2000, 2000);
+    put(&mut b, 1, "ru-orlan", 2000, 2000);
+    steps(&mut a, 40);
+    steps(&mut b, 41);
+    assert_ne!(state_hash(&a), state_hash(&b));
+}
+
+// ---------------------------------------------------------------------------
+// §4.4 charges: a launcher's drones are its ammunition
+// ---------------------------------------------------------------------------
+
+fn charges(world: &World, id: EntityId) -> u32 {
+    world.entity(id).unwrap().charges
+}
+
+/// Every unit that was ever launched by `master`, over `ticks` of play.
+fn launches_over(world: &mut World, master: EntityId, ticks: u32) -> usize {
+    let mut seen = std::collections::BTreeSet::new();
+    for _ in 0..ticks {
+        world.step();
+        seen.extend(
+            world
+                .entities()
+                .iter()
+                .filter(|e| e.master == Some(master))
+                .map(|e| e.id),
+        );
+    }
+    seen.len()
+}
+
+#[test]
+fn launchers_start_full_and_every_launch_spends_a_charge() {
+    let mut world = sandbox();
+    let team = put(&mut world, 0, "ua-fpv-team", 1000, 2000);
+    let crew = put(&mut world, 1, "ru-molniya-crew", 3000, 2000);
+    assert_eq!(charges(&world, team), 4);
+    assert_eq!(charges(&world, crew), 3);
+    // A target that cannot shoot back and does not die.
+    let plant = build(&mut world, 1, "ru-power-plant", 15, 20);
+    world.set_hp(plant, 1_000_000);
+    order(
+        &mut world,
+        0,
+        Command::Attack {
+            units: vec![team],
+            target: plant,
+        },
+    );
+    let launched = launches_over(&mut world, team, 200);
+    assert!(launched >= 1, "it launched");
+    assert_eq!(charges(&world, team) as usize, 4 - launched);
+}
+
+#[test]
+fn a_launcher_with_no_charge_launches_nothing_and_idles() {
+    let mut world = sandbox();
+    let team = put(&mut world, 0, "ua-fpv-team", 1000, 2000);
+    let plant = build(&mut world, 1, "ru-power-plant", 15, 20);
+    world.set_hp(plant, 1_000_000);
+    order(
+        &mut world,
+        0,
+        Command::Attack {
+            units: vec![team],
+            target: plant,
+        },
+    );
+    // Four charges at one launch per 150 ticks: all spent in 600 ticks.
+    let launched = launches_over(&mut world, team, 620);
+    assert_eq!(launched, 4, "exactly the four charges");
+    assert_eq!(charges(&world, team), 0);
+    assert!(
+        matches!(world.entity(team).unwrap().order, Order::Idle { .. }),
+        "an empty team gives up the attack"
+    );
+    assert_eq!(launches_over(&mut world, team, 600), 0, "and stays empty");
+    // It can still be ordered about.
+    fly_to(&mut world, 0, team, 800, 2000);
+    steps(&mut world, 60);
+    assert!(
+        world.entity(team).unwrap().pos.x < fx_centi(950),
+        "it walked"
+    );
+}
+
+/// A spent crew `id` at (1000, 2000) and `source` at `dx` centi-tiles from it:
+/// charges after `ticks`.
+fn refilled(crew: &str, owner: u8, source: &str, building: bool, dx: u32, ticks: u32) -> u32 {
+    let mut world = sandbox();
+    let unit = put(&mut world, owner, crew, 1000, 2000);
+    world.set_charges(unit, 0);
+    if building {
+        // A building footprint starts at its cell; put its edge `dx` away.
+        build(&mut world, owner, source, ((1000 + dx) / 100) as i32, 20);
+    } else {
+        put(&mut world, owner, source, 1000 + dx, 2000);
+    }
+    steps(&mut world, ticks);
+    charges(&world, unit)
+}
+
+#[test]
+fn a_launcher_refills_one_charge_per_refill_time_next_to_each_source() {
+    // Refill: 300 ticks per charge for the FPV team, 360 for the Molniya crew.
+    assert_eq!(
+        refilled("ua-fpv-team", 0, "ua-supply-truck", false, 300, 290),
+        0
+    );
+    assert_eq!(
+        refilled("ua-fpv-team", 0, "ua-supply-truck", false, 300, 310),
+        1
+    );
+    assert_eq!(
+        refilled("ua-fpv-team", 0, "ua-supply-truck", false, 300, 610),
+        2
+    );
+    assert_eq!(
+        refilled("ua-fpv-team", 0, "ua-supply-center", true, 300, 310),
+        1
+    );
+    assert_eq!(refilled("ua-fpv-team", 0, "ua-barracks", true, 300, 310), 1);
+    assert_eq!(
+        refilled("ru-molniya-crew", 1, "ru-supply-truck", false, 300, 370),
+        1
+    );
+    assert_eq!(
+        refilled("ru-molniya-crew", 1, "ru-supply-center", true, 300, 370),
+        1
+    );
+    assert_eq!(
+        refilled("ru-molniya-crew", 1, "ru-barracks", true, 300, 370),
+        1
+    );
+    assert_eq!(
+        refilled("ru-molniya-crew", 1, "ru-barracks", true, 300, 360),
+        1
+    );
+}
+
+#[test]
+fn a_launcher_never_refills_far_from_a_source_or_next_to_an_enemy_one() {
+    // Out of the 5 tile radius, however long it waits.
+    assert_eq!(
+        refilled("ua-fpv-team", 0, "ua-supply-truck", false, 900, 1500),
+        0
+    );
+    assert_eq!(
+        refilled("ua-fpv-team", 0, "ua-barracks", true, 1200, 1500),
+        0
+    );
+    // Something else that is close does not count.
+    assert_eq!(
+        refilled("ua-fpv-team", 0, "ua-rifleman", false, 100, 1500),
+        0
+    );
+    // Nor does an enemy truck.
+    let mut world = sandbox();
+    let unit = put(&mut world, 0, "ua-fpv-team", 1000, 2000);
+    world.set_charges(unit, 0);
+    put(&mut world, 1, "ru-supply-truck", 1100, 2000);
+    steps(&mut world, 1000);
+    assert_eq!(charges(&world, unit), 0);
+}
+
+#[test]
+fn walking_away_from_the_source_resets_the_refill_clock() {
+    let mut world = sandbox();
+    let unit = put(&mut world, 0, "ua-fpv-team", 1000, 2000);
+    world.set_charges(unit, 0);
+    put(&mut world, 0, "ua-supply-truck", 1450, 2000);
+    steps(&mut world, 250);
+    fly_to(&mut world, 0, unit, 500, 2000);
+    steps(&mut world, 100);
+    fly_to(&mut world, 0, unit, 1000, 2000);
+    steps(&mut world, 100);
+    assert_eq!(charges(&world, unit), 0, "no progress carried over");
+}
+
+#[test]
+fn the_sting_nest_refills_by_itself_and_only_launches_with_a_charge() {
+    let mut world = sandbox();
+    let nest = build(&mut world, 0, "ua-sting-nest", 10, 10);
+    build(&mut world, 0, "ua-power-plant", 4, 10);
+    assert_eq!(charges(&world, nest), 6);
+    world.set_charges(nest, 0);
+    // A Russian drone over the nest: nothing launches while it is empty.
+    let drone = put(&mut world, 1, "ru-geran-2", 1300, 1100);
+    order(
+        &mut world,
+        1,
+        Command::Attack {
+            units: vec![drone],
+            target: nest,
+        },
+    );
+    world.set_charges(nest, 0);
+    // 59 ticks: no charge yet, no Sting.
+    let early = launches_over(&mut world, nest, 59);
+    assert_eq!(early, 0, "empty, it launches nothing");
+    steps(&mut world, 2);
+    assert!(
+        charges(&world, nest) >= 1 || world.entities().iter().any(|e| e.master == Some(nest)),
+        "a charge came back by itself and was used"
+    );
+}
+
+#[test]
+fn a_launcher_save_round_trips_and_old_saves_load_full() {
+    let mut world = World::skirmish(Ruleset::builtin(), "showcase", 0).unwrap();
+    let team = put(&mut world, 0, "ua-fpv-team", 1000, 2000);
+    world.set_charges(team, 1);
+    put(&mut world, 0, "ua-supply-truck", 1100, 2000);
+    steps(&mut world, 100);
+    assert_eq!(world.entity(team).unwrap().charge_clock, 100);
+    let state = save_state(&world, 3, &[]).unwrap();
+    let parsed: SimState = serde_json::from_str(&serde_json::to_string(&state).unwrap()).unwrap();
+    let (mut loaded, _, _) = load_state(&parsed).unwrap();
+    assert_eq!(charges(&loaded, team), 1);
+    assert_eq!(loaded.entity(team).unwrap().charge_clock, 100);
+    assert_eq!(state_hash(&loaded), state_hash(&world));
+    steps(&mut world, 250);
+    steps(&mut loaded, 250);
+    assert_eq!(charges(&loaded, team), 2);
+    assert_eq!(state_hash(&loaded), state_hash(&world));
+    // A save without the field (every save before charges) loads full.
+    let mut text = serde_json::to_value(&state).unwrap();
+    for entity in text["entities"].as_array_mut().unwrap() {
+        entity.as_object_mut().unwrap().remove("charges");
+        entity.as_object_mut().unwrap().remove("chargeClock");
+    }
+    let old: SimState = serde_json::from_value(text).unwrap();
+    let (old_world, _, _) = load_state(&old).unwrap();
+    assert_eq!(charges(&old_world, team), 4);
+}
+
+#[test]
+fn the_charge_state_is_part_of_the_hash() {
+    let hash = |spent: bool| {
+        let mut world = sandbox();
+        let team = put(&mut world, 0, "ua-fpv-team", 1000, 2000);
+        if spent {
+            world.set_charges(team, 3);
+        }
+        state_hash(&world)
+    };
+    assert_ne!(hash(true), hash(false));
+    assert_eq!(hash(false), hash(false));
+}
+
+#[test]
+fn the_showcase_examples_keep_every_unit_when_left_alone() {
+    // Flyers and drones placed by a save are parked, on a rail or waiting on
+    // the ground: none burns its fuel or starves while nobody orders it.
+    for id in ["showcase", "showcase-units"] {
+        let (mut world, _, _) = load_example(id);
+        let before: Vec<(EntityId, u32)> = world.entities().iter().map(|e| (e.id, e.hp)).collect();
+        assert_eq!(before.len(), 51, "{id}");
+        steps(&mut world, 900);
+        let after: Vec<(EntityId, u32)> = world.entities().iter().map(|e| (e.id, e.hp)).collect();
+        assert_eq!(after, before, "{id}: 60 seconds on, nothing changed");
+    }
 }

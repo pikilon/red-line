@@ -25,8 +25,9 @@ locomotors:                          # required, ids referenced by unit types (s
   tracked: { kind: tracks, pivotAngleDeg: 45, accelCenti: 2, brakingCenti: 4, reverseAngleDeg: 120, reverseMaxCenti: 300, reverseSpeedPercent: 50, crusherLevel: 1 }   # crushes enemy infantry (spec 28)
   wheeled: { kind: wheels, minTurnSpeedPercent: 40, slowTurnAngleDeg: 9, accelCenti: 2, brakingCenti: 3, reverseAngleDeg: 120, reverseMaxCenti: 300, reverseSpeedPercent: 40, shoveDamage: 20, shovePushCenti: 40 }   # shoves enemy infantry aside (spec 28)
   # Spec 43 §4.1: flyers ignore the nav grids. `low` flyers are reached by `antiAir: low` weapons, `high` ones by `all` only.
-  airLow: { kind: air, class: low, altitudeCenti: 140 }
-  airHigh: { kind: air, class: high, altitudeCenti: 320 }
+  # Fixed-wing flyers (every flyer without `hover: true`) never drop below minSpeedPercent of their speed and fire inside noseConeDeg of their heading.
+  airLow: { kind: air, class: low, altitudeCenti: 140, minSpeedPercent: 60, noseConeDeg: 20 }
+  airHigh: { kind: air, class: high, altitudeCenti: 320, minSpeedPercent: 60, noseConeDeg: 20 }
 commonTypes:                       # required; type objects with no faction (placeholder, depot)
   - id: tech-slice-placeholder
     category: unit

@@ -49,6 +49,8 @@ Source: `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`; data: `INIZH.big` 1.0
 * **D3 — electronic warfare** has no Zero Hour equivalent: control links.
 * **D4 — one reload clock.** An aircraft reloads all its clip in `reloadTicks`,
   as Zero Hour, with no parking slots: any number land on one airfield.
+* **D5 — launchers carry finite charges** (§4.4), refilled next to a supply
+  source; Zero Hour has none for infantry launchers.
 
 ## 4. Rules
 
@@ -66,18 +68,55 @@ Source: `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`; data: `INIZH.big` 1.0
 * New armour classes `drone`, `aircraft`; new damage type `flak`.
 * `lowObservable: true`: an enemy weapon engages it only inside one third of its
   range (targeting, ordered attacks and the approach of an attacking flyer).
-* **As built.** A flyer's heading turns at `turnRateDeg` and it moves along it at
-  its top speed, at a quarter of it while the goal is more than 45 degrees off
-  the heading; within two steps of the goal it flies straight at it, so it always
-  arrives (turn rates are 150 degrees per second or more). An aircraft with a
-  weapon flies until the target is inside the weapon range (a `lowObservable`
-  target: a third of it) and then holds there; it needs no aiming, and hits with
-  splash weapons and direct hits skip the units its weapon cannot reach by height.
-  Airborne means: the order moves the flyer, or it is `Idle` more than
+* **Fixed-wing and rotorcraft.** Only rotorcraft may hover: a type with
+  `hover: true` (`ua-baba-yaga`, `ua-fpv`, `ua-sting`). Every other flyer is
+  fixed-wing and **never has speed 0 while airborne**: it turns at a limited
+  `turnRateDeg`, never in place, and flies at no less than `minSpeedPercent` of
+  its speed (locomotor, 60). It circles, on a circle whose radius follows from
+  speed and turn rate (`speed / turn rate`), when it waits, is idle with no
+  base or holds; it shoots on the move when the target is in range and inside a
+  nose cone (`noseConeDeg`, locomotor, 20 degrees each side); a missed window
+  means coming round again. Zero Hour: `JetOrHeliCirclingDeadAirfieldState`
+  and the wing-type circling of `getAircraftPath`. A parked aircraft and a unit
+  waiting on its rail stay still and are not airborne.
+* **As built (rotorcraft).** A rotorcraft's heading turns at `turnRateDeg` and it
+  moves along it at its top speed, at a quarter of it while the goal is more
+  than 45 degrees off the heading; within two steps of the goal it flies
+  straight at it, so it always arrives (turn rates are 150 degrees per second or
+  more). A rotorcraft with a weapon flies until the target is inside the weapon
+  range (a `lowObservable` target: a third of it) and then holds there, hovering,
+  needing no aiming.
+* **As built (fixed-wing).** Speed is the top speed, or the minimum speed while
+  the goal is more than 45 degrees off the heading (a tighter circle). There is
+  no turret, `stationaryFire` or `aim_turret` pause: `fire` and `fire_ground`
+  ask only whether the target is inside the nose cone
+  (`World::flyer_aligned`), so a flyer fires on any tick of a pass. Loitering
+  (idle, no base, empty with no base, an unarmed attack order) turns at the full
+  turn rate at the minimum speed, a circle of radius `minSpeed / turnRate`
+  starting where it is. A `Move` of a flyer without a `sortie` never ends: it
+  orbits the ordered point on a circle of 1.25 times that radius (a vector field
+  towards the tangent, with a margin so the turn rate can follow it), so the Orlan
+  circles over its point; a sortie flyer ends the `Move` near the point and
+  flies home. An armed flyer (Su-34) keeps flying at the target through its
+  weapon range and past it: the bomb is released inside range and cone, the clip
+  empties and it turns for base (the kept `Attack` is remembered), or, with
+  rounds left, it comes round. **Reaching a target inside the turning circle.**
+  Each tick the flyer predicts pure pursuit from its heading (a look-ahead of up
+  to one full circle, only needed within two top-speed turning circles of the
+  goal) and turns at the goal only if that gets inside the arrival distance; if
+  not it flies straight on, overshoots, and comes round once pursuit works, so
+  no one-way unit circles a target forever. The prediction is the pursuit it then
+  flies, so the answer does not flip-flop. (A first version slowed to the minimum
+  speed near the target for a tighter turn; that made waves arrive late under
+  anti-air and was dropped.) A flyer pressing a map edge turns anyway.
+* Airborne means: the order moves the flyer, or it is `Idle` more than
   `DOCK_RANGE_CENTI` (250) from the footprint of an own complete building that
   produces its type. An empty sortie aircraft docked with an attack remembered
-  is parked too. An attack order a unit's weapon (or warhead) can never carry out
-  by height is ignored. Flyers can be placed over any cell.
+  is parked too. A one-way drone with no master and no producing building (one
+  a save placed) is parked on the ground while idle: it burns no fuel. An attack
+  order a unit's weapon (or warhead) can never carry out by height is ignored.
+  Flyers can be placed over any cell. The snapshot marks a flyer with speed as
+  moving, so the client banks an idle circling flyer too.
 
 ### 4.2 One-way units
 
@@ -97,7 +136,8 @@ armed once `armTiles` tiles at top speed have been flown (`ceil(armTiles * 100 /
 speedCenti)` ticks), an unarmed unit flies on through its target. It detonates
 inside `max(60 centi, one step)` of the target (a ground robot: 100 centi, because
 separation keeps it off). A warhead with `scatterCenti` is inaccurate on its own.
-The blast is a `CombatEvent::Detonate` with `projectile = u32::MAX`, followed by
+A fixed-wing one-way unit arrives by the pursuit rule of §4.1 (it never hovers
+to line up). The blast is a `CombatEvent::Detonate` with `projectile = u32::MAX`, followed by
 the unit's `Death` (killer: itself). A unit shot down, or lost to jamming or a
 dead master, dies with no blast.
 
@@ -113,7 +153,11 @@ reloading. With no base it stays airborne and loses 5 % max HP each second
 empty, and a unit that is damaged but has a full clip is serviced too. The clip
 refills in `reloadTicks`; hit points come back evenly (the missing points over
 the ticks left), whole at the end. `Stop` ends any order, so it sends the aircraft
-home. A parked aircraft with a weapon still fires at enemies in range.
+home. A parked aircraft with a weapon still fires at enemies in range. A sortie flyer is
+a pass: the glide bomb has a short cooldown (3 ticks), so both rounds of the clip
+go in one approach from beyond the anti-air, and the aircraft then turns for
+its base (a fixed-wing flyer cannot stop to bomb, §4.1). If the first approach
+misses the nose cone or the range it comes round again.
 
 ### 4.4 Launched drones
 
@@ -130,6 +174,55 @@ nearest visible enemy its warhead can engage inside its own sight. A building ma
 be the master (Sting nest); a building whose weapon launches needs no
 `turretTurnRateDeg`. The launch needs the target visible like any shot; the Ukrainian
 FPV team therefore sees 1000 centi (the drone feed).
+
+**Charges.** A drone is ammunition. `charges: { max, refillTicks,
+refillRadiusCenti? }` on a type whose weapon `launches`. It starts with `max`
+(a unit a save places starts full, and a save without the field loads full), every
+launch spends one, and with 0 it cannot launch: it fires nothing, drops its attack
+order and idles, but stays selectable and can be ordered to move. One charge
+comes back every `refillTicks` while the unit is below `max` and:
+
+* with `refillRadiusCenti` (a crew on foot): an own unit or complete building with
+  `resupplies: true` (supply truck, supply center, barracks) is within that
+  radius of it (footprint distance for a building); leaving the radius resets the
+  clock, so a crew must be resupplied, by going back or by bringing a truck;
+* without it (the Sting nest): by itself, anywhere, so only saturation beats it.
+
+| Type | max | refillTicks | Radius | Launch cooldown |
+|---|---|---|---|---|
+| `ua-fpv-team` | 4 | 300 | 500 | 150 |
+| `ru-molniya-crew` | 3 | 360 | 500 | 240 |
+| `ua-sting-nest` | 6 | 60 | none | 40 |
+
+The numbers are asymmetric on purpose: the radio FPV is cheaper to refill and
+stronger in the field but jammable; the fibre Molniya is jam-proof, so its crew
+carries fewer.
+
+Precedent (`generals-precedent`, same commit): a Zero Hour spawner keeps at most
+`SpawnNumber` live spawns and queues one replacement per death at
+`now + SpawnReplaceDelay`, automatic, free, checked every 15 frames
+(`Object/Behavior/SpawnBehavior.cpp:210-263, 754-771`; Stinger Site: 3 spawns,
+30000 ms) with no supply check (`:826-847`): the Sting nest is that, as a
+charge per `refillTicks` rather than per death. Jets are a clip plus a reload at
+an airfield (`Weapon.ini:1662-1706`, `JetAIUpdate.cpp:1459-1482`). Zero Hour has
+no supply-gated refill for infantry-sized launchers (its drones are a one-time
+upgrade with no refill, `ObjectCreationUpgrade.cpp:92-98`): needing a supply
+source is a deliberate deviation (D5) so a drone crew is tied to logistics.
+
+**As built.** `Entity` gets `charges` and `charge_clock`: hashed with tags 8 and 9,
+written only when a launcher has spent a charge or the clock runs, so worlds
+without launchers or with full ones keep their hashes; saved as optional
+`charges` (absent: full) and `chargeClock`. The charge is spent in
+`launch_drone`; the refill and the dropped order are `charges_step`, run for
+every entity (a building too) at the start of the air phase. The gate is in
+`fire`, after the trench fight, so an empty crew still uses its sidearm in a
+trench. The snapshot air tail lists a launcher with its charges as `ammo` and
+`max` as `clip`, so the client shows the same pips as for a clip when it is
+selected (all dim when empty). **AI:** an attacker launcher crew that is idle
+with fewer than half its charges (`low_on_charges`) is sent by `Move` to its
+nearest own complete `resupplies` building (`resupply_orders`) and waits there
+until the refill brings it to half, when step 8 sends it on again; launched
+drones remain outside the pool.
 
 ### 4.5 Links and jamming
 
@@ -234,8 +327,10 @@ Ids of the weapons and balance numbers live in `data/factions/*.yaml`.
   is chosen before the weighted roll, once per match (`opened` in the AI save).
 * Step 5 fix: with intruders in the base and an empty pool, production (step 6)
   still runs, so the AI does not sit on its credits for the rest of the match.
-* Balance as tuned (`first-line`, seeds 1-5): the balanced pair 1 / 2 / 2 undecided,
-  the rush pair 3 / 1 / 1 undecided (Ukraine / Russia / neither).
+* Balance as tuned (`first-line`, seeds 1-5): before the flight model the balanced
+  pair 1 / 2 / 2 undecided, the rush pair 3 / 1 / 1 undecided (Ukraine / Russia /
+  neither). With the flight model (§4.1) and launcher charges (§4.4): the balanced
+  pair 0 / 2 / 3, the rush pair 4 / 1 / 0.
 
 **As built (client).**
 

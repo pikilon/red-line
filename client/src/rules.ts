@@ -55,6 +55,12 @@ export interface TypeDef {
   gnssScatterCenti?: number;
   /** Spec 43 §4.1: an enemy weapon engages it only inside a third of its range. */
   lowObservable?: boolean;
+  /** Spec 43 §4.1: a rotorcraft; every other flyer is fixed-wing and never stops. */
+  hover?: boolean;
+  /** Spec 43 §4.4: a launcher's drone charges and how they refill (radius 0: by itself). */
+  charges?: { max: number; refillTicks: number; refillRadiusCenti: number };
+  /** Spec 43 §4.4: launcher crews refill their charges next to this unit or building. */
+  resupplies?: boolean;
   render: { size: [number, number, number] };
 }
 
@@ -65,6 +71,10 @@ export interface LocomotorDef {
   class?: "low" | "high";
   /** Air only: cruise height in centi-tiles. */
   altitudeCenti?: number;
+  /** Air only: percent of top speed a fixed-wing flyer never drops below. */
+  minSpeedPercent?: number;
+  /** Air only: half-angle of the firing cone of a fixed-wing flyer, degrees. */
+  noseConeDeg?: number;
   /** Zero Hour `CrusherLevel`: 1 crushes infantry (spec 28). */
   crusherLevel?: number;
   /** Damage dealt to an enemy soldier shoved aside (spec 28). */

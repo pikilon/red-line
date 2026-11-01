@@ -420,19 +420,34 @@ impl Ai {
             }
         }
 
-        // 8. Retarget: attackers whose order finished go on the offensive.
-        let idle: Vec<EntityId> = self
+        // 8. Retarget: attackers whose order finished go on the offensive. A
+        // launcher crew short of drones goes back to a supply building first
+        // (spec 43 §4.4) and rejoins once it has charges again.
+        let (empty, idle): (Vec<EntityId>, Vec<EntityId>) = self
             .attackers
             .iter()
             .copied()
             .filter(|id| !launched.contains(id))
             .filter(|&id| {
-                world.entity(id).is_some_and(|entity| {
-                    matches!(entity.order, Order::Idle { .. }) && ready_to_fly(world, entity)
-                })
+                world
+                    .entity(id)
+                    .is_some_and(|entity| matches!(entity.order, Order::Idle { .. }))
+            })
+            .partition(|&id| {
+                world
+                    .entity(id)
+                    .is_some_and(|entity| low_on_charges(world, entity))
+            });
+        let idle: Vec<EntityId> = idle
+            .into_iter()
+            .filter(|&id| {
+                world
+                    .entity(id)
+                    .is_some_and(|entity| ready_to_fly(world, entity))
             })
             .collect();
         commands.extend(launch_orders(world, player, &idle));
+        commands.extend(resupply_orders(world, &empty));
 
         debug_assert!(budget <= state.credits);
         commands
@@ -735,6 +750,51 @@ fn ready_to_fly(world: &World, entity: &Entity) -> bool {
         .ty(entity.kind)
         .sortie
         .is_none_or(|sortie| entity.ammo >= sortie.clip)
+}
+
+/// Spec 43 §4.4: whether a launcher crew has fewer than half its charges, so
+/// the AI pulls it back to be resupplied instead of sending it on.
+fn low_on_charges(world: &World, entity: &Entity) -> bool {
+    world
+        .rules()
+        .ty(entity.kind)
+        .charges
+        .is_some_and(|charges| entity.charges * 2 < charges.max)
+}
+
+/// Spec 43 §4.4: sends each low launcher crew in `units` to the nearest own
+/// complete building that resupplies, unless it already stands within the
+/// refill radius (then it waits there to be refilled).
+fn resupply_orders(world: &World, units: &[EntityId]) -> Vec<Command> {
+    let mut commands = Vec::new();
+    for &id in units {
+        let (Some(index), Some(entity)) = (world.index_of(id), world.entity(id)) else {
+            continue;
+        };
+        let Some(charges) = world.rules().ty(entity.kind).charges else {
+            continue;
+        };
+        if world.resupplied(index, charges.refill_radius_centi) {
+            continue;
+        }
+        let source = world
+            .entities()
+            .iter()
+            .filter(|source| {
+                source.owner == entity.owner
+                    && source.hp > 0
+                    && world.rules().ty(source.kind).resupplies
+                    && source.site.as_ref().is_some_and(|site| site.complete)
+            })
+            .min_by_key(|source| (squared_distance(source.pos, entity.pos), source.id));
+        if let Some(source) = source {
+            commands.push(Command::Move {
+                units: vec![id],
+                target: source.pos,
+            });
+        }
+    }
+    commands
 }
 
 /// The commands that send `units` out: an attack or a move for the ground
@@ -1112,4 +1172,74 @@ fn enemy_start_center(world: &World, player: PlayerId) -> Option<FxVec2> {
         },
         world.rules().ty(hq).footprint,
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    //! Spec 43 §4.4: the AI pulls an empty launcher crew back to be resupplied.
+
+    use super::*;
+    use crate::map::MapGrid;
+    use crate::rules::Ruleset;
+
+    fn world() -> World {
+        World::sandbox(Ruleset::builtin(), MapGrid::open(80, 40), &[0, 1])
+    }
+
+    fn kind(world: &World, id: &str) -> TypeId {
+        world.rules().type_index(id).unwrap()
+    }
+
+    #[test]
+    fn a_low_crew_walks_to_the_nearest_supply_building_and_waits_there() {
+        let mut world = world();
+        let barracks =
+            world.place_building(0, kind(&world, "ua-barracks"), Cell { x: 30, y: 10 }, true);
+        world.place_building(0, kind(&world, "ua-barracks"), Cell { x: 5, y: 30 }, true);
+        let team = world.spawn(
+            0,
+            kind(&world, "ua-fpv-team"),
+            FxVec2::new(fx_centi(1800), fx_centi(1200)),
+        );
+        // Full: nothing to do about charges.
+        let entity = world.entity(team).unwrap();
+        assert!(!low_on_charges(&world, entity));
+        world.set_charges(team, 1);
+        let entity = world.entity(team).unwrap();
+        assert!(low_on_charges(&world, entity));
+        let commands = resupply_orders(&world, &[team]);
+        let barracks_pos = world.entity(barracks).unwrap().pos;
+        assert_eq!(
+            commands,
+            vec![Command::Move {
+                units: vec![team],
+                target: barracks_pos
+            }],
+            "the nearest barracks"
+        );
+        // Standing by the barracks it stays and waits for the refill.
+        let near = world.spawn(
+            0,
+            kind(&world, "ua-fpv-team"),
+            FxVec2::new(fx_centi(3000), fx_centi(1500)),
+        );
+        world.set_charges(near, 0);
+        assert!(resupply_orders(&world, &[near]).is_empty());
+        // Half full is enough to rejoin.
+        world.set_charges(near, 2);
+        let entity = world.entity(near).unwrap();
+        assert!(!low_on_charges(&world, entity));
+    }
+
+    #[test]
+    fn with_no_supply_building_there_is_nowhere_to_go() {
+        let mut world = world();
+        let team = world.spawn(
+            0,
+            kind(&world, "ua-fpv-team"),
+            FxVec2::new(fx_centi(2500), fx_centi(1200)),
+        );
+        world.set_charges(team, 0);
+        assert!(resupply_orders(&world, &[team]).is_empty());
+    }
 }
