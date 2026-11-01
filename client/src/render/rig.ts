@@ -107,6 +107,12 @@ const RIGS: Readonly<Record<string, Readonly<Record<string, Man>>>> = {
       pickup: true,
     },
   },
+  "ua-fpv-team": {
+    o: { weapon: "console", kneels: true, height: 0.46, phase: 0 },
+  },
+  "ru-molniya-crew": {
+    o: { weapon: "console", kneels: true, height: 0.5, phase: 0 },
+  },
 };
 
 /** Whether the team of `typeId` bends down to pick something up before it

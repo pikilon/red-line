@@ -1,7 +1,9 @@
 import { Vector3 } from "three";
 import { describe, expect, it } from "vitest";
+import { RULES } from "../rules";
 import type { LimbModel, TypeModel } from "./models";
 import {
+  isRigged,
   type LimbPose,
   limbPose,
   picksUp,
@@ -228,5 +230,16 @@ describe("unrigged types", () => {
   it("stay neutral", () => {
     const out = pose("ua-bradley", "m_hips", { walk: 1, phase: 0.3 });
     expect(out).toEqual(resetPose({} as LimbPose));
+  });
+});
+
+describe("infantry rigs", () => {
+  it("rigs every soldier: unrigged limbs are never drawn", () => {
+    const foot = RULES.locomotors.findIndex((l) => l.kind === "foot");
+    const soldiers = RULES.types.filter(
+      (t) =>
+        t.category === "unit" && t.locomotor === foot && t.id.includes("-"),
+    );
+    expect(soldiers.map((t) => t.id).filter((id) => !isRigged(id))).toEqual([]);
   });
 });
