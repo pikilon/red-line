@@ -18,6 +18,7 @@ export const TURRETED = [
   "ru-tos-1a",
   "ru-brdm-scout",
   "ru-defense",
+  "ru-pantsir",
 ];
 export const BUDGETS = { unit: 1500, building: 3000, depot: 1000 };
 const FILL = 0.7;
