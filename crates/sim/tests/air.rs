@@ -3,6 +3,9 @@
 //! Every test runs on the builtin ruleset (`data/factions/*.yaml`) in a small
 //! open sandbox: player 0 is Ukraine, player 1 is Russia.
 
+mod common;
+
+use common::saves::load_example;
 use sim::entity::EntityId;
 use sim::fixed::FxVec2;
 use sim::hash::state_hash;
@@ -991,4 +994,72 @@ fn every_new_type_is_defined_and_the_old_indices_hold() {
             .jammer
             .is_some()
     );
+}
+
+// ---------------------------------------------------------------------------
+// the example saves of spec 43 §7
+// ---------------------------------------------------------------------------
+
+fn find(world: &World, id: &str) -> Vec<EntityId> {
+    let kind = kind(world, id);
+    world
+        .entities()
+        .iter()
+        .filter(|e| e.kind == kind)
+        .map(|e| e.id)
+        .collect()
+}
+
+#[test]
+fn deep_strike_pantsir_kills_the_flamingo_and_the_storm_shadow_slips_past() {
+    let (mut world, _, _) = load_example("deep-strike");
+    let flamingo = find(&world, "ua-flamingo")[0];
+    let plant = find(&world, "ru-power-plant")[0];
+    let field = find(&world, "ru-airfield")[0];
+    steps(&mut world, 200);
+    assert!(world.entity(flamingo).is_none());
+    assert_eq!(hp(&world, field), 2200, "the Flamingo never arrived");
+    assert!(hp(&world, plant) <= 100, "the Storm Shadow hit the plant");
+}
+
+#[test]
+fn robots_vs_jammer_stops_the_robots_and_not_the_fibre_drones() {
+    let (mut world, _, _) = load_example("robots-vs-jammer");
+    let ratels = find(&world, "ua-ratel");
+    let tanks = find(&world, "ru-t-72b3");
+    let leopard = find(&world, "ua-leopard-2a4")[0];
+    steps(&mut world, 400);
+    for ratel in ratels {
+        assert!(
+            world.entity(ratel).is_some_and(|e| e.hp == 140),
+            "stopped, unhurt"
+        );
+        assert!(world.is_jammed(ratel));
+    }
+    for tank in tanks {
+        assert_eq!(hp(&world, tank), 850, "no robot or FPV got through");
+    }
+    assert!(
+        hp(&world, leopard) < max_hp(&world, "ua-leopard-2a4"),
+        "the Molniya drones ignore the jammer"
+    );
+}
+
+#[test]
+fn air_war_has_sortie_waves_and_interceptors() {
+    let (mut world, _, _) = load_example("air-war");
+    let gerans = find(&world, "ru-geran-2").len();
+    let mut stings = false;
+    let mut bombs = false;
+    for _ in 0..400 {
+        world.step();
+        stings |= !find(&world, "ua-sting").is_empty();
+        bombs |= find(&world, "ru-su-34")
+            .iter()
+            .any(|&jet| world.entity(jet).is_some_and(|e| e.ammo < 2));
+    }
+    assert_eq!(gerans, 4);
+    assert!(stings, "the nest launched Stings");
+    assert!(bombs, "the jets dropped bombs");
+    assert!(find(&world, "ru-geran-2").is_empty(), "the wave is spent");
 }

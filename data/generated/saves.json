@@ -300,6 +300,24 @@
       "map": "demo-bridges",
       "form": "setup",
       "entities": 5
+    },
+    {
+      "id": "air-war",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 15
+    },
+    {
+      "id": "robots-vs-jammer",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 11
+    },
+    {
+      "id": "deep-strike",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 8
     }
   ]
 }

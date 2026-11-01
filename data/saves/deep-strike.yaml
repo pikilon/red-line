@@ -1,0 +1,19 @@
+# Spec 43 §7: a Flamingo and a Storm Shadow from a Ukrainian missile site against a Russian base guarded by Pantsir.
+id: deep-strike
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 44, y: 20, zoom: 0.8 }
+entities:
+  - { player: 0, type: ua-missile-site, origin: [20, 15] }
+  - { player: 0, type: ua-flamingo, atCenti: [2100, 1400], order: { attack: field } }
+  - { player: 0, type: ua-storm-shadow, atCenti: [2300, 1400], order: { attack: plant } }
+  - { player: 1, type: ru-airfield, origin: [70, 15], label: field }
+  - { player: 1, type: ru-power-plant, origin: [64, 22], label: plant }
+  - { player: 1, type: ru-pantsir, atCenti: [6200, 2000] }
+  - { player: 1, type: ru-pantsir, atCenti: [6600, 2000] }
+  - { player: 1, type: ru-rifleman, atCenti: [6400, 2600] }

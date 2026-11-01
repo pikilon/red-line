@@ -1,0 +1,149 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "robots-vs-jammer",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 44,
+      "y": 20,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-ratel",
+        "atCenti": [
+          3000,
+          1800
+        ],
+        "order": {
+          "attack": "tank0"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-ratel",
+        "atCenti": [
+          3000,
+          2200
+        ],
+        "order": {
+          "attack": "tank1"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-tw-12-7",
+        "atCenti": [
+          3000,
+          2000
+        ],
+        "order": {
+          "attack": "tank0"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-tw-12-7",
+        "atCenti": [
+          3000,
+          2400
+        ],
+        "order": {
+          "attack": "tank1"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-fpv-team",
+        "atCenti": [
+          3800,
+          1800
+        ],
+        "order": {
+          "attack": "tank0"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-fpv-team",
+        "atCenti": [
+          3800,
+          2200
+        ],
+        "order": {
+          "attack": "tank1"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3600,
+          2000
+        ],
+        "label": "leopard"
+      },
+      {
+        "player": 1,
+        "type": "ru-pole-21",
+        "atCenti": [
+          4700,
+          2000
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          5000,
+          1800
+        ],
+        "label": "tank0"
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          5000,
+          2200
+        ],
+        "label": "tank1"
+      },
+      {
+        "player": 1,
+        "type": "ru-molniya-crew",
+        "atCenti": [
+          4150,
+          2000
+        ],
+        "order": {
+          "attack": "leopard"
+        }
+      }
+    ]
+  }
+}

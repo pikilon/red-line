@@ -1,0 +1,109 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "deep-strike",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 44,
+      "y": 20,
+      "zoom": 0.8
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-missile-site",
+        "origin": [
+          20,
+          15
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-flamingo",
+        "atCenti": [
+          2100,
+          1400
+        ],
+        "order": {
+          "attack": "field"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-storm-shadow",
+        "atCenti": [
+          2300,
+          1400
+        ],
+        "order": {
+          "attack": "plant"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-airfield",
+        "origin": [
+          70,
+          15
+        ],
+        "label": "field"
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          64,
+          22
+        ],
+        "label": "plant"
+      },
+      {
+        "player": 1,
+        "type": "ru-pantsir",
+        "atCenti": [
+          6200,
+          2000
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-pantsir",
+        "atCenti": [
+          6600,
+          2000
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          6400,
+          2600
+        ]
+      }
+    ]
+  }
+}
