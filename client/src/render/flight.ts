@@ -23,6 +23,9 @@ export const TOP_ATTACK_CLIMB = 0.3;
 const DIRECTION_STEP = 0.02;
 /** Share of the ground distance a `ballistic` arc rises at least. */
 const BALLISTIC_RISE = 0.25;
+/** A `ballistic` shot released from this high (a bomb dropped by an aircraft,
+ *  spec 43) only falls: it does not climb first. */
+export const DROPPED_FROM = 1.5;
 
 const lerp = (a: number, b: number, u: number): number => a + (b - a) * u;
 const clamp01 = (value: number): number => Math.min(1, Math.max(0, value));
@@ -88,7 +91,12 @@ export function flightPoint(
   const groundY = p.impactY - p.originY;
   const apex =
     profile === "ballistic"
-      ? Math.max(apexTiles, BALLISTIC_RISE * Math.hypot(groundX, groundY))
+      ? Math.max(
+          apexTiles,
+          h0 >= DROPPED_FROM
+            ? 0
+            : BALLISTIC_RISE * Math.hypot(groundX, groundY),
+        )
       : apexTiles;
   // Heights are above the ground line from muzzle to impact, so shots climb
   // to and fall from high ground (spec 30 §4).

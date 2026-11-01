@@ -87,14 +87,16 @@ export function clickSelect(
 export function boxSelect(
   entities: readonly EntityState[],
   rect: ScreenRect,
-  project: (x: number, y: number) => ScreenPoint,
+  project: (x: number, y: number, height?: number) => ScreenPoint,
   player: number,
+  altitudeOf?: (entity: EntityState) => number,
 ): number[] {
   const ids: number[] = [];
   for (const entity of entities) {
     if (entity.owner !== player) continue;
     if (!isUnit(entity) || hasFlag(entity, ENTITY_FLAGS.aboard)) continue;
-    const point = project(entity.x, entity.y);
+    // A flyer is boxed where it is drawn, above its position (spec 43).
+    const point = project(entity.x, entity.y, altitudeOf?.(entity) ?? 0);
     if (
       point.x >= rect.minX &&
       point.x <= rect.maxX &&

@@ -3,7 +3,13 @@ import type { EntityState } from "../sim/matchSnapshot";
 import type { PressSource } from "./terrainDeform";
 
 /** How hard each locomotor presses on soft ground (spec 24 §3). */
-const WEIGHT_BY_LOCOMOTOR = { foot: 0, wheels: 0.5, tracks: 1 } as const;
+const WEIGHT_BY_LOCOMOTOR = {
+  foot: 0,
+  wheels: 0.5,
+  tracks: 1,
+  // Flyers (spec 43) weigh nothing on the ground.
+  air: 0,
+} as const;
 
 /** The vehicles of `entities` that weigh on the ground. */
 export function pressSourcesOf(

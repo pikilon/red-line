@@ -7,6 +7,7 @@ import {
   NEUTRAL,
 } from "../sim/matchSnapshot";
 import type { SimCommand } from "../sim/protocol";
+import { canAttackGround, canEngage, isArmed } from "./engage";
 import { ORDER_PICK_RADIUS_TILES, pickEntity } from "./entitySelection";
 
 /** Selected entities owned by player, ascending id; missing ids are dropped. */
@@ -36,10 +37,6 @@ function hasCargoCapacity(entity: EntityState): boolean {
   return typeDef(entity.kind).capacity > 0;
 }
 
-function isArmed(entity: EntityState): boolean {
-  return typeDef(entity.kind).weapon >= 0;
-}
-
 function moveCommand(
   player: number,
   units: readonly number[],
@@ -58,14 +55,14 @@ function enemyAt(
   player: number,
   x: number,
   y: number,
-): number | null {
+): EntityState | null {
   const picked = pickEntity(entities, x, y, ORDER_PICK_RADIUS_TILES);
   const entity = entities.find((candidate) => candidate.id === picked);
   if (entity === undefined || hasFlag(entity, ENTITY_FLAGS.ghost)) return null;
   const category = typeDef(entity.kind).category;
   if (category !== "unit" && category !== "building") return null;
   if (entity.owner === player || entity.owner === NEUTRAL) return null;
-  return entity.id;
+  return entity;
 }
 
 /**
@@ -83,21 +80,24 @@ export function resolveForceFire(args: {
   y: number;
 }): SimCommand[] {
   const { player, selected, entities, x, y } = args;
-  const armed = unitIds(
-    ownSelected(selected, entities, player).filter(
-      (entity) => typeDef(entity.kind).category === "unit" && isArmed(entity),
-    ),
+  const armed = ownSelected(selected, entities, player).filter(
+    (entity) => typeDef(entity.kind).category === "unit" && isArmed(entity),
   );
   if (armed.length === 0) return [];
   const target = enemyAt(entities, player, x, y);
   if (target !== null) {
-    return [{ kind: "attack", player, units: armed, target }];
+    // Spec 43: only the units whose weapon reaches the target by height.
+    const hitters = unitIds(armed.filter((unit) => canEngage(unit, target)));
+    if (hitters.length === 0) return [];
+    return [{ kind: "attack", player, units: hitters, target: target.id }];
   }
+  const shooters = unitIds(armed.filter(canAttackGround));
+  if (shooters.length === 0) return [];
   return [
     {
       kind: "attackGround",
       player,
-      units: armed,
+      units: shooters,
       xRaw: toRaw(x),
       yRaw: toRaw(y),
     },
@@ -148,7 +148,10 @@ export function resolveClickOrder(args: {
       cursor.owner !== player &&
       cursor.owner !== NEUTRAL
     ) {
-      const armed = unitIds(own.filter(isArmed));
+      // Spec 43: an airborne target is offered only to units that can hit it.
+      const armed = unitIds(
+        own.filter((unit) => isArmed(unit) && canEngage(unit, cursor)),
+      );
       if (armed.length === 0) return [];
       return [{ kind: "attack", player, units: armed, target: cursor.id }];
     }

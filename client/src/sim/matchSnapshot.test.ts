@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  AIR_STRIDE,
   decodeMatchSnapshot,
+  ENTITY_FLAGS,
   ENTITY_STRIDE,
+  hasFlag,
   interpolateEntities,
   MATCH_HEADER_LEN,
   type MatchSnapshot,
@@ -71,6 +74,7 @@ describe("matchSnapshot", () => {
       ],
       queues: [{ building: 12, headPermille: 500, items: [3, 4] }],
       rallies: [{ building: 12, x: 30, y: 40 }],
+      air: [],
     });
 
     // Observer viewer (255): credits and power are 0, no queues.
@@ -123,6 +127,7 @@ describe("matchSnapshot", () => {
       ],
       queues: [],
       rallies: [],
+      air: [],
     });
 
     // Layout constants.
@@ -132,6 +137,81 @@ describe("matchSnapshot", () => {
     expect(QUEUE_STRIDE).toBe(12);
     expect(RALLY_STRIDE).toBe(3);
     expect(OUTCOMES).toEqual(["ongoing", "winner", "draw"]);
+  });
+
+  it("spec 43: decodes the airborne and jammed flags and the air tail", () => {
+    const data = new Int32Array([
+      // header: tick, viewer, credits, produced, consumed, outcome, winner, entityCount
+      7,
+      0,
+      0,
+      0,
+      0,
+      0,
+      -1,
+      2,
+      // a Su-34 on a sortie: airborne, moving
+      4,
+      0,
+      30,
+      65536,
+      131072,
+      420,
+      128 | 1,
+      0,
+      -1,
+      0,
+      0,
+      // a jammed FPV
+      9,
+      0,
+      31,
+      0,
+      0,
+      20,
+      128 | 256,
+      0,
+      -1,
+      0,
+      0,
+      // no queues, one rally
+      0,
+      1,
+      4,
+      65536,
+      65536,
+      // air tail: two records
+      2,
+      // Su-34: one round of two left, no fuel limit, not launched
+      4,
+      1,
+      2,
+      1000,
+      -1,
+      // FPV: no clip, 400 permille of fuel, launched by entity 3
+      9,
+      0,
+      0,
+      400,
+      3,
+    ]);
+    const snapshot = decodeMatchSnapshot(data);
+    const [jet, fpv] = snapshot.entities;
+    expect(hasFlag(jet as never, ENTITY_FLAGS.airborne)).toBe(true);
+    expect(hasFlag(jet as never, ENTITY_FLAGS.jammed)).toBe(false);
+    expect(hasFlag(fpv as never, ENTITY_FLAGS.jammed)).toBe(true);
+    expect(snapshot.rallies).toEqual([{ building: 4, x: 1, y: 1 }]);
+    expect(snapshot.air).toEqual([
+      { id: 4, ammo: 1, clip: 2, fuelPermille: 1000, master: null },
+      { id: 9, ammo: 0, clip: 0, fuelPermille: 400, master: 3 },
+    ]);
+    expect(AIR_STRIDE).toBe(5);
+    expect(ENTITY_STRIDE).toBe(11);
+  });
+
+  it("spec 43: a match without flyers has an empty air tail", () => {
+    const data = new Int32Array([1, 0, 0, 0, 0, 0, -1, 0, 0, 0]);
+    expect(decodeMatchSnapshot(data).air).toEqual([]);
   });
 
   it("AC-03-45: interpolates entities by id", () => {

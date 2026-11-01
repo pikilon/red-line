@@ -2,6 +2,7 @@ import {
   Box3,
   BoxGeometry,
   BufferGeometry,
+  CircleGeometry,
   Color,
   DoubleSide,
   Euler,
@@ -50,6 +51,15 @@ import {
   enableBands,
 } from "./flags";
 import {
+  airInfo,
+  createFlyers,
+  type FallingFlyer,
+  type FlightPose,
+  type Flyers,
+  isFlyerType,
+  ROTOR_RADIANS,
+} from "./flyers";
+import {
   applyBodyTextures,
   applyLivery,
   bodyMapsOf,
@@ -86,6 +96,7 @@ import type {
   MaterialName,
   ModelPart,
   ModelRegistry,
+  PropModel,
   TypeModel,
 } from "./models";
 import { type LimbPose, limbPose, resetPose } from "./rig";
@@ -145,7 +156,7 @@ function articulationOf(
   return BLADE_RAISED * (1 - moving);
 }
 
-export type ModelGroup = "hull" | "turret" | "limb";
+export type ModelGroup = "hull" | "turret" | "limb" | "prop";
 
 /** One lazily created `InstancedMesh` of a loaded model (spec 06 §5). */
 export interface ModelInstance {
@@ -153,6 +164,8 @@ export interface ModelInstance {
   readonly group: ModelGroup;
   /** Name of the limb of a `limb` group (spec 20). */
   readonly limb?: string;
+  /** Name of the first rotor of a `prop` group, which spins (spec 43). */
+  readonly prop?: string;
   /** `body` also carries the merged `dark` geometry with vertex colours. */
   readonly material: MaterialName;
   readonly mesh: InstancedMesh;
@@ -169,6 +182,10 @@ export interface EntityRenderer {
   readonly tracers: LineSegments;
   /** Lazily created instanced meshes of the types with a loaded `.glb`. */
   readonly models: readonly ModelInstance[];
+  /** Ground shadows of the flyers (spec 43). */
+  readonly shadows: InstancedMesh;
+  /** Altitude, bank and fall of the flyers; the owner starts their falls. */
+  readonly flyers: Flyers;
   /** Scaffolding around buildings under construction (spec 09 §5). */
   readonly scaffolds: InstancedMesh;
   /** Applies (or, with null, removes) the generated model textures. */
@@ -199,11 +216,46 @@ interface Look {
 
 const CLEAN: Look = { fade: 1, blood: 0 };
 
+/** Rotors of one model that share a geometry and so one instanced mesh. */
+interface PropGroup {
+  readonly members: readonly PropModel[];
+  readonly slots: readonly MeshSlot[];
+}
+
 interface TypeSlots {
   readonly hull: readonly MeshSlot[];
   readonly turret: readonly MeshSlot[];
   readonly limbs: ReadonlyMap<string, readonly MeshSlot[]>;
+  readonly props: readonly PropGroup[];
 }
+
+/** Rotors with the same axis, material set and geometry size, which can draw
+ *  from one instanced mesh with a different matrix each. */
+function groupProps(props: readonly PropModel[]): PropModel[][] {
+  const groups = new Map<string, PropModel[]>();
+  for (const prop of props) {
+    const key = [
+      prop.axis,
+      ...[...prop.parts.values()].map((part) => {
+        part.geometry.computeBoundingBox();
+        const box = part.geometry.boundingBox;
+        return `${part.material}:${part.geometry.attributes.position?.count ?? 0}:${box === null ? "" : `${box.min.toArray().map((v) => v.toFixed(3))}|${box.max.toArray().map((v) => v.toFixed(3))}`}`;
+      }),
+    ].join(";");
+    const group = groups.get(key);
+    if (group === undefined) groups.set(key, [prop]);
+    else group.push(prop);
+  }
+  return [...groups.values()];
+}
+
+/** Ground shadow of a flyer: shifted away from the sun by this many tiles per
+ *  tile of height, and kept just above the ground. */
+const SHADOW_SHIFT = { x: 0.45, y: -0.45 } as const;
+const SHADOW_LIFT = 0.04;
+const SHADOW_OPACITY = 0.32;
+/** Share of the model's footprint the shadow covers. */
+const SHADOW_SIZE = 0.8;
 
 function instanced(
   geometry: BufferGeometry,
@@ -450,6 +502,23 @@ export function createEntityRenderer(
     capacity,
   );
   scaffolds.visible = false;
+  // A flat dark ellipse under every flyer; the sun-cast shadow of an object
+  // that high would land far from it, so flyers do not cast one (spec 43).
+  const shadows = instanced(
+    new CircleGeometry(0.5, 24).rotateX(-Math.PI / 2),
+    new MeshBasicMaterial({
+      color: 0x000000,
+      transparent: true,
+      opacity: SHADOW_OPACITY,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -2,
+    }),
+    capacity,
+  );
+  shadows.renderOrder = 1;
+  const flyers = createFlyers();
   // Fallback boxes cast and receive shadows while scaffolding only receives
   // them (spec 10 AC-10-08): the building under construction keeps casting its
   // growing shadow, but its scaffolding frame does not. The ghosts and bars
@@ -484,6 +553,7 @@ export function createEntityRenderer(
     scaffolds,
     flags.group,
     shovels.group,
+    shadows,
   );
 
   const matrix = new Matrix4();
@@ -516,6 +586,9 @@ export function createEntityRenderer(
   const limbEuler = new Euler();
   const limbScale = new Vector3();
   const limbMove = new Vector3();
+  const propBase = new Matrix4();
+  const propSpin = new Matrix4();
+  const propHub = new Matrix4();
   const slots: MeshSlot[] = [];
   const byType = new Map<string, TypeSlots>();
   let generated: GeneratedTextures | null = null;
@@ -780,7 +853,7 @@ export function createEntityRenderer(
     typeId: string,
     model: TypeModel,
     kind: ModelGroup,
-    limb?: LimbModel,
+    limb?: LimbModel | PropModel,
   ): MeshSlot[] {
     const parts =
       limb !== undefined
@@ -842,7 +915,10 @@ export function createEntityRenderer(
       );
       mesh.count = 0;
       mesh.frustumCulled = true;
-      mesh.castShadow = material !== "cage";
+      // A flyer's shadow is drawn on the ground under it (spec 43), not cast
+      // from its altitude.
+      mesh.castShadow =
+        material !== "cage" && (type === undefined || !isFlyerType(type));
       mesh.receiveShadow = true;
       const slot: MeshSlot = {
         typeId,
@@ -850,9 +926,13 @@ export function createEntityRenderer(
         material,
         mesh,
         count: 0,
-        ...(limb === undefined ? {} : { limb: limb.name }),
+        ...(limb === undefined
+          ? {}
+          : kind === "prop"
+            ? { prop: limb.name }
+            : { limb: limb.name }),
       };
-      if (limb !== undefined && material !== "cage") {
+      if (kind === "limb" && material !== "cage") {
         // Limbs dissolve when their body fades and carry the blood of the wounds.
         const fx: LimbFx = {
           fade: new InstancedBufferAttribute(
@@ -906,6 +986,10 @@ export function createEntityRenderer(
           createSlots(typeId, model, "limb", limb),
         ]),
       ),
+      props: groupProps(model.props ?? []).map((members) => ({
+        members,
+        slots: createSlots(typeId, model, "prop", members[0]),
+      })),
     };
     byType.set(typeId, created);
     return created;
@@ -948,6 +1032,94 @@ export function createEntityRenderer(
     slot.count = index + 1;
   }
 
+  /** Draws the rotors of `typeSlots` on `propBase` (the hull's matrix), each
+   *  hub turned by the rotor time of `spin`; neighbours turn opposite ways. */
+  function drawProps(
+    typeSlots: TypeSlots,
+    hex: number,
+    spin: number,
+    phase: number,
+  ): void {
+    for (const group of typeSlots.props) {
+      group.members.forEach((prop, index) => {
+        const angle =
+          (index % 2 === 0 ? 1 : -1) * spin * ROTOR_RADIANS[prop.axis] +
+          phase +
+          index;
+        propHub.makeTranslation(prop.hub.x, prop.hub.y, prop.hub.z);
+        if (prop.axis === "x") propSpin.makeRotationX(angle);
+        else if (prop.axis === "y") propSpin.makeRotationY(angle);
+        else propSpin.makeRotationZ(angle);
+        for (const slot of group.slots) {
+          if (slot.count >= capacity) continue;
+          place(slot, slot.count, hex, () =>
+            turretMatrix.copy(propBase).multiply(propHub).multiply(propSpin),
+          );
+        }
+      });
+    }
+  }
+
+  /** The shadow of a flyer at `altitude`, `shadowCount` of them so far. */
+  function placeShadow(
+    index: number,
+    x: number,
+    y: number,
+    yaw: number,
+    altitude: number,
+    width: number,
+    depth: number,
+  ): void {
+    const sx = x + SHADOW_SHIFT.x * altitude;
+    const sy = y + SHADOW_SHIFT.y * altitude;
+    position.set(sx, groundY(sx, sy) + SHADOW_LIFT, sy);
+    rotation.setFromAxisAngle(UP, yaw);
+    // A little wider as it climbs: a shadow softens with height.
+    const grow = SHADOW_SIZE * (1 + 0.04 * altitude);
+    scale.set(Math.max(width, 0.3) * grow, 1, Math.max(depth, 0.3) * grow);
+    matrix.compose(position, rotation, scale);
+    shadows.setMatrixAt(index, matrix);
+  }
+
+  /** Flyers shot down, drawn on their way to the ground (spec 43). */
+  function drawFalling(nowMs: number, from: number): number {
+    let shadowCount = from;
+    for (const fall of flyers.falling(nowMs) as FallingFlyer[]) {
+      const type = typeDef(fall.kind);
+      const model = models?.get(type.id) ?? null;
+      if (model === null || model.fallback) continue;
+      const typeSlots = slotsFor(type.id, model);
+      const hex = ownerColor(fall.owner);
+      const floor = groundY(fall.x, fall.y);
+      for (const slot of typeSlots.hull) {
+        if (slot.count >= capacity) continue;
+        position.set(fall.x, floor + fall.altitude, fall.y);
+        rotation.setFromEuler(tilt.set(fall.pitch, fall.yaw, fall.roll, "YXZ"));
+        scale.set(1, 1, 1);
+        matrix.compose(position, rotation, scale);
+        place(slot, slot.count, hex);
+      }
+      position.set(fall.x, floor + fall.altitude, fall.y);
+      rotation.setFromEuler(tilt.set(fall.pitch, fall.yaw, fall.roll, "YXZ"));
+      scale.set(1, 1, 1);
+      propBase.compose(position, rotation, scale);
+      drawProps(typeSlots, hex, fall.spin, fall.id * 0.37);
+      if (shadowCount < capacity) {
+        const [w, , d] = type.render.size;
+        placeShadow(
+          shadowCount++,
+          fall.x,
+          fall.y,
+          fall.yaw,
+          fall.altitude,
+          (w ?? 100) / 100,
+          (d ?? 100) / 100,
+        );
+      }
+    }
+    return shadowCount;
+  }
+
   function placeBox(
     mesh: InstancedMesh,
     index: number,
@@ -967,6 +1139,8 @@ export function createEntityRenderer(
     bars,
     tracers,
     scaffolds,
+    shadows,
+    flyers,
     get models() {
       return slots;
     },
@@ -976,6 +1150,8 @@ export function createEntityRenderer(
     },
     update(entities, selected, nowMs = 0, facing = BAR_UNFACED) {
       const counts = { units: 0, buildings: 0, ghosts: 0, bars: 0 };
+      let shadowCount = 0;
+      flyers.update(entities, nowMs);
       byId.clear();
       for (const entity of entities) byId.set(entity.id, entity);
       suspension.prune(new Set(byId.keys()));
@@ -1001,12 +1177,17 @@ export function createEntityRenderer(
           number,
         ];
         const isSelected = selected.has(entity.id);
+        // A flyer hangs at its eased altitude over the ground (spec 43).
+        const air = type.category === "unit" ? airInfo(type) : null;
+        const flight: FlightPose | null =
+          air === null ? null : flyers.pose(entity.id);
         // Units stand on the ground under them, buildings on the lowest
         // point of their footprint (spec 30 §4).
-        const ground =
+        const floor =
           type.category === "unit"
             ? unitGround(entity, type)
             : footprintGround(entity.x, entity.y, w, d);
+        const ground = floor + (flight?.altitude ?? 0);
         const hex = isSelected ? SELECTED_COLOR : ownerColor(entity.owner);
         const isGhost = hasFlag(entity, ENTITY_FLAGS.ghost);
         const model = models?.get(type.id) ?? null;
@@ -1044,7 +1225,7 @@ export function createEntityRenderer(
         const pose = animator.pose(entity, nowMs, digSite !== null);
         const recoil = pose.recoil;
         const body =
-          type.category === "unit" && type.armor !== 0
+          type.category === "unit" && type.armor !== 0 && air === null
             ? suspension.update(
                 entity.id,
                 entity.x,
@@ -1055,17 +1236,22 @@ export function createEntityRenderer(
             : LEVEL_POSE;
         // A hit rocks the hull on its suspension (spec 27 §2).
         const rock =
-          vehicles !== undefined && type.category === "unit" && type.armor !== 0
+          vehicles !== undefined &&
+          type.category === "unit" &&
+          type.armor !== 0 &&
+          air === null
             ? vehicles.rock(entity.id, heading.yaw, nowMs)
             : null;
         // Vehicles sit on the slope: the ground under nose and tail, and
         // under both sides (spec 30 §4). Soldiers stay upright.
         const slope =
-          type.category === "unit" && pose.rig === null
+          type.category === "unit" && pose.rig === null && air === null
             ? groundTilt(entity.x, entity.y, heading.yaw, d, w)
             : LEVEL_TILT;
-        const pitch = body.pitch + slope.pitch + (rock?.pitch ?? 0);
-        const roll = body.roll + slope.roll + (rock?.roll ?? 0);
+        const pitch =
+          body.pitch + slope.pitch + (rock?.pitch ?? 0) + (flight?.pitch ?? 0);
+        const roll =
+          body.roll + slope.roll + (rock?.roll ?? 0) + (flight?.roll ?? 0);
         const lift = pose.lift + body.shake + (rock?.lift ?? 0);
         const working =
           hasFlag(entity, ENTITY_FLAGS.moving) && body.moving < 0.05;
@@ -1172,6 +1358,13 @@ export function createEntityRenderer(
             matrix.compose(position, rotation, scale);
             place(slot, slot.count, hex);
           }
+          if (flight !== null && typeSlots.props.length > 0) {
+            position.set(entity.x + shoveX, ground + lift, entity.y + shoveZ);
+            rotation.setFromEuler(tilt.set(pitch, hullYaw, roll, "YXZ"));
+            scale.set(1, f, 1);
+            propBase.compose(position, rotation, scale);
+            drawProps(typeSlots, hex, flight.spin, entity.id * 0.37);
+          }
           for (const slot of typeSlots.turret) {
             if (slot.count >= capacity) continue;
             const composeTurret = (): Matrix4 => {
@@ -1195,6 +1388,18 @@ export function createEntityRenderer(
             };
             place(slot, slot.count, hex, composeTurret);
           }
+        }
+
+        if (flight !== null && shadowCount < capacity) {
+          placeShadow(
+            shadowCount++,
+            entity.x,
+            entity.y,
+            heading.yaw,
+            flight.altitude,
+            w,
+            d,
+          );
         }
 
         if (dozing !== null && dozing.load > 0) {
@@ -1254,6 +1459,8 @@ export function createEntityRenderer(
 
       drawCorpses(nowMs);
       drawHulks(nowMs);
+      shadowCount = drawFalling(nowMs, shadowCount);
+      finish(shadows, shadowCount);
       finish(units, counts.units);
       finish(buildings, counts.buildings);
       finish(ghosts, counts.ghosts);

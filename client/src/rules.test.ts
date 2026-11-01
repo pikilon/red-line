@@ -6,7 +6,8 @@ describe("rules", () => {
   it("AC-03-43: exposes the ruleset and type names", () => {
     // RULES is the imported @data/ruleset.json.
     expect(RULES.maxQueue).toBe(9);
-    expect(RULES.types.length).toBe(31);
+    // 31 original types, then the air-war roster appended (spec 43).
+    expect(RULES.types.length).toBe(54);
     expect(RULES.factions.map((f) => f.id)).toEqual(["ukraine", "russia"]);
 
     // typeIndex(id): the index of a type by id, -1 if absent.
@@ -32,6 +33,19 @@ describe("rules", () => {
       faction: 1,
       category: "building",
     });
+    // The air war keeps every earlier index and appends its types (spec 36).
+    expect(typeIndex("ru-defense")).toBe(29);
+    expect(typeIndex("ua-sting-nest")).toBeGreaterThanOrEqual(31);
+    expect(typeDef(typeIndex("ru-su-34")).sortie).toEqual({
+      clip: 2,
+      reloadTicks: 450,
+    });
+    expect(typeDef(typeIndex("ru-geran-2")).oneWay?.warhead).toBeGreaterThan(0);
+    expect(typeDef(typeIndex("ru-pole-21")).jammer?.radiusCenti).toBe(900);
+    expect(RULES.locomotors.filter((l) => l.kind === "air")).toMatchObject([
+      { id: "airLow", class: "low", altitudeCenti: 140 },
+      { id: "airHigh", class: "high", altitudeCenti: 320 },
+    ]);
     expect(() => typeDef(-1)).toThrow(RangeError);
     expect(() => typeDef(RULES.types.length)).toThrow(RangeError);
 

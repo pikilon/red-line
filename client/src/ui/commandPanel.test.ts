@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { RULES, typeDef } from "../rules";
+import { RULES, typeDef, typeIndex } from "../rules";
 import type { EntityState, QueueState } from "../sim/matchSnapshot";
 import { ENTITY_FLAGS } from "../sim/matchSnapshot";
 import {
@@ -20,6 +20,9 @@ const SUPPLY_CENTER = 12;
 const BARRACKS = 13;
 const VEHICLE_FACTORY = 14;
 const DEFENSE = 15;
+// Spec 43: the air-war roster appended to the ruleset (`lateTypes`).
+const FPV_TEAM = typeIndex("ua-fpv-team");
+const LATE_BUILDS = typeDef(DOZER).builds.slice(5);
 
 function entity(overrides: Partial<EntityState>): EntityState {
   return {
@@ -67,15 +70,19 @@ describe("command panel", () => {
       BARRACKS,
       VEHICLE_FACTORY,
       DEFENSE,
+      ...LATE_BUILDS,
     ]);
+    expect(LATE_BUILDS.length).toBeGreaterThan(0);
     expect(buttons.every((button) => button.action === "construct")).toBe(true);
-    // enabled true, false, true, false, false.
+    // enabled true, false, true, false, false, then the air-war buildings,
+    // which need a supply center, a barracks or a factory first.
     expect(buttons.map((button) => button.enabled)).toEqual([
       true,
       false,
       true,
       false,
       false,
+      ...LATE_BUILDS.map(() => false),
     ]);
     // First label is "Power plant (600)".
     const [first] = buttons;
@@ -103,14 +110,21 @@ describe("command panel", () => {
     expect(buttons.map((button) => button.typeIndex)).toEqual([
       RIFLEMAN,
       STUGNA_TEAM,
+      FPV_TEAM,
       -1,
     ]);
     expect(buttons.map((button) => button.action)).toEqual([
       "produce",
       "produce",
+      "produce",
       "sell",
     ]);
-    expect(buttons.map((button) => button.enabled)).toEqual([true, true, true]);
+    expect(buttons.map((button) => button.enabled)).toEqual([
+      true,
+      true,
+      true,
+      true,
+    ]);
   });
 
   it("AC-03-51: disables produce buttons when the queue is full", () => {
@@ -144,6 +158,7 @@ describe("command panel", () => {
     });
 
     expect(buttons.map((button) => button.enabled)).toEqual([
+      false,
       false,
       false,
       true,
@@ -247,6 +262,7 @@ describe("command panel", () => {
       BARRACKS,
       VEHICLE_FACTORY,
       DEFENSE,
+      ...LATE_BUILDS,
     ]);
     // The queue is only consulted for a producing building.
     expect(RULES.maxQueue).toBe(9);
@@ -292,6 +308,7 @@ describe("command panel", () => {
       true,
       false,
       false,
+      ...LATE_BUILDS.map(() => false),
     ]);
 
     // The complete barracks at the permille total offers its produce buttons.
@@ -304,6 +321,7 @@ describe("command panel", () => {
     expect(produce.map((button) => button.typeIndex)).toEqual([
       RIFLEMAN,
       STUGNA_TEAM,
+      FPV_TEAM,
       -1,
     ]);
 

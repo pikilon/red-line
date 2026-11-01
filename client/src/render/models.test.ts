@@ -83,4 +83,58 @@ describe("model registry", () => {
 
     expect(warn).toHaveBeenCalledTimes(1);
   });
+
+  it("spec 43: keeps rotors out of the hull with their hub and spin axis", async () => {
+    const scene = new Group();
+    const root = new Group();
+    root.name = "ua-baba-yaga";
+    root.position.set(0, 0.25, 0);
+    root.add(
+      new Mesh(
+        new BoxGeometry(1, 0.2, 1),
+        new MeshLambertMaterial({ color: 0x5b6b3a, name: "body" }),
+      ),
+    );
+    scene.add(root);
+    // A flat horizontal rotor at the corner and a propeller at the tail.
+    const rotor = new Group();
+    rotor.name = "prop_0";
+    rotor.position.set(0.4, 0.08, -0.2);
+    rotor.add(
+      new Mesh(
+        new BoxGeometry(0.28, 0.02, 0.28),
+        new MeshLambertMaterial({ color: 0x222222, name: "dark" }),
+      ),
+    );
+    const pusher = new Group();
+    pusher.name = "prop";
+    pusher.position.set(0, 0.14, -0.5);
+    pusher.add(
+      new Mesh(
+        new BoxGeometry(0.27, 0.07, 0.06),
+        new MeshLambertMaterial({ color: 0x222222, name: "dark" }),
+      ),
+    );
+    scene.add(rotor, pusher);
+
+    const registry = await loadModels(
+      [typeDef(typeIndex("ua-baba-yaga"))],
+      fakeLoader(new Map([["ua-baba-yaga", scene]])),
+    );
+    const model = registry.get("ua-baba-yaga");
+    expect(model?.fallback).toBe(false);
+    // The hull holds only its own body: no rotor geometry merged into it.
+    expect(model?.parts.size).toBe(1);
+    expect(model?.parts.get("dark")).toBeUndefined();
+    const props = model?.props ?? [];
+    expect(props.map((prop) => prop.name)).toEqual(["prop_0", "prop"]);
+    expect(props[0]?.axis).toBe("y");
+    expect(props[0]?.hub.x).toBeCloseTo(0.4, 6);
+    expect(props[0]?.hub.y).toBeCloseTo(0.08, 6);
+    expect(props[1]?.axis).toBe("z");
+    // Geometry is relative to the hub: centred on the origin.
+    const rotorGeometry = props[0]?.parts.get("dark")?.geometry;
+    rotorGeometry?.computeBoundingBox();
+    expect(rotorGeometry?.boundingBox?.min.x).toBeCloseTo(-0.14, 6);
+  });
 });

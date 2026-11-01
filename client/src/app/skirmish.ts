@@ -64,6 +64,7 @@ import {
 } from "../input/skirmishController";
 import { disembarkOffer } from "../input/transport";
 import { createPerfPanel } from "../perfPanel";
+import { type AirOverlay, createAirOverlay } from "../render/airOverlay";
 import { type Animator, createAnimator } from "../render/animation";
 import { type AttackMarker, createAttackMarker } from "../render/attackMarker";
 import { createCorpses } from "../render/corpses";
@@ -114,6 +115,12 @@ import {
   onTrenchCraters,
   onTrenchStrokes,
 } from "../render/features/trenchNetwork";
+import {
+  isAirborne,
+  isAirDeath,
+  isSelfDestruct,
+  spawnFlyerTrails,
+} from "../render/flyers";
 import { createFogOverlay } from "../render/fog";
 import {
   type GeneratedTextures,
@@ -962,12 +969,15 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let generatedLoading = false;
   let effects: Effects | null = null;
   let attackMarker: AttackMarker | null = null;
+  let airOverlay: AirOverlay | null = null;
   let rallyMarker: RallyMarker | null = null;
   let decals: Decals | null = null;
   let groundImpacts: GroundImpacts | null = null;
   let projectiles: Projectiles | null = null;
   /** Flying projectiles of the latest combat snapshot (spec 17 §5). */
   let flying: readonly ProjectileState[] = [];
+  /** Last exhaust puff of each missile and jet drone, effect ms (spec 43). */
+  const flyerTrailPuffs = new Map<number, number>();
   let fogOverlay: FogOverlay | null = null;
   let weather: Weather | null = null;
   const placementGhost = createPlacementGhost();
@@ -1238,6 +1248,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       vehicleFx,
     );
     scene.add(entities.group);
+    airOverlay = createAirOverlay();
+    scene.add(airOverlay.group);
     scene.add(vehicleFx.group);
     effects = createEffects();
     scene.add(effects.group);
@@ -1358,6 +1370,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       mapWidth: mapInfo.mapWidth,
       mapHeight: mapInfo.mapHeight,
       entities: () => next?.entities ?? [],
+      altitudeOf: (entity) => entities?.flyers.altitudeOf(entity) ?? 0,
       garrisonFeatures: () => garrisonFeatures,
       repairJobs: () => repairJobs,
       tiles: () => mapInfo.tiles,
@@ -1557,7 +1570,11 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       ),
       canFire: selection.some((entity) => {
         const def = typeDef(entity.kind);
-        return def.category === "unit" && def.weapon >= 0;
+        // A one-way unit attacks by detonating (spec 43), so it can fire too.
+        return (
+          def.category === "unit" &&
+          (def.weapon >= 0 || def.oneWay !== undefined)
+        );
       }),
       rally:
         selection.length === 1 &&
@@ -1715,6 +1732,15 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       // flashes its muzzle (spec 17 §7.2).
       projectiles?.spawnEffects(flying, snapshot.tick, snapshot, atMs, effects);
       spawnShotEffects(snapshot, effects, atMs);
+      if (entities !== null) {
+        spawnFlyerTrails(
+          snapshot,
+          entities.flyers,
+          effects,
+          atMs,
+          flyerTrailPuffs,
+        );
+      }
       groundImpacts?.record(snapshot, combat, atMs);
       animator.recordShots(snapshot.entities, at);
       deathCauses.record(snapshot.entities, atMs);
@@ -1729,7 +1755,14 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         spawnHitBlood(hits, effects, settings.gore, atMs);
       }
       // Deaths and detonations come from the combat events (spec 17 §7.4–7.5).
-      const deaths = combat.events.filter((event) => event.kind === "death");
+      const allDeaths = combat.events.filter((event) => event.kind === "death");
+      // Spec 43: a flyer shot down falls and crashes, and a one-way unit that
+      // detonated leaves only its blast: neither is a wreck or a corpse.
+      const airDeaths = allDeaths.filter(
+        (event) => isSelfDestruct(event) || isAirDeath(event, previous),
+      );
+      entities?.flyers.kill(airDeaths, previous, atMs, effects);
+      const deaths = allDeaths.filter((event) => !airDeaths.includes(event));
       const causes = deathEventCauses(deaths, previous);
       // Vehicles leave burning hulks of their own (spec 27 §4).
       const vehicles = deaths
@@ -1750,7 +1783,22 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       });
       for (const event of combat.events) {
         if (event.kind === "detonate") {
-          spawnDetonationEffect(effects, event.weapon, event.x, event.y, atMs);
+          // Spec 43: a blast on a flyer bursts at its height; a one-way unit's
+          // own detonation (projectile id -1) is an explosion of its splash.
+          const hit =
+            event.hit === null
+              ? undefined
+              : (previous ?? snapshot).entities.find(
+                  (entity) => entity.id === event.hit,
+                );
+          const height =
+            hit !== undefined && entities !== null && isAirborne(hit)
+              ? entities.flyers.altitudeOf(hit)
+              : undefined;
+          spawnDetonationEffect(effects, event.weapon, event.x, event.y, atMs, {
+            oneWay: event.projectile < 0,
+            ...(height === undefined ? {} : { height }),
+          });
         }
       }
 
@@ -1966,7 +2014,21 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         effectTime(now),
         camera.quaternion,
       );
-      vehicleFx.update(drawn, effectTime(now), camera.quaternion);
+      airOverlay?.update(
+        drawn,
+        controller?.selected ?? NO_SELECTION,
+        next.air ?? [],
+        (entity) => entities?.flyers.altitudeOf(entity) ?? 0,
+        effectTime(now),
+        camera.quaternion,
+        controlled,
+      );
+      vehicleFx.update(
+        drawn,
+        effectTime(now),
+        camera.quaternion,
+        (entity) => entities?.flyers.altitudeOf(entity) ?? 0,
+      );
       // Entities are drawn between the previous and the latest tick, so the
       // projectiles fly at the same fractional tick.
       const drawnTick = next.tick - 1 + Math.min(1, Math.max(0, alpha));

@@ -319,4 +319,38 @@ describe("explosion fireballs (AC-07-07)", () => {
       expect(material.transparent).toBe(true);
     }
   });
+
+  it("spec 43: a one-way blast is an explosion sized by its warhead", () => {
+    const warhead = WEAPONS.findIndex((w) => w.id === "ua-fpv-warhead");
+    expect(WEAPONS[warhead]?.damageType).toBeGreaterThanOrEqual(0);
+    // An anti-tank warhead is only a blast when it lands as a shot...
+    const shot = createEffects();
+    spawnDetonationEffect(shot, warhead, 3, 4, 0);
+    shot.update(0);
+    expect(shot.counts().explosion).toBe(0);
+    expect(shot.counts().blast).toBe(1);
+    // ...but the unit's own detonation (projectile -1) is the big fireball.
+    const blast = createEffects();
+    spawnDetonationEffect(blast, warhead, 3, 4, 0, { oneWay: true });
+    blast.update(0);
+    expect(blast.counts().explosion).toBe(1);
+    expect(blast.counts().blast).toBe(0);
+    // Bigger splash, bigger fireball.
+    const flamingo = WEAPONS.findIndex((w) => w.id === "ua-flamingo-warhead");
+    const large = createEffects();
+    spawnDetonationEffect(large, flamingo, 3, 4, 0, { oneWay: true });
+    large.update(0);
+    expect(scale(large.meshes.explosion, 0).x).toBeGreaterThan(
+      scale(blast.meshes.explosion, 0).x,
+    );
+  });
+
+  it("spec 43: flak bursts at the height of the flyer it hit", () => {
+    const flak = WEAPONS.findIndex((w) => w.id === "ua-gepard-gun");
+    const effects = createEffects();
+    spawnDetonationEffect(effects, flak, 3, 4, 0, { height: 3.7 });
+    effects.update(0);
+    expect(effects.counts().blast).toBe(1);
+    expect(translation(effects.meshes.blast, 0).y).toBeCloseTo(3.7, 6);
+  });
 });

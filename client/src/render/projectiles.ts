@@ -26,6 +26,7 @@ import type { MatchSnapshot } from "../sim/matchSnapshot";
 import type { Effects } from "./effects";
 import { groundY } from "./elevation";
 import { FLIGHT_PROFILES, type FlightProfile, flightPoint } from "./flight";
+import { targetAltitude } from "./flyers";
 
 export const PROJECTILE_MODELS = [
   "tracer",
@@ -34,6 +35,7 @@ export const PROJECTILE_MODELS = [
   "rpg",
   "atgm",
   "rocket",
+  "glideBomb",
 ] as const;
 export type ProjectileModel = (typeof PROJECTILE_MODELS)[number];
 
@@ -68,6 +70,8 @@ interface MissileLook {
     fin: number;
     body: number;
     tail: number;
+    /** Swept glide wings on the body (the KAB glide bomb, spec 43). */
+    wing?: { span: number; chord: number };
   };
 }
 
@@ -105,6 +109,18 @@ const LOOKS: Record<ProjectileModel, ProjectileLook> = {
       fin: 0.1,
       body: 0x8a8f86,
       tail: 0xffb04a,
+    },
+  },
+  // The KAB glide bomb (spec 43): a fat bomb on a pair of short wings.
+  glideBomb: {
+    missile: {
+      radius: 0.075,
+      length: 0.5,
+      nose: { radius: 0.075, length: 0.14 },
+      fin: 0.12,
+      body: 0x6b705a,
+      tail: 0xff9a3a,
+      wing: { span: 0.55, chord: 0.15 },
     },
   },
 };
@@ -161,11 +177,22 @@ function missileGeometry(look: MissileLook["missile"]): BufferGeometry {
       .translate(0, radius + fin / 2, finZ)
       .rotateZ((index * Math.PI * 2) / FIN_COUNT),
   );
+  // Glide wings sit just behind the middle, flat across the body.
+  const wings =
+    look.wing === undefined
+      ? []
+      : [
+          new BoxGeometry(
+            look.wing.span,
+            FIN_THICKNESS * 2,
+            look.wing.chord,
+          ).translate(0, 0, shift - length * 0.1),
+        ];
   const tail = alongZ(
     new CylinderGeometry(radius * 0.8, radius * 0.8, TAIL_LENGTH, 8),
     shift - length / 2 - TAIL_LENGTH / 2,
   );
-  return merged([merged([body, cone, ...fins], false), tail], true);
+  return merged([merged([body, cone, ...fins, ...wings], false), tail], true);
 }
 
 function lookMesh(look: ProjectileLook): InstancedMesh {
@@ -208,9 +235,11 @@ const zeroCounts = (): Record<ProjectileModel, number> =>
 function muzzleHeights(snapshot: MatchSnapshot): Map<number, number> {
   const muzzles = new Map<number, number>();
   for (const entity of snapshot.entities) {
+    // A flyer fires from its cruise height (spec 43).
     muzzles.set(
       entity.id,
-      (MUZZLE_SHARE * typeDef(entity.kind).render.size[1]) / 100,
+      (MUZZLE_SHARE * typeDef(entity.kind).render.size[1]) / 100 +
+        targetAltitude(entity),
     );
   }
   return muzzles;

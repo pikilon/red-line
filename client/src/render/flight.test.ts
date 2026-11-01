@@ -57,6 +57,16 @@ describe("AC-17-12: flight profiles", () => {
     expect(point.z).toBeCloseTo(2.75, 9);
   });
 
+  it("spec 43: a bomb dropped from an aircraft only falls", () => {
+    const high = 3.8;
+    const start = flightPoint(projectile(), 0, "ballistic", high, 0);
+    const middle = flightPoint(projectile(), 5, "ballistic", high, 0);
+    const end = flightPoint(projectile(), 10, "ballistic", high, 0);
+    expect(start.z).toBeCloseTo(high, 9);
+    expect(middle.z).toBeCloseTo(high / 2, 9);
+    expect(end.z).toBeCloseTo(0, 9);
+  });
+
   it("every profile starts at s = 0 and ends at s = 1", () => {
     for (const profile of FLIGHT_PROFILES) {
       expect(flightSample(profile, 0, H0, APEX).s).toBeCloseTo(0, 9);

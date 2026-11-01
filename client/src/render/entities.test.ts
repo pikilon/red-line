@@ -521,4 +521,78 @@ describe("entity renderer", () => {
     // The building under construction keeps casting its growing shadow.
     expect(renderer.buildings.castShadow).toBe(true);
   });
+
+  it("spec 43: draws a flyer at altitude with a shadow and spinning rotors", () => {
+    const rotor = new BoxGeometry(0.28, 0.02, 0.28);
+    const registry: ModelRegistry = {
+      get: (): TypeModel => ({
+        parts: new Map<MaterialName, ModelPart>([
+          [
+            "body",
+            {
+              material: "body",
+              geometry: new BoxGeometry(0.4, 0.1, 0.4),
+              color: 0x556b2f,
+            },
+          ],
+        ]),
+        turret: new Map<MaterialName, ModelPart>(),
+        props: [0, 1, 2, 3].map((index) => ({
+          name: `prop_${index}`,
+          hub: new Vector3(
+            index % 2 === 0 ? 0.2 : -0.2,
+            0.1,
+            index < 2 ? 0.2 : -0.2,
+          ),
+          axis: "y" as const,
+          parts: new Map<MaterialName, ModelPart>([
+            ["dark", { material: "dark", geometry: rotor, color: 0x222222 }],
+          ]),
+        })),
+        pivot: new Vector3(),
+        fallback: false,
+      }),
+    };
+    const renderer = createEntityRenderer(100, registry);
+    const flying = entity(1, 0, "ua-fpv", 5, 5, 20, {
+      flags: ENTITY_FLAGS.airborne,
+    });
+    const parked = entity(2, 0, "ua-fpv", 8, 8, 20);
+    renderer.update([flying, parked], new Set(), 0);
+    renderer.update([flying, parked], new Set(), 100);
+
+    const hull = partMesh(renderer, "ua-fpv", "body");
+    const place = new Matrix4();
+    const at = (mesh: InstancedMesh, index: number): Vector3 => {
+      mesh.getMatrixAt(index, place);
+      return new Vector3().setFromMatrixPosition(place);
+    };
+    // The airborne one hangs at its eased altitude above the ground; the
+    // parked one sits on it.
+    expect(hull.count).toBe(2);
+    expect(at(hull, 0).y).toBeGreaterThan(0.1);
+    expect(at(hull, 1).y).toBeCloseTo(0, 6);
+    // It does not cast a shadow from up there: it gets a blob on the ground.
+    expect(hull.castShadow).toBe(false);
+    expect(renderer.shadows.count).toBe(2);
+    expect(at(renderer.shadows, 0).y).toBeLessThan(0.1);
+    // The four identical rotors of both share one instanced mesh.
+    const props = renderer.models.filter((model) => model.group === "prop");
+    expect(props.length).toBe(1);
+    expect(props[0]?.mesh.count).toBe(8);
+    // The rotors turn with time.
+    const first = new Matrix4();
+    props[0]?.mesh.getMatrixAt(0, first);
+    renderer.update([flying, parked], new Set(), 400);
+    const later = new Matrix4();
+    props[0]?.mesh.getMatrixAt(0, later);
+    expect(later.elements[0]).not.toBeCloseTo(first.elements[0] ?? 0, 3);
+    // The health bar of a selected flyer rides above it.
+    renderer.update([flying], new Set([1]), 500);
+    const bar = new Matrix4();
+    renderer.bars.getMatrixAt(0, bar);
+    expect(new Vector3().setFromMatrixPosition(bar).y).toBeGreaterThan(
+      at(hull, 0).y,
+    );
+  });
 });

@@ -1,4 +1,5 @@
 import {
+  Box3,
   BoxGeometry,
   type BufferGeometry,
   type Mesh,
@@ -38,12 +39,35 @@ export interface LimbModel {
   readonly parts: ReadonlyMap<MaterialName, ModelPart>;
 }
 
+/** Name of the glTF node of a single rotor or propeller (spec 43); a model
+ *  with several names them `prop_0`, `prop_1`... Each has its origin on the hub. */
+export const PROP_PREFIX = "prop";
+
+/** One rotor of a flyer: its geometry is relative to its hub, which sits at
+ *  `hub` in the hull frame, and it spins about `axis`. */
+export interface PropModel {
+  /** Node name, `prop` or `prop_<n>`. */
+  readonly name: string;
+  readonly hub: Vector3;
+  /** Axis the blades turn about: the thinnest extent of the rotor, so a
+   *  helicopter rotor turns about Y and a pusher propeller about its nose. */
+  readonly axis: "x" | "y" | "z";
+  readonly parts: ReadonlyMap<MaterialName, ModelPart>;
+}
+
+/** True for the glTF node name of a rotor: `prop` or `prop_<n>`. */
+export function isPropName(name: string): boolean {
+  return name === PROP_PREFIX || /^prop_\d+$/.test(name);
+}
+
 /** The parts of one type: hull and (optionally) turret, keyed by material. */
 export interface TypeModel {
   readonly parts: ReadonlyMap<MaterialName, ModelPart>;
   readonly turret: ReadonlyMap<MaterialName, ModelPart>;
   /** Rigid limbs, parents before children; absent or empty without any. */
   readonly limbs?: readonly LimbModel[];
+  /** Rotors and propellers, kept apart from the hull so they can spin. */
+  readonly props?: readonly PropModel[];
   /** Marker nodes (`anchor_*`) in the hull frame, by name. */
   readonly anchors?: ReadonlyMap<string, Vector3>;
   /** Turret ring in the hull frame; zero when the type has no turret. */
@@ -133,6 +157,71 @@ function limbOf(object: Object3D): Object3D | null {
   return null;
 }
 
+/** The nearest rotor node at or above `object`, null when it is not in one. */
+function propOf(object: Object3D): Object3D | null {
+  for (
+    let current: Object3D | null = object;
+    current !== null;
+    current = current.parent
+  ) {
+    if (isPropName(current.name)) return current;
+  }
+  return null;
+}
+
+/** Axis along which `parts` are thinnest. */
+function thinnestAxis(
+  parts: ReadonlyMap<MaterialName, ModelPart>,
+): "x" | "y" | "z" {
+  const box = new Box3();
+  for (const part of parts.values()) {
+    part.geometry.computeBoundingBox();
+    if (part.geometry.boundingBox !== null)
+      box.union(part.geometry.boundingBox);
+  }
+  const size = box.getSize(new Vector3());
+  // A tie goes to Z: a rotor as thick as it is wide is a nose-mounted one.
+  if (size.z <= size.x && size.z <= size.y) return "z";
+  return size.y <= size.x ? "y" : "x";
+}
+
+/** Rotors of `scene` with their geometry relative to their hubs. */
+function extractProps(scene: Object3D): PropModel[] {
+  const nodes: Object3D[] = [];
+  scene.traverse((object) => {
+    if (isPropName(object.name)) nodes.push(object);
+  });
+  const sceneInverse = scene.matrixWorld.clone().invert();
+  const props: PropModel[] = [];
+  for (const node of nodes) {
+    const bucket: Bucket = new Map();
+    const inverse = node.matrixWorld.clone().invert();
+    node.traverse((object) => {
+      if (!isMesh(object) || propOf(object) !== node) return;
+      const material = Array.isArray(object.material)
+        ? object.material[0]
+        : object.material;
+      const name = material?.name;
+      if (!isMaterialName(name)) return;
+      const geometry = object.geometry.clone();
+      geometry.applyMatrix4(inverse.clone().multiply(object.matrixWorld));
+      const color = (material as MeshStandardMaterial).color?.getHex();
+      addToBucket(bucket, name, geometry, color ?? 0xffffff);
+    });
+    const parts = mergeBucket(bucket);
+    if (parts.size === 0) continue;
+    props.push({
+      name: node.name,
+      hub: new Vector3().setFromMatrixPosition(
+        sceneInverse.clone().multiply(node.matrixWorld),
+      ),
+      axis: thinnestAxis(parts),
+      parts,
+    });
+  }
+  return props;
+}
+
 /** Limbs of `scene` with their geometry, parents before children. */
 function extractLimbs(scene: Object3D): LimbModel[] {
   const nodes: Object3D[] = [];
@@ -183,6 +272,7 @@ function extractLimbs(scene: Object3D): LimbModel[] {
 function extractModel(scene: Object3D): TypeModel | null {
   scene.updateMatrixWorld(true);
   const limbs = extractLimbs(scene);
+  const props = extractProps(scene);
   const anchors = new Map<string, Vector3>();
   const sceneFromWorld = scene.matrixWorld.clone().invert();
   scene.traverse((object) => {
@@ -213,7 +303,7 @@ function extractModel(scene: Object3D): TypeModel | null {
     const name = material?.name;
     if (!isMaterialName(name)) return;
     found = true;
-    if (limbOf(object) !== null) return;
+    if (limbOf(object) !== null || propOf(object) !== null) return;
     const geometry = object.geometry.clone();
     const standard = material as MeshStandardMaterial;
     const color = standard.color?.getHex() ?? 0xffffff;
@@ -235,6 +325,7 @@ function extractModel(scene: Object3D): TypeModel | null {
     parts: mergeBucket(hull),
     turret: mergeBucket(turret),
     limbs,
+    props,
     anchors,
     pivot,
     fallback: false,

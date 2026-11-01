@@ -6,6 +6,7 @@ export const ENTITY_STRIDE = 11;
 export const QUEUE_SLOTS = 9;
 export const QUEUE_STRIDE = 12; // building_id, headPermille, queue_len, kind_0..kind_8
 export const RALLY_STRIDE = 3; // building_id, x raw, y raw (spec 33)
+export const AIR_STRIDE = 5; // entity id, ammo, clip, fuel permille, master or -1 (spec 43)
 export const NEUTRAL = 255;
 export const OBSERVER = 255;
 
@@ -19,6 +20,11 @@ export const ENTITY_FLAGS = {
   inside: 32,
   /** Spec 34: rides a vehicle (with `inside`); `progress` holds its id. */
   aboard: 64,
+  /** Spec 43: drawn at altitude with a ground shadow; a parked aircraft and a
+   *  missile on its rail are not airborne. */
+  airborne: 128,
+  /** Spec 43 §4.5: inside a hostile jammer's radius. */
+  jammed: 256,
 } as const;
 export const OUTCOMES = ["ongoing", "winner", "draw"] as const;
 export type Outcome = (typeof OUTCOMES)[number];
@@ -51,6 +57,19 @@ export interface RallyState {
   y: number;
 }
 
+/** Ammo, fuel and master of a flyer or launched drone (spec 43 §5). */
+export interface AirState {
+  id: number;
+  /** Rounds left in the clip. */
+  ammo: number;
+  /** Clip size, 0 for a unit without a sortie clip. */
+  clip: number;
+  /** Fuel left in permille, 1000 for a unit without a limit. */
+  fuelPermille: number;
+  /** The unit that launched it, null when it was not launched. */
+  master: number | null;
+}
+
 export interface MatchSnapshot {
   tick: number;
   viewer: number;
@@ -62,6 +81,9 @@ export interface MatchSnapshot {
   entities: EntityState[];
   queues: QueueState[];
   rallies: RallyState[];
+  /** The air tail: one record per sortie flyer, one-way unit or launched
+   *  drone. The decoder always sets it; hand-built snapshots may omit it. */
+  air?: AirState[];
 }
 
 // decodeMatchSnapshot(data): per spec §5.15 — header (8), entity_count entities (11 each),
@@ -121,6 +143,22 @@ export function decodeMatchSnapshot(data: Int32Array): MatchSnapshot {
     });
   }
 
+  // Spec 43: absent when the match has no flyers.
+  const airBase = rallyBase + 1 + rallyCount * RALLY_STRIDE;
+  const airCount = data[airBase] ?? 0;
+  const air: AirState[] = [];
+  for (let i = 0; i < airCount; i++) {
+    const base = airBase + 1 + i * AIR_STRIDE;
+    const master = data[base + 4] ?? -1;
+    air.push({
+      id: data[base] ?? 0,
+      ammo: data[base + 1] ?? 0,
+      clip: data[base + 2] ?? 0,
+      fuelPermille: data[base + 3] ?? 1000,
+      master: master < 0 ? null : master,
+    });
+  }
+
   return {
     tick: data[0] ?? 0,
     viewer,
@@ -132,6 +170,7 @@ export function decodeMatchSnapshot(data: Int32Array): MatchSnapshot {
     entities,
     queues,
     rallies,
+    air,
   };
 }
 

@@ -681,12 +681,28 @@ function spawnExplosion(
   x: number,
   y: number,
   startMs: number,
+  height?: number,
 ): number {
   const damageType = DAMAGE_TYPES[weapon.damageType] ?? "";
   const base = Math.max(MIN_EXPLOSION_SIZE, weapon.splashCenti / 100);
   const size = damageType === "thermobaric" ? base * THERMOBARIC_SCALE : base;
-  effects.spawn("explosion", { x, y, size, startMs });
+  effects.spawn("explosion", {
+    x,
+    y,
+    size,
+    startMs,
+    ...(height === undefined ? {} : { z: height }),
+  });
   return size;
+}
+
+/** Where and how a detonation is drawn (spec 43). */
+export interface DetonationOptions {
+  /** A one-way unit's own blast (projectile id -1): always an explosion sized
+   *  by the warhead's splash, whatever its damage type. */
+  oneWay?: boolean;
+  /** Height above the ground, tiles: a flak burst on an airborne target. */
+  height?: number;
 }
 
 /** The spec 07 shot effect of a detonation at the event position (spec 17
@@ -698,16 +714,23 @@ export function spawnDetonationEffect(
   x: number,
   y: number,
   nowMs = 0,
+  options: DetonationOptions = {},
 ): void {
   const weapon = WEAPONS[weaponIndex];
   if (weapon === undefined) return;
+  const height = options.height;
+  const lifted = height === undefined ? {} : { z: height };
+  if (options.oneWay === true) {
+    spawnExplosion(effects, weapon, x, y, nowMs, height);
+    return;
+  }
   const damageType = DAMAGE_TYPES[weapon.damageType] ?? "";
   if (damageType === "smallArms" || damageType === "autocannon") {
-    effects.spawn("impact", { x, y, startMs: nowMs });
-  } else if (damageType === "antiTank") {
-    effects.spawn("blast", { x, y, startMs: nowMs });
+    effects.spawn("impact", { x, y, startMs: nowMs, ...lifted });
+  } else if (damageType === "antiTank" || damageType === "flak") {
+    effects.spawn("blast", { x, y, startMs: nowMs, ...lifted });
   } else if (damageType === "highExplosive" || damageType === "thermobaric") {
-    spawnExplosion(effects, weapon, x, y, nowMs);
+    spawnExplosion(effects, weapon, x, y, nowMs, height);
   }
 }
 
