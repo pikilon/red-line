@@ -65,7 +65,19 @@ Source: `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`; data: `INIZH.big` 1.0
   `smallArms` and `autocannon` weapons of units get `low`.
 * New armour classes `drone`, `aircraft`; new damage type `flak`.
 * `lowObservable: true`: an enemy weapon engages it only inside one third of its
-  range.
+  range (targeting, ordered attacks and the approach of an attacking flyer).
+* **As built.** A flyer's heading turns at `turnRateDeg` and it moves along it at
+  its top speed, at a quarter of it while the goal is more than 45 degrees off
+  the heading; within two steps of the goal it flies straight at it, so it always
+  arrives (turn rates are 150 degrees per second or more). An aircraft with a
+  weapon flies until the target is inside the weapon range (a `lowObservable`
+  target: a third of it) and then holds there; it needs no aiming, and hits with
+  splash weapons and direct hits skip the units its weapon cannot reach by height.
+  Airborne means: the order moves the flyer, or it is `Idle` more than
+  `DOCK_RANGE_CENTI` (250) from the footprint of an own complete building that
+  produces its type. An empty sortie aircraft docked with an attack remembered
+  is parked too. An attack order a unit's weapon (or warhead) can never carry out
+  by height is ignored. Flyers can be placed over any cell.
 
 ### 4.2 One-way units
 
@@ -75,8 +87,19 @@ arrival; the unit dies with no death explosion of its own. Out of fuel it falls
 and detonates where it is. Works for flyers (Geran, missiles, FPV, Sting) and
 ground drones (Ratel).
 
-A produced one-way unit waits at the launcher until ordered; it is never
-auto-launched, except a launched drone (§4.4).
+A produced one-way unit waits at the launcher until ordered (it ignores the
+rally point); it is never auto-launched, except a launched drone (§4.4).
+
+**As built.** The unit has no `weapon`; it fires nothing, so it never shoots on
+its own. `fuel` counts the ticks it has been under way (flyers: airborne; ground
+drones: with an order); it falls and detonates at `fuelTicks`, and the warhead is
+armed once `armTiles` tiles at top speed have been flown (`ceil(armTiles * 100 /
+speedCenti)` ticks), an unarmed unit flies on through its target. It detonates
+inside `max(60 centi, one step)` of the target (a ground robot: 100 centi, because
+separation keeps it off). A warhead with `scatterCenti` is inaccurate on its own.
+The blast is a `CombatEvent::Detonate` with `projectile = u32::MAX`, followed by
+the unit's `Death` (killer: itself). A unit shot down, or lost to jamming or a
+dead master, dies with no blast.
 
 ### 4.3 Sorties
 
@@ -86,6 +109,12 @@ of a type that lists it in `produces` and reloads there; repaired while
 reloading. With no base it stays airborne and loses 5 % max HP each second
 (Zero Hour). Attack orders given while empty are remembered until reloaded.
 
+**As built.** The unit is serviced (reloaded and repaired) while docked, idle or
+empty, and a unit that is damaged but has a full clip is serviced too. The clip
+refills in `reloadTicks`; hit points come back evenly (the missing points over
+the ticks left), whole at the end. `Stop` ends any order, so it sends the aircraft
+home. A parked aircraft with a weapon still fires at enemies in range.
+
 ### 4.4 Launched drones
 
 A weapon may set `launches: <unit type>` instead of a projectile: firing spawns
@@ -93,6 +122,14 @@ that unit next to the shooter, owned by the same player, with an attack order
 on the target and `master` set to the shooter. The weapon's range is the
 control range. If the master dies a `radio` drone falls harmlessly; `autonomous`
 ones finish the attack.
+
+**As built.** The drone falls harmlessly when its master is gone or dead if its
+link is `radio` or `fibre` (somebody is steering it); `gnss`, `autonomous` and
+unlinked drones finish the attack. A launched drone whose target dies picks the
+nearest visible enemy its warhead can engage inside its own sight. A building may
+be the master (Sting nest); a building whose weapon launches needs no
+`turretTurnRateDeg`. The launch needs the target visible like any shot; the Ukrainian
+FPV team therefore sees 1000 centi (the drone feed).
 
 ### 4.5 Links and jamming
 
@@ -107,6 +144,11 @@ ones finish the attack.
 | `fibre`, `autonomous` | None |
 
 Only Russia has a jammer.
+
+**As built.** `gnssScatterCenti` is a field of the type (seeded draw over the disc,
+on top of the warhead's own scatter). A jammer works for its enemies only; its
+own side, `fibre`, `autonomous` and unlinked units are never affected. A jammed
+ground robot keeps its order and resumes when free.
 
 ### 4.6 Roster
 
@@ -158,9 +200,21 @@ Ids of the weapons and balance numbers live in `data/factions/*.yaml`.
   call it; `is_valid_target` gains the air test.
 * `Entity`: `ammo`, `master`, `fuel`. `Order::ReturnToBase`. All of them hashed
   and saved; optional in saves with defaults, so old saves load.
-* Types are added with a per-faction `lateTypes` list so every existing type
-  index stays (spec 36).
-* Snapshot: `airborne`, `ammo`; `jammer` radii go through rules.
+* Types are added with a per-faction `lateTypes` list, and weapons with a
+  `lateWeapons` list, so every existing type and weapon index stays (spec 36):
+  the type order is common, factions, global `lateTypes`, then each faction's
+  `lateTypes`; the weapon order is the factions' `weapons`, then their
+  `lateWeapons`.
+* `Entity` also has `reload` (ticks spent servicing); `fuel` counts ticks under
+  way (§4.2). Hash tags 4..7 and order tag 12 are written only when set, so
+  worlds without flyers keep their hashes. Save entities carry optional `ammo`,
+  `reload`, `master`, `fuel` and the order kind `returnToBase`.
+* Snapshot: entity flags `FLAG_AIRBORNE` (128) and `FLAG_JAMMED` (256), and an air
+  tail after the rally records (`count, then entity id, ammo, clip, fuel permille,
+  master id or -1` per sortie flyer, one-way unit or launched drone; absent when
+  there are none). `jammer`, `oneWay`, `sortie`, `link`, `lowObservable`,
+  `gnssScatterCenti` and the locomotor `class` and `altitudeCenti` go through the
+  ruleset.
 * Client: flyers at altitude with a ground shadow, spinning props, smoke trail
   and the bomb model; jam radius drawn when selected; ammo pips.
 * AI: each faction builds its new structures in `buildOrder` and uses them in
@@ -169,6 +223,9 @@ Ids of the weapons and balance numbers live in `data/factions/*.yaml`.
 ## 6. Assumptions
 
 * Bombs and shells cannot be intercepted; only entities can.
+* Unarmed flyers (Orlan) and AA-only weapons are never sent against targets they
+  cannot hurt; the AI builds the new structures at the end of its `buildOrder` and
+  keeps AA units out of its task forces.
 * Baba Yaga is a flyer with a clip, so Ukraine has one reloading air unit but
   no jet.
 * Lancet, naval drones and repeater drones stay in the pool.
