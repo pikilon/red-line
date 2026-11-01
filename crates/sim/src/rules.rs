@@ -978,7 +978,10 @@ impl Ruleset {
         let n_types = self.types.len();
         for (i, w) in self.weapons.iter().enumerate() {
             if !is_in_range(w.launches, n_types as i32) {
-                return Err(format!("weapons[{i}].launches {} is out of range", w.launches));
+                return Err(format!(
+                    "weapons[{i}].launches {} is out of range",
+                    w.launches
+                ));
             }
         }
         for (i, t) in self.types.iter().enumerate() {

@@ -188,8 +188,10 @@ export function checkLocomotorCoverage(sources) {
   const known = Object.keys(globals.locomotors ?? {});
   for (const source of sources.factions) {
     const faction = parse(source.text);
+    // Spec 43 §4.4: a building whose weapon launches a unit has nothing to aim.
+    const launches = new Set(allWeapons(faction).filter((w) => w.launches !== undefined).map((w) => w.id));
     allTypes(faction).forEach((t, i) => {
-      if (t.category === "building" && t.weapon !== undefined && !(t.turretTurnRateDeg > 0)) {
+      if (t.category === "building" && t.weapon !== undefined && !launches.has(t.weapon) && !(t.turretTurnRateDeg > 0)) {
         errors.push({ file: source.file, pointer: `/types/${i}/turretTurnRateDeg`, code: "invalid-value", message: `armed building ${t.id} has no turretTurnRateDeg` });
       }
       if (t.category !== "unit") return;

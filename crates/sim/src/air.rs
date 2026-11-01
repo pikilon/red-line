@@ -24,6 +24,9 @@ pub const DOCK_RANGE_CENTI: u32 = 250;
 const LAND_CENTI: u32 = 100;
 /// A one-way unit detonates when this close to its target (or one step, if more).
 const CONTACT_CENTI: u32 = 60;
+/// A ground one-way unit is kept off its target by separation, so it goes off
+/// from further out.
+const GROUND_CONTACT_CENTI: u32 = 100;
 /// Spec 43 §4.3 (Zero Hour `OutOfAmmoDamagePerSecond`): percent of the maximum
 /// hit points a flyer with no base to land at loses every second.
 pub const STARVE_PERCENT_PER_SECOND: u32 = 5;
@@ -66,7 +69,17 @@ impl World {
         if entity.site.is_some() || !self.rules.ty(entity.kind).is_air() {
             return false;
         }
-        !matches!(entity.order, Order::Idle { .. }) || self.dock_of(index).is_none()
+        // An empty aircraft docked with an attack remembered is waiting to reload.
+        let waiting = self.rules.ty(entity.kind).sortie.is_some()
+            && entity.ammo == 0
+            && matches!(
+                entity.order,
+                Order::Attack { .. } | Order::AttackGround { .. }
+            );
+        if matches!(entity.order, Order::Idle { .. }) || waiting {
+            return self.dock_of(index).is_none();
+        }
+        true
     }
 
     /// Spec 43 §4.1: whether the entity `id` is airborne.
@@ -142,11 +155,9 @@ impl World {
                 && complete
                 && jammer.owner != entity.owner
                 && jammer.owner != NEUTRAL
-                && self
-                    .rules
-                    .ty(jammer.kind)
-                    .jammer
-                    .is_some_and(|def| (jammer.pos - entity.pos).length() <= fx_centi(def.radius_centi))
+                && self.rules.ty(jammer.kind).jammer.is_some_and(|def| {
+                    (jammer.pos - entity.pos).length() <= fx_centi(def.radius_centi)
+                })
         })
     }
 
@@ -243,8 +254,10 @@ impl World {
         };
         let order = self.entities[index].order;
         let empty = self.entities[index].ammo == 0;
-        let remembered = empty && matches!(order, Order::Attack { .. } | Order::AttackGround { .. });
-        let wants_base = matches!(order, Order::Idle { .. } | Order::ReturnToBase { .. }) || remembered;
+        let remembered =
+            empty && matches!(order, Order::Attack { .. } | Order::AttackGround { .. });
+        let wants_base =
+            matches!(order, Order::Idle { .. } | Order::ReturnToBase { .. }) || remembered;
         if !wants_base {
             return;
         }
@@ -252,8 +265,9 @@ impl World {
             let entity = &mut self.entities[index];
             if entity.ammo < sortie.clip || entity.hp < max_hp {
                 entity.reload += 1;
-                // Repaired evenly over the reload.
-                let heal = max_hp.div_ceil(sortie.reload_ticks.max(1));
+                // Repaired evenly: the missing hit points over the ticks left.
+                let left = sortie.reload_ticks.saturating_sub(entity.reload - 1).max(1);
+                let heal = max_hp.saturating_sub(entity.hp).div_ceil(left);
                 entity.hp = entity.hp.saturating_add(heal).min(max_hp);
                 if entity.reload >= sortie.reload_ticks {
                     entity.ammo = sortie.clip;
@@ -347,12 +361,14 @@ impl World {
             self.apply_splash(id, weapon_id, &warhead, impact);
             None
         } else {
-            let ordered = target.and_then(|target| self.index_of(target)).filter(|&t| {
-                self.entities[t].hp > 0
-                    && self.can_engage(&warhead, t)
-                    && self.entity_distance(impact, &self.entities[t])
-                        <= fx_centi(CONTACT_CENTI) + fx_centi(CONTACT_CENTI)
-            });
+            let ordered = target
+                .and_then(|target| self.index_of(target))
+                .filter(|&t| {
+                    self.entities[t].hp > 0
+                        && self.can_engage(&warhead, t)
+                        && self.entity_distance(impact, &self.entities[t])
+                            <= fx_centi(CONTACT_CENTI) + fx_centi(CONTACT_CENTI)
+                });
             ordered
                 .or_else(|| self.direct_hit(id, &warhead, impact))
                 .map(|t| {
@@ -440,7 +456,10 @@ impl World {
         // An empty clip heads home and keeps the order for the next sortie.
         if ty.sortie.is_some()
             && entity.ammo == 0
-            && matches!(entity.order, Order::Attack { .. } | Order::AttackGround { .. })
+            && matches!(
+                entity.order,
+                Order::Attack { .. } | Order::AttackGround { .. }
+            )
         {
             return self.plan_home(index, None);
         }
@@ -596,7 +615,7 @@ impl World {
     pub(crate) fn ground_contact(&mut self, index: usize, target: Option<EntityId>, point: FxVec2) {
         let pos = self.entities[index].pos;
         let speed = self.rules.ty(self.entities[index].kind).motion.max_speed;
-        let contact = fx_centi(CONTACT_CENTI).max(speed);
+        let contact = fx_centi(GROUND_CONTACT_CENTI).max(speed);
         let distance = match target.and_then(|id| self.entity(id)) {
             Some(entity) => self.entity_distance(pos, entity),
             None => (point - pos).length(),

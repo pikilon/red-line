@@ -318,7 +318,13 @@ impl World {
 
     /// Spec 17 §4.4: `(0, 0)` unless a ballistic weapon scatters, then a
     /// stateless uniform draw over the disc `[0, scatterCenti]`.
-    pub(crate) fn scatter(&self, weapon: &WeaponDef, shooter: EntityId, tick: u32, k: u32) -> FxVec2 {
+    pub(crate) fn scatter(
+        &self,
+        weapon: &WeaponDef,
+        shooter: EntityId,
+        tick: u32,
+        k: u32,
+    ) -> FxVec2 {
         if weapon.delivery != Delivery::Ballistic || weapon.scatter_centi == 0 {
             return FxVec2::ZERO;
         }
@@ -468,7 +474,12 @@ impl World {
     /// `impact`, within `DIRECT_HIT_CENTI`. A shell that lands on a friendly
     /// hurts it too (owner request 2026-10-25); automatic targeting still only
     /// picks enemies. Ties go to the lowest id (the ascending index).
-    pub(crate) fn direct_hit(&self, shooter: EntityId, weapon: &WeaponDef, impact: FxVec2) -> Option<usize> {
+    pub(crate) fn direct_hit(
+        &self,
+        shooter: EntityId,
+        weapon: &WeaponDef,
+        impact: FxVec2,
+    ) -> Option<usize> {
         let radius = fx_centi(DIRECT_HIT_CENTI);
         let mut best: Option<(Fx, usize)> = None;
         for index in 0..self.entities.len() {

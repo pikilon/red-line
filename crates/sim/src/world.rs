@@ -983,7 +983,12 @@ impl World {
 
     /// Gives every flyer of `player` in `units` a straight `Move` to `target`
     /// and returns the other units, which still need the nav grid.
-    fn send_flyers(&mut self, player: PlayerId, units: &[EntityId], target: FxVec2) -> Vec<EntityId> {
+    fn send_flyers(
+        &mut self,
+        player: PlayerId,
+        units: &[EntityId],
+        target: FxVec2,
+    ) -> Vec<EntityId> {
         let mut ground = Vec::with_capacity(units.len());
         let mut order = None;
         for &id in units {

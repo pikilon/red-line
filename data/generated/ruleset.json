@@ -2349,7 +2349,7 @@
       "speedCenti": 0,
       "turnRateDeg": 0,
       "radiusCenti": 0,
-      "turretTurnRateDeg": 360,
+      "turretTurnRateDeg": 0,
       "articulation": "none",
       "stationaryFire": false,
       "stowTicks": 0,
@@ -2603,7 +2603,7 @@
       "category": "unit",
       "armor": 0,
       "hp": 80,
-      "sightCenti": 700,
+      "sightCenti": 1000,
       "cost": 300,
       "buildTicks": 100,
       "speedCenti": 8,
@@ -19318,7 +19318,11 @@
         14,
         15,
         11,
-        15
+        15,
+        11,
+        32,
+        31,
+        34
       ],
       "taskForces": [
         {
@@ -19376,6 +19380,54 @@
               3
             ]
           ]
+        },
+        {
+          "id": "robots",
+          "units": [
+            [
+              35,
+              3
+            ],
+            [
+              36,
+              2
+            ]
+          ]
+        },
+        {
+          "id": "fpv",
+          "units": [
+            [
+              38,
+              3
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        },
+        {
+          "id": "deep-strike",
+          "units": [
+            [
+              42,
+              1
+            ],
+            [
+              43,
+              1
+            ]
+          ]
+        },
+        {
+          "id": "bombers",
+          "units": [
+            [
+              37,
+              2
+            ]
+          ]
         }
       ],
       "triggers": [
@@ -19398,6 +19450,26 @@
           "taskForce": 3,
           "weight": 20,
           "minTick": 6300
+        },
+        {
+          "taskForce": 4,
+          "weight": 30,
+          "minTick": 4800
+        },
+        {
+          "taskForce": 5,
+          "weight": 20,
+          "minTick": 3600
+        },
+        {
+          "taskForce": 7,
+          "weight": 15,
+          "minTick": 6300
+        },
+        {
+          "taskForce": 6,
+          "weight": 10,
+          "minTick": 9000
         }
       ]
     },
@@ -19463,6 +19535,15 @@
               2
             ]
           ]
+        },
+        {
+          "id": "fpv",
+          "units": [
+            [
+              38,
+              3
+            ]
+          ]
         }
       ],
       "triggers": [
@@ -19485,6 +19566,11 @@
           "taskForce": 3,
           "weight": 40,
           "minTick": 3600
+        },
+        {
+          "taskForce": 4,
+          "weight": 20,
+          "minTick": 3600
         }
       ]
     },
@@ -19500,7 +19586,10 @@
         27,
         25,
         28,
-        25
+        25,
+        25,
+        45,
+        44
       ],
       "taskForces": [
         {
@@ -19554,6 +19643,41 @@
               2
             ]
           ]
+        },
+        {
+          "id": "waves",
+          "units": [
+            [
+              48,
+              8
+            ]
+          ]
+        },
+        {
+          "id": "air-strike",
+          "units": [
+            [
+              46,
+              2
+            ],
+            [
+              49,
+              2
+            ]
+          ]
+        },
+        {
+          "id": "fibre",
+          "units": [
+            [
+              50,
+              3
+            ],
+            [
+              16,
+              3
+            ]
+          ]
         }
       ],
       "triggers": [
@@ -19576,6 +19700,21 @@
           "taskForce": 3,
           "weight": 20,
           "minTick": 6300
+        },
+        {
+          "taskForce": 4,
+          "weight": 30,
+          "minTick": 5400
+        },
+        {
+          "taskForce": 6,
+          "weight": 20,
+          "minTick": 3600
+        },
+        {
+          "taskForce": 5,
+          "weight": 15,
+          "minTick": 9000
         }
       ]
     },
@@ -19592,7 +19731,8 @@
         28,
         25,
         29,
-        25
+        25,
+        45
       ],
       "taskForces": [
         {
@@ -19646,6 +19786,15 @@
               3
             ]
           ]
+        },
+        {
+          "id": "waves",
+          "units": [
+            [
+              48,
+              6
+            ]
+          ]
         }
       ],
       "triggers": [
@@ -19668,6 +19817,11 @@
           "taskForce": 3,
           "weight": 40,
           "minTick": 4200
+        },
+        {
+          "taskForce": 4,
+          "weight": 20,
+          "minTick": 4800
         }
       ]
     }

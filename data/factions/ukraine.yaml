@@ -236,8 +236,7 @@ lateTypes:                           # spec 43: after the common late types, so 
     power: -2
     requires: [ua-supply-center]
     requiresPower: true
-    weapon: ua-sting-launcher
-    turretTurnRateDeg: 360
+    weapon: ua-sting-launcher         # launches Stings: nothing to aim, so no turret
     render: { height: 95 }
   - id: ua-patriot                   # long-range anti-air: the only answer to a Su-34; very expensive, slow to reload
     category: building
@@ -312,7 +311,7 @@ lateTypes:                           # spec 43: after the common late types, so 
     locomotor: foot
     armor: infantry
     hp: 80
-    sightCenti: 700
+    sightCenti: 1000                 # watches through the drone feed, so the launcher range is usable
     cost: 300
     buildTicks: 100
     speedCenti: 8

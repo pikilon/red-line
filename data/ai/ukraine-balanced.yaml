@@ -3,14 +3,22 @@ faction: ukraine
 harvesters: 3
 defenseRadiusCenti: 2000
 garrisonRadiusCenti: 800
-buildOrder: [ua-power-plant, ua-supply-center, ua-barracks, ua-power-plant, ua-vehicle-factory, ua-defense, ua-power-plant, ua-defense]
+buildOrder: [ua-power-plant, ua-supply-center, ua-barracks, ua-power-plant, ua-vehicle-factory, ua-defense, ua-power-plant, ua-defense, ua-power-plant, ua-sting-nest, ua-drone-workshop, ua-missile-site]
 taskForces:
   - { id: infantry, units: { ua-rifleman: 4, ua-stugna-team: 2 } }
   - { id: mechanized, units: { ua-bradley: 3, ua-rifleman: 4 } }
   - { id: armor, units: { ua-leopard-2a4: 3, ua-bradley: 2 } }
   - { id: fires, units: { ua-himars: 2, ua-leopard-2a4: 2, ua-stugna-team: 3 } }
+  - { id: robots, units: { ua-ratel: 3, ua-tw-12-7: 2 } }   # spec 43: ground robots
+  - { id: fpv, units: { ua-fpv-team: 3, ua-rifleman: 3 } }
+  - { id: deep-strike, units: { ua-flamingo: 1, ua-storm-shadow: 1 } }
+  - { id: bombers, units: { ua-baba-yaga: 2 } }
 triggers:
   - { taskForce: infantry, weight: 50, minTick: 0 }
   - { taskForce: mechanized, weight: 40, minTick: 2700 }
   - { taskForce: armor, weight: 40, minTick: 4500 }
   - { taskForce: fires, weight: 20, minTick: 6300 }
+  - { taskForce: robots, weight: 30, minTick: 4800 }
+  - { taskForce: fpv, weight: 20, minTick: 3600 }
+  - { taskForce: bombers, weight: 15, minTick: 6300 }
+  - { taskForce: deep-strike, weight: 10, minTick: 9000 }

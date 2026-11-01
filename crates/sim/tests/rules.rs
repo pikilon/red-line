@@ -101,7 +101,10 @@ fn ac_11_02_motion_profile_from_data() {
         .iter()
         .map(|l| l["id"].as_str().expect("locomotor id"))
         .collect();
-    assert_eq!(locomotors, ["foot", "tracked", "wheeled", "airLow", "airHigh"]);
+    assert_eq!(
+        locomotors,
+        ["foot", "tracked", "wheeled", "airLow", "airHigh"]
+    );
 
     let locomotor_of = |id: &str| -> &str {
         let index = json["types"]
