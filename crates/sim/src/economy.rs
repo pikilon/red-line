@@ -83,6 +83,10 @@ impl World {
                 site.queue.remove(0);
             }
             let unit = self.spawn(owner, head.kind, cell_center(exit));
+            // Spec 43 §4.2: a one-way unit waits at its launcher until ordered.
+            if self.rules.ty(head.kind).one_way.is_some() {
+                continue;
+            }
             if let Some(target) = rally {
                 self.apply_move(owner, &[unit], target);
             } else if self.rules.ty(head.kind).capacity > 0 {
@@ -427,7 +431,8 @@ impl World {
                 | Order::Repair { order_id, .. }
                 | Order::RepairBuilding { order_id, .. }
                 | Order::Heal { order_id, .. }
-                | Order::RepairVehicle { order_id, .. } => order_id,
+                | Order::RepairVehicle { order_id, .. }
+                | Order::ReturnToBase { order_id } => order_id,
             };
             unit.order = Order::Idle { last_order_id };
         }

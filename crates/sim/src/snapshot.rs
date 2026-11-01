@@ -153,6 +153,14 @@ pub const FLAG_INSIDE: i32 = 32;
 /// Spec 34: the unit rides a vehicle (with `FLAG_INSIDE`); its `progress`
 /// field holds the vehicle id.
 pub const FLAG_ABOARD: i32 = 64;
+/// Spec 43 §4.1: a flyer that is under way or away from its base. A parked
+/// aircraft or a missile on its rail does not have it.
+pub const FLAG_AIRBORNE: i32 = 128;
+/// Spec 43 §4.5: a `radio` or `gnss` unit inside a hostile jammer's radius.
+pub const FLAG_JAMMED: i32 = 256;
+/// One air record, after the rallies: `entity id, ammo, clip, fuel left in
+/// permille (1000 without a fuel limit), master id (-1 for none)`.
+pub const AIR_STRIDE: usize = 5;
 
 /// Phase 2 match snapshot (§5.15): header, then every entity visible to
 /// `viewer` plus, for a player viewer, its ghosts, then the viewer's
@@ -216,6 +224,7 @@ pub fn encode_match_snapshot_with_shots(
         }
     }
     rows.sort_by_key(|&(id, _)| id);
+    let rows_ids: Vec<EntityId> = rows.iter().map(|&(id, _)| id).collect();
 
     out.push(rows.len() as i32);
     for (_, row) in rows {
@@ -270,6 +279,34 @@ pub fn encode_match_snapshot_with_shots(
     }
     out.push(rally_count);
     out.extend_from_slice(&rallies);
+
+    // Spec 43: ammo, fuel and master of the flyers and launched drones listed above.
+    let mut air = Vec::new();
+    let mut air_count = 0;
+    for entity in world.entities() {
+        let ty = world.rules().ty(entity.kind);
+        let listed = rows_ids.contains(&entity.id);
+        if !listed || !(ty.sortie.is_some() || ty.one_way.is_some() || entity.master.is_some()) {
+            continue;
+        }
+        air_count += 1;
+        let fuel = match ty.one_way {
+            Some(one_way) if one_way.fuel_ticks > 0 => {
+                let left = one_way.fuel_ticks.saturating_sub(entity.fuel);
+                (u64::from(left) * 1000 / u64::from(one_way.fuel_ticks)) as i32
+            }
+            _ => 1000,
+        };
+        air.extend_from_slice(&[
+            entity.id as i32,
+            entity.ammo as i32,
+            ty.sortie.map_or(0, |sortie| sortie.clip) as i32,
+            fuel,
+            entity.master.map_or(-1, |master| master as i32),
+        ]);
+    }
+    out.push(air_count);
+    out.extend_from_slice(&air);
     out
 }
 
@@ -445,6 +482,12 @@ fn entity_flags(world: &World, entity: &Entity) -> i32 {
     }
     if world.rules().ty(entity.kind).requires_power && power_deficit(world, entity.owner) {
         flags |= FLAG_POWERED_OFF;
+    }
+    if world.is_airborne(entity.id) {
+        flags |= FLAG_AIRBORNE;
+    }
+    if world.is_jammed(entity.id) {
+        flags |= FLAG_JAMMED;
     }
     flags
 }

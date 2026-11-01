@@ -58,7 +58,11 @@ impl World {
             let entity = &self.entities[index];
             (entity.kind, entity.hp)
         };
-        if hp == 0 || !self.can_fire(index) || !self.rider_may_fire(index) {
+        if hp == 0
+            || !self.can_fire(index)
+            || !self.rider_may_fire(index)
+            || self.jam_stopped(index)
+        {
             return;
         }
         // Spec 35 §5c: soldiers in touching, opposing trench pieces fight each other.
@@ -78,6 +82,8 @@ impl World {
             return;
         }
         let legacy = self.rules.ty(kind).motion.kind == LocoKind::Immediate;
+        // Spec 43: a flyer's ordnance needs no aiming.
+        let flyer = self.is_flyer(index);
         let target_index = if legacy {
             None
         } else {
@@ -88,7 +94,7 @@ impl World {
         } else {
             self.held_building_target(index, &weapon, held)
         };
-        let aligned = if legacy {
+        let aligned = if legacy || flyer {
             true
         } else {
             let entity = &self.entities[index];
@@ -149,7 +155,10 @@ impl World {
             point,
         );
         let in_range = distance >= fx_centi(weapon.min_range_centi) && distance <= range;
-        let aligned = if self.rules.ty(kind).motion.kind == LocoKind::Immediate {
+        let aligned = if matches!(
+            self.rules.ty(kind).motion.kind,
+            LocoKind::Immediate | LocoKind::Air
+        ) {
             true
         } else {
             let stowed = self.rules.ty(kind).stationary_fire
@@ -184,7 +193,10 @@ impl World {
         let flight = self.flight_ticks(weapon, distance);
         let owner = self.entities[index].owner;
         let shooter = self.entities[index].id;
-        if flight == 0 {
+        if let Ok(drone) = TypeId::try_from(weapon.launches) {
+            // Spec 43 §4.4: the shot is a drone that flies to the target.
+            self.launch_drone(index, drone, target, aim);
+        } else if flight == 0 {
             // Instant branch of §5.11 step 4, with the target's position as the
             // impact point for splash.
             if target.is_none() {
@@ -216,6 +228,10 @@ impl World {
         }
         self.entities[index].cooldown = weapon.cooldown_ticks;
         self.entities[index].last_target = Some(target_id);
+        // Spec 43 §4.3: a shot spends one round of a sortie clip.
+        if self.rules.ty(self.entities[index].kind).sortie.is_some() {
+            self.entities[index].ammo = self.entities[index].ammo.saturating_sub(1);
+        }
     }
 
     /// Spec 11 §5.3 step 1: the locked target while it stays valid, otherwise a
@@ -302,7 +318,7 @@ impl World {
 
     /// Spec 17 §4.4: `(0, 0)` unless a ballistic weapon scatters, then a
     /// stateless uniform draw over the disc `[0, scatterCenti]`.
-    fn scatter(&self, weapon: &WeaponDef, shooter: EntityId, tick: u32, k: u32) -> FxVec2 {
+    pub(crate) fn scatter(&self, weapon: &WeaponDef, shooter: EntityId, tick: u32, k: u32) -> FxVec2 {
         if weapon.delivery != Delivery::Ballistic || weapon.scatter_centi == 0 {
             return FxVec2::ZERO;
         }
@@ -319,6 +335,10 @@ impl World {
     fn can_fire(&self, index: usize) -> bool {
         let entity = &self.entities[index];
         if entity.site.as_ref().is_some_and(|site| !site.complete) {
+            return false;
+        }
+        // Spec 43 §4.3: an empty clip does not fire.
+        if self.rules.ty(entity.kind).sortie.is_some() && entity.ammo == 0 {
             return false;
         }
         if !self.rules.ty(entity.kind).requires_power {
@@ -448,7 +468,7 @@ impl World {
     /// `impact`, within `DIRECT_HIT_CENTI`. A shell that lands on a friendly
     /// hurts it too (owner request 2026-10-25); automatic targeting still only
     /// picks enemies. Ties go to the lowest id (the ascending index).
-    fn direct_hit(&self, shooter: EntityId, weapon: &WeaponDef, impact: FxVec2) -> Option<usize> {
+    pub(crate) fn direct_hit(&self, shooter: EntityId, weapon: &WeaponDef, impact: FxVec2) -> Option<usize> {
         let radius = fx_centi(DIRECT_HIT_CENTI);
         let mut best: Option<(Fx, usize)> = None;
         for index in 0..self.entities.len() {
@@ -461,6 +481,7 @@ impl World {
                     .rules
                     .modifier(weapon.damage_type, self.rules.ty(entity.kind).armor)
                     == 0
+                || !self.can_engage(weapon, index)
             {
                 continue;
             }
@@ -518,8 +539,12 @@ impl World {
         {
             return false;
         }
+        if !self.can_engage(weapon, target_index) {
+            return false;
+        }
         let distance = self.entity_distance(attacker.pos, target);
         let range = self.effective_range(fx_centi(weapon.range_centi), attacker.pos, target.pos);
+        let range = self.reach_against(range, target_index);
         distance >= fx_centi(weapon.min_range_centi) && distance <= range
     }
 
@@ -532,7 +557,7 @@ impl World {
 
     /// Instant or projectile hit: the target loses the modified damage
     /// (saturating) and records `(shooter, weapon)` as its last hit.
-    fn apply_hit(
+    pub(crate) fn apply_hit(
         &mut self,
         shooter: EntityId,
         target_index: usize,
@@ -587,11 +612,12 @@ impl World {
                     && unit.hp > 0
                     && unit.site.is_none()
                     && ty.speed_centi > 0
+                    && !ty.is_air()
                     && matches!(unit.order, Order::Idle { .. })
-                    && self
-                        .rules
-                        .weapon_of(unit.kind)
-                        .is_some_and(|weapon| self.rules.modifier(weapon.damage_type, armor) > 0)
+                    && self.rules.weapon_of(unit.kind).is_some_and(|weapon| {
+                        self.rules.modifier(weapon.damage_type, armor) > 0
+                            && self.can_engage(weapon, shooter_index)
+                    })
                     && (unit.pos - victim_pos).length() <= radius
             })
             .collect();
@@ -613,7 +639,7 @@ impl World {
     /// loses the modified damage. Blasts hit friends and the shooter's own
     /// units too (owner request 2026-10-25), as in Zero Hour. Each damaged
     /// entity records `(shooter, weapon)` as its last hit.
-    fn apply_splash(
+    pub(crate) fn apply_splash(
         &mut self,
         shooter: EntityId,
         weapon_id: WeaponId,
@@ -632,6 +658,7 @@ impl World {
                 || entity.id == shooter
                 || entity.owner == NEUTRAL
                 || self.entity_distance(impact, entity) > radius
+                || !self.can_engage(weapon, index)
             {
                 continue;
             }

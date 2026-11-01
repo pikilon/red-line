@@ -41,6 +41,75 @@ pub enum LocoKind {
     Foot,
     Tracks,
     Wheels,
+    /// Spec 43 §4.1: flies straight over everything, ignoring the nav grids.
+    Air,
+}
+
+/// Altitude band of a flyer (spec 43 §4.1): a `low` weapon reaches `Low`
+/// flyers only, an `all` weapon reaches both.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum AirClass {
+    #[default]
+    Low,
+    High,
+}
+
+/// How far up a weapon reaches (spec 43 §4.1, decision D2).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum AntiAir {
+    /// Ground targets only (and parked aircraft).
+    #[default]
+    None,
+    /// Airborne units of class `low`.
+    Low,
+    /// Airborne units of both classes.
+    All,
+}
+
+/// How a unit is steered (spec 43 §4.5); absent is `None`, which no jammer
+/// affects.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Link {
+    #[default]
+    None,
+    Radio,
+    Fibre,
+    Gnss,
+    Autonomous,
+}
+
+/// Spec 43 §4.2: a unit that is its own warhead.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OneWayDef {
+    /// Index into `Ruleset::weapons`.
+    pub warhead: WeaponId,
+    /// Ticks the unit can be under way before it falls and detonates; `0` is
+    /// unlimited.
+    #[serde(default)]
+    pub fuel_ticks: u32,
+    /// Tiles the unit must be under way (at top speed) before the warhead is
+    /// armed; `0` arms at once.
+    #[serde(default)]
+    pub arm_tiles: u32,
+}
+
+/// Spec 43 §4.3: a flyer with a clip that reloads at a base.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SortieDef {
+    pub clip: u32,
+    pub reload_ticks: u32,
+}
+
+/// Spec 43 §4.5: an electronic-warfare vehicle.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct JammerDef {
+    pub radius_centi: u32,
 }
 
 /// Motion values precomputed once from the data at ruleset load (spec 11 §4.3).
@@ -66,6 +135,8 @@ pub struct Motion {
     pub shove_damage: u32,
     /// How far, sideways from the vehicle's path, a shoved soldier is thrown.
     pub shove_push: Fx,
+    /// Spec 43: altitude band of a `LocoKind::Air` hull.
+    pub air_class: AirClass,
 }
 
 /// A locomotor from `globals.locomotors` (spec 11 §4.1). `id` is its key.
@@ -85,6 +156,10 @@ pub struct LocomotorDef {
     pub crusher_level: u8,
     pub shove_damage: u32,
     pub shove_push_centi: u32,
+    /// Spec 43 §4.1: altitude band of an `air` locomotor.
+    pub class: AirClass,
+    /// Spec 43 §4.1: flight height; presentation only.
+    pub altitude_centi: u32,
 }
 
 fn no_locomotor() -> i32 {
@@ -119,6 +194,7 @@ fn motion_of(ty: &TypeDef, locomotor: Option<&LocomotorDef>) -> Motion {
         motion.crusher_level = l.crusher_level;
         motion.shove_damage = l.shove_damage;
         motion.shove_push = fx_centi(l.shove_push_centi);
+        motion.air_class = l.class;
     }
     motion
 }
@@ -172,6 +248,13 @@ pub struct WeaponDef {
     pub salvo_interval_ticks: u32,
     /// Aim tolerance in angle units (spec 11 §4.2, `deg_to_units`).
     pub aim_tolerance: i32,
+    /// Spec 43 §4.1: which airborne units the weapon reaches.
+    pub anti_air: AntiAir,
+    /// Spec 43 §4.1: whether the weapon reaches ground targets.
+    pub anti_ground: bool,
+    /// Spec 43 §4.4: index of the unit type that firing launches instead of a
+    /// projectile; `-1` for an ordinary weapon.
+    pub launches: i32,
 }
 
 /// Wire form of `WeaponDef`; it resolves the splash-dependent `delivery` default
@@ -198,6 +281,12 @@ struct WeaponDefWire {
     salvo_interval_ticks: u32,
     #[serde(default)]
     aim_tolerance_deg: u32,
+    #[serde(default)]
+    anti_air: AntiAir,
+    #[serde(default = "default_true")]
+    anti_ground: bool,
+    #[serde(default = "no_locomotor")]
+    launches: i32,
 }
 
 fn default_salvo() -> u32 {
@@ -226,6 +315,9 @@ impl From<WeaponDefWire> for WeaponDef {
             salvo: w.salvo,
             salvo_interval_ticks: w.salvo_interval_ticks,
             aim_tolerance: deg_to_units(w.aim_tolerance_deg),
+            anti_air: w.anti_air,
+            anti_ground: w.anti_ground,
+            launches: w.launches,
         }
     }
 }
@@ -294,6 +386,24 @@ pub struct TypeDef {
     /// Spec 34: infantry can ride this vehicle; `None` means it carries nobody.
     #[serde(default)]
     pub transport: Option<TransportDef>,
+    /// Spec 43 §4.2: the unit is its own warhead.
+    #[serde(default)]
+    pub one_way: Option<OneWayDef>,
+    /// Spec 43 §4.3: the flyer has a clip and reloads at a base.
+    #[serde(default)]
+    pub sortie: Option<SortieDef>,
+    /// Spec 43 §4.5: how the unit is steered.
+    #[serde(default)]
+    pub link: Link,
+    /// Spec 43 §4.5: this unit jams hostile `radio` and `gnss` links nearby.
+    #[serde(default)]
+    pub jammer: Option<JammerDef>,
+    /// Spec 43 §4.5: how far off target a jammed `gnss` warhead lands.
+    #[serde(default)]
+    pub gnss_scatter_centi: u32,
+    /// Spec 43 §4.1: an enemy weapon engages it only inside a third of its range.
+    #[serde(default)]
+    pub low_observable: bool,
     /// Precomputed at load (`Ruleset::from_json`), never read from the wire.
     #[serde(skip)]
     pub motion: Motion,
@@ -725,6 +835,19 @@ pub struct CoverDef {
     pub trench_pct: u32,
 }
 
+impl TypeDef {
+    /// Spec 43: the type flies (`LocoKind::Air`).
+    pub fn is_air(&self) -> bool {
+        self.motion.kind == LocoKind::Air
+    }
+
+    /// Spec 43: the type can be ordered to attack: it fires a weapon or is
+    /// its own warhead.
+    pub fn is_armed(&self) -> bool {
+        self.weapon >= 0 || self.one_way.is_some()
+    }
+}
+
 impl Ruleset {
     /// Parse `text` as a generated-format ruleset and validate it.
     ///
@@ -853,7 +976,20 @@ impl Ruleset {
         }
 
         let n_types = self.types.len();
+        for (i, w) in self.weapons.iter().enumerate() {
+            if !is_in_range(w.launches, n_types as i32) {
+                return Err(format!("weapons[{i}].launches {} is out of range", w.launches));
+            }
+        }
         for (i, t) in self.types.iter().enumerate() {
+            if let Some(one_way) = &t.one_way
+                && usize::from(one_way.warhead) >= n_weapons
+            {
+                return Err(format!(
+                    "types[{i}].oneWay.warhead {} is out of range",
+                    one_way.warhead
+                ));
+            }
             if usize::from(t.armor) >= n_armor_classes {
                 return Err(format!(
                     "types[{}].armor {} is out of range 0..={}",

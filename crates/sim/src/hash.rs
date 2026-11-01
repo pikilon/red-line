@@ -136,6 +136,24 @@ fn put_entity(out: &mut Vec<u8>, entity: &Entity) {
         out.push(3);
         put_u32(out, wait);
     }
+    // Spec 43: air state, written only when set, so worlds without flyers keep
+    // their hashes.
+    if entity.ammo > 0 {
+        out.push(4);
+        put_u32(out, entity.ammo);
+    }
+    if entity.reload > 0 {
+        out.push(5);
+        put_u32(out, entity.reload);
+    }
+    if let Some(master) = entity.master {
+        out.push(6);
+        put_u32(out, master);
+    }
+    if entity.fuel > 0 {
+        out.push(7);
+        put_u32(out, entity.fuel);
+    }
 }
 
 fn put_order(out: &mut Vec<u8>, order: &Order) {
@@ -218,6 +236,10 @@ fn put_order(out: &mut Vec<u8>, order: &Order) {
             put_u32(out, building);
             put_u32(out, missing);
             put_u32(out, remaining);
+        }
+        Order::ReturnToBase { order_id } => {
+            out.push(12);
+            put_u32(out, order_id);
         }
         Order::RepairVehicle {
             order_id,

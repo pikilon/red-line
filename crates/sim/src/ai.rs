@@ -642,7 +642,7 @@ fn pool(
         .filter(|entity| {
             entity.owner == player
                 && rules.ty(entity.kind).category == Category::Unit
-                && rules.weapon_of(entity.kind).is_some()
+                && rules.ty(entity.kind).is_armed()
                 && entity.kind != dozer
                 && Some(entity.kind) != truck
                 && !entity.contained()
