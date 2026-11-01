@@ -285,7 +285,7 @@ fn a_one_way_drone_detonates_on_arrival_and_dies_without_a_death_of_its_own() {
     assert_eq!(blasts.len(), 1, "exactly one detonation");
     assert_eq!(
         hp(&world, plant),
-        1000 - 220,
+        1000 - 170,
         "high explosive on a structure"
     );
     let (killer, weapon) = death.expect("the drone's death is reported once");

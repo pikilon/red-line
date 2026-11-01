@@ -412,6 +412,9 @@ pub struct AiState {
     pub force: Option<u16>,
     pub attackers: Vec<u32>,
     pub active: bool,
+    /// Spec 43 §5: indices of the `once` triggers already taken.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub opened: Vec<u16>,
 }
 
 /// The state of `world` and its AIs. Errors with

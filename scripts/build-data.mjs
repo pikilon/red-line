@@ -545,6 +545,14 @@ function checkAi(file, ai, factions, fail) {
       }
     }
   });
+  (ai.guards ?? []).forEach((guard, i) => {
+    const type = allTypes(faction).find((t) => t.id === guard.unit);
+    if (!type) {
+      fail(file, `/guards/${i}/unit`, "unknown-reference", `unknown type ${guard.unit} for faction ${ai.faction}`);
+    } else if (type.category !== "unit" || !produced(guard.unit)) {
+      fail(file, `/guards/${i}/unit`, "invalid-value", `${guard.unit} is not a unit produced by faction ${ai.faction}`);
+    }
+  });
   ai.triggers.forEach((trigger, i) => {
     if (!taskForces.has(trigger.taskForce)) {
       fail(file, `/triggers/${i}/taskForce`, "unknown-reference", `unknown task force ${trigger.taskForce}`);
@@ -763,10 +771,13 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
         id: tf.id,
         units: Object.entries(tf.units).map(([id, count]) => [typeIndex.get(id), count]),
       })),
+      // Spec 43 §5: units kept at home; omitted when there are none.
+      ...((a.guards ?? []).length === 0 ? {} : { guards: a.guards.map((g) => ({ unit: typeIndex.get(g.unit), count: g.count, minTick: g.minTick })) }),
       triggers: a.triggers.map((t) => ({
         taskForce: a.taskForces.findIndex((tf) => tf.id === t.taskForce),
         weight: t.weight,
         minTick: t.minTick,
+        ...(t.once === true ? { once: true } : {}),
       })),
     })),
   };

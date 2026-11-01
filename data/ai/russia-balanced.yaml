@@ -1,22 +1,30 @@
 id: russia-balanced
 faction: russia
-harvesters: 3
+harvesters: 4
 defenseRadiusCenti: 2000
 garrisonRadiusCenti: 800
-buildOrder: [ru-power-plant, ru-supply-center, ru-barracks, ru-power-plant, ru-vehicle-factory, ru-power-plant, ru-power-plant, ru-geran-site, ru-airfield]
+# Spec 43 §5: the Shahed site and the airfield come right after the vehicle factory.
+buildOrder: [ru-power-plant, ru-supply-center, ru-barracks, ru-power-plant, ru-vehicle-factory, ru-power-plant, ru-geran-site, ru-airfield, ru-power-plant]
 taskForces:
   - { id: infantry, units: { ru-rifleman: 6, ru-rpg-gunner: 2 } }
   - { id: mechanized, units: { ru-bmp-2: 2, ru-rifleman: 4 } }
   - { id: armor, units: { ru-t-72b3: 3, ru-bmp-2: 1 } }
   - { id: fires, units: { ru-tos-1a: 1, ru-t-72b3: 2 } }
-  - { id: waves, units: { ru-geran-2: 8 } }                  # spec 43: Shahed-type mass strike
-  - { id: air-strike, units: { ru-su-34: 2, ru-geran-3: 2 } }
-  - { id: fibre, units: { ru-molniya-crew: 3, ru-rifleman: 3 } }
+  - { id: waves, units: { ru-geran-2: 6 } }                  # spec 43: Shahed-type mass strike
+  - { id: air-strike, units: { ru-su-34: 1, ru-geran-3: 2 } }
+  - { id: fibre, units: { ru-molniya-crew: 2, ru-rifleman: 3 } }
+guards:                                                      # spec 43: stay home; wanted at once when enemy flyers show up
+  - { unit: ru-pantsir, count: 2, minTick: 4800 }
+  - { unit: ru-pole-21, count: 1, minTick: 6000 }
 triggers:
   - { taskForce: infantry, weight: 50, minTick: 0 }
   - { taskForce: mechanized, weight: 40, minTick: 2700 }
   - { taskForce: armor, weight: 40, minTick: 4500 }
   - { taskForce: fires, weight: 20, minTick: 6300 }
-  - { taskForce: waves, weight: 30, minTick: 5400 }
-  - { taskForce: fibre, weight: 20, minTick: 3600 }
-  - { taskForce: air-strike, weight: 15, minTick: 9000 }
+  # Spec 43 §5: openings, then the arms join the weighted roll.
+  - { taskForce: waves, weight: 1, minTick: 3000, once: true }
+  - { taskForce: fibre, weight: 1, minTick: 4200, once: true }
+  - { taskForce: air-strike, weight: 1, minTick: 4800, once: true }
+  - { taskForce: waves, weight: 40, minTick: 3000 }
+  - { taskForce: fibre, weight: 15, minTick: 4200 }
+  - { taskForce: air-strike, weight: 25, minTick: 4800 }

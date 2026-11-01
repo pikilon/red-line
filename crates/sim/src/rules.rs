@@ -698,6 +698,21 @@ pub struct TriggerDef {
     pub task_force: u16,
     pub weight: u32,
     pub min_tick: u32,
+    /// Spec 43 §5: an opening move. Once eligible, the first such trigger not
+    /// yet used is taken before any weighted roll, and only once per match.
+    #[serde(default)]
+    pub once: bool,
+}
+
+/// Spec 43 §5: a unit the AI keeps built at home and never launches (an
+/// anti-air vehicle, a jammer). It is wanted from `min_tick` on, or at once
+/// when enemy flyers are over the base.
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct GuardDef {
+    pub unit: TypeId,
+    pub count: u32,
+    pub min_tick: u32,
 }
 
 /// An AI personality (spec 05 §5.1).
@@ -715,6 +730,9 @@ pub struct AiDef {
     pub build_order: Vec<TypeId>,
     pub task_forces: Vec<TaskForceDef>,
     pub triggers: Vec<TriggerDef>,
+    /// Spec 43 §5: units kept at home.
+    #[serde(default)]
+    pub guards: Vec<GuardDef>,
 }
 
 fn default_sell_refund_percent() -> u32 {
@@ -1140,6 +1158,14 @@ impl Ruleset {
                     {
                         return Err(format!("ai[{}].taskForces[{}].units out of range", i, j));
                     }
+                }
+            }
+            for (j, guard) in ai.guards.iter().enumerate() {
+                if usize::from(guard.unit) >= n_types
+                    || self.types[usize::from(guard.unit)].category != Category::Unit
+                    || guard.count == 0
+                {
+                    return Err(format!("ai[{}].guards[{}] out of range", i, j));
                 }
             }
             for (j, trigger) in ai.triggers.iter().enumerate() {

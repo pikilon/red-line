@@ -220,6 +220,23 @@ Ids of the weapons and balance numbers live in `data/factions/*.yaml`.
 * AI: each faction builds its new structures in `buildOrder` and uses them in
   `taskForces`; one-way units attack the nearest known enemy building.
 
+**AI as built.**
+* Flyers and one-way units are launched with an `Attack` on the nearest visible
+  enemy building, else on a remembered one, else `AttackGround` on the enemy
+  start; never `Move`. A sortie aircraft is sent again only with a full clip.
+  Launched drones and `guards` are never in the pool.
+* `guards: [{unit, count, minTick}]` on a personality: units kept built at home
+  (Pantsir, Pole-21, Gepard), wanted from `minTick` or at once while visible enemy
+  flyers are inside the defense radius; idle armed guards then attack the nearest
+  such flyer. Airborne intruders no longer count as the ground threats of
+  spec 05 step 5, which would stop production for as long as a drone circled.
+* A trigger with `once: true` is an opening: the first eligible one not yet taken
+  is chosen before the weighted roll, once per match (`opened` in the AI save).
+* Step 5 fix: with intruders in the base and an empty pool, production (step 6)
+  still runs, so the AI does not sit on its credits for the rest of the match.
+* Balance as tuned (`first-line`, seeds 1-5): the balanced pair 1 / 2 / 2 undecided,
+  the rush pair 3 / 1 / 1 undecided (Ukraine / Russia / neither).
+
 **As built (client).**
 
 * `matchSnapshot.ts` decodes the flags and the air tail (`air`: id, ammo, clip,

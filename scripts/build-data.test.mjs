@@ -287,7 +287,16 @@ test("AC-05-01: personality sources build", () => {
       ...(source.garrisonRadiusCenti === undefined ? {} : { garrisonRadiusCenti: source.garrisonRadiusCenti }),
       buildOrder: buildOrder(source.buildOrder),
       taskForces: source.taskForces.map((force) => ({ id: force.id, units: kinds(Object.entries(force.units)) })),
-      triggers: source.triggers.map((t) => ({ taskForce: forceIds.indexOf(t.taskForce), weight: t.weight, minTick: t.minTick })),
+      // Spec 43 §5: units kept at home, only when the personality has them.
+      ...((source.guards ?? []).length === 0
+        ? {}
+        : { guards: source.guards.map((g) => ({ unit: typeIndex.get(g.unit), count: g.count, minTick: g.minTick })) }),
+      triggers: source.triggers.map((t) => ({
+        taskForce: forceIds.indexOf(t.taskForce),
+        weight: t.weight,
+        minTick: t.minTick,
+        ...(t.once === true ? { once: true } : {}),
+      })),
     });
   });
 });

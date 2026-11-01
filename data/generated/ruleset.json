@@ -844,11 +844,11 @@
     {
       "id": "ru-geran-2-warhead",
       "damageType": 3,
-      "damage": 220,
+      "damage": 170,
       "rangeCenti": 100,
       "minRangeCenti": 0,
       "cooldownTicks": 1,
-      "splashCenti": 180,
+      "splashCenti": 160,
       "projectileTicks": 0,
       "speedCenti": 0,
       "aimToleranceDeg": 2,
@@ -19307,7 +19307,7 @@
     {
       "id": "ukraine-balanced",
       "faction": 0,
-      "harvesters": 3,
+      "harvesters": 4,
       "defenseRadiusCenti": 2000,
       "garrisonRadiusCenti": 800,
       "buildOrder": [
@@ -19319,10 +19319,12 @@
         15,
         11,
         15,
-        11,
         32,
+        34,
+        11,
         31,
-        34
+        33,
+        11
       ],
       "taskForces": [
         {
@@ -19408,12 +19410,17 @@
           ]
         },
         {
-          "id": "deep-strike",
+          "id": "flamingo",
           "units": [
             [
               42,
               1
-            ],
+            ]
+          ]
+        },
+        {
+          "id": "storm-shadow",
+          "units": [
             [
               43,
               1
@@ -19428,6 +19435,13 @@
               2
             ]
           ]
+        }
+      ],
+      "guards": [
+        {
+          "unit": 41,
+          "count": 1,
+          "minTick": 3600
         }
       ],
       "triggers": [
@@ -19452,24 +19466,59 @@
           "minTick": 6300
         },
         {
+          "taskForce": 5,
+          "weight": 1,
+          "minTick": 3000,
+          "once": true
+        },
+        {
+          "taskForce": 6,
+          "weight": 1,
+          "minTick": 3600,
+          "once": true
+        },
+        {
+          "taskForce": 8,
+          "weight": 1,
+          "minTick": 4800,
+          "once": true
+        },
+        {
+          "taskForce": 7,
+          "weight": 1,
+          "minTick": 5400,
+          "once": true
+        },
+        {
           "taskForce": 4,
-          "weight": 30,
-          "minTick": 4800
+          "weight": 1,
+          "minTick": 6000,
+          "once": true
         },
         {
           "taskForce": 5,
-          "weight": 20,
+          "weight": 15,
+          "minTick": 3000
+        },
+        {
+          "taskForce": 6,
+          "weight": 15,
           "minTick": 3600
         },
         {
           "taskForce": 7,
           "weight": 15,
-          "minTick": 6300
+          "minTick": 5400
         },
         {
-          "taskForce": 6,
-          "weight": 10,
-          "minTick": 9000
+          "taskForce": 8,
+          "weight": 15,
+          "minTick": 4800
+        },
+        {
+          "taskForce": 4,
+          "weight": 15,
+          "minTick": 6000
         }
       ]
     },
@@ -19485,7 +19534,8 @@
         12,
         14,
         13,
-        11
+        11,
+        32
       ],
       "taskForces": [
         {
@@ -19546,6 +19596,13 @@
           ]
         }
       ],
+      "guards": [
+        {
+          "unit": 41,
+          "count": 1,
+          "minTick": 5400
+        }
+      ],
       "triggers": [
         {
           "taskForce": 0,
@@ -19577,7 +19634,7 @@
     {
       "id": "russia-balanced",
       "faction": 1,
-      "harvesters": 3,
+      "harvesters": 4,
       "defenseRadiusCenti": 2000,
       "garrisonRadiusCenti": 800,
       "buildOrder": [
@@ -19587,9 +19644,9 @@
         25,
         28,
         25,
-        25,
         45,
-        44
+        44,
+        25
       ],
       "taskForces": [
         {
@@ -19649,7 +19706,7 @@
           "units": [
             [
               48,
-              8
+              6
             ]
           ]
         },
@@ -19658,7 +19715,7 @@
           "units": [
             [
               46,
-              2
+              1
             ],
             [
               49,
@@ -19671,13 +19728,25 @@
           "units": [
             [
               50,
-              3
+              2
             ],
             [
               16,
               3
             ]
           ]
+        }
+      ],
+      "guards": [
+        {
+          "unit": 52,
+          "count": 2,
+          "minTick": 4800
+        },
+        {
+          "unit": 53,
+          "count": 1,
+          "minTick": 6000
         }
       ],
       "triggers": [
@@ -19703,25 +19772,43 @@
         },
         {
           "taskForce": 4,
-          "weight": 30,
-          "minTick": 5400
+          "weight": 1,
+          "minTick": 3000,
+          "once": true
         },
         {
           "taskForce": 6,
-          "weight": 20,
-          "minTick": 3600
+          "weight": 1,
+          "minTick": 4200,
+          "once": true
         },
         {
           "taskForce": 5,
+          "weight": 1,
+          "minTick": 4800,
+          "once": true
+        },
+        {
+          "taskForce": 4,
+          "weight": 40,
+          "minTick": 3000
+        },
+        {
+          "taskForce": 6,
           "weight": 15,
-          "minTick": 9000
+          "minTick": 4200
+        },
+        {
+          "taskForce": 5,
+          "weight": 25,
+          "minTick": 4800
         }
       ]
     },
     {
       "id": "russia-rush",
       "faction": 1,
-      "harvesters": 4,
+      "harvesters": 6,
       "defenseRadiusCenti": 1500,
       "garrisonRadiusCenti": 800,
       "buildOrder": [
@@ -19729,10 +19816,11 @@
         27,
         26,
         28,
+        27,
         25,
         29,
-        25,
-        45
+        45,
+        25
       ],
       "taskForces": [
         {
@@ -19792,9 +19880,16 @@
           "units": [
             [
               48,
-              6
+              8
             ]
           ]
+        }
+      ],
+      "guards": [
+        {
+          "unit": 52,
+          "count": 1,
+          "minTick": 5400
         }
       ],
       "triggers": [
@@ -19820,8 +19915,8 @@
         },
         {
           "taskForce": 4,
-          "weight": 20,
-          "minTick": 4800
+          "weight": 50,
+          "minTick": 2400
         }
       ]
     }

@@ -205,7 +205,7 @@ lateWeapons:                         # spec 43: after every faction's weapons, s
   # Glide bomb: dropped from beyond Pantsir (1000) and Gepard (700) range; only Patriot (1800) reaches the jet. Slow, wide, scattered.
   - { id: ru-kab-glide-bomb, damageType: highExplosive, damage: 200, rangeCenti: 1400, cooldownTicks: 45, splashCenti: 220, speedCenti: 50, delivery: ballistic, scatterCenti: 120, render: { model: glideBomb, flight: ballistic, apexCenti: 0, launch: softLaunch, trail: smoke } }
   # Warheads of one-way units: the unit is the projectile (rangeCenti and cooldownTicks are unused).
-  - { id: ru-geran-2-warhead, damageType: highExplosive, damage: 220, rangeCenti: 100, cooldownTicks: 1, splashCenti: 180 }
+  - { id: ru-geran-2-warhead, damageType: highExplosive, damage: 170, rangeCenti: 100, cooldownTicks: 1, splashCenti: 160 }
   - { id: ru-geran-3-warhead, damageType: highExplosive, damage: 320, rangeCenti: 100, cooldownTicks: 1, splashCenti: 220 }
   - { id: ru-molniya-warhead, damageType: antiTank, damage: 150, rangeCenti: 100, cooldownTicks: 1, splashCenti: 80 }
   - { id: ru-molniya-launcher, damageType: antiTank, damage: 1, rangeCenti: 600, cooldownTicks: 240, launches: ru-molniya, aimToleranceDeg: 15 }
