@@ -5,13 +5,13 @@
       "id": "showcase",
       "map": "showcase",
       "form": "setup",
-      "entities": 24
+      "entities": 47
     },
     {
       "id": "showcase-units",
       "map": "showcase",
       "form": "setup",
-      "entities": 24
+      "entities": 47
     },
     {
       "id": "armor-duel",
@@ -71,7 +71,7 @@
       "id": "production",
       "map": "first-line",
       "form": "setup",
-      "entities": 6
+      "entities": 10
     },
     {
       "id": "rally-points",

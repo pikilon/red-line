@@ -158,7 +158,7 @@ pub const FLAG_ABOARD: i32 = 64;
 pub const FLAG_AIRBORNE: i32 = 128;
 /// Spec 43 §4.5: a `radio` or `gnss` unit inside a hostile jammer's radius.
 pub const FLAG_JAMMED: i32 = 256;
-/// One air record, after the rallies: `entity id, ammo, clip, fuel left in
+/// One air record, after the rallies (the count and the records are left out when there are none): `entity id, ammo, clip, fuel left in
 /// permille (1000 without a fuel limit), master id (-1 for none)`.
 pub const AIR_STRIDE: usize = 5;
 
@@ -305,8 +305,11 @@ pub fn encode_match_snapshot_with_shots(
             entity.master.map_or(-1, |master| master as i32),
         ]);
     }
-    out.push(air_count);
-    out.extend_from_slice(&air);
+    // Written only when there is one, so a match without flyers keeps its layout.
+    if air_count > 0 {
+        out.push(air_count);
+        out.extend_from_slice(&air);
+    }
     out
 }
 

@@ -9,25 +9,33 @@
     "hq": { "$ref": "#/$defs/id" },
     "dozer": { "$ref": "#/$defs/id" },
     "weapons": { "type": "array", "items": { "$ref": "#/$defs/weapon" } },
-    "types": {
+    "lateWeapons": {
+      "description": "Spec 43: weapons listed after every faction's weapons, so adding one keeps every earlier weapon index.",
       "type": "array",
-      "items": {
-        "allOf": [
-          { "$ref": "#/$defs/type" },
-          { "properties": { "category": { "enum": ["unit", "building"] } } },
-          {
-            "if": { "type": "object", "required": ["category"], "properties": { "category": { "const": "unit" } } },
-            "then": { "type": "object", "required": ["turnRateDeg"] }
-          },
-          {
-            "if": { "type": "object", "required": ["category"], "properties": { "category": { "enum": ["building", "depot"] } } },
-            "then": { "type": "object", "properties": { "turnRateDeg": false, "locomotor": false } }
-          }
-        ]
-      }
-    }
+      "items": { "$ref": "#/$defs/weapon" }
+    },
+    "lateTypes": {
+      "description": "Spec 43: types listed after the common late types, so adding one keeps every earlier type index.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/factionType" }
+    },
+    "types": { "type": "array", "items": { "$ref": "#/$defs/factionType" } }
   },
   "$defs": {
+    "factionType": {
+            "allOf": [
+              { "$ref": "#/$defs/type" },
+              { "properties": { "category": { "enum": ["unit", "building"] } } },
+              {
+                "if": { "type": "object", "required": ["category"], "properties": { "category": { "const": "unit" } } },
+                "then": { "type": "object", "required": ["turnRateDeg"] }
+              },
+              {
+                "if": { "type": "object", "required": ["category"], "properties": { "category": { "enum": ["building", "depot"] } } },
+                "then": { "type": "object", "properties": { "turnRateDeg": false, "locomotor": false } }
+              }
+            ]
+          },
     "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
     "key": { "type": "string", "pattern": "^[a-z][a-zA-Z0-9]*$" },
     "ids": { "type": "array", "items": { "$ref": "#/$defs/id" } },
@@ -53,6 +61,9 @@
         "aimToleranceDeg": { "$ref": "#/$defs/aimDeg" },
         "salvo": { "$ref": "#/$defs/positive" },
         "salvoIntervalTicks": { "$ref": "#/$defs/count" },
+        "antiAir": { "description": "Spec 43 §4.1: which airborne units the weapon reaches.", "enum": ["none", "low", "all"] },
+        "antiGround": { "description": "Spec 43 §4.1: default true.", "type": "boolean" },
+        "launches": { "description": "Spec 43 §4.4: firing spawns this unit type instead of a projectile.", "$ref": "#/$defs/id" },
         "render": { "$ref": "#/$defs/weaponRender" }
       },
       "allOf": [
@@ -78,7 +89,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "model": { "enum": ["tracer", "tracerHeavy", "shell", "rpg", "atgm", "rocket"] },
+        "model": { "enum": ["tracer", "tracerHeavy", "shell", "rpg", "atgm", "rocket", "glideBomb"] },
         "flight": { "enum": ["straight", "boost", "loft", "ballistic", "topAttack"] },
         "apexCenti": { "$ref": "#/$defs/count" },
         "launch": { "enum": ["muzzle", "cannon", "backblast", "softLaunch", "rocketLaunch"] },
@@ -100,7 +111,7 @@
         "turretTurnRateDeg": { "$ref": "#/$defs/positive" },
         "articulation": { "enum": ["launcher", "blade"] },
         "stowTicks": { "$ref": "#/$defs/count" },
-        "locomotor": { "$ref": "#/$defs/id" },
+        "locomotor": { "$ref": "#/$defs/key" },
         "cost": { "$ref": "#/$defs/count" },
         "buildTicks": { "$ref": "#/$defs/count" },
         "weapon": { "$ref": "#/$defs/id" },
@@ -126,6 +137,34 @@
         "amphibious": { "description": "Spec 36: the vehicle drives over deep water too (Zero Hour Surfaces = GROUND WATER).", "type": "boolean" },
         "infinite": { "description": "Spec 36: a depot that never runs out (a port).", "type": "boolean" },
         "healsInfantry": { "description": "Spec 40: damaged infantry heal inside this building (Zero Hour HealContain).", "type": "boolean" },
+        "oneWay": {
+          "description": "Spec 43 §4.2: the unit is its own warhead.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["warhead"],
+          "properties": {
+            "warhead": { "$ref": "#/$defs/id" },
+            "fuelTicks": { "$ref": "#/$defs/positive" },
+            "armTiles": { "$ref": "#/$defs/positive" }
+          }
+        },
+        "sortie": {
+          "description": "Spec 43 §4.3: a flyer with a clip that reloads at a base.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["clip", "reloadTicks"],
+          "properties": { "clip": { "$ref": "#/$defs/positive" }, "reloadTicks": { "$ref": "#/$defs/positive" } }
+        },
+        "link": { "description": "Spec 43 §4.5: how the unit is steered; absent is unjammable.", "enum": ["radio", "fibre", "gnss", "autonomous"] },
+        "jammer": {
+          "description": "Spec 43 §4.5: jams hostile radio and gnss links inside the radius.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["radiusCenti"],
+          "properties": { "radiusCenti": { "$ref": "#/$defs/positive" } }
+        },
+        "gnssScatterCenti": { "description": "Spec 43 §4.5: how far off a jammed gnss warhead lands.", "$ref": "#/$defs/positive" },
+        "lowObservable": { "description": "Spec 43 §4.1: enemy weapons engage it only inside a third of their range.", "type": "boolean" },
         "transport": {
           "description": "Spec 34: infantry can ride this vehicle (Zero Hour TransportContain).",
           "type": "object",

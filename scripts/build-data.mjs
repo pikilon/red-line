@@ -75,6 +75,11 @@ export function readSources(rootDir) {
   };
 }
 
+/** Spec 43: every type of a faction, the late ones (added after the rest so earlier type indices stay) last. */
+const allTypes = (faction) => [...faction.types, ...(faction.lateTypes ?? [])];
+/** Spec 43: every weapon of a faction. */
+const allWeapons = (faction) => [...faction.weapons, ...(faction.lateWeapons ?? [])];
+
 /** §3.1 delivery: the written value, or `ballistic` when the weapon splashes. */
 const resolvedDelivery = (w) => w.delivery ?? ((w.splashCenti ?? 0) > 0 ? "ballistic" : "homing");
 
@@ -183,7 +188,7 @@ export function checkLocomotorCoverage(sources) {
   const known = Object.keys(globals.locomotors ?? {});
   for (const source of sources.factions) {
     const faction = parse(source.text);
-    (faction.types ?? []).forEach((t, i) => {
+    allTypes(faction).forEach((t, i) => {
       if (t.category === "building" && t.weapon !== undefined && !(t.turretTurnRateDeg > 0)) {
         errors.push({ file: source.file, pointer: `/types/${i}/turretTurnRateDeg`, code: "invalid-value", message: `armed building ${t.id} has no turretTurnRateDeg` });
       }
@@ -235,8 +240,14 @@ function checkReferences(sources, globals, factions, fail) {
   factions.forEach((faction, i) => {
     owners.push({ file: sources.factions[i].file, list: "types", types: faction.types, weapons: faction.weapons });
   });
+  // Spec 43: the late weapons and types of every faction come last, so earlier indices stay.
+  factions.forEach((faction, i) => {
+    if ((faction.lateTypes ?? []).length + (faction.lateWeapons ?? []).length > 0) {
+      owners.push({ file: sources.factions[i].file, list: "lateTypes", types: faction.lateTypes ?? [], weapons: faction.lateWeapons ?? [], weaponList: "lateWeapons" });
+    }
+  });
   for (const owner of owners) {
-    owner.weapons.forEach((w, i) => declare(weapons, owner.file, `/weapons/${i}/id`, w.id));
+    owner.weapons.forEach((w, i) => declare(weapons, owner.file, `/${owner.weaponList ?? "weapons"}/${i}/id`, w.id));
     owner.types.forEach((t, i) => declare(types, owner.file, `/${owner.list}/${i}/id`, t.id));
   }
 
@@ -249,6 +260,7 @@ function checkReferences(sources, globals, factions, fail) {
   for (const owner of owners) {
     owner.weapons.forEach((w, i) => {
       known(new Set(globals.damageTypes), "damage type", [w.damageType], owner.file, () => `/weapons/${i}/damageType`);
+      known(types, "type", single(w.launches), owner.file, () => `/weapons/${i}/launches`);
       // Scatter needs the ballistic delivery. The schema catches the written
       // case; here the defaulted case (`splashCenti == 0` defaults to homing).
       if ((w.scatterCenti ?? 0) > 0 && resolvedDelivery(w) !== "ballistic") {
@@ -261,6 +273,7 @@ function checkReferences(sources, globals, factions, fail) {
       known(weapons, "weapon", single(t.weapon), owner.file, () => `${at}/weapon`);
       known(weapons, "weapon", single(t.trenchWeapon), owner.file, () => `${at}/trenchWeapon`);
       known(types, "type", single(t.freeUnit), owner.file, () => `${at}/freeUnit`);
+      known(weapons, "weapon", single(t.oneWay?.warhead), owner.file, () => `${at}/oneWay/warhead`);
       for (const key of ["requires", "produces", "builds"]) {
         known(types, "type", t[key] ?? [], owner.file, (j) => `${at}/${key}/${j}`);
       }
@@ -511,21 +524,21 @@ function checkAi(file, ai, factions, fail) {
   }
   const dozer = faction.types.find((t) => t.id === faction.dozer);
   ai.buildOrder.forEach((id, i) => {
-    const type = faction.types.find((t) => t.id === id);
+    const type = allTypes(faction).find((t) => t.id === id);
     if (type?.category !== "building" || !dozer.builds?.includes(id)) {
       fail(file, `/buildOrder/${i}`, "invalid-value", `${id} is not a building of faction ${ai.faction} built by its dozer`);
     }
   });
-  const produced = (id) => faction.types.some((t) => t.category === "building" && (t.produces ?? []).includes(id));
+  const produced = (id) => allTypes(faction).some((t) => t.category === "building" && (t.produces ?? []).includes(id));
   const taskForces = new Set();
   ai.taskForces.forEach((taskForce, i) => {
     if (taskForces.has(taskForce.id)) fail(file, `/taskForces/${i}/id`, "duplicate-id", `duplicate task force ${taskForce.id}`);
     taskForces.add(taskForce.id);
     for (const id of Object.keys(taskForce.units)) {
-      const type = faction.types.find((t) => t.id === id);
+      const type = allTypes(faction).find((t) => t.id === id);
       if (!type) {
         fail(file, `/taskForces/${i}/units/${id}`, "unknown-reference", `unknown type ${id} for faction ${ai.faction}`);
-      } else if (type.category !== "unit" || type.weapon === undefined || !produced(id)) {
+      } else if (type.category !== "unit" || (type.weapon === undefined && type.oneWay === undefined) || !produced(id)) {
         fail(file, `/taskForces/${i}/units/${id}`, "invalid-value", `${id} is not an armed unit produced by faction ${ai.faction}`);
       }
     }
@@ -538,12 +551,14 @@ function checkAi(file, ai, factions, fail) {
 }
 
 const assemble = (globals, factions, maps, ai, featureTypes, layers, environment) => {
-  const weaponList = factions.flatMap((f) => f.weapons);
+  // Spec 43: late weapons and types of the factions go after everything else, so earlier indices stay.
+  const weaponList = [...factions.flatMap((f) => f.weapons), ...factions.flatMap((f) => f.lateWeapons ?? [])];
   const typeList = [
     ...globals.commonTypes.map((t) => ({ t, faction: -1 })),
     ...factions.flatMap((f, faction) => f.types.map((t) => ({ t, faction }))),
     // Spec 36: common types added later go last, so earlier type indices stay.
     ...(globals.lateTypes ?? []).map((t) => ({ t, faction: -1 })),
+    ...factions.flatMap((f, faction) => (f.lateTypes ?? []).map((t) => ({ t, faction }))),
   ];
   const weaponIndex = new Map(weaponList.map((w, i) => [w.id, i]));
   const typeIndex = new Map(typeList.map(({ t }, i) => [t.id, i]));
@@ -586,7 +601,7 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       : {}),
     locomotors: Object.entries(globals.locomotors ?? {}).map(([id, l]) => ({
       id,
-      kind: { foot: "foot", tracks: "tracks", wheels: "wheels" }[l.kind],
+      kind: { foot: "foot", tracks: "tracks", wheels: "wheels", air: "air" }[l.kind],
       pivotAngleDeg: l.pivotAngleDeg ?? 0,
       minTurnSpeedPercent: l.minTurnSpeedPercent ?? 0,
       slowTurnAngleDeg: l.slowTurnAngleDeg ?? 0,
@@ -598,6 +613,8 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       crusherLevel: l.crusherLevel ?? 0,
       shoveDamage: l.shoveDamage ?? 0,
       shovePushCenti: l.shovePushCenti ?? 0,
+      // Spec 43 §4.1: altitude band and flight height of an air locomotor.
+      ...(l.kind === "air" ? { class: l.class ?? "low", altitudeCenti: l.altitudeCenti ?? 0 } : {}),
     })),
     weapons: weaponList.map((w) => ({
       id: w.id,
@@ -615,6 +632,10 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       scatterCenti: w.scatterCenti ?? 0,
       salvo: w.salvo ?? 1,
       salvoIntervalTicks: w.salvoIntervalTicks ?? 0,
+      // Spec 43: omitted at the defaults (none, ground, no launch), so older fixtures keep their shape.
+      ...(w.antiAir === undefined ? {} : { antiAir: w.antiAir }),
+      ...(w.antiGround === undefined ? {} : { antiGround: w.antiGround }),
+      ...(w.launches === undefined ? {} : { launches: typeIndex.get(w.launches) }),
       render: {
         model: w.render?.model ?? "tracer",
         flight: w.render?.flight ?? "straight",
@@ -664,6 +685,13 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       ...(t.healsInfantry === undefined ? {} : { healsInfantry: t.healsInfantry }),
       // Spec 34: infantry transport.
       ...(t.transport === undefined ? {} : { transport: t.transport }),
+      // Spec 43: air power. Omitted when unused.
+      ...(t.oneWay === undefined ? {} : { oneWay: { warhead: weaponIndex.get(t.oneWay.warhead), fuelTicks: t.oneWay.fuelTicks ?? 0, armTiles: t.oneWay.armTiles ?? 0 } }),
+      ...(t.sortie === undefined ? {} : { sortie: t.sortie }),
+      ...(t.link === undefined ? {} : { link: t.link }),
+      ...(t.jammer === undefined ? {} : { jammer: t.jammer }),
+      ...(t.gnssScatterCenti === undefined ? {} : { gnssScatterCenti: t.gnssScatterCenti }),
+      ...(t.lowObservable === undefined ? {} : { lowObservable: t.lowObservable }),
       render: { size: renderSize(t) },
     })),
     factions: factions.map((f) => ({ id: f.id, hq: typeIndex.get(f.hq), dozer: typeIndex.get(f.dozer) })),

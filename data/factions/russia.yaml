@@ -2,13 +2,13 @@ id: russia                           # required, must equal the file name
 hq: ru-hq                            # required, a building type of this file
 dozer: ru-dozer                      # required, a unit type of this file
 weapons:                             # required
-  - { id: ru-ak74, damageType: smallArms, damage: 9, rangeCenti: 420, cooldownTicks: 15, speedCenti: 400, delivery: homing, aimToleranceDeg: 15 }
+  - { id: ru-ak74, damageType: smallArms, damage: 9, rangeCenti: 420, cooldownTicks: 15, speedCenti: 400, antiAir: low, delivery: homing, aimToleranceDeg: 15 }
   - { id: ru-rpg7, damageType: antiTank, damage: 90, rangeCenti: 450, cooldownTicks: 45, speedCenti: 60, delivery: ballistic, scatterCenti: 25, render: { model: rpg, flight: boost, apexCenti: 0, launch: backblast, trail: smoke }, aimToleranceDeg: 15 }
-  - { id: ru-kpvt, damageType: smallArms, damage: 14, rangeCenti: 500, cooldownTicks: 10, speedCenti: 450, delivery: homing }
-  - { id: ru-2a42, damageType: autocannon, damage: 16, rangeCenti: 600, cooldownTicks: 8, speedCenti: 500, delivery: homing, render: { model: tracerHeavy, flight: straight, apexCenti: 0, launch: muzzle, trail: none } }
+  - { id: ru-kpvt, damageType: smallArms, damage: 14, rangeCenti: 500, cooldownTicks: 10, speedCenti: 450, antiAir: low, delivery: homing }
+  - { id: ru-2a42, damageType: autocannon, damage: 16, rangeCenti: 600, cooldownTicks: 8, speedCenti: 500, antiAir: low, delivery: homing, render: { model: tracerHeavy, flight: straight, apexCenti: 0, launch: muzzle, trail: none } }
   - { id: ru-2a46m, damageType: antiTank, damage: 85, rangeCenti: 650, cooldownTicks: 33, speedCenti: 900, delivery: ballistic, render: { model: shell, flight: straight, apexCenti: 0, launch: cannon, trail: none } }
   - { id: ru-tos-thermobaric, damageType: thermobaric, damage: 30, rangeCenti: 1000, minRangeCenti: 300, cooldownTicks: 180, splashCenti: 250, speedCenti: 30, delivery: ballistic, scatterCenti: 150, salvo: 4, salvoIntervalTicks: 3, render: { model: rocket, flight: ballistic, apexCenti: 0, launch: rocketLaunch, trail: smoke } }
-  - { id: ru-sidearm, damageType: smallArms, damage: 4, rangeCenti: 300, cooldownTicks: 20, speedCenti: 400, delivery: homing }   # spec 35 §5c: trench fights
+  - { id: ru-sidearm, damageType: smallArms, damage: 4, rangeCenti: 300, cooldownTicks: 20, speedCenti: 400, antiAir: low, delivery: homing }   # spec 35 §5c: trench fights
   - { id: ru-kornet-emplacement, damageType: antiTank, damage: 120, rangeCenti: 1100, cooldownTicks: 75, speedCenti: 45, delivery: homing, render: { model: atgm, flight: loft, apexCenti: 40, launch: softLaunch, trail: smoke } }
 types:                               # required
   - id: ru-rifleman
@@ -108,7 +108,7 @@ types:                               # required
     buildTicks: 200
     speedCenti: 15
     turnRateDeg: 150
-    builds: [ru-power-plant, ru-supply-center, ru-barracks, ru-vehicle-factory, ru-defense]
+    builds: [ru-power-plant, ru-supply-center, ru-barracks, ru-vehicle-factory, ru-defense, ru-airfield, ru-geran-site]
     articulation: blade
     radiusCenti: 38
     render: { size: [80, 60, 100] }
@@ -170,7 +170,7 @@ types:                               # required
     buildTicks: 150
     footprint: [3, 3]
     power: -2
-    produces: [ru-rifleman, ru-rpg-gunner]
+    produces: [ru-rifleman, ru-rpg-gunner, ru-molniya-crew]
     healsInfantry: true
     requires: [ru-power-plant]
     render: { height: 90 }
@@ -183,7 +183,7 @@ types:                               # required
     buildTicks: 300
     footprint: [4, 4]
     power: -4
-    produces: [ru-brdm-scout, ru-bmp-2, ru-t-72b3, ru-tos-1a]
+    produces: [ru-brdm-scout, ru-bmp-2, ru-t-72b3, ru-tos-1a, ru-pantsir, ru-pole-21]
     repairsVehicles: true
     requires: [ru-supply-center]
     render: { height: 110 }
@@ -201,3 +201,141 @@ types:                               # required
     weapon: ru-kornet-emplacement
     turretTurnRateDeg: 120
     render: { height: 80 }
+lateWeapons:                         # spec 43: after every faction's weapons, so earlier weapon indices stay
+  # Glide bomb: dropped from beyond Pantsir (1000) and Gepard (700) range; only Patriot (1800) reaches the jet. Slow, wide, scattered.
+  - { id: ru-kab-glide-bomb, damageType: highExplosive, damage: 200, rangeCenti: 1400, cooldownTicks: 45, splashCenti: 220, speedCenti: 50, delivery: ballistic, scatterCenti: 120, render: { model: glideBomb, flight: ballistic, apexCenti: 0, launch: softLaunch, trail: smoke } }
+  # Warheads of one-way units: the unit is the projectile (rangeCenti and cooldownTicks are unused).
+  - { id: ru-geran-2-warhead, damageType: highExplosive, damage: 220, rangeCenti: 100, cooldownTicks: 1, splashCenti: 180 }
+  - { id: ru-geran-3-warhead, damageType: highExplosive, damage: 320, rangeCenti: 100, cooldownTicks: 1, splashCenti: 220 }
+  - { id: ru-molniya-warhead, damageType: antiTank, damage: 150, rangeCenti: 100, cooldownTicks: 1, splashCenti: 80 }
+  - { id: ru-molniya-launcher, damageType: antiTank, damage: 1, rangeCenti: 600, cooldownTicks: 240, launches: ru-molniya, aimToleranceDeg: 15 }
+  - { id: ru-pantsir-missile, damageType: flak, damage: 90, rangeCenti: 1000, cooldownTicks: 24, speedCenti: 150, delivery: homing, salvo: 2, salvoIntervalTicks: 4, antiAir: all, antiGround: false, aimToleranceDeg: 15, render: { model: rocket, flight: boost, apexCenti: 0, launch: rocketLaunch, trail: smoke } }
+lateTypes:                           # spec 43: after the common late types, so earlier type indices stay
+  - id: ru-airfield                  # produces and reloads aviation; big and expensive
+    category: building
+    armor: structure
+    hp: 2200
+    sightCenti: 600
+    cost: 3000
+    buildTicks: 360
+    footprint: [6, 4]
+    power: -5
+    produces: [ru-su-34, ru-orlan]
+    requires: [ru-vehicle-factory]
+    render: { height: 120 }
+  - id: ru-geran-site                # launch rails; static
+    category: building
+    armor: structure
+    hp: 900
+    sightCenti: 500
+    cost: 1200
+    buildTicks: 240
+    footprint: [3, 2]
+    power: -3
+    produces: [ru-geran-2, ru-geran-3]
+    requires: [ru-supply-center]
+    render: { height: 90 }
+  - id: ru-su-34                     # glide bombs from beyond Pantsir and Gepard; weak to Patriot; scarce
+    category: unit
+    locomotor: airHigh
+    armor: aircraft
+    hp: 420
+    sightCenti: 900
+    cost: 2200
+    buildTicks: 360
+    speedCenti: 110
+    turnRateDeg: 180
+    weapon: ru-kab-glide-bomb
+    sortie: { clip: 2, reloadTicks: 450 }
+    render: { size: [170, 50, 240] }
+  - id: ru-orlan                     # unarmed spotter with a long sight; any low weapon downs it
+    category: unit
+    locomotor: airLow
+    armor: drone
+    hp: 60
+    sightCenti: 1800
+    cost: 350
+    buildTicks: 90
+    speedCenti: 25
+    turnRateDeg: 150
+    render: { size: [130, 30, 80] }
+  - id: ru-geran-2                   # cheap, slow, gnss; sent in waves
+    category: unit
+    locomotor: airLow
+    armor: drone
+    hp: 70
+    sightCenti: 300
+    cost: 200
+    buildTicks: 40
+    speedCenti: 30
+    turnRateDeg: 150
+    oneWay: { warhead: ru-geran-2-warhead, fuelTicks: 1800, armTiles: 3 }
+    link: gnss
+    gnssScatterCenti: 250
+    render: { size: [100, 27, 105] }
+  - id: ru-geran-3                   # jet-powered: fast, expensive, class high
+    category: unit
+    locomotor: airHigh
+    armor: aircraft
+    hp: 160
+    sightCenti: 400
+    cost: 700
+    buildTicks: 120
+    speedCenti: 60
+    turnRateDeg: 360
+    oneWay: { warhead: ru-geran-3-warhead, fuelTicks: 1500, armTiles: 3 }
+    link: gnss
+    gnssScatterCenti: 200
+    render: { size: [100, 30, 110] }
+  - id: ru-molniya-crew              # launches fibre-guided Molniya drones at short range
+    category: unit
+    locomotor: foot
+    armor: infantry
+    hp: 90
+    sightCenti: 700
+    cost: 250
+    buildTicks: 100
+    speedCenti: 8
+    turnRateDeg: 540
+    weapon: ru-molniya-launcher
+    trenchWeapon: ru-sidearm
+    radiusCenti: 25
+    render: { size: [50, 55, 50] }
+  - id: ru-molniya                   # fixed-wing FPV on a fibre line: immune to jammers; dies to infantry fire
+    category: unit
+    locomotor: airLow
+    armor: drone
+    hp: 25
+    sightCenti: 400
+    speedCenti: 55
+    turnRateDeg: 270
+    oneWay: { warhead: ru-molniya-warhead, fuelTicks: 240 }
+    link: fibre
+    render: { size: [80, 30, 60] }
+  - id: ru-pantsir                   # mobile anti-air missiles, reaches both classes; saturated by waves
+    category: unit
+    locomotor: wheeled
+    armor: light
+    hp: 380
+    sightCenti: 1100
+    cost: 1500
+    buildTicks: 270
+    speedCenti: 24
+    turnRateDeg: 240
+    turretTurnRateDeg: 200
+    weapon: ru-pantsir-missile
+    radiusCenti: 41
+    render: { size: [80, 90, 135] }
+  - id: ru-pole-21                   # unarmed mobile jammer: stops radio ground robots, drops radio drones
+    category: unit
+    locomotor: wheeled
+    armor: light
+    hp: 260
+    sightCenti: 900
+    cost: 900
+    buildTicks: 200
+    speedCenti: 22
+    turnRateDeg: 200
+    radiusCenti: 38
+    jammer: { radiusCenti: 900 }
+    render: { size: [75, 110, 110] }

@@ -48,7 +48,9 @@
       "additionalProperties": false,
       "required": ["kind"],
       "properties": {
-        "kind": { "enum": ["foot", "tracks", "wheels"] },
+        "kind": { "enum": ["foot", "tracks", "wheels", "air"] },
+        "class": { "description": "Spec 43 §4.1: altitude band of an air locomotor.", "enum": ["low", "high"] },
+        "altitudeCenti": { "description": "Spec 43 §4.1: flight height, for rendering.", "type": "integer", "minimum": 0 },
         "pivotAngleDeg": { "type": "integer", "minimum": 1, "maximum": 180 },
         "minTurnSpeedPercent": { "type": "integer", "minimum": 25, "maximum": 100 },
         "slowTurnAngleDeg": { "type": "integer", "minimum": 1, "maximum": 90 },

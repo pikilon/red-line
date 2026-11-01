@@ -33,3 +33,27 @@ entities:
   - { player: 1, type: ru-barracks, origin: [69, 6] }
   - { player: 1, type: ru-vehicle-factory, origin: [74, 6] }
   - { player: 1, type: ru-defense, origin: [79, 6] }
+  # Spec 43: the air-war roster. Second row of buildings, third row of ground units, flyers last.
+  - { player: 0, type: ua-drone-workshop, origin: [4, 11] }
+  - { player: 0, type: ua-sting-nest, origin: [9, 11] }
+  - { player: 0, type: ua-patriot, origin: [13, 11] }
+  - { player: 0, type: ua-missile-site, origin: [18, 11] }
+  - { player: 0, type: ua-ratel, atCenti: [750, 2450] }
+  - { player: 0, type: ua-tw-12-7, atCenti: [1150, 2450] }
+  - { player: 0, type: ua-gepard, atCenti: [1550, 2450] }
+  - { player: 0, type: ua-fpv-team, atCenti: [1950, 2450] }
+  - { player: 0, type: ua-baba-yaga, atCenti: [550, 1560] }      # parked at its workshop
+  - { player: 0, type: ua-fpv, atCenti: [1150, 2850] }
+  - { player: 0, type: ua-sting, atCenti: [1550, 2850] }
+  - { player: 0, type: ua-flamingo, atCenti: [1950, 2850] }
+  - { player: 0, type: ua-storm-shadow, atCenti: [2350, 2850] }
+  - { player: 1, type: ru-airfield, origin: [54, 11] }
+  - { player: 1, type: ru-geran-site, origin: [61, 11] }
+  - { player: 1, type: ru-pantsir, atCenti: [5750, 2450] }
+  - { player: 1, type: ru-pole-21, atCenti: [6150, 2450] }
+  - { player: 1, type: ru-molniya-crew, atCenti: [6550, 2450] }
+  - { player: 1, type: ru-su-34, atCenti: [5700, 1560] }         # parked at its airfield
+  - { player: 1, type: ru-orlan, atCenti: [5750, 2850] }
+  - { player: 1, type: ru-geran-2, atCenti: [6150, 2850] }
+  - { player: 1, type: ru-geran-3, atCenti: [6550, 2850] }
+  - { player: 1, type: ru-molniya, atCenti: [6950, 2850] }

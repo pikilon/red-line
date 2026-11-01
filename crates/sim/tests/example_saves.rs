@@ -41,7 +41,7 @@ fn deaths(id: &str, ticks: u32) -> usize {
 
 fn showcase_contract(id: &str) {
     let (world, _, _) = load_example(id);
-    assert_eq!(world.entities().len(), 28);
+    assert_eq!(world.entities().len(), 51);
     let rules = world.rules();
     for (player, faction) in [(0u8, 0usize), (1, 1)] {
         let mut kinds: Vec<u16> = world
