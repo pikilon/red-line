@@ -314,6 +314,53 @@ events:
     minDistance: 4
     maxDistance: 50
 
+  weapon.ua-gepard-gun.fire:
+    sounds: [synth:cannon]
+    volume: 80
+    volumeShift: -10
+    limit: 3
+    priority: normal
+    control: [random, interrupt]
+    type: [world, shrouded, everyone]
+    minDistance: 5
+    maxDistance: 50
+
+  weapon.ua-sting-launcher.fire:
+    sounds: [synth:rocket]
+    volume: 60
+    volumeShift: -20
+    pitchShift: [-5, 5]
+    limit: 5
+    priority: normal
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 50
+
+  weapon.ua-fpv-launcher.fire:
+    sounds: [synth:rocket]
+    volume: 60
+    volumeShift: -20
+    pitchShift: [-5, 5]
+    limit: 5
+    priority: normal
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 50
+
+  weapon.ru-molniya-launcher.fire:
+    sounds: [synth:rocket]
+    volume: 60
+    volumeShift: -20
+    pitchShift: [-5, 5]
+    limit: 5
+    priority: normal
+    control: [random]
+    type: [world, shrouded, everyone]
+    minDistance: 4
+    maxDistance: 50
+
   # ---------------------------------------------------------------------------
   # Impacts
   # ---------------------------------------------------------------------------

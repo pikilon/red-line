@@ -217,6 +217,12 @@ weapon.ru-2a46m.fire: BattlemasterTankWeapon
 weapon.ru-tos-thermobaric.fire: InfernoCannonWeapon
 weapon.ru-kornet-emplacement.fire: GattlingCannonWeapon
 
+# Air war (spec 43): the closest existing sounds.
+weapon.ua-gepard-gun.fire: GattlingTankWeapon
+weapon.ua-sting-launcher.fire: MissileDefenderWeapon
+weapon.ua-fpv-launcher.fire: MissileDefenderWeapon
+weapon.ru-molniya-launcher.fire: MissileDefenderWeapon
+
 # -----------------------------------------------------------------------------
 # Weapon Fallbacks
 # -----------------------------------------------------------------------------

@@ -220,6 +220,34 @@ Ids of the weapons and balance numbers live in `data/factions/*.yaml`.
 * AI: each faction builds its new structures in `buildOrder` and uses them in
   `taskForces`; one-way units attack the nearest known enemy building.
 
+**As built (client).**
+
+* `matchSnapshot.ts` decodes the flags and the air tail (`air`: id, ammo, clip,
+  fuel permille, master); `rules.ts` carries the new type, weapon and locomotor
+  fields. `render/flyers.ts` eases each flyer to its locomotor altitude plus
+  0.5 tile of clearance (so it is never hidden behind a building), banks it into
+  turns, and keeps the rotor time. A unit whose id is new when it appears (a
+  launched drone) climbs from the ground; one already flying when first seen
+  starts at height.
+* Models: nodes named `prop` or `prop_<n>` stay out of the hull (`TypeModel.props`),
+  spin about their thinnest axis (a rotor about Y, a pusher propeller about its
+  nose), alternate direction, and rotors of one geometry share a single instanced
+  mesh. Flyers cast no sun shadow; a dark ellipse is drawn on the ground, shifted
+  away from the sun by the height. The KAB glide bomb is a procedural winged bomb
+  that only falls when released from a flyer (`DROPPED_FROM`).
+* A flyer shot down (death with no killer while airborne) tumbles to the ground
+  with a smoke trail and a crash puff, or a fireball when it is big; a one-way
+  unit's own detonation (projectile id -1, killer itself) is the warhead's
+  explosion sized by its splash and leaves no wreck. Missiles and jet drones
+  (one-way, class `high`) leave a smoke trail.
+* Clicks and boxes meet a flyer where it is drawn. Orders offer an airborne enemy
+  only to the units whose weapon reaches its class (`input/engage.ts`) and keep
+  anti-air weapons off the ground; one-way units have Force fire and attack any
+  point. A selected jammer draws its radius, a selected sortie unit its ammo
+  pips, and every jammed unit a warning mark (`render/airOverlay.ts`).
+* Fog needs nothing extra: the simulation lists an enemy flyer only while it is
+  visible.
+
 ## 6. Assumptions
 
 * Bombs and shells cannot be intercepted; only entities can.
