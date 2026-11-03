@@ -1709,7 +1709,9 @@ fn through_the_apartment_block(id: &str) -> (World, EntityId, u32) {
 fn a_one_way_drone_flying_into_a_tall_building_crashes_and_detonates_there() {
     let (world, geran, before) = through_the_apartment_block("ru-geran-2");
     assert!(world.entity(geran).is_none(), "the drone crashed");
-    let block = world.feature_at(Cell { x: 24, y: 27 }).expect("still standing");
+    let block = world
+        .feature_at(Cell { x: 24, y: 27 })
+        .expect("still standing");
     assert!(
         world.features()[block as usize].hp < before,
         "the warhead hit the building"

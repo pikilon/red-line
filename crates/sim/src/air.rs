@@ -960,7 +960,8 @@ impl World {
             return;
         };
         let row = &self.features[feature as usize];
-        if row.collapse > 0 || self.rules.feature_types[row.kind as usize].height_centi <= altitude {
+        if row.collapse > 0 || self.rules.feature_types[row.kind as usize].height_centi <= altitude
+        {
             return;
         }
         if self.rules.ty(self.entities[index].kind).one_way.is_some() {
