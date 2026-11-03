@@ -75,6 +75,20 @@ Depends on `26-map-features-plan.md`, `31-environment-interaction.md`,
 * A one-way flyer's own blast is drawn at its flight height, so a drone that
   flies into a wall explodes on the wall, not at its foot.
 
+### 4.3b Ruins (client)
+
+* Zero Hour gives each civilian building a separate `RUBBLE` model
+  (`CBTAprtmn1_R`, `CBTownHs01_R` in `W3D.big`): an apartment block keeps a
+  tall shell, about 0.7 of its height, a town house a low pile, about 0.3; the
+  transition is one burst of smoke, explosion and debris
+  (`TransitionDamageFX`), no lasting fire (`generals-precedent` note).
+* `rubble-heap` (client) draws, instead of a smooth mound: an ash-dark ground
+  past the footprint, a jagged mound of masonry, floor slabs fallen across it,
+  stubs of the outer walls with window holes (up to about 2.3 tiles on a 3x3
+  or larger ruin, a block's shell; up to 1.3 on smaller ones), snapped columns,
+  bent rebar and loose blocks, some charred. Original art: D-02.
+* Difference: the ruin smoulders and its embers glow for a while (spec 31).
+
 ### 4.4 One-way flyers sent to a point
 
 * A fixed-wing one-way flyer (Geran, Molniya) ordered to move to a point flies

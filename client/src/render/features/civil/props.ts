@@ -328,7 +328,7 @@ function tiltedBox(
  *  footprint. A jagged mound of broken masonry under an ash-dark ground, with
  *  floor slabs fallen across it, stubs of the outer walls still standing with
  *  their window holes, snapped columns, bent rebar and loose blocks, some of
- *  them charred (Zero Hour keeps wall stubs in its `RUBBLE` models). */
+ *  them charred. */
 export const rubbleHeap: BuilderFn = (b) => {
   const sets = [
     { wall: 0xb8b0a0, brick: 0x9a5a44, slab: 0x9c988e, dust: 0x6e665a },
@@ -412,7 +412,10 @@ export const rubbleHeap: BuilderFn = (b) => {
     while (t < side.to - 0.15) {
       const len = b.r(0.18, 0.5);
       const end = Math.min(side.to, t + len);
-      const top = b.r(0.1, 1) < 0.3 ? b.r(0.6, 1.3) : b.r(0.12, 0.5);
+      // Zero Hour: a block keeps a tall shell (`CBTAprtmn1_R`, ~0.7 of its
+      // height), a house leaves a low pile (`CBTownHs01_R`, ~0.3).
+      const shell = Math.min(b.w, b.d) >= 3 ? 1.8 : 1;
+      const top = b.r(0.1, 1) < 0.3 ? b.r(0.6, 1.3) * shell : b.r(0.12, 0.5);
       const thick = 0.07;
       const [x0, z0, x1, z1] =
         side.along === "x"
