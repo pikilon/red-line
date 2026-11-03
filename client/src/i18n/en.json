@@ -1,4 +1,8 @@
 {
+  "mainMenu.title": "Red Line",
+  "mainMenu.subtitle": "Modern Conquest",
+  "mainMenu.skirmish": "Skirmish",
+  "mainMenu.loadGame": "Load game",
   "hud.selectedCount": "Selected: {count}",
   "hud.tick": "Tick {tick}",
   "hud.player": "Player {player}: {faction}",

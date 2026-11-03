@@ -204,6 +204,7 @@ import {
 } from "../ui/commandPanel";
 import { createGameMenu } from "../ui/gameMenu";
 import { createHudBar } from "../ui/hudBar";
+import { createMainMenu } from "../ui/mainMenu";
 import { createMinimap, type MinimapTerrain } from "../ui/minimap";
 import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
@@ -337,6 +338,8 @@ interface SkirmishBoot {
   applySettings: boolean;
   /** The `?load` id once applied. */
   loadedId: string | null;
+  /** The main menu's AI-vs-AI shell battle (spec 45). */
+  shell?: boolean;
 }
 
 /** A fresh skirmish from the URL parameters (spec §6.7). */
@@ -397,6 +400,48 @@ function saveBoot(save: SaveFile, id: string): SkirmishBoot {
     applySettings: form === "world",
     loadedId: id,
   };
+}
+
+/** Seconds the shell camera takes to sweep from one base to the other and
+ *  back (spec 45 §3). */
+const SHELL_SWEEP_SECONDS = 120;
+/** Wall-clock pause after a shell battle ends before a new one starts. */
+const SHELL_RESTART_MS = 5000;
+
+/** The main menu's shell battle: both sides played by the AI on the default
+ *  map, watched with the map revealed (spec 45 §3). */
+function shellBoot(): SkirmishBoot {
+  // A fixed seed, as Zero Hour's `InitGameLogicRandom(0)` (spec 45 §3).
+  const seed = DEFAULT_SEED;
+  const ai = DEFAULT_AI;
+  const demoAi = `${RULES.factions[0]?.id ?? "ukraine"}-${ai.replace(/^[^-]*-/, "")}`;
+  return {
+    seed,
+    seedText: String(seed),
+    mapId: DEFAULT_MAP,
+    debug: false,
+    speed: 1,
+    aiActive: true,
+    start: {
+      seed,
+      mapId: DEFAULT_MAP,
+      viewer: OBSERVER,
+      speed: 1,
+      debug: false,
+      ai,
+      demoAi,
+    },
+    client: null,
+    applySettings: false,
+    loadedId: null,
+    shell: true,
+  };
+}
+
+/** Main menu over an AI-vs-AI battle, like the Zero Hour shell map; shown when
+ *  the page has no URL parameters (spec 45). */
+export function startShell(): void {
+  runSkirmish(shellBoot(), createIndexedDbSaveStore());
 }
 
 /** Shows `#load-error` with `detail` (spec 19 §5.3). */
@@ -736,7 +781,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let next: MatchSnapshot | null = null;
   let fog: Uint8Array<ArrayBuffer> = new Uint8Array(0);
   let receivedAt = 0;
-  let controlled = restored?.controlled ?? boot.start.viewer;
+  // The shell battle is watched from player 0's side of the menu.
+  let controlled = restored?.controlled ?? (boot.shell ? 0 : boot.start.viewer);
   let ready = false;
   /** Type index being placed, or null; the command panel starts placement. */
   let placementKind: number | null = null;
@@ -758,7 +804,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     boot.start,
   );
   // A saved side of 1 means the AI starts on the other base (fresh matches).
-  if (restored === null && controlled === 1) moveAiToOpponent();
+  if (restored === null && controlled === 1 && !boot.shell) moveAiToOpponent();
   let uiRenders = 0;
   /** Garrisonable buildings as placed on the map, in the sim's feature row order (spec 31 block 2). */
   const placedGarrisons = garrisonFeaturesOf(
@@ -1581,7 +1627,9 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   function refreshOverlay(): void {
     resourceBar.render(next);
     quickBar.refresh();
-    outcome.render(next === null ? null : outcomeText(next, controlled));
+    outcome.render(
+      next === null || boot.shell ? null : outcomeText(next, controlled),
+    );
     const queue = next === null ? null : selectedQueue();
     const selection = selectedEntities();
     const panel: PanelInput = {
@@ -2034,6 +2082,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     }
     lastFrameMs = now;
     controller?.update(dtMs / 1000);
+    if (boot.shell) sweepShellCamera(now);
     liveFeatures?.update(effectTime(now));
     const relief = terrain === null ? null : terrainDeformerOf(terrain);
     updateSun();
@@ -2112,6 +2161,51 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     drawCalls = renderer.info.render.calls;
   }
   requestAnimationFrame(frame);
+
+  /** The two HQs the shell camera sweeps between, once the map is ready. */
+  let shellBases: { a: Vector2; b: Vector2 } | null = null;
+  let shellRestartAt: number | null = null;
+  /** Pans the camera slowly between both bases and starts a new battle once
+   *  this one ends (spec 45 §3). */
+  function sweepShellCamera(now: number): void {
+    if (!ready || next === null) return;
+    if (shellBases === null) {
+      const a = ownHeadquarters(next.entities, 0);
+      const b = ownHeadquarters(next.entities, 1);
+      if (a === null || b === null) return;
+      shellBases = { a: new Vector2(a.x, a.y), b: new Vector2(b.x, b.y) };
+    }
+    const phase = (now / 1000 / SHELL_SWEEP_SECONDS) * 2 * Math.PI;
+    const blend = (1 - Math.cos(phase)) / 2;
+    const { a, b } = shellBases;
+    moveCamera(a.x + (b.x - a.x) * blend, a.y + (b.y - a.y) * blend);
+    if (next.outcome === "ongoing") return;
+    shellRestartAt ??= now + SHELL_RESTART_MS;
+    if (now >= shellRestartAt) window.location.reload();
+  }
+
+  if (boot.shell) {
+    document.body.classList.add("shell");
+    // The battle only plays behind the menu: no key reaches the game.
+    window.addEventListener(
+      "keydown",
+      (event) => {
+        event.stopImmediatePropagation();
+        if (event.key === "Escape" && savesOpen) saveManager.handleEscape();
+      },
+      { capture: true },
+    );
+    createMainMenu(document.body, {
+      skirmish: () => {
+        uiClick();
+        window.location.assign("?mode=skirmish");
+      },
+      loadGame: () => {
+        uiClick();
+        openSaves("load");
+      },
+    });
+  }
 
   if (debug) {
     const api: SkirmishDebug = {

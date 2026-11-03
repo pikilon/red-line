@@ -107,6 +107,9 @@ export type InitSkirmishMessage = {
   debug: boolean;
   /** Personality attached to player 1, `null` for none (§7). */
   ai?: string | null;
+  /** Personality also attached to player 0: the main menu's AI-vs-AI battle
+   *  (spec 45 §3). */
+  demoAi?: string;
 };
 /** Builds the skirmish from a save (spec 19 §5.4); AIs come from the state. */
 export type InitFromSaveMessage = {
