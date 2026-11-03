@@ -1,0 +1,14 @@
+# Spec 46: Build a base: power, supply and barracks from a lone dozer. (ukraine)
+id: tutorial-ua-base
+map: first-line
+victory: false
+debug: false
+starts: false
+credits: [3000, 0]
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 14, y: 62, zoom: 1 }
+entities:
+  - { player: 0, type: ua-hq, origin: [10, 58] }
+  - { player: 0, type: ua-dozer, atCenti: [1850, 6150] }

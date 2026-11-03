@@ -324,6 +324,42 @@
       "map": "showcase",
       "form": "setup",
       "entities": 8
+    },
+    {
+      "id": "tutorial-ua-base",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "tutorial-ua-infantry",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 7
+    },
+    {
+      "id": "tutorial-ua-armor",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 8
+    },
+    {
+      "id": "tutorial-ru-base",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "tutorial-ru-infantry",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 7
+    },
+    {
+      "id": "tutorial-ru-armor",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 8
     }
   ]
 }

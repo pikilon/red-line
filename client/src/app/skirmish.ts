@@ -213,6 +213,11 @@ import { createResourceBar } from "../ui/resourceBar";
 import { createSaveManager, type SlotView } from "../ui/saveManager";
 import { createSelectionBox } from "../ui/selectionBox";
 import { createTouchControls, isTouchDevice } from "../ui/touchControls";
+import {
+  createTutorialPanel,
+  findTutorial,
+  type TutorialMission,
+} from "../ui/tutorial";
 import { createCameraMemory, homeView } from "./cameraMemory";
 
 export const DEFAULT_MAP = "river-port";
@@ -444,6 +449,11 @@ export function startShell(): void {
   runSkirmish(shellBoot(), createIndexedDbSaveStore());
 }
 
+/** Opens a tutorial mission: its example save (spec 46 §2). */
+function playTutorial(mission: TutorialMission): void {
+  window.location.assign(`?load=${mission.id}`);
+}
+
 /** Shows `#load-error` with `detail` (spec 19 §5.3). */
 function showLoadError(detail: string): void {
   const element = document.createElement("div");
@@ -556,6 +566,15 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   });
   let lastOrderVoiceAtMs = -Infinity;
 
+  /** Objectives of a tutorial mission loaded by `?load` (spec 46). */
+  const tutorialMission = findTutorial(boot.loadedId);
+  const tutorialPanel =
+    tutorialMission === null
+      ? null
+      : createTutorialPanel(document.body, tutorialMission, {
+          play: playTutorial,
+          menu: () => window.location.assign(window.location.pathname),
+        });
   const gameMenu = createGameMenu(document.body, {
     resume: () => {
       uiClick();
@@ -780,6 +799,16 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let initial: MatchSnapshot | null = null;
   let next: MatchSnapshot | null = null;
   let fog: Uint8Array<ArrayBuffer> = new Uint8Array(0);
+  /** Whether the tile at (`tileX`, `tileY`) is in the viewer's sight. */
+  function tileInSight(tileX: number, tileY: number): boolean {
+    if (viewer === OBSERVER || map === null) return true;
+    const ix = Math.floor(tileX);
+    const iy = Math.floor(tileY);
+    if (ix < 0 || iy < 0 || ix >= map.mapWidth || iy >= map.mapHeight) {
+      return false;
+    }
+    return fog[iy * map.mapWidth + ix] === 2;
+  }
   let receivedAt = 0;
   // The shell battle is watched from player 0's side of the menu.
   let controlled = restored?.controlled ?? (boot.shell ? 0 : boot.start.viewer);
@@ -1626,6 +1655,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
    *  (spec §6.7, #140). */
   function refreshOverlay(): void {
     resourceBar.render(next);
+    if (next !== null)
+      tutorialPanel?.update(next.entities, controlled, tileInSight);
     quickBar.refresh();
     outcome.render(
       next === null || boot.shell ? null : outcomeText(next, controlled),
@@ -1902,15 +1933,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
               ndc.y <= 1.05,
           };
         },
-        isTileVisible(tileX, tileY) {
-          if (viewer === OBSERVER || map === null) return true;
-          const ix = Math.floor(tileX);
-          const iy = Math.floor(tileY);
-          if (ix < 0 || iy < 0 || ix >= map.mapWidth || iy >= map.mapHeight) {
-            return false;
-          }
-          return fog[iy * map.mapWidth + ix] === 2;
-        },
+        isTileVisible: tileInSight,
       };
       const audioBatch = deriveSnapshotAudio(
         previous,
@@ -2203,6 +2226,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       loadGame: () => {
         uiClick();
         openSaves("load");
+      },
+      tutorial: (mission) => {
+        uiClick();
+        playTutorial(mission);
       },
     });
   }
