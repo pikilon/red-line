@@ -1,4 +1,5 @@
 import {
+  type AliveRequestMessage,
   type CommandMessage,
   type HashRequestMessage,
   type InitFromSaveMessage,
@@ -42,6 +43,8 @@ export interface SkirmishSimLike {
   step(): void;
   state_hash_hex(): string;
   enable_debug_commands(): void;
+  /** Spec 46: 1 per alive id; newer sims only. */
+  alive?(ids: Uint32Array): Uint8Array;
   attach_ai(player: number, personality: string): void;
   set_ai_active(player: number, active: boolean): boolean;
   snapshot_for(viewer: number): Int32Array;
@@ -405,6 +408,14 @@ export function createWorkerHandler(
         type: "hash",
         requestId: message.requestId,
         hash: target.state_hash_hex(),
+      });
+    },
+    aliveRequest: (message: AliveRequestMessage): void => {
+      const flags = skirmish?.alive?.(Uint32Array.from(message.ids));
+      post({
+        type: "alive",
+        requestId: message.requestId,
+        alive: message.ids.map((_, index) => (flags?.[index] ?? 1) === 1),
       });
     },
     initSkirmish: (message: InitSkirmishMessage): void => {

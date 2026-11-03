@@ -1,0 +1,21 @@
+# Spec 46: Russia: Molniya crew and Geran-2 launches against a Ukrainian outpost.
+id: tutorial-ru-drones
+map: first-line
+victory: false
+debug: false
+starts: false
+credits: [0, 1500]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 114, y: 66, zoom: 1 }
+entities:
+  - { player: 1, type: ru-hq, origin: [114, 66] }
+  - { player: 1, type: ru-power-plant, origin: [120, 67] }
+  - { player: 1, type: ru-supply-center, origin: [108, 69] }
+  - { player: 1, type: ru-barracks, origin: [120, 62] }
+  - { player: 1, type: ru-geran-site, origin: [109, 74] }
+  - { player: 1, type: ru-dozer, atCenti: [10950, 6650] }
+  - { player: 0, type: ua-power-plant, origin: [85, 67] }
+  - { player: 0, type: ua-kozak-scout, atCenti: [9000, 6700] }
+  - { player: 0, type: ua-rifleman, atCenti: [9200, 6950] }

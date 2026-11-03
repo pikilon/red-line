@@ -495,3 +495,35 @@ fn ordered_armor_does_not_pile_up_at_the_goal() {
         }
     }
 }
+
+#[test]
+fn tutorial_waves_reach_the_power_plant() {
+    // Spec 46 §3: the tutorial orders the wave by save index; the save's
+    // entities follow the map's depots in order, starting with the player's HQ.
+    for (id, attackers, player) in [
+        ("tutorial-ua-air-defense", [5, 6, 7, 8], 0),
+        ("tutorial-ru-air-defense", [8, 9, 10, 11], 1),
+    ] {
+        let (mut world, _, mut ais) = load_example(id);
+        let hq = world
+            .entities()
+            .iter()
+            .find(|entity| entity.owner == player)
+            .unwrap()
+            .id;
+        let plant = hq + 1;
+        let full = world.entity(plant).unwrap().hp;
+        world.enqueue_as(
+            1 - player,
+            Command::Attack {
+                units: attackers.iter().map(|index| hq + index).collect(),
+                target: plant,
+            },
+        );
+        let hit = (0..3000).any(|_| {
+            step_with_ai(&mut world, &mut ais);
+            world.entity(plant).is_none_or(|entity| entity.hp < full)
+        });
+        assert!(hit, "{id}: the wave reaches the power plant");
+    }
+}

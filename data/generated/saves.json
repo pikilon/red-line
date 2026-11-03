@@ -344,6 +344,18 @@
       "entities": 8
     },
     {
+      "id": "tutorial-ua-drones",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 8
+    },
+    {
+      "id": "tutorial-ua-air-defense",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 9
+    },
+    {
       "id": "tutorial-ru-base",
       "map": "first-line",
       "form": "setup",
@@ -360,6 +372,18 @@
       "map": "first-line",
       "form": "setup",
       "entities": 8
+    },
+    {
+      "id": "tutorial-ru-drones",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 9
+    },
+    {
+      "id": "tutorial-ru-air-defense",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 12
     }
   ]
 }

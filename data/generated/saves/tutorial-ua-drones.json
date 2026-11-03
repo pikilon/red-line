@@ -1,0 +1,105 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "tutorial-ua-drones",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "first-line",
+    "seed": "1",
+    "debug": false,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": false,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": false,
+    "camera": {
+      "x": 14,
+      "y": 62,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "first-line",
+    "seed": "1",
+    "victory": false,
+    "debug": false,
+    "starts": false,
+    "credits": [
+      2000,
+      0
+    ],
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-hq",
+        "origin": [
+          10,
+          58
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          5,
+          58
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-barracks",
+        "origin": [
+          5,
+          63
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-drone-workshop",
+        "origin": [
+          5,
+          68
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-dozer",
+        "atCenti": [
+          1850,
+          6150
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          3600,
+          6000
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          3500,
+          5800
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          3500,
+          6250
+        ]
+      }
+    ]
+  }
+}
