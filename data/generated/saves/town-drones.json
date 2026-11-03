@@ -1,0 +1,121 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "town-drones",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "river-port",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 24,
+      "y": 40,
+      "zoom": 0.8
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "river-port",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": true,
+    "ai": [],
+    "entities": [
+      {
+        "player": 1,
+        "type": "ru-geran-2",
+        "atCenti": [
+          4400,
+          4050
+        ],
+        "order": {
+          "moveCenti": [
+            3050,
+            4050
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-geran-2",
+        "atCenti": [
+          5400,
+          4050
+        ],
+        "order": {
+          "moveCenti": [
+            3050,
+            4050
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-geran-2",
+        "atCenti": [
+          6400,
+          4050
+        ],
+        "order": {
+          "moveCenti": [
+            3050,
+            4050
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-geran-2",
+        "atCenti": [
+          7400,
+          4050
+        ],
+        "order": {
+          "moveCenti": [
+            3050,
+            4050
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-geran-2",
+        "atCenti": [
+          8400,
+          4050
+        ],
+        "order": {
+          "moveCenti": [
+            3050,
+            4050
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-geran-2",
+        "atCenti": [
+          9400,
+          4050
+        ],
+        "order": {
+          "moveCenti": [
+            3050,
+            4050
+          ]
+        }
+      }
+    ]
+  }
+}

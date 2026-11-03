@@ -341,15 +341,13 @@ fn the_warhead_is_unarmed_until_the_arming_distance_is_flown() {
 
 #[test]
 fn a_one_way_drone_out_of_fuel_falls_and_detonates_where_it_is() {
-    let mut world = sandbox();
-    // Molniya: fuelTicks 240. It is ordered to a point away from the vehicle,
-    // circles it (a fixed-wing flyer cannot hang there), and falls at 240.
-    let victim = put(&mut world, 0, "ua-leopard-2a4", 2000, 2000);
-    let molniya = put(&mut world, 1, "ru-molniya", 1900, 2000);
-    fly_to(&mut world, 1, molniya, 2600, 2000);
+    // Molniya: fuelTicks 240 at 0.55 tiles a tick. It is sent to a point
+    // farther than its fuel reaches and falls on the way, where it is.
+    let mut world = World::sandbox(Ruleset::builtin(), MapGrid::open(256, 40), &[0, 1]);
+    let molniya = put(&mut world, 1, "ru-molniya", 500, 2000);
+    fly_to(&mut world, 1, molniya, 25000, 2000);
     steps(&mut world, 200);
     assert!(world.entity(molniya).is_some(), "still fuel left");
-    assert_eq!(hp(&world, victim), max_hp(&world, "ua-leopard-2a4"));
     let mut blast = None;
     for _ in 0..80 {
         world.step();
@@ -360,8 +358,8 @@ fn a_one_way_drone_out_of_fuel_falls_and_detonates_where_it_is() {
     assert!(world.entity(molniya).is_none(), "out of fuel at 240 ticks");
     let pos = blast.expect("it came down and went off where it was");
     assert!(
-        (pos - at(2600, 2000)).length() <= fx_centi(300),
-        "over its ordered point"
+        pos.x > fx_centi(10000) && pos.x < fx_centi(16000),
+        "on the way, short of its ordered point"
     );
 }
 
@@ -664,7 +662,7 @@ fn a_sting_cannot_reach_a_high_flyer() {
     build(&mut world, 0, "ua-power-plant", 5, 5);
     let nest = build(&mut world, 0, "ua-sting-nest", 20, 20);
     let jet = put(&mut world, 1, "ru-geran-3", 2900, 2100);
-    fly_to(&mut world, 1, jet, 2900, 2200);
+    fly_to(&mut world, 1, jet, 7900, 2100);
     steps(&mut world, 60);
     assert!(
         launched(&world, nest).is_none(),
@@ -1684,4 +1682,61 @@ fn the_showcase_examples_keep_every_unit_when_left_alone() {
         let after: Vec<(EntityId, u32)> = world.entities().iter().map(|e| (e.id, e.hp)).collect();
         assert_eq!(after, before, "{id}: 60 seconds on, nothing changed");
     }
+}
+
+// ---------------------------------------------------------------------------
+// Spec 44: drones crash into tall civilian buildings
+// ---------------------------------------------------------------------------
+
+/// The west city of river-port: an apartment block east of the base covers
+/// cells 29..=31 x 39..=41. A flyer of player 1 starts east of it and flies
+/// west along y 40.5, straight through it.
+fn through_the_apartment_block(id: &str) -> (World, EntityId, u32) {
+    let mut world = World::skirmish(Ruleset::builtin(), "river-port", 1).unwrap();
+    let block = world
+        .feature_at(Cell { x: 30, y: 40 })
+        .expect("the apartment block stands");
+    let before = world.features()[block as usize].hp;
+    let flyer = put(&mut world, 1, id, 4400, 4050);
+    fly_to(&mut world, 1, flyer, 1000, 4050);
+    steps(&mut world, 120);
+    (world, flyer, before)
+}
+
+#[test]
+fn a_one_way_drone_flying_into_a_tall_building_crashes_and_detonates_there() {
+    let (world, geran, before) = through_the_apartment_block("ru-geran-2");
+    assert!(world.entity(geran).is_none(), "the drone crashed");
+    let block = world
+        .feature_at(Cell { x: 30, y: 40 })
+        .expect("still standing");
+    assert!(
+        world.features()[block as usize].hp < before,
+        "the warhead hit the building"
+    );
+}
+
+#[test]
+fn a_flyer_above_the_rooftops_passes_over_the_town() {
+    let (world, jet, _) = through_the_apartment_block("ru-su-34");
+    assert!(world.entity(jet).is_some(), "the jet flies high");
+}
+
+#[test]
+fn a_one_way_flyer_sent_to_a_point_dives_into_it_instead_of_circling() {
+    let mut world = sandbox();
+    let geran = put(&mut world, 1, "ru-geran-2", 6000, 2000);
+    fly_to(&mut world, 1, geran, 2000, 2000);
+    let mut blasts = Vec::new();
+    for _ in 0..200 {
+        world.step();
+        blasts.extend(detonations(&world));
+    }
+    assert!(world.entity(geran).is_none(), "the drone is spent");
+    assert_eq!(blasts.len(), 1, "it detonated once");
+    let (_, pos) = blasts[0];
+    assert!(
+        (pos - at(2000, 2000)).length() < fx_centi(150),
+        "at the point"
+    );
 }

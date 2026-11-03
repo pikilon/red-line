@@ -1791,9 +1791,21 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
               : (previous ?? snapshot).entities.find(
                   (entity) => entity.id === event.hit,
                 );
+          // Spec 44: a one-way flyer goes off where it flies (into a wall).
+          const self =
+            event.projectile < 0
+              ? (previous ?? snapshot).entities.find(
+                  (entity) =>
+                    entity.owner === event.owner &&
+                    isAirborne(entity) &&
+                    Math.hypot(entity.x - event.x, entity.y - event.y) < 1.5,
+                )
+              : undefined;
+          const lifted =
+            self ?? (hit !== undefined && isAirborne(hit) ? hit : undefined);
           const height =
-            hit !== undefined && entities !== null && isAirborne(hit)
-              ? entities.flyers.altitudeOf(hit)
+            lifted !== undefined && entities !== null
+              ? entities.flyers.altitudeOf(lifted)
               : undefined;
           spawnDetonationEffect(effects, event.weapon, event.x, event.y, atMs, {
             oneWay: event.projectile < 0,

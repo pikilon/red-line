@@ -158,6 +158,53 @@ export class FeatureFx {
     }
   }
 
+  /** Spec 44: building `index` lost `loss` (0..1 of its hit points): a
+   *  fireball on a wall, pieces of the facade falling and a dust curtain
+   *  sliding down it, so a building crumbles hit by hit before it falls. */
+  hit(instance: FeatureInstance, loss: number, nowMs: number): void {
+    const { x, y, w, d } = this.box(instance);
+    const roof = roofOf(instance);
+    const between = (a: number, b: number) => a + (b - a) * this.rnd();
+    const power = Math.min(1, Math.max(0.15, loss * 4));
+    // A point on the wall facing the camera (south and east sides).
+    const side = this.rnd() < 0.5;
+    const hx = side ? x + between(-0.45, 0.45) * w : x + w * 0.5;
+    const hy = side ? y + d * 0.5 : y + between(-0.45, 0.45) * d;
+    const hz = between(roof * 0.35, roof * 0.95);
+    for (let i = Math.round(6 + 10 * power); i > 0; i--) {
+      this.particles.fire(
+        hx + between(-0.25, 0.25),
+        hy + between(-0.25, 0.25),
+        hz + between(-0.2, 0.25),
+        between(0.6, 1.1) * (0.6 + power),
+        nowMs + between(0, 120),
+        0.8,
+        between(350, 650),
+      );
+    }
+    this.particles.chunks(
+      hx,
+      hy,
+      hz,
+      Math.round(5 + 14 * power),
+      nowMs,
+      0.8 + power * 0.6,
+    );
+    for (let i = Math.round(5 + 10 * power); i > 0; i--) {
+      const fall = between(0, 1);
+      this.particles.smoke(
+        hx + between(-0.35, 0.35),
+        hy + between(-0.35, 0.35),
+        hz * (1 - fall) + 0.1,
+        between(0.35, 0.6),
+        nowMs + fall * 700,
+        between(0.15, 0.55),
+        between(2400, 3600),
+        0.7,
+      );
+    }
+  }
+
   /** Emits this frame's particles. */
   update(nowMs: number): void {
     const dt =

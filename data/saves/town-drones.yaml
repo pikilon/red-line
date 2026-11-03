@@ -1,0 +1,19 @@
+# Spec 44: the Ukrainian base starts in the middle of its city on river-port. A wave of six Russian Gerans flies
+# west, one after another, at the apartment block east of the base: every hit is an explosion, the block smokes,
+# burns and crumbles hit by hit until it collapses. Each Geran dives into its point; none circles.
+id: town-drones
+map: river-port
+victory: false
+debug: true
+starts: true                  # the HQ and dozer of each start
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 24, y: 40, zoom: 0.8 }
+entities:
+  - { player: 1, type: ru-geran-2, atCenti: [4400, 4050], order: { moveCenti: [3050, 4050] } }
+  - { player: 1, type: ru-geran-2, atCenti: [5400, 4050], order: { moveCenti: [3050, 4050] } }
+  - { player: 1, type: ru-geran-2, atCenti: [6400, 4050], order: { moveCenti: [3050, 4050] } }
+  - { player: 1, type: ru-geran-2, atCenti: [7400, 4050], order: { moveCenti: [3050, 4050] } }
+  - { player: 1, type: ru-geran-2, atCenti: [8400, 4050], order: { moveCenti: [3050, 4050] } }
+  - { player: 1, type: ru-geran-2, atCenti: [9400, 4050], order: { moveCenti: [3050, 4050] } }
