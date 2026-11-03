@@ -34,6 +34,8 @@ export interface Settings {
   hudMinimal?: boolean;
   /** The HUD bar docked to the left edge (spec 42 §3.5); absent: bottom. */
   hudVertical?: boolean;
+  /** The side the player controls in a fresh match; absent: player 0. */
+  side?: 1;
 }
 
 export const DEFAULT_SETTINGS: Settings = { gore: true };
@@ -107,6 +109,7 @@ export function loadSettings(storage?: Storage): Settings {
       ...(strongLanguage === false ? { strongLanguage } : {}),
       ...(obj.hudMinimal === true ? { hudMinimal: true } : {}),
       ...(obj.hudVertical === true ? { hudVertical: true } : {}),
+      ...(obj.side === 1 ? { side: 1 as const } : {}),
     };
   } catch {
     return { ...DEFAULT_SETTINGS };

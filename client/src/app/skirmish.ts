@@ -357,7 +357,7 @@ function paramsBoot(params: URLSearchParams): SkirmishBoot {
     debug,
     speed,
     aiActive: ai === null ? null : true,
-    start: { seed, mapId, viewer: 0, speed, debug, ai },
+    start: { seed, mapId, viewer: loadSettings().side ?? 0, speed, debug, ai },
     client: null,
     applySettings: false,
     loadedId: null,
@@ -736,7 +736,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let next: MatchSnapshot | null = null;
   let fog: Uint8Array<ArrayBuffer> = new Uint8Array(0);
   let receivedAt = 0;
-  let controlled = restored?.controlled ?? 0;
+  let controlled = restored?.controlled ?? boot.start.viewer;
   let ready = false;
   /** Type index being placed, or null; the command panel starts placement. */
   let placementKind: number | null = null;
@@ -757,6 +757,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     }),
     boot.start,
   );
+  // A saved side of 1 means the AI starts on the other base (fresh matches).
+  if (restored === null && controlled === 1) moveAiToOpponent();
   let uiRenders = 0;
   /** Garrisonable buildings as placed on the map, in the sim's feature row order (spec 31 block 2). */
   const placedGarrisons = garrisonFeaturesOf(
@@ -1488,11 +1490,31 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     sunLight.target.updateMatrixWorld();
   }
 
+  /** Gives the skirmish AI the side the player left (spec 08 §3.5). */
+  function moveAiToOpponent(): void {
+    if (aiActive === null) return;
+    const opponent = controlled === 0 ? 1 : 0;
+    const suffix = (
+      ("ai" in boot.start ? boot.start.ai : null) ?? DEFAULT_AI
+    ).replace(/^[^-]*-/, "");
+    interact.setAiSide(
+      controlled,
+      `${RULES.factions[opponent]?.id ?? "russia"}-${suffix}`,
+    );
+  }
+
   /** Applies the controlled-player change of the debug-only F2 key (§6.5). */
   function setControlledPlayer(player: number): void {
     const current = controller?.cameraTarget() ?? cameraTarget;
     const view = cameraMemory.switchPlayer(controlled, player, current);
     controlled = player;
+    if (player === 0 || player === 1) {
+      settings = { ...settings };
+      if (player === 1) settings.side = 1;
+      else delete settings.side;
+      saveSettings(settings);
+      moveAiToOpponent();
+    }
     if (view === null) {
       centrePending = true;
       if (next !== null) centreOnHomeIfPending(next);

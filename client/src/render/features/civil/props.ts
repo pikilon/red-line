@@ -281,35 +281,228 @@ export const rubblePile: BuilderFn = (b) => {
   b.bag.ribbon([0.05, 0.2, 0.05], [-0.3, 0.34, 0.2], 0.012, 0x4a3a28);
 };
 
-/** Spec 31 block 1: what a collapsed building leaves, filling its footprint:
- *  a low mound of debris with bent rebar. */
+type V3 = [number, number, number];
+
+/** A box of half sizes (hx, hy, hz) about `c`, turned `yaw` about Y and then
+ *  tipped `tilt` about its own X axis: a fallen slab or a leaning beam. */
+function tiltedBox(
+  b: Parameters<BuilderFn>[0],
+  c: V3,
+  hx: number,
+  hy: number,
+  hz: number,
+  yaw: number,
+  tilt: number,
+  colour: number,
+): void {
+  const cy = Math.cos(yaw);
+  const sy = Math.sin(yaw);
+  const ct = Math.cos(tilt);
+  const st = Math.sin(tilt);
+  const at = (x: number, y: number, z: number): V3 => {
+    const y1 = y * ct - z * st;
+    const z1 = y * st + z * ct;
+    return [c[0] + x * cy + z1 * sy, c[1] + y1, c[2] - x * sy + z1 * cy];
+  };
+  const p = [
+    at(-hx, -hy, -hz),
+    at(hx, -hy, -hz),
+    at(hx, -hy, hz),
+    at(-hx, -hy, hz),
+    at(-hx, hy, -hz),
+    at(hx, hy, -hz),
+    at(hx, hy, hz),
+    at(-hx, hy, hz),
+  ] as V3[];
+  const q = (a: number, bb: number, cc: number, d: number, col: number) =>
+    b.bag.quad(p[a] as V3, p[bb] as V3, p[cc] as V3, p[d] as V3, col);
+  q(4, 7, 6, 5, colour);
+  q(0, 1, 2, 3, b.cj(colour, 0.06));
+  q(3, 2, 6, 7, b.cj(colour, 0.04));
+  q(1, 0, 4, 5, b.cj(colour, 0.04));
+  q(0, 3, 7, 4, b.cj(colour, 0.05));
+  q(2, 1, 5, 6, b.cj(colour, 0.05));
+}
+
+/** Spec 31 block 1, spec 44: what a collapsed building leaves, filling its
+ *  footprint. A jagged mound of broken masonry under an ash-dark ground, with
+ *  floor slabs fallen across it, stubs of the outer walls still standing with
+ *  their window holes, snapped columns, bent rebar and loose blocks, some of
+ *  them charred (Zero Hour keeps wall stubs in its `RUBBLE` models). */
 export const rubbleHeap: BuilderFn = (b) => {
   const sets = [
-    [0x9a5a44, 0x8a847a, 0x4a423c],
-    [0x9a9890, 0x7a7870, 0x3f3b36],
-    [0x7a5a3c, 0x5a4630, 0x3a3028],
+    { wall: 0xb8b0a0, brick: 0x9a5a44, slab: 0x9c988e, dust: 0x6e665a },
+    { wall: 0xc4c0b4, brick: 0x8a847a, slab: 0xa8a69e, dust: 0x726c62 },
+    { wall: 0xa88a66, brick: 0x7a5a3c, slab: 0x948a7c, dust: 0x665a4a },
   ];
-  const colours = sets[b.variant % sets.length] as number[];
-  const hw = Math.max(0.4, b.w / 2 - 0.15);
-  const hd = Math.max(0.4, b.d / 2 - 0.15);
-  b.bag.frustum(
-    [-hw, -hd, hw, hd],
-    [-hw * 0.5, -hd * 0.5, hw * 0.5, hd * 0.5],
+  const set = sets[b.variant % sets.length] as (typeof sets)[number];
+  const char = 0x2a2622;
+  const hw = Math.max(0.45, b.w / 2 - 0.08);
+  const hd = Math.max(0.45, b.d / 2 - 0.08);
+  const peak = Math.min(0.75, 0.3 + 0.12 * Math.min(b.w, b.d));
+
+  // Ash and dust spread past the footprint.
+  b.bag.box(
+    -hw - 0.12,
     0,
-    0.5,
-    b.cj(colours[1] as number, 0.05),
+    -hd - 0.12,
+    hw + 0.12,
+    0.012,
+    hd + 0.12,
+    b.cj(set.dust, 0.04),
   );
+  for (let i = 0; i < 4; i++) {
+    const x = b.r(-hw, hw * 0.4);
+    const z = b.r(-hd, hd * 0.4);
+    b.bag.box(
+      x,
+      0.013,
+      z,
+      x + b.r(0.3, 0.7),
+      0.016,
+      z + b.r(0.25, 0.6),
+      b.cj(char, 0.05),
+    );
+  }
+
+  // The mound: a jagged height field, highest inside, nothing at the edge.
+  const nx = Math.max(4, Math.round(b.w * 4));
+  const nz = Math.max(4, Math.round(b.d * 4));
+  const heights: number[] = [];
+  for (let k = 0; k <= nz; k++) {
+    for (let i = 0; i <= nx; i++) {
+      const u = (i / nx) * 2 - 1;
+      const v = (k / nz) * 2 - 1;
+      const edge = i === 0 || k === 0 || i === nx || k === nz;
+      const bump = Math.max(0, (1 - u * u) * (1 - v * v));
+      heights.push(edge ? 0 : peak * bump * b.r(0.55, 1.35));
+    }
+  }
+  const h = (i: number, k: number) => heights[k * (nx + 1) + i] as number;
+  const px = (i: number) => -hw + (2 * hw * i) / nx;
+  const pz = (k: number) => -hd + (2 * hd * k) / nz;
+  const tones = [set.slab, set.brick, set.wall, set.dust, char];
+  for (let k = 0; k < nz; k++) {
+    for (let i = 0; i < nx; i++) {
+      const tone = tones[
+        Math.floor(b.r(0, 1) * (b.r(0, 1) < 0.15 ? 5 : 4))
+      ] as number;
+      b.bag.quad(
+        [px(i), h(i, k + 1), pz(k + 1)],
+        [px(i + 1), h(i + 1, k + 1), pz(k + 1)],
+        [px(i + 1), h(i + 1, k), pz(k)],
+        [px(i), h(i, k), pz(k)],
+        b.cj(tone, 0.07),
+      );
+    }
+  }
+
+  // Stubs of the outer walls along two or three sides, ragged on top, with
+  // the dark holes of their windows.
+  const sides = [
+    { along: "x", fixed: hd, from: -hw, to: hw },
+    { along: "z", fixed: hw, from: -hd, to: hd },
+    { along: "x", fixed: -hd, from: -hw, to: hw },
+    { along: "z", fixed: -hw, from: -hd, to: hd },
+  ];
+  const wall = b.variant % 2 === 0 ? set.wall : set.brick;
+  for (const side of sides) {
+    if (b.r(0, 1) < 0.35) continue;
+    let t = side.from + b.r(0, 0.3);
+    while (t < side.to - 0.15) {
+      const len = b.r(0.18, 0.5);
+      const end = Math.min(side.to, t + len);
+      const top = b.r(0.1, 1) < 0.3 ? b.r(0.6, 1.3) : b.r(0.12, 0.5);
+      const thick = 0.07;
+      const [x0, z0, x1, z1] =
+        side.along === "x"
+          ? [t, side.fixed - thick, end, side.fixed]
+          : [side.fixed - thick, t, side.fixed, end];
+      b.bag.box(x0, 0, z0, x1, top, z1, b.cj(wall, 0.05));
+      if (top > 0.45) {
+        // A window hole on the outer face.
+        const wy = top * 0.55;
+        const mid = (t + end) / 2;
+        const ww = Math.min(0.08, (end - t) / 3);
+        if (side.along === "x") {
+          b.bag.box(
+            mid - ww,
+            wy,
+            side.fixed - 0.005,
+            mid + ww,
+            wy + 0.14,
+            side.fixed + 0.005,
+            char,
+          );
+        } else {
+          b.bag.box(
+            side.fixed - 0.005,
+            wy,
+            mid - ww,
+            side.fixed + 0.005,
+            wy + 0.14,
+            mid + ww,
+            char,
+          );
+        }
+      }
+      t = end + (b.r(0, 1) < 0.45 ? b.r(0.15, 0.45) : 0);
+    }
+  }
+
+  // Floor slabs fallen across the heap.
+  const slabs = Math.round(2 + b.w * b.d * 0.7);
+  for (let i = 0; i < slabs; i++) {
+    const x = b.r(-hw * 0.7, hw * 0.7);
+    const z = b.r(-hd * 0.7, hd * 0.7);
+    tiltedBox(
+      b,
+      [x, peak * b.r(0.3, 0.8), z],
+      b.r(0.18, 0.4),
+      0.025,
+      b.r(0.14, 0.3),
+      b.r(0, Math.PI),
+      b.r(-0.7, 0.7),
+      b.cj(set.slab, 0.06),
+    );
+  }
+
+  // Snapped columns and beams.
+  for (let i = Math.round(1 + b.w * b.d * 0.25); i > 0; i--) {
+    tiltedBox(
+      b,
+      [b.r(-hw * 0.6, hw * 0.6), peak * 0.5, b.r(-hd * 0.6, hd * 0.6)],
+      0.035,
+      b.r(0.18, 0.4),
+      0.035,
+      b.r(0, Math.PI),
+      b.r(-0.9, 0.9),
+      b.cj(set.slab, 0.04),
+    );
+  }
+
+  // Rebar bent up out of the concrete.
+  for (let i = Math.round(3 + b.w * b.d * 0.5); i > 0; i--) {
+    const x = b.r(-hw * 0.6, hw * 0.6);
+    const z = b.r(-hd * 0.6, hd * 0.6);
+    const y = peak * b.r(0.3, 0.8);
+    tiltedBox(
+      b,
+      [x, y + 0.12, z],
+      0.006,
+      b.r(0.1, 0.22),
+      0.006,
+      b.r(0, Math.PI),
+      b.r(-1, 1),
+      0x3a2e26,
+    );
+  }
+
+  // Loose blocks on and around the heap, some charred.
   b.rubble(
-    { x0: -hw, z0: -hd, x1: hw, z1: hd, h: 1 },
-    Math.round(8 * b.w * b.d),
-    colours,
-  );
-  b.bag.ribbon([-hw * 0.4, 0.4, 0], [hw * 0.3, 0.9, -hd * 0.3], 0.02, 0x3a3028);
-  b.bag.ribbon(
-    [hw * 0.1, 0.45, hd * 0.2],
-    [-hw * 0.5, 0.8, hd * 0.4],
-    0.02,
-    0x4a3a28,
+    { x0: -hw, z0: -hd, x1: hw, z1: hd, h: 1, y0: 0 },
+    Math.round(5 * b.w * b.d),
+    [set.slab, set.brick, set.wall, char],
   );
 };
 

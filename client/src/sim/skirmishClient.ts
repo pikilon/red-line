@@ -11,6 +11,7 @@ import {
   type ReadyMessage,
   type SaveStateMessage,
   type SetAiActiveMessage,
+  type SetAiSideMessage,
   type SetPausedMessage,
   type SetViewerMessage,
   type SimCommand,
@@ -26,6 +27,8 @@ export interface SkirmishClient {
   setPaused(paused: boolean): void;
   /** Pauses or resumes the skirmish AI (spec 08 §3.3). */
   setAiActive(active: boolean): void;
+  /** Gives the AI the side opposite `human` (spec 08 §3.5). */
+  setAiSide(human: number, personality: string): void;
   requestHash(): Promise<string>;
   /** `Sim::save_state` JSON; rejects with the sim's error (spec 19 §5.4). */
   saveState(): Promise<string>;
@@ -178,6 +181,14 @@ export function createSkirmishClient(
     },
     setAiActive(active: boolean) {
       const message: SetAiActiveMessage = { type: "setAiActive", active };
+      worker.postMessage(message);
+    },
+    setAiSide(human: number, personality: string) {
+      const message: SetAiSideMessage = {
+        type: "setAiSide",
+        human,
+        personality,
+      };
       worker.postMessage(message);
     },
     requestHash() {
