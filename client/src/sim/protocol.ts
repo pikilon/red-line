@@ -124,6 +124,13 @@ export type SetViewerMessage = { type: "setViewer"; viewer: number };
 export type SetPausedMessage = { type: "setPaused"; paused: boolean };
 /** Pauses or resumes the skirmish AI (spec 08 §3.3). */
 export type SetAiActiveMessage = { type: "setAiActive"; active: boolean };
+/** Moves the skirmish AI to the side opposite `human`, attaching it with
+ *  `personality` the first time (the human changed side). */
+export type SetAiSideMessage = {
+  type: "setAiSide";
+  human: number;
+  personality: string;
+};
 export type MainToWorker =
   | InitMessage
   | MoveMessage
@@ -134,7 +141,8 @@ export type MainToWorker =
   | CommandMessage
   | SetViewerMessage
   | SetPausedMessage
-  | SetAiActiveMessage;
+  | SetAiActiveMessage
+  | SetAiSideMessage;
 
 export type ReadyMessage = {
   type: "ready";

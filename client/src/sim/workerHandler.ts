@@ -9,6 +9,7 @@ import {
   type MoveMessage,
   type SaveRequestMessage,
   type SetAiActiveMessage,
+  type SetAiSideMessage,
   type SetPausedMessage,
   type SetViewerMessage,
   type SimCommand,
@@ -317,6 +318,10 @@ export function createWorkerHandler(
   let lastMs: number | null = null;
   let accumulatorMs = 0;
   let paused = false;
+  /** Players with an attached AI, and whether the playing one is active. */
+  const aiPlayers = new Set<number>();
+  let aiPlayer = AI_PLAYER;
+  let aiOn = true;
 
   const postSnapshot = (target: SimLike): void => {
     const data = target.snapshot();
@@ -425,6 +430,7 @@ export function createWorkerHandler(
       if (message.ai != null) {
         try {
           created.attach_ai(AI_PLAYER, message.ai);
+          aiPlayers.add(AI_PLAYER);
         } catch (error) {
           post({ type: "error", detail: String(error) });
           return;
@@ -446,6 +452,7 @@ export function createWorkerHandler(
       }
       viewer = message.viewer;
       speed = Math.min(MAX_SPEED, Math.max(1, message.speed));
+      aiPlayers.add(AI_PLAYER);
       attachSkirmish(created);
     },
     saveRequest: (message: SaveRequestMessage): void => {
@@ -482,7 +489,29 @@ export function createWorkerHandler(
       paused = message.paused;
     },
     setAiActive: (message: SetAiActiveMessage): void => {
-      skirmish?.set_ai_active(AI_PLAYER, message.active);
+      aiOn = message.active;
+      skirmish?.set_ai_active(aiPlayer, message.active);
+    },
+    setAiSide: (message: SetAiSideMessage): void => {
+      if (skirmish === null) {
+        return;
+      }
+      const opponent = message.human === 0 ? 1 : 0;
+      if (opponent === aiPlayer) {
+        return;
+      }
+      if (!aiPlayers.has(opponent)) {
+        try {
+          skirmish.attach_ai(opponent, message.personality);
+          aiPlayers.add(opponent);
+        } catch (error) {
+          post({ type: "error", detail: String(error) });
+          return;
+        }
+      }
+      skirmish.set_ai_active(aiPlayer, false);
+      aiPlayer = opponent;
+      skirmish.set_ai_active(aiPlayer, aiOn);
     },
   } as const;
 
