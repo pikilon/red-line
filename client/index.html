@@ -154,6 +154,15 @@
       #load-error { position: fixed; top: calc(48px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); max-width: min(80vw, 480px); padding: 8px 14px; border-radius: 4px; background: rgba(127, 29, 29, 0.9); color: #fff; font: 14px/1.4 system-ui, sans-serif; z-index: 10; }
       #game-menu { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 12px; box-sizing: border-box; background: rgba(0, 0, 0, 0.55); pointer-events: auto; color: #fff; font: 14px/1.4 system-ui, sans-serif; z-index: 30; }
       #game-menu[hidden] { display: none; }
+      body.shell #hud-bar, body.shell #hud, body.shell #outcome, body.shell #toast, body.shell #game-menu { display: none !important; }
+      #main-menu { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: flex-end; padding: 0 calc(6vw + env(safe-area-inset-right)) 0 16px; box-sizing: border-box; background: linear-gradient(90deg, rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, 0.7)); pointer-events: auto; touch-action: none; }
+      #main-menu-panel { display: flex; flex-direction: column; gap: 10px; width: min(300px, calc(100vw - 32px)); padding: 22px 20px; box-sizing: border-box; border: 1px solid #4a525a; border-top: 4px solid #c62828; background: linear-gradient(180deg, rgba(29, 35, 41, 0.94), rgba(20, 24, 28, 0.94)); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6); }
+      #main-menu-title { margin: 0; color: #fff; font: 800 34px/1 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; text-align: center; text-shadow: 0 2px 6px #000; }
+      #main-menu-subtitle { margin: 0 0 10px; color: #facc15; font: 600 12px/1 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.4em; text-transform: uppercase; text-align: center; }
+      #main-menu-panel button { padding: 12px 14px; border: 1px solid #4a525a; background: #262e35; color: #e6edf2; font: 700 15px/1 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; text-align: left; cursor: pointer; touch-action: manipulation; }
+      #main-menu-panel button:hover, #main-menu-panel button:focus-visible { border-color: #facc15; background: #323c45; color: #fff; outline: none; }
+      #main-menu-panel button:active { background: #facc15; color: #000; }
+      @media (max-width: 600px) { #main-menu { justify-content: center; padding: 0 16px; background: rgba(0, 0, 0, 0.45); } }
       #game-menu-panel { display: flex; flex-direction: column; gap: 8px; width: min(420px, calc(100vw - 32px)); max-height: calc(100vh - 24px); overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; box-sizing: border-box; padding: 20px 24px; border-radius: 6px; background: rgba(0, 0, 0, 0.85); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6); }
       @supports (height: 100dvh) {
         #save-manager-panel, #game-menu-panel { max-height: calc(100dvh - 24px); }

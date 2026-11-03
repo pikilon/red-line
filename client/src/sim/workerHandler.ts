@@ -431,6 +431,10 @@ export function createWorkerHandler(
         try {
           created.attach_ai(AI_PLAYER, message.ai);
           aiPlayers.add(AI_PLAYER);
+          if (message.demoAi !== undefined) {
+            created.attach_ai(0, message.demoAi);
+            aiPlayers.add(0);
+          }
         } catch (error) {
           post({ type: "error", detail: String(error) });
           return;

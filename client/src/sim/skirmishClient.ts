@@ -64,6 +64,8 @@ export type SkirmishStart =
       debug: boolean;
       /** Personality attached to player 1, `null` for none (§7). */
       ai?: string | null;
+      /** Personality attached to player 0 as well (spec 45 §3). */
+      demoAi?: string;
     }
   | {
       save: { form: "world" | "setup"; json: string };
@@ -161,6 +163,9 @@ export function createSkirmishClient(
     };
     if (options.ai !== undefined) {
       init.ai = options.ai;
+    }
+    if (options.demoAi !== undefined) {
+      init.demoAi = options.demoAi;
     }
     worker.postMessage(init);
   }
