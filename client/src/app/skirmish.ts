@@ -764,7 +764,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   const placedGarrisons = garrisonFeaturesOf(
     (
       ruleset.maps.find((entry) => entry.id === mapId) as
-        { features?: readonly GarrisonMapFeature[] } | undefined
+        | { features?: readonly GarrisonMapFeature[] }
+        | undefined
     )?.features ?? [],
     (ruleset as unknown as { featureTypes?: readonly GarrisonTypeInfo[] })
       .featureTypes ?? [],
@@ -776,7 +777,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   const placedBridges = repairJobsOf(
     (
       ruleset.maps.find((entry) => entry.id === mapId) as
-        { features?: readonly RepairMapFeature[] } | undefined
+        | { features?: readonly RepairMapFeature[] }
+        | undefined
     )?.features ?? [],
     (ruleset as unknown as { featureTypes?: readonly RepairTypeInfo[] })
       .featureTypes ?? [],
