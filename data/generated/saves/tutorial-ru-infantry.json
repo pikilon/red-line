@@ -1,0 +1,97 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "tutorial-ru-infantry",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "first-line",
+    "seed": "1",
+    "debug": false,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 1,
+    "revealed": false,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": false,
+    "camera": {
+      "x": 114,
+      "y": 66,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "first-line",
+    "seed": "1",
+    "victory": false,
+    "debug": false,
+    "starts": false,
+    "credits": [
+      0,
+      1000
+    ],
+    "ai": [],
+    "entities": [
+      {
+        "player": 1,
+        "type": "ru-hq",
+        "origin": [
+          114,
+          66
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          120,
+          67
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-barracks",
+        "origin": [
+          120,
+          62
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-dozer",
+        "atCenti": [
+          10950,
+          6650
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          9400,
+          7000
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          9400,
+          6750
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          9250,
+          6500
+        ]
+      }
+    ]
+  }
+}

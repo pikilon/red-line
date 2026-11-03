@@ -1,0 +1,14 @@
+# Spec 46: Build a base: power, supply and barracks from a lone dozer. (russia)
+id: tutorial-ru-base
+map: first-line
+victory: false
+debug: false
+starts: false
+credits: [0, 3000]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 114, y: 66, zoom: 1 }
+entities:
+  - { player: 1, type: ru-hq, origin: [114, 66] }
+  - { player: 1, type: ru-dozer, atCenti: [10950, 6650] }

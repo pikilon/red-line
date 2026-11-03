@@ -1,0 +1,19 @@
+# Spec 46: Train infantry at the barracks and wipe out an enemy patrol. (ukraine)
+id: tutorial-ua-infantry
+map: first-line
+victory: false
+debug: false
+starts: false
+credits: [1000, 0]
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 14, y: 62, zoom: 1 }
+entities:
+  - { player: 0, type: ua-hq, origin: [10, 58] }
+  - { player: 0, type: ua-power-plant, origin: [5, 58] }
+  - { player: 0, type: ua-barracks, origin: [5, 63] }
+  - { player: 0, type: ua-dozer, atCenti: [1850, 6150] }
+  - { player: 1, type: ru-rifleman, atCenti: [3400, 5800] }
+  - { player: 1, type: ru-rifleman, atCenti: [3400, 6050] }
+  - { player: 1, type: ru-rifleman, atCenti: [3550, 6300] }

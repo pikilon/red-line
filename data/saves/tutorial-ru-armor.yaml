@@ -1,0 +1,20 @@
+# Spec 46: Build vehicles at the factory and destroy an enemy outpost. (russia)
+id: tutorial-ru-armor
+map: first-line
+victory: false
+debug: false
+starts: false
+credits: [0, 2500]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 114, y: 66, zoom: 1 }
+entities:
+  - { player: 1, type: ru-hq, origin: [114, 66] }
+  - { player: 1, type: ru-power-plant, origin: [120, 67] }
+  - { player: 1, type: ru-supply-center, origin: [108, 69] }
+  - { player: 1, type: ru-vehicle-factory, origin: [113, 60] }
+  - { player: 1, type: ru-dozer, atCenti: [10950, 6650] }
+  - { player: 0, type: ua-bradley, atCenti: [9000, 6700] }
+  - { player: 0, type: ua-rifleman, atCenti: [9200, 6950] }
+  - { player: 0, type: ua-power-plant, origin: [85, 67] }
