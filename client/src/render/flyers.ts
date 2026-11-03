@@ -231,6 +231,7 @@ export function bankFor(yawRate: number): number {
 
 export function createFlyers(): Flyers {
   const states = new Map<number, FlyerState>();
+  const byId = new Map<number, EntityState>();
   let falls: Fall[] = [];
   let lastMs: number | null = null;
   let maxId = -1;
@@ -245,7 +246,7 @@ export function createFlyers(): Flyers {
       lastMs = nowMs;
       const seen = new Set<number>();
       let newest = maxId;
-      const byId = new Map<number, EntityState>();
+      byId.clear();
       for (const entity of entities) byId.set(entity.id, entity);
       for (const entity of entities) {
         newest = Math.max(newest, entity.id);
