@@ -73,6 +73,8 @@ export function createSimClient(
     },
     // The tech slice never saves (spec 19 §3.7).
     saveState: (): void => {},
+    // Nor runs tutorials (spec 46).
+    alive: (): void => {},
   } as const;
 
   worker.onmessage = (event) => {

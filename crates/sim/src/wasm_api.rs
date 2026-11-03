@@ -127,6 +127,14 @@ impl Sim {
         self.world.map().tiles()
     }
 
+    /// Spec 46: 1 for each of `ids` that is alive, else 0; tutorials ask
+    /// this regardless of fog, as Zero Hour's mission scripts do.
+    pub fn alive(&self, ids: &[u32]) -> Vec<u8> {
+        ids.iter()
+            .map(|&id| u8::from(self.world.entity(id).is_some_and(|e| e.hp > 0)))
+            .collect()
+    }
+
     pub fn tick(&self) -> u32 {
         self.world.tick()
     }

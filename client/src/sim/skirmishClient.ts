@@ -2,6 +2,8 @@ import { type CombatSnapshot, decodeCombat } from "./combatSnapshot";
 import { decodeFeatures, type FeatureRow } from "./featureSnapshot";
 import { decodeMatchSnapshot, type MatchSnapshot } from "./matchSnapshot";
 import {
+  type AliveMessage,
+  type AliveRequestMessage,
   type CommandMessage,
   type ErrorMessage,
   EXPECTED_API_VERSION,
@@ -30,6 +32,8 @@ export interface SkirmishClient {
   /** Gives the AI the side opposite `human` (spec 08 §3.5). */
   setAiSide(human: number, personality: string): void;
   requestHash(): Promise<string>;
+  /** Which of `ids` are alive, regardless of fog (spec 46). */
+  requestAlive(ids: readonly number[]): Promise<boolean[]>;
   /** `Sim::save_state` JSON; rejects with the sim's error (spec 19 §5.4). */
   saveState(): Promise<string>;
   /** Returns an unsubscribe function. */
@@ -85,6 +89,7 @@ export function createSkirmishClient(
     rejectReady = reject;
   });
   const pendingHashes = new Map<number, (hash: string) => void>();
+  const pendingAlive = new Map<number, (alive: boolean[]) => void>();
   const pendingSaves = new Map<
     number,
     { resolve: (world: string) => void; reject: (error: Error) => void }
@@ -111,6 +116,11 @@ export function createSkirmishClient(
       const resolve = pendingHashes.get(message.requestId);
       pendingHashes.delete(message.requestId);
       resolve?.(message.hash);
+    },
+    alive: (message: AliveMessage): void => {
+      const resolve = pendingAlive.get(message.requestId);
+      pendingAlive.delete(message.requestId);
+      resolve?.(message.alive);
     },
     saveState: (message: SaveStateMessage): void => {
       const pending = pendingSaves.get(message.requestId);
@@ -201,6 +211,18 @@ export function createSkirmishClient(
       return new Promise<string>((resolve) => {
         pendingHashes.set(requestId, resolve);
         worker.postMessage({ type: "hashRequest", requestId });
+      });
+    },
+    requestAlive(ids) {
+      const requestId = nextRequestId++;
+      return new Promise<boolean[]>((resolve) => {
+        pendingAlive.set(requestId, resolve);
+        const message: AliveRequestMessage = {
+          type: "aliveRequest",
+          requestId,
+          ids: [...ids],
+        };
+        worker.postMessage(message);
       });
     },
     saveState() {

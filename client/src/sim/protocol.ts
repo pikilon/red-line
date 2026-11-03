@@ -14,6 +14,12 @@ export type MoveMessage = {
   targetYRaw: number;
 };
 export type HashRequestMessage = { type: "hashRequest"; requestId: number };
+/** Spec 46: which of `ids` are alive, regardless of fog. */
+export type AliveRequestMessage = {
+  type: "aliveRequest";
+  requestId: number;
+  ids: number[];
+};
 
 export type SimCommand =
   | {
@@ -138,6 +144,7 @@ export type MainToWorker =
   | InitMessage
   | MoveMessage
   | HashRequestMessage
+  | AliveRequestMessage
   | InitSkirmishMessage
   | InitFromSaveMessage
   | SaveRequestMessage
@@ -164,6 +171,11 @@ export type SnapshotMessage = {
   features?: Int32Array;
 };
 export type HashMessage = { type: "hash"; requestId: number; hash: string };
+export type AliveMessage = {
+  type: "alive";
+  requestId: number;
+  alive: boolean[];
+};
 export type ErrorMessage = { type: "error"; detail: string };
 /** `Sim::save_state` JSON, or null with `error` when it failed (spec 19 §5.4). */
 export type SaveStateMessage = {
@@ -176,5 +188,6 @@ export type WorkerToMain =
   | ReadyMessage
   | SnapshotMessage
   | HashMessage
+  | AliveMessage
   | ErrorMessage
   | SaveStateMessage;

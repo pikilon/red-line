@@ -1,0 +1,24 @@
+# Spec 46: Russia: Pantsir and Pole-21 jammer against Ukrainian bombers and robots the tutorial launches once both are built.
+id: tutorial-ru-air-defense
+map: first-line
+victory: false
+debug: false
+starts: false
+credits: [0, 2500]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 114, y: 66, zoom: 1 }
+entities:
+  - { player: 1, type: ru-hq, origin: [114, 66] }
+  - { player: 1, type: ru-power-plant, origin: [120, 67] }
+  - { player: 1, type: ru-supply-center, origin: [108, 69] }
+  - { player: 1, type: ru-vehicle-factory, origin: [113, 60] }
+  - { player: 1, type: ru-dozer, atCenti: [10950, 6650] }
+  - { player: 1, type: ru-rifleman, atCenti: [11800, 6500] }
+  - { player: 1, type: ru-rifleman, atCenti: [11850, 6600] }
+  - { player: 0, type: ua-drone-workshop, origin: [4, 60] }
+  - { player: 0, type: ua-baba-yaga, atCenti: [900, 5800] }
+  - { player: 0, type: ua-baba-yaga, atCenti: [900, 6600] }
+  - { player: 0, type: ua-tw-12-7, atCenti: [1200, 6200] }
+  - { player: 0, type: ua-tw-12-7, atCenti: [1200, 6500] }

@@ -2,9 +2,10 @@
 
 ## 1. Goal
 
-The main menu offers **Tutorials**: short missions, three per army, that teach
-how to build a base and how to build and use each army's infantry and
-vehicles.
+The main menu offers **Tutorials**: short missions, five per army, that teach
+how to build a base, how to build and use each army's infantry and vehicles,
+and how its drones and air defenses work (owner request: the asymmetric air
+war of spec 43 is the most confusing part).
 
 ## 2. Precedent (generals-precedent note)
 
@@ -30,14 +31,26 @@ ones are done and stays done.
 | Build a base | HQ, dozer, 3000 credits | power plant, supply center, barracks |
 | Infantry | HQ, power plant, barracks, 1000 credits; 3 enemy riflemen 22 tiles away | 3 riflemen, 1 anti-tank infantry (Stugna-P / RPG), destroy every enemy |
 | Armor | HQ, power plant, supply center, factory, 2500 credits; an enemy IFV, rifleman and power plant 26 tiles away | 1 scout vehicle, 1 tank, destroy every enemy |
+| Drones (Ukraine) | HQ, power plant, barracks, drone workshop, 2000 credits; a T-72 and 2 riflemen | 1 FPV team, 1 Baba Yaga, destroy every enemy |
+| Air defense (Ukraine) | HQ, power plant, supply center, factory, 2500 credits; 4 Geran-2 parked far east | 1 Sting nest, 1 Gepard, destroy the wave |
+| Drones (Russia) | HQ, power plant, supply center, barracks, Geran site, 1500 credits; a Ukrainian power plant, scout car and rifleman | 1 Molniya crew, 2 Geran-2, destroy every enemy |
+| Air defense (Russia) | HQ, power plant, supply center, factory, 2 riflemen, 2500 credits; a Ukrainian drone workshop with 2 Baba Yagas and 2 TW-12.7 far west | 1 Pantsir, 1 Pole-21, destroy the wave |
 
-Russia's missions mirror Ukraine's through the map centre.
+The first three missions of Russia mirror Ukraine's through the map centre.
+Each step of the drone missions has a hint that explains the unit: how it is
+guided, what stops it (jammer, small arms, interceptors) and how to use it.
 
-* *Build / train* steps count the player's finished entities of that type
-  (`BUILT_BY_PLAYER`).
-* *Destroy every enemy* holds once an enemy has been seen and every enemy seen
-  has left the snapshot while its last tile was in sight; one that leaves into
-  the fog is still alive.
+* *Build / train* steps count every entity of that type the player has
+  finished, even if it is gone since (`BUILT_BY_PLAYER`): a Geran launched
+  before the step still counts.
+* *Destroy* steps name save entities and hold once the sim says each is dead,
+  regardless of fog, as a Zero Hour script condition knows. The sim answers
+  `Sim::alive(ids)`; save entities are numbered in order after the map's
+  depots, so the player's HQ (always the first entity) gives the offset.
+* *Wave* (air defense missions): once both defenses are built, the tutorial
+  orders the wave at the player's power plant, as a mission script orders a
+  team, and repeats the order every 450 ticks so a bomber that went home to
+  reload comes back; it goes for the HQ once the plant is gone.
 
 ## 4. Interface
 
@@ -52,6 +65,8 @@ Russia's missions mirror Ukraine's through the map centre.
 
 * The step list lives in `client/src/ui/tutorial.ts`, not `data/`: it is
   presentation over example saves and has no balance numbers.
+* The step list lives in code because it names save entities by index; a
+  test checks every index against the save.
 * No voice-over or briefing screen; the hint line plays the role of the
   military captions.
 * The mission has no defeat: the player can reload it from the game menu.

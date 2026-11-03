@@ -574,6 +574,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       : createTutorialPanel(document.body, tutorialMission, {
           play: playTutorial,
           menu: () => window.location.assign(window.location.pathname),
+          command: (command) => interact.command(command),
+          alive: (ids) => interact.requestAlive(ids),
         });
   const gameMenu = createGameMenu(document.body, {
     resume: () => {
@@ -1655,8 +1657,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
    *  (spec §6.7, #140). */
   function refreshOverlay(): void {
     resourceBar.render(next);
-    if (next !== null)
-      tutorialPanel?.update(next.entities, controlled, tileInSight);
+    if (next !== null) tutorialPanel?.update(next, controlled);
     quickBar.refresh();
     outcome.render(
       next === null || boot.shell ? null : outcomeText(next, controlled),
