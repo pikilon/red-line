@@ -5,7 +5,7 @@ blocked: []                          # the water, cliffs and features below bloc
 # The default skirmish map (spec 32): mirrored left-right. A river runs north to south into the sea and splits
 # the two bases; it is crossed by a road bridge (north), a ford (centre), a wooden bridge and a stone arch
 # (south). Each side has a harbour on the south coast, a pine forest, two hills, a plateau with a rich depot
-# reached by one ramp, river groves and a farm hamlet. Each base starts in the middle of a town (spec 44).
+# reached by one ramp, river groves, and each base starts in the middle of a city (spec 44).
 depots:                              # required; origin = top-left cell
   - { origin: [12, 36], amount: 15000 }
   - { origin: [114, 36], amount: 15000 }
@@ -46,6 +46,27 @@ terrain:
     - { type: asphalt, path: [[68, 72], [107, 72]], width: 2 }
     - { type: asphalt, path: [[20, 20], [20, 72]], width: 2 }
     - { type: asphalt, path: [[107, 20], [107, 72]], width: 2 }
+    # Spec 44: city streets.
+    - { type: asphalt, path: [[7, 20], [7, 72]], width: 2 }
+    - { type: asphalt, path: [[120, 20], [120, 72]], width: 2 }
+    - { type: asphalt, path: [[14, 20], [14, 72]], width: 2 }
+    - { type: asphalt, path: [[113, 20], [113, 72]], width: 2 }
+    - { type: asphalt, path: [[28, 20], [28, 72]], width: 2 }
+    - { type: asphalt, path: [[99, 20], [99, 72]], width: 2 }
+    - { type: asphalt, path: [[35, 20], [35, 72]], width: 2 }
+    - { type: asphalt, path: [[92, 20], [92, 72]], width: 2 }
+    - { type: asphalt, path: [[42, 20], [42, 72]], width: 2 }
+    - { type: asphalt, path: [[85, 20], [85, 72]], width: 2 }
+    - { type: asphalt, path: [[0, 30], [47, 30]], width: 2 }
+    - { type: asphalt, path: [[127, 30], [80, 30]], width: 2 }
+    - { type: asphalt, path: [[0, 38], [47, 38]], width: 2 }
+    - { type: asphalt, path: [[127, 38], [80, 38]], width: 2 }
+    - { type: asphalt, path: [[0, 46], [47, 46]], width: 2 }
+    - { type: asphalt, path: [[127, 46], [80, 46]], width: 2 }
+    - { type: asphalt, path: [[0, 53], [47, 53]], width: 2 }
+    - { type: asphalt, path: [[127, 53], [80, 53]], width: 2 }
+    - { type: asphalt, path: [[0, 62], [47, 62]], width: 2 }
+    - { type: asphalt, path: [[127, 62], [80, 62]], width: 2 }
   water:
     - { kind: sea, depth: deep, rect: [0, 86, 127, 95] }
     - { kind: sea, depth: shallow, rect: [0, 84, 127, 85] }
@@ -63,19 +84,8 @@ features:
   - { type: birch, area: [69, 24, 77, 34], density: 25, seed: 9 }
   - { type: oak, area: [48, 44, 58, 54], density: 20, seed: 11 }
   - { type: oak, area: [69, 44, 79, 54], density: 20, seed: 13 }
-  - { type: bush, area: [24, 24, 44, 52], density: 4, seed: 15 }
-  - { type: bush, area: [83, 24, 103, 52], density: 4, seed: 17 }
   - { type: poplar, area: [24, 60, 56, 62], density: 10, seed: 19 }
   - { type: poplar, area: [71, 60, 103, 62], density: 10, seed: 21 }
-  # Farm hamlets by the dirt road.
-  - { type: farmhouse, at: [38, 54], rot: 0, variant: 0 }
-  - { type: house-small, at: [43, 54], rot: 0, variant: 1 }
-  - { type: warehouse-barn, at: [42, 61], rot: 0, variant: 0 }
-  - { type: farmhouse, at: [87, 54], rot: 0, variant: 2 }
-  - { type: house-small, at: [83, 54], rot: 0, variant: 2 }
-  - { type: warehouse-barn, at: [82, 61], rot: 0, variant: 1 }
-  - { type: hedge, at: [36, 53], rot: 0, variant: 0 }
-  - { type: hedge, at: [90, 53], rot: 0, variant: 1 }
   # West harbour (Ukraine).
   - { type: warehouse, at: [8, 74], rot: 0, variant: 0 }
   - { type: warehouse, at: [13, 74], rot: 0, variant: 1 }
@@ -118,75 +128,166 @@ features:
   - { type: buoy, at: [115, 92], variant: 1 }
   - { type: buoy, at: [91, 90], variant: 0 }
   - { type: lighthouse, at: [124, 80], variant: 1 }
-  # Spec 44: each base stands in the middle of a town (west: Ukraine).
-  # North row, fronts face south.
-  - { type: townhouse-row, at: [2, 27], rot: 0, variant: 0 }
-  - { type: shop, at: [7, 27], rot: 0, variant: 1 }
-  - { type: shop, at: [9, 27], rot: 0, variant: 2 }
-  - { type: apartment-block, at: [12, 26], rot: 0, variant: 0 }
-  - { type: church, at: [16, 25], rot: 0, variant: 0 }
-  - { type: apartment-block, at: [23, 26], rot: 0, variant: 1 }
-  # West row, fronts face east.
-  - { type: house-small, at: [1, 32], rot: 1, variant: 0 }
-  - { type: house-small, at: [1, 35], rot: 1, variant: 1 }
-  - { type: apartment-block, at: [1, 38], rot: 1, variant: 2 }
-  - { type: farmhouse, at: [1, 42], rot: 1, variant: 0 }
-  - { type: house-small, at: [1, 46], rot: 1, variant: 2 }
-  - { type: house-small, at: [1, 49], rot: 1, variant: 0 }
-  # East row across the main road, fronts face west.
-  - { type: shop, at: [24, 40], rot: 3, variant: 0 }
-  - { type: house-small, at: [24, 43], rot: 3, variant: 1 }
-  - { type: office-tower, at: [23, 46], rot: 3, variant: 0 }
-  - { type: house-small, at: [24, 50], rot: 3, variant: 2 }
-  # South row, fronts face north.
-  - { type: shop, at: [2, 54], rot: 2, variant: 0 }
-  - { type: shop, at: [4, 54], rot: 2, variant: 1 }
-  - { type: gas-station, at: [7, 54], rot: 2, variant: 0 }
-  - { type: house-small, at: [12, 54], rot: 2, variant: 1 }
-  - { type: townhouse-row, at: [14, 54], rot: 2, variant: 2 }
-  - { type: apartment-block, at: [23, 54], rot: 2, variant: 2 }
-  # Street props.
-  - { type: lamp-post, at: [6, 30], rot: 0, variant: 0 }
-  - { type: lamp-post, at: [11, 30], rot: 0, variant: 0 }
-  - { type: lamp-post, at: [17, 30], rot: 0, variant: 0 }
-  - { type: lamp-post, at: [6, 52], rot: 0, variant: 1 }
-  - { type: lamp-post, at: [12, 52], rot: 0, variant: 1 }
-  - { type: lamp-post, at: [18, 52], rot: 0, variant: 1 }
-  - { type: parked-car, at: [22, 31], rot: 0, variant: 0 }
-  - { type: parked-car, at: [22, 52], rot: 0, variant: 2 }
-  - { type: bus-stop, at: [22, 38], rot: 1, variant: 0 }
-  # East town (Russia), the mirror of the west one.
-  - { type: townhouse-row, at: [122, 27], rot: 0, variant: 1 }
-  - { type: shop, at: [119, 27], rot: 0, variant: 2 }
-  - { type: shop, at: [117, 27], rot: 0, variant: 0 }
-  - { type: apartment-block, at: [113, 26], rot: 0, variant: 1 }
-  - { type: church, at: [109, 25], rot: 0, variant: 1 }
-  - { type: apartment-block, at: [102, 26], rot: 0, variant: 2 }
-  - { type: house-small, at: [125, 32], rot: 3, variant: 1 }
-  - { type: house-small, at: [125, 35], rot: 3, variant: 2 }
-  - { type: apartment-block, at: [124, 38], rot: 3, variant: 0 }
-  - { type: farmhouse, at: [125, 42], rot: 3, variant: 1 }
-  - { type: house-small, at: [125, 46], rot: 3, variant: 0 }
-  - { type: house-small, at: [125, 49], rot: 3, variant: 1 }
-  - { type: shop, at: [102, 40], rot: 1, variant: 1 }
-  - { type: house-small, at: [102, 43], rot: 1, variant: 2 }
-  - { type: office-tower, at: [102, 46], rot: 1, variant: 1 }
-  - { type: house-small, at: [102, 50], rot: 1, variant: 0 }
-  - { type: shop, at: [124, 54], rot: 2, variant: 1 }
-  - { type: shop, at: [122, 54], rot: 2, variant: 2 }
-  - { type: gas-station, at: [117, 54], rot: 2, variant: 1 }
-  - { type: house-small, at: [114, 54], rot: 2, variant: 2 }
-  - { type: townhouse-row, at: [110, 54], rot: 2, variant: 0 }
-  - { type: apartment-block, at: [102, 54], rot: 2, variant: 0 }
-  - { type: lamp-post, at: [121, 30], rot: 0, variant: 1 }
-  - { type: lamp-post, at: [116, 30], rot: 0, variant: 1 }
-  - { type: lamp-post, at: [110, 30], rot: 0, variant: 1 }
-  - { type: lamp-post, at: [121, 52], rot: 0, variant: 0 }
-  - { type: lamp-post, at: [115, 52], rot: 0, variant: 0 }
-  - { type: lamp-post, at: [109, 52], rot: 0, variant: 0 }
-  - { type: parked-car, at: [105, 31], rot: 0, variant: 1 }
-  - { type: parked-car, at: [105, 52], rot: 0, variant: 0 }
-  - { type: bus-stop, at: [105, 38], rot: 3, variant: 0 }
+  # Spec 44: each base stands in the middle of a city (west: Ukraine; generated, then mirrored east).
+  - { type: shop, at: [0, 22], rot: 2, variant: 1 }
+  - { type: shop, at: [2, 22], rot: 2, variant: 1 }
+  - { type: shop, at: [4, 22], rot: 2, variant: 1 }
+  - { type: townhouse-row, at: [0, 27], rot: 0, variant: 1 }
+  - { type: house-small, at: [4, 27], rot: 0, variant: 1 }
+  - { type: shop, at: [8, 22], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [10, 22], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [8, 26], rot: 0, variant: 2 }
+  - { type: house-small, at: [11, 27], rot: 0, variant: 2 }
+  - { type: house-small, at: [15, 22], rot: 2, variant: 0 }
+  - { type: house-small, at: [17, 22], rot: 2, variant: 0 }
+  - { type: townhouse-row, at: [15, 27], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [22, 22], rot: 2, variant: 1 }
+  - { type: shop, at: [25, 22], rot: 2, variant: 1 }
+  - { type: shop, at: [36, 22], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [38, 22], rot: 2, variant: 2 }
+  - { type: office-tower, at: [43, 22], rot: 2, variant: 0 }
+  - { type: house-small, at: [43, 27], rot: 0, variant: 0 }
+  - { type: house-small, at: [45, 27], rot: 0, variant: 2 }
+  - { type: townhouse-row, at: [0, 31], rot: 2, variant: 1 }
+  - { type: shop, at: [0, 35], rot: 0, variant: 1 }
+  - { type: shop, at: [22, 31], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [22, 34], rot: 0, variant: 0 }
+  - { type: shop, at: [39, 35], rot: 0, variant: 1 }
+  - { type: factory, at: [43, 31], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [43, 34], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [0, 39], rot: 2, variant: 2 }
+  - { type: shop, at: [0, 43], rot: 0, variant: 0 }
+  - { type: house-small, at: [2, 43], rot: 0, variant: 1 }
+  - { type: office-tower, at: [22, 39], rot: 2, variant: 2 }
+  - { type: house-small, at: [25, 39], rot: 2, variant: 0 }
+  - { type: factory, at: [22, 42], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [29, 39], rot: 2, variant: 1 }
+  - { type: shop, at: [32, 39], rot: 2, variant: 1 }
+  - { type: house-small, at: [29, 43], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [0, 47], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [0, 50], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [22, 47], rot: 2, variant: 0 }
+  - { type: shop, at: [25, 47], rot: 2, variant: 2 }
+  - { type: townhouse-row, at: [22, 51], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [29, 47], rot: 2, variant: 2 }
+  - { type: shop, at: [32, 47], rot: 2, variant: 1 }
+  - { type: shop, at: [29, 51], rot: 0, variant: 0 }
+  - { type: house-small, at: [31, 51], rot: 0, variant: 2 }
+  - { type: shop, at: [36, 51], rot: 0, variant: 2 }
+  - { type: shop, at: [38, 51], rot: 0, variant: 0 }
+  - { type: house-small, at: [43, 51], rot: 0, variant: 1 }
+  - { type: house-small, at: [45, 51], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [0, 55], rot: 0, variant: 1 }
+  - { type: house-small, at: [3, 56], rot: 0, variant: 1 }
+  - { type: townhouse-row, at: [8, 56], rot: 0, variant: 0 }
+  - { type: office-tower, at: [15, 55], rot: 0, variant: 1 }
+  - { type: factory, at: [22, 55], rot: 0, variant: 1 }
+  - { type: house-small, at: [29, 56], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [31, 55], rot: 0, variant: 0 }
+  - { type: townhouse-row, at: [36, 56], rot: 0, variant: 2 }
+  - { type: house-small, at: [43, 56], rot: 0, variant: 1 }
+  - { type: house-small, at: [45, 56], rot: 0, variant: 1 }
+  - { type: house-small, at: [0, 63], rot: 2, variant: 1 }
+  - { type: townhouse-row, at: [2, 63], rot: 2, variant: 2 }
+  - { type: shop, at: [0, 69], rot: 0, variant: 0 }
+  - { type: shop, at: [2, 69], rot: 0, variant: 2 }
+  - { type: shop, at: [4, 69], rot: 0, variant: 0 }
+  - { type: office-tower, at: [8, 63], rot: 2, variant: 0 }
+  - { type: shop, at: [11, 63], rot: 2, variant: 0 }
+  - { type: townhouse-row, at: [8, 69], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [15, 63], rot: 2, variant: 1 }
+  - { type: shop, at: [15, 69], rot: 0, variant: 2 }
+  - { type: shop, at: [17, 69], rot: 0, variant: 2 }
+  - { type: shop, at: [22, 63], rot: 2, variant: 0 }
+  - { type: office-tower, at: [24, 63], rot: 2, variant: 0 }
+  - { type: warehouse-barn, at: [22, 68], rot: 0, variant: 2 }
+  - { type: shop, at: [29, 69], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [31, 68], rot: 0, variant: 0 }
+  - { type: townhouse-row, at: [36, 63], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [36, 68], rot: 0, variant: 0 }
+  - { type: house-small, at: [39, 69], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [43, 63], rot: 2, variant: 1 }
+  - { type: townhouse-row, at: [43, 69], rot: 0, variant: 1 }
+  # East city (Russia), the mirror of the west one.
+  - { type: shop, at: [126, 22], rot: 2, variant: 2 }
+  - { type: shop, at: [124, 22], rot: 2, variant: 2 }
+  - { type: shop, at: [122, 22], rot: 2, variant: 2 }
+  - { type: townhouse-row, at: [124, 27], rot: 0, variant: 2 }
+  - { type: house-small, at: [122, 27], rot: 0, variant: 2 }
+  - { type: shop, at: [118, 22], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [115, 22], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [117, 26], rot: 0, variant: 0 }
+  - { type: house-small, at: [115, 27], rot: 0, variant: 0 }
+  - { type: house-small, at: [111, 22], rot: 2, variant: 1 }
+  - { type: house-small, at: [109, 22], rot: 2, variant: 1 }
+  - { type: townhouse-row, at: [109, 27], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [103, 22], rot: 2, variant: 2 }
+  - { type: shop, at: [101, 22], rot: 2, variant: 2 }
+  - { type: shop, at: [90, 22], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [87, 22], rot: 2, variant: 0 }
+  - { type: office-tower, at: [82, 22], rot: 2, variant: 1 }
+  - { type: house-small, at: [83, 27], rot: 0, variant: 1 }
+  - { type: house-small, at: [81, 27], rot: 0, variant: 0 }
+  - { type: townhouse-row, at: [124, 31], rot: 2, variant: 2 }
+  - { type: shop, at: [126, 35], rot: 0, variant: 2 }
+  - { type: shop, at: [104, 31], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [103, 34], rot: 0, variant: 1 }
+  - { type: shop, at: [87, 35], rot: 0, variant: 2 }
+  - { type: factory, at: [81, 31], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [82, 34], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [125, 39], rot: 2, variant: 0 }
+  - { type: shop, at: [126, 43], rot: 0, variant: 1 }
+  - { type: house-small, at: [124, 43], rot: 0, variant: 2 }
+  - { type: office-tower, at: [103, 39], rot: 2, variant: 0 }
+  - { type: house-small, at: [101, 39], rot: 2, variant: 1 }
+  - { type: factory, at: [102, 42], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [96, 39], rot: 2, variant: 2 }
+  - { type: shop, at: [94, 39], rot: 2, variant: 2 }
+  - { type: house-small, at: [97, 43], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [125, 47], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [125, 50], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [103, 47], rot: 2, variant: 1 }
+  - { type: shop, at: [101, 47], rot: 2, variant: 0 }
+  - { type: townhouse-row, at: [102, 51], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [96, 47], rot: 2, variant: 0 }
+  - { type: shop, at: [94, 47], rot: 2, variant: 2 }
+  - { type: shop, at: [97, 51], rot: 0, variant: 1 }
+  - { type: house-small, at: [95, 51], rot: 0, variant: 0 }
+  - { type: shop, at: [90, 51], rot: 0, variant: 0 }
+  - { type: shop, at: [88, 51], rot: 0, variant: 1 }
+  - { type: house-small, at: [83, 51], rot: 0, variant: 2 }
+  - { type: house-small, at: [81, 51], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [125, 55], rot: 0, variant: 2 }
+  - { type: house-small, at: [123, 56], rot: 0, variant: 2 }
+  - { type: townhouse-row, at: [116, 56], rot: 0, variant: 1 }
+  - { type: office-tower, at: [110, 55], rot: 0, variant: 2 }
+  - { type: factory, at: [102, 55], rot: 0, variant: 2 }
+  - { type: house-small, at: [97, 56], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [94, 55], rot: 0, variant: 1 }
+  - { type: townhouse-row, at: [88, 56], rot: 0, variant: 0 }
+  - { type: house-small, at: [83, 56], rot: 0, variant: 2 }
+  - { type: house-small, at: [81, 56], rot: 0, variant: 2 }
+  - { type: house-small, at: [126, 63], rot: 2, variant: 2 }
+  - { type: townhouse-row, at: [122, 63], rot: 2, variant: 0 }
+  - { type: shop, at: [126, 69], rot: 0, variant: 1 }
+  - { type: shop, at: [124, 69], rot: 0, variant: 0 }
+  - { type: shop, at: [122, 69], rot: 0, variant: 1 }
+  - { type: office-tower, at: [117, 63], rot: 2, variant: 1 }
+  - { type: shop, at: [115, 63], rot: 2, variant: 1 }
+  - { type: townhouse-row, at: [116, 69], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [110, 63], rot: 2, variant: 2 }
+  - { type: shop, at: [111, 69], rot: 0, variant: 0 }
+  - { type: shop, at: [109, 69], rot: 0, variant: 0 }
+  - { type: shop, at: [104, 63], rot: 2, variant: 1 }
+  - { type: office-tower, at: [101, 63], rot: 2, variant: 1 }
+  - { type: warehouse-barn, at: [102, 68], rot: 0, variant: 0 }
+  - { type: shop, at: [97, 69], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [94, 68], rot: 0, variant: 1 }
+  - { type: townhouse-row, at: [88, 63], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [89, 68], rot: 0, variant: 1 }
+  - { type: house-small, at: [87, 69], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [82, 63], rot: 2, variant: 2 }
+  - { type: townhouse-row, at: [81, 69], rot: 0, variant: 2 }
 
 starts:                              # required, exactly 2 entries; start i is player i
   - { faction: ukraine, hq: [12, 42], dozerCenti: [1850, 4350] }

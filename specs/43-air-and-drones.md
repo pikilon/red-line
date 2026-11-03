@@ -94,7 +94,8 @@ Source: `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`; data: `INIZH.big` 1.0
   (idle, no base, empty with no base, an unarmed attack order) turns at the full
   turn rate at the minimum speed, a circle of radius `minSpeed / turnRate`
   starting where it is. A `Move` of a flyer without a `sortie` never ends: it
-  orbits the ordered point on a circle of 1.25 times that radius (a vector field
+  orbits the ordered point (spec 44 §4.4: a one-way fixed-wing flyer dives into
+  it instead) on a circle of 1.25 times that radius (a vector field
   towards the tangent, with a margin so the turn rate can follow it), so the Orlan
   circles over its point; a sortie flyer ends the `Move` near the point and
   flies home. An armed flyer (Su-34) keeps flying at the target through its

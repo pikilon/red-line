@@ -591,6 +591,15 @@ impl World {
             return self.plan_home(index, None);
         }
         match entity.order {
+            // Spec 44: a fixed-wing one-way flyer sent to a point flies there
+            // and dives into it (a Shahed flies to its coordinates); it never
+            // circles. A rotorcraft one hovers there instead.
+            Order::Move { target, .. } if ty.one_way.is_some() && ty.is_fixed_wing() => Plan::Go {
+                goal: target,
+                entity: None,
+                within: contact,
+                arrival: Arrival::Detonate(None),
+            },
             Order::Move {
                 order_id, target, ..
             } if ty.is_fixed_wing() => Plan::Go {

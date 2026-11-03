@@ -102,6 +102,8 @@ export class LiveFeatures {
   /** Toppling trees; keyed apart so a stump can stand while its tree falls. */
   private readonly toppling = new Map<number, Falling>();
   private readonly burnt: boolean[];
+  /** Spec 44: last hit points (permille) of each row, to see a building hit. */
+  private readonly hp: number[];
   private readonly fx: FeatureFx | null;
   private lastRebuildMs = Number.NEGATIVE_INFINITY;
   private readonly flameGeometry = new ConeGeometry(0.28, 0.9, 6, 1);
@@ -135,6 +137,7 @@ export class LiveFeatures {
     this.wanted = [...initial];
     this.alive = initial.map(() => true);
     this.burnt = initial.map(() => false);
+    this.hp = initial.map(() => -1);
     this.object.name = "map-feature-families";
     for (const family of FEATURE_FAMILIES) this.dirty.add(family);
     this.rebuild(0);
@@ -193,6 +196,18 @@ export class LiveFeatures {
       }
       this.burnt[row.index] = row.alive && row.burning;
       const instance = this.wanted[row.index] as FeatureInstance;
+      const before = this.hp[row.index] ?? -1;
+      this.hp[row.index] = row.hpPermille;
+      if (
+        row.alive &&
+        !row.collapsing &&
+        type.family === "building" &&
+        old.typeIndex === row.kind &&
+        before >= 0 &&
+        row.hpPermille < before
+      ) {
+        this.fx?.hit(instance, (before - row.hpPermille) / 1000, nowMs);
+      }
       if (this.fx !== null) {
         this.fx.set(row.index, instance, blazeOf(instance, row));
       } else {
@@ -448,6 +463,8 @@ function blazeOf(instance: FeatureInstance, row: FeatureRow): FeatureBlaze {
   if (instance.type.family !== "building") return "none";
   if (row.state >= STATE_WRECKED) return "fire";
   if (row.state >= STATE_DAMAGED) return "smoke";
+  // Spec 44: any lost wall already smokes.
+  if (row.hpPermille < 1000) return "smoke";
   return "none";
 }
 

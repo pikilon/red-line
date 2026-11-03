@@ -263,7 +263,7 @@
       "id": "town-drones",
       "map": "river-port",
       "form": "setup",
-      "entities": 4
+      "entities": 6
     },
     {
       "id": "infantry-transport",

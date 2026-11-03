@@ -202,6 +202,8 @@
   "saves.port-supply.description": "Supply trucks load at the harbour's cargo yard, which never runs out but loads slowly, and at an ordinary supply depot that empties.",
   "saves.amphibious-crossing.name": "Amphibious crossing",
   "saves.amphibious-crossing.description": "Russian BMP-2s and a BRDM-2 swim straight across the river while a T-72 drives round by a bridge. Right click the far bank to try it.",
+  "saves.town-drones.name": "Drones over the city",
+  "saves.town-drones.description": "The Ukrainian base stands in the middle of its city. A wave of Geran drones dives one by one into the apartment block next to it: every hit explodes and the block crumbles until it collapses.",
   "saves.air-war.name": "Air war",
   "saves.air-war.description": "Two Su-34 jets and a wave of Geran drones strike a Ukrainian base defended by a Sting nest, a Patriot and a Gepard. Watch the interceptors rise.",
   "saves.robots-vs-jammer.name": "Robots against a jammer",
