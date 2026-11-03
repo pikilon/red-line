@@ -84,6 +84,23 @@ export function targetAltitude(entity: EntityState): number {
   return airInfo(typeDef(entity.kind))?.altitude ?? 0;
 }
 
+/** Spec 44: tiles from its target inside which a one-way flyer dives from
+ *  its altitude to the ground (the sim's `DIVE_CENTI`). */
+export const DIVE_TILES = 4;
+
+/** `cruise` lowered for a one-way flyer in its final dive on `victim`. */
+export function diveAltitude(
+  entity: EntityState,
+  victim: EntityState | undefined,
+  cruise: number,
+): number {
+  if (victim === undefined || typeDef(entity.kind).oneWay === undefined) {
+    return cruise;
+  }
+  const distance = Math.hypot(victim.x - entity.x, victim.y - entity.y);
+  return distance >= DIVE_TILES ? cruise : (cruise * distance) / DIVE_TILES;
+}
+
 /** Missiles and jet drones leave a smoke trail: one-way flyers of the high
  *  class (Flamingo, Storm Shadow, Geran-3). */
 export function leavesTrail(type: TypeDef): boolean {
@@ -228,12 +245,18 @@ export function createFlyers(): Flyers {
       lastMs = nowMs;
       const seen = new Set<number>();
       let newest = maxId;
+      const byId = new Map<number, EntityState>();
+      for (const entity of entities) byId.set(entity.id, entity);
       for (const entity of entities) {
         newest = Math.max(newest, entity.id);
         const type = typeDef(entity.kind);
         if (!isFlyerType(type)) continue;
         seen.add(entity.id);
-        const target = targetAltitude(entity);
+        const target = diveAltitude(
+          entity,
+          entity.target === null ? undefined : byId.get(entity.target),
+          targetAltitude(entity),
+        );
         let state = states.get(entity.id);
         if (state === undefined) {
           // A unit launched mid-match climbs from its rail; one that was

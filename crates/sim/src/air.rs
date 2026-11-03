@@ -956,21 +956,23 @@ impl World {
     }
 
     /// Spec 44: an airborne class `low` flyer inside the footprint of a
-    /// standing feature taller than its altitude crashes into it: a one-way
-    /// unit detonates its warhead there, any other falls, harmless.
+    /// standing feature taller than its flight height crashes into it: a
+    /// one-way unit detonates its warhead there, any other falls, harmless.
+    /// A one-way flyer cruises at its altitude and only comes down in its
+    /// final dive (`DIVE_CENTI` from its target), so low buildings stop it
+    /// only right before the target.
     pub(crate) fn crash_into_building(&mut self, index: usize) {
         let entity = &self.entities[index];
         let motion = &self.rules.ty(entity.kind).motion;
         if entity.hp == 0 || motion.air_class != AirClass::Low || !self.airborne(index) {
             return;
         }
-        let altitude = motion.altitude_centi;
-        let Some(feature) = self.feature_at(cell_of(entity.pos)) else {
+        let height = self.flight_height_centi(index);
+        let Some(feature) = self.feature_at(cell_of(self.entities[index].pos)) else {
             return;
         };
         let row = &self.features[feature as usize];
-        if row.collapse > 0 || self.rules.feature_types[row.kind as usize].height_centi <= altitude
-        {
+        if row.collapse > 0 || self.rules.feature_types[row.kind as usize].height_centi <= height {
             return;
         }
         if self.rules.ty(self.entities[index].kind).one_way.is_some() {
@@ -980,11 +982,43 @@ impl World {
         }
     }
 
+    /// Spec 44: height of the low flyer at `index` over the ground, in
+    /// centi-tiles: its altitude, scaled down linearly inside the last
+    /// `DIVE_CENTI` to the target of a one-way flyer.
+    fn flight_height_centi(&self, index: usize) -> u32 {
+        let entity = &self.entities[index];
+        let ty = self.rules.ty(entity.kind);
+        let altitude = ty.motion.altitude_centi;
+        if ty.one_way.is_none() {
+            return altitude;
+        }
+        let distance = match entity.order {
+            Order::Attack { target, .. } => match self.entity(target) {
+                Some(victim) => self.entity_distance(entity.pos, victim),
+                None => return altitude,
+            },
+            Order::AttackGround { target, .. } | Order::Move { target, .. } => {
+                (target - entity.pos).length()
+            }
+            _ => return altitude,
+        };
+        let dive = fx_centi(DIVE_CENTI);
+        if distance >= dive {
+            return altitude;
+        }
+        let share = i64::from(distance.raw()) * 1000 / i64::from(dive.raw()).max(1);
+        (i64::from(altitude) * share / 1000) as u32
+    }
+
     /// Whether entity `index` is a flyer.
     pub(crate) fn is_flyer(&self, index: usize) -> bool {
         self.rules.ty(self.entities[index].kind).is_air()
     }
 }
+
+/// Spec 44: distance to its target inside which a one-way flyer dives from
+/// its altitude to the ground.
+pub const DIVE_CENTI: u32 = 400;
 
 /// Turning radius of a flyer at `speed` with `turn_step` angle units a tick:
 /// `speed / angular rate` in fixed point.

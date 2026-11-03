@@ -3720,6 +3720,7 @@
         "damagePct": 125,
         "evictOnWrecked": true
       },
+      "heightCenti": 90,
       "render": {
         "model": "house-small"
       }
@@ -3749,7 +3750,7 @@
         "damagePct": 125,
         "evictOnWrecked": true
       },
-      "heightCenti": 160,
+      "heightCenti": 130,
       "render": {
         "model": "townhouse-row"
       }
@@ -3809,6 +3810,7 @@
         "damagePct": 125,
         "evictOnWrecked": true
       },
+      "heightCenti": 80,
       "render": {
         "model": "shop"
       }
@@ -3838,6 +3840,7 @@
         "damagePct": 125,
         "evictOnWrecked": true
       },
+      "heightCenti": 70,
       "render": {
         "model": "gas-station"
       }
@@ -3897,7 +3900,7 @@
         "damagePct": 125,
         "evictOnWrecked": true
       },
-      "heightCenti": 180,
+      "heightCenti": 130,
       "render": {
         "model": "factory"
       }
@@ -3957,6 +3960,7 @@
         "damagePct": 125,
         "evictOnWrecked": true
       },
+      "heightCenti": 110,
       "render": {
         "model": "warehouse-barn"
       }
@@ -3986,6 +3990,7 @@
         "damagePct": 125,
         "evictOnWrecked": true
       },
+      "heightCenti": 90,
       "render": {
         "model": "farmhouse"
       }
