@@ -14,6 +14,7 @@
 use crate::angle::{Angle, atan2};
 use crate::entity::{EntityId, NEUTRAL, Order};
 use crate::fixed::{Fx, FxVec2};
+use crate::map::cell_of;
 use crate::rng::SplitMix64;
 use crate::rules::{AirClass, AntiAir, Link, TypeId, WeaponDef, fx_centi};
 use crate::world::{CombatEvent, MAX_UNITS, TICK_RATE_HZ, World};
@@ -942,6 +943,30 @@ impl World {
         };
         if distance <= contact && self.armed_warhead(index) {
             self.detonate(index, target);
+        }
+    }
+
+    /// Spec 44: an airborne class `low` flyer inside the footprint of a
+    /// standing feature taller than its altitude crashes into it: a one-way
+    /// unit detonates its warhead there, any other falls, harmless.
+    pub(crate) fn crash_into_building(&mut self, index: usize) {
+        let entity = &self.entities[index];
+        let motion = &self.rules.ty(entity.kind).motion;
+        if entity.hp == 0 || motion.air_class != AirClass::Low || !self.airborne(index) {
+            return;
+        }
+        let altitude = motion.altitude_centi;
+        let Some(feature) = self.feature_at(cell_of(entity.pos)) else {
+            return;
+        };
+        let row = &self.features[feature as usize];
+        if row.collapse > 0 || self.rules.feature_types[row.kind as usize].height_centi <= altitude {
+            return;
+        }
+        if self.rules.ty(self.entities[index].kind).one_way.is_some() {
+            self.detonate(index, None);
+        } else {
+            self.fall_harmless(index);
         }
     }
 

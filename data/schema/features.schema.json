@@ -43,6 +43,11 @@
             "items": { "enum": ["grass", "dirt", "sand", "rock", "mud", "gravel", "asphalt", "concrete", "snow-field"] },
             "uniqueItems": true
           },
+          "heightCenti": {
+            "description": "Spec 44: height of the standing feature in centi-tiles. A drone (air class low) flying lower than this into the footprint crashes into it: a one-way unit detonates its warhead there, any other falls. Omitted: drones clear it.",
+            "type": "integer",
+            "minimum": 0
+          },
           "wheelsBlockedState": {
             "description": "Spec 35 §5b: wheeled hulls cannot cross the feature while its damage state is at most this (0 finished, 1 half, 2 just started). Omitted: never stops them.",
             "type": "integer",

@@ -150,6 +150,8 @@ pub struct Motion {
     pub shove_push: Fx,
     /// Spec 43: altitude band of a `LocoKind::Air` hull.
     pub air_class: AirClass,
+    /// Spec 44: flight height of a `LocoKind::Air` hull, in centi-tiles.
+    pub altitude_centi: u32,
     /// Spec 43 §4.1: slowest speed a fixed-wing hull flies while airborne.
     pub min_speed: Fx,
     /// Spec 43 §4.1: half-angle (angle units) of the nose cone a fixed-wing
@@ -176,7 +178,8 @@ pub struct LocomotorDef {
     pub shove_push_centi: u32,
     /// Spec 43 §4.1: altitude band of an `air` locomotor.
     pub class: AirClass,
-    /// Spec 43 §4.1: flight height; presentation only.
+    /// Spec 43 §4.1: flight height; spec 44: a class `low` flyer below a
+    /// building's `heightCenti` crashes into it.
     pub altitude_centi: u32,
     /// Spec 43 §4.1: percent of the top speed a fixed-wing hull never drops below.
     pub min_speed_percent: u32,
@@ -217,6 +220,7 @@ fn motion_of(ty: &TypeDef, locomotor: Option<&LocomotorDef>) -> Motion {
         motion.shove_damage = l.shove_damage;
         motion.shove_push = fx_centi(l.shove_push_centi);
         motion.air_class = l.class;
+        motion.altitude_centi = l.altitude_centi;
         // Spec 43 §4.1: rulesets that predate the flight model get its defaults.
         let min_percent = if l.min_speed_percent == 0 {
             60
@@ -568,6 +572,10 @@ pub struct FeatureTypeDef {
     /// state is at most this (1 is half dug or more); `None` never stops them.
     #[serde(default, rename = "wheelsBlockedState")]
     pub wheels_blocked_state: Option<u8>,
+    /// Spec 44: height of the standing feature in centi-tiles; a class `low`
+    /// flyer flying lower than this into the footprint crashes. 0: none.
+    #[serde(default, rename = "heightCenti")]
+    pub height_centi: u32,
 }
 
 fn hundred() -> u32 {

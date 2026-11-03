@@ -1,0 +1,93 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "town-drones",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "river-port",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 16,
+      "y": 40,
+      "zoom": 0.8
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "river-port",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": true,
+    "ai": [],
+    "entities": [
+      {
+        "player": 1,
+        "type": "ru-geran-2",
+        "atCenti": [
+          3600,
+          2750
+        ],
+        "order": {
+          "moveCenti": [
+            200,
+            2750
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-geran-2",
+        "atCenti": [
+          3600,
+          2650
+        ],
+        "order": {
+          "moveCenti": [
+            200,
+            2650
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-geran-2",
+        "atCenti": [
+          3600,
+          3150
+        ],
+        "order": {
+          "moveCenti": [
+            200,
+            3150
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-orlan",
+        "atCenti": [
+          3600,
+          4750
+        ],
+        "order": {
+          "moveCenti": [
+            1000,
+            4750
+          ]
+        }
+      }
+    ]
+  }
+}

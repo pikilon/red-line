@@ -1224,6 +1224,7 @@ impl World {
             // Spec 43 §4.1: flyers ignore the nav grids.
             if self.is_flyer(index) {
                 self.fly(index);
+                self.crash_into_building(index);
                 continue;
             }
             let before = self.entities[index].pos;

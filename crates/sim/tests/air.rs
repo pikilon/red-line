@@ -1685,3 +1685,39 @@ fn the_showcase_examples_keep_every_unit_when_left_alone() {
         assert_eq!(after, before, "{id}: 60 seconds on, nothing changed");
     }
 }
+
+// ---------------------------------------------------------------------------
+// Spec 44: drones crash into tall civilian buildings
+// ---------------------------------------------------------------------------
+
+/// The west town of river-port: the apartment block of the north row covers
+/// cells 23..=25 x 26..=28. A flyer of player 1 starts east of it and flies
+/// west along y 27.5, straight through it.
+fn through_the_apartment_block(id: &str) -> (World, EntityId, u32) {
+    let mut world = World::skirmish(Ruleset::builtin(), "river-port", 1).unwrap();
+    let block = world
+        .feature_at(Cell { x: 24, y: 27 })
+        .expect("the apartment block stands");
+    let before = world.features()[block as usize].hp;
+    let flyer = put(&mut world, 1, id, 3400, 2750);
+    fly_to(&mut world, 1, flyer, 1000, 2750);
+    steps(&mut world, 120);
+    (world, flyer, before)
+}
+
+#[test]
+fn a_one_way_drone_flying_into_a_tall_building_crashes_and_detonates_there() {
+    let (world, geran, before) = through_the_apartment_block("ru-geran-2");
+    assert!(world.entity(geran).is_none(), "the drone crashed");
+    let block = world.feature_at(Cell { x: 24, y: 27 }).expect("still standing");
+    assert!(
+        world.features()[block as usize].hp < before,
+        "the warhead hit the building"
+    );
+}
+
+#[test]
+fn a_flyer_above_the_rooftops_passes_over_the_town() {
+    let (world, jet, _) = through_the_apartment_block("ru-su-34");
+    assert!(world.entity(jet).is_some(), "the jet flies high");
+}

@@ -743,6 +743,7 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
       // Spec 35 §5b: undiggable ground (indices of layerNames.ground) and when wheels stop at it.
       ...(t.hardGround === undefined ? {} : { hardGround: t.hardGround.map((name) => GROUND_MATERIALS.indexOf(name)) }),
       ...(t.wheelsBlockedState === undefined ? {} : { wheelsBlockedState: t.wheelsBlockedState }),
+      ...(t.heightCenti === undefined ? {} : { heightCenti: t.heightCenti }),
       // Spec 35 §5c: trench rules (breaksWith as indices of the damage types).
       ...(t.trench === undefined ? {} : { trench: { ...t.trench, breaksWith: t.trench.breaksWith.map((name) => globals.damageTypes.indexOf(name)) } }),
       render: t.render,

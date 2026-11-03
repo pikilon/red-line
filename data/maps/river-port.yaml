@@ -5,7 +5,7 @@ blocked: []                          # the water, cliffs and features below bloc
 # The default skirmish map (spec 32): mirrored left-right. A river runs north to south into the sea and splits
 # the two bases; it is crossed by a road bridge (north), a ford (centre), a wooden bridge and a stone arch
 # (south). Each side has a harbour on the south coast, a pine forest, two hills, a plateau with a rich depot
-# reached by one ramp, river groves and a farm hamlet.
+# reached by one ramp, river groves and a farm hamlet. Each base starts in the middle of a town (spec 44).
 depots:                              # required; origin = top-left cell
   - { origin: [12, 36], amount: 15000 }
   - { origin: [114, 36], amount: 15000 }
@@ -118,6 +118,76 @@ features:
   - { type: buoy, at: [115, 92], variant: 1 }
   - { type: buoy, at: [91, 90], variant: 0 }
   - { type: lighthouse, at: [124, 80], variant: 1 }
+  # Spec 44: each base stands in the middle of a town (west: Ukraine).
+  # North row, fronts face south.
+  - { type: townhouse-row, at: [2, 27], rot: 0, variant: 0 }
+  - { type: shop, at: [7, 27], rot: 0, variant: 1 }
+  - { type: shop, at: [9, 27], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [12, 26], rot: 0, variant: 0 }
+  - { type: church, at: [16, 25], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [23, 26], rot: 0, variant: 1 }
+  # West row, fronts face east.
+  - { type: house-small, at: [1, 32], rot: 1, variant: 0 }
+  - { type: house-small, at: [1, 35], rot: 1, variant: 1 }
+  - { type: apartment-block, at: [1, 38], rot: 1, variant: 2 }
+  - { type: farmhouse, at: [1, 42], rot: 1, variant: 0 }
+  - { type: house-small, at: [1, 46], rot: 1, variant: 2 }
+  - { type: house-small, at: [1, 49], rot: 1, variant: 0 }
+  # East row across the main road, fronts face west.
+  - { type: shop, at: [24, 40], rot: 3, variant: 0 }
+  - { type: house-small, at: [24, 43], rot: 3, variant: 1 }
+  - { type: office-tower, at: [23, 46], rot: 3, variant: 0 }
+  - { type: house-small, at: [24, 50], rot: 3, variant: 2 }
+  # South row, fronts face north.
+  - { type: shop, at: [2, 54], rot: 2, variant: 0 }
+  - { type: shop, at: [4, 54], rot: 2, variant: 1 }
+  - { type: gas-station, at: [7, 54], rot: 2, variant: 0 }
+  - { type: house-small, at: [12, 54], rot: 2, variant: 1 }
+  - { type: townhouse-row, at: [14, 54], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [23, 54], rot: 2, variant: 2 }
+  # Street props.
+  - { type: lamp-post, at: [6, 30], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [11, 30], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [17, 30], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [6, 52], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [12, 52], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [18, 52], rot: 0, variant: 1 }
+  - { type: parked-car, at: [22, 31], rot: 0, variant: 0 }
+  - { type: parked-car, at: [22, 52], rot: 0, variant: 2 }
+  - { type: bus-stop, at: [22, 38], rot: 1, variant: 0 }
+  # East town (Russia), the mirror of the west one.
+  - { type: townhouse-row, at: [122, 27], rot: 0, variant: 1 }
+  - { type: shop, at: [119, 27], rot: 0, variant: 2 }
+  - { type: shop, at: [117, 27], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [113, 26], rot: 0, variant: 1 }
+  - { type: church, at: [109, 25], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [102, 26], rot: 0, variant: 2 }
+  - { type: house-small, at: [125, 32], rot: 3, variant: 1 }
+  - { type: house-small, at: [125, 35], rot: 3, variant: 2 }
+  - { type: apartment-block, at: [124, 38], rot: 3, variant: 0 }
+  - { type: farmhouse, at: [125, 42], rot: 3, variant: 1 }
+  - { type: house-small, at: [125, 46], rot: 3, variant: 0 }
+  - { type: house-small, at: [125, 49], rot: 3, variant: 1 }
+  - { type: shop, at: [102, 40], rot: 1, variant: 1 }
+  - { type: house-small, at: [102, 43], rot: 1, variant: 2 }
+  - { type: office-tower, at: [102, 46], rot: 1, variant: 1 }
+  - { type: house-small, at: [102, 50], rot: 1, variant: 0 }
+  - { type: shop, at: [124, 54], rot: 2, variant: 1 }
+  - { type: shop, at: [122, 54], rot: 2, variant: 2 }
+  - { type: gas-station, at: [117, 54], rot: 2, variant: 1 }
+  - { type: house-small, at: [114, 54], rot: 2, variant: 2 }
+  - { type: townhouse-row, at: [110, 54], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [102, 54], rot: 2, variant: 0 }
+  - { type: lamp-post, at: [121, 30], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [116, 30], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [110, 30], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [121, 52], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [115, 52], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [109, 52], rot: 0, variant: 0 }
+  - { type: parked-car, at: [105, 31], rot: 0, variant: 1 }
+  - { type: parked-car, at: [105, 52], rot: 0, variant: 0 }
+  - { type: bus-stop, at: [105, 38], rot: 3, variant: 0 }
+
 starts:                              # required, exactly 2 entries; start i is player i
   - { faction: ukraine, hq: [12, 42], dozerCenti: [1850, 4350] }
   - { faction: russia, hq: [112, 42], dozerCenti: [10950, 4450] }

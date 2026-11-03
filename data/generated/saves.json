@@ -260,6 +260,12 @@
       "entities": 4
     },
     {
+      "id": "town-drones",
+      "map": "river-port",
+      "form": "setup",
+      "entities": 4
+    },
+    {
       "id": "infantry-transport",
       "map": "demo-ground",
       "form": "setup",
