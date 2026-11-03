@@ -1740,3 +1740,45 @@ fn a_one_way_flyer_sent_to_a_point_dives_into_it_instead_of_circling() {
         "at the point"
     );
 }
+
+/// The factory east of the west base on river-port covers cells 22..=25 x
+/// 42..=44 and is lower (130) than the drone altitude (140). A Geran flies
+/// west along y 43.5 to the point `x_centi`.
+fn over_the_factory(x_centi: u32, ticks: u32) -> (World, EntityId, u32, Vec<FxVec2>) {
+    let mut world = World::skirmish(Ruleset::builtin(), "river-port", 1).unwrap();
+    let factory = world
+        .feature_at(Cell { x: 23, y: 43 })
+        .expect("the factory");
+    let before = world.features()[factory as usize].hp;
+    let geran = put(&mut world, 1, "ru-geran-2", 4400, 4350);
+    fly_to(&mut world, 1, geran, x_centi, 4350);
+    let mut blasts = Vec::new();
+    for _ in 0..ticks {
+        world.step();
+        blasts.extend(detonations(&world).into_iter().map(|(_, pos)| pos));
+    }
+    (world, geran, before, blasts)
+}
+
+#[test]
+fn a_cruising_drone_flies_over_a_low_building() {
+    let (world, geran, _, blasts) = over_the_factory(500, 90);
+    let pos = world.entity(geran).expect("still flying").pos;
+    assert!(pos.x < fx_centi(2100), "past the factory");
+    assert!(blasts.is_empty());
+}
+
+#[test]
+fn a_diving_drone_hits_a_low_building_right_before_its_target() {
+    let (world, geran, before, blasts) = over_the_factory(2100, 120);
+    assert!(world.entity(geran).is_none(), "it went off");
+    let blast = blasts.first().expect("one blast");
+    assert!(
+        blast.x >= fx_centi(2200) && blast.x <= fx_centi(2600),
+        "in the factory, short of its point"
+    );
+    let factory = world
+        .feature_at(Cell { x: 23, y: 43 })
+        .expect("still standing");
+    assert!(world.features()[factory as usize].hp < before);
+}

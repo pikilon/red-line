@@ -49,15 +49,25 @@ Depends on `26-map-features-plan.md`, `31-environment-interaction.md`,
 ### 4.2 Drones crashing into buildings
 
 * Feature type field `heightCenti` (default 0): height of the standing feature
-  in centi-tiles. Data: `townhouse-row` 160, `factory` 180, `apartment-block`
-  220, `church` 280, `office-tower` 420; the other buildings stay below the
-  low drone altitude (`airLow.altitudeCenti` 140) and drones clear them.
+  in centi-tiles. Data: `gas-station` 70, `shop` 80, `house-small` and
+  `farmhouse` 90, `warehouse-barn` 110, `townhouse-row` and `factory` 130,
+  `apartment-block` 220, `church` 280, `office-tower` 420.
+* A low drone flies at its locomotor `altitudeCenti` (`airLow` 140), so it
+  clears every building lower than that while it cruises (owner, 2026-11-03:
+  low buildings such as factories only stop a drone very close to its target).
+* **Final dive.** A one-way flyer within `DIVE_CENTI` (400, 4 tiles) of its
+  target (the victim's footprint for an attack, the point for an attack on the
+  ground or a move) flies at `altitude × distance / DIVE_CENTI`: it comes down
+  in a straight line, and a building in its way that is taller than that stops
+  it right before the target.
 * After it moves each tick, an airborne flyer of air class `low` whose cell lies
   in the footprint of a living, not collapsing, feature with `heightCenti`
-  above its locomotor `altitudeCenti` crashes:
+  above its current flight height crashes:
   * a one-way unit detonates its warhead there (the building takes the hit, as
     from any detonation);
   * any other flyer falls, harmless (no killer).
+* Client: a one-way flyer with a target unit or building is drawn coming down
+  over the same last 4 tiles (`render/flyers.ts` `diveAltitude`).
 * Class `high` flyers (jets, cruise missiles) fly over every building.
 * Low drones fly straight (spec 43 §4.1), so a player routes them around tall
   buildings with waypoints.
@@ -74,6 +84,20 @@ Depends on `26-map-features-plan.md`, `31-environment-interaction.md`,
   wrecked burns and a collapse sinks in fire and dust (spec 31), as before.
 * A one-way flyer's own blast is drawn at its flight height, so a drone that
   flies into a wall explodes on the wall, not at its foot.
+
+### 4.3b Ruins (client)
+
+* Zero Hour gives each civilian building a separate `RUBBLE` model
+  (`CBTAprtmn1_R`, `CBTownHs01_R` in `W3D.big`): an apartment block keeps a
+  tall shell, about 0.7 of its height, a town house a low pile, about 0.3; the
+  transition is one burst of smoke, explosion and debris
+  (`TransitionDamageFX`), no lasting fire (`generals-precedent` note).
+* `rubble-heap` (client) draws, instead of a smooth mound: an ash-dark ground
+  past the footprint, a jagged mound of masonry, floor slabs fallen across it,
+  stubs of the outer walls with window holes (up to about 2.3 tiles on a 3x3
+  or larger ruin, a block's shell; up to 1.3 on smaller ones), snapped columns,
+  bent rebar and loose blocks, some charred. Original art: D-02.
+* Difference: the ruin smoulders and its embers glow for a while (spec 31).
 
 ### 4.4 One-way flyers sent to a point
 
@@ -95,4 +119,5 @@ Depends on `26-map-features-plan.md`, `31-environment-interaction.md`,
   explodes, and the block smokes, burns and collapses.
 * `crates/sim/tests/air.rs`: a Geran flying into the apartment block crashes and
   damages it; a Su-34 on the same line flies on; a Geran sent to a point
-  detonates there once.
+  detonates there once; a Geran cruising over a factory passes, one diving at
+  a point just behind it hits the factory.
