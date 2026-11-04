@@ -95,6 +95,7 @@ test("AC-08-13: switch side in the skirmish", async ({ page }) => {
       return Math.hypot(after.x - before.x, after.y - before.y);
     })
     .toBeGreaterThan(10);
+  await page.locator("#game-menu-debug-back").click();
   await page.getByRole("button", { name: "Resume" }).click();
   const tick = await page.evaluate(
     () => (window as DebugWindow).__redline?.tick() ?? 0,
