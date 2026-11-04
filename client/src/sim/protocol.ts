@@ -58,6 +58,8 @@ export type SimCommand =
       yRaw: number;
     }
   | { kind: "stop"; player: number; units: number[] }
+  /** Spec 43 §4.6: units with rounds or charges missing go and reload now. */
+  | { kind: "reload"; player: number; units: number[] }
   /** Spec 31 block 2: infantry walk to feature `feature` (map row index) and garrison it. */
   | { kind: "garrison"; player: number; units: number[]; feature: number }
   /** Spec 31 block 2: evacuate the garrisoned feature `feature`. */

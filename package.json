@@ -35,6 +35,9 @@
     "saves:run": "node scripts/saves.mjs run",
     "saves:import": "node scripts/saves.mjs import",
     "help:shots": "node scripts/help-shots.mjs",
+    "testers:invite": "node scripts/testers.mjs invite",
+    "testers:list": "node scripts/testers.mjs list",
+    "testers:revoke": "node scripts/testers.mjs revoke",
     "deploy:pages": "node scripts/deploy-pages.mjs",
     "verify": "node --run check:rust && node --run check:rules && node --run test:scripts && node --run build:wasm && node --run check && node --run typecheck && node --run test:unit && node --run build && node --run test:e2e && node --run check:data && node --run check:audio && node --run assets:check -- --strict",
     "format": "cargo fmt --all && cd client && npx biome check --write ."

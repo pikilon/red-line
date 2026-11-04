@@ -73,6 +73,9 @@ export interface PanelInput {
   /** The selection holds a unit with a weapon; unset counts as true. Without
    *  one (trucks, dozers) Force fire is greyed out. */
   canFire?: boolean;
+  /** The selection holds a unit with rounds or charges missing (spec 43
+   *  §4.6): the Reload button shows. */
+  reload?: boolean;
   /** The selection is one own producer: the Rally point button shows. */
   rally: boolean;
   /** The armed mode that lights its button. */
@@ -99,6 +102,7 @@ export function samePanelInput(a: PanelInput, b: PanelInput): boolean {
     a.placing !== b.placing ||
     a.units !== b.units ||
     a.canFire !== b.canFire ||
+    a.reload !== b.reload ||
     a.rally !== b.rally ||
     a.armed !== b.armed ||
     a.buttons.length !== b.buttons.length ||
@@ -343,6 +347,8 @@ export function isComplete(entity: EntityState): boolean {
 /** Inline icons, 24 x 24, drawn with the current colour (spec 41 §3.5). */
 const ICONS = {
   stop: '<rect x="6" y="6" width="12" height="12" fill="currentColor"/>',
+  reload:
+    '<path d="M19 12a7 7 0 1 1-2.100-5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19 3v5h-5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="1.800" fill="currentColor"/>',
   force:
     '<circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v6M12 16v6M2 12h6M16 12h6" stroke="currentColor" stroke-width="2"/>',
   screen:
@@ -388,6 +394,8 @@ export interface CommandPanelHandlers {
   onDisabled?(button: CommandButton): void;
   /** Spec 41: stop the selected units. */
   onStop?(): void;
+  /** Spec 43 §4.6: send the units with rounds or charges missing to reload. */
+  onReload?(): void;
   /** Spec 41: arm or disarm the Force fire map tap. */
   onForceFire?(): void;
   /** Spec 41: arm or disarm the Rally point map tap. */
@@ -755,6 +763,13 @@ export function createCommandPanel(
     if (input.units) {
       unitRows.push(
         actionButton("stop", "stop", t("ui.stop"), () => handlers.onStop?.()),
+        ...(input.reload === true
+          ? [
+              actionButton("reload", "reload", t("ui.reload"), () =>
+                handlers.onReload?.(),
+              ),
+            ]
+          : []),
         actionButton(
           "force-fire",
           "force",

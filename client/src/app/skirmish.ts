@@ -47,6 +47,7 @@ import {
   trenchGarrisons,
   withLiveState,
 } from "../input/garrison";
+import { type ReloadPlan, reloadPlan } from "../input/reload";
 import {
   canDig,
   canRepairVehicles,
@@ -160,12 +161,14 @@ import {
   startSecondsFrom,
   type Weather,
 } from "../render/weather";
+import { reportsEnabled } from "../report/api";
 import { RULES, typeDef, typeIndex, typeName, WEAPONS } from "../rules";
 import { loadSource, readExample, readSave } from "../saves/boot";
 import {
   buildSaveFile,
   type ClientState,
   defaultSaveName,
+  gameTime,
   type SaveFile,
   SLOT_COUNT,
   type SlotId,
@@ -215,6 +218,7 @@ import { createMinimap, type MinimapTerrain } from "../ui/minimap";
 import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
 import { createQuickBar } from "../ui/quickBar";
+import { createReportPage, type ReportCapture } from "../ui/reportPage";
 import { createResourceBar } from "../ui/resourceBar";
 import { createSaveManager, type SlotView } from "../ui/saveManager";
 import { createSelectionBox } from "../ui/selectionBox";
@@ -681,6 +685,9 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       uiClick();
       window.location.reload();
     },
+    report: reportsEnabled()
+      ? createReportPage({ capture: captureForReport })
+      : undefined,
   });
   // The menu button lives in the HUD bar on every device (spec 42 §3.1).
   const touchControls = createTouchControls(hudBar.menu, {
@@ -784,6 +791,46 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       showToast(t("saves.saveFailed", { detail }));
     }
     await renderSaves();
+  }
+
+  /** Screenshot, save and context for a tester report (spec 47 §4). */
+  async function captureForReport(): Promise<ReportCapture> {
+    // Read the canvas right after a render: the drawing buffer is not kept.
+    renderer.render(scene, camera);
+    const screenshot = await new Promise<Blob | null>((resolve) =>
+      renderer.domElement.toBlob(resolve, "image/jpeg", 0.85),
+    );
+    let save: string | null = null;
+    let tick: number | null = null;
+    try {
+      const world = await interact.saveState();
+      tick = (JSON.parse(world) as { tick: number }).tick;
+      save = JSON.stringify(
+        buildSaveFile({
+          name: `report ${defaultSaveName(mapId, tick)}`,
+          savedAt: new Date(),
+          tick,
+          match: { mapId, seed: boot.seedText, debug, speed: boot.speed },
+          client: clientState(),
+          worldJson: world,
+        }),
+      );
+    } catch {
+      // The report still goes out without a save.
+    }
+    return {
+      screenshot,
+      save,
+      context: {
+        url: window.location.href,
+        map: mapId,
+        tick,
+        gameTime: tick === null ? null : gameTime(tick),
+        viewport: `${window.innerWidth}x${window.innerHeight}@${window.devicePixelRatio}`,
+        touch: isTouchDevice(),
+        userAgent: navigator.userAgent,
+      },
+    };
   }
 
   /** Puts a slot's or an example's save file on the clipboard. */
@@ -932,6 +979,16 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
           .map((entity) => entity.id);
         if (units.length === 0) return;
         interact.command({ kind: "stop", player: controlled, units });
+      },
+      onReload: () => {
+        const plan = currentReloadPlan();
+        if (plan.command === null) {
+          // No base or supply source to go to: the usual refusal.
+          audioMixer.play({ eventId: "ui.error", relation: "self" });
+          return;
+        }
+        uiClick();
+        interact.command(plan.command);
       },
       onForceFire: () => {
         uiClick();
@@ -1707,6 +1764,16 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     );
   }
 
+  /** Spec 43 §4.6: what the Reload button does for the current selection. */
+  function currentReloadPlan(): ReloadPlan {
+    return reloadPlan({
+      player: controlled,
+      selected: controller?.selected ?? NO_SELECTION,
+      entities: next?.entities ?? [],
+      air: next?.air ?? [],
+    });
+  }
+
   /** Refreshes the DOM overlay; called on events only, never per frame
    *  (spec §6.7, #140). */
   function refreshOverlay(): void {
@@ -1724,6 +1791,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       units: selection.some(
         (entity) => typeDef(entity.kind).category === "unit",
       ),
+      reload: currentReloadPlan().reloadable.length > 0,
       canFire: selection.some((entity) => {
         const def = typeDef(entity.kind);
         // A one-way unit attacks by detonating (spec 43), so it can fire too.

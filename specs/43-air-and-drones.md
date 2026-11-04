@@ -285,6 +285,47 @@ Flamingo, Storm Shadow slips past Pantsir, Patriot pushes the Su-34 back.
 
 Ids of the weapons and balance numbers live in `data/factions/*.yaml`.
 
+### 4.7 Reload on demand
+
+`Command::Reload { units }` (the Reload button of spec 41) sends units to be
+resupplied now instead of waiting for the clip to run dry.
+
+Precedent (`generals-precedent`, Zero Hour): a jet has no Return to Base or
+rearm button (the Raptor card is Guard, Attack Move, Stop). A rearm on demand is
+a right click on an own airfield, which `JetAIUpdate::privateEnter` /
+`doLandingCommand` (`AICMD_ENTER`, `AICMD_GET_REPAIRED`) turns into "fly to that
+airfield, reserve a slot, make it the producer, rearm there"; a jet already
+parked there ignores it. The automatic return when every `RETURN_TO_BASE_TO_RELOAD`
+weapon is empty is the same landing state. Without an airfield the jet circles
+the last base and re-checks once a second. Afterwards it stays parked and idle
+unless a command was pending (a command given while empty, or a guard/hunt
+interrupted by the return).
+
+Red Line adds the button (a mobile-friendly card has no right click) and keeps
+the rest:
+
+* **Sortie flyer** with `ammo < clip`: gets `ReturnToBase`, the order that
+  already sends an idle flyer home (§4.3). It flies to the nearest own complete
+  building that lists its type in `produces`, docks, reloads and repairs there
+  exactly as when empty, then goes idle.
+* **Launcher crew on foot** (`charges` with `refillRadiusCenti > 0`, e.g.
+  `ua-fpv-team`) with `charges < max`: moves (the ordinary `Move`, group spread
+  included) to the nearest own unit or complete building with `resupplies`
+  (the AI's resupply move, spec 43 §4.4); the refill mechanic of §4.4 does the
+  rest. A crew already inside a source's radius just stops and waits there. It
+  is idle afterwards.
+* Units that are full, have no clip or charges, are not own, are inside a
+  vehicle or building, or are buildings (the Sting nest refills by itself) are
+  ignored.
+* The previous order is dropped and never resumed (assumption: the narrowest
+  option; Zero Hour resumes a pending guard/hunt, Red Line has no guard).
+* With no base or no supply source the sim ignores the unit (as it ignores any
+  order it cannot carry out) and the client, which sees the same snapshot,
+  refuses first: it plays the `ui.error` sound and sends nothing. Units that do
+  have a source still go when the selection is mixed.
+* The button shows when the selection holds one own unit with a clip or charges
+  not full; no hotkey, like the other panel orders (spec 41).
+
 ## 5. Architecture
 
 * `rules.rs`: `LocoKind::Air`, `AirClass`, `OneWayDef`, `SortieDef`, `Link`,
