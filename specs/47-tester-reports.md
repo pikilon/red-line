@@ -31,6 +31,8 @@ so no generals-precedent note applies.
   * **Screenshot** — the game view as it was when Report was pressed.
   * **Match save** — the current match as a save file (spec 19), so the owner
     can open the exact situation.
+* Pasting an image (Ctrl/Cmd+V) anywhere in the form adds it as an extra
+  file, the same as picking it by hand (owner request 2026-11-04).
 * **Send** creates the issue and shows its number with a link. Title and
   description are required; at most 8 extra files of 10 MB each.
 * Typing in the form never reaches the game (no hotkeys fire).

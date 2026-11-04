@@ -237,6 +237,27 @@ export function createReportPage(deps: ReportPageDeps): ReportPage {
     show("login");
   });
   anotherButton.addEventListener("click", () => show("form"));
+  // Pasted images become attachments, like files picked by hand (spec 47 §4).
+  formView.addEventListener("paste", (event) => {
+    const pasted = [...(event.clipboardData?.files ?? [])].filter((file) =>
+      file.type.startsWith("image/"),
+    );
+    if (pasted.length === 0) return;
+    event.preventDefault();
+    const merged = new DataTransfer();
+    for (const file of files.files ?? []) merged.items.add(file);
+    const stamp = new Date().toISOString().replace(/\D/g, "").slice(0, 14);
+    pasted.forEach((file, index) => {
+      const extension = file.type.split("/")[1] ?? "png";
+      merged.items.add(
+        new File([file], `pasted-${stamp}-${index + 1}.${extension}`, {
+          type: file.type,
+        }),
+      );
+    });
+    files.files = merged.files;
+    status.textContent = t("report.pasted", { count: merged.files.length });
+  });
 
   return {
     page,

@@ -326,7 +326,7 @@
   "report.kindFeature": "Feature request",
   "report.title": "Title",
   "report.description": "What happened, or what would you like?",
-  "report.files": "Extra files (optional)",
+  "report.files": "Extra files (optional, or paste images)",
   "report.withScreenshot": "Attach screenshot",
   "report.withSave": "Attach match save",
   "report.send": "Send",
@@ -340,5 +340,6 @@
   "report.error.signed-out": "Your session expired. Sign in again.",
   "report.error.too-large": "Too many files (8 max) or one is over 10 MB.",
   "report.error.network": "No connection. Try again.",
-  "report.error.failed": "Sending failed. Try again later."
+  "report.error.failed": "Sending failed. Try again later.",
+  "report.pasted": "Image pasted. {count} file(s) attached."
 }
