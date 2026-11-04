@@ -10,7 +10,8 @@ max_frequency = "1m0s"
 otp_length = 8
 
 [functions.report]
-verify_jwt = true
+# Testers carry an invite secret, not a Supabase session (spec 47 §3).
+verify_jwt = false
 
 # Hosted values, declared so a push leaves them alone.
 [auth]

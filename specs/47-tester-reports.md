@@ -12,16 +12,19 @@ in `pikilon/red-line`, so nothing the testers say gets lost (owner request
 Zero Hour has no in-game bug reporter; this is tooling, not a game mechanism,
 so no generals-precedent note applies.
 
-## 3. Accounts
+## 3. Testers and invite links (owner request 2026-11-04)
 
-* Only emails on the **tester list** (`public.testers`, edited by the owner in
-  the Supabase table editor) can register. Registering any other email fails
-  with "not on the tester list".
-* A tester registers once with email and password and stays signed in on that
-  browser (the session is refreshed silently). **Sign out** forgets it.
-* No email is ever sent: there is no confirmation mail and no password reset.
-  A tester who forgets the password asks the owner, who deletes the user in
-  Supabase so the tester can register again.
+* No accounts, passwords or emails. The owner invites a tester by name with
+  `node --run testers:invite -- "Name"`, which prints a personal link
+  `https://pikilon.github.io/red-line/?invite=<secret>` to send privately.
+* Opening the link stores the secret in that browser and removes it from the
+  address bar; the page then behaves as if opened without it (main menu).
+  The invite stays until revoked; there is no expiry.
+* `node --run testers:list` lists testers; `node --run testers:revoke --
+  "Name"` deletes one, and its link stops working. Inviting the same name
+  again issues a new link and voids the old one.
+* Without a stored invite, the Report page explains how to get one. A revoked
+  invite is forgotten on the next call and the page says so.
 
 ## 4. Reporting
 
@@ -40,9 +43,9 @@ so no generals-precedent note applies.
 ## 5. The GitHub issue
 
 * Labels: `bug` or `enhancement`, plus `tester-report`.
-* Body: the description, the screenshot and image attachments shown inline,
-  other files and the save as links, the tester's display name (never the
-  email) and a context block (page URL, map, tick, viewport, browser).
+* The body starts with **Reporter:** and the tester's name, then the
+  description, the screenshot and image attachments shown inline,
+  other files and the save as links, and a context block (page URL, map, tick, viewport, browser).
 * When the backend has a GitHub Project id configured, the issue is also added
   to that project board.
 * To open a reported match: download `save.json` from the issue and run
@@ -50,12 +53,13 @@ so no generals-precedent note applies.
 
 ## 6. Backend
 
-* Supabase project `red-line`: Auth (email + password, confirmations off),
-  table `testers`, public storage bucket `reports`, Edge Function `report`.
-* The function checks the signed-in user is still on the tester list, stores
-  the files in `reports/<date>/<uuid>/`, and creates the issue with a GitHub
-  token kept as a function secret (`GITHUB_TOKEN`, optional
-  `GITHUB_PROJECT_ID`). The game only holds the public anon key.
+* Supabase project `red-line`: table `testers` (name, SHA-256 of the invite
+  secret), public storage bucket `reports`, Edge Function `report` (no JWT;
+  the secret travels in the `x-tester-token` header).
+* `GET` returns the tester's name; `POST` stores the files in
+  `reports/<date>/<uuid>/` and creates the issue with a GitHub token kept as a
+  function secret (`GITHUB_TOKEN`, optional `GITHUB_PROJECT_ID`). The game
+  only holds the publishable key.
 
 ## 7. Assumptions
 
