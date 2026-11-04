@@ -1,0 +1,16 @@
+# Spec 48: help card of the power plant. A base that consumes more power than its one plant produces.
+id: help-ua-power-plant-low
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 45, y: 22, zoom: 1.4 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [37, 20] }
+  - { player: 0, type: ua-supply-center, origin: [40, 20] }
+  - { player: 0, type: ua-barracks, origin: [44, 20] }
+  - { player: 0, type: ua-vehicle-factory, origin: [47, 20] }
+  - { player: 0, type: ua-defense, origin: [51, 21] }

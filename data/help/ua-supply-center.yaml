@@ -1,0 +1,7 @@
+# Spec 48 §3.3: screenshots of the supply center card. `node --run help:shots -- --type ua-supply-center`
+- { id: ua-supply-center-produce, save: help-ua-supply-center-produce, ticks: 5, select: [ua-supply-center], hud: true, tab: build }
+- { id: ua-supply-center-dropoff, save: help-ua-supply-center-dropoff, ticks: 95, select: [ua-supply-truck] }
+- { id: ua-supply-center-resupply, save: help-ua-supply-center-resupply, ticks: 2, select: [ua-fpv-team], hud: true, tab: orders }
+- { id: ua-supply-center-rally, save: help-ua-supply-center-rally, ticks: 5, select: [ua-supply-center], hud: true, tab: orders }
+- { id: ua-supply-center-repair, save: help-ua-supply-center-repair, ticks: 10, select: [ua-dozer] }
+- { id: ua-supply-center-sell, save: help-ua-supply-center-sell, ticks: 5, select: [ua-supply-center], hud: true, tab: orders }

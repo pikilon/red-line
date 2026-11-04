@@ -1,0 +1,15 @@
+# Spec 48: help card of the power plant. A plant feeding a supply center and barracks.
+id: help-ua-power-plant-power
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [5000, 0]
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 46, y: 19, zoom: 2 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [41, 18] }
+  - { player: 0, type: ua-supply-center, origin: [44, 18] }
+  - { player: 0, type: ua-barracks, origin: [48, 19] }

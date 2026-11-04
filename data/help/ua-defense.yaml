@@ -1,0 +1,5 @@
+# Spec 48 §3.3: screenshots of the Stugna-P emplacement card. `node --run help:shots -- --type ua-defense`
+- { id: ua-defense-missile, save: help-ua-defense-missile, ticks: 20, select: [ua-defense] }
+- { id: ua-defense-power, save: help-ua-defense-power, ticks: 5, select: [ua-defense], hud: true }
+- { id: ua-defense-repair, save: help-ua-defense-repair, ticks: 10, select: [ua-dozer] }
+- { id: ua-defense-sell, save: help-ua-defense-sell, ticks: 5, select: [ua-defense], hud: true, tab: orders }

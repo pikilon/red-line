@@ -1,0 +1,13 @@
+# Spec 48: help card of the Stugna-P emplacement. A damaged emplacement waits for its dozer.
+id: help-ua-defense-repair
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45.5, y: 19.5, zoom: 3 }
+entities:
+  - { player: 0, type: ua-defense, origin: [44, 17], hpPercent: 40 }
+  - { player: 0, type: ua-dozer, atCenti: [4200, 1900] }

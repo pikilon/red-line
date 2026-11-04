@@ -1,0 +1,13 @@
+# Spec 48: help card of the drone workshop. A damaged workshop waits for its dozer.
+id: help-ua-drone-workshop-repair
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 46, y: 20.5, zoom: 2.2 }
+entities:
+  - { player: 0, type: ua-drone-workshop, origin: [45, 18], hpPercent: 40 }
+  - { player: 0, type: ua-dozer, atCenti: [4200, 2100] }

@@ -1,0 +1,13 @@
+# Spec 48: help card of the Stugna-P emplacement. Select it to see Sell in the structure row.
+id: help-ua-defense-sell
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [5000, 0]
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45.5, y: 19, zoom: 2.8 }
+entities:
+  - { player: 0, type: ua-defense, origin: [44, 17] }

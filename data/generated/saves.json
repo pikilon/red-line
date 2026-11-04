@@ -410,6 +410,42 @@
       "entities": 3
     },
     {
+      "id": "help-ua-barracks-heal",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ua-barracks-rally",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ua-barracks-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-barracks-resupply",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-barracks-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ua-barracks-train",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
       "id": "help-ua-bradley-carry",
       "map": "showcase",
       "form": "setup",
@@ -420,6 +456,30 @@
       "map": "showcase",
       "form": "setup",
       "entities": 2
+    },
+    {
+      "id": "help-ua-defense-missile",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-defense-power",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-ua-defense-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-defense-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
     },
     {
       "id": "help-ua-dozer-bridge",
@@ -452,6 +512,36 @@
       "entities": 2
     },
     {
+      "id": "help-ua-drone-workshop-build",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ua-drone-workshop-jamming",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 8
+    },
+    {
+      "id": "help-ua-drone-workshop-rally",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ua-drone-workshop-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-drone-workshop-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
       "id": "help-ua-himars-attack-ground",
       "map": "showcase",
       "form": "setup",
@@ -480,6 +570,30 @@
       "map": "showcase",
       "form": "setup",
       "entities": 6
+    },
+    {
+      "id": "help-ua-hq-build",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ua-hq-rally",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ua-hq-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-hq-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
     },
     {
       "id": "help-ua-kozak-scout-carry",
@@ -522,6 +636,30 @@
       "map": "showcase",
       "form": "setup",
       "entities": 2
+    },
+    {
+      "id": "help-ua-power-plant-low",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-ua-power-plant-power",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-power-plant-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-power-plant-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
     },
     {
       "id": "help-ua-rifleman-air",
@@ -602,6 +740,42 @@
       "entities": 2
     },
     {
+      "id": "help-ua-supply-center-dropoff",
+      "map": "demo-ground",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-supply-center-produce",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-supply-center-rally",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ua-supply-center-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-supply-center-resupply",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-supply-center-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
       "id": "help-ua-supply-truck-harvest",
       "map": "demo-ground",
       "form": "setup",
@@ -618,6 +792,36 @@
       "map": "showcase",
       "form": "setup",
       "entities": 3
+    },
+    {
+      "id": "help-ua-vehicle-factory-build",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ua-vehicle-factory-rally",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ua-vehicle-factory-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-vehicle-factory-repair-dozer",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-vehicle-factory-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
     }
   ]
 }
