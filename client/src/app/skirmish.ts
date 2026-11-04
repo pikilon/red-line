@@ -1974,7 +1974,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
           : snapshot.winner === controlled
             ? "victory"
             : "defeat";
-      audioMixer.updateMusic(factionId, audioBatch.combatActive, musicResult);
+      // Behind the main menu the menu theme keeps playing (spec 25 §10).
+      if (!boot.shell) {
+        audioMixer.updateMusic(factionId, audioBatch.combatActive, musicResult);
+      }
     }
     refreshOverlay();
   });

@@ -8,9 +8,9 @@ export const DEFAULT_AUDIO_MASTER = 50;
 export const DEFAULT_AUDIO_SFX = 60;
 export const DEFAULT_AUDIO_AMBIENT = 30;
 export const DEFAULT_AUDIO_VOICE = 60;
-/** Music starts off: the game's music made the first minutes of play hard to
- *  follow, so the player turns it up in the menu if they want it (owner request). */
-export const DEFAULT_AUDIO_MUSIC = 0;
+/** Music is audible by default so the main menu has its theme (owner request,
+ *  2026-11-04); the player can still turn it down or off in the Sound page. */
+export const DEFAULT_AUDIO_MUSIC = 40;
 
 export interface Settings {
   gore: boolean;
