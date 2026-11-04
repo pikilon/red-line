@@ -1829,3 +1829,24 @@ fn a_hovering_drone_ordered_onto_a_mountain_wall_stops_there() {
     );
     assert!(matches!(unit.order, Order::Idle { .. }));
 }
+
+#[test]
+fn a_fixed_wing_drone_ordered_onto_a_mountain_wall_orbits_it() {
+    let mut grid = MapGrid::open(80, 40);
+    for x in 19..=21 {
+        for y in 19..=21 {
+            grid.set_blocked(Cell { x, y }, true);
+        }
+    }
+    let mut world = World::sandbox(Ruleset::builtin(), grid, &[0, 1]);
+    let geran = put(&mut world, 1, "ru-geran-2", 6000, 2000);
+    fly_to(&mut world, 1, geran, 2000, 2000);
+    let mut blasts = Vec::new();
+    for _ in 0..300 {
+        world.step();
+        blasts.extend(detonations(&world));
+    }
+    let pos = world.entity(geran).expect("still circling").pos;
+    assert!(blasts.is_empty());
+    assert!((pos - at(2000, 2000)).length() < fx_centi(1500));
+}
