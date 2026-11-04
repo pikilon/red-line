@@ -44,6 +44,7 @@ import {
   garrisonCommand,
   garrisonFeaturesOf,
   garrisonOffers,
+  isFreeInfantry,
   trenchGarrisons,
   withLiveState,
 } from "../input/garrison";
@@ -122,6 +123,11 @@ import {
   spawnFlyerTrails,
 } from "../render/flyers";
 import { createFogOverlay } from "../render/fog";
+import {
+  acceptsRiders,
+  createGarrisonMarkers,
+  type GarrisonMarkers,
+} from "../render/garrisonMarkers";
 import {
   type GeneratedTextures,
   loadGeneratedTextures,
@@ -1008,6 +1014,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     terrain: () => minimapTerrain,
     fog: () => fog,
     entities: () => next?.entities ?? [],
+    garrisons: () =>
+      garrisonFeatures.filter(
+        (feature) => feature.trench !== true && feature.closed !== true,
+      ),
     player: () => controlled,
     color: (owner) => `#${ownerColor(owner).toString(16).padStart(6, "0")}`,
     // The four screen corners on the ground plane (spec 42 §3.7).
@@ -1050,6 +1060,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let attackMarker: AttackMarker | null = null;
   let airOverlay: AirOverlay | null = null;
   let rallyMarker: RallyMarker | null = null;
+  let garrisonMarkers: GarrisonMarkers | null = null;
+  let garrisonMarkersAt = Number.NEGATIVE_INFINITY;
   let decals: Decals | null = null;
   let groundImpacts: GroundImpacts | null = null;
   let projectiles: Projectiles | null = null;
@@ -1336,6 +1348,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     scene.add(attackMarker.group);
     rallyMarker = createRallyMarker();
     scene.add(rallyMarker.group);
+    garrisonMarkers = createGarrisonMarkers();
+    scene.add(garrisonMarkers.group);
     decals = createDecals(
       createTerrainSurface(
         mapInfo.mapWidth,
@@ -2174,6 +2188,25 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
             color: OWNER_COLORS[controlled] ?? 0xffffff,
           },
     );
+    // Spec 31 A13: garrison signage, brighter while the selection could enter.
+    if (garrisonMarkers !== null && now - garrisonMarkersAt >= 100) {
+      garrisonMarkersAt = now;
+      const chosen = controller?.selected ?? NO_SELECTION;
+      const infantrySelected =
+        chosen.size > 0 &&
+        (next?.entities ?? []).some(
+          (entity) =>
+            chosen.has(entity.id) &&
+            entity.owner === controlled &&
+            isFreeInfantry(entity),
+        );
+      garrisonMarkers.update(garrisonFeatures, {
+        ready: (feature) =>
+          infantrySelected && acceptsRiders(feature, controlled),
+        colour: (owner) =>
+          `#${ownerColor(owner).toString(16).padStart(6, "0")}`,
+      });
+    }
     decals?.update(effectTime(now));
     relief?.update(effectTime(now));
     fogOverlay?.update(fog);
@@ -2309,6 +2342,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       effectCounts: () => effects?.counts() ?? NO_EFFECT_COUNTS,
       attackMarkerCount: () => attackMarker?.activeCount() ?? 0,
       rallyMarkerCount: () => rallyMarker?.activeCount() ?? 0,
+      garrisonMarkerCount: () => garrisonMarkers?.activeCount() ?? 0,
       rallyPoints: () => next?.rallies ?? [],
       decalCount: () => decals?.count() ?? 0,
       projectileCounts: () => projectiles?.counts() ?? NO_PROJECTILE_COUNTS,

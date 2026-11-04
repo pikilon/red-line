@@ -106,6 +106,7 @@ export interface SkirmishDebug {
   attackMarkerCount(): number;
   /** Selected producer's persistent rally marker (spec 33). */
   rallyMarkerCount(): number;
+  garrisonMarkerCount(): number;
   /** Authoritative rally points in the latest snapshot (spec 33). */
   rallyPoints(): { building: number; x: number; y: number }[];
   /** Ground marks alive: tracks plus scorches (spec 24). */
