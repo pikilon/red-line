@@ -540,6 +540,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     ...resolveAudioVolumes(settings),
     strongLanguage: settings.strongLanguage,
   });
+  audioMixer.setMenuMix(boot.shell === true);
   audioMixer.installGestureUnlock(window);
   if (isAudioDebugEnabled(pageParams.toString())) {
     createAudioDebugOverlay(document.body, audioMixer);
