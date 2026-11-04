@@ -1809,3 +1809,23 @@ fn a_diving_drone_hits_a_low_building_right_before_its_target() {
         .expect("still standing");
     assert!(world.features()[factory as usize].hp < before);
 }
+
+#[test]
+fn a_hovering_drone_ordered_onto_a_mountain_wall_stops_there() {
+    let mut grid = MapGrid::open(80, 40);
+    for x in 19..=21 {
+        for y in 19..=21 {
+            grid.set_blocked(Cell { x, y }, true);
+        }
+    }
+    let mut world = World::sandbox(Ruleset::builtin(), grid, &[0, 1]);
+    let fpv = put(&mut world, 0, "ua-fpv", 2400, 2100);
+    fly_to(&mut world, 0, fpv, 2000, 2000);
+    steps(&mut world, 200);
+    let unit = world.entity(fpv).expect("still hovering");
+    assert!(
+        (unit.pos - at(2000, 2000)).length() < fx_centi(50),
+        "on the wall"
+    );
+    assert!(matches!(unit.order, Order::Idle { .. }));
+}

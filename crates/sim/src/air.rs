@@ -992,9 +992,7 @@ impl World {
                 Some(victim) => self.entity_distance(entity.pos, victim),
                 None => return altitude,
             },
-            Order::AttackGround { target, .. } | Order::Move { target, .. } => {
-                (target - entity.pos).length()
-            }
+            Order::AttackGround { target, .. } => (target - entity.pos).length(),
             _ => return altitude,
         };
         let dive = fx_centi(DIVE_CENTI);
