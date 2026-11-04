@@ -1,0 +1,7 @@
+# Spec 48 §3.3: screenshots of the barracks card. `node --run help:shots -- --type ru-barracks`
+- { id: ru-barracks-train, save: help-ru-barracks-train, ticks: 5, select: [ru-barracks], hud: true, tab: build }
+- { id: ru-barracks-rally, save: help-ru-barracks-rally, ticks: 5, select: [ru-barracks], hud: true, tab: orders }
+- { id: ru-barracks-heal, save: help-ru-barracks-heal, ticks: 10, select: [ru-rifleman] }
+- { id: ru-barracks-resupply, save: help-ru-barracks-resupply, ticks: 5, select: [ru-molniya-crew], hud: true, tab: orders }
+- { id: ru-barracks-repair, save: help-ru-barracks-repair, ticks: 10, select: [ru-dozer] }
+- { id: ru-barracks-sell, save: help-ru-barracks-sell, ticks: 5, select: [ru-barracks], hud: true, tab: orders }

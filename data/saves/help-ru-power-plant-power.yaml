@@ -1,0 +1,15 @@
+# Spec 48: help card of the Russian power plant. A plant feeding a supply center and barracks.
+id: help-ru-power-plant-power
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 5000]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 46, y: 19, zoom: 2 }
+entities:
+  - { player: 1, type: ru-power-plant, origin: [41, 18] }
+  - { player: 1, type: ru-supply-center, origin: [44, 18] }
+  - { player: 1, type: ru-barracks, origin: [48, 19] }

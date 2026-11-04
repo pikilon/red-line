@@ -1,0 +1,13 @@
+# Spec 48: help card of the Russian barracks. Select it to see the three infantry it trains.
+id: help-ru-barracks-train
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 5000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 46, y: 16.5, zoom: 2.2 }
+entities:
+  - { player: 1, type: ru-barracks, origin: [45, 14] }

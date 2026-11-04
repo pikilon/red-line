@@ -1,0 +1,61 @@
+{
+  "id": "ru-supply-center",
+  "role": "Supply drop-off and Molniya resupply",
+  "summary": "The base's supply hub. It turns each loaded truck into credits, produces more trucks and refills Molniya crews that wait beside it. It has no weapon, so keep it behind the line.",
+  "sections": [
+    {
+      "title": "Produce supply trucks",
+      "how": "Select the supply center, open the Build tab and press Supply truck.",
+      "body": "Each truck leaves the center ready to harvest. The first one arrives free when the center finishes, so a new center starts earning at once. Queue another when the old trucks are far away.",
+      "shots": ["ru-supply-center-produce"]
+    },
+    {
+      "title": "Receive supply loads",
+      "how": "There is no drop-off order: a loaded truck drives back to the nearest completed supply center and unloads by itself.",
+      "body": "The cargo becomes credits when unloading finishes, and the truck heads back to its depot. A truck chooses the nearest completed supply center, so build one close to the depots you work. If the center is destroyed, trucks look for another; with none left they wait.",
+      "shots": ["ru-supply-center-dropoff"]
+    },
+    {
+      "title": "Refill Molniya crews",
+      "how": "Park a Molniya crew beside the supply center; no order is needed.",
+      "body": "A Molniya crew carries fibre-guided drones as charges, shown as pips; with empty pips it cannot launch. While a short crew stays in range, one charge comes back after a wait. Leaving the area resets the clock. A supply truck does the same job in the field, and a barracks does it at home.",
+      "shots": ["ru-supply-center-resupply"]
+    },
+    {
+      "title": "Rally point",
+      "how": "Select the supply center, press Rally point and left-click the ground.",
+      "body": "Produced trucks drive to the rally point. Without one they start harvesting the nearest depot on their own. Changing the point only affects trucks produced afterwards, and the marker shows while the center is selected.",
+      "shots": ["ru-supply-center-rally"]
+    },
+    {
+      "title": "Repair with a dozer",
+      "how": "Select a dozer and left-click the damaged supply center.",
+      "body": "The dozer drives to the center and restores it until it is whole. The work costs half the build price as the health comes back, and only one dozer works on a building at a time. If the credits run out, the repair stops and the dozer goes idle.",
+      "shots": ["ru-supply-center-repair"]
+    },
+    {
+      "title": "Sell",
+      "how": "Select the supply center and press Sell twice.",
+      "body": "It sells for half its price and disappears at once. Any truck in its queue is cancelled and refunded in full. Selling your last building loses the match.",
+      "shots": ["ru-supply-center-sell"]
+    }
+  ],
+  "strong": [
+    "Funding an army near the depots",
+    "Producing supply trucks",
+    "Keeping Molniya crews in the fight"
+  ],
+  "weak": [
+    "It has no weapon",
+    "Tanks and artillery",
+    "Raids on your supply line"
+  ],
+  "tips": [
+    "Build it close to the depots your trucks work: every truck unloads at the nearest completed supply center.",
+    "The first truck is free when the center finishes, so a new center starts earning at once.",
+    "Park a Molniya crew beside it between fights so its charges are full when the drones are needed.",
+    "Set a rally point toward the front for new trucks, or leave it clear so they start harvesting at once.",
+    "Keep a dozer nearby: the center cannot repair itself.",
+    "It draws power: keep a plant ahead of it so production stays at full speed."
+  ]
+}

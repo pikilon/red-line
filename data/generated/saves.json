@@ -386,6 +386,78 @@
       "entities": 12
     },
     {
+      "id": "help-ru-airfield-build",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ru-airfield-power",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-ru-airfield-rally",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ru-airfield-reload",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-airfield-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-airfield-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ru-barracks-heal",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ru-barracks-rally",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ru-barracks-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-barracks-resupply",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-barracks-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ru-barracks-train",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
       "id": "help-ru-bmp-2-carry",
       "map": "showcase",
       "form": "setup",
@@ -440,6 +512,30 @@
       "entities": 3
     },
     {
+      "id": "help-ru-defense-missile",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-defense-power",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-ru-defense-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-defense-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
       "id": "help-ru-dozer-bridge",
       "map": "demo-bridges",
       "form": "setup",
@@ -468,6 +564,54 @@
       "map": "showcase",
       "form": "setup",
       "entities": 2
+    },
+    {
+      "id": "help-ru-hq-build",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ru-hq-rally",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ru-hq-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-hq-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ru-power-plant-low",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-ru-power-plant-power",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-power-plant-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-power-plant-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
     },
     {
       "id": "help-ru-rifleman-air",
@@ -554,6 +698,42 @@
       "entities": 3
     },
     {
+      "id": "help-ru-supply-center-dropoff",
+      "map": "demo-ground",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-supply-center-produce",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-supply-center-rally",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ru-supply-center-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-supply-center-resupply",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-supply-center-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
       "id": "help-ru-supply-truck-harvest",
       "map": "demo-ground",
       "form": "setup",
@@ -630,6 +810,36 @@
       "map": "showcase",
       "form": "setup",
       "entities": 4
+    },
+    {
+      "id": "help-ru-vehicle-factory-build",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ru-vehicle-factory-rally",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ru-vehicle-factory-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-vehicle-factory-repair-dozer",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-vehicle-factory-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
     },
     {
       "id": "help-ua-baba-yaga-bomb",

@@ -1,0 +1,66 @@
+{
+  "id": "ru-airfield",
+  "role": "Aviation production and reload",
+  "summary": "Russia's airbase: it builds the Su-34 strike jet and the Orlan spotter, and reloads and repairs both for free. It is large, draws power and needs a vehicle factory, but it has no weapon of its own.",
+  "sections": [
+    {
+      "title": "Build aircraft",
+      "how": "Select the airfield, open the Build tab and press the Su-34 or Orlan tile. Press + on a tile to queue another and − to cancel the last one.",
+      "body": "The airfield builds Russia's two aircraft. The Su-34 is a high-flying strike jet with two glide bombs: it releases them from beyond the reach of short-range anti-air, and only a long-range missile such as the Patriot can answer it. The Orlan is an unarmed spotter with a long sight, useful for finding targets; any weapon that can fire at low flyers can shoot it down. Each finished aircraft leaves the airfield and waits beside it until you give it an order.",
+      "shots": ["ru-airfield-build"]
+    },
+    {
+      "title": "Reload and repair aircraft",
+      "how": "Let a Su-34 spend its bombs, or press Stop to send it home early. A damaged aircraft is repaired while it rearms.",
+      "body": "When a Su-34 has dropped its two glide bombs, or is left idle, it flies to the nearest own airfield. It docks, refills its whole clip in one reload and has its damage repaired for free, then waits for your next order. Pressing Stop sends it home even with bombs left. The Orlan carries no weapon, but it is repaired at the airfield too. Any number of aircraft can use one airfield, and a parked aircraft with a weapon still fires at enemies in range. With no airfield left, an empty aircraft cannot rearm and slowly loses health.",
+      "shots": ["ru-airfield-reload"]
+    },
+    {
+      "title": "Rally point",
+      "how": "Select the airfield, press Rally point and left-click the ground.",
+      "body": "Aircraft built afterwards fly to the rally point. A Su-34 flies there and then turns back to the airfield; an Orlan circles over the point until you order it elsewhere. Changing the point only affects aircraft produced later, and the marker shows while the airfield is selected.",
+      "shots": ["ru-airfield-rally"]
+    },
+    {
+      "title": "Needs power",
+      "how": "Watch the power reading in the HUD; keep production at least equal to consumption.",
+      "body": "The airfield draws power from the base. While the base consumes more than it produces, the reading turns red and aircraft production slows sharply, though it never stops. Reloading and repairs are not slowed. Build another power plant or sell something that draws power.",
+      "shots": ["ru-airfield-power"]
+    },
+    {
+      "title": "Repair with a dozer",
+      "how": "Select a dozer and left-click the damaged airfield.",
+      "body": "The dozer drives to the airfield and restores it until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle.",
+      "shots": ["ru-airfield-repair"]
+    },
+    {
+      "title": "Sell",
+      "how": "Select the airfield and press Sell twice.",
+      "body": "It sells for half its price and disappears at once, opening the ground it held. Any aircraft still in its queue are cancelled and refunded in full. Aircraft already built stay under your control, but with no airfield left they cannot rearm: an empty one stays in the air and slowly loses health. Selling your last building loses the match.",
+      "shots": ["ru-airfield-sell"]
+    }
+  ],
+  "strong": [
+    "Building the Su-34 glide-bomb jet",
+    "Building the Orlan spotter",
+    "Reloading and repairing aircraft for free",
+    "A base for repeated air strikes"
+  ],
+  "weak": [
+    "It has no weapon",
+    "Tanks, artillery and long-range fire",
+    "Aircraft and drones",
+    "A power deficit",
+    "Raids behind the line"
+  ],
+  "tips": [
+    "Raise it with a dozer once the vehicle factory stands: the airfield needs one.",
+    "Build a power plant first or the extra load slows aircraft production.",
+    "Keep the airfield behind the line: it is large, unarmed and easy to find.",
+    "Let a Su-34 run out of bombs and it flies home by itself to reload and repair.",
+    "Press Stop to bring a Su-34 home early with bombs left.",
+    "Keep a dozer nearby: the airfield cannot repair itself.",
+    "An empty Su-34 with no airfield cannot rearm; protect the base or build another.",
+    "Use the Orlan's long sight to find targets for the Su-34."
+  ]
+}

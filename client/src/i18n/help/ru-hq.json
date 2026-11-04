@@ -1,0 +1,48 @@
+{
+  "id": "ru-hq",
+  "role": "Starting headquarters",
+  "summary": "The headquarters you begin with. It needs no power, produces none and is the only source of engineering dozers, the vehicles that raise the rest of the Russian base.",
+  "sections": [
+    {
+      "title": "Produce dozers",
+      "how": "Select the headquarters, open the Build tab and press Engineering vehicle.",
+      "body": "Each dozer leaves the headquarters ready to raise the whole Russian build list: power plants, supply centers, barracks, the vehicle factory, Kornet emplacements, the airfield and the Geran launch site. Queue another one when the base must grow faster.",
+      "shots": ["ru-hq-build"]
+    },
+    {
+      "title": "Rally point",
+      "how": "Select the headquarters, press Rally point and left-click the ground.",
+      "body": "New dozers leave the headquarters and drive to the rally point. Changing the point only affects dozers produced afterwards. The marker shows while the headquarters is selected.",
+      "shots": ["ru-hq-rally"]
+    },
+    {
+      "title": "Repair with a dozer",
+      "how": "Select a dozer and left-click the damaged headquarters.",
+      "body": "The dozer drives over and restores the headquarters a little every second until it is whole. The work costs half the build price pro rata, and the headquarters costs nothing, so repairing it is free. A second dozer does not speed it up.",
+      "shots": ["ru-hq-repair"]
+    },
+    {
+      "title": "Sell the headquarters",
+      "how": "Select the headquarters and press Sell twice.",
+      "body": "It sells like any completed building. The refund is zero because it costs nothing, but every dozer in its queue is cancelled and refunded in full. Selling your last building loses the match.",
+      "shots": ["ru-hq-sell"]
+    }
+  ],
+  "strong": [
+    "Producing dozers",
+    "A sturdy starting building",
+    "A rally point behind the line"
+  ],
+  "weak": [
+    "It has no weapon",
+    "Tanks and artillery",
+    "It cannot repair itself"
+  ],
+  "tips": [
+    "Build a power plant first: the headquarters produces no power and the rest of the base needs it.",
+    "Set a rally point near the construction site so new dozers start working at once.",
+    "Keep a dozer near the headquarters: the headquarters cannot repair itself.",
+    "The headquarters is the only source of dozers; if it falls, the base stops growing.",
+    "Do not sell your last building unless you are ready to lose."
+  ]
+}

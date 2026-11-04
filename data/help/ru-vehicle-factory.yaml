@@ -1,0 +1,6 @@
+# Spec 48 §3.3: screenshots of the vehicle factory card. `node --run help:shots -- --type ru-vehicle-factory`
+- { id: ru-vehicle-factory-produce, save: help-ru-vehicle-factory-build, ticks: 5, select: [ru-vehicle-factory], hud: true, tab: build }
+- { id: ru-vehicle-factory-rally, save: help-ru-vehicle-factory-rally, ticks: 5, select: [ru-vehicle-factory], hud: true, tab: orders }
+- { id: ru-vehicle-factory-repair, save: help-ru-vehicle-factory-repair, ticks: 10, select: [ru-t-72b3], hud: true, tab: orders }
+- { id: ru-vehicle-factory-repair-dozer, save: help-ru-vehicle-factory-repair-dozer, ticks: 10, select: [ru-dozer] }
+- { id: ru-vehicle-factory-sell, save: help-ru-vehicle-factory-sell, ticks: 5, select: [ru-vehicle-factory], hud: true, tab: orders }
