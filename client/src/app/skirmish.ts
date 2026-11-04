@@ -176,6 +176,11 @@ import {
   resolveAudioVolumes,
   type Settings,
   saveSettings,
+  DEFAULT_AUDIO_AMBIENT,
+  DEFAULT_AUDIO_MASTER,
+  DEFAULT_AUDIO_MUSIC,
+  DEFAULT_AUDIO_SFX,
+  DEFAULT_AUDIO_VOICE,
 } from "../settings";
 import type { ProjectileState } from "../sim/combatSnapshot";
 import { fromRaw } from "../sim/fixed";
@@ -841,8 +846,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   const placedGarrisons = garrisonFeaturesOf(
     (
       ruleset.maps.find((entry) => entry.id === mapId) as
-        | { features?: readonly GarrisonMapFeature[] }
-        | undefined
+        { features?: readonly GarrisonMapFeature[] } | undefined
     )?.features ?? [],
     (ruleset as unknown as { featureTypes?: readonly GarrisonTypeInfo[] })
       .featureTypes ?? [],
@@ -854,8 +858,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   const placedBridges = repairJobsOf(
     (
       ruleset.maps.find((entry) => entry.id === mapId) as
-        | { features?: readonly RepairMapFeature[] }
-        | undefined
+        { features?: readonly RepairMapFeature[] } | undefined
     )?.features ?? [],
     (ruleset as unknown as { featureTypes?: readonly RepairTypeInfo[] })
       .featureTypes ?? [],
@@ -2231,6 +2234,20 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       tutorial: (mission) => {
         uiClick();
         playTutorial(mission);
+      },
+      getVolume: (channel) =>
+        settings[channel] ??
+        {
+          audioMaster: DEFAULT_AUDIO_MASTER,
+          audioSfx: DEFAULT_AUDIO_SFX,
+          audioAmbient: DEFAULT_AUDIO_AMBIENT,
+          audioVoice: DEFAULT_AUDIO_VOICE,
+          audioMusic: DEFAULT_AUDIO_MUSIC,
+        }[channel],
+      setVolume: (channel, value) => {
+        settings = { ...settings, [channel]: value };
+        saveSettings(settings);
+        audioMixer.setVolumes({ [channel]: value });
       },
     });
   }
