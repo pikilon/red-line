@@ -15,7 +15,7 @@ verify_jwt = false
 
 # Hosted values, declared so a push leaves them alone.
 [auth]
-site_url = "https://pikilon.github.io/red-line/"
+site_url = "https://red-line.pikilon.com/"
 
 [auth.mfa.totp]
 enroll_enabled = true

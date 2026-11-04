@@ -16,7 +16,7 @@ so no generals-precedent note applies.
 
 * No accounts, passwords or emails. The owner invites a tester by name with
   `node --run testers:invite -- "Name"`, which prints a personal link
-  `https://pikilon.github.io/red-line/?invite=<secret>` to send privately.
+  `https://red-line.pikilon.com/?invite=<secret>` to send privately.
 * Opening the link stores the secret in that browser and removes it from the
   address bar; the page then behaves as if opened without it (main menu).
   The invite stays until revoked; there is no expiry.

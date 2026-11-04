@@ -11,7 +11,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-export const GAME_URL = "https://pikilon.github.io/red-line/";
+export const GAME_URL = "https://red-line.pikilon.com/";
 
 /** A tester name as an SQL string literal. */
 export function sqlString(text) {
