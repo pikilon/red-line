@@ -20,6 +20,7 @@ pub mod locomotor;
 pub mod map;
 pub mod nav;
 pub mod player;
+mod reload;
 pub mod repair;
 pub mod rng;
 pub mod rules;

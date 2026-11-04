@@ -398,6 +398,9 @@ pub enum CommandState {
     Stop {
         units: Vec<u32>,
     },
+    Reload {
+        units: Vec<u32>,
+    },
     DebugSpawn {
         kind: String,
         pos: [i32; 2],
@@ -1187,6 +1190,9 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
         Command::Stop { units } => CommandState::Stop {
             units: units.clone(),
         },
+        Command::Reload { units } => CommandState::Reload {
+            units: units.clone(),
+        },
         Command::Garrison { units, feature } => CommandState::Garrison {
             units: units.clone(),
             feature: *feature,
@@ -1279,6 +1285,9 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
             target: fx_vec2(*target),
         },
         CommandState::Stop { units } => Command::Stop {
+            units: units.clone(),
+        },
+        CommandState::Reload { units } => Command::Reload {
             units: units.clone(),
         },
         CommandState::Garrison { units, feature } => Command::Garrison {
