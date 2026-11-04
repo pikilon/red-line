@@ -879,6 +879,10 @@ fn default_vehicle_repair_ticks() -> u32 {
     75
 }
 
+fn default_repair_cost_permille() -> u32 {
+    500
+}
+
 /// Spec 35: how fast workers repair. Each worker on a job adds its points, up
 /// to `max_workers` workers; one point restores `permille_per_second_per_point`
 /// of the maximum hit points per second.
@@ -892,6 +896,11 @@ pub struct RepairDef {
     /// Spec 39: ticks a repair pad spends on the initial missing HP.
     #[serde(default = "default_vehicle_repair_ticks")]
     pub vehicle_repair_ticks: u32,
+    /// Spec 38 §3: permille of the build price paid to restore all of a unit's
+    /// or building's hit points; credits are charged in proportion to the hit
+    /// points actually restored.
+    #[serde(default = "default_repair_cost_permille")]
+    pub cost_permille: u32,
 }
 
 /// Percent of damage a target in cover does not take; the best cover applies.

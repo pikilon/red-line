@@ -34,6 +34,11 @@ AI-vs-AI battle, like the Zero Hour shell map.
 * Any URL parameter (`?load`, `?map`, `?mode`...) skips the menu, so links and
   tests open the game directly.
 
+## 4.1 Sound (owner request 2026-11-04)
+
+* A third button, **Sound**, opens a page with the five volume sliders (same
+  channels and saved settings as the Esc menu, spec 08 §3.10) and a Back button.
+
 ## 5. Assumptions
 
 * Multiplayer, campaigns, Options, Credits and Exit are left out: the game has

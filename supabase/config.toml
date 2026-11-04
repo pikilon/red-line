@@ -1,0 +1,33 @@
+# Supabase project for tester reports (specs/47-tester-reports.md).
+# Only what differs from the hosted defaults is declared, so
+# `supabase config push` changes nothing else.
+project_id = "red-line"
+
+[auth.email]
+# Testers register without a confirmation mail (spec 47 §3).
+enable_confirmations = false
+max_frequency = "1m0s"
+otp_length = 8
+
+[functions.report]
+# Testers carry an invite secret, not a Supabase session (spec 47 §3).
+verify_jwt = false
+
+# Hosted values, declared so a push leaves them alone.
+[auth]
+site_url = "https://red-line.pikilon.com/"
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[auth.sms]
+enable_confirmations = true
+
+
+[db.pooler]
+default_pool_size = 15
+max_client_conn = 200
+
+[storage.vector]
+enabled = false

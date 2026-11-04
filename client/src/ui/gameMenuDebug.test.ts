@@ -65,7 +65,9 @@ function createFakeDom(): {
 function buttonsOf(root: HTMLElement): FakeElement[] {
   const panel = (root as unknown as FakeElement).children[0];
   if (panel === undefined) throw new Error("missing menu panel");
-  return panel.children.filter((child) => child.tagName === "button");
+  return panel.children
+    .flatMap((page) => page.children)
+    .filter((child) => child.tagName === "button");
 }
 
 function labels(root: HTMLElement): (string | undefined)[] {
@@ -99,13 +101,15 @@ describe("game menu debug buttons", () => {
 
     expect(labels(menu.root)).toEqual([
       "Resume",
+      "Debug",
+      "Restart match",
       "Gore: off",
       "AI: on",
       "Textures: procedural",
       "Switch side",
       "Reveal map: off",
       "FPS panel: off",
-      "Restart match",
+      "Back",
     ]);
 
     menu.render({ open: true, gore: false, ai: true });
@@ -120,14 +124,14 @@ describe("game menu debug buttons", () => {
       revealed: true,
       fpsPanel: true,
     });
-    expect(labels(menu.root).slice(4, 7)).toEqual([
+    expect(labels(menu.root).slice(6, 9)).toEqual([
       "Switch side",
       "Reveal map: on",
       "FPS panel: on",
     ]);
 
     const buttons = buttonsOf(menu.root);
-    for (const button of buttons.slice(4, 7)) button.click();
+    for (const button of buttons.slice(6, 9)) button.click();
     expect(actions.switchSide).toHaveBeenCalledTimes(1);
     expect(actions.toggleReveal).toHaveBeenCalledTimes(1);
     expect(actions.toggleFpsPanel).toHaveBeenCalledTimes(1);
@@ -141,9 +145,11 @@ describe("game menu debug buttons", () => {
     });
     expect(labels(plain.root)).toEqual([
       "Resume",
+      "Debug",
+      "Restart match",
       "Gore: off",
       "AI: on",
-      "Restart match",
+      "Back",
     ]);
   });
 });

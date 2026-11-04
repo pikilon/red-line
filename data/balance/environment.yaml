@@ -13,6 +13,7 @@ repair:
   dozerPoints: 3
   maxWorkers: 6
   vehicleRepairTicks: 75   # spec 39: five seconds at 15 Hz, Zero Hour TimeForFullHeal = 5000 ms
+  costPermille: 500        # spec 38: repairing units and buildings costs 50% of the build price, pro rata to hp restored
 # Spec 40: damaged infantry heal inside an own barracks (Zero Hour HealContain).
 infirmary:
   healTicks: 30   # 2000 ms at 15 Hz

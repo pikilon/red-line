@@ -31,6 +31,7 @@ test("AC-12-04: textures toggle in the game menu", async ({ page }) => {
 
   await page.keyboard.press("Escape");
   await expect(menu).toBeVisible();
+  await page.locator("#game-menu-debug-open").click();
   // Generated textures are the default (owner decision 2026-10-13).
   await expect(button).toHaveText("Textures: generated");
   await button.click();
@@ -51,6 +52,7 @@ test("AC-12-04: textures toggle in the game menu", async ({ page }) => {
   await button.click();
   await expect(button).toHaveText("Textures: generated");
 
+  await page.locator("#game-menu-debug-back").click();
   await page.getByRole("button", { name: "Resume" }).click();
   await expect(menu).toBeHidden();
   const before = await page.evaluate(
