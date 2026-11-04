@@ -67,6 +67,8 @@ export interface GameMenuActions {
   setVolume?(channel: VolumeSliderChannel, value: number): void;
   /** Reloads the page with the same query string. */
   restart(): void;
+  /** The tester report page (spec 47); no button when absent. */
+  report?: { readonly page: HTMLElement; open(): void };
 }
 
 /** The `#game-menu` overlay (spec 08 §3.1). */
@@ -118,6 +120,8 @@ export function createGameMenu(
   const soundPage = makePage("game-menu-sound");
   const debugPage = makePage("game-menu-debug");
   const pages = [panel, soundPage, debugPage];
+  const report = actions.report;
+  if (report !== undefined) pages.push(report.page);
   const showPage = (page: HTMLElement): void => {
     for (const p of pages) p.hidden = p !== page;
   };
@@ -280,6 +284,15 @@ export function createGameMenu(
       showPage(debugPage),
     ),
   );
+  if (report !== undefined) {
+    report.page.appendChild(backButton("game-menu-report-back"));
+    panel.appendChild(
+      createButton("game-menu-report-open", t("menu.report"), () => {
+        report.open();
+        showPage(report.page);
+      }),
+    );
+  }
   panel.appendChild(restart);
 
   /** Last rendered view; an equal render mutates nothing. */
