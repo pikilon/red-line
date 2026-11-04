@@ -32,7 +32,7 @@ export function inviteUrl(token) {
 function query(root, sql) {
   const result = spawnSync(
     "supabase",
-    ["db", "query", "--remote", "--yes", "-o", "json", sql],
+    ["db", "query", "--remote", "--yes", "--agent", "no", "-o", "json", sql],
     { cwd: root, encoding: "utf8" },
   );
   if (result.error !== undefined) {
@@ -41,9 +41,13 @@ function query(root, sql) {
   if (result.status !== 0) {
     throw new Error((result.stderr || result.stdout).trim());
   }
-  const start = result.stdout.indexOf("{");
-  const parsed = JSON.parse(result.stdout.slice(start));
-  return parsed.rows ?? [];
+  // The CLI prints a bare array of rows, or an object with `rows` in agent
+  // mode; statements without results may print nothing.
+  const text = result.stdout.trim();
+  const start = text.search(/[[{]/);
+  if (start === -1) return [];
+  const parsed = JSON.parse(text.slice(start));
+  return Array.isArray(parsed) ? parsed : (parsed.rows ?? []);
 }
 
 function cleanName(raw) {
