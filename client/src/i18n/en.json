@@ -307,6 +307,7 @@
   "ui.section.structure": "Structure",
   "ui.section.build": "Build",
   "ui.stop": "Stop",
+  "ui.reload": "Reload",
   "ui.forceFire": "Force fire",
   "ui.sameScreen": "Same on screen",
   "ui.sameMap": "Same everywhere",

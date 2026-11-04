@@ -120,6 +120,7 @@ export interface SkirmishSimLike {
     yRaw: number,
   ): void;
   command_stop(player: number, unitIds: Uint32Array): void;
+  command_reload(player: number, unitIds: Uint32Array): void;
   debug_spawn(player: number, kind: number, xRaw: number, yRaw: number): void;
   debug_set_hp(entity: number, hp: number): void;
 }
@@ -289,6 +290,9 @@ const COMMANDS = {
   }),
   stop: run((sim, command: Extract<SimCommand, { kind: "stop" }>) => {
     sim.command_stop(command.player, Uint32Array.from(command.units));
+  }),
+  reload: run((sim, command: Extract<SimCommand, { kind: "reload" }>) => {
+    sim.command_reload(command.player, Uint32Array.from(command.units));
   }),
   debugSpawn: run(
     (sim, command: Extract<SimCommand, { kind: "debugSpawn" }>) => {

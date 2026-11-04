@@ -47,6 +47,7 @@ import {
   trenchGarrisons,
   withLiveState,
 } from "../input/garrison";
+import { type ReloadPlan, reloadPlan } from "../input/reload";
 import {
   canDig,
   canRepairVehicles,
@@ -931,6 +932,16 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         if (units.length === 0) return;
         interact.command({ kind: "stop", player: controlled, units });
       },
+      onReload: () => {
+        const plan = currentReloadPlan();
+        if (plan.command === null) {
+          // No base or supply source to go to: the usual refusal.
+          audioMixer.play({ eventId: "ui.error", relation: "self" });
+          return;
+        }
+        uiClick();
+        interact.command(plan.command);
+      },
       onForceFire: () => {
         uiClick();
         controller?.toggleForceFire();
@@ -1705,6 +1716,16 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     );
   }
 
+  /** Spec 43 §4.6: what the Reload button does for the current selection. */
+  function currentReloadPlan(): ReloadPlan {
+    return reloadPlan({
+      player: controlled,
+      selected: controller?.selected ?? NO_SELECTION,
+      entities: next?.entities ?? [],
+      air: next?.air ?? [],
+    });
+  }
+
   /** Refreshes the DOM overlay; called on events only, never per frame
    *  (spec §6.7, #140). */
   function refreshOverlay(): void {
@@ -1722,6 +1743,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       units: selection.some(
         (entity) => typeDef(entity.kind).category === "unit",
       ),
+      reload: currentReloadPlan().reloadable.length > 0,
       canFire: selection.some((entity) => {
         const def = typeDef(entity.kind);
         // A one-way unit attacks by detonating (spec 43), so it can fire too.

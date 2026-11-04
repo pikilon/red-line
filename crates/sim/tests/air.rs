@@ -1782,3 +1782,125 @@ fn a_diving_drone_hits_a_low_building_right_before_its_target() {
         .expect("still standing");
     assert!(world.features()[factory as usize].hp < before);
 }
+
+// ---------------------------------------------------------------------------
+// §4.6 Reload: units with something to reload go and do it now
+// ---------------------------------------------------------------------------
+
+fn reload(world: &mut World, player: u8, units: Vec<EntityId>) {
+    order(world, player, Command::Reload { units });
+}
+
+#[test]
+fn reload_sends_a_part_empty_flyer_home_and_leaves_it_idle_and_full() {
+    let mut world = sandbox();
+    build(&mut world, 0, "ua-drone-workshop", 10, 10);
+    let bomber = put(&mut world, 0, "ua-baba-yaga", 4000, 3000);
+    let sortie = world
+        .rules()
+        .ty(kind(&world, "ua-baba-yaga"))
+        .sortie
+        .unwrap();
+    world.set_ammo(bomber, sortie.clip - 1);
+    // Far out on a move order: it would not come home by itself.
+    fly_to(&mut world, 0, bomber, 6000, 3500);
+    steps(&mut world, 2);
+    reload(&mut world, 0, vec![bomber]);
+    world.step();
+    assert!(matches!(
+        world.entity(bomber).unwrap().order,
+        Order::ReturnToBase { .. }
+    ));
+    steps(&mut world, 1500 + sortie.reload_ticks);
+    let e = world.entity(bomber).unwrap();
+    assert_eq!(e.ammo, sortie.clip, "reloaded at the workshop");
+    assert!(
+        matches!(e.order, Order::Idle { .. }),
+        "no old order resumed"
+    );
+    assert!(!world.is_airborne(bomber));
+}
+
+#[test]
+fn reload_ignores_a_full_flyer_and_a_flyer_with_no_base() {
+    let mut world = sandbox();
+    build(&mut world, 0, "ua-drone-workshop", 10, 10);
+    let full = put(&mut world, 0, "ua-baba-yaga", 4000, 3000);
+    fly_to(&mut world, 0, full, 6000, 3500);
+    world.step();
+    reload(&mut world, 0, vec![full]);
+    world.step();
+    assert!(
+        matches!(world.entity(full).unwrap().order, Order::Move { .. }),
+        "a full clip keeps its order"
+    );
+
+    let mut bare = sandbox();
+    let lost = put(&mut bare, 0, "ua-baba-yaga", 4000, 3000);
+    bare.set_ammo(lost, 1);
+    fly_to(&mut bare, 0, lost, 6000, 3500);
+    bare.step();
+    reload(&mut bare, 0, vec![lost]);
+    bare.step();
+    assert!(
+        matches!(bare.entity(lost).unwrap().order, Order::Move { .. }),
+        "with no base the order is refused"
+    );
+}
+
+#[test]
+fn reload_walks_a_launcher_crew_to_the_nearest_supply_and_refills_it() {
+    let mut world = sandbox();
+    put(&mut world, 0, "ua-supply-truck", 7000, 2000);
+    let near = put(&mut world, 0, "ua-supply-truck", 2500, 2000);
+    let team = put(&mut world, 0, "ua-fpv-team", 1000, 2000);
+    world.set_charges(team, 1);
+    reload(&mut world, 0, vec![team]);
+    world.step();
+    assert!(matches!(
+        world.entity(team).unwrap().order,
+        Order::Move { .. }
+    ));
+    steps(&mut world, 1500);
+    let e = world.entity(team).unwrap();
+    assert!(e.charges > 1, "the truck refills it");
+    assert!(
+        (e.pos - world.entity(near).unwrap().pos).length() < fx_centi(600),
+        "it went to the nearest source"
+    );
+    steps(&mut world, 1500);
+    assert_eq!(charges(&world, team), 4);
+    assert!(matches!(
+        world.entity(team).unwrap().order,
+        Order::Idle { .. }
+    ));
+}
+
+#[test]
+fn reload_is_refused_for_a_full_crew_a_foreign_unit_and_a_crew_with_no_supply() {
+    let mut world = sandbox();
+    put(&mut world, 0, "ua-supply-truck", 2500, 2000);
+    let full = put(&mut world, 0, "ua-fpv-team", 1000, 2000);
+    let theirs = put(&mut world, 1, "ru-molniya-crew", 1500, 2000);
+    world.set_charges(theirs, 0);
+    reload(&mut world, 0, vec![full, theirs]);
+    world.step();
+    assert!(matches!(
+        world.entity(full).unwrap().order,
+        Order::Idle { .. }
+    ));
+    assert!(matches!(
+        world.entity(theirs).unwrap().order,
+        Order::Idle { .. }
+    ));
+
+    let mut bare = sandbox();
+    let team = put(&mut bare, 0, "ua-fpv-team", 1000, 2000);
+    bare.set_charges(team, 0);
+    reload(&mut bare, 0, vec![team]);
+    bare.step();
+    assert!(matches!(
+        bare.entity(team).unwrap().order,
+        Order::Idle { .. }
+    ));
+}
