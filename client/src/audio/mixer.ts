@@ -33,6 +33,9 @@ import type {
   UnitLoopState,
 } from "./types";
 
+/** Share of the player's effects/voice/ambient volume kept behind the menu music. */
+const MENU_BACKGROUND_GAIN = 0.25;
+
 export interface VolumeSettings {
   audioMaster: number; // 0..100
   audioSfx: number; // 0..100
@@ -87,6 +90,7 @@ export class AudioMixer {
   private volumes: VolumeSettings;
   private paused = false;
   private unlocked = false;
+  private menuMix = false;
 
   constructor(catalog: AudioCatalog, initialVolumes?: Partial<VolumeSettings>) {
     this.catalog = catalog;
@@ -142,6 +146,16 @@ export class AudioMixer {
     if (next.strongLanguage !== undefined)
       this.loader.strongLanguage = next.strongLanguage;
     this.volumes = { ...this.volumes, ...next };
+    this.applyBusVolumes();
+  }
+
+  /**
+   * Main-menu mix (specs/25-audio.md §10): no EVA voices and every other bus
+   * at `MENU_BACKGROUND_GAIN` of the player's setting, so the music dominates.
+   */
+  setMenuMix(on: boolean): void {
+    if (this.menuMix === on) return;
+    this.menuMix = on;
     this.applyBusVolumes();
   }
 
@@ -257,6 +271,7 @@ export class AudioMixer {
 
   /** Enqueues an EVA event and processes the EVA priority queue. */
   triggerEva(eventId: string, faction: string): boolean {
+    if (this.menuMix) return false;
     const queued = this.evaQueue.trigger(eventId, faction);
     this.tickEva();
     return queued;
@@ -264,6 +279,7 @@ export class AudioMixer {
 
   /** Advances the EVA queue and plays the highest-priority waiting announcement if free. */
   tickEva(): void {
+    if (this.menuMix) return;
     const next = this.evaQueue.process(2000);
     if (!next) return;
 
@@ -949,29 +965,30 @@ export class AudioMixer {
 
   private applyBusVolumes(): void {
     if (!this.buses) return;
+    const bg = this.menuMix ? MENU_BACKGROUND_GAIN : 1;
     this.buses.master.gain.value = Math.max(
       0,
       Math.min(1.5, this.volumes.audioMaster / 100),
     );
     this.buses.sfx.gain.value = Math.max(
       0,
-      Math.min(1.5, this.volumes.audioSfx / 100),
+      Math.min(1.5, (this.volumes.audioSfx / 100) * bg),
     );
     this.buses.ui.gain.value = Math.max(
       0,
-      Math.min(1.5, this.volumes.audioSfx / 100),
+      Math.min(1.5, (this.volumes.audioSfx / 100) * bg),
     );
     this.buses.ambient.gain.value = Math.max(
       0,
-      Math.min(1.5, this.volumes.audioAmbient / 100),
+      Math.min(1.5, (this.volumes.audioAmbient / 100) * bg),
     );
     this.buses.voice.gain.value = Math.max(
       0,
-      Math.min(1.5, this.volumes.audioVoice / 100),
+      Math.min(1.5, (this.volumes.audioVoice / 100) * bg),
     );
     this.buses.eva.gain.value = Math.max(
       0,
-      Math.min(1.5, this.volumes.audioVoice / 100),
+      Math.min(1.5, this.menuMix ? 0 : this.volumes.audioVoice / 100),
     );
     this.buses.music.gain.value = Math.max(
       0,

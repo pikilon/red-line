@@ -498,6 +498,11 @@ fall back through a chain so every weapon sounds like something:
   70) and music at 0 (off), so the player turns them up in the menu; persisted like
   the other settings. Ambient has its own slider because birds/wind are not
   combat effects and are the first thing players want to turn down.
+* **Main menu mix (2026-11-04).** Behind the main menu's shell battle (spec 45)
+  no EVA announcement plays and effects, ambient and voices run at 25 % of
+  their Sound-page value, so the music is the dominant sound. The music slider
+  and master are untouched. Assumption: the 25 % factor is a menu-only mix, not
+  a setting; starting a mode reloads the page and restores the normal mix.
 * **Master volume 50 by default.** From 2026-10-26 the master started at 0
   while only placeholder synth sounds existed; phase 3 (2026-10-27) brought it
   back to Zero Hour's 100, and on 2026-10-28 the owner asked for a quiet start,
