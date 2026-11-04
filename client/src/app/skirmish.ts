@@ -172,15 +172,15 @@ import {
 } from "../saves/saveFile";
 import { createIndexedDbSaveStore, type SaveStore } from "../saves/store";
 import {
-  loadSettings,
-  resolveAudioVolumes,
-  type Settings,
-  saveSettings,
   DEFAULT_AUDIO_AMBIENT,
   DEFAULT_AUDIO_MASTER,
   DEFAULT_AUDIO_MUSIC,
   DEFAULT_AUDIO_SFX,
   DEFAULT_AUDIO_VOICE,
+  loadSettings,
+  resolveAudioVolumes,
+  type Settings,
+  saveSettings,
 } from "../settings";
 import type { ProjectileState } from "../sim/combatSnapshot";
 import { fromRaw } from "../sim/fixed";
@@ -846,7 +846,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   const placedGarrisons = garrisonFeaturesOf(
     (
       ruleset.maps.find((entry) => entry.id === mapId) as
-        { features?: readonly GarrisonMapFeature[] } | undefined
+        | { features?: readonly GarrisonMapFeature[] }
+        | undefined
     )?.features ?? [],
     (ruleset as unknown as { featureTypes?: readonly GarrisonTypeInfo[] })
       .featureTypes ?? [],
@@ -858,7 +859,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   const placedBridges = repairJobsOf(
     (
       ruleset.maps.find((entry) => entry.id === mapId) as
-        { features?: readonly RepairMapFeature[] } | undefined
+        | { features?: readonly RepairMapFeature[] }
+        | undefined
     )?.features ?? [],
     (ruleset as unknown as { featureTypes?: readonly RepairTypeInfo[] })
       .featureTypes ?? [],
