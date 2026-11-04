@@ -596,7 +596,21 @@ impl World {
                 * u64::from(repair.permille_per_second_per_point)
                 * u64::from(points)
                 / 1000;
-            self.repair_entity(building, (gain as u32).max(1));
+            if !self.repair_entity(building, (gain as u32).max(1)) {
+                // Out of funds: every dozer on this building stops (spec 38).
+                for entity in &mut self.entities {
+                    if let Order::RepairBuilding {
+                        order_id,
+                        building: target,
+                    } = entity.order
+                        && target == building
+                    {
+                        entity.order = Order::Idle {
+                            last_order_id: order_id,
+                        };
+                    }
+                }
+            }
         }
         for index in 0..self.entities.len() {
             let Order::RepairBuilding { order_id, building } = self.entities[index].order else {
@@ -656,9 +670,9 @@ impl World {
             let done = u64::from(ticks.saturating_sub(remaining));
             let before = u64::from(missing) * done / u64::from(ticks);
             let after = u64::from(missing) * (done + 1) / u64::from(ticks);
-            self.repair_entity(id, (after - before) as u32);
+            let paid = self.repair_entity(id, (after - before) as u32);
             let hp = self.entities[index].hp;
-            self.entities[index].order = if hp == max {
+            self.entities[index].order = if hp == max || !paid {
                 Order::Idle {
                     last_order_id: order_id,
                 }
@@ -680,14 +694,45 @@ impl World {
         }
     }
 
-    /// Restores hit points to an entity without touching construction,
-    /// production or rally state (spec 38).
-    pub(crate) fn repair_entity(&mut self, building: EntityId, amount: u32) {
+    /// Restores up to `amount` hit points to an entity without touching
+    /// construction, production or rally state, charging its owner
+    /// `costPermille` of the build price in proportion to the hit points
+    /// restored (spec 38 §3). Returns false when the owner could not pay for
+    /// all of it: only the affordable part was restored.
+    ///
+    /// The price is the difference of `floor(num * hp / den)` before and after,
+    /// so any sequence of small steps adds up to the exact total without
+    /// per-step rounding and needs no extra state.
+    pub(crate) fn repair_entity(&mut self, building: EntityId, amount: u32) -> bool {
         let Some(index) = self.index_of(building) else {
-            return;
+            return true;
         };
-        let max = self.rules.ty(self.entities[index].kind).hp;
-        self.entities[index].hp = self.entities[index].hp.saturating_add(amount).min(max);
+        let ty = self.rules.ty(self.entities[index].kind);
+        let (max, cost) = (ty.hp, u64::from(ty.cost));
+        let permille = self
+            .rules
+            .environment
+            .repair
+            .map_or(0, |repair| u64::from(repair.cost_permille));
+        let (before, owner) = (self.entities[index].hp, self.entities[index].owner);
+        let mut target = before.saturating_add(amount).min(max);
+        let (num, den) = (cost * permille, u64::from(max) * 1000);
+        let mut paid = true;
+        if num > 0 && target > before {
+            let credits = u64::from(self.players[usize::from(owner)].credits);
+            let owed = |hp: u32| u64::from(hp) * num / den;
+            let budget = owed(before) + credits;
+            if owed(target) > budget {
+                // Largest hp whose cumulative price still fits the wallet.
+                let affordable = ((budget + 1) * den - 1) / num;
+                target = (affordable as u32).clamp(before, target);
+                paid = false;
+            }
+            let price = owed(target) - owed(before);
+            self.players[usize::from(owner)].credits -= price as u32;
+        }
+        self.entities[index].hp = target;
+        paid
     }
 
     /// Restores `amount` hit points to feature `index`: it stands again, and its
