@@ -11,7 +11,12 @@ const run = (cmd, args, cwd) =>
 const out = (cmd, args, cwd) =>
   execFileSync(cmd, args, { cwd, encoding: "utf8" }).trim();
 
-const remote = out("git", ["remote", "get-url", "origin"]);
+// CI (.github/workflows/pages.yml) passes the authenticated URL in PAGES_REMOTE
+// and no git identity exists there, so it commits as the Actions bot.
+const remote = process.env.PAGES_REMOTE || out("git", ["remote", "get-url", "origin"]);
+const identity = process.env.GITHUB_ACTIONS
+  ? ["-c", "user.name=github-actions[bot]", "-c", "user.email=41898282+github-actions[bot]@users.noreply.github.com"]
+  : [];
 const domain = "red-line.pikilon.com";
 const base = "/";
 const source = out("git", ["rev-parse", "--short", "HEAD"]);
@@ -36,7 +41,7 @@ try {
   run("git", ["add", "-A"], pub);
   run(
     "git",
-    ["commit", "-q", "-m", `Deploy local build of ${source}${dirty ? " (dirty tree)" : ""}`],
+    [...identity, "commit", "-q", "-m", `Deploy local build of ${source}${dirty ? " (dirty tree)" : ""}`],
     pub,
   );
   run("git", ["remote", "add", "origin", remote], pub);
