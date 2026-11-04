@@ -13,6 +13,7 @@ import {
   selectOccupantsAt,
 } from "./garrison";
 import { resolveClickOrder, resolveForceFire, resolveRally } from "./intent";
+import { cursorFor, type OrderHint, orderHint } from "./orderCursor";
 import { createPinchGesture } from "./pinch";
 import { canPlace, footprintOrigin } from "./placement";
 import {
@@ -170,6 +171,7 @@ export function createSkirmishController(
       selected.add(id);
     }
     options.onSelectionChange(selected);
+    refreshCursor();
   }
 
   function setTarget(x: number, y: number): void {
@@ -285,15 +287,14 @@ export function createSkirmishController(
    * Spec 08 §3.9: the contextual own/neutral object orders of a left click, in
    * the order the old right-click path used. The first non-empty result wins.
    */
-  function applyContextOrders(ground: { x: number; y: number }): boolean {
-    const args = {
-      player: options.player(),
-      selected: [...selected],
-      entities: options.entities(),
-      x: ground.x,
-      y: ground.y,
-    };
-    const actions = [
+  function contextResolutions(args: {
+    player: number;
+    selected: number[];
+    entities: readonly EntityState[];
+    x: number;
+    y: number;
+  }): SimCommand[][] {
+    return [
       resolveGarrisonClick({
         ...args,
         features: options.garrisonFeatures?.() ?? [],
@@ -304,6 +305,47 @@ export function createSkirmishController(
       resolveBuildingRepairClick(args),
       resolveInfirmaryClick(args),
     ];
+  }
+
+  /** Spec 08 §3.10: show what a left click here would do (garrison or
+   *  repair); the default pointer otherwise or while another mode is armed. */
+  function refreshCursor(): void {
+    let hint: OrderHint | null = null;
+    const point = lastPointer;
+    if (
+      point !== null &&
+      selected.size > 0 &&
+      options.placementKind() === null &&
+      armedMode === null &&
+      !digArmed &&
+      !forceFireArmed &&
+      dragStart === null
+    ) {
+      const ground = pickAt(point);
+      if (ground !== null) {
+        hint = orderHint(
+          contextResolutions({
+            player: options.player(),
+            selected: [...selected],
+            entities: options.entities(),
+            x: ground.x,
+            y: ground.y,
+          }),
+        );
+      }
+    }
+    canvas.style.cursor = cursorFor(hint);
+  }
+
+  function applyContextOrders(ground: { x: number; y: number }): boolean {
+    const args = {
+      player: options.player(),
+      selected: [...selected],
+      entities: options.entities(),
+      x: ground.x,
+      y: ground.y,
+    };
+    const actions = contextResolutions(args);
     for (const commands of actions) {
       if (commands.length === 0) continue;
       for (const command of commands) options.command(command);
@@ -404,6 +446,7 @@ export function createSkirmishController(
   canvas.addEventListener("pointermove", (event) => {
     if (pinch.move(event)) return;
     lastPointer = { x: event.clientX, y: event.clientY };
+    refreshCursor();
     if (digArmed && dragStart !== null) return;
     if (dragStart !== null && isDrag(dragStart, lastPointer)) {
       options.selectionBox.show(rectFromDrag(dragStart, lastPointer));
@@ -424,6 +467,7 @@ export function createSkirmishController(
   });
   window.addEventListener("pointerup", () => {
     forceFireArmed = false;
+    refreshCursor();
   });
   canvas.addEventListener("pointerdown", (event) => {
     lastPointer = { x: event.clientX, y: event.clientY };
