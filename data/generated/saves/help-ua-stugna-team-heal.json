@@ -1,0 +1,72 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ua-stugna-team-heal",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 44.5,
+      "y": 19.5,
+      "zoom": 3
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-barracks",
+        "origin": [
+          43,
+          16
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-stugna-team",
+        "atCenti": [
+          4300,
+          2100
+        ],
+        "hpPercent": 35
+      },
+      {
+        "player": 0,
+        "type": "ua-stugna-team",
+        "atCenti": [
+          4600,
+          2100
+        ],
+        "hpPercent": 45
+      },
+      {
+        "player": 0,
+        "type": "ua-stugna-team",
+        "atCenti": [
+          4450,
+          2250
+        ],
+        "hpPercent": 100
+      }
+    ]
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "id": "ua-himars",
+  "role": "Long-range rocket artillery",
+  "summary": "A wheeled launcher that fires rockets far beyond the front. It breaks buildings and infantry clusters, but it cannot defend itself up close.",
+  "sections": [
+    {
+      "title": "GMLRS rockets",
+      "how": "Select the HIMARS and left-click an enemy, or let it fire at any spotted target in range.",
+      "body": "Each salvo sends two rockets high into the air and down onto the target. The blast is strongest against buildings and infantry and weaker against tanks.",
+      "shots": [
+        "ua-himars-fight"
+      ]
+    },
+    {
+      "title": "Splash damage",
+      "how": "Fire at a cluster, or at the ground beside it.",
+      "body": "A rocket blasts a small area, not just the unit it was aimed at. It hurts enemy and friendly units alike, so keep your own troops clear of the target.",
+      "shots": [
+        "ua-himars-splash"
+      ]
+    },
+    {
+      "title": "Minimum range",
+      "how": "Keep the HIMARS behind the line; if an enemy closes in, select it and left-click the ground to drive away.",
+      "body": "The launcher cannot fire at targets closer than six tiles. Enemy tanks and fast units that reach it can attack without reply, so keep an escort between it and the front.",
+      "shots": [
+        "ua-himars-min-range"
+      ]
+    },
+    {
+      "title": "Attack ground",
+      "how": "Select the HIMARS, hold Ctrl and left-click the ground, or press Force fire and tap the ground.",
+      "body": "The HIMARS shells the chosen point even when no enemy is in sight, and keeps firing until you give another order or press Stop. A scout can spot the target, but the blast still hurts your own units.",
+      "shots": [
+        "ua-himars-attack-ground"
+      ]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged HIMARS and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The HIMARS drives to the factory and is repaired for half its price, paid as the health comes back.",
+      "shots": [
+        "ua-himars-repair"
+      ]
+    }
+  ],
+  "strong": [
+    "Buildings and static defenses",
+    "Infantry clusters",
+    "Light vehicles"
+  ],
+  "weak": [
+    "Tanks",
+    "Fast units that close in",
+    "Aircraft"
+  ],
+  "tips": [
+    "Keep a scout ahead: the HIMARS sees less far than it shoots.",
+    "Aim at the ground beside a cluster so the blast catches more of it.",
+    "Save the salvo for buildings and groups; a single tank is a poor target."
+  ]
+}

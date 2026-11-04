@@ -1,0 +1,13 @@
+# Spec 48: help card of the supply truck. A truck loads at a depot beside its supply center.
+id: help-ua-supply-truck-harvest
+map: demo-ground
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 13.5, y: 45.5, zoom: 3 }
+entities:
+  - { player: 0, type: ua-supply-center, origin: [16, 44] }
+  - { player: 0, type: ua-supply-truck, atCenti: [1050, 4450], label: truck, order: { harvest: depot-0 } }

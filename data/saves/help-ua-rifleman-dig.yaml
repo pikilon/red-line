@@ -1,0 +1,14 @@
+# Spec 48: help card of the rifleman. Three soldiers dig a trench on open ground.
+id: help-ua-rifleman-dig
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 40, y: 20.5, zoom: 3 }
+entities:
+  - { player: 0, type: ua-rifleman, atCenti: [3800, 1900], order: { dig: [39, 20] } }
+  - { player: 0, type: ua-rifleman, atCenti: [3800, 2000], order: { dig: [39, 20] } }
+  - { player: 0, type: ua-rifleman, atCenti: [3800, 2100], order: { dig: [39, 20] } }

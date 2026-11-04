@@ -5,7 +5,7 @@
   "sections": [
     {
       "title": "Autocannon",
-      "how": "Select the Bradley and right-click an enemy, or let it fire at anything in range.",
+      "how": "Select the Bradley and left-click an enemy, or let it fire at anything in range.",
       "body": "The Bushmaster fires short, quick bursts. It is deadly against infantry, scouts, other infantry fighting vehicles and low drones, but barely scratches a main battle tank.",
       "shots": ["ua-bradley-fight"]
     },

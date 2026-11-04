@@ -1,0 +1,20 @@
+# Spec 48: help card of the Kozak-2 scout. A loaded squad fires from its firing ports at Russian infantry.
+id: help-ua-kozak-scout-fireports
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45.5, y: 20, zoom: 3 }
+entities:
+  - { player: 0, type: ua-kozak-scout, atCenti: [4500, 2000], label: kozak }
+  - { player: 0, type: ua-rifleman, atCenti: [4350, 1850], order: { board: kozak } }
+  - { player: 0, type: ua-rifleman, atCenti: [4300, 2000], order: { board: kozak } }
+  - { player: 0, type: ua-rifleman, atCenti: [4350, 2150], order: { board: kozak } }
+  - { player: 0, type: ua-rifleman, atCenti: [4250, 2000], order: { board: kozak } }
+  - { player: 1, type: ru-rifleman, atCenti: [4850, 1800], hpPercent: 100 }
+  - { player: 1, type: ru-rifleman, atCenti: [4850, 1930], hpPercent: 100 }
+  - { player: 1, type: ru-rifleman, atCenti: [4850, 2070], hpPercent: 100 }
+  - { player: 1, type: ru-rifleman, atCenti: [4850, 2200], hpPercent: 100 }

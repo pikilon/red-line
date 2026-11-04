@@ -5,7 +5,7 @@
   "sections": [
     {
       "title": "Autocannon",
-      "how": "Select the BMP-2 and right-click an enemy, or let it fire at anything in range.",
+      "how": "Select the BMP-2 and left-click an enemy, or let it fire at anything in range.",
       "body": "The 2A42 fires quick bursts. It is deadly against infantry, scouts and other light vehicles, and can track low drones, but it struggles against a main battle tank.",
       "shots": ["ru-bmp-2-fight"]
     },
@@ -23,7 +23,7 @@
     },
     {
       "title": "Swim rivers",
-      "how": "Select the BMP-2 and right-click the far bank.",
+      "how": "Select the BMP-2 and left-click the far bank.",
       "body": "The BMP-2 is amphibious: it crosses deep water at the same speed as open ground. Tanks and other non-swimming vehicles must use a bridge.",
       "shots": ["ru-bmp-2-swim"]
     },

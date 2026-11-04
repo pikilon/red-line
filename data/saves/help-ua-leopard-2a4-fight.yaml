@@ -1,0 +1,13 @@
+# Spec 48: help card of the Leopard. Its 120 mm gun trades shells with a T-72B3.
+id: help-ua-leopard-2a4-fight
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 46, y: 20, zoom: 3 }
+entities:
+  - { player: 0, type: ua-leopard-2a4, atCenti: [4300, 2000], label: leopard, order: { attack: t72 } }
+  - { player: 1, type: ru-t-72b3, atCenti: [4900, 2000], label: t72, hpPercent: 20 }

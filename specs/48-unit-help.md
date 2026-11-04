@@ -109,7 +109,10 @@ Template: `client/src/i18n/help/ua-bradley.json`, `data/help/ua-bradley.yaml`,
    (grep the type id and the YAML key, e.g. `transport` spec 34, `charges`
    and `link` and `jammer` spec 43, repair specs 38 and 39, healing 40,
    garrison 31, trenches 35, selling 37, rally 33, production 33/41).
-   Controls in `how` must match the client (spec 41 buttons, spec 08 clicks).
+   Controls in `how` must match the client (spec 41 buttons, spec 08 §3.9):
+   orders are LEFT clicks (left-click ground to move, an enemy to attack, own
+   transport to board, own factory to repair), Ctrl + left click is force
+   fire, right click only deselects; on touch, tap.
 2. One section per thing it can do: its weapon, each special ability
    (carry, unload, garrison, dig, repair, reload/resupply, jam, launch drones,
    build, harvest, heal, produce, power...), plus how it is repaired or healed.

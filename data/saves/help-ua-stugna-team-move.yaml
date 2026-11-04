@@ -1,0 +1,14 @@
+# Spec 48: help card of the Stugna team. The crew stows the launcher and walks toward a trench.
+id: help-ua-stugna-team-move
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45.5, y: 20.5, zoom: 3 }
+trenches:
+  - { at: [47, 20] }
+entities:
+  - { player: 0, type: ua-stugna-team, atCenti: [4300, 2000], label: stugna, order: { moveCenti: [4800, 2000] } }

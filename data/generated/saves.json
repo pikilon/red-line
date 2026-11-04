@@ -420,6 +420,204 @@
       "map": "showcase",
       "form": "setup",
       "entities": 2
+    },
+    {
+      "id": "help-ua-dozer-bridge",
+      "map": "demo-bridges",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ua-dozer-build",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 6
+    },
+    {
+      "id": "help-ua-dozer-dig",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ua-dozer-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-dozer-repair-building",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-himars-attack-ground",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-himars-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-himars-min-range",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-himars-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-himars-splash",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 6
+    },
+    {
+      "id": "help-ua-kozak-scout-carry",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-ua-kozak-scout-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ua-kozak-scout-fireports",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 9
+    },
+    {
+      "id": "help-ua-kozak-scout-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-leopard-2a4-crush",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-ua-leopard-2a4-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-leopard-2a4-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-rifleman-air",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-rifleman-board",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ua-rifleman-bridge",
+      "map": "demo-bridges",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-rifleman-dig",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-rifleman-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ua-rifleman-garrison",
+      "map": "demo-town",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ua-rifleman-heal",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ua-rifleman-trench",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 7
+    },
+    {
+      "id": "help-ua-stugna-team-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-stugna-team-garrison",
+      "map": "demo-town",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-stugna-team-heal",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ua-stugna-team-move",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ua-stugna-team-trench",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-supply-truck-harvest",
+      "map": "demo-ground",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-supply-truck-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-supply-truck-resupply",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
     }
   ]
 }

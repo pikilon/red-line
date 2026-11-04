@@ -1,0 +1,13 @@
+# Spec 48: help card of the Leopard. A damaged Leopard waits beside its repair factory.
+id: help-ua-leopard-2a4-repair
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 49, y: 21, zoom: 3 }
+entities:
+  - { player: 0, type: ua-vehicle-factory, origin: [50, 18] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [4600, 2000], hpPercent: 40 }

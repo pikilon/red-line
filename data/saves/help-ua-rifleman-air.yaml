@@ -1,0 +1,14 @@
+# Spec 48: help card of the rifleman. Riflemen fire at a low Orlan drone overhead.
+id: help-ua-rifleman-air
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45, y: 19.5, zoom: 3 }
+entities:
+  - { player: 0, type: ua-rifleman, atCenti: [4300, 2000], label: a, order: { attack: drone } }
+  - { player: 0, type: ua-rifleman, atCenti: [4300, 2150], label: b, order: { attack: drone } }
+  - { player: 1, type: ru-orlan, atCenti: [4750, 1950], label: drone }

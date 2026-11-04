@@ -1,0 +1,47 @@
+{
+  "id": "ua-supply-truck",
+  "role": "Unarmed supply hauler",
+  "summary": "A wheeled truck that carries supply from depots to your supply center and refills drone launcher crews in the field. It has no weapon, so keep it away from the fighting.",
+  "sections": [
+    {
+      "title": "Harvest supply",
+      "how": "Select one or more supply trucks and left-click a supply depot or a port cargo yard. A new truck from the supply center starts harvesting the nearest depot on its own unless it has a rally point.",
+      "body": "The truck drives to the depot, fills its cargo, then returns to the nearest completed supply center and unloads it as credits. It keeps cycling until the depot runs dry, then moves to the nearest depot that still has supply. Port cargo yards never run out, but every load there takes longer.",
+      "shots": ["ua-supply-truck-harvest"]
+    },
+    {
+      "title": "Deliver the load",
+      "how": "There is no drop-off order: a loaded truck returns to your supply center by itself and unloads when it arrives.",
+      "body": "The cargo becomes credits the moment unloading finishes. The truck then drives back to its depot for another load. If the supply center is destroyed, the truck looks for another complete one; with no supply center left it waits, so rebuild one to restart the income.",
+      "shots": ["ua-supply-truck-unload"]
+    },
+    {
+      "title": "Resupply drone crews",
+      "how": "Select the supply truck and left-click the ground beside an FPV team. The truck does not need a special order; simply keep it close to the crew.",
+      "body": "Drone charges are ammunition: an FPV team with empty pips cannot launch. While a low crew stays near a supply truck, one charge comes back after a wait. Driving the truck away or walking the crew out of range resets the clock. A supply center or barracks does the same job at home.",
+      "shots": ["ua-supply-truck-resupply"]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged supply truck and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The truck drives to the factory and is repaired for half its price, paid as the health comes back. Production continues while it is repaired. If the credits run out, it leaves the dock and stops.",
+      "shots": ["ua-supply-truck-repair"]
+    }
+  ],
+  "strong": [
+    "Funding an army",
+    "Keeping drone crews supplied",
+    "Long games with distant depots"
+  ],
+  "weak": [
+    "Tanks and infantry",
+    "Artillery",
+    "Aircraft"
+  ],
+  "tips": [
+    "The first truck is free when the supply center finishes; build more to keep income flowing while another truck drives.",
+    "Build the supply center near the depot you work: every truck returns to the nearest completed one.",
+    "A port cargo yard never runs dry, so it is a safe late-game source when nearby depots are empty.",
+    "Park a truck beside an FPV team before a fight so its charges are ready when the drones are."
+  ]
+}

@@ -1,0 +1,6 @@
+# Spec 48 §3.3: screenshots of the Kozak-2 scout card. `node --run help:shots -- --type ua-kozak-scout`
+- { id: ua-kozak-scout-fight, save: help-ua-kozak-scout-fight, ticks: 50, select: [ua-kozak-scout] }
+- { id: ua-kozak-scout-carry, save: help-ua-kozak-scout-carry, ticks: 12, select: [ua-rifleman] }
+- { id: ua-kozak-scout-fireports, save: help-ua-kozak-scout-fireports, ticks: 60, select: [ua-kozak-scout], hud: true }
+- { id: ua-kozak-scout-unload, save: help-ua-kozak-scout-carry, ticks: 200, select: [ua-kozak-scout], hud: true }
+- { id: ua-kozak-scout-repair, save: help-ua-kozak-scout-repair, ticks: 10, select: [ua-kozak-scout], hud: true }
