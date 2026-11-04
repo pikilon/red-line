@@ -1,0 +1,56 @@
+{
+  "id": "ua-sting-nest",
+  "role": "Automatic interceptor launcher",
+  "summary": "A static launcher that sends autonomous Sting interceptors after low-flying drones and missiles. Its charges refill by themselves, it needs power to fire, and a massed wave or a high flyer beats it.",
+  "sections": [
+    {
+      "title": "Launch Sting interceptors",
+      "how": "Select the Sting nest and let it fire: it launches at any low flyer in range by itself, with no order to give.",
+      "body": "Each launch sends a Sting after one low-flying target, such as a Geran-2, an Orlan-10 or a Molniya. The Sting is a one-way interceptor: it rams the target and its warhead detonates, and the drone is spent. It cannot reach high flyers such as the Su-34 or the jet-powered Geran-3, and it never attacks the ground. Its autonomous link means jamming does not stop it, and it still finishes its attack if the nest is destroyed.",
+      "about": "ua-sting",
+      "shots": ["ua-sting-nest-intercept"]
+    },
+    {
+      "title": "Charges refill by themselves",
+      "how": "Watch the ammunition pips over the selected nest; no supply truck is needed.",
+      "body": "The nest holds six Stings and spends one per launch. One charge comes back on its own after a short wait, wherever the nest stands, so cutting it off from supplies does not silence it. At zero charges it launches nothing until one returns. A massed wave can drain the rack faster than it refills: that saturation is how a drone wave beats the nest.",
+      "shots": ["ua-sting-nest-charges"]
+    },
+    {
+      "title": "Needs power",
+      "how": "Watch the power reading in the HUD; keep production at least equal to consumption.",
+      "body": "The nest draws power from the base. While the base consumes more than it produces, the reading turns red and every defense that needs power, including this one, holds its fire until the deficit is fixed. Build another power plant or sell something that draws power.",
+      "shots": ["ua-sting-nest-power"]
+    },
+    {
+      "title": "Repair with a dozer",
+      "how": "Select a dozer and left-click the damaged nest.",
+      "body": "The dozer drives over and restores the nest until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle.",
+      "shots": ["ua-sting-nest-repair"]
+    },
+    {
+      "title": "Sell",
+      "how": "Select the nest and press Sell twice.",
+      "body": "It sells for half its price and disappears at once, opening the ground it held. Selling your last building loses the match.",
+      "shots": ["ua-sting-nest-sell"]
+    }
+  ],
+  "strong": [
+    "Low-flying drones and missiles",
+    "Automatic fire without orders",
+    "A steady trickle of low flyers"
+  ],
+  "weak": [
+    "High flyers such as the Su-34 and Geran-3",
+    "Saturation: more targets than charges",
+    "A power deficit",
+    "Artillery and long-range fire"
+  ],
+  "tips": [
+    "Place it near what Russia bombs: it engages only targets that come inside its range.",
+    "Keep the power grid ahead: while the base is short of power the nest launches nothing.",
+    "Let the nest refill itself; its charges need no supply truck.",
+    "Do not count on it against a Su-34 or a Geran-3; use a Patriot or a Gepard for high flyers.",
+    "Keep a dozer nearby: the nest cannot repair itself."
+  ]
+}

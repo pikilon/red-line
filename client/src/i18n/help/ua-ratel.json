@@ -1,0 +1,41 @@
+{
+  "id": "ua-ratel",
+  "role": "Ground kamikaze drone",
+  "summary": "A slow tracked drone packed with a heavy warhead. It drives into its target and detonates, smashing armour and collapsing trenches, but a Russian jammer can stop it in its tracks.",
+  "sections": [
+    {
+      "title": "One-way warhead",
+      "how": "Select the Ratel S and left-click an enemy, or Ctrl + left-click the ground to send it at a spot.",
+      "body": "The Ratel S carries no gun and never fires on its own: once ordered, it drives at the target and blows up on arrival. The blast is powerful enough to smash tanks and collapse trenches. The drone is destroyed by its own warhead and leaves no wreck.",
+      "shots": ["ua-ratel-strike", "ua-ratel-trench"]
+    },
+    {
+      "title": "Radio link and jammers",
+      "how": "Keep the Ratel S out of a Russian jammer's circle; a jammed robot shows a warning mark.",
+      "body": "The Ratel S is steered by radio. Inside a hostile jammer's circle it stops dead and cannot move, so it never reaches its target. It keeps its order and drives on once it is clear, but the mobile Pole-21 can pin it in place while other Russian units shoot it.",
+      "shots": ["ua-ratel-jamming"]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged Ratel S and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The Ratel S is a tracked vehicle, so the vehicle factory repairs it even though the drone workshop builds it. It drives to the factory and is repaired for half its price, paid as the health comes back.",
+      "shots": ["ua-ratel-repair"]
+    }
+  ],
+  "strong": [
+    "Tanks and other armour",
+    "Trench lines and the soldiers in them",
+    "Static targets that cannot move away"
+  ],
+  "weak": [
+    "Russian jammers, especially the Pole-21",
+    "Small arms",
+    "Anything that can shoot it before it arrives"
+  ],
+  "tips": [
+    "Send it at a tank or a manned trench: it has no gun and cannot be reused.",
+    "Scout for a Pole-21 before committing. Kill it or wait for it to move, and the Ratel S carries on.",
+    "Build it at the drone workshop, but bring damaged ones back to the vehicle factory.",
+    "Clear the way with other units: the Ratel S has to survive the approach to detonate."
+  ]
+}

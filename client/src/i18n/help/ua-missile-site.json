@@ -1,0 +1,73 @@
+{
+  "id": "ua-missile-site",
+  "role": "Deep-strike missile launcher",
+  "summary": "A fixed launch pad that builds Ukraine's long-range cruise missiles. It has no weapon of its own: each missile waits on the pad until you order it at a target, then flies there and detonates. It draws power and cannot repair itself.",
+  "sections": [
+    {
+      "title": "Build deep-strike missiles",
+      "how": "Select the missile site, open the Build tab and press a missile tile. Press + to queue another and − to cancel the last one.",
+      "body": "The site builds the Flamingo and the Storm Shadow. Both are one-way missiles: when one is ready it stands beside the site as a unit of its own and waits there. It ignores rally points and never launches by itself, so you give the attack order. A missile is spent when it detonates, so build another for the next strike.",
+      "shots": ["ua-missile-site-build"]
+    },
+    {
+      "title": "Flamingo",
+      "about": "ua-flamingo",
+      "how": "Build a Flamingo, select it on the pad and left-click an enemy building or unit. Ctrl + left-click the ground strikes a point.",
+      "body": "A big cruise missile with a huge warhead and a wide blast. It is best against buildings, defenses and clustered infantry, and it carries enough fuel to reach any target on the map. Its satellite-guided warhead is not precise: it can land well off the aim point, and a Russian jammer throws it further off. It is large and easy to hit, so a Pantsir can shoot it down on the way. If its fuel runs out it falls and detonates where it is.",
+      "shots": ["ua-missile-site-flamingo", "ua-missile-site-flamingo-strike"]
+    },
+    {
+      "title": "Storm Shadow",
+      "about": "ua-storm-shadow",
+      "how": "Build a Storm Shadow, select it on the pad and left-click an enemy building or unit. Ctrl + left-click the ground strikes a point.",
+      "body": "A precise penetrator for high-value buildings. Its warhead has no splash: it damages only the target it hits, so aim it at a command post, factory or defense rather than a crowd. It is hard to detect: Russian weapons engage it only inside a third of their range, so it can slip past a Pantsir that would kill a Flamingo. It is costly and slow to build. Its satellite guidance can be thrown off by a jammer, and when its fuel runs out it falls and detonates where it is.",
+      "shots": [
+        "ua-missile-site-storm-shadow",
+        "ua-missile-site-storm-shadow-strike"
+      ]
+    },
+    {
+      "title": "Needs power",
+      "how": "Watch the power reading in the HUD; keep production at least equal to consumption.",
+      "body": "The site draws power from the base. While the base consumes more than it produces, the reading turns red and missile production slows sharply, though it never stops. Build another power plant or sell something that draws power.",
+      "shots": ["ua-missile-site-power"]
+    },
+    {
+      "title": "Repair with a dozer",
+      "how": "Select a dozer and left-click the damaged missile site.",
+      "body": "The dozer drives to the site and restores it until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle.",
+      "shots": ["ua-missile-site-repair"]
+    },
+    {
+      "title": "Sell",
+      "how": "Select the missile site and press Sell twice.",
+      "body": "It sells for half its price and disappears at once, opening the ground it held. Any missiles still in its queue are cancelled and refunded in full. A missile already on the pad stays under your control. Selling your last building loses the match.",
+      "shots": ["ua-missile-site-sell"]
+    }
+  ],
+  "strong": [
+    "Russian buildings and bases with the Flamingo",
+    "Clusters of infantry and defenses with the Flamingo",
+    "High-value buildings with the Storm Shadow",
+    "Strikes far behind the front",
+    "Slipping past a Pantsir with the Storm Shadow"
+  ],
+  "weak": [
+    "Pantsir anti-air against the Flamingo",
+    "The Flamingo's scatter on small targets",
+    "Russian jammers against both missiles",
+    "The Storm Shadow's lack of splash",
+    "It has no weapon of its own",
+    "A power deficit"
+  ],
+  "tips": [
+    "The site needs a vehicle factory; raise it with a dozer.",
+    "Queue the Flamingo for a cluster or a large building, and the Storm Shadow for one important target.",
+    "Scout a target before firing: a missile sees only a short way on its own.",
+    "Aim the Flamingo at the ground beside a cluster so its wide blast catches more.",
+    "Keep the site behind the line and cover it: it has no weapon.",
+    "Keep a dozer nearby: the site cannot repair itself.",
+    "Watch the power reading: a deficit slows missile production.",
+    "Send the Storm Shadow at a Pantsir or a command building; its low observability gets it close."
+  ]
+}

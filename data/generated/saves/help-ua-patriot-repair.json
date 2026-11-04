@@ -1,0 +1,62 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ua-patriot-repair",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 45,
+      "y": 19.5,
+      "zoom": 2.8
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          36,
+          16
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-patriot",
+        "origin": [
+          43,
+          17
+        ],
+        "hpPercent": 40
+      },
+      {
+        "player": 0,
+        "type": "ua-dozer",
+        "atCenti": [
+          4100,
+          1900
+        ]
+      }
+    ]
+  }
+}

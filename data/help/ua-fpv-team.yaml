@@ -1,0 +1,8 @@
+# Spec 48 §3.3: screenshots of the FPV team card. `node --run help:shots -- --type ua-fpv-team`
+- { id: ua-fpv-team-launch, save: help-ua-fpv-team-launch, ticks: 156, select: [ua-fpv-team, ua-fpv] }
+- { id: ua-fpv-team-resupply, save: help-ua-fpv-team-resupply, ticks: 760, select: [ua-fpv-team] }
+- { id: ua-fpv-team-refill, save: help-ua-fpv-team-resupply, ticks: 1060, select: [ua-fpv-team] }
+- { id: ua-fpv-team-jamming, save: help-ua-fpv-team-jamming, ticks: 160, select: [ru-pole-21] }
+- { id: ua-fpv-team-trench, save: help-ua-fpv-team-trench, ticks: 155, select: [ua-fpv-team, ua-fpv] }
+- { id: ua-fpv-team-garrison, save: help-ua-fpv-team-garrison, ticks: 10, select: [ua-fpv-team], hud: true, tab: orders }
+- { id: ua-fpv-team-heal, save: help-ua-fpv-team-heal, ticks: 10, select: [ua-fpv-team] }

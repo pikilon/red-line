@@ -1,0 +1,68 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ua-fpv-team-resupply",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 47,
+      "y": 19.5,
+      "zoom": 2.8
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-supply-truck",
+        "atCenti": [
+          4150,
+          2000
+        ],
+        "label": "truck"
+      },
+      {
+        "player": 0,
+        "type": "ua-fpv-team",
+        "atCenti": [
+          4400,
+          2000
+        ],
+        "label": "fpv",
+        "order": {
+          "attack": "target"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-barracks",
+        "origin": [
+          51,
+          17
+        ],
+        "hpPercent": 45,
+        "label": "target"
+      }
+    ]
+  }
+}

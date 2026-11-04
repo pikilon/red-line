@@ -1,0 +1,87 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ua-missile-site-flamingo",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 39.5,
+      "y": 16.2,
+      "zoom": 3.4
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-missile-site",
+        "origin": [
+          36,
+          16
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-flamingo",
+        "atCenti": [
+          3900,
+          1500
+        ],
+        "label": "flamingo"
+      },
+      {
+        "player": 1,
+        "type": "ru-airfield",
+        "origin": [
+          50,
+          15
+        ],
+        "label": "airfield"
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          57,
+          15
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          5300,
+          1900
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          5400,
+          2000
+        ]
+      }
+    ]
+  }
+}

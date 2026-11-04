@@ -1,0 +1,66 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ua-baba-yaga-reload",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 47.5,
+      "y": 19,
+      "zoom": 2.8
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-drone-workshop",
+        "origin": [
+          44,
+          17
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-baba-yaga",
+        "atCenti": [
+          3900,
+          1850
+        ],
+        "label": "baba",
+        "order": {
+          "attack": "plant"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          50,
+          17
+        ],
+        "label": "plant"
+      }
+    ]
+  }
+}

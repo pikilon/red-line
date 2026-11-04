@@ -1,0 +1,126 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ua-ratel-trench",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 42.5,
+      "y": 20,
+      "zoom": 2.8
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-ratel",
+        "atCenti": [
+          4100,
+          2000
+        ],
+        "label": "ratel",
+        "order": {
+          "attackGroundCenti": [
+            4700,
+            2000
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4400,
+          2100
+        ],
+        "order": {
+          "garrison": [
+            44,
+            20
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4450,
+          2100
+        ],
+        "order": {
+          "garrison": [
+            44,
+            20
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4650,
+          2100
+        ],
+        "order": {
+          "garrison": [
+            46,
+            20
+          ]
+        }
+      }
+    ],
+    "trenches": [
+      {
+        "at": [
+          38,
+          20
+        ]
+      },
+      {
+        "at": [
+          40,
+          20
+        ]
+      },
+      {
+        "at": [
+          42,
+          20
+        ]
+      },
+      {
+        "at": [
+          44,
+          20
+        ]
+      },
+      {
+        "at": [
+          46,
+          20
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+# Spec 48: help card of the Patriot. A low Geran-2 drone flies into the battery's long range.
+id: help-ua-patriot-low
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 48, y: 19.5, zoom: 2.6 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [30, 19] }
+  - { player: 0, type: ua-patriot, origin: [40, 19], label: patriot }
+  - { player: 1, type: ru-geran-2, atCenti: [5800, 2000], label: drone, order: { attack: patriot } }

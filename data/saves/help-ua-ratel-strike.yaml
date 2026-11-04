@@ -1,0 +1,13 @@
+# Spec 48: help card of the Ratel S. It drives its warhead into a Russian T-72B3.
+id: help-ua-ratel-strike
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45, y: 19, zoom: 3 }
+entities:
+  - { player: 0, type: ua-ratel, atCenti: [4100, 1900], label: ratel, order: { attack: tank } }
+  - { player: 1, type: ru-t-72b3, atCenti: [4800, 1900], label: tank }

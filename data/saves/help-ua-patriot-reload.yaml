@@ -1,0 +1,16 @@
+# Spec 48: help card of the Patriot. One drone is engaged while the rest of the wave closes in.
+id: help-ua-patriot-reload
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 47, y: 20, zoom: 2.6 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [28, 20] }
+  - { player: 0, type: ua-patriot, origin: [38, 19], label: patriot }
+  - { player: 1, type: ru-geran-2, atCenti: [5500, 1700], label: drone0, order: { attack: patriot } }
+  - { player: 1, type: ru-geran-2, atCenti: [5700, 2000], label: drone1, order: { attack: patriot } }
+  - { player: 1, type: ru-geran-2, atCenti: [5500, 2300], label: drone2, order: { attack: patriot } }

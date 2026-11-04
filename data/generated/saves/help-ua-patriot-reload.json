@@ -1,0 +1,90 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ua-patriot-reload",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 47,
+      "y": 20,
+      "zoom": 2.6
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          28,
+          20
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-patriot",
+        "origin": [
+          38,
+          19
+        ],
+        "label": "patriot"
+      },
+      {
+        "player": 1,
+        "type": "ru-geran-2",
+        "atCenti": [
+          5500,
+          1700
+        ],
+        "label": "drone0",
+        "order": {
+          "attack": "patriot"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-geran-2",
+        "atCenti": [
+          5700,
+          2000
+        ],
+        "label": "drone1",
+        "order": {
+          "attack": "patriot"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-geran-2",
+        "atCenti": [
+          5500,
+          2300
+        ],
+        "label": "drone2",
+        "order": {
+          "attack": "patriot"
+        }
+      }
+    ]
+  }
+}

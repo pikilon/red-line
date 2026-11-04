@@ -410,6 +410,30 @@
       "entities": 3
     },
     {
+      "id": "help-ua-baba-yaga-bomb",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ua-baba-yaga-jammer",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-baba-yaga-low-aa",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-baba-yaga-reload",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
       "id": "help-ua-barracks-heal",
       "map": "showcase",
       "form": "setup",
@@ -542,6 +566,42 @@
       "entities": 1
     },
     {
+      "id": "help-ua-fpv-team-garrison",
+      "map": "demo-town",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-fpv-team-heal",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ua-fpv-team-jamming",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-fpv-team-launch",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-fpv-team-resupply",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-fpv-team-trench",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
       "id": "help-ua-himars-attack-ground",
       "map": "showcase",
       "form": "setup",
@@ -638,6 +698,96 @@
       "entities": 2
     },
     {
+      "id": "help-ua-missile-site-build",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ua-missile-site-flamingo",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 6
+    },
+    {
+      "id": "help-ua-missile-site-flamingo-strike",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ua-missile-site-power",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-ua-missile-site-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-missile-site-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-missile-site-storm-shadow",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-missile-site-storm-shadow-strike",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ua-patriot-geran3",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-patriot-low",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-patriot-power",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-ua-patriot-reload",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-ua-patriot-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-patriot-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-patriot-su34",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
       "id": "help-ua-power-plant-low",
       "map": "showcase",
       "form": "setup",
@@ -660,6 +810,30 @@
       "map": "showcase",
       "form": "setup",
       "entities": 1
+    },
+    {
+      "id": "help-ua-ratel-jamming",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-ratel-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-ratel-strike",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-ratel-trench",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
     },
     {
       "id": "help-ua-rifleman-air",
@@ -708,6 +882,36 @@
       "map": "showcase",
       "form": "setup",
       "entities": 7
+    },
+    {
+      "id": "help-ua-sting-nest-charges",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 6
+    },
+    {
+      "id": "help-ua-sting-nest-intercept",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-sting-nest-power",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 6
+    },
+    {
+      "id": "help-ua-sting-nest-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-sting-nest-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
     },
     {
       "id": "help-ua-stugna-team-fight",
@@ -792,6 +996,30 @@
       "map": "showcase",
       "form": "setup",
       "entities": 3
+    },
+    {
+      "id": "help-ua-tw-12-7-air",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-tw-12-7-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ua-tw-12-7-jamming",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-tw-12-7-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
     },
     {
       "id": "help-ua-vehicle-factory-build",

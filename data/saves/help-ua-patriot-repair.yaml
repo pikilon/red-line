@@ -1,0 +1,14 @@
+# Spec 48: help card of the Patriot. A damaged battery waits for its dozer.
+id: help-ua-patriot-repair
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45, y: 19.5, zoom: 2.8 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [36, 16] }
+  - { player: 0, type: ua-patriot, origin: [43, 17], hpPercent: 40 }
+  - { player: 0, type: ua-dozer, atCenti: [4100, 1900] }

@@ -1,0 +1,36 @@
+{
+  "id": "ua-tw-12-7",
+  "role": "Crewless machine gun robot",
+  "summary": "A small tracked robot with a heavy machine gun and no crew. It cuts down infantry, light vehicles and low drones, but Russian jammers can stop it dead.",
+  "sections": [
+    {
+      "title": "Heavy machine gun",
+      "how": "Select the TW-12.7 and left-click an enemy, or let it fire at anything in range.",
+      "body": "The remote machine gun fires quick bursts that tear through infantry and light vehicles. It can also reach low drones, which makes it a useful escort for tanks. Its bullets barely scratch a main battle tank.",
+      "shots": ["ua-tw-12-7-fight", "ua-tw-12-7-air"]
+    },
+    {
+      "title": "Radio link and jammers",
+      "how": "Keep the TW-12.7 out of a Russian jammer's circle; a jammed robot shows a warning mark.",
+      "body": "The robot is steered by radio. Inside a hostile jammer's circle it stops dead: it cannot move or fire until it is clear. It keeps its order and carries on once it leaves, but the mobile Pole-21 can pin it in place while other Russian units shoot it.",
+      "shots": ["ua-tw-12-7-jamming"]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged TW-12.7 and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The robot is a tracked vehicle, so the vehicle factory repairs it even though the drone workshop builds it. It drives to the factory and is repaired for half its price, paid as the health comes back. Production continues while it waits its turn.",
+      "shots": ["ua-tw-12-7-repair"]
+    }
+  ],
+  "strong": ["Infantry", "Low drones", "Scouts and light vehicles"],
+  "weak": [
+    "Tanks and armoured vehicles",
+    "Russian jammers, especially the Pole-21",
+    "Artillery"
+  ],
+  "tips": [
+    "Pair it with tanks: they take the hits while the TW-12.7 clears the infantry and drones around them.",
+    "Scout for a Pole-21 before committing. Kill it or wait for it to move, and the robot carries on.",
+    "Pull damaged robots back to the vehicle factory; the drone workshop cannot repair them."
+  ]
+}
