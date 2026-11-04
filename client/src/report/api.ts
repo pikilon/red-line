@@ -1,30 +1,23 @@
-/** Tester accounts and report submission against Supabase (spec 47). Plain
- *  `fetch` against the Auth REST API and the `report` Edge Function, so the
- *  client needs no SDK. */
+/** Tester invites and report submission against the Supabase `report` Edge
+ *  Function (spec 47). Plain `fetch`, so the client needs no SDK. */
 
-/** Public project settings; the anon key is meant to ship in the client. */
+/** Public project settings; the publishable key is meant to ship. */
 export const SUPABASE_URL: string = "https://uuoqsligbiiwkktovznu.supabase.co";
 export const SUPABASE_ANON_KEY: string =
   "sb_publishable_4_gDq07hwapHIwnw3y1DFA_pH3Yg4_k";
+
+const FUNCTION_URL = `${SUPABASE_URL}/functions/v1/report`;
+const INVITE_KEY = "redline.report.invite";
 
 /** Whether the report backend is configured (spec 47 §4). */
 export function reportsEnabled(): boolean {
   return SUPABASE_URL !== "" && SUPABASE_ANON_KEY !== "";
 }
 
-export interface Session {
-  accessToken: string;
-  refreshToken: string;
-  /** Epoch seconds. */
-  expiresAt: number;
-  email: string;
-}
-
 /** Failure codes the report page turns into messages. */
 export type ReportError =
   | "not-tester"
-  | "bad-login"
-  | "signed-out"
+  | "no-invite"
   | "too-large"
   | "network"
   | "failed";
@@ -37,118 +30,79 @@ export class ReportApiError extends Error {
   }
 }
 
-const SESSION_KEY = "redline.report.session";
+export interface Invite {
+  token: string;
+  /** The tester's name once the backend confirmed it. */
+  name: string | null;
+}
 
-export function loadSession(): Session | null {
+export function loadInvite(): Invite | null {
   try {
-    const raw = localStorage.getItem(SESSION_KEY);
+    const raw = localStorage.getItem(INVITE_KEY);
     if (raw === null) return null;
-    const parsed = JSON.parse(raw) as Partial<Session>;
-    if (
-      typeof parsed.accessToken !== "string" ||
-      typeof parsed.refreshToken !== "string" ||
-      typeof parsed.expiresAt !== "number" ||
-      typeof parsed.email !== "string"
-    ) {
-      return null;
-    }
-    return parsed as Session;
+    const parsed = JSON.parse(raw) as Partial<Invite>;
+    if (typeof parsed.token !== "string") return null;
+    return {
+      token: parsed.token,
+      name: typeof parsed.name === "string" ? parsed.name : null,
+    };
   } catch {
     return null;
   }
 }
 
-function storeSession(session: Session | null): void {
+function storeInvite(invite: Invite | null): void {
   try {
-    if (session === null) localStorage.removeItem(SESSION_KEY);
-    else localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    if (invite === null) localStorage.removeItem(INVITE_KEY);
+    else localStorage.setItem(INVITE_KEY, JSON.stringify(invite));
   } catch {
-    // Storage blocked: the session lives until the tab closes.
+    // Storage blocked: the invite is lost when the tab closes.
   }
 }
 
-export function signOut(): void {
-  storeSession(null);
+export function forgetInvite(): void {
+  storeInvite(null);
 }
 
-interface AuthResponse {
-  access_token?: string;
-  refresh_token?: string;
-  expires_in?: number;
-  user?: { email?: string };
-  msg?: string;
-  error_description?: string;
-  message?: string;
+/** Takes `?invite=` off the URL and keeps it (spec 47 §3), so the rest of
+ *  the boot never sees it and it never leaks into shared links. */
+export function consumeInviteParam(): void {
+  const url = new URL(window.location.href);
+  const token = url.searchParams.get("invite");
+  if (token === null) return;
+  url.searchParams.delete("invite");
+  if (token !== "") storeInvite({ token, name: null });
+  window.history.replaceState(window.history.state, "", url.toString());
 }
 
-async function auth(path: string, body: unknown): Promise<AuthResponse> {
-  let response: Response;
+function headers(invite: Invite): Record<string, string> {
+  return { apikey: SUPABASE_ANON_KEY, "x-tester-token": invite.token };
+}
+
+async function call(init: RequestInit): Promise<Response> {
   try {
-    response = await fetch(`${SUPABASE_URL}/auth/v1/${path}`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_ANON_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
+    return await fetch(FUNCTION_URL, init);
   } catch {
     throw new ReportApiError("network");
   }
-  const data = (await response.json().catch(() => ({}))) as AuthResponse;
-  if (!response.ok) {
-    const text = `${data.msg ?? ""} ${data.error_description ?? ""} ${data.message ?? ""}`;
-    if (/tester list|database error saving new user/i.test(text)) {
-      throw new ReportApiError("not-tester");
-    }
-    throw new ReportApiError(path.startsWith("token") ? "bad-login" : "failed");
-  }
-  return data;
 }
 
-function toSession(data: AuthResponse, email: string): Session {
-  if (data.access_token === undefined || data.refresh_token === undefined) {
+/** The stored invite's tester name, asking the backend the first time. */
+export async function whoAmI(): Promise<string> {
+  const invite = loadInvite();
+  if (invite === null) throw new ReportApiError("no-invite");
+  if (invite.name !== null) return invite.name;
+  const response = await call({ method: "GET", headers: headers(invite) });
+  const data = (await response.json().catch(() => ({}))) as { name?: string };
+  if (response.status === 403) {
+    forgetInvite();
+    throw new ReportApiError("not-tester");
+  }
+  if (!response.ok || data.name === undefined) {
     throw new ReportApiError("failed");
   }
-  const session: Session = {
-    accessToken: data.access_token,
-    refreshToken: data.refresh_token,
-    expiresAt: Math.floor(Date.now() / 1000) + (data.expires_in ?? 3600),
-    email: data.user?.email ?? email,
-  };
-  storeSession(session);
-  return session;
-}
-
-/** Signs in, registering the account first when it does not exist yet. */
-export async function signIn(
-  email: string,
-  password: string,
-  register: boolean,
-): Promise<Session> {
-  const normalized = email.trim().toLowerCase();
-  const data = register
-    ? await auth("signup", { email: normalized, password })
-    : await auth("token?grant_type=password", { email: normalized, password });
-  return toSession(data, normalized);
-}
-
-/** A session whose access token is valid for at least one more minute. */
-async function freshSession(): Promise<Session> {
-  const session = loadSession();
-  if (session === null) throw new ReportApiError("signed-out");
-  if (session.expiresAt - 60 > Date.now() / 1000) return session;
-  try {
-    const data = await auth("token?grant_type=refresh_token", {
-      refresh_token: session.refreshToken,
-    });
-    return toSession(data, session.email);
-  } catch (error) {
-    if (error instanceof ReportApiError && error.code === "network")
-      throw error;
-    signOut();
-    throw new ReportApiError("signed-out");
-  }
+  storeInvite({ token: invite.token, name: data.name });
+  return data.name;
 }
 
 export interface ReportDraft {
@@ -165,7 +119,8 @@ export interface ReportDraft {
 export async function submitReport(
   draft: ReportDraft,
 ): Promise<{ number: number; url: string }> {
-  const session = await freshSession();
+  const invite = loadInvite();
+  if (invite === null) throw new ReportApiError("no-invite");
   const form = new FormData();
   form.append("kind", draft.kind);
   form.append("title", draft.title);
@@ -182,32 +137,22 @@ export async function submitReport(
     );
   }
   for (const file of draft.attachments) form.append("attachment", file);
-  let response: Response;
-  try {
-    response = await fetch(`${SUPABASE_URL}/functions/v1/report`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${session.accessToken}`,
-      },
-      body: form,
-    });
-  } catch {
-    throw new ReportApiError("network");
-  }
+  const response = await call({
+    method: "POST",
+    headers: headers(invite),
+    body: form,
+  });
   const data = (await response.json().catch(() => ({}))) as {
     number?: number;
     url?: string;
-    error?: string;
   };
   if (response.ok && data.number !== undefined && data.url !== undefined) {
     return { number: data.number, url: data.url };
   }
-  if (response.status === 401) {
-    signOut();
-    throw new ReportApiError("signed-out");
+  if (response.status === 403) {
+    forgetInvite();
+    throw new ReportApiError("not-tester");
   }
-  if (data.error === "not-tester") throw new ReportApiError("not-tester");
   if (response.status === 413) throw new ReportApiError("too-large");
   throw new ReportApiError("failed");
 }

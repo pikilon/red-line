@@ -1,11 +1,10 @@
 import { type MessageKey, t } from "../i18n";
 import {
-  loadSession,
+  loadInvite,
   ReportApiError,
   type ReportDraft,
-  signIn,
-  signOut,
   submitReport,
+  whoAmI,
 } from "../report/api";
 
 /** What the match hands the report page when it opens (spec 47 §4). */
@@ -19,7 +18,7 @@ export interface ReportPageDeps {
   /** Grabs the screenshot, match save and context. */
   capture(): Promise<ReportCapture>;
   /** Network calls; tests replace them. */
-  signIn?: typeof signIn;
+  whoAmI?: () => Promise<string>;
   submit?: (draft: ReportDraft) => Promise<{ number: number; url: string }>;
 }
 
@@ -51,7 +50,7 @@ function errorText(error: unknown): string {
 
 /** The Report page of the Esc menu (spec 47). */
 export function createReportPage(deps: ReportPageDeps): ReportPage {
-  const doSignIn = deps.signIn ?? signIn;
+  const doWhoAmI = deps.whoAmI ?? whoAmI;
   const doSubmit = deps.submit ?? submitReport;
   const page = el("div", "game-menu-report");
   page.className = "game-menu-page";
@@ -65,30 +64,13 @@ export function createReportPage(deps: ReportPageDeps): ReportPage {
   const status = el("p", "report-status");
   status.setAttribute("role", "status");
 
-  // Signed-out view.
+  // No-invite view: testers get in only through their invite link (§3).
   const loginView = el("div", "report-login");
-  const email = el("input", "report-email");
-  email.type = "email";
-  email.autocomplete = "email";
-  email.placeholder = t("report.email");
-  const password = el("input", "report-password");
-  password.type = "password";
-  password.autocomplete = "current-password";
-  password.placeholder = t("report.password");
-  const signInButton = el("button", "report-sign-in", t("report.signIn"));
-  const registerButton = el("button", "report-register", t("report.register"));
-  loginView.append(
-    el("p", "report-login-hint", t("report.loginHint")),
-    email,
-    password,
-    signInButton,
-    registerButton,
-  );
+  loginView.append(el("p", "report-login-hint", t("report.inviteHint")));
 
   // Form view.
   const formView = el("div", "report-form");
   const who = el("p", "report-who");
-  const signOutButton = el("button", "report-sign-out", t("report.signOut"));
   const kind = el("select", "report-kind");
   for (const value of ["bug", "feature"] as const) {
     const option = document.createElement("option");
@@ -119,15 +101,7 @@ export function createReportPage(deps: ReportPageDeps): ReportPage {
     return input;
   };
   const sendButton = el("button", "report-send", t("report.send"));
-  formView.append(
-    who,
-    signOutButton,
-    kind,
-    title,
-    description,
-    filesLabel,
-    files,
-  );
+  formView.append(who, kind, title, description, filesLabel, files);
   const withScreenshot = checkbox(
     "report-with-screenshot",
     t("report.withScreenshot"),
@@ -153,35 +127,26 @@ export function createReportPage(deps: ReportPageDeps): ReportPage {
     loginView.hidden = view !== "login";
     formView.hidden = view !== "form";
     doneView.hidden = view !== "done";
-    const session = loadSession();
-    who.textContent =
-      session === null ? "" : t("report.signedInAs", { email: session.email });
   }
 
   function setBusy(value: boolean): void {
     busy = value;
-    for (const button of [signInButton, registerButton, sendButton]) {
-      button.disabled = value;
-    }
+    sendButton.disabled = value;
   }
 
-  async function login(register: boolean): Promise<void> {
-    if (busy) return;
-    if (email.value.trim() === "" || password.value.length < 6) {
-      status.textContent = t("report.error.credentials");
+  /** Shows the form when the stored invite is still valid. */
+  async function enter(): Promise<void> {
+    if (loadInvite() === null) {
+      show("login");
       return;
     }
-    setBusy(true);
-    status.textContent = t("report.signingIn");
+    show("form");
+    who.textContent = "";
     try {
-      await doSignIn(email.value, password.value, register);
-      password.value = "";
-      status.textContent = "";
-      show("form");
+      who.textContent = t("report.reportingAs", { name: await doWhoAmI() });
     } catch (error) {
       status.textContent = errorText(error);
-    } finally {
-      setBusy(false);
+      if (loadInvite() === null) show("login");
     }
   }
 
@@ -221,21 +186,13 @@ export function createReportPage(deps: ReportPageDeps): ReportPage {
       show("done");
     } catch (error) {
       status.textContent = errorText(error);
-      if (error instanceof ReportApiError && error.code === "signed-out") {
-        show("login");
-      }
+      if (loadInvite() === null) show("login");
     } finally {
       setBusy(false);
     }
   }
 
-  signInButton.addEventListener("click", () => void login(false));
-  registerButton.addEventListener("click", () => void login(true));
   sendButton.addEventListener("click", () => void send());
-  signOutButton.addEventListener("click", () => {
-    signOut();
-    show("login");
-  });
   anotherButton.addEventListener("click", () => show("form"));
   // Pasted images become attachments, like files picked by hand (spec 47 §4).
   formView.addEventListener("paste", (event) => {
@@ -270,7 +227,7 @@ export function createReportPage(deps: ReportPageDeps): ReportPage {
         context: {},
       }));
       status.textContent = "";
-      show(loadSession() === null ? "login" : "form");
+      void enter();
     },
   };
 }
