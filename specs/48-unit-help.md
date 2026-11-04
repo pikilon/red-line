@@ -119,7 +119,7 @@ Template: `client/src/i18n/help/ua-bradley.json`, `data/help/ua-bradley.yaml`,
    Prefer one to three shots per section; `hud: true` when a button matters.
 4. `data/saves/help-<id>-<what>.yaml`: a small scene (copy an existing save
    of the same spec, keep `debug: true`, `starts: false`, `victory: false`,
-   `client.revealed: true`). Camera `zoom: 3` centred on the action; with
+   `client.revealed: true`). Map players follow the stock maps: Ukraine is player 0, Russia player 1; for a Russian card set `client.controlled: 1`. Camera `zoom: 3` centred on the action; with
    `hud: true` keep the action in the upper two thirds. Map `showcase` is open
    ground around x 30-60, y 10-30 (tiles; `atCenti` is tiles × 100).
 5. Run `node --run help:shots -- --type <id>`, open every

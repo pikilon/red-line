@@ -12,7 +12,7 @@
     {
       "title": "Carry infantry",
       "how": "Select infantry, then left-click the Bradley.",
-      "body": "Up to six soldiers ride inside. Riders take only a tenth of the damage the vehicle takes, but they cannot shoot out: the Bradley has no firing ports. Riders cannot be selected until they leave.",
+      "body": "Up to six soldiers ride inside. If the Bradley is destroyed its riders get out with light wounds, but while inside they cannot shoot out: the Bradley has no firing ports. Riders cannot be selected until they leave.",
       "shots": ["ua-bradley-board"]
     },
     {

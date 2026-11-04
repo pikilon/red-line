@@ -1,0 +1,112 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ru-bmp-2-carry",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 1,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 44,
+      "y": 20,
+      "zoom": 3
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          4500,
+          2000
+        ],
+        "label": "bmp"
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4000,
+          1850
+        ],
+        "order": {
+          "board": "bmp"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4000,
+          2000
+        ],
+        "order": {
+          "board": "bmp"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4000,
+          2150
+        ],
+        "order": {
+          "board": "bmp"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rpg-gunner",
+        "atCenti": [
+          3900,
+          1850
+        ],
+        "order": {
+          "board": "bmp"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rpg-gunner",
+        "atCenti": [
+          3900,
+          2000
+        ],
+        "order": {
+          "board": "bmp"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rpg-gunner",
+        "atCenti": [
+          3900,
+          2150
+        ],
+        "order": {
+          "board": "bmp"
+        }
+      }
+    ]
+  }
+}

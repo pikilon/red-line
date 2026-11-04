@@ -1,0 +1,18 @@
+# Spec 48: help card of the BMP-2. A squad boards it; select the BMP-2 to see Unload (n).
+id: help-ru-bmp-2-carry
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 44, y: 20, zoom: 3 }
+entities:
+  - { player: 1, type: ru-bmp-2, atCenti: [4500, 2000], label: bmp }
+  - { player: 1, type: ru-rifleman, atCenti: [4000, 1850], order: { board: bmp } }
+  - { player: 1, type: ru-rifleman, atCenti: [4000, 2000], order: { board: bmp } }
+  - { player: 1, type: ru-rifleman, atCenti: [4000, 2150], order: { board: bmp } }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [3900, 1850], order: { board: bmp } }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [3900, 2000], order: { board: bmp } }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [3900, 2150], order: { board: bmp } }

@@ -386,6 +386,30 @@
       "entities": 12
     },
     {
+      "id": "help-ru-bmp-2-carry",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 7
+    },
+    {
+      "id": "help-ru-bmp-2-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ru-bmp-2-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-bmp-2-swim",
+      "map": "demo-bridges",
+      "form": "setup",
+      "entities": 3
+    },
+    {
       "id": "help-ua-bradley-carry",
       "map": "showcase",
       "form": "setup",
