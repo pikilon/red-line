@@ -1,4 +1,5 @@
-// Tester report → GitHub issue (specs/47-tester-reports.md).
+// Tester report → GitHub issue (specs/47-tester-reports.md). Testers are
+// identified by the secret in their invite link (header `x-tester-token`).
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const REPO = Deno.env.get("GITHUB_REPO") ?? "pikilon/red-line";
@@ -10,8 +11,8 @@ const MAX_DESCRIPTION = 20_000;
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "authorization, x-client-info, apikey, content-type, x-tester-token",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
 function json(status: number, body: unknown): Response {
@@ -26,6 +27,23 @@ const admin = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
   { auth: { persistSession: false } },
 );
+
+async function testerFor(token: string): Promise<{ name: string } | null> {
+  if (token.length < 16) return null;
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(token),
+  );
+  const hash = [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+  const { data } = await admin
+    .from("testers")
+    .select("name")
+    .eq("token_hash", hash)
+    .maybeSingle();
+  return data;
+}
 
 function safeName(name: string): string {
   const cleaned = name.replace(/[^\w.-]+/g, "_").slice(-80);
@@ -46,18 +64,11 @@ async function github(path: string, init: RequestInit): Promise<Response> {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
-  if (req.method !== "POST") return json(405, { error: "method" });
-
-  const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer /, "");
-  const { data: userData } = await admin.auth.getUser(jwt);
-  const email = userData.user?.email?.toLowerCase();
-  if (email === undefined) return json(401, { error: "signed-out" });
-  const { data: tester } = await admin
-    .from("testers")
-    .select("name")
-    .eq("email", email)
-    .maybeSingle();
+  const tester = await testerFor(req.headers.get("x-tester-token") ?? "");
   if (tester === null) return json(403, { error: "not-tester" });
+  // GET tells the game who the invite belongs to.
+  if (req.method === "GET") return json(200, { name: tester.name });
+  if (req.method !== "POST") return json(405, { error: "method" });
 
   let form: FormData;
   try {
@@ -103,7 +114,7 @@ Deno.serve(async (req) => {
     uploaded.push({ role, name, url, image: file.type.startsWith("image/") });
   }
 
-  const lines: string[] = [description, ""];
+  const lines: string[] = [`**Reporter:** ${tester.name}`, "", description, ""];
   const screenshot = uploaded.find((u) => u.role === "screenshot");
   if (screenshot !== undefined) {
     lines.push("## Screenshot", "", `![screenshot](${screenshot.url})`, "");
@@ -132,7 +143,7 @@ Deno.serve(async (req) => {
     JSON.stringify(context, null, 2),
     "```",
     "",
-    `Reported by **${tester.name}** from the in-game report (spec 47).`,
+    "_Sent from the in-game report (spec 47)._",
   );
 
   const created = await github(`/repos/${REPO}/issues`, {
