@@ -215,6 +215,7 @@ import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
 import { createQuickBar } from "../ui/quickBar";
 import { createResourceBar } from "../ui/resourceBar";
+import { createHelpCard } from "../ui/helpCard";
 import { createSaveManager, type SlotView } from "../ui/saveManager";
 import { createSelectionBox } from "../ui/selectionBox";
 import { createTouchControls, isTouchDevice } from "../ui/touchControls";
@@ -559,6 +560,52 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   };
   let lastCashSoundAt = -Infinity;
   const hudBar = createHudBar(document.body);
+  // Spec 48: help cards. `?` arms help; a tile or chip then opens its card.
+  let helpOpen = false;
+  let helpArmed = false;
+  let swallowClick = false;
+  const helpCard = createHelpCard(document.body, (open) => {
+    helpOpen = open;
+    syncPause();
+  });
+  hudBar.selection.dataset.helpHint = t("help.armed");
+  function setHelpArmed(armed: boolean): void {
+    helpArmed = armed;
+    hudBar.help.setAttribute("aria-pressed", String(armed));
+    document.getElementById("hud-bar")?.toggleAttribute("data-help", armed);
+  }
+  hudBar.help.addEventListener("click", () => {
+    uiClick();
+    setHelpArmed(!helpArmed);
+  });
+  // Capture, so the press never builds, cancels or narrows (spec 48 §3.1).
+  hudBar.content.addEventListener(
+    "pointerdown",
+    (event) => {
+      swallowClick = false;
+      if (!helpArmed || !(event.target instanceof Element)) return;
+      const target = event.target.closest<HTMLElement>(".tile, .chip");
+      const typeId = target?.dataset.type;
+      if (typeId === undefined) return;
+      event.stopPropagation();
+      event.preventDefault();
+      swallowClick = true;
+      setHelpArmed(false);
+      uiClick();
+      helpCard.open(typeId);
+    },
+    true,
+  );
+  hudBar.content.addEventListener(
+    "click",
+    (event) => {
+      if (!swallowClick) return;
+      swallowClick = false;
+      event.stopPropagation();
+      event.preventDefault();
+    },
+    true,
+  );
   const resourceBar = createResourceBar(hudBar.status, {
     onCreditsChange(delta) {
       const now = performance.now();
@@ -689,7 +736,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       open: savesOpen,
       mode: savesMode,
       slots,
-      examples: EXAMPLE_IDS,
+      // Help-card scenes (spec 48 §3.3) load by URL but stay out of the menu.
+      examples: EXAMPLE_IDS.filter((id) => !id.startsWith("help-")),
       storageAvailable,
       defaultName: defaultSaveName(mapId, next?.tick ?? 0),
     });
@@ -1640,7 +1688,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     selected: () => controller?.selected ?? NO_SELECTION,
     select: (ids) => controller?.setSelection(ids),
     centre: (x, y) => moveCamera(x, y),
-    active: () => !paused,
+    active: () => !paused && !helpOpen,
     onGroupSelect: () => hudBar.keepTabOnce(),
   });
 
@@ -2049,19 +2097,26 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     return wallMs - pausedTotalMs - ongoing;
   }
 
-  /** Opens or closes the game menu; there is no pause without the menu
-   *  (spec 08 §3.1). */
+  /** Pauses while the game menu or a help card is open (spec 08 §3.1,
+   *  spec 48 §3.2). */
+  function syncPause(): void {
+    const want = paused || helpOpen;
+    if (want === (pauseStartMs !== null)) return;
+    if (want) {
+      pauseStartMs = performance.now();
+    } else if (pauseStartMs !== null) {
+      pausedTotalMs += performance.now() - pauseStartMs;
+      pauseStartMs = null;
+    }
+    interact.setPaused(want);
+    audioMixer.setPaused(want);
+  }
+
+  /** Opens or closes the game menu. */
   function setMenuOpen(open: boolean): void {
     if (paused !== open) {
       paused = open;
-      if (open) {
-        pauseStartMs = performance.now();
-      } else if (pauseStartMs !== null) {
-        pausedTotalMs += performance.now() - pauseStartMs;
-        pauseStartMs = null;
-      }
-      interact.setPaused(paused);
-      audioMixer.setPaused(paused);
+      syncPause();
     }
     if (!open && savesOpen) {
       savesOpen = false;
@@ -2072,6 +2127,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
 
   /** What `Esc` does: cancels a placement mode, else toggles the menu. */
   function toggleMenuLikeEsc(): void {
+    if (helpCard.isOpen()) {
+      helpCard.close();
+      return;
+    }
     if (saveManager.handleEscape()) return;
     if (placementKind !== null) {
       placementKind = null;
@@ -2088,6 +2147,13 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       return;
     }
     if (event.key !== "Escape") return;
+    // Spec 48 §3.1: Esc closes a help card, then disarms help.
+    if (helpCard.isOpen() || helpArmed) {
+      event.preventDefault();
+      if (helpCard.isOpen()) helpCard.close();
+      else setHelpArmed(false);
+      return;
+    }
     // While a placement mode is active the controller cancels it instead; this
     // listener runs first, so it must leave the event alone (spec 08 §3.1).
     if (placementKind !== null) return;
@@ -2186,7 +2252,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     decals?.update(effectTime(now));
     relief?.update(effectTime(now));
     fogOverlay?.update(fog);
-    if (weather !== null && settings.weather !== false && !paused) {
+    if (weather !== null && settings.weather !== false && !paused && !helpOpen) {
       const focus = controller?.cameraTarget() ?? cameraTarget;
       weather.update(dtMs / 1000, focus);
     }
@@ -2265,7 +2331,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       mode: () => "skirmish",
       modelsReady: () => modelsReady,
       tick: () => next?.tick ?? 0,
-      paused: () => paused,
+      paused: () => paused || helpOpen,
       menuOpen: () => paused,
       aiActive: () => aiActive,
       controlledPlayer: () => controlled,

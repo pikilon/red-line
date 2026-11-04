@@ -384,6 +384,18 @@
       "map": "first-line",
       "form": "setup",
       "entities": 12
+    },
+    {
+      "id": "help-ua-bradley-carry",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-ua-bradley-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
     }
   ]
 }

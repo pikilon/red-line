@@ -1,0 +1,37 @@
+{
+  "id": "ua-bradley",
+  "role": "Infantry fighting vehicle",
+  "summary": "A tracked troop carrier with a fast-firing 25 mm autocannon. It shreds light vehicles, infantry and low drones, and carries a squad safely to the front.",
+  "sections": [
+    {
+      "title": "Autocannon",
+      "how": "Select the Bradley and right-click an enemy, or let it fire at anything in range.",
+      "body": "The Bushmaster fires short, quick bursts. It is deadly against infantry, scouts, other infantry fighting vehicles and low drones, but barely scratches a main battle tank.",
+      "shots": ["ua-bradley-fight"]
+    },
+    {
+      "title": "Carry infantry",
+      "how": "Select infantry, then left-click the Bradley.",
+      "body": "Up to six soldiers ride inside. Riders take only a tenth of the damage the vehicle takes, but they cannot shoot out: the Bradley has no firing ports. Riders cannot be selected until they leave.",
+      "shots": ["ua-bradley-board"]
+    },
+    {
+      "title": "Unload",
+      "how": "Select the loaded Bradley and press Unload (n).",
+      "body": "The riders step out one after another beside the vehicle. Drive close to the objective first, then unload.",
+      "shots": ["ua-bradley-unload"]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged Bradley and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The Bradley drives to the factory and is repaired for half its price, paid as the health comes back.",
+      "shots": ["ua-bradley-repair"]
+    }
+  ],
+  "strong": ["Infantry", "Scouts and light vehicles", "Low drones"],
+  "weak": ["Tanks", "Anti-tank teams and RPGs", "Artillery"],
+  "tips": [
+    "Pair it with tanks: the tank fights armour, the Bradley clears the infantry around it.",
+    "Unload anti-tank teams behind cover instead of driving the Bradley into a tank."
+  ]
+}

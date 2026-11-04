@@ -658,6 +658,8 @@ test("AC-19-01: builtin example saves are current and named", () => {
   const en = JSON.parse(readFileSync(join(root, "client/src/i18n/en.json"), "utf8"));
   for (const save of built.saves) {
     assert.deepEqual(generated(`saves/${save.id}.json`), save.file, `${save.id} is current`);
+    // Spec 48 §3.3: help-card scenes are not listed in the menu, so need no name.
+    if (save.id.startsWith("help-")) continue;
     assert.equal(typeof en[`saves.${save.id}.name`], "string", `saves.${save.id}.name`);
     assert.equal(typeof en[`saves.${save.id}.description`], "string", `saves.${save.id}.description`);
   }
