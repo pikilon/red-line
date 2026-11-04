@@ -36,6 +36,8 @@ C&C Generals. Behavior lives in `specs/*.md`; decisions in `docs/decisions.md`
   `node --run check`; CI fails on any Biome error (import order included).
 * To let the owner try a situation, give a `?load=<id>` URL from an example
   save (`node --run saves:list`; spec 19).
+* Tester invite links for in-game reports (spec 47): `node --run
+  testers:invite -- "Name"`, `testers:list`, `testers:revoke -- "Name"`.
 * `node --run deploy:pages` publishes the game publicly: only when the owner
   asks.
 
