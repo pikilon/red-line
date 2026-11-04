@@ -89,7 +89,8 @@
       "infantryPoints": 1,
       "dozerPoints": 3,
       "maxWorkers": 6,
-      "vehicleRepairTicks": 75
+      "vehicleRepairTicks": 75,
+      "costPermille": 500
     },
     "infirmary": {
       "healTicks": 30,
