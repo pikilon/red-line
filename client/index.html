@@ -175,12 +175,18 @@
       #tutorial button { margin: 8px 8px 0 0; padding: 8px 12px; border: 1px solid #4a525a; background: #262e35; color: #e6edf2; font: 700 13px/1 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
       #tutorial button:hover { border-color: #facc15; }
       @media (max-width: 600px) { #main-menu { justify-content: center; padding: 0 16px; background: rgba(0, 0, 0, 0.45); } }
-      #game-menu-panel { display: flex; flex-direction: column; gap: 8px; width: min(420px, calc(100vw - 32px)); max-height: calc(100vh - 24px); overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; box-sizing: border-box; padding: 20px 24px; border-radius: 6px; background: rgba(0, 0, 0, 0.85); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6); }
+      #game-menu-panel { display: flex; flex-direction: column; gap: 10px; width: min(300px, calc(100vw - 32px)); max-height: calc(100vh - 24px); overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; box-sizing: border-box; padding: 22px 20px; border: 1px solid #4a525a; border-top: 4px solid #c62828; background: linear-gradient(180deg, rgba(29, 35, 41, 0.94), rgba(20, 24, 28, 0.94)); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6); }
       @supports (height: 100dvh) {
         #save-manager-panel, #game-menu-panel { max-height: calc(100dvh - 24px); }
       }
-      #game-menu-panel h2 { margin: 0 0 8px; font-size: 22px; text-align: center; }
-      #game-menu-panel button { cursor: pointer; padding: 6px 10px; }
+      #game-menu-panel h2 { margin: 0 0 10px; color: #fff; font: 800 34px/1 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; text-align: center; text-shadow: 0 2px 6px #000; }
+      .game-menu-page { display: flex; flex-direction: column; gap: 10px; }
+      .game-menu-page[hidden] { display: none; }
+      #game-menu-panel button { padding: 12px 14px; border: 1px solid #4a525a; background: #262e35; color: #e6edf2; font: 700 15px/1 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; text-align: left; cursor: pointer; touch-action: manipulation; }
+      #game-menu-panel button:hover, #game-menu-panel button:focus-visible { border-color: #facc15; background: #323c45; color: #fff; outline: none; }
+      #game-menu-panel button:active { background: #facc15; color: #000; }
+      #game-menu-panel label { color: #e6edf2; font: 700 13px/1.6 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.1em; text-transform: uppercase; }
+      #game-menu-panel input[type=range] { width: 100%; accent-color: #facc15; }
       .bar-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 44px; min-height: 44px; padding: 0 6px; border: 1px solid #44525e; background: #1d242a; color: #e6edf2; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; }
       .bar-btn:active { background: #2a343c; }
       .bar-btn.active { border-color: #facc15; background: #facc15; color: #000; }

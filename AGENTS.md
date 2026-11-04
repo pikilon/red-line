@@ -31,6 +31,9 @@ C&C Generals. Behavior lives in `specs/*.md`; decisions in `docs/decisions.md`
   worktree: `node --run install:root && node --run install:client`.
 * CI runs `node --run verify`. Shells may lack cargo: prefix
   `PATH="$HOME/.cargo/bin:$PATH"`; `scripts/doctor.sh` checks the toolchain.
+* **Formatting and lint use Biome, never Prettier or ESLint.** Before every
+  commit run `cd client && npx biome check --write <changed files>` and then
+  `node --run check`; CI fails on any Biome error (import order included).
 * To let the owner try a situation, give a `?load=<id>` URL from an example
   save (`node --run saves:list`; spec 19).
 * `node --run deploy:pages` publishes the game publicly: only when the owner

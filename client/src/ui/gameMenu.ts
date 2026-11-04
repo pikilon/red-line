@@ -101,11 +101,30 @@ export function createGameMenu(
   const root = appendDiv(parent, "game-menu");
   root.hidden = true;
 
-  const panel = appendDiv(root, "game-menu-panel");
+  const frame = appendDiv(root, "game-menu-panel");
   const title = document.createElement("h2");
   title.id = "game-menu-title";
   title.textContent = t("menu.title");
-  panel.appendChild(title);
+  frame.appendChild(title);
+  // Same look as the main menu (spec 45): a main page plus Sound and Debug
+  // sub menus (spec 08 §3.10).
+  const makePage = (id: string): HTMLElement => {
+    const page = document.createElement("div");
+    page.id = id;
+    page.className = "game-menu-page";
+    return page;
+  };
+  const panel = makePage("game-menu-main");
+  const soundPage = makePage("game-menu-sound");
+  const debugPage = makePage("game-menu-debug");
+  const pages = [panel, soundPage, debugPage];
+  const showPage = (page: HTMLElement): void => {
+    for (const p of pages) p.hidden = p !== page;
+  };
+  showPage(panel);
+  for (const page of pages) frame.appendChild(page);
+  const backButton = (id: string): HTMLButtonElement =>
+    createButton(id, t("mainMenu.back"), () => showPage(panel));
 
   const resume = createButton("game-menu-resume", t("menu.resume"), () => {
     actions.resume();
@@ -136,8 +155,8 @@ export function createGameMenu(
       ),
     );
   }
-  panel.appendChild(gore);
-  panel.appendChild(ai);
+  debugPage.appendChild(gore);
+  debugPage.appendChild(ai);
   const toggleTextures = actions.toggleTextures;
   const textures =
     toggleTextures === undefined
@@ -145,10 +164,10 @@ export function createGameMenu(
       : createButton("game-menu-textures", t("menu.texturesProcedural"), () =>
           toggleTextures.call(actions),
         );
-  if (textures !== null) panel.appendChild(textures);
+  if (textures !== null) debugPage.appendChild(textures);
   const switchSide = actions.switchSide;
   if (switchSide !== undefined) {
-    panel.appendChild(
+    debugPage.appendChild(
       createButton("game-menu-switch", t("menu.switchSide"), () =>
         switchSide.call(actions),
       ),
@@ -161,7 +180,7 @@ export function createGameMenu(
       : createButton("game-menu-reveal", t("menu.revealOff"), () =>
           toggleReveal.call(actions),
         );
-  if (reveal !== null) panel.appendChild(reveal);
+  if (reveal !== null) debugPage.appendChild(reveal);
   const toggleWeather = actions.toggleWeather;
   const weather =
     toggleWeather === undefined
@@ -169,7 +188,7 @@ export function createGameMenu(
       : createButton("game-menu-weather", t("menu.weatherOn"), () =>
           toggleWeather.call(actions),
         );
-  if (weather !== null) panel.appendChild(weather);
+  if (weather !== null) debugPage.appendChild(weather);
   const toggleFpsPanel = actions.toggleFpsPanel;
   const fps =
     toggleFpsPanel === undefined
@@ -177,7 +196,7 @@ export function createGameMenu(
       : createButton("game-menu-fps", t("menu.fpsOff"), () =>
           toggleFpsPanel.call(actions),
         );
-  if (fps !== null) panel.appendChild(fps);
+  if (fps !== null) debugPage.appendChild(fps);
 
   const sliderRows: VolumeSliderRow[] = [];
   const setVolume = actions.setVolume;
@@ -220,7 +239,7 @@ export function createGameMenu(
       },
     ];
     for (const def of defs) {
-      const row = appendDiv(panel, `${def.id}-row`);
+      const row = appendDiv(soundPage, `${def.id}-row`);
       const labelEl = document.createElement("label");
       labelEl.id = `${def.id}-label`;
       labelEl.textContent = t(def.labelKey, { pct: def.defaultVal });
@@ -247,6 +266,20 @@ export function createGameMenu(
     }
   }
 
+  if (setVolume !== undefined) {
+    soundPage.appendChild(backButton("game-menu-sound-back"));
+    panel.appendChild(
+      createButton("game-menu-sound-open", t("menu.sound"), () =>
+        showPage(soundPage),
+      ),
+    );
+  }
+  debugPage.appendChild(backButton("game-menu-debug-back"));
+  panel.appendChild(
+    createButton("game-menu-debug-open", t("menu.debug"), () =>
+      showPage(debugPage),
+    ),
+  );
   panel.appendChild(restart);
 
   /** Last rendered view; an equal render mutates nothing. */
@@ -272,6 +305,7 @@ export function createGameMenu(
       ) {
         return;
       }
+      const wasOpen = last?.open === true;
       last = {
         open: view.open,
         gore: view.gore,
@@ -287,6 +321,7 @@ export function createGameMenu(
         audioMusic: view.audioMusic,
       };
       if (root.hidden !== !view.open) root.hidden = !view.open;
+      if (view.open && !wasOpen) showPage(panel);
       setText(gore, t(view.gore ? "menu.goreOn" : "menu.goreOff"));
       if (textures !== null) {
         setText(
