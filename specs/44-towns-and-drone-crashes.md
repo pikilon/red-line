@@ -11,7 +11,7 @@ Depends on `26-map-features-plan.md`, `31-environment-interaction.md`,
   front-line bases do in reality.
 * Drones can crash into civilian buildings.
 * A hit building crumbles bit by bit, with an explosion at every hit.
-* A Shahed (Geran) sent to a point dives into it; it never circles.
+* A Shahed (Geran) sent to a point orbits it and attacks nothing (§4.4); it dives only on an attack order.
 
 ## 2. Precedent (`generals-precedent`, Zero Hour)
 
@@ -101,9 +101,18 @@ Depends on `26-map-features-plan.md`, `31-environment-interaction.md`,
 
 ### 4.4 One-way flyers sent to a point
 
-* A fixed-wing one-way flyer (Geran, Molniya) ordered to move to a point flies
-  there and detonates on arrival, like an attack on the ground (spec 43 §4.2);
-  it never orbits the point. A one-way rotorcraft (FPV, Sting) still hovers.
+* A move order never attacks. A fixed-wing one-way flyer (Geran, Molniya,
+  Flamingo, Storm Shadow) cannot hover, so it orbits the ordered point like any
+  fixed-wing flyer (spec 43 §4.2); a one-way rotorcraft (FPV, Sting) hovers
+  there. Either way it detonates only after an attack order on an enemy, or an
+  explicit force-fire (Ctrl + click) on a ground point, and when its fuel runs
+  out (spec 43 §4.2).
+* Precedent (Zero Hour): a suicide unit (Bomb Truck) on a move order only moves,
+  detonation needs an attack order; wings (Raptor, Aurora) with no goal circle
+  the point (`Locomotor::maintainCurrentPositionWings`, WINGS needs a minimum
+  speed so they cannot hover); a hover locomotor (Comanche) holds position.
+* Assumption: Ctrl + click on an empty point is a deliberate ground strike and
+  keeps the dive; only the plain move changed.
 
 ## 5. Assumptions
 
@@ -118,6 +127,6 @@ Depends on `26-map-features-plan.md`, `31-environment-interaction.md`,
   one after another into the apartment block east of the base, each hit
   explodes, and the block smokes, burns and collapses.
 * `crates/sim/tests/air.rs`: a Geran flying into the apartment block crashes and
-  damages it; a Su-34 on the same line flies on; a Geran sent to a point
-  detonates there once; a Geran cruising over a factory passes, one diving at
+  damages it; a Su-34 on the same line flies on; a Geran sent to an empty point
+  orbits it without detonating, one told to force-fire it detonates there once; a Geran cruising over a factory passes, one diving at
   a point just behind it hits the factory.

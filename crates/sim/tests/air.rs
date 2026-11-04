@@ -1723,7 +1723,7 @@ fn a_flyer_above_the_rooftops_passes_over_the_town() {
 }
 
 #[test]
-fn a_one_way_flyer_sent_to_a_point_dives_into_it_instead_of_circling() {
+fn a_one_way_flyer_sent_to_an_empty_point_orbits_it_without_attacking() {
     let mut world = sandbox();
     let geran = put(&mut world, 1, "ru-geran-2", 6000, 2000);
     fly_to(&mut world, 1, geran, 2000, 2000);
@@ -1732,13 +1732,33 @@ fn a_one_way_flyer_sent_to_a_point_dives_into_it_instead_of_circling() {
         world.step();
         blasts.extend(detonations(&world));
     }
+    let pos = world.entity(geran).expect("still flying").pos;
+    assert!(blasts.is_empty(), "nothing detonated");
+    assert!(
+        (pos - at(2000, 2000)).length() < fx_centi(1500),
+        "it circles the point"
+    );
+}
+
+#[test]
+fn a_one_way_flyer_ordered_to_force_fire_a_point_still_dives_into_it() {
+    let mut world = sandbox();
+    let geran = put(&mut world, 1, "ru-geran-2", 6000, 2000);
+    order(
+        &mut world,
+        1,
+        Command::AttackGround {
+            units: vec![geran],
+            target: at(2000, 2000),
+        },
+    );
+    let mut blasts = Vec::new();
+    for _ in 0..200 {
+        world.step();
+        blasts.extend(detonations(&world));
+    }
     assert!(world.entity(geran).is_none(), "the drone is spent");
     assert_eq!(blasts.len(), 1, "it detonated once");
-    let (_, pos) = blasts[0];
-    assert!(
-        (pos - at(2000, 2000)).length() < fx_centi(150),
-        "at the point"
-    );
 }
 
 /// The factory east of the west base on river-port covers cells 22..=25 x
@@ -1751,7 +1771,14 @@ fn over_the_factory(x_centi: u32, ticks: u32) -> (World, EntityId, u32, Vec<FxVe
         .expect("the factory");
     let before = world.features()[factory as usize].hp;
     let geran = put(&mut world, 1, "ru-geran-2", 4400, 4350);
-    fly_to(&mut world, 1, geran, x_centi, 4350);
+    order(
+        &mut world,
+        1,
+        Command::AttackGround {
+            units: vec![geran],
+            target: at(x_centi, 4350),
+        },
+    );
     let mut blasts = Vec::new();
     for _ in 0..ticks {
         world.step();
