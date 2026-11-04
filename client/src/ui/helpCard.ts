@@ -38,7 +38,14 @@ export function createHelpCard(
   root.appendChild(sheet);
   parent.appendChild(root);
   // Nothing under the card reaches the map.
-  for (const type of ["pointerdown", "pointerup", "click", "wheel", "contextmenu", "touchstart"]) {
+  for (const type of [
+    "pointerdown",
+    "pointerup",
+    "click",
+    "wheel",
+    "contextmenu",
+    "touchstart",
+  ]) {
     root.addEventListener(type, (event) => event.stopPropagation());
   }
   let downOnBackdrop = false;
@@ -74,7 +81,10 @@ export function createHelpCard(
     return table;
   }
 
-  function list(title: string, items: readonly string[] | undefined): HTMLElement | null {
+  function list(
+    title: string,
+    items: readonly string[] | undefined,
+  ): HTMLElement | null {
     if (items === undefined || items.length === 0) return null;
     const box = el("div", "hc-list");
     box.append(el("h4", "", title));
@@ -105,13 +115,22 @@ export function createHelpCard(
     const titles = el("div", "hc-titles");
     titles.append(
       el("h2", "", kind >= 0 ? typeName(kind) : card.id),
-      el("p", "hc-role", `${def === undefined ? "" : `${factionName(def.faction)} · `}${card.role}`),
+      el(
+        "p",
+        "hc-role",
+        `${def === undefined ? "" : `${factionName(def.faction)} · `}${card.role}`,
+      ),
     );
     const closeButton = el("button", "hc-close", "×");
     closeButton.type = "button";
     closeButton.setAttribute("aria-label", t("help.close"));
     closeButton.addEventListener("click", () => close());
-    head.append(cameo(card.id), titles, el("span", "hc-paused", t("help.paused")), closeButton);
+    head.append(
+      cameo(card.id),
+      titles,
+      el("span", "hc-paused", t("help.paused")),
+      closeButton,
+    );
     const body = el("div", "hc-body");
     body.append(statsTable(card.id), el("p", "hc-summary", card.summary));
     card.sections.forEach((section, index) => {

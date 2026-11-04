@@ -16,7 +16,9 @@ interface Recipe {
 
 function recipes(card: string): Recipe[] {
   const file = join(ROOT, "data/help", `${card}.yaml`);
-  return existsSync(file) ? ((parse(readFileSync(file, "utf8")) ?? []) as Recipe[]) : [];
+  return existsSync(file)
+    ? ((parse(readFileSync(file, "utf8")) ?? []) as Recipe[])
+    : [];
 }
 
 describe("spec 48 help cards", () => {

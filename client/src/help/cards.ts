@@ -61,7 +61,10 @@ export function isLaunched(typeId: string): boolean {
  *  faction (common types are the test placeholder and supply depots). */
 export function helpedTypes(): string[] {
   return RULES.types
-    .filter((type) => type.category !== "depot" && type.id !== "tech-slice-placeholder")
+    .filter(
+      (type) =>
+        type.category !== "depot" && type.id !== "tech-slice-placeholder",
+    )
     .map((type) => type.id);
 }
 

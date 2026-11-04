@@ -33,11 +33,7 @@
     "Keeping drone crews supplied",
     "Long games with distant depots"
   ],
-  "weak": [
-    "Tanks and infantry",
-    "Artillery",
-    "Aircraft"
-  ],
+  "weak": ["Tanks and infantry", "Artillery", "Aircraft"],
   "tips": [
     "The first truck is free when the supply center finishes; build more to keep income flowing while another truck drives.",
     "Build the supply center near the depot you work: every truck returns to the nearest completed one.",

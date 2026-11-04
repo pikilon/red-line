@@ -28,8 +28,16 @@
       "shots": ["ua-hq-sell"]
     }
   ],
-  "strong": ["Producing dozers", "A sturdy starting building", "A rally point behind the line"],
-  "weak": ["It has no weapon", "Tanks and artillery", "It cannot repair itself"],
+  "strong": [
+    "Producing dozers",
+    "A sturdy starting building",
+    "A rally point behind the line"
+  ],
+  "weak": [
+    "It has no weapon",
+    "Tanks and artillery",
+    "It cannot repair itself"
+  ],
   "tips": [
     "Build a power plant first: the headquarters gives no power.",
     "Set a rally point near the construction site so new dozers start working at once.",

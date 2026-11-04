@@ -208,6 +208,7 @@ import {
   selectionLabel,
 } from "../ui/commandPanel";
 import { createGameMenu } from "../ui/gameMenu";
+import { createHelpCard } from "../ui/helpCard";
 import { createHudBar } from "../ui/hudBar";
 import { createMainMenu } from "../ui/mainMenu";
 import { createMinimap, type MinimapTerrain } from "../ui/minimap";
@@ -215,7 +216,6 @@ import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
 import { createQuickBar } from "../ui/quickBar";
 import { createResourceBar } from "../ui/resourceBar";
-import { createHelpCard } from "../ui/helpCard";
 import { createSaveManager, type SlotView } from "../ui/saveManager";
 import { createSelectionBox } from "../ui/selectionBox";
 import { createTouchControls, isTouchDevice } from "../ui/touchControls";
@@ -2252,7 +2252,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     decals?.update(effectTime(now));
     relief?.update(effectTime(now));
     fogOverlay?.update(fog);
-    if (weather !== null && settings.weather !== false && !paused && !helpOpen) {
+    if (
+      weather !== null &&
+      settings.weather !== false &&
+      !paused &&
+      !helpOpen
+    ) {
       const focus = controller?.cameraTarget() ?? cameraTarget;
       weather.update(dtMs / 1000, focus);
     }

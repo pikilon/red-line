@@ -51,6 +51,11 @@
       "how": "Select one or more crews, then left-click your own BRDM-2 or BMP-2.",
       "body": "They climb aboard and cannot be selected until they get out. A BRDM-2 has firing ports, so its passengers can fire from inside; a BMP-2 has none, so they ride protected but silent. If the BRDM-2 is destroyed its riders are killed, while a destroyed BMP-2 only hurts them. Select the loaded vehicle and press Unload to let them out.",
       "shots": ["ru-molniya-crew-board"]
+    },
+    {
+      "title": "Repair bridges",
+      "how": "Select one or more soldiers and left-click a damaged or broken bridge.",
+      "body": "The soldiers walk to the bank and repair the bridge for free. Every worker adds a share, up to six; a dozer counts for three. A broken bridge opens again once it is repaired enough to carry traffic."
     }
   ],
   "strong": [

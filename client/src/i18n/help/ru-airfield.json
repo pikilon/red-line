@@ -1,7 +1,7 @@
 {
   "id": "ru-airfield",
   "role": "Aviation production and reload",
-  "summary": "Russia's airbase: it builds the Su-34 strike jet and the Orlan spotter, and reloads and repairs both for free. It is large, draws power and needs a vehicle factory, but it has no weapon of its own.",
+  "summary": "Russia's airbase: it builds the Su-34 strike jet and the Orlan spotter, and reloads and repairs the Su-34 for free. It is large, draws power and needs a vehicle factory, but it has no weapon of its own.",
   "sections": [
     {
       "title": "Build aircraft",
@@ -12,7 +12,7 @@
     {
       "title": "Reload and repair aircraft",
       "how": "Let a Su-34 spend its bombs, or press Stop to send it home early. A damaged aircraft is repaired while it rearms.",
-      "body": "When a Su-34 has dropped its two glide bombs, or is left idle, it flies to the nearest own airfield. It docks, refills its whole clip in one reload and has its damage repaired for free, then waits for your next order. Pressing Stop sends it home even with bombs left. The Orlan carries no weapon, but it is repaired at the airfield too. Any number of aircraft can use one airfield, and a parked aircraft with a weapon still fires at enemies in range. With no airfield left, an empty aircraft cannot rearm and slowly loses health.",
+      "body": "When a Su-34 has dropped its two glide bombs, or is left idle, it flies to the nearest own airfield. It docks, refills its whole clip in one reload and has its damage repaired for free, then waits for your next order. Pressing Stop sends it home even with bombs left. The Orlan has no bombs to reload and is not serviced here. Any number of aircraft can use one airfield, and a parked aircraft with a weapon still fires at enemies in range. With no airfield left, an empty aircraft cannot rearm and slowly loses health.",
       "shots": ["ru-airfield-reload"]
     },
     {

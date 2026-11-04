@@ -45,7 +45,9 @@ export function helpStats(typeId: string): HelpStat[] {
       ),
     );
   }
-  out.push(stat("sight", t("help.unit.tiles", { value: tiles(def.sightCenti) })));
+  out.push(
+    stat("sight", t("help.unit.tiles", { value: tiles(def.sightCenti) })),
+  );
   const weapon = WEAPONS[def.weapon];
   if (def.weapon >= 0 && weapon !== undefined) {
     const damage = ruleset.damageTypes[weapon.damageType];
@@ -63,12 +65,16 @@ export function helpStats(typeId: string): HelpStat[] {
     out.push(
       stat(
         "targets",
-        t(`help.targets.${ground ? "ground" : "noGround"}.${air}` as MessageKey),
+        t(
+          `help.targets.${ground ? "ground" : "noGround"}.${air}` as MessageKey,
+        ),
       ),
     );
   }
   if (def.transport !== undefined)
-    out.push(stat("carries", t("help.unit.slots", { count: def.transport.slots })));
+    out.push(
+      stat("carries", t("help.unit.slots", { count: def.transport.slots })),
+    );
   if (def.power !== 0)
     out.push(
       stat("power", def.power > 0 ? `+${def.power}` : String(def.power)),
