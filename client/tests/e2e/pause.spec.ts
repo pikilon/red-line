@@ -133,6 +133,7 @@ test("AC-08-03: game menu in the skirmish", async ({ page }) => {
   // The gore button toggles the setting and its label.
   await page.keyboard.press("Escape");
   await expect(menu).toBeVisible();
+  await page.locator("#game-menu-debug-open").click();
   const goreOn = await gore(page);
   await expect(goreButton).toHaveText(goreOn ? "Gore: on" : "Gore: off");
   await goreButton.click();
@@ -173,6 +174,7 @@ test("AC-08-09: AI toggle in the skirmish", async ({ page }) => {
   // A real mouse click toggles the AI off and back on.
   await page.keyboard.press("Escape");
   await expect(page.locator("#game-menu")).toBeVisible();
+  await page.locator("#game-menu-debug-open").click();
   await expect(aiButton).toHaveText("AI: on");
   await page.getByRole("button", { name: "AI: on" }).click();
   await expect(aiButton).toHaveText("AI: off");
@@ -186,5 +188,6 @@ test("AC-08-09: AI toggle in the skirmish", async ({ page }) => {
   expect(await aiActive(page)).toBeNull();
   await page.keyboard.press("Escape");
   await expect(page.locator("#game-menu")).toBeVisible();
+  await page.locator("#game-menu-debug-open").click();
   await expect(aiButton).toBeHidden();
 });
