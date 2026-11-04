@@ -1,0 +1,15 @@
+# Spec 48: help card of the Russian rifleman. A squad waits by the apartment block with the Garrison button offered.
+id: help-ru-rifleman-garrison
+map: demo-town
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 17, y: 26, zoom: 3 }
+entities:
+  - { player: 1, type: ru-rifleman, atCenti: [1500, 2800] }
+  - { player: 1, type: ru-rifleman, atCenti: [1600, 2800] }
+  - { player: 1, type: ru-rifleman, atCenti: [1700, 2800] }
+  - { player: 1, type: ru-rifleman, atCenti: [1800, 2800] }

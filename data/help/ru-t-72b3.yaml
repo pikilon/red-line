@@ -1,0 +1,4 @@
+# Spec 48 §3.3: screenshots of the T-72B3 card. `node --run help:shots -- --type ru-t-72b3`
+- { id: ru-t-72b3-fight, save: help-ru-t-72b3-fight, ticks: 55, select: [ru-t-72b3] }
+- { id: ru-t-72b3-crush, save: help-ru-t-72b3-crush, ticks: 40, select: [ru-t-72b3] }
+- { id: ru-t-72b3-repair, save: help-ru-t-72b3-repair, ticks: 10, select: [ru-t-72b3], hud: true }

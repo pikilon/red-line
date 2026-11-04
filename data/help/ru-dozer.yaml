@@ -1,0 +1,7 @@
+# Spec 48 §3.3: screenshots of the Russian dozer card. `node --run help:shots -- --type ru-dozer`
+- { id: ru-dozer-build, save: help-ru-dozer-build, ticks: 5, select: [ru-dozer], hud: true, tab: build }
+- { id: ru-dozer-resume, save: help-ru-dozer-build, ticks: 10, select: [ru-dozer] }
+- { id: ru-dozer-repair-building, save: help-ru-dozer-repair-building, ticks: 10, select: [ru-dozer] }
+- { id: ru-dozer-dig, save: help-ru-dozer-dig, ticks: 100, select: [ru-dozer] }
+- { id: ru-dozer-bridge, save: help-ru-dozer-bridge, ticks: 300, select: [ru-dozer] }
+- { id: ru-dozer-repair, save: help-ru-dozer-repair, ticks: 10, select: [ru-dozer], hud: true, tab: orders }

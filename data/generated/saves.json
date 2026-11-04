@@ -410,6 +410,228 @@
       "entities": 3
     },
     {
+      "id": "help-ru-brdm-scout-carry",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-ru-brdm-scout-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ru-brdm-scout-fireports",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 9
+    },
+    {
+      "id": "help-ru-brdm-scout-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-brdm-scout-swim",
+      "map": "demo-bridges",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-dozer-bridge",
+      "map": "demo-bridges",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ru-dozer-build",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 6
+    },
+    {
+      "id": "help-ru-dozer-dig",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ru-dozer-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-dozer-repair-building",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-rifleman-air",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-rifleman-board",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ru-rifleman-bridge",
+      "map": "demo-bridges",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-rifleman-dig",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-rifleman-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ru-rifleman-garrison",
+      "map": "demo-town",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ru-rifleman-heal",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ru-rifleman-trench",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 7
+    },
+    {
+      "id": "help-ru-rpg-gunner-board",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ru-rpg-gunner-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-rpg-gunner-garrison",
+      "map": "demo-town",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-rpg-gunner-heal",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ru-rpg-gunner-move",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ru-rpg-gunner-trench",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-supply-truck-harvest",
+      "map": "demo-ground",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-supply-truck-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-supply-truck-resupply",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-t-72b3-crush",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-ru-t-72b3-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-t-72b3-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-tos-1a-attack-ground",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-tos-1a-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 7
+    },
+    {
+      "id": "help-ru-tos-1a-garrison",
+      "map": "demo-town",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-ru-tos-1a-min-range",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-tos-1a-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-tos-1a-splash",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 7
+    },
+    {
+      "id": "help-ru-tos-1a-trench",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
       "id": "help-ua-baba-yaga-bomb",
       "map": "showcase",
       "form": "setup",

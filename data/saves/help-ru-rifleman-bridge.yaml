@@ -1,0 +1,16 @@
+# Spec 48: help card of the Russian rifleman. Three soldiers repair a broken road bridge from the west bank.
+id: help-ru-rifleman-bridge
+map: demo-bridges
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 29, y: 23.5, zoom: 3 }
+features:
+  - { at: [30, 23], hpPercent: 20 }
+entities:
+  - { player: 1, type: ru-rifleman, atCenti: [2500, 2200], order: { repair: [30, 23] } }
+  - { player: 1, type: ru-rifleman, atCenti: [2500, 2300], order: { repair: [30, 23] } }
+  - { player: 1, type: ru-rifleman, atCenti: [2500, 2400], order: { repair: [30, 23] } }

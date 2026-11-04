@@ -1,0 +1,65 @@
+{
+  "id": "ru-tos-1a",
+  "role": "Heavy thermobaric rocket launcher",
+  "summary": "A tracked launcher that fires a salvo of thermobaric rockets in a high arc. The blast is devastating against infantry and buildings and can break a trench line, but tanks shrug it off and it cannot defend itself up close.",
+  "sections": [
+    {
+      "title": "Thermobaric rockets",
+      "how": "Select the TOS-1A and left-click an enemy, or let it fire at any spotted target in range.",
+      "body": "Each shot launches four rockets that climb and come down scattered around the target. Their thermobaric warheads are strongest against infantry and buildings, and weak against armoured vehicles.",
+      "shots": ["ru-tos-1a-fight"]
+    },
+    {
+      "title": "Splash damage",
+      "how": "Fire at a cluster, or at the ground beside it.",
+      "body": "Every rocket bursts over a wide area, not just the unit it was aimed at. Overlapping blasts can wipe out a whole infantry group, and they hurt friendly units too, so keep your own troops clear of the target.",
+      "shots": ["ru-tos-1a-splash"]
+    },
+    {
+      "title": "Break trenches",
+      "how": "Select the TOS-1A and left-click the trench holding an enemy squad.",
+      "body": "Thermobaric blasts count as high explosive against earthworks: they wear a trench down and, when a section collapses, catch the soldiers left in the open. A full trench may need more than one salvo.",
+      "shots": ["ru-tos-1a-trench"]
+    },
+    {
+      "title": "Shell garrisons",
+      "how": "Select the TOS-1A and left-click a building held by enemy infantry.",
+      "body": "The rockets break the structure while the squad is inside. A wrecked building throws the survivors out, and one that is destroyed can bury them. Repeated salvos are needed to bring a large building down.",
+      "shots": ["ru-tos-1a-garrison"]
+    },
+    {
+      "title": "Minimum range",
+      "how": "Keep the TOS-1A behind the line; if an enemy closes in, select it and left-click the ground to drive away.",
+      "body": "The launcher cannot fire at targets that get too close. Enemy tanks and fast units that reach it can attack without reply, so keep an escort between it and the front.",
+      "shots": ["ru-tos-1a-min-range"]
+    },
+    {
+      "title": "Attack ground",
+      "how": "Select the TOS-1A, hold Ctrl and left-click the ground, or press Force fire and tap the ground.",
+      "body": "The launcher shells the chosen point even when no enemy is in sight, and keeps firing until you give another order or press Stop. A scout can spot the target, but the blast still hurts your own units.",
+      "shots": ["ru-tos-1a-attack-ground"]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged TOS-1A and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The TOS-1A drives to the factory and is repaired for half its price, paid as the health comes back.",
+      "shots": ["ru-tos-1a-repair"]
+    }
+  ],
+  "strong": [
+    "Infantry in the open",
+    "Buildings and garrisons",
+    "Trenches and static defenses"
+  ],
+  "weak": [
+    "Tanks and armoured vehicles",
+    "Fast units that close in",
+    "Aircraft"
+  ],
+  "tips": [
+    "Keep a scout ahead: the TOS-1A sees less far than it shoots.",
+    "Aim at the ground beside a cluster so the overlapping blasts catch more of it.",
+    "Save the salvo for infantry and buildings; a single tank is a poor target.",
+    "Keep an escort close: anything that reaches the launcher can attack it unanswered."
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ru-dozer-bridge",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "demo-bridges",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 1,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 30.5,
+      "y": 9,
+      "zoom": 3
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "demo-bridges",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 1,
+        "type": "ru-dozer",
+        "atCenti": [
+          2600,
+          900
+        ],
+        "order": {
+          "repair": [
+            30,
+            9
+          ]
+        }
+      }
+    ],
+    "features": [
+      {
+        "at": [
+          30,
+          9
+        ],
+        "hpPercent": 0
+      }
+    ]
+  }
+}

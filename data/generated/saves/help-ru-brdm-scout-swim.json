@@ -1,0 +1,75 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ru-brdm-scout-swim",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "demo-bridges",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 1,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 32,
+      "y": 20,
+      "zoom": 3
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "demo-bridges",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 1,
+        "type": "ru-brdm-scout",
+        "atCenti": [
+          2400,
+          1600
+        ],
+        "label": "brdm",
+        "order": {
+          "moveCenti": [
+            4200,
+            1600
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          2800,
+          2300
+        ],
+        "label": "tank",
+        "order": {
+          "moveCenti": [
+            4200,
+            2300
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          4200,
+          1400
+        ]
+      }
+    ]
+  }
+}

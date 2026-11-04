@@ -1,0 +1,18 @@
+# Spec 48: help card of the TOS-1A. It shells the ground beside a Ukrainian infantry cluster.
+id: help-ru-tos-1a-splash
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 42.5, y: 20, zoom: 2.6 }
+entities:
+  - { player: 1, type: ru-tos-1a, atCenti: [3800, 2000], label: tos, order: { attackGroundCenti: [4700, 1950] } }
+  - { player: 0, type: ua-rifleman, atCenti: [4650, 1900] }
+  - { player: 0, type: ua-rifleman, atCenti: [4750, 1900] }
+  - { player: 0, type: ua-rifleman, atCenti: [4650, 2000] }
+  - { player: 0, type: ua-rifleman, atCenti: [4750, 2000] }
+  - { player: 0, type: ua-rifleman, atCenti: [4700, 2050] }
+  - { player: 0, type: ua-rifleman, atCenti: [4800, 1950] }

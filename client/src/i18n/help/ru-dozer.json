@@ -1,0 +1,72 @@
+{
+  "id": "ru-dozer",
+  "role": "Engineering vehicle",
+  "summary": "An unarmed tracked dozer that raises the Russian base. It repairs buildings and bridges, digs trenches, and can be repaired at the vehicle factory.",
+  "sections": [
+    {
+      "title": "Build structures",
+      "how": "Select the dozer, open the Build tab and press a building tile, then left-click the ground to place it. Esc cancels.",
+      "body": "The dozer drives to the site and raises the building on its own; the price is paid when you place it. It can put up the whole Russian build list: power plants, supply centers, barracks, the vehicle factory, Kornet emplacements, the airfield and the Geran launch site.",
+      "shots": [
+        "ru-dozer-build"
+      ]
+    },
+    {
+      "title": "Continue construction",
+      "how": "Select the dozer and left-click your unfinished building.",
+      "body": "A building left half-built by another dozer can be finished by any dozer. It walks over and resumes work where the previous builder stopped.",
+      "shots": [
+        "ru-dozer-resume"
+      ]
+    },
+    {
+      "title": "Repair buildings",
+      "how": "Select the dozer and left-click a damaged own building.",
+      "body": "The dozer drives to the building and restores its hit points until it is whole. Only one dozer works on a building at a time, and the repair costs half the building's price as the health comes back. If the credits run out, the work stops.",
+      "shots": [
+        "ru-dozer-repair-building"
+      ]
+    },
+    {
+      "title": "Dig trenches",
+      "how": "Select the dozer, press Dig trench and left-click the ground. Drag to draw a line; Shift turns a single trench or keeps the button armed after a line.",
+      "body": "A dozer digs a two-cell trench three times as fast as a soldier. A finished trench halves the damage its infantry take, and a roofed section protects the first two soldiers completely. Wheeled vehicles cannot cross it once it is half dug; tracked vehicles and infantry can.",
+      "shots": [
+        "ru-dozer-dig"
+      ]
+    },
+    {
+      "title": "Repair bridges",
+      "how": "Select the dozer and left-click a damaged or broken bridge.",
+      "body": "The dozer drives to the bank and repairs the bridge for free. It counts as three workers, and up to six workers add their effort, so a dozer and a squad of infantry finish a span faster. A broken bridge opens to traffic again once it is repaired enough to carry it.",
+      "shots": [
+        "ru-dozer-bridge"
+      ]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged dozer and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The dozer drives to the factory and is repaired for half its price, paid as the health comes back. Production continues while it is repaired. If the credits run out, it leaves the dock and stops.",
+      "shots": [
+        "ru-dozer-repair"
+      ]
+    }
+  ],
+  "strong": [
+    "Turning credits into a base",
+    "Keeping structures and bridges alive",
+    "Preparing trenches before a fight"
+  ],
+  "weak": [
+    "Tanks and infantry",
+    "Artillery",
+    "Aircraft"
+  ],
+  "tips": [
+    "Build the power plant first: the barracks needs it, and the Kornet emplacement stops firing without enough power.",
+    "The supply center opens the vehicle factory and the Geran launch site; the vehicle factory opens the airfield.",
+    "One dozer can run a base, but a second lets you build and repair at the same time.",
+    "Keep the dozer behind the line: it is unarmed and lightly armoured.",
+    "A dozer counts as three workers at a bridge, so send it when a span must open fast."
+  ]
+}

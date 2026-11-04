@@ -1,0 +1,7 @@
+# Spec 48 §3.3: screenshots of the RPG gunner card. `node --run help:shots -- --type ru-rpg-gunner`
+- { id: ru-rpg-gunner-fight, save: help-ru-rpg-gunner-fight, ticks: 30, select: [ru-rpg-gunner] }
+- { id: ru-rpg-gunner-move, save: help-ru-rpg-gunner-move, ticks: 35, select: [ru-rpg-gunner] }
+- { id: ru-rpg-gunner-trench, save: help-ru-rpg-gunner-trench, ticks: 45, select: [ru-rpg-gunner] }
+- { id: ru-rpg-gunner-garrison, save: help-ru-rpg-gunner-garrison, ticks: 10, select: [ru-rpg-gunner], hud: true, tab: orders }
+- { id: ru-rpg-gunner-board, save: help-ru-rpg-gunner-board, ticks: 12, select: [ru-rpg-gunner] }
+- { id: ru-rpg-gunner-heal, save: help-ru-rpg-gunner-heal, ticks: 10, select: [ru-rpg-gunner] }

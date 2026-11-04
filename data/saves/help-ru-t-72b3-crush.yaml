@@ -1,0 +1,16 @@
+# Spec 48: help card of the T-72B3. Its tracks drive over a line of Ukrainian riflemen.
+id: help-ru-t-72b3-crush
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 46, y: 20, zoom: 3 }
+entities:
+  - { player: 1, type: ru-t-72b3, atCenti: [4000, 2000], label: t72, order: { moveCenti: [5200, 2000] } }
+  - { player: 0, type: ua-rifleman, atCenti: [4400, 2000] }
+  - { player: 0, type: ua-rifleman, atCenti: [4600, 1950] }
+  - { player: 0, type: ua-rifleman, atCenti: [4800, 2050] }
+  - { player: 0, type: ua-rifleman, atCenti: [5000, 2000] }

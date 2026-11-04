@@ -1,0 +1,90 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ru-dozer-build",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 1,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 45,
+      "y": 19,
+      "zoom": 3
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "credits": [
+      0,
+      50000
+    ],
+    "ai": [],
+    "entities": [
+      {
+        "player": 1,
+        "type": "ru-dozer",
+        "atCenti": [
+          4500,
+          2000
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-barracks",
+        "origin": [
+          46,
+          18
+        ],
+        "buildPercent": 30
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          30,
+          26
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-supply-center",
+        "origin": [
+          34,
+          26
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-vehicle-factory",
+        "origin": [
+          39,
+          25
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-barracks",
+        "origin": [
+          43,
+          27
+        ]
+      }
+    ]
+  }
+}

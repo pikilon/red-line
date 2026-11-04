@@ -1,0 +1,19 @@
+# Spec 48: help card of the TOS-1A. A salvo collapses a damaged trench held by Ukrainian infantry.
+id: help-ru-tos-1a-trench
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 43, y: 20.5, zoom: 2.3 }
+trenches:
+  - { at: [43, 20] }
+  - { at: [45, 20] }
+  - { at: [47, 20] }
+entities:
+  - { player: 1, type: ru-tos-1a, atCenti: [3800, 2000], label: tos, order: { attackGroundCenti: [4550, 2000] } }
+  - { player: 0, type: ua-rifleman, atCenti: [4550, 2300], order: { garrison: [45, 20] } }
+  - { player: 0, type: ua-rifleman, atCenti: [4650, 2300], order: { garrison: [45, 20] } }
+  - { player: 0, type: ua-rifleman, atCenti: [4750, 2300], order: { garrison: [45, 20] } }

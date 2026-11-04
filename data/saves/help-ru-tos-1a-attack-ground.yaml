@@ -1,0 +1,14 @@
+# Spec 48: help card of the TOS-1A. It shells a chosen point beside a Ukrainian power plant.
+id: help-ru-tos-1a-attack-ground
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 48, y: 19.5, zoom: 1.6 }
+entities:
+  - { player: 1, type: ru-tos-1a, atCenti: [4400, 2000], label: tos, order: { attackGroundCenti: [5300, 1850] } }
+  - { player: 1, type: ru-brdm-scout, atCenti: [5000, 2300] }
+  - { player: 0, type: ua-power-plant, origin: [53, 18], label: plant }

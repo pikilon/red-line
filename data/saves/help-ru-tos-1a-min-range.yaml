@@ -1,0 +1,13 @@
+# Spec 48: help card of the TOS-1A. A Ukrainian tank has closed inside its minimum range, so it drives away.
+id: help-ru-tos-1a-min-range
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 42, y: 20, zoom: 3 }
+entities:
+  - { player: 1, type: ru-tos-1a, atCenti: [4300, 2000], label: tos, order: { moveCenti: [3500, 2000] } }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [4550, 2000], label: tank, order: { attack: tos } }
