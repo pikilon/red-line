@@ -57,10 +57,11 @@ export function isLaunched(typeId: string): boolean {
   return RULES.locomotors[def.locomotor]?.kind === "air";
 }
 
-/** Types the player can build or select: every unit and building. */
+/** Types the player can build or select: every unit and building of a
+ *  faction (common types are the test placeholder and supply depots). */
 export function helpedTypes(): string[] {
   return RULES.types
-    .filter((type) => type.category !== "depot")
+    .filter((type) => type.category !== "depot" && type.id !== "tech-slice-placeholder")
     .map((type) => type.id);
 }
 

@@ -1,0 +1,14 @@
+# Spec 48: help card of the Pole-21. It moves behind a pair of tanks, its circle covering the column.
+id: help-ru-pole-21-move
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 49, y: 20, zoom: 2.4 }
+entities:
+  - { player: 1, type: ru-pole-21, atCenti: [4300, 2000], label: jammer, order: { moveCenti: [5100, 2000] } }
+  - { player: 1, type: ru-t-72b3, atCenti: [4650, 1850], order: { moveCenti: [5350, 1850] } }
+  - { player: 1, type: ru-t-72b3, atCenti: [4700, 2150], order: { moveCenti: [5400, 2150] } }

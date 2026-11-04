@@ -1,0 +1,14 @@
+# Spec 48: help card of the Gepard. The mobile gun moves with a Bradley and a Leopard.
+id: help-ua-gepard-move
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 46.5, y: 20, zoom: 2.6 }
+entities:
+  - { player: 0, type: ua-gepard, atCenti: [4200, 2000], label: gepard, order: { moveCenti: [5300, 2000] } }
+  - { player: 0, type: ua-bradley, atCenti: [4000, 1850], order: { moveCenti: [5100, 1850] } }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [4000, 2150], order: { moveCenti: [5100, 2150] } }

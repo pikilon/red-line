@@ -1,0 +1,21 @@
+# Spec 48: help card of the Geran launch site. A wave of low Geran-2 drones closes on a Ukrainian outpost.
+id: help-ru-geran-site-geran-2
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 5000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 47.5, y: 18.5, zoom: 2.2 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [52, 15], label: plant }
+  - { player: 0, type: ua-sting-nest, origin: [52, 20], label: nest }
+  - { player: 0, type: ua-rifleman, atCenti: [5500, 1800] }
+  - { player: 0, type: ua-rifleman, atCenti: [5600, 1900] }
+  - { player: 1, type: ru-geran-site, origin: [31, 16] }
+  - { player: 1, type: ru-geran-2, atCenti: [3900, 1650], label: drone0, order: { attack: plant } }
+  - { player: 1, type: ru-geran-2, atCenti: [4000, 1800], label: drone1, order: { attack: plant } }
+  - { player: 1, type: ru-geran-2, atCenti: [4100, 1950], label: drone2, order: { attack: nest } }
+  - { player: 1, type: ru-geran-2, atCenti: [4200, 2100], label: drone3, order: { attack: nest } }

@@ -1,0 +1,10 @@
+# Spec 48 §3.3: screenshots of the Molniya crew card. `node --run help:shots -- --type ru-molniya-crew`
+- { id: ru-molniya-crew-launch, save: help-ru-molniya-crew-launch, ticks: 10, select: [ru-molniya-crew, ru-molniya] }
+- { id: ru-molniya-crew-resupply, save: help-ru-molniya-crew-resupply, ticks: 1000, select: [ru-molniya-crew] }
+- { id: ru-molniya-crew-refill, save: help-ru-molniya-crew-resupply, ticks: 1120, select: [ru-molniya-crew] }
+- { id: ru-molniya-crew-jamming, save: help-ru-molniya-crew-jamming, ticks: 10, select: [ru-molniya, ru-pole-21] }
+- { id: ru-molniya-crew-dig, save: help-ru-molniya-crew-dig, ticks: 100, select: [ru-molniya-crew] }
+- { id: ru-molniya-crew-trench, save: help-ru-molniya-crew-trench, ticks: 8, select: [ru-molniya-crew, ru-molniya] }
+- { id: ru-molniya-crew-garrison, save: help-ru-molniya-crew-garrison, ticks: 10, select: [ru-molniya-crew], hud: true, tab: orders }
+- { id: ru-molniya-crew-heal, save: help-ru-molniya-crew-heal, ticks: 10, select: [ru-molniya-crew] }
+- { id: ru-molniya-crew-board, save: help-ru-molniya-crew-board, ticks: 100, select: [ru-brdm-scout], hud: true, tab: orders }

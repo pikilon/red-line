@@ -1,0 +1,44 @@
+{
+  "id": "ua-gepard",
+  "role": "Mobile anti-aircraft gun",
+  "summary": "A wheeled anti-air gun that tracks low drones and high-flying jets with quick-firing flak. It is short-ranged, cannot shoot at the ground, and is outranged by the Su-34's glide bombs, so it guards a point from close by or moves with a column.",
+  "sections": [
+    {
+      "title": "Anti-aircraft cannon",
+      "how": "Select the Gepard and left-click an enemy aircraft, or let it fire at anything in range.",
+      "body": "Its cannon fires quick bursts of flak that track both low drones and high-flying jets. It never fires at ground units or buildings, so it cannot defend itself against tanks or infantry. Its reach is short: keep it close to what it guards, and expect a Su-34 to release its glide bombs from outside the Gepard's range.",
+      "shots": ["ua-gepard-low", "ua-gepard-high"]
+    },
+    {
+      "title": "Move with the column",
+      "how": "Select the Gepard and left-click the ground where it should go; on touch, tap.",
+      "body": "It is a wheeled vehicle, so it can follow an armoured push or shift to cover another building. Its armour is light: keep it behind the tanks and pull it back when enemy infantry or anti-tank teams get close.",
+      "shots": ["ua-gepard-move"]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged Gepard and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The Gepard drives to the factory and is repaired for half its price, paid as the health comes back. Production carries on while it waits its turn.",
+      "shots": ["ua-gepard-repair"]
+    }
+  ],
+  "strong": [
+    "Low drones and missiles",
+    "High-flying jets and bombers",
+    "Following an armoured push",
+    "Guarding a building from close range"
+  ],
+  "weak": [
+    "Ground units and buildings",
+    "A Su-34 bombing from beyond its range",
+    "Tanks and anti-tank teams",
+    "Artillery"
+  ],
+  "tips": [
+    "Place it beside what Russia bombs: it engages only targets that come inside its short range.",
+    "It cannot shoot ground targets, so pair it with tanks or infantry that can protect it.",
+    "Do not chase a Su-34 with it: the jet can bomb from outside the cannon's reach. Use a Patriot for that.",
+    "Keep it behind the front: its light armour does not survive a tank or an anti-tank team.",
+    "Pull a damaged Gepard back to the vehicle factory; repairs cost half the price."
+  ]
+}

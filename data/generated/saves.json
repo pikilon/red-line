@@ -566,6 +566,42 @@
       "entities": 2
     },
     {
+      "id": "help-ru-geran-site-build",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ru-geran-site-geran-2",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 9
+    },
+    {
+      "id": "help-ru-geran-site-geran-3",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ru-geran-site-power",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-ru-geran-site-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-geran-site-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
       "id": "help-ru-hq-build",
       "map": "showcase",
       "form": "setup",
@@ -588,6 +624,144 @@
       "map": "showcase",
       "form": "setup",
       "entities": 1
+    },
+    {
+      "id": "help-ru-molniya-crew-board",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-molniya-crew-dig",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-molniya-crew-garrison",
+      "map": "demo-town",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-molniya-crew-heal",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ru-molniya-crew-jamming",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ru-molniya-crew-launch",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-molniya-crew-resupply",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-molniya-crew-trench",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-orlan-crash",
+      "map": "demo-town",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-ru-orlan-flight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-orlan-low-aa",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-orlan-spot",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-pantsir-high",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-pantsir-low",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-pantsir-move",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-pantsir-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-pantsir-wave",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 6
+    },
+    {
+      "id": "help-ru-pole-21-drones",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-pole-21-gnss",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ru-pole-21-immune",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-pole-21-jam",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-pole-21-move",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-pole-21-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
     },
     {
       "id": "help-ru-power-plant-low",
@@ -693,6 +867,30 @@
     },
     {
       "id": "help-ru-rpg-gunner-trench",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-su-34-bomb",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ru-su-34-flight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-su-34-patriot",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ru-su-34-reload",
       "map": "showcase",
       "form": "setup",
       "entities": 3
@@ -1029,6 +1227,30 @@
     },
     {
       "id": "help-ua-fpv-team-trench",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-gepard-high",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-ua-gepard-low",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-ua-gepard-move",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-ua-gepard-repair",
       "map": "showcase",
       "form": "setup",
       "entities": 2

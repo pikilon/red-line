@@ -1,0 +1,16 @@
+# Spec 48: help card of the Geran launch site. Select it to see the Geran-2 and Geran-3 tiles.
+id: help-ru-geran-site-build
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 5000]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 47.5, y: 16.5, zoom: 2.2 }
+entities:
+  - { player: 1, type: ru-power-plant, origin: [38, 13] }
+  - { player: 1, type: ru-geran-site, origin: [44, 13] }
+  - { player: 1, type: ru-geran-2, atCenti: [4750, 1430] }
+  - { player: 1, type: ru-geran-3, atCenti: [4950, 1430] }

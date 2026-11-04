@@ -1,0 +1,13 @@
+# Spec 48: help card of the Gepard. A high-flying Su-34 crosses the Gepard's short range.
+id: help-ua-gepard-high
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45.5, y: 19.5, zoom: 2.6 }
+entities:
+  - { player: 0, type: ua-gepard, atCenti: [4300, 2000], label: gepard }
+  - { player: 1, type: ru-su-34, atCenti: [3900, 2000], label: jet, order: { moveCenti: [6000, 2000] } }

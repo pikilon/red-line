@@ -1,0 +1,55 @@
+{
+  "id": "ru-orlan",
+  "role": "Unarmed reconnaissance drone",
+  "summary": "A small fixed-wing drone with the longest sight in the Russian army. It circles where you send it and shares everything it sees with your whole team, so artillery and strike aircraft can hit targets far beyond their own sight. It carries no weapon, dies to any weapon that reaches low aircraft and crashes into tall buildings.",
+  "sections": [
+    {
+      "title": "Spot for artillery",
+      "how": "Select the Orlan and left-click the ground where you want it to look. Keep it ahead of your guns; whatever it sees, your artillery can fire on.",
+      "body": "The Orlan has the longest sight in the Russian army and shares it with every unit you own. A TOS-1A, a Su-34 or any other shooter can attack an enemy that only the Orlan can see, even when that enemy lies far beyond the shooter's own sight. The Orlan itself never fires: its whole job is to find targets and keep them visible while the guns work.",
+      "shots": ["ru-orlan-spot"]
+    },
+    {
+      "title": "Fixed-wing flight",
+      "how": "Select the Orlan and left-click the point it should watch; on touch, tap. Give it a new point to move its watch.",
+      "body": "It is a fixed-wing drone and never stops or hovers in the air. It flies to the point you give it and then circles over it, so it keeps watching the same area instead of drifting away. It cannot hold position or land on command, so keep it clear of danger; a replacement comes from the airfield.",
+      "shots": ["ru-orlan-flight"]
+    },
+    {
+      "title": "Low and fragile",
+      "how": "Keep it away from riflemen, autocannons and dedicated anti-air. If it is caught, pull it back behind your line.",
+      "body": "It flies low, inside the reach of every weapon that can fire at low flyers: rifle fire, autocannons and dedicated anti-air. Tanks, artillery and anti-tank teams cannot hit it. Its light frame cannot take much fire, so a short burst can bring it down. It has no weapon and cannot shoot back, and it cannot be repaired: the airfield services the Su-34, so a damaged Orlan stays damaged until it is lost.",
+      "shots": ["ru-orlan-low-aa"]
+    },
+    {
+      "title": "Tall buildings",
+      "how": "Route it around apartment blocks, churches and office towers with waypoints; it flies at the point you give it and does not climb over them.",
+      "body": "Low drones cruise at rooftop height and do not climb over obstacles. Flying into an apartment block, a church or an office tower makes the Orlan crash: it falls harmlessly and is lost. Factories, shops, houses and townhouses are low enough to clear, but it is safer to give it waypoints around a city.",
+      "shots": ["ru-orlan-crash"]
+    },
+    {
+      "title": "No radio link",
+      "how": "Nothing to do; it has no link to jam.",
+      "body": "The Orlan has no radio, satellite or fibre link, so a Pole-21's jammer cannot blind it, stop it or make it fall. Only Russia fields a jammer, so in a normal match no electronic warfare can touch it. What kills it is a weapon that reaches low aircraft, or a tall building in its path."
+    }
+  ],
+  "strong": [
+    "Spotting targets for artillery and strike aircraft",
+    "A long sight that the whole team shares",
+    "Finding enemy buildings and units far ahead"
+  ],
+  "weak": [
+    "Any weapon that can fire at low flyers",
+    "Rifle fire, autocannons and dedicated anti-air",
+    "Tall buildings on its flight path",
+    "It has no weapon and cannot fight back"
+  ],
+  "tips": [
+    "Send it ahead of the TOS-1A: the launcher sees much less far than it shoots.",
+    "Keep it behind the line; it cannot dodge and dies quickly once noticed.",
+    "Route it around apartment blocks, churches and office towers.",
+    "A Pole-21 cannot jam it; only guns, missiles and tall buildings can stop it.",
+    "Pair it with a Su-34 or a TOS-1A and let them hit what it finds.",
+    "It cannot be repaired: bring a fresh one from the airfield instead of nursing a damaged drone."
+  ]
+}

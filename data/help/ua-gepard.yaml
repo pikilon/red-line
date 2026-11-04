@@ -1,0 +1,5 @@
+# Spec 48 §3.3: screenshots of the Gepard card. `node --run help:shots -- --type ua-gepard`
+- { id: ua-gepard-low, save: help-ua-gepard-low, ticks: 5, select: [ua-gepard] }
+- { id: ua-gepard-high, save: help-ua-gepard-high, ticks: 0, select: [ua-gepard] }
+- { id: ua-gepard-move, save: help-ua-gepard-move, ticks: 30, select: [ua-gepard] }
+- { id: ua-gepard-repair, save: help-ua-gepard-repair, ticks: 10, select: [ua-gepard], hud: true }

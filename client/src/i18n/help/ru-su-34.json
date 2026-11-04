@@ -1,0 +1,52 @@
+{
+  "id": "ru-su-34",
+  "role": "High-flying glide-bomb strike jet",
+  "summary": "Russia's scarce strike aircraft. It flies high above short-range anti-air, releases both glide bombs in one pass and then returns to an airfield to rearm. Only a long-range missile such as the Patriot reliably reaches it.",
+  "sections": [
+    {
+      "title": "Glide-bomb pass",
+      "how": "Select the Su-34 and left-click an enemy. To bomb a spot, hold Ctrl and left-click the ground, or press Force fire and tap the ground.",
+      "body": "The Su-34 does not stop over a target: it flies at it, releases the bombs while the target is in front of its nose and keeps going. Both bombs of the clip fall in one approach, so a building, a tight vehicle column or a defended position takes the whole stick. If the target is outside the nose cone or the range, the jet comes round for another pass.",
+      "shots": ["ru-su-34-bomb"]
+    },
+    {
+      "title": "Clip and reload",
+      "how": "Let both bombs go, press Stop, or leave the jet idle: it flies to the nearest own airfield by itself. A damaged jet is repaired there too.",
+      "body": "The Su-34 carries two glide bombs. Once they are gone, or when it has no order, it returns to the nearest airfield, docks and refills its whole clip in one reload while its damage is repaired for free. It waits there until you give it a new order. An attack order given while it is empty is remembered until it is reloaded. With no airfield left it stays in the air and slowly loses health, so protect the airfield or build another.",
+      "shots": ["ru-su-34-reload"]
+    },
+    {
+      "title": "Fixed-wing flight",
+      "how": "Select the Su-34 and left-click the ground where it should go; on touch, tap.",
+      "body": "It is a fixed-wing jet: it never hovers or stops in the air. It flies a wide turning circle, so it cannot hold a spot. A move order takes it past the point and it turns for home; with no airfield to return to it circles in the air and slowly loses health. Give it room and expect it to come round again instead of lining up over a target.",
+      "shots": ["ru-su-34-flight"]
+    },
+    {
+      "title": "Only the Patriot reaches it",
+      "how": "Keep it flying high and watch for a Patriot battery. Send the jet elsewhere until the battery is destroyed or distracted.",
+      "body": "Rifle fire and autocannons cannot reach its altitude. A Gepard can hurt it if the jet flies into its short range, but the Su-34 releases its bombs from outside it. A Patriot is the exception: its long-range missiles can chase the jet before it releases, and its airframe does not take many hits. The Su-34 is expensive and slow to replace, so do not trade it for a small target.",
+      "shots": ["ru-su-34-patriot"]
+    }
+  ],
+  "strong": [
+    "Buildings and static defenses",
+    "Tanks and tight vehicle columns",
+    "Strikes from outside short-range anti-air",
+    "Repeated passes with a nearby airfield"
+  ],
+  "weak": [
+    "A Patriot battery",
+    "Flying into a Gepard's short range",
+    "Having no airfield left to rearm",
+    "Wide turns that miss a small target"
+  ],
+  "tips": [
+    "Aim at a building or a tight vehicle cluster: both bombs of the clip land in one pass.",
+    "Do not send it over a Patriot: its missiles reach farther than the glide bombs.",
+    "Keep an airfield alive: an empty Su-34 with no base slowly loses health.",
+    "Press Stop to bring it home early with bombs left.",
+    "Do not expect it to hover over a spot; it always flies through and comes round.",
+    "Use the Orlan's long sight to find targets for it.",
+    "It is scarce: do not trade it for a single rifle squad."
+  ]
+}

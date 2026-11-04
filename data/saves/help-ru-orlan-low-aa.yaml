@@ -1,0 +1,14 @@
+# Spec 48: help card of the Orlan. A Ukrainian Gepard catches the low drone inside its short anti-air range.
+id: help-ru-orlan-low-aa
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 10000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 46.5, y: 20.5, zoom: 3 }
+entities:
+  - { player: 1, type: ru-orlan, atCenti: [4800, 2000], label: orlan, order: { moveCenti: [5000, 2000] } }
+  - { player: 0, type: ua-gepard, atCenti: [4300, 2000], label: gepard }

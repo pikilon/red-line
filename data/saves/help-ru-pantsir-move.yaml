@@ -1,0 +1,15 @@
+# Spec 48: help card of the Pantsir. The mobile missile vehicle moves with a Russian column.
+id: help-ru-pantsir-move
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 5000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 47, y: 20, zoom: 2.6 }
+entities:
+  - { player: 1, type: ru-pantsir, atCenti: [4200, 2000], label: pantsir, order: { moveCenti: [5200, 2000] } }
+  - { player: 1, type: ru-t-72b3, atCenti: [4000, 2150], order: { moveCenti: [5000, 2150] } }
+  - { player: 1, type: ru-bmp-2, atCenti: [4000, 1850], order: { moveCenti: [5000, 1850] } }

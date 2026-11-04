@@ -1,0 +1,17 @@
+# Spec 48: help card of the Geran launch site. A base that consumes more power than its one plant produces.
+id: help-ru-geran-site-power
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 5000]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 44, y: 20.3, zoom: 1.0 }
+entities:
+  - { player: 1, type: ru-power-plant, origin: [31, 15] }
+  - { player: 1, type: ru-supply-center, origin: [35, 15] }
+  - { player: 1, type: ru-barracks, origin: [40, 15] }
+  - { player: 1, type: ru-vehicle-factory, origin: [44, 15] }
+  - { player: 1, type: ru-geran-site, origin: [49, 15] }

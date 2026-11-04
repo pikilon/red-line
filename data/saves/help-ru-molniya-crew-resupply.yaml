@@ -1,0 +1,13 @@
+# Spec 48: help card of the Molniya crew. The crew has spent its charges beside a supply truck and waits for the first to come back.
+id: help-ru-molniya-crew-resupply
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 45, y: 20, zoom: 2.9 }
+entities:
+  - { player: 1, type: ru-supply-truck, atCenti: [4500, 2000], label: truck }
+  - { player: 1, type: ru-molniya-crew, atCenti: [4300, 2000], label: crew, order: { attackGroundCenti: [4700, 2000] } }

@@ -1,0 +1,15 @@
+# Spec 48: help card of the Su-34. A Patriot missile chases the jet, the only ground anti-air that reaches it.
+id: help-ru-su-34-patriot
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 10000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 47.5, y: 20.5, zoom: 2.8 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [30, 19] }
+  - { player: 0, type: ua-patriot, origin: [40, 19], label: patriot }
+  - { player: 1, type: ru-su-34, atCenti: [6100, 2000], label: jet, order: { moveCenti: [5000, 2000] } }
