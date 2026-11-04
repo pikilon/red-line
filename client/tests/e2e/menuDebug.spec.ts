@@ -53,6 +53,7 @@ test("AC-08-13: switch side in the skirmish", async ({ page }) => {
     await page.evaluate(() => (window as DebugWindow).__redline === undefined),
   ).toBe(true);
   await page.keyboard.press("Escape");
+  await page.locator("#game-menu-debug-open").click();
   await page.getByRole("button", { name: "Switch side" }).click();
   await expect(page.locator("#res-player")).toHaveText("Player 2: Russia");
   await page.getByRole("button", { name: "Switch side" }).click();
@@ -72,6 +73,7 @@ test("AC-08-13: switch side in the skirmish", async ({ page }) => {
     () => (window as DebugWindow).__redline?.cameraTarget() ?? { x: 0, y: 0 },
   );
   await page.keyboard.press("Escape");
+  await page.locator("#game-menu-debug-open").click();
   await page.getByRole("button", { name: "Switch side" }).click();
   await expect
     .poll(() =>
@@ -114,6 +116,7 @@ test("AC-08-14: reveal and FPS panel in the skirmish", async ({ page }) => {
   await expect(panel).toBeHidden();
 
   await page.keyboard.press("Escape");
+  await page.locator("#game-menu-debug-open").click();
   const fps = page.getByRole("button", { name: /^FPS panel/ });
   await expect(fps).toHaveText("FPS panel: off");
   await fps.click();
@@ -137,6 +140,7 @@ test("AC-08-14: reveal and FPS panel in the skirmish", async ({ page }) => {
   await boot(page, "?debug=1&seed=1&ai=off", true);
   await expect(panel).toBeVisible();
   await page.keyboard.press("Escape");
+  await page.locator("#game-menu-debug-open").click();
   await expect(page.getByRole("button", { name: /^FPS panel/ })).toHaveText(
     "FPS panel: on",
   );

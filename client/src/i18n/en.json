@@ -71,6 +71,8 @@
   "touch.menu": "Menu",
   "rotate.title": "Rotate your device",
   "rotate.body": "Red Line plays in landscape.",
+  "menu.sound": "Sound",
+  "menu.debug": "Debug",
   "menu.restart": "Restart match",
   "error.simInit": "The simulation failed to start: {detail}",
   "settings.goreOn": "Gore on",
