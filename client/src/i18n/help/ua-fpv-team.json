@@ -8,50 +8,37 @@
       "about": "ua-fpv",
       "how": "Select the team and left-click an enemy, or Ctrl + left-click the ground to send a drone at a spot.",
       "body": "Each launch sends a racing quad at the target. The drone carries no gun: it flies there and detonates an anti-tank warhead, destroying itself. It is best against tanks and light vehicles; its small blast barely touches spread-out infantry, and it cannot attack aircraft. The squad watches through the drone feed, so it can launch at a tank far beyond rifle range. The drone is steered by radio: if the squad is killed while it is in the air, it falls harmlessly, and a Pole-21 jammer drops it the same way. Small arms and other low-air weapons can shoot it down on the way.",
-      "shots": [
-        "ua-fpv-team-launch"
-      ]
+      "shots": ["ua-fpv-team-launch"]
     },
     {
       "title": "Reload drones",
       "how": "Press Reload to walk the team to the nearest supply truck, supply center or barracks, or park it within five tiles of one yourself.",
       "body": "The team carries four drones, shown as pips over the selected squad. Every launch spends one. With none left the team launches nothing, drops its attack order and waits; it can still be ordered to move. One drone comes back after a twenty-second wait while the team stays beside a supply source. Driving the truck away or walking out of range resets the wait. Bring the team home or bring a truck forward before the next fight. Reload shows only while drones are missing. A team already in range just stops and waits; with no supply source left, Reload plays an error sound.",
-      "shots": [
-        "ua-fpv-team-resupply",
-        "ua-fpv-team-refill"
-      ]
+      "shots": ["ua-fpv-team-resupply", "ua-fpv-team-refill"]
     },
     {
       "title": "Radio link and jammers",
       "how": "Keep the drones clear of a Russian Pole-21.",
       "body": "The FPV is steered by radio, so a hostile jammer cuts the link. A drone inside a Pole-21's circle falls without exploding; the mobile Pole-21 carries the Russian jammer. The same link ties the drone to its crew: if the squad dies while a drone is in the air, the drone falls too. Small arms, machine guns and other weapons that can hit low flyers are the other way to stop an FPV before it arrives.",
-      "shots": [
-        "ua-fpv-team-jamming"
-      ]
+      "shots": ["ua-fpv-team-jamming"]
     },
     {
       "title": "Fight from a trench",
       "how": "Select the team and left-click a finished trench, or press Garrison.",
       "body": "Inside a trench the squad is protected: small arms and most fire only graze it, while high explosives and thermobaric shells wear the trench down and can destroy it. It still launches drones over the parapet at vehicles, and at point-blank it fights with a sidearm. A trench line lets the squad move from piece to piece toward the enemy. Press Unload to get out.",
-      "shots": [
-        "ua-fpv-team-trench"
-      ]
+      "shots": ["ua-fpv-team-trench"]
     },
     {
       "title": "Garrison buildings",
       "how": "Select the team and left-click a civilian building, or press Garrison.",
       "body": "The squad takes cover inside and launches drones from the windows with more range. The building changes hands to your side while they hold it and returns to neutral when they leave. A wrecked building throws them out, and one that collapses can kill them.",
-      "shots": [
-        "ua-fpv-team-garrison"
-      ]
+      "shots": ["ua-fpv-team-garrison"]
     },
     {
       "title": "Heal at the barracks",
       "how": "Select damaged FPV teams and left-click your barracks.",
       "body": "They walk in and heal for free while the barracks keeps training. A patient leaves on its own when whole. If the barracks is destroyed or sold, the patients are thrown out.",
-      "shots": [
-        "ua-fpv-team-heal"
-      ]
+      "shots": ["ua-fpv-team-heal"]
     },
     {
       "title": "Dig trenches",

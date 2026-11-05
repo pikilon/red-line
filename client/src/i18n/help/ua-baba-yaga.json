@@ -7,33 +7,25 @@
       "title": "Bombing run",
       "how": "Select the Baba Yaga and left-click an enemy. To bomb a spot, hold Ctrl and left-click the ground, or press Force fire and tap the ground.",
       "body": "The Baba Yaga flies to the target and hangs over it while it drops its bombs, so it bombs what it is flying over rather than a distant point. Each bomb blasts a small area, which makes a cluster of infantry or light vehicles a good target. It is slow and has to come close, so send it against a target that is not protected by anti-air.",
-      "shots": [
-        "ua-baba-yaga-bomb"
-      ]
+      "shots": ["ua-baba-yaga-bomb"]
     },
     {
       "title": "Clip and reload",
       "how": "Press Reload to send it to the nearest drone workshop now, or let the clip run out and it goes by itself.",
       "body": "The Baba Yaga carries four bombs and spends one per drop. Once the clip is empty it returns to a drone workshop, waits there while the bombs are reloaded and its damage is repaired, then it is ready again. With no workshop left it cannot rearm; once it is empty it stays in the air and slowly loses health. Pressing Stop sends it home even with bombs left. Reload shows only while bombs are missing; afterwards the Baba Yaga waits idle at the workshop. With no workshop left, Reload plays an error sound and nothing happens.",
-      "shots": [
-        "ua-baba-yaga-reload"
-      ]
+      "shots": ["ua-baba-yaga-reload"]
     },
     {
       "title": "No radio link",
       "how": "Fly it through a Russian jammer's circle.",
       "body": "The Baba Yaga has no radio or satellite link, so a Pole-21's jammer does not stop it, blind it or make it fall. It keeps flying and bombing inside the circle. Only weapons that can hit low flyers can bring it down.",
-      "shots": [
-        "ua-baba-yaga-jammer"
-      ]
+      "shots": ["ua-baba-yaga-jammer"]
     },
     {
       "title": "Low and fragile",
       "how": "Keep it away from riflemen, autocannons and anti-air; route it around apartment blocks, churches and office towers.",
       "body": "It flies low, inside the reach of every weapon that can fire at low flyers: rifle fire, autocannons and dedicated anti-air. Tanks, artillery and anti-tank teams cannot hit it. Its light frame cannot take much fire, and flying over a building taller than its rotor height makes it crash.",
-      "shots": [
-        "ua-baba-yaga-low-aa"
-      ]
+      "shots": ["ua-baba-yaga-low-aa"]
     }
   ],
   "strong": [

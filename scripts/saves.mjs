@@ -54,7 +54,10 @@ function ensureBuilt(root) {
 export function listSaves(root) {
   ensureBuilt(root);
   const index = JSON.parse(read(root, "data/generated/saves.json"));
-  return index.saves.map((s) => `${s.id}  ${s.map}  ${s.form}  ${s.entities}  ${DEV_URL}${s.id}`);
+  // Spec 48 §3.3: help-card scenes belong to `node --run help:shots`, not this list.
+  return index.saves
+    .filter((s) => !s.id.startsWith("help-"))
+    .map((s) => `${s.id}  ${s.map}  ${s.form}  ${s.entities}  ${DEV_URL}${s.id}`);
 }
 
 /** `cargo run -p headless -- save <args>` in `root`. */
