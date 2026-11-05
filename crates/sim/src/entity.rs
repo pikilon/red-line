@@ -93,6 +93,24 @@ pub enum Order {
     ReturnToBase {
         order_id: u32,
     },
+    /// Spec 49 §3.1: Zero Hour attack-move. Moves like `Move` toward `target`
+    /// (`goal` cell), but engages the enemies it meets on the way (`engaging`)
+    /// and resumes the move once they are dead or out of sight.
+    AttackMove {
+        order_id: u32,
+        target: FxVec2,
+        goal: Cell,
+        engaging: Option<EntityId>,
+    },
+    /// Spec 49 §3.2: Zero Hour guard. Holds `post`, attacks enemies that come
+    /// within the inner guard radius of it, chases them while they stay inside
+    /// the outer radius and `chase` ticks remain, then walks back to `post`.
+    Guard {
+        order_id: u32,
+        post: FxVec2,
+        target: Option<EntityId>,
+        chase: u32,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

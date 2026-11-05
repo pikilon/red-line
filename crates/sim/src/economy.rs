@@ -460,6 +460,8 @@ impl World {
                 | Order::RepairBuilding { order_id, .. }
                 | Order::Heal { order_id, .. }
                 | Order::RepairVehicle { order_id, .. }
+                | Order::AttackMove { order_id, .. }
+                | Order::Guard { order_id, .. }
                 | Order::ReturnToBase { order_id } => order_id,
             };
             unit.order = Order::Idle { last_order_id };

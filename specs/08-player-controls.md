@@ -569,8 +569,8 @@ S stop, 0-9 / Ctrl+0-9 / Shift+0-9 groups.
   unit types on the screen; `Backspace` centres the camera on the selection;
   `Z` stops the selected units.
 * Assumption: Zero Hour's `S` for Stop stays with the panning keys (WASD), so
-  Stop is `Z`. Attack move, Guard, Scatter and Deploy keys wait for those
-  commands (spec 41 A1).
+  Stop is `Z`. Attack move is `F` and Guard is `H` (spec 49 A1: A pans, G
+  toggles gore); Scatter and Deploy keys wait for those commands (spec 41 A1).
 * **Same in every mode.** The skirmish and the tech slice share this: right
   click deselects, `Q` and `Backspace` work in both. `E` and `Z` need unit
   types and the stop order, so they exist only where those do (skirmish).

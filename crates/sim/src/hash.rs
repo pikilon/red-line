@@ -255,6 +255,31 @@ fn put_order(out: &mut Vec<u8>, order: &Order) {
             out.push(12);
             put_u32(out, order_id);
         }
+        Order::AttackMove {
+            order_id,
+            target,
+            goal: _,
+            engaging,
+        } => {
+            out.push(13);
+            put_u32(out, order_id);
+            put_i32(out, target.x.raw());
+            put_i32(out, target.y.raw());
+            put_u32(out, engaging.unwrap_or(u32::MAX));
+        }
+        Order::Guard {
+            order_id,
+            post,
+            target,
+            chase,
+        } => {
+            out.push(14);
+            put_u32(out, order_id);
+            put_i32(out, post.x.raw());
+            put_i32(out, post.y.raw());
+            put_u32(out, target.unwrap_or(u32::MAX));
+            put_u32(out, chase);
+        }
         Order::RepairVehicle {
             order_id,
             factory,

@@ -104,6 +104,28 @@ export function resolveForceFire(args: {
   ];
 }
 
+/** Spec 49: a unit behaviour order armed with a button or hotkey. */
+export type UnitMode = "attackMove" | "guard";
+
+/**
+ * Spec 49: the armed attack-move or guard tap at (x, y) tiles. Every selected
+ * own unit receives it; the sim turns it into a plain move for the unarmed
+ * ones and for flyers.
+ */
+export function resolveModeOrder(args: {
+  mode: UnitMode;
+  player: number;
+  selected: readonly number[];
+  entities: readonly EntityState[];
+  x: number;
+  y: number;
+}): SimCommand[] {
+  const { mode, player, selected, entities, x, y } = args;
+  const units = unitIds(ownSelected(selected, entities, player));
+  if (units.length === 0) return [];
+  return [{ kind: mode, player, units, xRaw: toRaw(x), yRaw: toRaw(y) }];
+}
+
 function isUnderConstruction(entity: EntityState): boolean {
   return hasFlag(entity, ENTITY_FLAGS.underConstruction);
 }

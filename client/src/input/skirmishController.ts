@@ -13,7 +13,13 @@ import {
   resolveGarrisonClick,
   selectOccupantsAt,
 } from "./garrison";
-import { resolveClickOrder, resolveForceFire, resolveRally } from "./intent";
+import {
+  resolveClickOrder,
+  resolveForceFire,
+  resolveModeOrder,
+  resolveRally,
+  type UnitMode,
+} from "./intent";
 import { cursorFor, type OrderHint, orderHint } from "./orderCursor";
 import { createPinchGesture } from "./pinch";
 import { canPlace, footprintOrigin } from "./placement";
@@ -104,9 +110,11 @@ export interface SkirmishController {
   /** Spec 41: the Rally point button; the next left tap sets the rally of the
    *  selected producer. */
   toggleRally(): void;
-  /** The armed map-tap mode of the command panel, if any. */
+  /** Spec 49: the Attack move / Guard buttons and the F / H keys; the next
+   *  left tap gives that order at the point, a second press disarms. */
+  toggleMode(mode: UnitMode): void;
   /** The armed mode that lights its button; Dig trench counts (spec 35). */
-  armedMode(): "force" | "rally" | "dig" | null;
+  armedMode(): "force" | "rally" | "dig" | UnitMode | null;
   /** Spec 41: selects the selected unit types on the screen or the map. */
   selectSameType(scope: "screen" | "map"): void;
   /** Spec 41: narrows the selection to the entities of `kind`. */
@@ -159,7 +167,7 @@ export function createSkirmishController(
   /** Spec 35: the Dig button was pressed; the next left click digs there. */
   let digArmed = false;
   /** Spec 41: the panel's Force fire / Rally point buttons armed the next tap. */
-  let armedMode: "force" | "rally" | null = null;
+  let armedMode: "force" | "rally" | UnitMode | null = null;
   /** Spec 41 A3: the last plain click, for the same-type double click. */
   let lastClick: { id: number; time: number } | null = null;
 
@@ -317,7 +325,13 @@ export function createSkirmishController(
   function refreshCursor(): void {
     let hint: OrderHint | null = null;
     const point = lastPointer;
+    // Spec 49: an armed attack-move or guard shows its own cursor.
     if (
+      (armedMode === "attackMove" || armedMode === "guard") &&
+      selected.size > 0
+    ) {
+      hint = armedMode;
+    } else if (
       point !== null &&
       selected.size > 0 &&
       options.placementKind() === null &&
@@ -556,6 +570,23 @@ export function createSkirmishController(
       lastClick = null;
       return;
     }
+    if (armedMode === "attackMove" || armedMode === "guard") {
+      const mode = armedMode;
+      armedMode = null;
+      for (const command of resolveModeOrder({
+        mode,
+        player: options.player(),
+        selected: [...selected],
+        entities: options.entities(),
+        x: ground.x,
+        y: ground.y,
+      })) {
+        options.command(command);
+      }
+      lastClick = null;
+      refreshCursor();
+      return;
+    }
     if (armedMode === "rally") {
       armedMode = null;
       for (const command of resolveRally({
@@ -730,6 +761,15 @@ export function createSkirmishController(
       if (point !== null) setTarget(point.x, point.y);
       return true;
     }
+    // Spec 49: F arms attack-move and H arms guard (Zero Hour's A and G are
+    // taken by panning and the gore toggle).
+    if (code === "KeyF" || code === "KeyH") {
+      const mode: UnitMode = code === "KeyF" ? "attackMove" : "guard";
+      if (selectedUnitKinds(entities, selected).length === 0) return false;
+      armedMode = armedMode === mode ? null : mode;
+      refreshCursor();
+      return true;
+    }
     if (code === "KeyZ") {
       const units = [...selected].filter((id) => {
         const entity = entities.find((row) => row.id === id);
@@ -845,6 +885,10 @@ export function createSkirmishController(
     },
     toggleRally() {
       armedMode = armedMode === "rally" ? null : "rally";
+    },
+    toggleMode(mode) {
+      armedMode = armedMode === mode ? null : mode;
+      refreshCursor();
     },
     armedMode: () => (digArmed ? "dig" : armedMode),
     selectSameType(scope) {

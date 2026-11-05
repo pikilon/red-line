@@ -102,6 +102,8 @@ export const CONTROL_LINES: readonly MessageKey[] = [
   "controls.sameType",
   "controls.centre",
   "controls.stop",
+  "controls.attackMove",
+  "controls.guard",
   "controls.deselect",
   "controls.cancel",
   "controls.forceFire",

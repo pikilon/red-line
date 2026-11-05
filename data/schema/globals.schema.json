@@ -30,6 +30,17 @@
     "sellRefundPercent": { "$ref": "#/$defs/percent" },
     "aimToleranceDeg": { "$ref": "#/$defs/aimDeg" },
     "turretRecenterTicks": { "type": "integer", "minimum": 0 },
+    "guard": {
+      "description": "Spec 49 §3.2: guard radii as percent of sight around the post, and the chase time in ticks.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["innerPercent", "outerPercent", "chaseTicks"],
+      "properties": {
+        "innerPercent": { "type": "integer", "minimum": 1 },
+        "outerPercent": { "type": "integer", "minimum": 1 },
+        "chaseTicks": { "type": "integer", "minimum": 0 }
+      }
+    },
     "crushDodgeLookaheadCenti": { "type": "integer", "minimum": 0 },
     "crushDodgeMissOneIn": { "type": "integer", "minimum": 0 },
     "locomotors": { "type": "object", "additionalProperties": { "$ref": "#/$defs/locomotor" } },

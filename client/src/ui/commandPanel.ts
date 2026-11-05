@@ -60,7 +60,13 @@ export function selectionChips(
 }
 
 /** An armed map-tap mode of the command panel (spec 41 §3.1). */
-export type ArmedMode = "force" | "rally" | "dig" | null;
+export type ArmedMode =
+  | "force"
+  | "rally"
+  | "dig"
+  | "attackMove"
+  | "guard"
+  | null;
 
 /** What one command panel render shows (spec §6.7). */
 export interface PanelInput {
@@ -382,6 +388,10 @@ const ICONS = {
     '<path d="M10 4H4v16h6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 12h12M17 8l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2"/>',
   rally:
     '<path d="M6 21V3" stroke="currentColor" stroke-width="2.5"/><path d="M6 4h13l-3 4 3 4H6z" fill="currentColor"/>',
+  attackMove:
+    '<path d="M4 4l11 11M15 4L4 15" stroke="currentColor" stroke-width="2.200" stroke-linecap="round"/><path d="M15 13l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"/>',
+  guard:
+    '<path d="M12 2l8 3v6c0 5-3.500 9-8 11-4.500-2-8-6-8-11V5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 7v10M8 11h8" stroke="currentColor" stroke-width="2"/>',
   sell: '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 9c-1-1.500-5-1.500-5.500.500S14 12 14.500 14s-4 2-5.500.500M12 6v12" fill="none" stroke="currentColor" stroke-width="2"/>',
 } as const;
 type IconName = keyof typeof ICONS;
@@ -417,6 +427,8 @@ export interface CommandPanelHandlers {
   onReload?(): void;
   /** Spec 41: arm or disarm the Force fire map tap. */
   onForceFire?(): void;
+  /** Spec 49: arm or disarm the Attack move / Guard map tap. */
+  onMode?(mode: "attackMove" | "guard"): void;
   /** Spec 41: arm or disarm the Rally point map tap. */
   onRally?(): void;
   /** Spec 41: select the same unit types on the screen or on the map. */
@@ -795,6 +807,22 @@ export function createCommandPanel(
           t("ui.forceFire"),
           () => handlers.onForceFire?.(),
           input.armed === "force",
+          input.canFire !== false,
+        ),
+        actionButton(
+          "attack-move",
+          "attackMove",
+          `${t("ui.attackMove")} (F)`,
+          () => handlers.onMode?.("attackMove"),
+          input.armed === "attackMove",
+          input.canFire !== false,
+        ),
+        actionButton(
+          "guard",
+          "guard",
+          `${t("ui.guard")} (H)`,
+          () => handlers.onMode?.("guard"),
+          input.armed === "guard",
           input.canFire !== false,
         ),
         actionButton("same-screen", "screen", t("ui.sameScreen"), () =>
