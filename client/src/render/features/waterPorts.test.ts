@@ -1,6 +1,6 @@
 import ruleset from "@data/ruleset.json";
 import { type Group, Mesh } from "three";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { elevationOf, groundY, setGroundElevation } from "../elevation";
 import {
   createMapFeatures,
@@ -10,6 +10,10 @@ import {
   terrainLayersOf,
 } from "./index";
 import { waterFieldOf } from "./renderers/water";
+
+// Building the coast map is slow on CI runners (software rendering, few
+// cores): the default 5 s limit flaked at ~6 s.
+vi.setConfig({ testTimeout: 30_000 });
 
 const rules = ruleset as unknown as FeatureRules;
 const coast = ruleset.maps.find((m) => m.id === "demo-coast") as FeatureMap;
