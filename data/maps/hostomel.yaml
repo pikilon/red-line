@@ -1,0 +1,103 @@
+id: hostomel                         # required, equals the file name
+width: 128
+height: 128
+blocked: []
+# Spec 48 §5: the Antonov Airport at Hostomel. A 100-cell concrete runway runs NW to SE (the real 14/32 strip), a
+# parallel taxiway with three connectors feeds the apron on its north-east side, where the hangars, the control tower
+# and the terminal stand. The town of Hostomel (houses, shops, a church, apartment blocks) fills the south-east, pine
+# woods close the north and south-west. The Ukrainian base stays in the west and the Russian one in the east, as in
+# first-line (same HQ cells), so the airfield sits between them.
+depots:
+  - { origin: [12, 54], amount: 15000 }
+  - { origin: [114, 72], amount: 15000 }
+  - { origin: [26, 34], amount: 10000 }
+  - { origin: [98, 26], amount: 10000 }
+  - { origin: [30, 100], amount: 10000 }
+  - { origin: [112, 116], amount: 10000 }
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: concrete, path: [[30, 10], [100, 80]], width: 5 }   # runway
+      - { material: concrete, rect: [70, 22, 84, 36] }                  # apron
+      - { material: gravel, rect: [66, 14, 90, 20] }                    # hangar yard
+      - { material: dirt, rect: [4, 52, 24, 68] }
+      - { material: dirt, rect: [104, 56, 122, 74] }
+  roads:
+    - { type: asphalt, path: [[50, 18], [96, 64]], width: 2 }           # taxiway
+    - { type: asphalt, path: [[56, 36], [62, 30]], width: 2 }           # connectors runway <-> taxiway
+    - { type: asphalt, path: [[70, 50], [76, 44]], width: 2 }
+    - { type: asphalt, path: [[84, 64], [90, 58]], width: 2 }
+    - { type: asphalt, path: [[68, 36], [70, 34]], width: 2 }           # taxiway to apron
+    - { type: asphalt, path: [[24, 60], [44, 60]], width: 2 }           # base road west
+    - { type: asphalt, path: [[100, 80], [100, 96]], width: 3 }         # airport road into town
+    - { type: asphalt, path: [[62, 96], [127, 96]], width: 3 }          # Hostomel main street
+    - { type: asphalt, path: [[80, 84], [80, 127]], width: 2 }
+    - { type: asphalt, path: [[118, 84], [118, 127]], width: 2 }
+    - { type: asphalt, path: [[62, 106], [127, 106]], width: 2 }
+    - { type: dirt, path: [[44, 60], [60, 78], [62, 96]], width: 2 }     # track from the base to the town
+    - { type: dirt, path: [[112, 64], [104, 64], [96, 64]], width: 2 }
+features:
+  # Hangars on the apron's north side (fronts face the apron).
+  - { type: warehouse-barn, at: [68, 15], rot: 2, variant: 0 }
+  - { type: warehouse-barn, at: [73, 15], rot: 2, variant: 1 }
+  - { type: warehouse-barn, at: [78, 15], rot: 2, variant: 2 }
+  - { type: warehouse-barn, at: [83, 15], rot: 2, variant: 0 }
+  # Control tower west of the apron, maintenance shops and terminal east of it.
+  - { type: office-tower, at: [65, 29], rot: 0, variant: 0 }
+  - { type: factory, at: [87, 24], rot: 3, variant: 0 }
+  - { type: factory, at: [87, 29], rot: 3, variant: 1 }
+  - { type: apartment-block, at: [74, 38], rot: 2, variant: 0 }
+  - { type: gas-station, at: [92, 34], rot: 2, variant: 0 }
+  - { type: crate-stack, at: [72, 24], rot: 0, variant: 0 }
+  - { type: crate-stack, at: [73, 24], rot: 0, variant: 1 }
+  - { type: crate-stack, at: [80, 33], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [70, 21], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [84, 21], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [70, 37], rot: 0, variant: 0 }
+  # A second hangar group at the south-east end of the taxiway.
+  - { type: warehouse-barn, at: [96, 50], rot: 3, variant: 1 }
+  - { type: warehouse-barn, at: [96, 54], rot: 3, variant: 2 }
+  # Town of Hostomel, south-east: north row facing the main street, south row, church, shops.
+  - { type: house-small, at: [66, 92], rot: 2, variant: 0 }
+  - { type: house-small, at: [70, 92], rot: 2, variant: 1 }
+  - { type: house-small, at: [74, 92], rot: 2, variant: 2 }
+  - { type: townhouse-row, at: [84, 91], rot: 2, variant: 0 }
+  - { type: house-small, at: [90, 92], rot: 2, variant: 1 }
+  - { type: shop, at: [94, 92], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [104, 91], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [108, 91], rot: 2, variant: 1 }
+  - { type: house-small, at: [122, 92], rot: 2, variant: 2 }
+  - { type: house-small, at: [66, 100], rot: 0, variant: 1 }
+  - { type: house-small, at: [70, 100], rot: 0, variant: 2 }
+  - { type: farmhouse, at: [74, 100], rot: 0, variant: 0 }
+  - { type: church, at: [86, 99], rot: 0, variant: 0 }
+  - { type: shop, at: [92, 100], rot: 0, variant: 1 }
+  - { type: shop, at: [95, 100], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [104, 99], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [108, 99], rot: 0, variant: 0 }
+  - { type: house-small, at: [122, 100], rot: 0, variant: 0 }
+  - { type: house-small, at: [66, 110], rot: 2, variant: 0 }
+  - { type: house-small, at: [70, 110], rot: 2, variant: 1 }
+  - { type: house-small, at: [74, 110], rot: 2, variant: 2 }
+  - { type: house-small, at: [84, 110], rot: 2, variant: 0 }
+  - { type: house-small, at: [88, 110], rot: 2, variant: 1 }
+  - { type: townhouse-row, at: [92, 110], rot: 2, variant: 1 }
+  - { type: house-small, at: [104, 110], rot: 2, variant: 2 }
+  - { type: house-small, at: [108, 110], rot: 2, variant: 0 }
+  - { type: lamp-post, at: [82, 94], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [102, 94], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [116, 94], rot: 0, variant: 0 }
+  # Trees: pine woods north and south-west, birch and oak between the houses and along the runway.
+  - { type: pine, area: [2, 2, 40, 8], density: 30, seed: 3 }
+  - { type: pine, area: [100, 2, 125, 14], density: 30, seed: 5 }
+  - { type: pine, area: [2, 78, 50, 124], density: 22, seed: 7 }
+  - { type: birch, area: [64, 112, 125, 124], density: 18, seed: 9 }
+  - { type: oak, area: [76, 112, 82, 124], density: 30, seed: 11 }
+  - { type: birch, area: [30, 40, 50, 52], density: 8, seed: 13 }
+  - { type: poplar, area: [26, 24, 60, 26], density: 12, seed: 15 }
+  - { type: poplar, area: [100, 84, 114, 88], density: 12, seed: 17 }
+  - { type: oak, area: [60, 78, 96, 86], density: 10, seed: 19 }
+starts:
+  - { faction: ukraine, hq: [12, 60], dozerCenti: [1850, 6150] }
+  - { faction: russia, hq: [112, 64], dozerCenti: [10950, 6650] }
