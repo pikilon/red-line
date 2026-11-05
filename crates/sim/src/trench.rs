@@ -536,6 +536,24 @@ mod tests {
     }
 
     #[test]
+    fn a_destroyed_trench_can_be_dug_again() {
+        let mut world = ground();
+        let index = piece(&mut world, 40, 40, 0);
+        let he = weapon(&world, "ua-gmlrs");
+        let centre = world.feature_center(index).unwrap();
+        for _ in 0..3 {
+            world.hit_features(centre, &he);
+        }
+        assert!(!world.features[index as usize].alive);
+        let cell = Cell { x: 40, y: 40 };
+        assert!(world.repair_job_at(cell).is_none());
+        assert!(!world.needs_repair(index));
+        let again = world.dig_trench(cell, 0, 0).expect("cells are free again");
+        assert_ne!(again, index);
+        assert_eq!(world.repair_job_at(cell), Some(again));
+    }
+
+    #[test]
     fn opposing_squads_advance_along_the_line_and_fight_with_sidearms() {
         let mut world = ground();
         let line: Vec<u32> = (0..5)

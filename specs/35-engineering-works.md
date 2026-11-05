@@ -112,6 +112,13 @@ once repaired above that threshold, and the client draws it again.
   rock, asphalt and concrete are the hard materials; gravel, mud, sand, dirt
   and snow dig.
 
+* **Rebuilding (issue #448).** A destroyed trench is gone: its dead row is no
+  longer a repair job (`repair_job_at`, `needs_repair` skip dead earthworks),
+  so its cells are free for a new `Dig`/`DigLine`. Assumption **A12**: the
+  sim does not track craters (only the client terrain deformer does), so no
+  crater size blocks digging yet; the "very large crater blocks it" rule from
+  the tester waits until craters enter the sim.
+
 ### 5b.1 Trench lines
 
 * **Drawing.** With Dig armed, press-drag-release (mouse, or one finger)

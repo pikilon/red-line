@@ -46,6 +46,8 @@ impl World {
                 let def = &self.rules.feature_types[row.kind as usize];
                 let (x0, y0, x1, y1) = extent(def, row);
                 REPAIRABLE_FAMILIES.contains(&def.family.as_str())
+                    // A destroyed trench is gone: its cells can be dug again.
+                    && (row.alive || def.family != EARTHWORK_FAMILY)
                     && (x0..=x1).contains(&cell.x)
                     && (y0..=y1).contains(&cell.y)
             })
@@ -62,6 +64,7 @@ impl World {
             && REPAIRABLE_FAMILIES.contains(&def.family.as_str())
             && def.hp > 0
             && row.collapse == 0
+            && (row.alive || def.family != EARTHWORK_FAMILY)
             && (!row.alive || row.hp < def.hp)
     }
 
