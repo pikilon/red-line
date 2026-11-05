@@ -32,12 +32,24 @@ export interface MinimapDot {
   readonly owner: number;
 }
 
+/** A garrisonable building: a hollow square on the radar, filled when held. */
+export interface MinimapGarrison {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  readonly owner?: number;
+  readonly occupants?: number;
+}
+
 export interface MinimapDeps {
   /** The terrain of the running map, or null before it is known. */
   terrain(): MinimapTerrain | null;
   /** Fog per cell (0 unexplored, 1 explored, 2 visible), `y * width + x`. */
   fog(): Uint8Array;
   entities(): readonly MinimapDot[];
+  /** Garrisonable buildings to mark on the radar (spec 31 A13). */
+  garrisons?(): readonly MinimapGarrison[];
   /** The player whose units always show. */
   player(): number;
   /** CSS colour of an owner's dots. */
@@ -272,6 +284,29 @@ export function createMinimap(radar: HTMLElement, deps: MinimapDeps): Minimap {
     // 2 px dots, 3 px on a phone where the map is smaller on screen.
     const size = window.matchMedia?.("(max-height: 500px)").matches ? 3 : 2;
     const player = deps.player();
+    // Garrisonable buildings: hollow squares, filled in the holder's colour
+    // once occupied. Drawn under the unit dots.
+    for (const building of deps.garrisons?.() ?? []) {
+      const at = worldToMinimap(
+        building.x + building.width / 2,
+        building.y + building.height / 2,
+        width,
+        height,
+        terrain.width,
+        terrain.height,
+      );
+      const box = size + 2;
+      const left = Math.round(at.x - box / 2);
+      const top = Math.round(at.y - box / 2);
+      if ((building.occupants ?? 0) > 0) {
+        context.fillStyle = deps.color(building.owner ?? player);
+        context.fillRect(left, top, box, box);
+      } else {
+        context.strokeStyle = "rgba(232, 237, 242, 0.7)";
+        context.lineWidth = 1;
+        context.strokeRect(left + 0.5, top + 0.5, box - 1, box - 1);
+      }
+    }
     for (const dot of deps.entities()) {
       if (!dotVisible(dot, player, fog, terrain.width)) continue;
       const at = worldToMinimap(

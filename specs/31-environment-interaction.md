@@ -254,6 +254,15 @@ allowEnemies? }` on the feature type; the AI reads `garrisonRadiusCenti` from
   destroyed building, not a full one and not one another player holds. The
   holder is public, as in Zero Hour, where a garrisoned building shows its
   team colour.
+* **A13 — garrison signage.** Every standing, open garrisonable building shows
+  a small marker above it: one pip per slot (rows of five), filled in the
+  holder's colour per occupant, so a player sees where garrisons are and how
+  full they are. It is subtle (half opacity) and full strength while the
+  selection holds free own infantry and the building still accepts them
+  (room left, empty or held by the same player). Wrecked or collapsing
+  buildings and trench pieces show none. The minimap marks the same buildings
+  with a hollow square, filled in the holder's colour while occupied. Pure
+  presentation: `client/src/render/garrisonMarkers.ts`, `ui/minimap.ts`.
 * **A12 — attacking a garrison (owner answer, open question 3).** As in Zero
   Hour (`PartitionFilterRejectBuildings`, `PartitionManager.cpp:4922`), a
   building garrisoned by another player is an enemy: a unit with no unit to
