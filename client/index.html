@@ -47,8 +47,14 @@
       #res-player-row { display: flex; align-items: center; gap: 6px; }
       #res-flag { flex: none; width: 15px; height: 10px; background: var(--team-flag, none); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25); }
       #res-player { color: #8fa0ad; font-size: 10px; letter-spacing: 0.1em; }
-      #res-row { display: flex; gap: 14px; }
-      #res-power.power-low { color: #ff5252; }
+      #res-row { display: flex; align-items: center; gap: 14px; }
+      #res-power { display: flex; align-items: center; gap: 6px; width: 96px; }
+      .res-power-icon { flex: none; width: 12px; height: 14px; color: var(--amber); }
+      .res-power-icon svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+      #res-power-bar { flex: 1; height: 8px; box-sizing: border-box; overflow: hidden; background: #090c0f; box-shadow: inset 0 0 0 1px #4a525a; }
+      #res-power-fill { width: 0; height: 100%; background: #4ade80; transition: width 120ms linear, background-color 120ms linear; }
+      #res-power.power-warn #res-power-fill { background: var(--amber); }
+      #res-power.power-low #res-power-fill { background: #ff5252; }
       #hud-tabs { flex: none; display: flex; }
       .hud-tab { position: relative; display: flex; align-items: center; gap: 6px; padding: 0 14px; border: 0; border-right: 1px solid #2c343b; border-top: 2px solid transparent; background: none; color: #8a939b; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; touch-action: manipulation; }
       .hud-tab[aria-selected="true"] { border-top-color: var(--accent); background: #262e35; color: #fff; }
@@ -273,6 +279,7 @@
         #resource-bar { font-size: 12px; }
         #res-player { font-size: 9px; }
         #res-row { gap: 10px; }
+        #res-power { width: 84px; }
         .hud-tab { padding: 0 9px; font-size: 11px; }
         #hud-selection { padding: 0 8px; }
         #picked { font-size: 12px; }
