@@ -690,11 +690,23 @@ test("AC-08-26: left click moves, attacks and selects; right is inert", async ({
 
   // Empty ground moves the selection and keeps it.
   await clickTiles(page, 35, 66);
+  // At speed 4 the rifleman can arrive before a slow poll sees the order, so
+  // a unit that already left its spot counts as having been ordered to move.
   await expect
-    .poll(async () => (await savedOrder(page, first.id))?.kind, {
-      timeout: ms(5000),
-    })
-    .toBe("move");
+    .poll(
+      async () => {
+        const kind = (await savedOrder(page, first.id))?.kind;
+        const now = await debugCall(
+          page,
+          (api, id: number) => api.entity(id),
+          first.id,
+        );
+        const moved = now !== null && (now.x !== first.x || now.y !== first.y);
+        return kind === "move" || moved;
+      },
+      { timeout: ms(5000) },
+    )
+    .toBe(true);
   expect(await debugCall(page, (api) => api.selectedIds())).toEqual([first.id]);
 
   // Another own unit is selected, not attacked or moved to.
