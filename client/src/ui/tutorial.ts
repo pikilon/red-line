@@ -315,6 +315,30 @@ export interface TutorialActions {
   alive(ids: readonly number[]): Promise<boolean[]>;
 }
 
+/** `localStorage` key of whether the player hid the objectives (spec 48 §4). */
+const OBJECTIVES_STORAGE_KEY = "redline.objectives.collapsed";
+/** How long the header flashes after an objective changes while hidden. */
+const OBJECTIVES_FLASH_MS = 2000;
+const OBJECTIVES_FLASH_CLASS = "flash";
+
+/** Whether the player hid the objectives; false when storage is unavailable. */
+function readCollapsed(): boolean {
+  try {
+    return globalThis.localStorage.getItem(OBJECTIVES_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+/** Remembers the player's choice; private mode keeps it for this page only. */
+function saveCollapsed(collapsed: boolean): void {
+  try {
+    globalThis.localStorage.setItem(OBJECTIVES_STORAGE_KEY, String(collapsed));
+  } catch {
+    // Private mode: the choice lasts for this page only.
+  }
+}
+
 /** `#tutorial`: the objective list of `mission` and, once every step is
  *  done, the mission-complete panel (spec 46 §4). */
 export function createTutorialPanel(
@@ -325,9 +349,21 @@ export function createTutorialPanel(
   update(snapshot: MatchSnapshot, player: number): void;
 } {
   const element = appendDiv(root, "tutorial");
-  const title = document.createElement("h2");
+  const header = document.createElement("h2");
+  header.id = "tutorial-header";
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.className = "tutorial-toggle";
+  const arrow = document.createElement("span");
+  arrow.className = "tutorial-toggle-arrow";
+  arrow.setAttribute("aria-hidden", "true");
+  const title = document.createElement("span");
   title.textContent = t(mission.title);
+  toggle.append(arrow, title);
+  header.appendChild(toggle);
   const list = document.createElement("ol");
+  list.id = "tutorial-objectives";
+  toggle.setAttribute("aria-controls", list.id);
   const items = mission.goals.map((goal) => {
     const item = document.createElement("li");
     item.textContent = goalText(goal);
@@ -336,7 +372,49 @@ export function createTutorialPanel(
   });
   const hint = document.createElement("p");
   hint.id = "tutorial-hint";
-  element.append(title, list, hint);
+  element.append(header, list, hint);
+  let collapsed = readCollapsed();
+  let flashTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /** Draws the collapsed state on the panel and its toggle. */
+  function applyCollapsed(): void {
+    element.classList.toggle("collapsed", collapsed);
+    toggle.setAttribute("aria-expanded", String(!collapsed));
+    arrow.textContent = collapsed ? "▸" : "▾";
+    const label = t(
+      collapsed ? "campaign.showObjectives" : "campaign.hideObjectives",
+    );
+    toggle.setAttribute("aria-label", label);
+    toggle.title = label;
+    if (!collapsed) {
+      header.classList.remove(OBJECTIVES_FLASH_CLASS);
+      if (flashTimer !== null) {
+        clearTimeout(flashTimer);
+        flashTimer = null;
+      }
+    }
+  }
+
+  /** Draws attention to the hidden list when its current objective advances. */
+  function flashHeader(): void {
+    if (!collapsed) return;
+    header.classList.remove(OBJECTIVES_FLASH_CLASS);
+    // Restart the animation when the next objective arrives mid-flash.
+    void header.offsetWidth;
+    header.classList.add(OBJECTIVES_FLASH_CLASS);
+    if (flashTimer !== null) clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => {
+      header.classList.remove(OBJECTIVES_FLASH_CLASS);
+      flashTimer = null;
+    }, OBJECTIVES_FLASH_MS);
+  }
+
+  toggle.addEventListener("click", () => {
+    collapsed = !collapsed;
+    saveCollapsed(collapsed);
+    applyCollapsed();
+  });
+  applyCollapsed();
   let done = -1;
   /** Tick of the last attack order given to the wave; null before it. */
   let waveOrderedAt: number | null = null;
@@ -458,6 +536,7 @@ export function createTutorialPanel(
           item.textContent = t(current.text, { time: clock(left) });
       }
       if (step === done) return;
+      const changed = done >= 0;
       done = step;
       items.forEach((item, index) => {
         item.className =
@@ -466,6 +545,7 @@ export function createTutorialPanel(
       const goal = mission.goals[step];
       if (goal === undefined) finish(true);
       else hint.textContent = hintText(goal, mission);
+      if (changed) flashHeader();
     },
   };
 }

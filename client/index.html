@@ -200,6 +200,12 @@
       .main-menu-page h2 { margin: 6px 0 0; color: #facc15; font: 700 13px/1 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.25em; text-transform: uppercase; }
       #tutorial { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: calc(12px + env(safe-area-inset-left)); z-index: 30; width: min(320px, calc(100vw - 32px)); box-sizing: border-box; padding: 12px 14px; border: 1px solid #4a525a; border-top: 3px solid #facc15; background: rgba(20, 24, 28, 0.9); color: #e6edf2; font: 14px/1.4 system-ui, sans-serif; pointer-events: auto; }
       #tutorial h2 { margin: 0 0 6px; font: 700 15px/1.2 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; }
+      #tutorial .tutorial-toggle { display: flex; align-items: center; gap: 6px; width: 100%; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit; text-align: left; cursor: pointer; }
+      #tutorial .tutorial-toggle:hover { border: 0; color: #facc15; }
+      #tutorial .tutorial-toggle-arrow { width: 1em; color: #facc15; font-size: 13px; }
+      #tutorial.collapsed > :not(#tutorial-header) { display: none; }
+      #tutorial-header.flash { animation: tutorial-objectives-flash 2s ease-in-out; }
+      @keyframes tutorial-objectives-flash { 0%, 100% { color: #e6edf2; text-shadow: none; } 15%, 45%, 75% { color: #facc15; text-shadow: 0 0 8px #facc15; } }
       #tutorial ol { margin: 0; padding-left: 20px; color: #8a949c; }
       #tutorial li.current { color: #fff; font-weight: 700; }
       #tutorial li.done { color: #4ade80; text-decoration: line-through; }
