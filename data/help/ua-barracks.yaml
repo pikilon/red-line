@@ -1,0 +1,7 @@
+# Spec 48 §3.3: screenshots of the barracks card. `node --run help:shots -- --type ua-barracks`
+- { id: ua-barracks-train, save: help-ua-barracks-train, ticks: 5, select: [ua-barracks], hud: true, tab: build }
+- { id: ua-barracks-rally, save: help-ua-barracks-rally, ticks: 5, select: [ua-barracks], hud: true, tab: orders }
+- { id: ua-barracks-heal, save: help-ua-barracks-heal, ticks: 10, select: [ua-rifleman] }
+- { id: ua-barracks-resupply, save: help-ua-barracks-resupply, ticks: 5, select: [ua-fpv-team], hud: true, tab: orders }
+- { id: ua-barracks-repair, save: help-ua-barracks-repair, ticks: 10, select: [ua-dozer] }
+- { id: ua-barracks-sell, save: help-ua-barracks-sell, ticks: 5, select: [ua-barracks], hud: true, tab: orders }

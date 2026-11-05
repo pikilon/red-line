@@ -1,0 +1,14 @@
+# Spec 48: help card of the Geran launch site. A damaged site waits for its dozer.
+id: help-ru-geran-site-repair
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 5000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 46, y: 19.7, zoom: 2.2 }
+entities:
+  - { player: 1, type: ru-geran-site, origin: [44, 17], hpPercent: 40 }
+  - { player: 1, type: ru-dozer, atCenti: [4000, 2000] }

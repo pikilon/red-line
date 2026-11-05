@@ -1,0 +1,59 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ua-stugna-team-fight",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 46,
+      "y": 20.5,
+      "zoom": 3
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-stugna-team",
+        "atCenti": [
+          4200,
+          2000
+        ],
+        "label": "stugna",
+        "order": {
+          "attack": "tank"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          5000,
+          2000
+        ],
+        "label": "tank",
+        "hpPercent": 10
+      }
+    ]
+  }
+}

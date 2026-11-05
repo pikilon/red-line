@@ -1,0 +1,15 @@
+# Spec 48: help card of the Russian RPG gunner. Three teams board a BRDM-2, which lets them fire from inside.
+id: help-ru-rpg-gunner-board
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 44, y: 20, zoom: 3 }
+entities:
+  - { player: 1, type: ru-brdm-scout, atCenti: [4500, 2000], label: brdm }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [4100, 1850], order: { board: brdm } }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [4000, 2000], order: { board: brdm } }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [4100, 2150], order: { board: brdm } }

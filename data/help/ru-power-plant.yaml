@@ -1,0 +1,5 @@
+# Spec 48 §3.3: screenshots of the Russian power plant card. `node --run help:shots -- --type ru-power-plant`
+- { id: ru-power-plant-power, save: help-ru-power-plant-power, ticks: 5, select: [ru-power-plant], hud: true }
+- { id: ru-power-plant-low, save: help-ru-power-plant-low, ticks: 5, select: [], hud: true }
+- { id: ru-power-plant-repair, save: help-ru-power-plant-repair, ticks: 5, select: [ru-dozer] }
+- { id: ru-power-plant-sell, save: help-ru-power-plant-sell, ticks: 5, select: [ru-power-plant], hud: true, tab: orders }

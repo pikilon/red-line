@@ -1,0 +1,32 @@
+{
+  "id": "ua-leopard-2a4",
+  "role": "Main battle tank",
+  "summary": "A main battle tank with a heavy 120 mm gun and thick armour. It is built to win tank duels and can grind enemy infantry under its tracks, but it needs support against missiles and massed soldiers.",
+  "sections": [
+    {
+      "title": "120 mm cannon",
+      "how": "Select the Leopard and left-click an enemy, or let it fire at anything in range.",
+      "body": "The 120 mm smoothbore fires one armour-piercing shell at a time. It is made for tank duels and punches through light vehicles, but the anti-tank shell does little against infantry, and the gun cannot fire at aircraft.",
+      "shots": ["ua-leopard-2a4-fight"]
+    },
+    {
+      "title": "Crush infantry",
+      "how": "Select the Leopard and left-click the ground beyond the enemy infantry.",
+      "body": "While it moves, the Leopard runs over enemy soldiers in its path and kills them outright. It never hurts friendly infantry, and it cannot crush other vehicles.",
+      "shots": ["ua-leopard-2a4-crush"]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged Leopard and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The Leopard drives to the factory and is repaired for half its price, paid as the health comes back.",
+      "shots": ["ua-leopard-2a4-repair"]
+    }
+  ],
+  "strong": ["Tanks and armoured vehicles", "Light vehicles"],
+  "weak": ["Anti-tank teams and missiles", "Massed infantry", "Aircraft"],
+  "tips": [
+    "Pair it with a Bradley or riflemen: the Leopard fights armour while they clear the enemy infantry around it.",
+    "Drive through enemy infantry instead of stopping to shoot them: a moving Leopard crushes them under its tracks.",
+    "Pull damaged Leopards back to the vehicle factory; repairs cost half the price."
+  ]
+}

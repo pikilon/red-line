@@ -1,0 +1,56 @@
+{
+  "id": "ua-patriot",
+  "role": "Long-range anti-air battery",
+  "summary": "A fixed Patriot battery that reaches high-flying jets and low drones far from the base. It is the only Ukrainian defense that can answer a Su-34 before it bombs, but it fires slowly, needs power and cannot touch the ground.",
+  "sections": [
+    {
+      "title": "Long-range anti-air missile",
+      "how": "Select the battery and let it fire: it launches at any aircraft or drone in range by itself.",
+      "body": "The launcher turns on its mount and sends a homing missile at a high-flying jet or a low drone. It reaches the Su-34 and the jet-powered Geran-3, and it is the only Ukrainian defense that can hit a Su-34 before its glide bombs leave the aircraft. It never fires at ground units or buildings.",
+      "shots": ["ua-patriot-su34", "ua-patriot-geran3", "ua-patriot-low"]
+    },
+    {
+      "title": "One missile at a time",
+      "how": "Watch the battery after a launch; there is no way to speed up the reload.",
+      "body": "The Patriot fires one missile, then reloads for about six seconds before the next. A single battery cannot stop a massed drone wave on its own: while it reloads, the rest of the wave flies on. Back it with Sting nests, Gepards or riflemen for the low flyers.",
+      "shots": ["ua-patriot-reload"]
+    },
+    {
+      "title": "Needs power",
+      "how": "Watch the power reading in the HUD; keep production at least equal to consumption.",
+      "body": "The battery draws power from the base. While the base consumes more than it produces, the reading turns red and every defense that needs power, including this one, holds its fire until the deficit is fixed. Build another power plant or sell something that draws power.",
+      "shots": ["ua-patriot-power"]
+    },
+    {
+      "title": "Repair with a dozer",
+      "how": "Select a dozer and left-click the damaged battery.",
+      "body": "The dozer drives over and restores the battery until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle.",
+      "shots": ["ua-patriot-repair"]
+    },
+    {
+      "title": "Sell",
+      "how": "Select the battery and press Sell twice.",
+      "body": "It sells for half its price and disappears at once, opening the ground it held. Selling your last building loses the match.",
+      "shots": ["ua-patriot-sell"]
+    }
+  ],
+  "strong": [
+    "High-flying jets and bombers",
+    "Low-flying drones",
+    "Long-range cover over a base",
+    "The Su-34's stand-off attack"
+  ],
+  "weak": [
+    "Ground units and buildings",
+    "Massed cheap drones",
+    "A power deficit",
+    "A Su-34 that survives the first missile"
+  ],
+  "tips": [
+    "Place it so its long range covers the approach to your base, not just the building beside it.",
+    "Save it for high flyers: a Gepard or a Sting nest handles low drones without spending Patriot missiles.",
+    "Keep the power grid ahead: while the base is short of power the battery holds fire.",
+    "Keep a dozer nearby: the battery cannot repair itself.",
+    "A Su-34 can survive one missile; the second has to wait for the reload, so do not rely on a single battery against a raid."
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ua-vehicle-factory-repair-dozer",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 46,
+      "y": 20.5,
+      "zoom": 2.2
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-vehicle-factory",
+        "origin": [
+          45,
+          18
+        ],
+        "hpPercent": 40
+      },
+      {
+        "player": 0,
+        "type": "ua-dozer",
+        "atCenti": [
+          4200,
+          2100
+        ]
+      }
+    ]
+  }
+}

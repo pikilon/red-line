@@ -1,0 +1,6 @@
+# Spec 48 §3.3: screenshots of the vehicle factory card. `node --run help:shots -- --type ua-vehicle-factory`
+- { id: ua-vehicle-factory-produce, save: help-ua-vehicle-factory-build, ticks: 5, select: [ua-vehicle-factory], hud: true, tab: build }
+- { id: ua-vehicle-factory-rally, save: help-ua-vehicle-factory-rally, ticks: 5, select: [ua-vehicle-factory], hud: true, tab: orders }
+- { id: ua-vehicle-factory-repair, save: help-ua-vehicle-factory-repair, ticks: 10, select: [ua-bradley], hud: true, tab: orders }
+- { id: ua-vehicle-factory-repair-dozer, save: help-ua-vehicle-factory-repair-dozer, ticks: 10, select: [ua-dozer] }
+- { id: ua-vehicle-factory-sell, save: help-ua-vehicle-factory-sell, ticks: 5, select: [ua-vehicle-factory], hud: true, tab: orders }

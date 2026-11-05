@@ -1,0 +1,71 @@
+{
+  "id": "ru-rpg-gunner",
+  "role": "Anti-tank rocket team",
+  "summary": "A two-man RPG-7 team: cheap, quick to train and deadly to tanks and light vehicles at close range. It must stand still to fire, is poor against infantry and cannot touch aircraft.",
+  "sections": [
+    {
+      "title": "Anti-tank rocket",
+      "how": "Select the RPG gunner and left-click an enemy vehicle, or let him fire at anything in range.",
+      "body": "The RPG-7 fires an unguided shaped-charge rocket. It punches through tank armour and destroys light vehicles and buildings, but it does little to infantry. It cannot hit aircraft or drones, and it has no minimum range, so anything that gets close is still covered.",
+      "shots": ["ru-rpg-gunner-fight"]
+    },
+    {
+      "title": "Stow and set up",
+      "how": "Select the team and left-click the ground; on touch, tap.",
+      "body": "The gunner cannot walk with the launcher ready. He shoulders it, walks, then sets it up again on the new spot, and only then can he fire. He must also stand still to fire, so give the move order before the enemy arrives, not in the middle of a duel.",
+      "shots": ["ru-rpg-gunner-move"]
+    },
+    {
+      "title": "Fight from a trench",
+      "how": "Select the team and left-click a finished trench, or press Garrison.",
+      "body": "A piece holds three teams. Fire from outside only grazes them, while high explosives and thermobaric shells wear the trench down and can destroy it; a roofed piece shelters the first two. The team fires its rocket out at vehicles. When an enemy holds the next piece of the line, it switches to sidearms and fights as infantry, never firing the launcher into the next trench, and in a trench line it advances from piece to piece toward the enemy. Press Unload to get out.",
+      "shots": ["ru-rpg-gunner-trench"]
+    },
+    {
+      "title": "Garrison buildings",
+      "how": "Select the team and left-click a civilian building, or press Garrison.",
+      "body": "The team takes cover inside and fires from the windows with more range and damage. The building changes hands to your side while they hold it and returns to neutral when they leave. A wrecked building throws them out, and one that collapses can kill them.",
+      "shots": ["ru-rpg-gunner-garrison"]
+    },
+    {
+      "title": "Ride in vehicles",
+      "how": "Select one or more RPG gunners, then left-click your own BRDM-2 or BMP-2.",
+      "body": "They climb aboard and cannot be selected until they get out. A BRDM-2 has firing ports, so the gunner can fire his rocket from inside; a BMP-2 has none, so they ride protected but silent. If the BRDM-2 is destroyed its riders are killed, while a destroyed BMP-2 only hurts them. Select the loaded vehicle and press Unload to let them out.",
+      "shots": ["ru-rpg-gunner-board"]
+    },
+    {
+      "title": "Heal at the barracks",
+      "how": "Select damaged RPG gunners and left-click your barracks.",
+      "body": "They walk in and heal for free while the barracks keeps training. A patient leaves on its own when whole; a full-health gunner stays outside. If the barracks is destroyed or sold, the patients are thrown out.",
+      "shots": ["ru-rpg-gunner-heal"]
+    },
+    {
+      "title": "Dig trenches",
+      "how": "Select the soldiers, press Dig trench and left-click the ground. Drag to draw a line; Shift turns a single trench or keeps the button armed after a line.",
+      "body": "A squad digs a two-cell trench; more diggers finish faster. A finished trench halves the damage its infantry take, and a section with a roof protects the first two soldiers completely. Wheeled vehicles cannot cross it once it is half dug; tracked vehicles and infantry can."
+    },
+    {
+      "title": "Repair bridges",
+      "how": "Select one or more soldiers and left-click a damaged or broken bridge.",
+      "body": "The soldiers walk to the bank and repair the bridge for free. Every worker adds a share, up to six; a dozer counts for three. A broken bridge opens again once it is repaired enough to carry traffic."
+    }
+  ],
+  "strong": [
+    "Tanks and armoured vehicles",
+    "Light vehicles and transports",
+    "Buildings"
+  ],
+  "weak": [
+    "Infantry",
+    "Aircraft and drones",
+    "Artillery and long-range fire",
+    "Open ground"
+  ],
+  "tips": [
+    "The rocket is wasted on infantry and cannot reach aircraft: back the team with riflemen or a BMP-2.",
+    "It fires only when set up and standing still; start the move before contact or the team is caught stowed.",
+    "Ambush from a trench or a building: in the open a lone gunner falls to the first squad that closes.",
+    "Several rockets are needed to kill a tank; mass two or three teams and fire together.",
+    "A BRDM-2 lets the gunner fire from inside; a BMP-2 carries him protected but silent."
+  ]
+}

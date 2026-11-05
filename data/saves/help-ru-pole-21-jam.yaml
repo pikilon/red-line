@@ -1,0 +1,14 @@
+# Spec 48: help card of the Pole-21. Two Ukrainian radio robots are stopped inside its circle.
+id: help-ru-pole-21-jam
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 43, y: 20, zoom: 2.2 }
+entities:
+  - { player: 1, type: ru-pole-21, atCenti: [4600, 2000], label: jammer }
+  - { player: 0, type: ua-ratel, atCenti: [3900, 1850], order: { moveCenti: [4800, 1850] } }
+  - { player: 0, type: ua-tw-12-7, atCenti: [3950, 2150], order: { moveCenti: [4800, 2150] } }

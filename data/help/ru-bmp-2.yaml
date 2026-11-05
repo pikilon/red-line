@@ -1,0 +1,6 @@
+# Spec 48 §3.3: screenshots of the BMP-2 card. `node --run help:shots -- --type ru-bmp-2`
+- { id: ru-bmp-2-fight, save: help-ru-bmp-2-fight, ticks: 40, select: [ru-bmp-2] }
+- { id: ru-bmp-2-board, save: help-ru-bmp-2-carry, ticks: 12, select: [ru-rifleman, ru-rpg-gunner] }
+- { id: ru-bmp-2-unload, save: help-ru-bmp-2-carry, ticks: 200, select: [ru-bmp-2], hud: true }
+- { id: ru-bmp-2-swim, save: help-ru-bmp-2-swim, ticks: 40, select: [ru-bmp-2] }
+- { id: ru-bmp-2-repair, save: help-ru-bmp-2-repair, ticks: 10, select: [ru-bmp-2], hud: true }

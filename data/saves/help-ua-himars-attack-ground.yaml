@@ -1,0 +1,14 @@
+# Spec 48: help card of the HIMARS. A scout spots the Russian base while the launcher shells a chosen point.
+id: help-ua-himars-attack-ground
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 49, y: 20, zoom: 1.3 }
+entities:
+  - { player: 0, type: ua-himars, atCenti: [3800, 2000], label: himars, order: { attackGroundCenti: [5400, 1850] } }
+  - { player: 0, type: ua-kozak-scout, atCenti: [5200, 2300] }
+  - { player: 1, type: ru-power-plant, origin: [55, 18], label: plant }

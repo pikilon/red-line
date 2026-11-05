@@ -1,0 +1,66 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ua-patriot-low",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 48,
+      "y": 19.5,
+      "zoom": 2.6
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          30,
+          19
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-patriot",
+        "origin": [
+          40,
+          19
+        ],
+        "label": "patriot"
+      },
+      {
+        "player": 1,
+        "type": "ru-geran-2",
+        "atCenti": [
+          5800,
+          2000
+        ],
+        "label": "drone",
+        "order": {
+          "attack": "patriot"
+        }
+      }
+    ]
+  }
+}

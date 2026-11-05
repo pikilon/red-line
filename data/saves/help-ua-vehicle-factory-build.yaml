@@ -1,0 +1,13 @@
+# Spec 48: help card of the vehicle factory. Select it to see the five vehicles it builds.
+id: help-ua-vehicle-factory-build
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [10000, 0]
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 47.5, y: 17.2, zoom: 2.2 }
+entities:
+  - { player: 0, type: ua-vehicle-factory, origin: [45, 13] }

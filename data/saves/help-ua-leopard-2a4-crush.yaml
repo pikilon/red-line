@@ -1,0 +1,16 @@
+# Spec 48: help card of the Leopard. Its tracks drive over a line of Russian riflemen.
+id: help-ua-leopard-2a4-crush
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 46, y: 20, zoom: 3 }
+entities:
+  - { player: 0, type: ua-leopard-2a4, atCenti: [4000, 2000], label: leopard, order: { moveCenti: [5200, 2000] } }
+  - { player: 1, type: ru-rifleman, atCenti: [4400, 2000] }
+  - { player: 1, type: ru-rifleman, atCenti: [4600, 1950] }
+  - { player: 1, type: ru-rifleman, atCenti: [4800, 2050] }
+  - { player: 1, type: ru-rifleman, atCenti: [5000, 2000] }

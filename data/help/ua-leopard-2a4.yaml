@@ -1,0 +1,4 @@
+# Spec 48 §3.3: screenshots of the Leopard 2A4 card. `node --run help:shots -- --type ua-leopard-2a4`
+- { id: ua-leopard-2a4-fight, save: help-ua-leopard-2a4-fight, ticks: 55, select: [ua-leopard-2a4] }
+- { id: ua-leopard-2a4-crush, save: help-ua-leopard-2a4-crush, ticks: 40, select: [ua-leopard-2a4] }
+- { id: ua-leopard-2a4-repair, save: help-ua-leopard-2a4-repair, ticks: 10, select: [ua-leopard-2a4], hud: true }

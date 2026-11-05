@@ -1,0 +1,15 @@
+# Spec 48: help card of the Su-34. The fixed-wing jet banks through a wide turn over open ground.
+id: help-ru-su-34-flight
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 10000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 37, y: 22, zoom: 2.6 }
+entities:
+  - { player: 1, type: ru-su-34, atCenti: [3600, 2000], label: jet, order: { moveCenti: [3600, 2500] } }
+  - { player: 1, type: ru-t-72b3, atCenti: [4100, 2300] }
+  - { player: 1, type: ru-bmp-2, atCenti: [4250, 2400] }

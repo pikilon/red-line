@@ -1,0 +1,15 @@
+# Spec 48: help card of the BRDM-2. Its KPVT heavy machine gun cuts into Ukrainian infantry beside a scout vehicle.
+id: help-ru-brdm-scout-fight
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 46, y: 20.5, zoom: 3 }
+entities:
+  - { player: 1, type: ru-brdm-scout, atCenti: [4300, 2000], label: brdm, order: { attack: scout } }
+  - { player: 0, type: ua-kozak-scout, atCenti: [4750, 2000], label: scout, hpPercent: 40 }
+  - { player: 0, type: ua-rifleman, atCenti: [4750, 1930], hpPercent: 70 }
+  - { player: 0, type: ua-rifleman, atCenti: [4750, 2070], hpPercent: 70 }

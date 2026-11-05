@@ -1,0 +1,7 @@
+# Spec 48 §3.3: screenshots of the BRDM-2 card. `node --run help:shots -- --type ru-brdm-scout`
+- { id: ru-brdm-scout-fight, save: help-ru-brdm-scout-fight, ticks: 40, select: [ru-brdm-scout] }
+- { id: ru-brdm-scout-board, save: help-ru-brdm-scout-carry, ticks: 12, select: [ru-rifleman, ru-rpg-gunner] }
+- { id: ru-brdm-scout-fireports, save: help-ru-brdm-scout-fireports, ticks: 45, select: [ru-brdm-scout], hud: true }
+- { id: ru-brdm-scout-unload, save: help-ru-brdm-scout-carry, ticks: 200, select: [ru-brdm-scout], hud: true }
+- { id: ru-brdm-scout-swim, save: help-ru-brdm-scout-swim, ticks: 27, select: [ru-brdm-scout] }
+- { id: ru-brdm-scout-repair, save: help-ru-brdm-scout-repair, ticks: 10, select: [ru-brdm-scout], hud: true }

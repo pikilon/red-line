@@ -1,0 +1,15 @@
+# Spec 48: help card of the Russian supply center. A Molniya crew waits beside its supply center.
+id: help-ru-supply-center-resupply
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 5000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 45, y: 19, zoom: 2.2 }
+entities:
+  - { player: 1, type: ru-supply-center, origin: [39, 17] }
+  - { player: 1, type: ru-molniya-crew, atCenti: [4400, 1900], label: crew }
+  - { player: 0, type: ua-power-plant, origin: [48, 18], label: target }

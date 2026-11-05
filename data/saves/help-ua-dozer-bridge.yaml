@@ -1,0 +1,14 @@
+# Spec 48: help card of the dozer. It repairs the broken road bridge.
+id: help-ua-dozer-bridge
+map: demo-bridges
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 30.5, y: 9, zoom: 3 }
+features:
+  - { at: [30, 9], hpPercent: 0 }
+entities:
+  - { player: 0, type: ua-dozer, atCenti: [2600, 900], order: { repair: [30, 9] } }

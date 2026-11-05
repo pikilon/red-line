@@ -1,0 +1,15 @@
+# Spec 48: help card of the Su-34. Bombs spent, it docks at its airfield to reload and repair.
+id: help-ru-su-34-reload
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 10000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 46, y: 17, zoom: 2.5 }
+entities:
+  - { player: 1, type: ru-airfield, origin: [43, 12] }
+  - { player: 1, type: ru-su-34, atCenti: [3500, 2000], label: jet, hpPercent: 20, order: { attack: target } }
+  - { player: 0, type: ua-power-plant, origin: [52, 17], label: target }

@@ -1,0 +1,18 @@
+# Spec 48: help card of the Stugna team. The crew holds a trench piece and fires its missile at a T-72.
+id: help-ua-stugna-team-trench
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 44, y: 20.5, zoom: 3 }
+trenches:
+  - { at: [38, 20] }
+  - { at: [40, 20], variant: 1 }
+  - { at: [42, 20] }
+  - { at: [44, 20] }
+entities:
+  - { player: 0, type: ua-stugna-team, atCenti: [4033, 2050], order: { garrison: [40, 20] } }
+  - { player: 1, type: ru-t-72b3, atCenti: [4650, 2000], hpPercent: 15 }

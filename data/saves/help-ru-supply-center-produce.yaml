@@ -1,0 +1,14 @@
+# Spec 48: help card of the Russian supply center. Select it to see the truck it produces.
+id: help-ru-supply-center-produce
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 5000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 46, y: 16.5, zoom: 2.2 }
+entities:
+  - { player: 1, type: ru-supply-center, origin: [45, 14] }
+  - { player: 1, type: ru-supply-truck, atCenti: [4400, 1750] }

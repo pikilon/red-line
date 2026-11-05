@@ -1,0 +1,13 @@
+# Spec 48: help card of the airfield. Select it to see Rally point and Sell in the structure row.
+id: help-ru-airfield-sell
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 10000]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 48, y: 16.5, zoom: 2.2 }
+entities:
+  - { player: 1, type: ru-airfield, origin: [45, 13] }

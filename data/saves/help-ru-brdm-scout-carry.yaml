@@ -1,0 +1,16 @@
+# Spec 48: help card of the BRDM-2. A squad walks to board it; select the infantry to see the move.
+id: help-ru-brdm-scout-carry
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 44, y: 20, zoom: 3 }
+entities:
+  - { player: 1, type: ru-brdm-scout, atCenti: [4500, 2000], label: brdm }
+  - { player: 1, type: ru-rifleman, atCenti: [4050, 1850], order: { board: brdm } }
+  - { player: 1, type: ru-rifleman, atCenti: [4000, 2000], order: { board: brdm } }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [4050, 2150], order: { board: brdm } }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [3950, 2000], order: { board: brdm } }

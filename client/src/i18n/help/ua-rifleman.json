@@ -1,0 +1,61 @@
+{
+  "id": "ua-rifleman",
+  "role": "Line infantry",
+  "summary": "The cheapest Ukrainian soldier: a rifle, a pair of boots and a good eye for ground. He is most useful holding a building, a trench or a bridge, where cover makes his rifle count.",
+  "sections": [
+    {
+      "title": "Rifle",
+      "how": "Select the rifleman and left-click an enemy, or let him fire at anything in range.",
+      "body": "The rifle hits infantry hard and can also shoot low drones. Against light and armoured vehicles it does little, and against a building almost nothing.",
+      "shots": ["ua-rifleman-fight", "ua-rifleman-air"]
+    },
+    {
+      "title": "Ride in vehicles",
+      "how": "Select one or more riflemen, then left-click your own Kozak or Bradley.",
+      "body": "They climb aboard and cannot be selected until they get out. A Kozak has firing ports, so its riflemen shoot from inside; a Bradley has none, so they ride protected but silent. If the vehicle is destroyed, its riders are hurt or killed. Select the loaded vehicle and press Unload to let them out.",
+      "shots": ["ua-rifleman-board"]
+    },
+    {
+      "title": "Garrison buildings",
+      "how": "Select riflemen and left-click a civilian building, or press Garrison.",
+      "body": "They take cover inside and fire from the windows with more range and damage. The building changes hands to your side while they hold it and returns to neutral when they leave. A wrecked building throws them out, and one that collapses can kill them.",
+      "shots": ["ua-rifleman-garrison"]
+    },
+    {
+      "title": "Dig trenches",
+      "how": "Select the soldiers, press Dig trench and left-click the ground. Drag to draw a line; Shift turns a single trench or keeps the button armed after a line.",
+      "body": "A squad digs a two-cell trench; more diggers finish faster. A finished trench halves the damage its infantry take, and a section with a roof protects the first two soldiers completely. Wheeled vehicles cannot cross it once it is half dug; tracked vehicles and infantry can.",
+      "shots": ["ua-rifleman-dig"]
+    },
+    {
+      "title": "Fight from a trench",
+      "how": "Select riflemen and left-click a finished trench, or press Garrison.",
+      "body": "A piece holds three soldiers. Fire from outside the trench only grazes them, while high explosives and thermobaric shells wear the trench down and can destroy it. In a trench line the squad moves from piece to piece toward the enemy, and soldiers in a roofed piece are sheltered from small arms.",
+      "shots": ["ua-rifleman-trench"]
+    },
+    {
+      "title": "Repair bridges",
+      "how": "Select one or more soldiers and left-click a damaged or broken bridge.",
+      "body": "The soldiers walk to the bank and repair the bridge for free. Every worker adds a share, up to six; a dozer counts for three. A broken bridge opens again once it is repaired enough to carry traffic.",
+      "shots": ["ua-rifleman-bridge"]
+    },
+    {
+      "title": "Heal at the barracks",
+      "how": "Select damaged riflemen and left-click your barracks.",
+      "body": "They walk in and heal for free while the barracks keeps training. A patient leaves on his own when whole; a full-health rifleman stays outside. If the barracks is destroyed or sold, the patients are thrown out.",
+      "shots": ["ua-rifleman-heal"]
+    }
+  ],
+  "strong": ["Enemy infantry", "Low drones"],
+  "weak": [
+    "Tanks and armoured vehicles",
+    "Artillery and explosives",
+    "Aircraft",
+    "Open ground against vehicles"
+  ],
+  "tips": [
+    "Riflemen are cheap and train quickly: keep a few near every building and trench line.",
+    "Get them under cover before the shooting starts; a rifle in the open loses to almost any vehicle.",
+    "They can answer low drones, but they cannot reach high aircraft."
+  ]
+}

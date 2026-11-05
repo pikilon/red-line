@@ -1,0 +1,7 @@
+# Spec 48 §3.3: screenshots of the Geran launch site card. `node --run help:shots -- --type ru-geran-site`
+- { id: ru-geran-site-build, save: help-ru-geran-site-build, ticks: 5, select: [ru-geran-site], hud: true, tab: build }
+- { id: ru-geran-site-geran-2, save: help-ru-geran-site-geran-2, ticks: 15, select: [ru-geran-2] }
+- { id: ru-geran-site-geran-3, save: help-ru-geran-site-geran-3, ticks: 10, select: [ru-geran-3] }
+- { id: ru-geran-site-power, save: help-ru-geran-site-power, ticks: 15, select: [ru-geran-site], hud: true }
+- { id: ru-geran-site-repair, save: help-ru-geran-site-repair, ticks: 10, select: [ru-dozer] }
+- { id: ru-geran-site-sell, save: help-ru-geran-site-sell, ticks: 5, select: [ru-geran-site], hud: true, tab: orders }

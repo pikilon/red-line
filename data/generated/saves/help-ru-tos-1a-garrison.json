@@ -1,0 +1,108 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ru-tos-1a-garrison",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "demo-town",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 1,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 19.5,
+      "y": 25.5,
+      "zoom": 2.4
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "demo-town",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 1,
+        "type": "ru-tos-1a",
+        "atCenti": [
+          2400,
+          2700
+        ],
+        "label": "tos",
+        "order": {
+          "attackGroundCenti": [
+            1650,
+            2450
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1700,
+          2600
+        ],
+        "order": {
+          "garrison": [
+            16,
+            24
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1600,
+          2600
+        ],
+        "order": {
+          "garrison": [
+            16,
+            24
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1750,
+          2600
+        ],
+        "order": {
+          "garrison": [
+            16,
+            24
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1650,
+          2600
+        ],
+        "order": {
+          "garrison": [
+            16,
+            24
+          ]
+        }
+      }
+    ]
+  }
+}

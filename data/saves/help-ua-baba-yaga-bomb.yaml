@@ -1,0 +1,15 @@
+# Spec 48: help card of the Baba Yaga. It hangs over a Russian rifle squad and drops its bombs.
+id: help-ua-baba-yaga-bomb
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 46, y: 19.5, zoom: 3 }
+entities:
+  - { player: 0, type: ua-baba-yaga, atCenti: [3900, 1950], label: baba, order: { attack: squad } }
+  - { player: 1, type: ru-rifleman, atCenti: [4850, 1950], label: squad }
+  - { player: 1, type: ru-rifleman, atCenti: [4800, 1850] }
+  - { player: 1, type: ru-rifleman, atCenti: [4800, 2050] }

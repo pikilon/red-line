@@ -1,0 +1,54 @@
+{
+  "id": "ru-pantsir",
+  "role": "Mobile anti-air missile vehicle",
+  "summary": "A wheeled anti-air vehicle that launches homing missiles at both low drones and high-flying targets. It cannot shoot the ground, its two-missile salvo is wasted on cheap drones, and its reach is shorter than a Patriot battery's or a Su-34's glide bombs, so it guards a point or a column from close by.",
+  "sections": [
+    {
+      "title": "Anti-air missiles",
+      "how": "Select the Pantsir and left-click an enemy aircraft or missile, or let it fire at anything in range.",
+      "body": "Its turret launches homing missiles that track low drones and high-flying targets alike. Each shot is a two-missile salvo, so one target takes both missiles. It never fires at ground units or buildings, so it cannot defend itself against tanks or infantry. Its reach is shorter than a Patriot battery's and shorter than the Su-34's glide-bomb release, so it is a short-range guard rather than a long-range umbrella.",
+      "shots": ["ru-pantsir-low", "ru-pantsir-high"]
+    },
+    {
+      "title": "Waves of cheap drones",
+      "how": "Watch it against a drone wave; no order is needed. It fires at the nearest valid target in range.",
+      "body": "Each salvo spends both missiles on one target. While it reloads, the next drone flies on, and a wave of cheap drones can soak its missiles and close the distance. It is strongest against a few valuable aircraft, not against a swarm; back it with quick-firing guns or riflemen.",
+      "shots": ["ru-pantsir-wave"]
+    },
+    {
+      "title": "Move with the column",
+      "how": "Select the Pantsir and left-click the ground where it should go; on touch, tap.",
+      "body": "It is a wheeled vehicle, so it can follow an armoured push or shift to cover another building. Its armour is light: keep it behind the tanks and pull it back when enemy infantry or anti-tank teams get close.",
+      "shots": ["ru-pantsir-move"]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged Pantsir and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The Pantsir drives to the factory and is repaired for half its price, paid as the health comes back. The factory repairs one vehicle at a time; production carries on while it waits its turn.",
+      "shots": ["ru-pantsir-repair"]
+    }
+  ],
+  "strong": [
+    "Low drones and missiles",
+    "High-flying aircraft and cruise missiles in range",
+    "Following an armoured push",
+    "Guarding a point from close range"
+  ],
+  "weak": [
+    "Ground units and buildings",
+    "Waves of cheap drones",
+    "A Patriot battery's longer reach",
+    "A Su-34 releasing glide bombs from outside its range",
+    "Tanks and anti-tank teams",
+    "A Storm Shadow that slips inside its reduced engagement range"
+  ],
+  "tips": [
+    "Place it beside what Russia needs to protect: it engages only targets that come inside its missile range.",
+    "It cannot shoot the ground, so pair it with tanks or infantry that can protect it.",
+    "Do not chase a Patriot with it: the battery reaches farther and the Pantsir cannot shoot ground targets anyway.",
+    "A Su-34 releases its glide bombs from beyond the Pantsir's reach; use the Pantsir to cover the base, not to push a jet back.",
+    "Against a drone wave, add quick-firing guns or riflemen: each Pantsir salvo spends both missiles on one drone.",
+    "A Storm Shadow is hard to detect and is engaged only inside a third of the Pantsir's range; do not rely on one Pantsir to screen the whole base.",
+    "Pull a damaged Pantsir back to the vehicle factory; repairs cost half the price."
+  ]
+}

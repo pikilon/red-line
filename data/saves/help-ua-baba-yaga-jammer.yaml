@@ -1,0 +1,14 @@
+# Spec 48: help card of the Baba Yaga. It ignores the Pole-21's jammer and flies on to bomb a Russian tank.
+id: help-ua-baba-yaga-jammer
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 49, y: 19.5, zoom: 1.8 }
+entities:
+  - { player: 0, type: ua-baba-yaga, atCenti: [4000, 1950], label: baba, order: { attack: tank } }
+  - { player: 1, type: ru-pole-21, atCenti: [4600, 1950], label: jammer }
+  - { player: 1, type: ru-t-72b3, atCenti: [5400, 1950], label: tank }

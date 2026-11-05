@@ -1,0 +1,16 @@
+# Spec 48: help card of the missile site. A base that consumes more power than its one plant produces.
+id: help-ua-missile-site-power
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 42, y: 20.5, zoom: 1.4 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [32, 17] }
+  - { player: 0, type: ua-supply-center, origin: [36, 17] }
+  - { player: 0, type: ua-barracks, origin: [41, 17] }
+  - { player: 0, type: ua-vehicle-factory, origin: [45, 17] }
+  - { player: 0, type: ua-missile-site, origin: [50, 17] }

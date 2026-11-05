@@ -1,0 +1,49 @@
+{
+  "id": "ua-defense",
+  "role": "Anti-tank emplacement",
+  "summary": "A fixed Stugna-P launcher on a powered turret. It covers an approach with guided anti-tank missiles and stops tanks and light vehicles cold, but it needs power and support against infantry.",
+  "sections": [
+    {
+      "title": "Anti-tank guided missile",
+      "how": "Select a dozer, open the Build tab, press Stugna-P emplacement and left-click the ground. Once built it fires on its own.",
+      "body": "The launcher turns on its mount to face the target and fires a guided Stugna-P missile. The missile punches through tank and light-vehicle armour; against infantry it does little, and it cannot hit aircraft or drones. It has no minimum range, so anything that comes close is still covered.",
+      "shots": ["ua-defense-missile"]
+    },
+    {
+      "title": "Needs power",
+      "how": "Watch the power reading in the HUD; keep production at least equal to consumption.",
+      "body": "The emplacement draws power from the base. While the base consumes more than it produces, the reading turns red and every defense that needs power, including this one, holds its fire until the deficit is fixed. Build another power plant or sell something that draws power.",
+      "shots": ["ua-defense-power"]
+    },
+    {
+      "title": "Repair with a dozer",
+      "how": "Select a dozer and left-click the damaged emplacement.",
+      "body": "The dozer drives over and restores the emplacement until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle.",
+      "shots": ["ua-defense-repair"]
+    },
+    {
+      "title": "Sell",
+      "how": "Select the emplacement and press Sell twice.",
+      "body": "It sells for half its price and disappears at once, opening the ground it held. Selling your last building loses the match.",
+      "shots": ["ua-defense-sell"]
+    }
+  ],
+  "strong": [
+    "Tanks and armoured vehicles",
+    "Light vehicles and transports",
+    "Holding a fixed approach"
+  ],
+  "weak": [
+    "Infantry",
+    "Aircraft and drones",
+    "Artillery and long-range fire",
+    "A power deficit"
+  ],
+  "tips": [
+    "Place it where its long range covers the approach, behind the infantry that will screen it.",
+    "Keep enough power for it: while the base is short, the emplacement holds its fire.",
+    "Back it with riflemen or a Bradley; its missile does little to infantry that reaches it.",
+    "Keep a dozer nearby: the emplacement cannot repair itself.",
+    "It has no minimum range, unlike the Stugna team, so it can still fight at point-blank."
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "ua-power-plant",
+  "role": "Power building",
+  "summary": "The base's source of power. It has no weapon: factories and defenses draw on what it makes, and a shortage slows production and silences the defenses that need power.",
+  "sections": [
+    {
+      "title": "Power the base",
+      "how": "Select a dozer, open the Build tab, press Power plant and left-click the ground.",
+      "body": "The dozer raises the plant on its own. Its power counts only once the building is complete, and it keeps working while the plant is damaged. Production runs at full speed while the base makes at least as much power as it consumes.",
+      "shots": ["ua-power-plant-power"]
+    },
+    {
+      "title": "When power runs short",
+      "how": "Watch the power reading in the HUD.",
+      "body": "If the base consumes more power than it produces, the reading turns red and production slows sharply, though it never stops. Defenses that need power — the Stugna-P emplacement, the Sting nest and the Patriot — hold their fire until the deficit is fixed. Add another plant or sell something that draws power.",
+      "shots": ["ua-power-plant-low"]
+    },
+    {
+      "title": "Repair with a dozer",
+      "how": "Select a dozer and left-click the damaged power plant.",
+      "body": "The dozer drives to the plant and restores it until it is whole. The work costs half the build price as the health comes back, and only one dozer works on a building at a time. If the credits run out, the repair stops and the dozer goes idle.",
+      "shots": ["ua-power-plant-repair"]
+    },
+    {
+      "title": "Sell",
+      "how": "Select the power plant, press Sell, then press Confirm.",
+      "body": "The plant sells for half its price and disappears at once, taking its power with it. Selling it while the base is already short of power makes the deficit worse. Selling your last building loses the match.",
+      "shots": ["ua-power-plant-sell"]
+    }
+  ],
+  "strong": [
+    "Powering factories and defenses",
+    "Unlocking the barracks",
+    "A compact building to place behind the line"
+  ],
+  "weak": [
+    "It has no weapon",
+    "Tanks, artillery and air strikes",
+    "It cannot repair itself"
+  ],
+  "tips": [
+    "The barracks cannot be built until a power plant stands.",
+    "Build a second plant before the factories and defenses outgrow the first.",
+    "Keep the plant behind the line: it is unarmed.",
+    "A damaged plant still powers the base; repair it before it is destroyed."
+  ]
+}

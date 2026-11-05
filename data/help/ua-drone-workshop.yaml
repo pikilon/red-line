@@ -1,0 +1,6 @@
+# Spec 48 §3.3: screenshots of the drone workshop card. `node --run help:shots -- --type ua-drone-workshop`
+- { id: ua-drone-workshop-build, save: help-ua-drone-workshop-build, ticks: 5, select: [ua-drone-workshop], hud: true, tab: build }
+- { id: ua-drone-workshop-jamming, save: help-ua-drone-workshop-jamming, ticks: 90, select: [ua-ratel, ua-tw-12-7] }
+- { id: ua-drone-workshop-rally, save: help-ua-drone-workshop-rally, ticks: 5, select: [ua-drone-workshop], hud: true, tab: orders }
+- { id: ua-drone-workshop-repair, save: help-ua-drone-workshop-repair, ticks: 10, select: [ua-dozer] }
+- { id: ua-drone-workshop-sell, save: help-ua-drone-workshop-sell, ticks: 5, select: [ua-drone-workshop], hud: true, tab: orders }

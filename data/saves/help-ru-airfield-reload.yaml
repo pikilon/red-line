@@ -1,0 +1,15 @@
+# Spec 48: help card of the airfield. A damaged Su-34 waits at the airfield while it is rearmed and repaired.
+id: help-ru-airfield-reload
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 10000]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 47, y: 18.8, zoom: 2.4 }
+entities:
+  - { player: 1, type: ru-airfield, origin: [43, 13] }
+  - { player: 1, type: ru-su-34, atCenti: [4700, 1820], hpPercent: 20 }
+  - { player: 1, type: ru-orlan, atCenti: [4950, 1850] }

@@ -1,0 +1,15 @@
+# Spec 48: help card of the Russian rifleman. Two wounded riflemen wait beside their barracks to be healed.
+id: help-ru-rifleman-heal
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 44.5, y: 19.5, zoom: 3 }
+entities:
+  - { player: 1, type: ru-barracks, origin: [43, 16] }
+  - { player: 1, type: ru-rifleman, atCenti: [4300, 2100], hpPercent: 35 }
+  - { player: 1, type: ru-rifleman, atCenti: [4600, 2100], hpPercent: 45 }
+  - { player: 1, type: ru-rifleman, atCenti: [4450, 2250], hpPercent: 100 }

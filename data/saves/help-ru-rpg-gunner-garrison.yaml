@@ -1,0 +1,13 @@
+# Spec 48: help card of the Russian RPG gunner. Two teams wait by the apartment block with the Garrison button offered.
+id: help-ru-rpg-gunner-garrison
+map: demo-town
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 17, y: 26, zoom: 3 }
+entities:
+  - { player: 1, type: ru-rpg-gunner, atCenti: [1500, 2800] }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [1750, 2800] }

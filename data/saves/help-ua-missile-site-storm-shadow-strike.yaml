@@ -1,0 +1,15 @@
+# Spec 48: help card of the missile site. A Storm Shadow destroys a Russian power plant.
+id: help-ua-missile-site-storm-shadow-strike
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 51, y: 17, zoom: 2.6 }
+entities:
+  - { player: 0, type: ua-missile-site, origin: [38, 16] }
+  - { player: 0, type: ua-storm-shadow, atCenti: [4900, 1800], label: storm, order: { attack: plant } }
+  - { player: 1, type: ru-power-plant, origin: [50, 15], label: plant, hpPercent: 20 }
+  - { player: 1, type: ru-vehicle-factory, origin: [55, 20] }

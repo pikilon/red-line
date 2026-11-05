@@ -1,0 +1,16 @@
+# Spec 48: help card of the Kornet emplacement. A base that consumes more power than its one plant produces; the selected emplacement holds its fire.
+id: help-ru-defense-power
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 51.5, y: 21.5, zoom: 2.6 }
+entities:
+  - { player: 1, type: ru-power-plant, origin: [37, 20] }
+  - { player: 1, type: ru-supply-center, origin: [40, 20] }
+  - { player: 1, type: ru-barracks, origin: [44, 20] }
+  - { player: 1, type: ru-vehicle-factory, origin: [47, 20] }
+  - { player: 1, type: ru-defense, origin: [51, 20] }

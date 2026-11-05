@@ -1,0 +1,7 @@
+# Spec 48 §3.3: screenshots of the Pole-21 card. `node --run help:shots -- --type ru-pole-21`
+- { id: ru-pole-21-jam, save: help-ru-pole-21-jam, ticks: 20, select: [ru-pole-21] }
+- { id: ru-pole-21-drones, save: help-ru-pole-21-drones, ticks: 18, select: [ru-pole-21] }
+- { id: ru-pole-21-gnss, save: help-ru-pole-21-gnss, ticks: 24, select: [ru-pole-21] }
+- { id: ru-pole-21-immune, save: help-ru-pole-21-immune, ticks: 8, select: [ru-pole-21] }
+- { id: ru-pole-21-move, save: help-ru-pole-21-move, ticks: 30, select: [ru-pole-21] }
+- { id: ru-pole-21-repair, save: help-ru-pole-21-repair, ticks: 10, select: [ru-pole-21], hud: true }

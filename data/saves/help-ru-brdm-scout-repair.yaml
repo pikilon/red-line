@@ -1,0 +1,13 @@
+# Spec 48: help card of the BRDM-2. A damaged BRDM-2 waits beside its repair factory.
+id: help-ru-brdm-scout-repair
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 49, y: 21, zoom: 3 }
+entities:
+  - { player: 1, type: ru-vehicle-factory, origin: [50, 18] }
+  - { player: 1, type: ru-brdm-scout, atCenti: [4600, 2000], hpPercent: 40 }

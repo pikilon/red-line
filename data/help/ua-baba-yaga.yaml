@@ -1,0 +1,5 @@
+# Spec 48 §3.3: screenshots of the Baba Yaga card. `node --run help:shots -- --type ua-baba-yaga`
+- { id: ua-baba-yaga-bomb, save: help-ua-baba-yaga-bomb, ticks: 58, select: [ua-baba-yaga] }
+- { id: ua-baba-yaga-reload, save: help-ua-baba-yaga-reload, ticks: 118, select: [ua-baba-yaga], hud: true }
+- { id: ua-baba-yaga-jammer, save: help-ua-baba-yaga-jammer, ticks: 70, select: [ru-pole-21] }
+- { id: ua-baba-yaga-low-aa, save: help-ua-baba-yaga-low-aa, ticks: 56, select: [ua-baba-yaga] }

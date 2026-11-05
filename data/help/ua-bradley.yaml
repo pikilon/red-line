@@ -1,0 +1,5 @@
+# Spec 48 §3.3: screenshots of the Bradley card. `node --run help:shots -- --type ua-bradley`
+- { id: ua-bradley-fight, save: help-ua-bradley-fight, ticks: 40, select: [ua-bradley] }
+- { id: ua-bradley-board, save: help-ua-bradley-carry, ticks: 12, select: [ua-rifleman, ua-stugna-team] }
+- { id: ua-bradley-unload, save: help-ua-bradley-carry, ticks: 200, select: [ua-bradley], hud: true }
+- { id: ua-bradley-repair, save: vehicle-repair, ticks: 10, select: [ua-bradley], hud: true }

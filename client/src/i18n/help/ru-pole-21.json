@@ -1,0 +1,67 @@
+{
+  "id": "ru-pole-21",
+  "role": "Mobile radio jammer",
+  "summary": "An unarmed wheeled vehicle that projects a circle of electronic warfare. Inside it enemy radio robots stop and radio drones drop, and satellite-guided missiles lose their aim, while fibre, autonomous and unlinked units pass untouched. It has no weapon, so it needs an escort.",
+  "sections": [
+    {
+      "title": "Stop radio robots",
+      "how": "Select the Pole-21 and keep the enemy inside its circle; no order is needed. A jammed robot shows a warning mark.",
+      "body": "Its circle jams enemy radio links. A hostile ground robot steered by radio, such as the Ratel S or the TW-12.7, stops as soon as it enters: it cannot move or fire, so it sits in the open until the circle moves away or it leaves. The robot keeps its order and carries on when it is free. The jammer never affects its own side, so Russian radio units work inside the circle normally.",
+      "shots": ["ru-pole-21-jam"]
+    },
+    {
+      "title": "Drop radio drones",
+      "how": "Keep the Pole-21 between an enemy drone crew and its target; no order is needed.",
+      "body": "A radio-guided flyer that enters the circle falls out of the air and dies harmlessly, without detonating its warhead. An FPV drone is the usual victim, and the same link ties a drone to its crew, so killing the crew drops it too. Fibre, autonomous and unlinked drones are not affected.",
+      "shots": ["ru-pole-21-drones"]
+    },
+    {
+      "title": "Scatter satellite guidance",
+      "how": "No order is needed: move the circle over the target the missile is aimed at.",
+      "body": "The circle also disturbs satellite navigation. A GNSS-guided missile is not stopped, but its warhead lands off the aim point, on top of the weapon's own inaccuracy: a Flamingo or a Storm Shadow can miss the building it was fired at. Guns, aircraft and anything else that needs no satellite link are unaffected.",
+      "shots": ["ru-pole-21-gnss"]
+    },
+    {
+      "title": "What it cannot jam",
+      "how": "Do not rely on the Pole-21 against fibre, autonomous or unlinked enemies; fight them with guns, missiles or tanks.",
+      "body": "Only radio and satellite links are affected. A Molniya on its fibre-optic cable, an autonomous Sting and units with no link at all, such as the Baba Yaga or the Orlan, ignore the circle and keep flying, driving or firing. The jammer also never affects its own side.",
+      "shots": ["ru-pole-21-immune"]
+    },
+    {
+      "title": "Unarmed support",
+      "how": "Select the Pole-21 and left-click the ground where it should go; on touch, tap.",
+      "body": "The Pole-21 carries no weapon and its armour is light, so it cannot defend itself or lead an attack. Keep it behind the tanks and escort it with anti-air and infantry. It can still move with the column and shift its circle to where the enemy drones and robots are.",
+      "shots": ["ru-pole-21-move"]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged Pole-21 and press Repair at factory, or left-click your vehicle factory.",
+      "body": "It is a wheeled vehicle, so the vehicle factory repairs it. It drives to the pad and is restored over five seconds, one vehicle at a time, while production carries on. The repair costs half its price, paid as the health comes back.",
+      "shots": ["ru-pole-21-repair"]
+    }
+  ],
+  "strong": [
+    "Ukrainian radio robots: Ratel S and TW-12.7",
+    "FPV drones",
+    "Satellite-guided Flamingo and Storm Shadow missiles",
+    "Covering a push from behind the tanks"
+  ],
+  "weak": [
+    "It has no weapon",
+    "Tanks, anti-tank teams and artillery",
+    "Aircraft and helicopters",
+    "Fibre Molniya drones",
+    "Autonomous Sting drones",
+    "Unlinked Baba Yaga and Orlan",
+    "Raids that reach it"
+  ],
+  "tips": [
+    "Keep it behind the tanks: it cannot shoot back.",
+    "Move it with the push so the circle covers the enemy robots and drone crews, not empty ground.",
+    "Pair it with a Pantsir or riflemen; it stops radio drones but cannot shoot them down.",
+    "Let Ukrainian radio robots come to it: they stop at the edge and the tanks it escorts can finish them.",
+    "Do not chase a Molniya, a Sting, a Baba Yaga or an Orlan with it; they ignore the jammer.",
+    "Satellite-guided missiles still arrive; the circle only throws their aim off, so do not leave buildings undefended.",
+    "Pull a damaged Pole-21 back to the vehicle factory: repairs cost half its price."
+  ]
+}

@@ -1,0 +1,5 @@
+# Spec 48 §3.3: screenshots of the headquarters card. `node --run help:shots -- --type ua-hq`
+- { id: ua-hq-build, save: help-ua-hq-build, ticks: 5, select: [ua-hq], hud: true, tab: build }
+- { id: ua-hq-rally, save: help-ua-hq-rally, ticks: 5, select: [ua-hq], hud: true, tab: orders }
+- { id: ua-hq-repair, save: help-ua-hq-repair, ticks: 5, select: [ua-dozer] }
+- { id: ua-hq-sell, save: help-ua-hq-sell, ticks: 5, select: [ua-hq], hud: true, tab: orders }

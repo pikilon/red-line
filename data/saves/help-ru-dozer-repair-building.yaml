@@ -1,0 +1,13 @@
+# Spec 48: help card of the Russian dozer. A damaged power plant waits for its dozer.
+id: help-ru-dozer-repair-building
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 45.5, y: 20, zoom: 3 }
+entities:
+  - { player: 1, type: ru-power-plant, origin: [46, 19], hpPercent: 40 }
+  - { player: 1, type: ru-dozer, atCenti: [4450, 2050] }

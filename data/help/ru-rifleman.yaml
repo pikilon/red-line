@@ -1,0 +1,9 @@
+# Spec 48 §3.3: screenshots of the Russian rifleman card. `node --run help:shots -- --type ru-rifleman`
+- { id: ru-rifleman-fight, save: help-ru-rifleman-fight, ticks: 40, select: [ru-rifleman] }
+- { id: ru-rifleman-air, save: help-ru-rifleman-air, ticks: 18, select: [ru-rifleman] }
+- { id: ru-rifleman-board, save: help-ru-rifleman-board, ticks: 30, select: [ru-rifleman] }
+- { id: ru-rifleman-garrison, save: help-ru-rifleman-garrison, ticks: 10, select: [ru-rifleman], hud: true }
+- { id: ru-rifleman-dig, save: help-ru-rifleman-dig, ticks: 100, select: [ru-rifleman] }
+- { id: ru-rifleman-trench, save: help-ru-rifleman-trench, ticks: 120, select: [ru-rifleman] }
+- { id: ru-rifleman-bridge, save: help-ru-rifleman-bridge, ticks: 60, select: [ru-rifleman] }
+- { id: ru-rifleman-heal, save: help-ru-rifleman-heal, ticks: 10, select: [ru-rifleman] }

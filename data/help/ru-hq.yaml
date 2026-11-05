@@ -1,0 +1,5 @@
+# Spec 48 §3.3: screenshots of the headquarters card. `node --run help:shots -- --type ru-hq`
+- { id: ru-hq-build, save: help-ru-hq-build, ticks: 5, select: [ru-hq], hud: true, tab: build }
+- { id: ru-hq-rally, save: help-ru-hq-rally, ticks: 5, select: [ru-hq], hud: true, tab: orders }
+- { id: ru-hq-repair, save: help-ru-hq-repair, ticks: 5, select: [ru-dozer] }
+- { id: ru-hq-sell, save: help-ru-hq-sell, ticks: 5, select: [ru-hq], hud: true, tab: orders }

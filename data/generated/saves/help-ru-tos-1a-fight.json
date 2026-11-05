@@ -1,0 +1,98 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ru-tos-1a-fight",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 1,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 44.5,
+      "y": 19.5,
+      "zoom": 2.4
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 1,
+        "type": "ru-tos-1a",
+        "atCenti": [
+          4100,
+          2000
+        ],
+        "label": "tos",
+        "order": {
+          "attack": "lead"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4800,
+          1900
+        ],
+        "label": "lead"
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4700,
+          1850
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4750,
+          1950
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4850,
+          1950
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4700,
+          2000
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4800,
+          2050
+        ]
+      }
+    ]
+  }
+}

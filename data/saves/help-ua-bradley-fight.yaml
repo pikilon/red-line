@@ -1,0 +1,13 @@
+# Spec 48: help card of the Bradley. Its Bushmaster autocannon shreds a BMP-2 and downs an Orlan drone overhead.
+id: help-ua-bradley-fight
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 46, y: 20.5, zoom: 3 }
+entities:
+  - { player: 0, type: ua-bradley, atCenti: [4300, 2000], label: bradley, order: { attack: bmp } }
+  - { player: 1, type: ru-bmp-2, atCenti: [4900, 2000], label: bmp, hpPercent: 60 }

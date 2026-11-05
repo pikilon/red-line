@@ -1,0 +1,15 @@
+# Spec 48: help card of the Gepard. Its cannon engages a wave of low Geran-2 drones at the edge of its range.
+id: help-ua-gepard-low
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 48, y: 20, zoom: 2.2 }
+entities:
+  - { player: 0, type: ua-gepard, atCenti: [4300, 2000], label: gepard }
+  - { player: 1, type: ru-geran-2, atCenti: [5900, 1850], label: drone0, order: { attack: gepard } }
+  - { player: 1, type: ru-geran-2, atCenti: [6000, 2000], label: drone1, order: { attack: gepard } }
+  - { player: 1, type: ru-geran-2, atCenti: [6100, 2150], label: drone2, order: { attack: gepard } }

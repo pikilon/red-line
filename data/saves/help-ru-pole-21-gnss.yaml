@@ -1,0 +1,15 @@
+# Spec 48: help card of the Pole-21. A satellite-guided Flamingo is thrown off the airfield inside the circle.
+id: help-ru-pole-21-gnss
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 48, y: 19.5, zoom: 2.0 }
+entities:
+  - { player: 1, type: ru-pole-21, atCenti: [4400, 2000], label: jammer }
+  - { player: 0, type: ua-flamingo, atCenti: [3700, 1900], label: missile, order: { attack: airfield } }
+  - { player: 1, type: ru-airfield, origin: [49, 18], label: airfield }
+  - { player: 1, type: ru-power-plant, origin: [55, 21] }

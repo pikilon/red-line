@@ -1,0 +1,19 @@
+# Spec 48: help card of the dozer. A dozer beside a half-built barracks, with a
+# complete support base out of shot so the Build tab offers every structure.
+id: help-ua-dozer-build
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [50000, 0]
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45, y: 19, zoom: 3 }
+entities:
+  - { player: 0, type: ua-dozer, atCenti: [4500, 2000] }
+  - { player: 0, type: ua-barracks, origin: [46, 18], buildPercent: 30 }
+  - { player: 0, type: ua-power-plant, origin: [30, 26] }
+  - { player: 0, type: ua-supply-center, origin: [34, 26] }
+  - { player: 0, type: ua-vehicle-factory, origin: [39, 25] }
+  - { player: 0, type: ua-barracks, origin: [43, 27] }

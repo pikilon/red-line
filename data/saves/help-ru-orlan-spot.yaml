@@ -1,0 +1,15 @@
+# Spec 48: help card of the Orlan. It spots a Ukrainian power plant for a TOS-1A beyond the launcher's own sight.
+id: help-ru-orlan-spot
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 10000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 44, y: 18.5, zoom: 2.2 }
+entities:
+  - { player: 1, type: ru-tos-1a, atCenti: [3900, 2000], label: tos, order: { attack: target } }
+  - { player: 1, type: ru-orlan, atCenti: [4550, 1950], label: orlan, order: { moveCenti: [4650, 1950] } }
+  - { player: 0, type: ua-power-plant, origin: [47, 16], label: target }

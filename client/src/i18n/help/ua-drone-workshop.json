@@ -1,0 +1,57 @@
+{
+  "id": "ua-drone-workshop",
+  "role": "Robot and drone production",
+  "summary": "A static workshop that builds Ukraine's ground robots and its heavy bomber drone. It draws power, needs a barracks, and its radio-link robots are vulnerable to Russian jammers.",
+  "sections": [
+    {
+      "title": "Build robots",
+      "how": "Select the workshop, open the Build tab and press a robot tile. Press + on a tile to queue another and − to cancel the last one.",
+      "body": "The workshop builds three machines. The Ratel S is a slow tracked kamikaze: it drives into its target and detonates a heavy warhead, good against armour and trenches. The TW-12.7 is a crewless machine gun on tracks, deadly against infantry and low drones; its small arms barely dent armour. The Baba Yaga is a heavy bomber hexacopter: it flies over a target, drops its bombs and returns to the workshop to reload and repair, or goes at once when you press Reload.",
+      "shots": ["ua-drone-workshop-build"]
+    },
+    {
+      "title": "Radio links and jammers",
+      "how": "Select a Ratel S or TW-12.7 and keep it clear of a Russian jammer; a jammed robot shows a warning mark.",
+      "body": "Both ground robots are steered by radio. Inside a hostile jammer's circle they stop dead: they cannot move or fire until they leave, then they carry on with their order. The mobile Pole-21 carries the Russian jammer. The Baba Yaga has no radio link, so jamming does not affect it.",
+      "shots": ["ua-drone-workshop-jamming"]
+    },
+    {
+      "title": "Rally point",
+      "how": "Select the workshop, press Rally point and left-click the ground. With only the workshop selected, a plain left click on open ground also sets it.",
+      "body": "Robots built afterwards leave the workshop and move to the rally point. Changing the point only affects robots produced later, and the marker shows while the workshop is selected. A Ratel S ignores the rally point and waits at the workshop until you order it to attack.",
+      "shots": ["ua-drone-workshop-rally"]
+    },
+    {
+      "title": "Repair with a dozer",
+      "how": "Select a dozer and left-click the damaged workshop.",
+      "body": "The dozer drives to the workshop and restores it until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle.",
+      "shots": ["ua-drone-workshop-repair"]
+    },
+    {
+      "title": "Sell",
+      "how": "Select the workshop and press Sell twice.",
+      "body": "It sells for half its price and disappears at once. Any robots in its queue are cancelled and refunded in full. Selling your last building loses the match.",
+      "shots": ["ua-drone-workshop-sell"]
+    }
+  ],
+  "strong": [
+    "Armour and trenches with the Ratel S",
+    "Infantry and low drones with the TW-12.7",
+    "Bombing ground targets with the Baba Yaga",
+    "A steady robot supply away from jammers"
+  ],
+  "weak": [
+    "Russian jammers against the radio robots",
+    "Any low weapon against the Baba Yaga",
+    "It has no weapon of its own",
+    "Artillery and raids behind the line"
+  ],
+  "tips": [
+    "Raise it with a dozer once the barracks stands: the workshop needs one.",
+    "Keep the workshop behind the line. It cannot move and has no weapon.",
+    "Watch the power grid: a deficit slows robot production.",
+    "Hunt the Pole-21 with tanks, guns or artillery before sending in radio robots.",
+    "Build Ratel S for armour and trenches, TW-12.7 for infantry and drones, and Baba Yaga for clustered ground targets.",
+    "Keep a dozer nearby: the workshop cannot repair itself."
+  ]
+}

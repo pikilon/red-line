@@ -1,0 +1,9 @@
+# Spec 48 §3.3: screenshots of the rifleman card. `node --run help:shots -- --type ua-rifleman`
+- { id: ua-rifleman-fight, save: help-ua-rifleman-fight, ticks: 40, select: [ua-rifleman] }
+- { id: ua-rifleman-air, save: help-ua-rifleman-air, ticks: 18, select: [ua-rifleman] }
+- { id: ua-rifleman-board, save: help-ua-rifleman-board, ticks: 30, select: [ua-rifleman] }
+- { id: ua-rifleman-garrison, save: help-ua-rifleman-garrison, ticks: 10, select: [ua-rifleman], hud: true }
+- { id: ua-rifleman-dig, save: help-ua-rifleman-dig, ticks: 100, select: [ua-rifleman] }
+- { id: ua-rifleman-trench, save: help-ua-rifleman-trench, ticks: 120, select: [ua-rifleman] }
+- { id: ua-rifleman-bridge, save: help-ua-rifleman-bridge, ticks: 60, select: [ua-rifleman] }
+- { id: ua-rifleman-heal, save: help-ua-rifleman-heal, ticks: 10, select: [ua-rifleman] }

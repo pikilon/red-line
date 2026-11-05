@@ -1,0 +1,13 @@
+# Spec 48: help card of the Russian headquarters. A damaged headquarters waits for its dozer.
+id: help-ru-hq-repair
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 45, y: 15.5, zoom: 2.2 }
+entities:
+  - { player: 1, type: ru-hq, origin: [45, 13], hpPercent: 45 }
+  - { player: 1, type: ru-dozer, atCenti: [4200, 1800] }

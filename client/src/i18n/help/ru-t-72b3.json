@@ -1,0 +1,32 @@
+{
+  "id": "ru-t-72b3",
+  "role": "Main battle tank",
+  "summary": "A main battle tank with a heavy 125 mm gun and thick armour. It is built to win tank duels and can grind enemy infantry under its tracks, but it needs support against missiles, aircraft and massed soldiers.",
+  "sections": [
+    {
+      "title": "125 mm cannon",
+      "how": "Select the T-72B3 and left-click an enemy, or let it fire at anything in range.",
+      "body": "The 125 mm smoothbore fires one armour-piercing shell at a time. It is made for tank duels and punches through light vehicles, but the anti-tank shell does little against infantry, and the gun cannot fire at aircraft.",
+      "shots": ["ru-t-72b3-fight"]
+    },
+    {
+      "title": "Crush infantry",
+      "how": "Select the T-72B3 and left-click the ground beyond the enemy infantry.",
+      "body": "While it moves, the T-72B3 runs over enemy soldiers in its path and kills them outright. It never hurts friendly infantry, and it cannot crush other vehicles.",
+      "shots": ["ru-t-72b3-crush"]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged T-72B3 and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The T-72B3 drives to the factory and is repaired for half its price, paid as the health comes back. The factory repairs one vehicle at a time; other damaged vehicles wait their turn.",
+      "shots": ["ru-t-72b3-repair"]
+    }
+  ],
+  "strong": ["Tanks and armoured vehicles", "Light vehicles"],
+  "weak": ["Anti-tank teams and missiles", "Massed infantry", "Aircraft"],
+  "tips": [
+    "Pair it with a BMP-2 or riflemen: the T-72B3 fights armour while they clear the enemy infantry around it.",
+    "Drive through enemy infantry instead of stopping to shoot them: a moving T-72B3 crushes them under its tracks.",
+    "Pull damaged T-72B3s back to the vehicle factory; repairs cost half the price."
+  ]
+}

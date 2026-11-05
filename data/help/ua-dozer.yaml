@@ -1,0 +1,7 @@
+# Spec 48 §3.3: screenshots of the dozer card. `node --run help:shots -- --type ua-dozer`
+- { id: ua-dozer-build, save: help-ua-dozer-build, ticks: 5, select: [ua-dozer], hud: true, tab: build }
+- { id: ua-dozer-resume, save: help-ua-dozer-build, ticks: 10, select: [ua-dozer] }
+- { id: ua-dozer-repair-building, save: help-ua-dozer-repair-building, ticks: 10, select: [ua-dozer] }
+- { id: ua-dozer-dig, save: help-ua-dozer-dig, ticks: 100, select: [ua-dozer] }
+- { id: ua-dozer-bridge, save: help-ua-dozer-bridge, ticks: 300, select: [ua-dozer] }
+- { id: ua-dozer-repair, save: help-ua-dozer-repair, ticks: 10, select: [ua-dozer], hud: true, tab: orders }

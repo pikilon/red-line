@@ -1,0 +1,14 @@
+# Spec 48: help card of the Kornet emplacement. Its guided missile hits a Leopard 2A4.
+id: help-ru-defense-missile
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 46.5, y: 18.4, zoom: 3.5 }
+entities:
+  - { player: 1, type: ru-power-plant, origin: [33, 14] }
+  - { player: 1, type: ru-defense, origin: [42, 17], label: defense, order: { attack: tank } }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [5000, 1800], label: tank, hpPercent: 5 }

@@ -1,0 +1,13 @@
+# Spec 48: help card of the Orlan. It flies into the church on the demo-town main street and falls.
+id: help-ru-orlan-crash
+map: demo-town
+victory: false
+debug: true
+starts: false
+credits: [0, 10000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 37, y: 24, zoom: 2.6 }
+entities:
+  - { player: 1, type: ru-orlan, atCenti: [3700, 2900], label: orlan, order: { moveCenti: [3700, 1950] } }

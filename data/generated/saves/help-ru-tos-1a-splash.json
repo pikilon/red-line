@@ -1,0 +1,100 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ru-tos-1a-splash",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 1,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 42.5,
+      "y": 20,
+      "zoom": 2.6
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 1,
+        "type": "ru-tos-1a",
+        "atCenti": [
+          3800,
+          2000
+        ],
+        "label": "tos",
+        "order": {
+          "attackGroundCenti": [
+            4700,
+            1950
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4650,
+          1900
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4750,
+          1900
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4650,
+          2000
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4750,
+          2000
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4700,
+          2050
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          4800,
+          1950
+        ]
+      }
+    ]
+  }
+}

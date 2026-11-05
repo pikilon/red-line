@@ -1,0 +1,15 @@
+# Spec 48: help card of the TW-12.7. Its heavy machine gun cuts down Russian infantry beside a scout vehicle.
+id: help-ua-tw-12-7-fight
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 46, y: 20.5, zoom: 3 }
+entities:
+  - { player: 0, type: ua-tw-12-7, atCenti: [4300, 2000], label: robot, order: { attack: inf } }
+  - { player: 1, type: ru-rifleman, atCenti: [4700, 1900], label: inf }
+  - { player: 1, type: ru-rifleman, atCenti: [4700, 2100], hpPercent: 70 }
+  - { player: 1, type: ru-brdm-scout, atCenti: [4900, 2000], label: bmp, hpPercent: 60 }

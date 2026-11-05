@@ -1,0 +1,17 @@
+# Spec 48: help card of the Sting nest. A base that consumes more power than its one plant produces; the selected nest holds its fire.
+id: help-ua-sting-nest-power
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 42.5, y: 20, zoom: 1.25 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [30, 16] }
+  - { player: 0, type: ua-supply-center, origin: [35, 16] }
+  - { player: 0, type: ua-barracks, origin: [40, 16] }
+  - { player: 0, type: ua-vehicle-factory, origin: [45, 16] }
+  - { player: 0, type: ua-sting-nest, origin: [50, 16], label: nest }
+  - { player: 0, type: ua-defense, origin: [53, 16] }

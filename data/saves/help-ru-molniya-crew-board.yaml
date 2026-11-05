@@ -1,0 +1,14 @@
+# Spec 48: help card of the Molniya crew. Two crews board a BRDM-2; select it to see Unload (n).
+id: help-ru-molniya-crew-board
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 43, y: 20, zoom: 3 }
+entities:
+  - { player: 1, type: ru-brdm-scout, atCenti: [4500, 2000], label: brdm }
+  - { player: 1, type: ru-molniya-crew, atCenti: [4100, 1900], order: { board: brdm } }
+  - { player: 1, type: ru-molniya-crew, atCenti: [4100, 2100], order: { board: brdm } }

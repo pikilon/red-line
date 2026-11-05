@@ -1,0 +1,13 @@
+# Spec 48: help card of the Geran launch site. Select it to see Sell in the structure row.
+id: help-ru-geran-site-sell
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 5000]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 48, y: 16.5, zoom: 2.2 }
+entities:
+  - { player: 1, type: ru-geran-site, origin: [45, 13] }

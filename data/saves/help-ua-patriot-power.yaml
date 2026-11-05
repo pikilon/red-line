@@ -1,0 +1,16 @@
+# Spec 48: help card of the Patriot. A base that consumes more power than its one plant produces; the selected battery holds its fire.
+id: help-ua-patriot-power
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 42.5, y: 20, zoom: 1.4 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [33, 16] }
+  - { player: 0, type: ua-supply-center, origin: [37, 16] }
+  - { player: 0, type: ua-barracks, origin: [41, 16] }
+  - { player: 0, type: ua-vehicle-factory, origin: [45, 16] }
+  - { player: 0, type: ua-patriot, origin: [49, 16] }

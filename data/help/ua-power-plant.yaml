@@ -1,0 +1,5 @@
+# Spec 48 §3.3: screenshots of the power plant card. `node --run help:shots -- --type ua-power-plant`
+- { id: ua-power-plant-power, save: help-ua-power-plant-power, ticks: 5, select: [ua-power-plant], hud: true }
+- { id: ua-power-plant-low, save: help-ua-power-plant-low, ticks: 5, select: [], hud: true }
+- { id: ua-power-plant-repair, save: help-ua-power-plant-repair, ticks: 5, select: [ua-dozer] }
+- { id: ua-power-plant-sell, save: help-ua-power-plant-sell, ticks: 5, select: [ua-power-plant], hud: true, tab: orders }

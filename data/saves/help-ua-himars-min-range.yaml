@@ -1,0 +1,13 @@
+# Spec 48: help card of the HIMARS. A Russian scout has closed inside its minimum range, so it drives away.
+id: help-ua-himars-min-range
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45, y: 20, zoom: 2.8 }
+entities:
+  - { player: 0, type: ua-himars, atCenti: [4400, 2000], label: himars, order: { moveCenti: [3600, 2000] } }
+  - { player: 1, type: ru-t-72b3, atCenti: [4850, 2000], label: tank, order: { attack: himars } }

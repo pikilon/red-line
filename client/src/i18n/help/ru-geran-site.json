@@ -1,0 +1,69 @@
+{
+  "id": "ru-geran-site",
+  "role": "One-way drone launch site",
+  "summary": "A static launch site that builds Russia's one-way Geran drones and holds them on its rails until you order a strike. It has no weapon, draws power and needs a supply center.",
+  "sections": [
+    {
+      "title": "Build Geran drones",
+      "how": "Select the launch site, open the Build tab and press a Geran tile. Press + to queue another and − to cancel the last one.",
+      "body": "The site builds the cheap Geran-2 and the jet-powered Geran-3. Each finished drone appears beside the launch rails and waits there. Drones ignore rally points and never launch by themselves, so you give the attack order. A drone is spent when it detonates, so build another for the next strike.",
+      "shots": ["ru-geran-site-build"]
+    },
+    {
+      "title": "Geran-2",
+      "about": "ru-geran-2",
+      "how": "Build a Geran-2, select it on the rails and left-click an enemy building or unit. Left-click the ground to send it at that point, or Ctrl + left-click to force-fire.",
+      "body": "A cheap, slow drone that flies low and detonates its warhead where it lands. Send it in waves: one drone is easy to intercept, while several together saturate a Sting nest, a Gepard or a group of riflemen and open a path for the ones behind. Its GNSS satellite link is its weak point in theory, since a hostile jammer scatters the aim, but Ukraine has no jammer of its own. It has no weapon and cannot come back.",
+      "shots": ["ru-geran-site-geran-2"]
+    },
+    {
+      "title": "Geran-3",
+      "about": "ru-geran-3",
+      "how": "Build a Geran-3, select it on the rails and left-click an enemy building or unit. Left-click the ground to send it at that point, or Ctrl + left-click to force-fire.",
+      "body": "A jet-powered drone that flies high and fast. Small arms and Sting interceptors cannot reach it, so only anti-air that engages high flyers, such as a Patriot or a Gepard, can stop it. It hits harder than the Geran-2, crosses the map quickly and is meant for a valuable target rather than a screen of defences. Its GNSS satellite link can be scattered by a jammer, though Ukraine has none. It has no weapon and cannot come back.",
+      "shots": ["ru-geran-site-geran-3"]
+    },
+    {
+      "title": "Needs power",
+      "how": "Watch the power reading in the HUD; keep production at least equal to consumption.",
+      "body": "The launch site draws power from the base. While the base consumes more than it produces, the reading turns red and drone production slows sharply, though it never stops. Build another power plant or sell something that draws power.",
+      "shots": ["ru-geran-site-power"]
+    },
+    {
+      "title": "Repair with a dozer",
+      "how": "Select a dozer and left-click the damaged launch site.",
+      "body": "The dozer drives to the site and restores it until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle.",
+      "shots": ["ru-geran-site-repair"]
+    },
+    {
+      "title": "Sell",
+      "how": "Select the launch site and press Sell twice.",
+      "body": "It sells for half its price and disappears at once, opening the ground it held. Any drone still in its queue is cancelled and refunded in full. Drones already built stay under your control. Selling your last building loses the match.",
+      "shots": ["ru-geran-site-sell"]
+    }
+  ],
+  "strong": [
+    "Waves of Geran-2 against air defences",
+    "Buildings and clustered infantry",
+    "The Geran-3's speed against valuable targets",
+    "Strikes anywhere on the map"
+  ],
+  "weak": [
+    "Rifle fire, autocannons and Sting interceptors against the low Geran-2",
+    "Patriot and other high-reaching anti-air against the Geran-3",
+    "GNSS scatter inside a hostile jammer",
+    "It has no weapon and cannot return",
+    "A power deficit",
+    "Raids behind the line"
+  ],
+  "tips": [
+    "Raise the site with a dozer once a supply center stands: it needs one.",
+    "Launch the Geran-2 in waves: one drone is easy to intercept, several drain the defences.",
+    "Send the Geran-3 at a Patriot, command post or factory where its speed and punch pay off.",
+    "Drones ignore rally points; they wait beside the site until you order them.",
+    "Scout first: the Gerans see only a short way on their own.",
+    "Keep a dozer nearby: the site cannot repair itself.",
+    "Keep the site behind the line and covered: it has no weapon.",
+    "Watch the power reading: a deficit slows drone production."
+  ]
+}
