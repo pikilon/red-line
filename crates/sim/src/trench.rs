@@ -20,6 +20,10 @@ use crate::world::World;
 /// sidearm instead).
 const ANTI_TANK: &str = "antiTank";
 
+/// Unconnected trench pieces this many cells (or fewer) from the targeted one
+/// still take riders that do not fit (spec 35 §5c).
+const NEARBY_GAP: i32 = 6;
+
 impl World {
     /// Trench rules of feature `index` while it stands.
     pub fn trench_def(&self, index: u32) -> Option<TrenchDef> {
@@ -65,17 +69,33 @@ impl World {
         order
     }
 
-    /// The piece of `start`'s network (nearest first) that takes a rider of
-    /// `owner`; `pending` counts riders already assigned to each piece.
+    /// The piece that takes a rider of `owner` heading for `start`: first the
+    /// pieces connected to it (nearest first), then unconnected pieces within
+    /// `NEARBY_GAP` cells, nearest first (ties by ascending index). `pending`
+    /// counts riders already assigned to each piece.
     pub(crate) fn trench_entry_piece(
         &self,
         owner: PlayerId,
         start: u32,
         pending: &BTreeMap<u32, u32>,
     ) -> Option<u32> {
-        self.trench_network(start)
+        let network = self.trench_network(start);
+        let rect = |index: u32| {
+            let row = &self.features[index as usize];
+            extent(&self.rules.feature_types[row.kind as usize], row)
+        };
+        let mut near: Vec<(i32, u32)> = self
+            .trench_pieces()
+            .into_iter()
+            .filter(|piece| !network.iter().any(|&(seen, _)| seen == *piece))
+            .map(|piece| (rect_gap(rect(start), rect(piece)), piece))
+            .filter(|&(gap, _)| gap <= NEARBY_GAP)
+            .collect();
+        near.sort_unstable();
+        network
             .into_iter()
             .map(|(piece, _)| piece)
+            .chain(near.into_iter().map(|(_, piece)| piece))
             .find(|piece| {
                 self.piece_accepts(owner, *piece, pending.get(piece).copied().unwrap_or(0))
             })
@@ -405,7 +425,7 @@ mod tests {
         let mut world = ground();
         let first = piece(&mut world, 40, 40, 0);
         let second = piece(&mut world, 42, 40, 0);
-        let far = piece(&mut world, 36, 44, 0);
+        let far = piece(&mut world, 20, 60, 0);
         let units: Vec<EntityId> = (0..4)
             .map(|i| soldier(&mut world, "ua-rifleman", 0, 4000 + 40 * i, 4350))
             .collect();
@@ -428,6 +448,24 @@ mod tests {
         assert_eq!(xs, expected);
         let y = world.entity(units[0]).unwrap().pos.y;
         assert_eq!(y, fx_centi(4050));
+    }
+
+    #[test]
+    fn riders_overflow_to_nearby_unconnected_pieces_closest_first() {
+        let mut world = ground();
+        let target = piece(&mut world, 40, 40, 0);
+        let close = piece(&mut world, 45, 40, 0);
+        let farther = piece(&mut world, 40, 46, 0);
+        let remote = piece(&mut world, 40, 60, 0);
+        let units: Vec<EntityId> = (0..8)
+            .map(|i| soldier(&mut world, "ua-rifleman", 0, 4000 + 40 * i, 4350))
+            .collect();
+        garrison(&mut world, 0, &units, target);
+        run(&mut world, 400);
+        assert_eq!(world.occupants(target).len(), 3);
+        assert_eq!(world.occupants(close).len(), 3);
+        assert_eq!(world.occupants(farther).len(), 2);
+        assert!(world.occupants(remote).is_empty(), "out of range");
     }
 
     #[test]

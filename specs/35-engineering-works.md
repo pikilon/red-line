@@ -169,8 +169,13 @@ once repaired above that threshold, and the client draws it again.
 * **Entry.** Only a finished (full hit points) piece takes riders. Riders that
   do not fit go to the nearest connected piece that is empty or held by the same
   player. The network is the pieces whose cells are 8-adjacent, transitively
-  (breadth first, neighbours in ascending feature index). A rider that finds its
-  piece full on arrival moves on to the next one. Vehicles never enter.
+  (breadth first, neighbours in ascending feature index). When the whole
+  network is full, riders go on to unconnected pieces within 6 cells of the
+  targeted one (Chebyshev gap between footprints), nearest first, ties by
+  ascending feature index (assumption, issue #449: narrowest radius that
+  bridges the usual one- to few-cell gaps in a dug line). Riders with no room
+  anywhere stay outside. A rider that finds its piece full on arrival moves on
+  to the next one. Vehicles never enter.
 * **Visible.** Occupants keep `FLAG_INSIDE` but are not hidden from other
   players' snapshots. They stand at slot points of the piece (slot `i` of `n` at
   `(2i+1)/2n` of the long axis, on the centre line).
