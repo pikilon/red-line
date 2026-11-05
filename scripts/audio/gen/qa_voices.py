@@ -30,18 +30,21 @@ if "--review" in sys.argv:
 if "--listen" in sys.argv:
     import mlx_whisper
     report, scores = {}, []
+    only = [a for a in sys.argv[1:] if not a.startswith("--")]
     for side in sorted(ROOT.joinpath("raw/audio").rglob("*.json")):
+        if only and not any(f"/{f}/" in str(side) for f in only):
+            continue
         meta = json.loads(side.read_text())
         if meta.get("tool") != "piper":
             continue
         t = str(side.relative_to(ROOT / "raw")).replace(".json", ".webm")
-        lang = "ru" if "/russia/" in t else "uk"
-        heard = mlx_whisper.transcribe(str(REPO / "client/public" / t), language=lang,
+        lang = "en" if meta.get("speak") else ("ru" if "/russia/" in t else "uk")
+        heard = mlx_whisper.transcribe(str(raw_path(t)), language=lang,
                                        path_or_hf_repo="mlx-community/whisper-large-v3-turbo")["text"].strip()
         norm = lambda s: "".join(c for c in s.lower() if c.isalnum())
         score = difflib.SequenceMatcher(None, norm(meta["text"]), norm(heard)).ratio()
         scores.append(score)
         report[t] = {"text": meta["text"], "heard": heard, "score": round(score, 2)}
-    (ROOT / "lines/qa.json").write_text(json.dumps(report, ensure_ascii=False, indent=1))
+    (ROOT / f"lines/qa{'-' + '-'.join(only) if only else ''}.json").write_text(json.dumps(report, ensure_ascii=False, indent=1))
     bad = sum(s < 0.6 for s in scores)
     print(f"QA {len(scores)} files, mean {sum(scores)/len(scores):.2f}, below 0.6: {bad}")
