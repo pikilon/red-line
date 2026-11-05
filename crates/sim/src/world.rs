@@ -794,6 +794,7 @@ impl World {
         self.air_pass();
         self.yield_to_movers();
         self.move_units();
+        self.dodge_crushers();
         self.carry_riders();
         self.run_over();
         self.features_step();

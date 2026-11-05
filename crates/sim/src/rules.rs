@@ -808,6 +808,13 @@ pub struct Ruleset {
     pub low_power_max_speed_percent: u32,
     pub max_queue: u32,
     pub dock_range_centi: u32,
+    /// Spec 28 §6: how far past its nose a moving vehicle makes enemy
+    /// soldiers dodge; 0 turns dodging off.
+    #[serde(default)]
+    pub crush_dodge_lookahead_centi: u32,
+    /// Spec 28 §6: one reaction window in N a soldier fails to dodge; 0 never.
+    #[serde(default)]
+    pub crush_dodge_miss_one_in: u32,
     pub weapons: Vec<WeaponDef>,
     pub types: Vec<TypeDef>,
     pub factions: Vec<FactionDef>,

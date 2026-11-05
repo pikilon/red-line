@@ -72,6 +72,8 @@
   "lowPowerMaxSpeedPercent": 75,
   "maxQueue": 9,
   "dockRangeCenti": 100,
+  "crushDodgeLookaheadCenti": 150,
+  "crushDodgeMissOneIn": 3,
   "aimToleranceDeg": 2,
   "turretRecenterTicks": 30,
   "guard": {

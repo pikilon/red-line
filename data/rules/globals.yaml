@@ -18,6 +18,8 @@ lowPowerMinSpeedPercent: 25          # required, 1..100
 lowPowerMaxSpeedPercent: 75          # required, 1..100
 maxQueue: 9                          # required, 1..9 (semantic check: <= QUEUE_SLOTS)
 dockRangeCenti: 100                  # required, >= 1
+crushDodgeLookaheadCenti: 150        # optional, >= 0: tiles*100 past a moving vehicle's nose that enemy soldiers dodge (spec 28 §6); 0 = off
+crushDodgeMissOneIn: 3               # optional, >= 0: one half-second window in N a soldier fails to react (spec 28 §6); 0 = always reacts
 aimToleranceDeg: 2                   # required, 1..45: default weapon aim tolerance (spec 11 §4.1)
 turretRecenterTicks: 30              # required, >= 0: idle ticks before a stationary turret recenters (spec 11 §4.1)
 guard: { innerPercent: 180, outerPercent: 220, chaseTicks: 150 }   # optional (spec 49 §3.2): Zero Hour AIData.ini human guard — attack within 180% of sight from the post, chase within 220%, give up after 10 s (150 ticks) outside the inner radius
