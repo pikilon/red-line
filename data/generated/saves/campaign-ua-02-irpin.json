@@ -194,7 +194,7 @@
         "player": 1,
         "type": "ru-supply-truck",
         "atCenti": [
-          4600,
+          4700,
           3000
         ],
         "label": "convoy4"
@@ -211,7 +211,7 @@
         "player": 1,
         "type": "ru-bmp-2",
         "atCenti": [
-          4400,
+          4300,
           3300
         ]
       },

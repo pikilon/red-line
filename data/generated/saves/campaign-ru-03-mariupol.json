@@ -196,7 +196,7 @@
         "type": "ua-dozer",
         "atCenti": [
           1300,
-          800
+          700
         ]
       },
       {
@@ -236,7 +236,7 @@
         "type": "ua-stugna-team",
         "atCenti": [
           1500,
-          1000
+          1100
         ]
       }
     ]

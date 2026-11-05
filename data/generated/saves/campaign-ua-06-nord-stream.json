@@ -120,7 +120,7 @@
         "type": "ru-power-plant",
         "origin": [
           30,
-          10
+          12
         ],
         "label": "line1"
       },
@@ -128,7 +128,7 @@
         "player": 1,
         "type": "ru-power-plant",
         "origin": [
-          40,
+          39,
           20
         ],
         "label": "line2"
@@ -137,7 +137,7 @@
         "player": 1,
         "type": "ru-power-plant",
         "origin": [
-          44,
+          47,
           44
         ],
         "label": "line3"

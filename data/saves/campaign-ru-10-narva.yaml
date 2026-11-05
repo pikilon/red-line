@@ -29,6 +29,6 @@ entities:
   - { player: 0, type: ua-vehicle-factory, origin: [4, 25] }
   - { player: 0, type: ua-dozer, atCenti: [1000, 2000] }
   - { player: 0, type: ua-defense, origin: [22, 10], label: bridgehead1 }
-  - { player: 0, type: ua-defense, origin: [22, 30], label: bridgehead2 }
+  - { player: 0, type: ua-defense, origin: [23, 30], label: bridgehead2 }
   - { player: 0, type: ua-bradley, atCenti: [2000, 1400] }
   - { player: 0, type: ua-bradley, atCenti: [2000, 1800] }
