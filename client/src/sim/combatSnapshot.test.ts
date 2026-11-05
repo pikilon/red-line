@@ -37,6 +37,7 @@ function skirmishSim(
     command_sell: vi.fn(),
     command_rally: vi.fn(),
     command_stop: vi.fn(),
+    command_reload: vi.fn(),
     command_garrison: vi.fn(),
     command_unload: vi.fn(),
     command_board: vi.fn(),

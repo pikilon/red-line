@@ -7,7 +7,7 @@ Decisions: D-02 (deterministic fixed point), D-05 (balance in data).
 ## 1. Goal
 
 A damaged vehicle ordered onto its own vehicle factory docks outside and is
-repaired for free, one vehicle at a time, while factory production continues.
+repaired (half its price, pro rata), one vehicle at a time, while factory production continues.
 
 ## 2. Precedent (`generals-precedent`, Zero Hour)
 
@@ -38,7 +38,8 @@ Source: `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`; Zero Hour 1.04 INI.
   tick restores the share of that deficit that is due by then, so the deficit is
   repaired in exactly 75 ticks. Damage taken during the cycle is not healed by
   it; when the countdown ends below full, a fresh cycle starts for the remaining
-  deficit. Repair costs no credits.
+  deficit. Repair is paid per tick as in spec 38 §3 (50 % of the build price
+  pro rata); if funds run out the vehicle leaves the dock idle.
 * The vehicle remains outside and targetable. Production, rally and construction
   state are untouched; completion returns the vehicle to idle.
 * No explicit five-position queue geometry is added: waiting vehicles use normal
