@@ -574,9 +574,16 @@ S stop, 0-9 / Ctrl+0-9 / Shift+0-9 groups.
 * **Same in every mode.** The skirmish and the tech slice share this: right
   click deselects, `Q` and `Backspace` work in both. `E` and `Z` need unit
   types and the stop order, so they exist only where those do (skirmish).
+* **Controls page.** The Esc menu's main page gets a **Controls** button
+  (after Sound, before Debug) that opens a read-only list of these keys and
+  mouse actions, one line each, with a Back button (`CONTROL_LINES` in
+  `gameMenu.ts`, texts in `client/src/i18n/`). New keys must add a line there.
+* **AC-08-33 (unit).** The game menu builds a Controls page whose lines
+  include Ctrl + 1-9, Q, E, Backspace, Z, Right click and Esc.
 * **AC-08-32.** Right click on the map with units selected clears the
   selection; during placement it leaves placement and keeps the selection;
-  `Q`, `E`, `Backspace` and `Z` act as above. (Supersedes AC-08-29's
+  `Q`, `E`, `Backspace` and `Z` act as above, and the Esc menu's Controls
+  page lists them. (Supersedes AC-08-29's
   right-click-on-map lines.)
 
 ## 4. Acceptance criteria

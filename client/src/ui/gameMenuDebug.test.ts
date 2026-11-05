@@ -101,6 +101,7 @@ describe("game menu debug buttons", () => {
 
     expect(labels(menu.root)).toEqual([
       "Resume",
+      "Controls",
       "Debug",
       "Restart match",
       "Gore: off",
@@ -109,6 +110,7 @@ describe("game menu debug buttons", () => {
       "Switch side",
       "Reveal map: off",
       "FPS panel: off",
+      "Back",
       "Back",
     ]);
 
@@ -124,14 +126,14 @@ describe("game menu debug buttons", () => {
       revealed: true,
       fpsPanel: true,
     });
-    expect(labels(menu.root).slice(6, 9)).toEqual([
+    expect(labels(menu.root).slice(7, 10)).toEqual([
       "Switch side",
       "Reveal map: on",
       "FPS panel: on",
     ]);
 
     const buttons = buttonsOf(menu.root);
-    for (const button of buttons.slice(6, 9)) button.click();
+    for (const button of buttons.slice(7, 10)) button.click();
     expect(actions.switchSide).toHaveBeenCalledTimes(1);
     expect(actions.toggleReveal).toHaveBeenCalledTimes(1);
     expect(actions.toggleFpsPanel).toHaveBeenCalledTimes(1);
@@ -145,10 +147,12 @@ describe("game menu debug buttons", () => {
     });
     expect(labels(plain.root)).toEqual([
       "Resume",
+      "Controls",
       "Debug",
       "Restart match",
       "Gore: off",
       "AI: on",
+      "Back",
       "Back",
     ]);
   });

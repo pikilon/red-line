@@ -1116,3 +1116,71 @@ test("AC-03-67: draws the selection box while dragging", async ({ page }) => {
     "Territorial Defense rifleman x 2",
   );
 });
+
+test("AC-08-32: Q, E, Backspace, Z and the Controls page", async ({ page }) => {
+  await bootDebug(page, "debug=1&speed=4&ai=off");
+  const rifleKind = await kindOf(page, "ua-rifleman");
+  await spawnAt(page, 0, rifleKind, 30.5, 62.5);
+  await spawnAt(page, 0, rifleKind, 32.5, 62.5);
+  await expect
+    .poll(() => entityCount(page, 0, rifleKind), { timeout: ms(5000) })
+    .toBe(2);
+  await debugCall(page, (api) => api.setCameraTarget(31.5, 62.5));
+  const own = await debugCall(
+    page,
+    (api, kind: number) =>
+      api
+        .entities()
+        .filter((entity) => entity.owner === 0 && entity.kind === kind)
+        .sort((a, b) => a.x - b.x),
+    rifleKind,
+  );
+  const ids = own.map((entity) => entity.id);
+
+  // Q selects every own unit on the screen.
+  await page.keyboard.press("q");
+  await expect
+    .poll(() => debugCall(page, (api) => api.selectedIds()))
+    .toEqual(ids);
+
+  // Right click clears; E widens one unit to its type on the screen.
+  await clickTiles(page, 35, 66, "right");
+  await expect
+    .poll(() => debugCall(page, (api) => api.selectedIds()))
+    .toEqual([]);
+  await clickTiles(page, own[0]?.x ?? 0, own[0]?.y ?? 0);
+  await page.keyboard.press("e");
+  await expect
+    .poll(() => debugCall(page, (api) => api.selectedIds()))
+    .toEqual(ids);
+
+  // Backspace centres the camera on the selection.
+  await debugCall(page, (api) => api.setCameraTarget(10, 10));
+  await page.keyboard.press("Backspace");
+  await expect
+    .poll(async () => (await debugCall(page, (api) => api.cameraTarget())).x)
+    .toBeGreaterThan(25);
+
+  // Z stops: a move order is replaced.
+  await clickTiles(page, 35, 66);
+  await expect
+    .poll(async () => (await savedOrder(page, ids[0] ?? -1))?.kind, {
+      timeout: ms(5000),
+    })
+    .toBe("move");
+  await page.keyboard.press("z");
+  await expect
+    .poll(async () => (await savedOrder(page, ids[0] ?? -1))?.kind ?? null, {
+      timeout: ms(5000),
+    })
+    .not.toBe("move");
+
+  // The Esc menu lists the keys (Controls page).
+  await page.keyboard.press("Escape");
+  await page.locator("#game-menu-controls-open").click();
+  await expect(page.locator("#game-menu-controls")).toContainText(
+    "Backspace · Centre the camera on the selection",
+  );
+  await page.locator("#game-menu-controls-back").click();
+  await expect(page.locator("#game-menu-main")).toBeVisible();
+});
