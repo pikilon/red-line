@@ -7,25 +7,33 @@
       "title": "Glide-bomb pass",
       "how": "Select the Su-34 and left-click an enemy. To bomb a spot, hold Ctrl and left-click the ground, or press Force fire and tap the ground.",
       "body": "The Su-34 does not stop over a target: it flies at it, releases the bombs while the target is in front of its nose and keeps going. Both bombs of the clip fall in one approach, so a building, a tight vehicle column or a defended position takes the whole stick. If the target is outside the nose cone or the range, the jet comes round for another pass.",
-      "shots": ["ru-su-34-bomb"]
+      "shots": [
+        "ru-su-34-bomb"
+      ]
     },
     {
       "title": "Clip and reload",
-      "how": "Let both bombs go, press Stop, or leave the jet idle: it flies to the nearest own airfield by itself. A damaged jet is repaired there too.",
-      "body": "The Su-34 carries two glide bombs. Once they are gone, or when it has no order, it returns to the nearest airfield, docks and refills its whole clip in one reload while its damage is repaired for free. It waits there until you give it a new order. An attack order given while it is empty is remembered until it is reloaded. With no airfield left it stays in the air and slowly loses health, so protect the airfield or build another.",
-      "shots": ["ru-su-34-reload"]
+      "how": "Press Reload to send it to the nearest airfield now, or let both bombs go or leave it idle: it flies home by itself.",
+      "body": "The Su-34 carries two glide bombs. Once they are gone, or when it has no order, it returns to the nearest airfield, docks and refills its whole clip in one reload while its damage is repaired for free. It waits there until you give it a new order. An attack order given while it is empty is remembered until it is reloaded. With no airfield left it stays in the air and slowly loses health, so protect the airfield or build another. Reload shows only while a bomb is missing; with no airfield left it plays an error sound and nothing happens.",
+      "shots": [
+        "ru-su-34-reload"
+      ]
     },
     {
       "title": "Fixed-wing flight",
       "how": "Select the Su-34 and left-click the ground where it should go; on touch, tap.",
       "body": "It is a fixed-wing jet: it never hovers or stops in the air. It flies a wide turning circle, so it cannot hold a spot. A move order takes it past the point and it turns for home; with no airfield to return to it circles in the air and slowly loses health. Give it room and expect it to come round again instead of lining up over a target.",
-      "shots": ["ru-su-34-flight"]
+      "shots": [
+        "ru-su-34-flight"
+      ]
     },
     {
       "title": "Only the Patriot reaches it",
       "how": "Keep it flying high and watch for a Patriot battery. Send the jet elsewhere until the battery is destroyed or distracted.",
       "body": "Rifle fire and autocannons cannot reach its altitude. A Gepard can hurt it if the jet flies into its short range, but the Su-34 releases its bombs from outside it. A Patriot is the exception: its long-range missiles can chase the jet before it releases, and its airframe does not take many hits. The Su-34 is expensive and slow to replace, so do not trade it for a small target.",
-      "shots": ["ru-su-34-patriot"]
+      "shots": [
+        "ru-su-34-patriot"
+      ]
     }
   ],
   "strong": [

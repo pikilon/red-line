@@ -6,7 +6,7 @@
     {
       "title": "Build robots",
       "how": "Select the workshop, open the Build tab and press a robot tile. Press + on a tile to queue another and − to cancel the last one.",
-      "body": "The workshop builds three machines. The Ratel S is a slow tracked kamikaze: it drives into its target and detonates a heavy warhead, good against armour and trenches. The TW-12.7 is a crewless machine gun on tracks, deadly against infantry and low drones; its small arms barely dent armour. The Baba Yaga is a heavy bomber hexacopter: it flies over a target, drops its bombs and returns to the workshop to reload and repair.",
+      "body": "The workshop builds three machines. The Ratel S is a slow tracked kamikaze: it drives into its target and detonates a heavy warhead, good against armour and trenches. The TW-12.7 is a crewless machine gun on tracks, deadly against infantry and low drones; its small arms barely dent armour. The Baba Yaga is a heavy bomber hexacopter: it flies over a target, drops its bombs and returns to the workshop to reload and repair, or goes at once when you press Reload.",
       "shots": ["ua-drone-workshop-build"]
     },
     {

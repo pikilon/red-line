@@ -7,37 +7,49 @@
       "title": "Build aircraft",
       "how": "Select the airfield, open the Build tab and press the Su-34 or Orlan tile. Press + on a tile to queue another and − to cancel the last one.",
       "body": "The airfield builds Russia's two aircraft. The Su-34 is a high-flying strike jet with two glide bombs: it releases them from beyond the reach of short-range anti-air, and only a long-range missile such as the Patriot can answer it. The Orlan is an unarmed spotter with a long sight, useful for finding targets; any weapon that can fire at low flyers can shoot it down. Each finished aircraft leaves the airfield and waits beside it until you give it an order.",
-      "shots": ["ru-airfield-build"]
+      "shots": [
+        "ru-airfield-build"
+      ]
     },
     {
       "title": "Reload and repair aircraft",
-      "how": "Let a Su-34 spend its bombs, or press Stop to send it home early. A damaged aircraft is repaired while it rearms.",
+      "how": "Select a Su-34 and press Reload, or let it spend its bombs: it flies to the nearest airfield. A damaged aircraft is repaired while it rearms.",
       "body": "When a Su-34 has dropped its two glide bombs, or is left idle, it flies to the nearest own airfield. It docks, refills its whole clip in one reload and has its damage repaired for free, then waits for your next order. Pressing Stop sends it home even with bombs left. The Orlan has no bombs to reload and is not serviced here. Any number of aircraft can use one airfield, and a parked aircraft with a weapon still fires at enemies in range. With no airfield left, an empty aircraft cannot rearm and slowly loses health.",
-      "shots": ["ru-airfield-reload"]
+      "shots": [
+        "ru-airfield-reload"
+      ]
     },
     {
       "title": "Rally point",
       "how": "Select the airfield, press Rally point and left-click the ground.",
       "body": "Aircraft built afterwards fly to the rally point. A Su-34 flies there and then turns back to the airfield; an Orlan circles over the point until you order it elsewhere. Changing the point only affects aircraft produced later, and the marker shows while the airfield is selected.",
-      "shots": ["ru-airfield-rally"]
+      "shots": [
+        "ru-airfield-rally"
+      ]
     },
     {
       "title": "Needs power",
       "how": "Watch the power reading in the HUD; keep production at least equal to consumption.",
       "body": "The airfield draws power from the base. While the base consumes more than it produces, the reading turns red and aircraft production slows sharply, though it never stops. Reloading and repairs are not slowed. Build another power plant or sell something that draws power.",
-      "shots": ["ru-airfield-power"]
+      "shots": [
+        "ru-airfield-power"
+      ]
     },
     {
       "title": "Repair with a dozer",
       "how": "Select a dozer and left-click the damaged airfield.",
       "body": "The dozer drives to the airfield and restores it until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle.",
-      "shots": ["ru-airfield-repair"]
+      "shots": [
+        "ru-airfield-repair"
+      ]
     },
     {
       "title": "Sell",
       "how": "Select the airfield and press Sell twice.",
       "body": "It sells for half its price and disappears at once, opening the ground it held. Any aircraft still in its queue are cancelled and refunded in full. Aircraft already built stay under your control, but with no airfield left they cannot rearm: an empty one stays in the air and slowly loses health. Selling your last building loses the match.",
-      "shots": ["ru-airfield-sell"]
+      "shots": [
+        "ru-airfield-sell"
+      ]
     }
   ],
   "strong": [
