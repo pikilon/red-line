@@ -17,6 +17,22 @@ export interface ResourceText {
   low: boolean;
 }
 
+/** The colour band of the power bar (spec §6.6). */
+export type PowerLevel = "ok" | "warn" | "low";
+
+/** Consumption as a fraction of production, clamped to the bar (spec §6.6). */
+export function powerFill(produced: number, consumed: number): number {
+  if (produced <= 0) return consumed > 0 ? 1 : 0;
+  return Math.min(1, Math.max(0, consumed / produced));
+}
+
+/** Green up to 80%, yellow up to 100%, red in deficit (spec §6.6). */
+export function powerLevel(produced: number, consumed: number): PowerLevel {
+  if (consumed > produced) return "low";
+  if (produced <= 0) return "ok";
+  return consumed > produced * 0.8 ? "warn" : "ok";
+}
+
 /** Formats the resource bar for a match snapshot (spec §6.6). */
 export function resourceText(snapshot: MatchSnapshot): ResourceText {
   return {
@@ -53,8 +69,8 @@ export function teamColors(
 
 /**
  * `<div id="resource-bar">`: the player's own panel, with
- * `#res-player` (who you are), `#res-credits` and `#res-power` (spec §6.6,
- * spec 03 §6.7).
+ * `#res-player` (who you are), `#res-credits` and the `#res-power` bar
+ * (spec §6.6, spec 03 §6.7).
  */
 export function createResourceBar(
   root: HTMLElement,
@@ -74,6 +90,16 @@ export function createResourceBar(
   const row = appendDiv(bar, "res-row");
   const credits = appendDiv(row, "res-credits");
   const power = appendDiv(row, "res-power");
+  const icon = document.createElement("span");
+  icon.className = "res-power-icon";
+  icon.setAttribute("aria-hidden", "true");
+  icon.innerHTML =
+    '<svg viewBox="0 0 24 24" width="12" height="14" aria-hidden="true" focusable="false"><path d="M13 2 4.5 13.5H11l-1 8.5 9.5-12H13V2Z"/></svg>';
+  power.appendChild(icon);
+  const track = appendDiv(power, "res-power-bar");
+  track.className = "res-power-bar";
+  const fill = appendDiv(track, "res-power-fill");
+  fill.className = "res-power-fill";
   let lastCredits: number | null = null;
   return {
     render(snapshot) {
@@ -88,9 +114,22 @@ export function createResourceBar(
           ? { credits: "", power: "", low: false }
           : resourceText(snapshot);
       setText(credits, text.credits);
-      setText(power, text.power);
-      if (power.classList.contains("power-low") !== text.low)
-        power.classList.toggle("power-low", text.low);
+      if (snapshot === null) {
+        power.removeAttribute("title");
+        power.removeAttribute("data-level");
+        power.classList.remove("power-ok", "power-warn", "power-low");
+        fill.style.width = "0%";
+        return;
+      }
+      const level = powerLevel(snapshot.powerProduced, snapshot.powerConsumed);
+      power.title = text.power;
+      power.dataset.level = level;
+      power.classList.toggle("power-ok", level === "ok");
+      power.classList.toggle("power-warn", level === "warn");
+      power.classList.toggle("power-low", level === "low");
+      fill.style.width = `${Math.round(
+        powerFill(snapshot.powerProduced, snapshot.powerConsumed) * 100,
+      )}%`;
     },
     setPlayer(n, faction) {
       setText(

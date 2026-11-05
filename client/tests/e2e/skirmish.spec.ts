@@ -93,7 +93,10 @@ test("AC-03-55: boots a skirmish with fog", async ({ page }) => {
   expect(await debugCall(page, (api) => api.fogAt(113, 65))).toBe(0);
 
   await expect(page.locator("#res-credits")).toHaveText("Credits 5000");
-  await expect(page.locator("#res-power")).toHaveText("Power 0/0");
+  await expect(page.locator("#res-power")).toHaveAttribute(
+    "title",
+    "Power 0/0",
+  );
   await expect(page.locator("#res-player")).toHaveText("Player 1: Ukraine");
 
   const before = await debugCall(page, (api) => api.tick());
@@ -348,9 +351,11 @@ test("AC-03-56: builds a power plant through the UI", async ({ page }) => {
       timeout: ms(30_000),
     })
     .toBeGreaterThan(0);
-  await expect(page.locator("#res-power")).toHaveText("Power 10/0", {
-    timeout: ms(30_000),
-  });
+  await expect(page.locator("#res-power")).toHaveAttribute(
+    "title",
+    "Power 10/0",
+    { timeout: ms(30_000) },
+  );
 
   // Escape while placing cancels it, so the next ground click, which is a legal
   // 3x3 site, must not start a second building.
