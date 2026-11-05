@@ -1,0 +1,16 @@
+# Spec 48: help card of the Geran launch site. A jet-powered Geran-3 runs at a Ukrainian Patriot.
+id: help-ru-geran-site-geran-3
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 5000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 47, y: 18.5, zoom: 2.4 }
+entities:
+  - { player: 0, type: ua-patriot, origin: [52, 17], label: patriot }
+  - { player: 0, type: ua-sting-nest, origin: [56, 21] }
+  - { player: 1, type: ru-geran-site, origin: [33, 16] }
+  - { player: 1, type: ru-geran-3, atCenti: [4200, 1750], label: jet, order: { attack: patriot } }

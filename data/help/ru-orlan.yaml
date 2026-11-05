@@ -1,0 +1,5 @@
+# Spec 48 §3.3: screenshots of the Orlan card. `node --run help:shots -- --type ru-orlan`
+- { id: ru-orlan-spot, save: help-ru-orlan-spot, ticks: 45, select: [ru-orlan] }
+- { id: ru-orlan-flight, save: help-ru-orlan-flight, ticks: 10, select: [ru-orlan] }
+- { id: ru-orlan-low-aa, save: help-ru-orlan-low-aa, ticks: 6, select: [ru-orlan] }
+- { id: ru-orlan-crash, save: help-ru-orlan-crash, ticks: 8, select: [ru-orlan] }

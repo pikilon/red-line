@@ -1,0 +1,14 @@
+# Spec 48: help card of the Su-34. It flies over a Ukrainian power plant and releases both glide bombs.
+id: help-ru-su-34-bomb
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 10000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 40, y: 19, zoom: 1.2 }
+entities:
+  - { player: 1, type: ru-su-34, atCenti: [2800, 2000], label: jet, order: { attack: target } }
+  - { player: 0, type: ua-power-plant, origin: [44, 16], label: target }

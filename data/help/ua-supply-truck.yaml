@@ -1,0 +1,5 @@
+# Spec 48 §3.3: screenshots of the supply truck card. `node --run help:shots -- --type ua-supply-truck`
+- { id: ua-supply-truck-harvest, save: help-ua-supply-truck-harvest, ticks: 8, select: [ua-supply-truck] }
+- { id: ua-supply-truck-unload, save: help-ua-supply-truck-harvest, ticks: 75, select: [ua-supply-truck] }
+- { id: ua-supply-truck-resupply, save: help-ua-supply-truck-resupply, ticks: 200, select: [ua-supply-truck, ua-fpv-team] }
+- { id: ua-supply-truck-repair, save: help-ua-supply-truck-repair, ticks: 10, select: [ua-supply-truck], hud: true, tab: orders }

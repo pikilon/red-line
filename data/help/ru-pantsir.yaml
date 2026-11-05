@@ -1,0 +1,6 @@
+# Spec 48 §3.3: screenshots of the Pantsir card. `node --run help:shots -- --type ru-pantsir`
+- { id: ru-pantsir-low, save: help-ru-pantsir-low, ticks: 10, select: [ru-pantsir] }
+- { id: ru-pantsir-high, save: help-ru-pantsir-high, ticks: 22, select: [ru-pantsir] }
+- { id: ru-pantsir-wave, save: help-ru-pantsir-wave, ticks: 10, select: [ru-pantsir] }
+- { id: ru-pantsir-move, save: help-ru-pantsir-move, ticks: 24, select: [ru-pantsir] }
+- { id: ru-pantsir-repair, save: help-ru-pantsir-repair, ticks: 10, select: [ru-pantsir], hud: true }

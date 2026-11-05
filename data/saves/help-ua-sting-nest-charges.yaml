@@ -1,0 +1,17 @@
+# Spec 48: help card of the Sting nest. A wave closes in while the selected nest has spent two of its charges.
+id: help-ua-sting-nest-charges
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45, y: 19, zoom: 2.8 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [33, 17], label: plant }
+  - { player: 0, type: ua-sting-nest, origin: [40, 17], label: nest }
+  - { player: 1, type: ru-geran-2, atCenti: [5000, 1800], label: geran0, order: { attack: nest } }
+  - { player: 1, type: ru-geran-2, atCenti: [5600, 2000], label: geran1, order: { attack: nest } }
+  - { player: 1, type: ru-geran-2, atCenti: [5800, 2200], label: geran2, order: { attack: nest } }
+  - { player: 1, type: ru-geran-2, atCenti: [6000, 2400], label: geran3, order: { attack: nest } }

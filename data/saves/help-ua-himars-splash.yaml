@@ -1,0 +1,17 @@
+# Spec 48: help card of the HIMARS. Its rockets catch a cluster of Russian infantry.
+id: help-ua-himars-splash
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 52, y: 19.5, zoom: 3 }
+entities:
+  - { player: 0, type: ua-himars, atCenti: [3800, 2000], label: himars, order: { attackGroundCenti: [5200, 1950] } }
+  - { player: 1, type: ru-rifleman, atCenti: [5150, 1900] }
+  - { player: 1, type: ru-rifleman, atCenti: [5250, 1900] }
+  - { player: 1, type: ru-rifleman, atCenti: [5150, 2000] }
+  - { player: 1, type: ru-rifleman, atCenti: [5250, 2000] }
+  - { player: 1, type: ru-rifleman, atCenti: [5200, 2050] }

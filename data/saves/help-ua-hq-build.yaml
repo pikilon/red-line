@@ -1,0 +1,13 @@
+# Spec 48: help card of the headquarters. Select it to see the dozer it produces.
+id: help-ua-hq-build
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [10000, 0]
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 46, y: 15, zoom: 2.2 }
+entities:
+  - { player: 0, type: ua-hq, origin: [45, 13] }

@@ -1,0 +1,77 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ua-tw-12-7-fight",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 46,
+      "y": 20.5,
+      "zoom": 3
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-tw-12-7",
+        "atCenti": [
+          4300,
+          2000
+        ],
+        "label": "robot",
+        "order": {
+          "attack": "inf"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4700,
+          1900
+        ],
+        "label": "inf"
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4700,
+          2100
+        ],
+        "hpPercent": 70
+      },
+      {
+        "player": 1,
+        "type": "ru-brdm-scout",
+        "atCenti": [
+          4900,
+          2000
+        ],
+        "label": "bmp",
+        "hpPercent": 60
+      }
+    ]
+  }
+}

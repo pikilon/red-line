@@ -1,0 +1,44 @@
+{
+  "id": "ru-bmp-2",
+  "role": "Infantry fighting vehicle",
+  "summary": "A tracked troop carrier with a fast-firing 30 mm autocannon. It shreds light vehicles, infantry and low drones, carries a squad safely to the front, and swims across rivers.",
+  "sections": [
+    {
+      "title": "Autocannon",
+      "how": "Select the BMP-2 and left-click an enemy, or let it fire at anything in range.",
+      "body": "The 2A42 fires quick bursts. It is deadly against infantry, scouts and other light vehicles, and can track low drones, but it struggles against a main battle tank.",
+      "shots": ["ru-bmp-2-fight"]
+    },
+    {
+      "title": "Carry infantry",
+      "how": "Select infantry, then left-click the BMP-2.",
+      "body": "Up to six soldiers ride inside. Riders lose only a tenth of their health if the BMP-2 is destroyed, but they cannot shoot out: it has no firing ports. Riders cannot be selected until they leave.",
+      "shots": ["ru-bmp-2-board"]
+    },
+    {
+      "title": "Unload",
+      "how": "Select the loaded BMP-2 and press Unload (n).",
+      "body": "The riders step out one after another beside the vehicle. Drive close to the objective first, then unload.",
+      "shots": ["ru-bmp-2-unload"]
+    },
+    {
+      "title": "Swim rivers",
+      "how": "Select the BMP-2 and left-click the far bank.",
+      "body": "The BMP-2 is amphibious: it crosses deep water at the same speed as open ground. Tanks and other non-swimming vehicles must use a bridge.",
+      "shots": ["ru-bmp-2-swim"]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged BMP-2 and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The BMP-2 drives to the factory and is repaired for half its price, paid as the health comes back.",
+      "shots": ["ru-bmp-2-repair"]
+    }
+  ],
+  "strong": ["Infantry", "Scouts and light vehicles", "Low drones"],
+  "weak": ["Tanks", "Anti-tank teams and RPGs", "Artillery"],
+  "tips": [
+    "Pair it with tanks: the tank fights armour, the BMP-2 clears the infantry around it.",
+    "Unload anti-tank teams behind cover instead of driving the BMP-2 into a tank.",
+    "Use rivers as roads: the BMP-2 can flank where enemy tanks cannot follow."
+  ]
+}

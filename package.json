@@ -34,6 +34,7 @@
     "saves:list": "node scripts/saves.mjs list",
     "saves:run": "node scripts/saves.mjs run",
     "saves:import": "node scripts/saves.mjs import",
+    "help:shots": "node scripts/help-shots.mjs",
     "testers:invite": "node scripts/testers.mjs invite",
     "testers:list": "node scripts/testers.mjs list",
     "testers:revoke": "node scripts/testers.mjs revoke",

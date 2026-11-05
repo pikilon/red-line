@@ -1,0 +1,15 @@
+# Spec 48: help card of the Kozak-2 scout. Its heavy machine gun cuts into Russian infantry beside a scout vehicle.
+id: help-ua-kozak-scout-fight
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 46, y: 20.5, zoom: 3 }
+entities:
+  - { player: 0, type: ua-kozak-scout, atCenti: [4300, 2000], label: kozak }
+  - { player: 1, type: ru-rifleman, atCenti: [4750, 1930], hpPercent: 70 }
+  - { player: 1, type: ru-rifleman, atCenti: [4750, 2070], hpPercent: 70 }
+  - { player: 1, type: ru-brdm-scout, atCenti: [5000, 2000], hpPercent: 60 }

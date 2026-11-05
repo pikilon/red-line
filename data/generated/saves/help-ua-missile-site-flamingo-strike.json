@@ -1,0 +1,74 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ua-missile-site-flamingo-strike",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 50.5,
+      "y": 18,
+      "zoom": 2.4
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-missile-site",
+        "origin": [
+          38,
+          16
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-flamingo",
+        "atCenti": [
+          4800,
+          1700
+        ],
+        "label": "flamingo",
+        "order": {
+          "attack": "airfield"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-airfield",
+        "origin": [
+          50,
+          15
+        ],
+        "label": "airfield"
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          56,
+          20
+        ]
+      }
+    ]
+  }
+}

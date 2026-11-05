@@ -54,6 +54,16 @@ const listedIds = (text, key) => {
   }
 };
 
+/** Spec 48 §3.3: help-card scenes `data/saves/help-*.yaml`, picked up without a globals entry. */
+function helpSaveIds(rootDir) {
+  const dir = join(rootDir, "data", "saves");
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((f) => f.startsWith("help-") && f.endsWith(".yaml"))
+    .map((f) => f.slice(0, -".yaml".length))
+    .sort();
+}
+
 /** Reads globals, then the factions, maps, AI personalities and example saves it lists, as repository-relative files. */
 export function readSources(rootDir) {
   const read = (file) => ({ file, text: readFileSync(join(rootDir, file), "utf8") });
@@ -69,7 +79,7 @@ export function readSources(rootDir) {
     features: listedIds(globals.text, "features").map((id) => read(`data/features/${id}.yaml`)),
     maps: listedIds(globals.text, "maps").map((id) => read(`data/maps/${id}.yaml`)),
     ai: listedIds(globals.text, "ai").map((id) => read(`data/ai/${id}.yaml`)),
-    saves: listedIds(globals.text, "saves").map((id) => read(saveFile(id))),
+    saves: [...listedIds(globals.text, "saves"), ...helpSaveIds(rootDir)].map((id) => read(saveFile(id))),
     // Spec 31 section 6: one balance file, optional so older fixtures keep their shape.
     environment: existsSync(join(rootDir, ENVIRONMENT_FILE)) ? read(ENVIRONMENT_FILE) : undefined,
   };

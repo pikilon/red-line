@@ -1,0 +1,13 @@
+# Spec 48: help card of the headquarters. Its rally point sits east of the building.
+id: help-ua-hq-rally
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [10000, 0]
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 48, y: 14.5, zoom: 2 }
+entities:
+  - { player: 0, type: ua-hq, origin: [43, 13], order: { rally: [5200, 1550] } }

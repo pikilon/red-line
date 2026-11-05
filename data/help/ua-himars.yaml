@@ -1,0 +1,6 @@
+# Spec 48 §3.3: screenshots of the HIMARS card. `node --run help:shots -- --type ua-himars`
+- { id: ua-himars-fight, save: help-ua-himars-fight, ticks: 43, select: [ua-himars] }
+- { id: ua-himars-splash, save: help-ua-himars-splash, ticks: 50, select: [ua-himars] }
+- { id: ua-himars-min-range, save: help-ua-himars-min-range, ticks: 8, select: [ua-himars] }
+- { id: ua-himars-attack-ground, save: help-ua-himars-attack-ground, ticks: 44, select: [ua-himars], hud: true, tab: orders }
+- { id: ua-himars-repair, save: help-ua-himars-repair, ticks: 10, select: [ua-himars], hud: true }

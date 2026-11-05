@@ -1,0 +1,7 @@
+# Spec 48 §3.3: screenshots of the Russian supply center card. `node --run help:shots -- --type ru-supply-center`
+- { id: ru-supply-center-produce, save: help-ru-supply-center-produce, ticks: 5, select: [ru-supply-center], hud: true, tab: build }
+- { id: ru-supply-center-dropoff, save: help-ru-supply-center-dropoff, ticks: 95, select: [ru-supply-truck] }
+- { id: ru-supply-center-resupply, save: help-ru-supply-center-resupply, ticks: 2, select: [ru-molniya-crew], hud: true, tab: orders }
+- { id: ru-supply-center-rally, save: help-ru-supply-center-rally, ticks: 5, select: [ru-supply-center], hud: true, tab: orders }
+- { id: ru-supply-center-repair, save: help-ru-supply-center-repair, ticks: 10, select: [ru-dozer] }
+- { id: ru-supply-center-sell, save: help-ru-supply-center-sell, ticks: 5, select: [ru-supply-center], hud: true, tab: orders }

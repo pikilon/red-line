@@ -1,0 +1,13 @@
+# Spec 48: help card of the Russian supply center. A truck loads at a depot and returns to unload.
+id: help-ru-supply-center-dropoff
+map: demo-ground
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 50, y: 45.5, zoom: 3 }
+entities:
+  - { player: 1, type: ru-supply-center, origin: [44, 44] }
+  - { player: 1, type: ru-supply-truck, atCenti: [5250, 4450], label: truck, order: { harvest: depot-1 } }

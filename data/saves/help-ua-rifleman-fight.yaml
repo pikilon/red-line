@@ -1,0 +1,15 @@
+# Spec 48: help card of the rifleman. A Ukrainian pair trades rifle fire with Russian infantry.
+id: help-ua-rifleman-fight
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45, y: 20.5, zoom: 3 }
+entities:
+  - { player: 0, type: ua-rifleman, atCenti: [4300, 1950], label: a, order: { attack: enemy-a } }
+  - { player: 0, type: ua-rifleman, atCenti: [4300, 2100], label: b, order: { attack: enemy-b } }
+  - { player: 1, type: ru-rifleman, atCenti: [4800, 1950], label: enemy-a }
+  - { player: 1, type: ru-rifleman, atCenti: [4800, 2100], label: enemy-b }

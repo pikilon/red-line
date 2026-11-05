@@ -1,0 +1,13 @@
+# Spec 48: help card of the TW-12.7. Its machine gun reaches a low Orlan drone overhead.
+id: help-ua-tw-12-7-air
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45, y: 19.5, zoom: 3 }
+entities:
+  - { player: 0, type: ua-tw-12-7, atCenti: [4300, 2000], label: robot, order: { attack: drone } }
+  - { player: 1, type: ru-orlan, atCenti: [4700, 1950], label: drone }

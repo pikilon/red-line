@@ -1,0 +1,8 @@
+# Spec 48 §3.3: screenshots of the Patriot card. `node --run help:shots -- --type ua-patriot`
+- { id: ua-patriot-su34, save: help-ua-patriot-su34, ticks: 102, select: [ua-patriot] }
+- { id: ua-patriot-geran3, save: help-ua-patriot-geran3, ticks: 34, select: [ua-patriot] }
+- { id: ua-patriot-low, save: help-ua-patriot-low, ticks: 4, select: [ua-patriot] }
+- { id: ua-patriot-reload, save: help-ua-patriot-reload, ticks: 5, select: [ua-patriot] }
+- { id: ua-patriot-power, save: help-ua-patriot-power, ticks: 5, select: [ua-patriot], hud: true }
+- { id: ua-patriot-repair, save: help-ua-patriot-repair, ticks: 10, select: [ua-dozer] }
+- { id: ua-patriot-sell, save: help-ua-patriot-sell, ticks: 5, select: [ua-patriot], hud: true, tab: orders }

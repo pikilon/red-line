@@ -1,0 +1,5 @@
+# Spec 48 §3.3: screenshots of the Su-34 card. `node --run help:shots -- --type ru-su-34`
+- { id: ru-su-34-bomb, save: help-ru-su-34-bomb, ticks: 37, select: [ru-su-34] }
+- { id: ru-su-34-reload, save: help-ru-su-34-reload, ticks: 60, select: [ru-su-34], hud: true }
+- { id: ru-su-34-flight, save: help-ru-su-34-flight, ticks: 10, select: [ru-su-34] }
+- { id: ru-su-34-patriot, save: help-ru-su-34-patriot, ticks: 102, select: [ru-su-34] }

@@ -1,0 +1,21 @@
+# Spec 48: help card of the drone workshop, framed from the robots-vs-jammer scene.
+# The radio robots stop at the Pole-21's circle while the unlinked Baba Yaga flies on.
+id: help-ua-drone-workshop-jamming
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [5000, 0]
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 42.5, y: 20.3, zoom: 2.4 }
+entities:
+  - { player: 0, type: ua-ratel, atCenti: [3000, 1850], order: { attack: tank0 } }
+  - { player: 0, type: ua-ratel, atCenti: [3000, 2150], order: { attack: tank1 } }
+  - { player: 0, type: ua-tw-12-7, atCenti: [3000, 2000], order: { attack: tank0 } }
+  - { player: 0, type: ua-tw-12-7, atCenti: [3000, 2300], order: { attack: tank1 } }
+  - { player: 0, type: ua-baba-yaga, atCenti: [4450, 2200], order: { attack: tank1 } }
+  - { player: 1, type: ru-pole-21, atCenti: [4700, 2000] }
+  - { player: 1, type: ru-t-72b3, atCenti: [5000, 1850], label: tank0 }
+  - { player: 1, type: ru-t-72b3, atCenti: [5000, 2150], label: tank1 }

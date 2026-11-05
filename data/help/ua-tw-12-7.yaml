@@ -1,0 +1,5 @@
+# Spec 48 §3.3: screenshots of the TW-12.7 card. `node --run help:shots -- --type ua-tw-12-7`
+- { id: ua-tw-12-7-fight, save: help-ua-tw-12-7-fight, ticks: 55, select: [ua-tw-12-7] }
+- { id: ua-tw-12-7-air, save: help-ua-tw-12-7-air, ticks: 21, select: [ua-tw-12-7] }
+- { id: ua-tw-12-7-jamming, save: help-ua-tw-12-7-jamming, ticks: 100, select: [ua-tw-12-7] }
+- { id: ua-tw-12-7-repair, save: help-ua-tw-12-7-repair, ticks: 10, select: [ua-tw-12-7], hud: true }

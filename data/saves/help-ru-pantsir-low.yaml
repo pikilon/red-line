@@ -1,0 +1,14 @@
+# Spec 48: help card of the Pantsir. Its missiles rise at a low-flying Ukrainian drone.
+id: help-ru-pantsir-low
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 5000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 50, y: 20, zoom: 2.6 }
+entities:
+  - { player: 1, type: ru-pantsir, atCenti: [4500, 2000], label: pantsir }
+  - { player: 0, type: ua-baba-yaga, atCenti: [5700, 1900], label: drone, order: { attack: pantsir } }

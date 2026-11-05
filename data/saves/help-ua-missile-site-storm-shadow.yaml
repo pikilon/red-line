@@ -1,0 +1,13 @@
+# Spec 48: help card of the missile site. A Storm Shadow waits on its pad beside the site.
+id: help-ua-missile-site-storm-shadow
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 41.5, y: 16.2, zoom: 3.4 }
+entities:
+  - { player: 0, type: ua-missile-site, origin: [38, 16] }
+  - { player: 0, type: ua-storm-shadow, atCenti: [4100, 1500], label: storm }

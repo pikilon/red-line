@@ -1,0 +1,56 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ru-orlan-crash",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "demo-town",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 1,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 37,
+      "y": 24,
+      "zoom": 2.6
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "demo-town",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "credits": [
+      0,
+      10000
+    ],
+    "ai": [],
+    "entities": [
+      {
+        "player": 1,
+        "type": "ru-orlan",
+        "atCenti": [
+          3700,
+          2900
+        ],
+        "label": "orlan",
+        "order": {
+          "moveCenti": [
+            3700,
+            1950
+          ]
+        }
+      }
+    ]
+  }
+}

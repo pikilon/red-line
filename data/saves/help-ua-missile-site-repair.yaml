@@ -1,0 +1,14 @@
+# Spec 48: help card of the missile site. A damaged site waits for its dozer.
+id: help-ua-missile-site-repair
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 42, y: 19, zoom: 2.8 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [35, 16] }
+  - { player: 0, type: ua-missile-site, origin: [41, 16], hpPercent: 40 }
+  - { player: 0, type: ua-dozer, atCenti: [4000, 1900] }

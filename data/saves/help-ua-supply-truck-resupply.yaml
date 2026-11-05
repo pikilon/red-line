@@ -1,0 +1,14 @@
+# Spec 48: help card of the supply truck. A truck that has spent a drone charge parks beside an FPV team.
+id: help-ua-supply-truck-resupply
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 44.5, y: 20.5, zoom: 3 }
+entities:
+  - { player: 0, type: ua-supply-truck, atCenti: [4500, 2000], label: truck }
+  - { player: 0, type: ua-fpv-team, atCenti: [4300, 2000], label: fpv, order: { attack: target } }
+  - { player: 1, type: ru-bmp-2, atCenti: [5150, 2000], label: target, hpPercent: 20 }

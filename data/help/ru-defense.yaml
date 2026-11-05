@@ -1,0 +1,5 @@
+# Spec 48 §3.3: screenshots of the Kornet emplacement card. `node --run help:shots -- --type ru-defense`
+- { id: ru-defense-missile, save: help-ru-defense-missile, ticks: 20, select: [ru-defense] }
+- { id: ru-defense-power, save: help-ru-defense-power, ticks: 5, select: [ru-defense], hud: true }
+- { id: ru-defense-repair, save: help-ru-defense-repair, ticks: 10, select: [ru-dozer] }
+- { id: ru-defense-sell, save: help-ru-defense-sell, ticks: 5, select: [ru-defense], hud: true, tab: orders }

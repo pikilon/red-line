@@ -1,0 +1,15 @@
+# Spec 48: help card of the Stugna team. Two wounded crews wait beside their barracks to be healed.
+id: help-ua-stugna-team-heal
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 44.5, y: 19.5, zoom: 3 }
+entities:
+  - { player: 0, type: ua-barracks, origin: [43, 16] }
+  - { player: 0, type: ua-stugna-team, atCenti: [4300, 2100], hpPercent: 35 }
+  - { player: 0, type: ua-stugna-team, atCenti: [4600, 2100], hpPercent: 45 }
+  - { player: 0, type: ua-stugna-team, atCenti: [4450, 2250], hpPercent: 100 }

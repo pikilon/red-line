@@ -1,0 +1,48 @@
+{
+  "id": "ua-kozak-scout",
+  "role": "Wheeled scout and transport",
+  "summary": "A fast wheeled scout with a heavy machine gun and room for a squad. It sees far, shreds infantry and light vehicles, and carries its passengers into the fight with their weapons ready.",
+  "sections": [
+    {
+      "title": "Heavy machine gun",
+      "how": "Select the Kozak and left-click an enemy, or let it fire at anything in range.",
+      "body": "The heavy machine gun fires quick bursts. It tears through infantry, scouts and other light vehicles, and can answer low drones. Against a main battle tank it struggles badly.",
+      "shots": ["ua-kozak-scout-fight"]
+    },
+    {
+      "title": "Carry infantry",
+      "how": "Select one or more infantry, then left-click your own Kozak.",
+      "body": "A squad rides hidden inside and cannot be selected until the riders get out. If the Kozak is destroyed, everyone aboard dies with it.",
+      "shots": ["ua-kozak-scout-carry"]
+    },
+    {
+      "title": "Fire from inside",
+      "how": "Load infantry into the Kozak and drive close to the enemy; the passengers fire on their own.",
+      "body": "The Kozak has firing ports, so its passengers shoot from inside with their own weapons instead of standing in the open. They stay hidden and untargetable while they ride.",
+      "shots": ["ua-kozak-scout-fireports"]
+    },
+    {
+      "title": "Unload",
+      "how": "Select the loaded Kozak and press Unload (n).",
+      "body": "The riders step out one after another beside the vehicle. Drive close to the objective first, then unload.",
+      "shots": ["ua-kozak-scout-unload"]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged Kozak and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The Kozak drives to the factory and is repaired for half its price, paid as the health comes back.",
+      "shots": ["ua-kozak-scout-repair"]
+    }
+  ],
+  "strong": ["Infantry", "Scouts and light vehicles", "Low drones"],
+  "weak": [
+    "Tanks and armoured vehicles",
+    "Anti-tank teams and RPGs",
+    "Artillery"
+  ],
+  "tips": [
+    "Use its sight to find the enemy first: the Kozak spots further than it shoots.",
+    "Load a squad before driving into the open so the passengers keep firing from inside.",
+    "Do not lead with it: let tanks take the hits while the Kozak hunts infantry and light vehicles."
+  ]
+}

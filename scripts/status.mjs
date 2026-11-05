@@ -49,6 +49,8 @@ function main() {
   for (const line of stale) console.log(line);
   console.log(`Extra worktrees (${worktrees.length})`);
   for (const w of worktrees) console.log(`  ${w.slice("worktree ".length)}`);
+  // Spec 48 §3.3: help screenshots taken before the game changed its look.
+  console.log(execFileSync("node", ["scripts/help-shots.mjs", "--check"], { encoding: "utf8" }).trim().split("\n").at(-1));
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

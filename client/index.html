@@ -154,6 +154,39 @@
       #load-error { position: fixed; top: calc(48px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); max-width: min(80vw, 480px); padding: 8px 14px; border-radius: 4px; background: rgba(127, 29, 29, 0.9); color: #fff; font: 14px/1.4 system-ui, sans-serif; z-index: 10; }
       #game-menu { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 12px; box-sizing: border-box; background: rgba(0, 0, 0, 0.55); pointer-events: auto; color: #fff; font: 14px/1.4 system-ui, sans-serif; z-index: 30; }
       #game-menu[hidden] { display: none; }
+      #hud-help { color: #e6edf2; font: 700 20px/1 system-ui, sans-serif; }
+      #hud-help[aria-pressed="true"] { background: var(--amber); color: #000; }
+      #hud-bar[data-help] #hud-selection > * { display: none; }
+      #hud-bar[data-help] #hud-selection::before { content: attr(data-help-hint); color: var(--amber); text-transform: none; letter-spacing: 0; }
+      #hud-bar[data-help] #command-panel .cmd.tile::after, #hud-bar[data-help] #command-panel .cmd.chip::after { content: "?"; position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--amber); color: #000; font: 700 12px/16px system-ui, sans-serif; text-align: center; pointer-events: none; }
+      #hud-bar[data-help] #command-panel .cmd.tile:disabled, #hud-bar[data-help] #command-panel .cmd.chip { opacity: 1; filter: none; cursor: help; }
+      #help-card { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); box-sizing: border-box; background: rgba(0, 0, 0, 0.6); color: #e6edf2; font: 14px/1.45 system-ui, sans-serif; -webkit-user-select: text; user-select: text; touch-action: pan-y; }
+      #help-card[hidden] { display: none; }
+      #help-card .hc-sheet { display: flex; flex-direction: column; width: min(760px, 100%); max-height: 100%; background: linear-gradient(180deg, #1d2329, #14181c); border: 1px solid #4a525a; border-top: 4px solid var(--team-accent, #c62828); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7); }
+      #help-card .hc-head { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid #2c343b; }
+      #help-card .hc-cameo { flex: none; width: 56px; height: 56px; background: #0b0e11; border: 1px solid #4a525a; }
+      #help-card .hc-cameo img { width: 100%; height: 100%; object-fit: cover; }
+      #help-card .hc-titles { flex: 1; min-width: 0; }
+      #help-card h2 { margin: 0; font: 700 20px/1.2 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.04em; text-transform: uppercase; }
+      #help-card .hc-role { margin: 2px 0 0; color: #8fa0ad; }
+      #help-card .hc-paused { flex: none; padding: 2px 6px; border: 1px solid #facc15; color: #facc15; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; }
+      #help-card .hc-close { flex: none; width: 40px; height: 40px; border: 1px solid #4a525a; background: #262e35; color: #fff; font-size: 22px; cursor: pointer; }
+      #help-card .hc-body { overflow-y: auto; padding: 12px; overscroll-behavior: contain; }
+      #help-card .hc-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px 12px; margin: 0 0 10px; padding: 8px; background: #0f1316; border: 1px solid #2c343b; }
+      #help-card .hc-stats dt { color: #8fa0ad; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+      #help-card .hc-stats dd { margin: 0 0 4px; }
+      #help-card .hc-link { padding: 0; border: 0; background: none; color: #facc15; font: inherit; text-decoration: underline; cursor: pointer; }
+      #help-card .hc-summary { margin: 0 0 12px; }
+      #help-card .hc-section { margin: 0 0 14px; padding-top: 10px; border-top: 1px solid #2c343b; }
+      #help-card h3 { margin: 0 0 4px; font: 700 15px/1.3 system-ui, sans-serif; color: #fff; }
+      #help-card .hc-how { margin: 0 0 4px; color: #facc15; }
+      #help-card .hc-section p { margin: 0 0 6px; }
+      #help-card .hc-shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 6px; margin-top: 6px; }
+      #help-card .hc-shots img.big { grid-column: 1 / -1; }
+      #help-card .hc-shots img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border: 1px solid #2c343b; background: #000; cursor: zoom-in; }
+      #help-card .hc-lists { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+      #help-card h4 { margin: 0 0 4px; color: #8fa0ad; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; }
+      #help-card ul { margin: 0; padding-left: 18px; }
       body.shell #hud-bar, body.shell #hud, body.shell #outcome, body.shell #toast, body.shell #game-menu { display: none !important; }
       #main-menu { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: flex-end; padding: 0 calc(6vw + env(safe-area-inset-right)) 0 16px; box-sizing: border-box; background: linear-gradient(90deg, rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, 0.7)); pointer-events: auto; touch-action: none; }
       #main-menu-panel { display: flex; flex-direction: column; gap: 10px; width: min(300px, calc(100vw - 32px)); padding: 22px 20px; box-sizing: border-box; border: 1px solid #4a525a; border-top: 4px solid #c62828; background: linear-gradient(180deg, rgba(29, 35, 41, 0.94), rgba(20, 24, 28, 0.94)); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6); }

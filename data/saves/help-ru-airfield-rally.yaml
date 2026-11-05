@@ -1,0 +1,13 @@
+# Spec 48: help card of the airfield. Its rally point sits east of the building.
+id: help-ru-airfield-rally
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 10000]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 49, y: 16.5, zoom: 2.0 }
+entities:
+  - { player: 1, type: ru-airfield, origin: [43, 12], order: { rally: [5100, 1500] } }

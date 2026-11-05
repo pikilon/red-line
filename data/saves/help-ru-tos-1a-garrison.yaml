@@ -1,0 +1,16 @@
+# Spec 48: help card of the TOS-1A. It shells a town block held by a Ukrainian squad.
+id: help-ru-tos-1a-garrison
+map: demo-town
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 19.5, y: 25.5, zoom: 2.4 }
+entities:
+  - { player: 1, type: ru-tos-1a, atCenti: [2400, 2700], label: tos, order: { attackGroundCenti: [1650, 2450] } }
+  - { player: 0, type: ua-rifleman, atCenti: [1700, 2600], order: { garrison: [16, 24] } }
+  - { player: 0, type: ua-rifleman, atCenti: [1600, 2600], order: { garrison: [16, 24] } }
+  - { player: 0, type: ua-rifleman, atCenti: [1750, 2600], order: { garrison: [16, 24] } }
+  - { player: 0, type: ua-rifleman, atCenti: [1650, 2600], order: { garrison: [16, 24] } }

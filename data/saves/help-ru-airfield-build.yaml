@@ -1,0 +1,16 @@
+# Spec 48: help card of the airfield. Select it to see the Su-34 and Orlan it builds.
+id: help-ru-airfield-build
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 10000]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 47.5, y: 16.5, zoom: 2.2 }
+entities:
+  - { player: 1, type: ru-power-plant, origin: [39, 13] }
+  - { player: 1, type: ru-airfield, origin: [44, 13] }
+  - { player: 1, type: ru-su-34, atCenti: [5150, 1400] }
+  - { player: 1, type: ru-orlan, atCenti: [5250, 1600] }

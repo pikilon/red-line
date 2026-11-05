@@ -1,0 +1,8 @@
+# Spec 48 §3.3: screenshots of the TOS-1A card. `node --run help:shots -- --type ru-tos-1a`
+- { id: ru-tos-1a-fight, save: help-ru-tos-1a-fight, ticks: 45, select: [ru-tos-1a] }
+- { id: ru-tos-1a-splash, save: help-ru-tos-1a-splash, ticks: 50, select: [ru-tos-1a] }
+- { id: ru-tos-1a-trench, save: help-ru-tos-1a-trench, ticks: 45, select: [ru-tos-1a] }
+- { id: ru-tos-1a-garrison, save: help-ru-tos-1a-garrison, ticks: 45, select: [ru-tos-1a] }
+- { id: ru-tos-1a-min-range, save: help-ru-tos-1a-min-range, ticks: 8, select: [ru-tos-1a] }
+- { id: ru-tos-1a-attack-ground, save: help-ru-tos-1a-attack-ground, ticks: 50, select: [ru-tos-1a], hud: true, tab: orders }
+- { id: ru-tos-1a-repair, save: help-ru-tos-1a-repair, ticks: 10, select: [ru-tos-1a], hud: true }

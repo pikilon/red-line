@@ -1,0 +1,57 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ru-supply-truck-harvest",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "demo-ground",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 1,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 50,
+      "y": 45.5,
+      "zoom": 3
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "demo-ground",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 1,
+        "type": "ru-supply-center",
+        "origin": [
+          44,
+          44
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-supply-truck",
+        "atCenti": [
+          5250,
+          4450
+        ],
+        "label": "truck",
+        "order": {
+          "harvest": "depot-1"
+        }
+      }
+    ]
+  }
+}

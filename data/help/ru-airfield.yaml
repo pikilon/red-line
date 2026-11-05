@@ -1,0 +1,7 @@
+# Spec 48 §3.3: screenshots of the airfield card. `node --run help:shots -- --type ru-airfield`
+- { id: ru-airfield-build, save: help-ru-airfield-build, ticks: 5, select: [ru-airfield], hud: true, tab: build }
+- { id: ru-airfield-reload, save: help-ru-airfield-reload, ticks: 5, select: [ru-su-34], hud: true }
+- { id: ru-airfield-rally, save: help-ru-airfield-rally, ticks: 5, select: [ru-airfield], hud: true, tab: orders }
+- { id: ru-airfield-power, save: help-ru-airfield-power, ticks: 15, select: [ru-airfield], hud: true }
+- { id: ru-airfield-repair, save: help-ru-airfield-repair, ticks: 10, select: [ru-dozer] }
+- { id: ru-airfield-sell, save: help-ru-airfield-sell, ticks: 5, select: [ru-airfield], hud: true, tab: orders }

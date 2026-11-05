@@ -1,0 +1,5 @@
+# Spec 48 §3.3: screenshots of the Ratel S card. `node --run help:shots -- --type ua-ratel`
+- { id: ua-ratel-strike, save: help-ua-ratel-strike, ticks: 52, select: [ua-ratel] }
+- { id: ua-ratel-trench, save: help-ua-ratel-trench, ticks: 46, select: [ua-ratel] }
+- { id: ua-ratel-jamming, save: help-ua-ratel-jamming, ticks: 100, select: [ua-ratel] }
+- { id: ua-ratel-repair, save: help-ua-ratel-repair, ticks: 10, select: [ua-ratel], hud: true }

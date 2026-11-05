@@ -1,0 +1,18 @@
+# Spec 48: help card of the Pantsir. A wave of cheap FPV drones saturates its missile salvoes.
+id: help-ru-pantsir-wave
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 5000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 52, y: 20, zoom: 2.6 }
+entities:
+  - { player: 1, type: ru-pantsir, atCenti: [4500, 2000], label: pantsir }
+  - { player: 0, type: ua-fpv, atCenti: [5600, 1700], label: drone0, order: { attack: pantsir } }
+  - { player: 0, type: ua-fpv, atCenti: [5700, 1900], label: drone1, order: { attack: pantsir } }
+  - { player: 0, type: ua-fpv, atCenti: [5800, 2100], label: drone2, order: { attack: pantsir } }
+  - { player: 0, type: ua-fpv, atCenti: [5900, 2300], label: drone3, order: { attack: pantsir } }
+  - { player: 0, type: ua-fpv, atCenti: [6100, 2000], label: drone4, order: { attack: pantsir } }

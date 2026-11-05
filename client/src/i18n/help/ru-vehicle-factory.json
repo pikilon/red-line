@@ -1,0 +1,56 @@
+{
+  "id": "ru-vehicle-factory",
+  "role": "Vehicle production and repair",
+  "summary": "The base's vehicle works. It builds the Russian combat vehicles, repairs damaged ones at its pad and can be kept alive by a dozer. It has no weapon, draws power and needs a supply center before a dozer can raise it.",
+  "sections": [
+    {
+      "title": "Produce vehicles",
+      "how": "Select the factory, open the Build tab and press a vehicle tile. Press + on a tile to queue another and − to cancel the last one.",
+      "body": "The factory builds the BRDM-2 scout, BMP-2, T-72B3, TOS-1A, Pantsir-S1 and Pole-21. Each vehicle is paid when you press its tile and shows a clock wipe while it is being built, then rolls out of the door. The queue keeps working while the factory repairs a vehicle at the pad.",
+      "shots": ["ru-vehicle-factory-produce"]
+    },
+    {
+      "title": "Rally point",
+      "how": "Select the factory, press Rally point and left-click the ground.",
+      "body": "Vehicles built afterwards leave the factory and drive to the rally point. Changing the point only affects vehicles produced later. The marker shows while the factory is selected.",
+      "shots": ["ru-vehicle-factory-rally"]
+    },
+    {
+      "title": "Repair vehicles",
+      "how": "Select a damaged vehicle and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The vehicle drives to the outside of the factory and is restored over five seconds, one vehicle at a time. The work costs half its price as the health comes back. Production carries on meanwhile. If the credits run out, the vehicle leaves the pad and stops.",
+      "shots": ["ru-vehicle-factory-repair"]
+    },
+    {
+      "title": "Repair with a dozer",
+      "how": "Select a dozer and left-click the damaged factory.",
+      "body": "The dozer drives to the factory and restores it until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle.",
+      "shots": ["ru-vehicle-factory-repair-dozer"]
+    },
+    {
+      "title": "Sell",
+      "how": "Select the factory and press Sell twice.",
+      "body": "It sells for half its price and disappears at once. Every vehicle in its queue is cancelled and refunded in full. Selling your last building loses the match.",
+      "shots": ["ru-vehicle-factory-sell"]
+    }
+  ],
+  "strong": [
+    "Building the Russian combat vehicles",
+    "Repairing vehicles between fights",
+    "A repair pad behind the line"
+  ],
+  "weak": [
+    "It has no weapon",
+    "Tanks and artillery",
+    "Aircraft and long-range fire",
+    "Raids behind the line"
+  ],
+  "tips": [
+    "Build a supply center first: the factory needs one before a dozer can raise it.",
+    "Set a rally point toward the front so new vehicles do not crowd the exit.",
+    "Pull damaged vehicles back to the factory: repairs cost half their price.",
+    "Keep a dozer nearby: the factory cannot repair itself.",
+    "The Pole-21 is unarmed: escort it when it rolls out of the factory.",
+    "Watch the power grid: a deficit slows vehicle production."
+  ]
+}

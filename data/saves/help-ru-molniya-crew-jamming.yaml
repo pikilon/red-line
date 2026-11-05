@@ -1,0 +1,15 @@
+# Spec 48: help card of the Molniya crew. A Molniya drone sits inside a Pole-21's circle and keeps its course.
+id: help-ru-molniya-crew-jamming
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 46.5, y: 20, zoom: 2.4 }
+entities:
+  - { player: 1, type: ru-molniya-crew, atCenti: [4300, 2000], label: crew }
+  - { player: 1, type: ru-molniya, atCenti: [4650, 2000], label: drone }
+  - { player: 1, type: ru-pole-21, atCenti: [4600, 2000], label: jammer }
+  - { player: 0, type: ua-power-plant, origin: [49, 18], label: plant }

@@ -1,0 +1,63 @@
+{
+  "id": "ua-barracks",
+  "role": "Infantry production and healing",
+  "summary": "The barracks trains every Ukrainian infantry unit and heals wounded foot soldiers for free. It also refills the drone crews that wait beside it. It has no weapon, draws power and needs a power plant before a dozer can raise it.",
+  "sections": [
+    {
+      "title": "Train infantry",
+      "how": "Select the barracks, open the Build tab and press Rifleman, Stugna team or FPV team.",
+      "body": "The barracks trains all three Ukrainian foot units. Press a tile to queue one, press + on its tile to queue another and − to cancel the last one. The head item shows a clock wipe while it is being trained. New soldiers leave by the building exit; set a rally point so they walk where they are needed.",
+      "shots": ["ua-barracks-train"]
+    },
+    {
+      "title": "Rally point",
+      "how": "Select the barracks, press Rally point and left-click the ground.",
+      "body": "Infantry trained afterwards leaves the barracks and walks to the rally point. Changing the point only affects units produced later. The marker shows while the barracks is selected.",
+      "shots": ["ua-barracks-rally"]
+    },
+    {
+      "title": "Heal infantry",
+      "how": "Select damaged riflemen, Stugna teams or FPV teams and left-click the barracks.",
+      "body": "The patients walk in and heal free of charge while the barracks keeps training. They are hidden and safe inside, and leave on their own once whole. Up to ten fit at once; full-health infantry stay outside. If the barracks is destroyed or sold, its patients are thrown out, and one with nowhere to stand can die in the collapse.",
+      "shots": ["ua-barracks-heal"]
+    },
+    {
+      "title": "Resupply drone crews",
+      "how": "Park an FPV team beside the barracks; no order is needed.",
+      "body": "An FPV team carries four drones, shown as pips over the selected crew. With empty pips it cannot launch. While a short crew waits beside the barracks, a drone comes back after a wait; leaving the area resets the clock. A supply truck or supply center does the same job in the field.",
+      "shots": ["ua-barracks-resupply"]
+    },
+    {
+      "title": "Repair with a dozer",
+      "how": "Select a dozer and left-click the damaged barracks.",
+      "body": "The dozer drives to the building and restores it until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle.",
+      "shots": ["ua-barracks-repair"]
+    },
+    {
+      "title": "Sell",
+      "how": "Select the barracks and press Sell twice.",
+      "body": "It sells for half its price and disappears at once. Any infantry still in its queue is cancelled and refunded in full, and its patients are thrown out. Selling your last building loses the match.",
+      "shots": ["ua-barracks-sell"]
+    }
+  ],
+  "strong": [
+    "Training every Ukrainian infantry unit",
+    "Healing infantry between fights",
+    "Keeping FPV crews supplied",
+    "A base close to the front line"
+  ],
+  "weak": [
+    "It has no weapon",
+    "Tanks and artillery",
+    "Aircraft and long-range fire",
+    "Raids behind the line"
+  ],
+  "tips": [
+    "Build a power plant first: the barracks needs one and draws power from it.",
+    "Place it behind the line but within walking distance of the front, so wounded infantry can reach it.",
+    "Set a rally point toward the front so new infantry do not crowd the exit.",
+    "Park FPV teams beside it between sorties; their drone pips refill only while they stay close.",
+    "Keep a dozer nearby: the barracks cannot repair itself.",
+    "Queue infantry before a fight; training continues while the barracks heals its patients."
+  ]
+}

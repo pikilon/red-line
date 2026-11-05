@@ -1,0 +1,13 @@
+# Spec 48: help card of the barracks. A damaged barracks waits for its dozer.
+id: help-ua-barracks-repair
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45.5, y: 19.5, zoom: 2.2 }
+entities:
+  - { player: 0, type: ua-barracks, origin: [45, 18], hpPercent: 40 }
+  - { player: 0, type: ua-dozer, atCenti: [4300, 2100] }

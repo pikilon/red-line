@@ -1,0 +1,15 @@
+# Spec 48: help card of the BMP-2. Its 2A42 autocannon tears into a Ukrainian scout vehicle.
+id: help-ru-bmp-2-fight
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 45, y: 20, zoom: 3 }
+entities:
+  - { player: 1, type: ru-bmp-2, atCenti: [4200, 2000], label: bmp, order: { attack: scout } }
+  - { player: 0, type: ua-kozak-scout, atCenti: [4800, 2000], label: scout, hpPercent: 40 }
+  - { player: 0, type: ua-rifleman, atCenti: [4750, 1850] }
+  - { player: 0, type: ua-rifleman, atCenti: [4750, 2150] }

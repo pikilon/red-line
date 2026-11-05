@@ -1,0 +1,6 @@
+# Spec 48 §3.3: screenshots of the Sting nest card. `node --run help:shots -- --type ua-sting-nest`
+- { id: ua-sting-nest-intercept, save: help-ua-sting-nest-intercept, ticks: 42, select: [ua-sting] }
+- { id: ua-sting-nest-charges, save: help-ua-sting-nest-charges, ticks: 48, select: [ua-sting-nest], hud: true }
+- { id: ua-sting-nest-power, save: help-ua-sting-nest-power, ticks: 5, select: [ua-sting-nest], hud: true }
+- { id: ua-sting-nest-repair, save: help-ua-sting-nest-repair, ticks: 10, select: [ua-dozer] }
+- { id: ua-sting-nest-sell, save: help-ua-sting-nest-sell, ticks: 5, select: [ua-sting-nest], hud: true, tab: orders }

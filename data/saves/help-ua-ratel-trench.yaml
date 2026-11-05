@@ -1,0 +1,21 @@
+# Spec 48: help card of the Ratel S. Its warhead detonates on a manned Russian trench line.
+id: help-ua-ratel-trench
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 42.5, y: 20, zoom: 2.8 }
+trenches:
+  - { at: [38, 20] }
+  - { at: [40, 20] }
+  - { at: [42, 20] }
+  - { at: [44, 20] }
+  - { at: [46, 20] }
+entities:
+  - { player: 0, type: ua-ratel, atCenti: [4100, 2000], label: ratel, order: { attackGroundCenti: [4700, 2000] } }
+  - { player: 1, type: ru-rifleman, atCenti: [4400, 2100], order: { garrison: [44, 20] } }
+  - { player: 1, type: ru-rifleman, atCenti: [4450, 2100], order: { garrison: [44, 20] } }
+  - { player: 1, type: ru-rifleman, atCenti: [4650, 2100], order: { garrison: [46, 20] } }

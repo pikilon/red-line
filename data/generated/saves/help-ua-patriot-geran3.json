@@ -1,0 +1,66 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ua-patriot-geran3",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 47.5,
+      "y": 20.5,
+      "zoom": 2.8
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          30,
+          19
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-patriot",
+        "origin": [
+          40,
+          19
+        ],
+        "label": "patriot"
+      },
+      {
+        "player": 1,
+        "type": "ru-geran-3",
+        "atCenti": [
+          7500,
+          2000
+        ],
+        "label": "geran",
+        "order": {
+          "attack": "patriot"
+        }
+      }
+    ]
+  }
+}

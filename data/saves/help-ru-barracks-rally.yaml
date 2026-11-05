@@ -1,0 +1,13 @@
+# Spec 48: help card of the Russian barracks. Its rally point sits east of the building.
+id: help-ru-barracks-rally
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 5000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 48, y: 14.5, zoom: 2 }
+entities:
+  - { player: 1, type: ru-barracks, origin: [43, 13], order: { rally: [5200, 1550] } }

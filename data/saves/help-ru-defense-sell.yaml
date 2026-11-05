@@ -1,0 +1,13 @@
+# Spec 48: help card of the Kornet emplacement. Select it to see Sell in the structure row.
+id: help-ru-defense-sell
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 5000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 45.5, y: 19, zoom: 2.8 }
+entities:
+  - { player: 1, type: ru-defense, origin: [44, 17] }

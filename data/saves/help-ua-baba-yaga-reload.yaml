@@ -1,0 +1,14 @@
+# Spec 48: help card of the Baba Yaga. Bombs spent, it flies home to its workshop to reload and repair.
+id: help-ua-baba-yaga-reload
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 47.5, y: 19, zoom: 2.8 }
+entities:
+  - { player: 0, type: ua-drone-workshop, origin: [44, 17] }
+  - { player: 0, type: ua-baba-yaga, atCenti: [3900, 1850], label: baba, order: { attack: plant } }
+  - { player: 1, type: ru-power-plant, origin: [50, 17], label: plant }

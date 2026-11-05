@@ -1,0 +1,6 @@
+# Spec 48 §3.3: screenshots of the Stugna team card. `node --run help:shots -- --type ua-stugna-team`
+- { id: ua-stugna-team-fight, save: help-ua-stugna-team-fight, ticks: 30, select: [ua-stugna-team] }
+- { id: ua-stugna-team-move, save: help-ua-stugna-team-move, ticks: 35, select: [ua-stugna-team] }
+- { id: ua-stugna-team-trench, save: help-ua-stugna-team-trench, ticks: 40, select: [ua-stugna-team] }
+- { id: ua-stugna-team-garrison, save: help-ua-stugna-team-garrison, ticks: 10, select: [ua-stugna-team], hud: true, tab: orders }
+- { id: ua-stugna-team-heal, save: help-ua-stugna-team-heal, ticks: 10, select: [ua-stugna-team] }

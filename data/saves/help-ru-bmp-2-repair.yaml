@@ -1,0 +1,13 @@
+# Spec 48: help card of the BMP-2. A damaged BMP-2 waits beside its repair factory.
+id: help-ru-bmp-2-repair
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 49, y: 21, zoom: 3 }
+entities:
+  - { player: 1, type: ru-vehicle-factory, origin: [50, 18] }
+  - { player: 1, type: ru-bmp-2, atCenti: [4600, 2000], hpPercent: 40 }

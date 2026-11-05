@@ -1,0 +1,19 @@
+# Spec 48: help card of the Russian RPG gunner. Two teams hold a trench line and fire at a Ukrainian tank.
+id: help-ru-rpg-gunner-trench
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 42, y: 20.5, zoom: 3 }
+trenches:
+  - { at: [38, 20] }
+  - { at: [40, 20], variant: 1 }
+  - { at: [42, 20] }
+  - { at: [44, 20] }
+entities:
+  - { player: 1, type: ru-rpg-gunner, atCenti: [3900, 2150], order: { garrison: [40, 20] } }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [4100, 2150], order: { garrison: [42, 20] } }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [4800, 2000], hpPercent: 20 }

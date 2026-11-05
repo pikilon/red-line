@@ -1,0 +1,14 @@
+# Spec 48: help card of the Russian rifleman. Riflemen fire at a low Baba Yaga drone overhead.
+id: help-ru-rifleman-air
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 45, y: 19.5, zoom: 3 }
+entities:
+  - { player: 1, type: ru-rifleman, atCenti: [4300, 2000], label: a, order: { attack: drone } }
+  - { player: 1, type: ru-rifleman, atCenti: [4300, 2150], label: b, order: { attack: drone } }
+  - { player: 0, type: ua-baba-yaga, atCenti: [4750, 1950], label: drone }

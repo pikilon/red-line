@@ -1,0 +1,13 @@
+# Spec 48: help card of the vehicle factory. Its rally point sits east of the building.
+id: help-ru-vehicle-factory-rally
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [10000, 0]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 48.5, y: 15.2, zoom: 2 }
+entities:
+  - { player: 1, type: ru-vehicle-factory, origin: [43, 12], order: { rally: [5200, 1500] } }

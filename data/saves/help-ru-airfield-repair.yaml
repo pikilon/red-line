@@ -1,0 +1,14 @@
+# Spec 48: help card of the airfield. A damaged airfield waits for its dozer.
+id: help-ru-airfield-repair
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 10000]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 46, y: 19.7, zoom: 2.2 }
+entities:
+  - { player: 1, type: ru-airfield, origin: [44, 17], hpPercent: 40 }
+  - { player: 1, type: ru-dozer, atCenti: [4000, 2000] }

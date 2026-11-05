@@ -1,0 +1,9 @@
+# Spec 48 §3.3: screenshots of the missile site card. `node --run help:shots -- --type ua-missile-site`
+- { id: ua-missile-site-build, save: help-ua-missile-site-build, ticks: 5, select: [ua-missile-site], hud: true, tab: build }
+- { id: ua-missile-site-flamingo, save: help-ua-missile-site-flamingo, ticks: 0, select: [ua-flamingo] }
+- { id: ua-missile-site-flamingo-strike, save: help-ua-missile-site-flamingo-strike, ticks: 0, select: [ua-flamingo] }
+- { id: ua-missile-site-storm-shadow, save: help-ua-missile-site-storm-shadow, ticks: 0, select: [ua-storm-shadow] }
+- { id: ua-missile-site-storm-shadow-strike, save: help-ua-missile-site-storm-shadow-strike, ticks: 20, select: [ua-storm-shadow] }
+- { id: ua-missile-site-power, save: help-ua-missile-site-power, ticks: 5, select: [ua-missile-site], hud: true }
+- { id: ua-missile-site-repair, save: help-ua-missile-site-repair, ticks: 10, select: [ua-dozer] }
+- { id: ua-missile-site-sell, save: help-ua-missile-site-sell, ticks: 5, select: [ua-missile-site], hud: true, tab: orders }

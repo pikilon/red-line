@@ -1,0 +1,73 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ru-molniya-crew-jamming",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 1,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 46.5,
+      "y": 20,
+      "zoom": 2.4
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 1,
+        "type": "ru-molniya-crew",
+        "atCenti": [
+          4300,
+          2000
+        ],
+        "label": "crew"
+      },
+      {
+        "player": 1,
+        "type": "ru-molniya",
+        "atCenti": [
+          4650,
+          2000
+        ],
+        "label": "drone"
+      },
+      {
+        "player": 1,
+        "type": "ru-pole-21",
+        "atCenti": [
+          4600,
+          2000
+        ],
+        "label": "jammer"
+      },
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          49,
+          18
+        ],
+        "label": "plant"
+      }
+    ]
+  }
+}

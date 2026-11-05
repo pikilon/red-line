@@ -1,0 +1,14 @@
+# Spec 48: help card of the Sting nest. A damaged nest waits for its dozer.
+id: help-ua-sting-nest-repair
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45, y: 19, zoom: 3 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [36, 17] }
+  - { player: 0, type: ua-sting-nest, origin: [44, 17], hpPercent: 40 }
+  - { player: 0, type: ua-dozer, atCenti: [4200, 1900] }

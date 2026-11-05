@@ -1,0 +1,16 @@
+# Spec 48: help card of the Bradley. A squad boards it; select the Bradley to see Unload (n).
+id: help-ua-bradley-carry
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 44, y: 20, zoom: 3 }
+entities:
+  - { player: 0, type: ua-bradley, atCenti: [4500, 2000], label: bradley }
+  - { player: 0, type: ua-rifleman, atCenti: [4000, 1850], order: { board: bradley } }
+  - { player: 0, type: ua-rifleman, atCenti: [4000, 2000], order: { board: bradley } }
+  - { player: 0, type: ua-rifleman, atCenti: [4000, 2150], order: { board: bradley } }
+  - { player: 0, type: ua-stugna-team, atCenti: [3900, 2000], order: { board: bradley } }

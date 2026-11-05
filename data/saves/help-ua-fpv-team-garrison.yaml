@@ -1,0 +1,13 @@
+# Spec 48: help card of the FPV team. Two crews wait by the apartment block with the Garrison button offered.
+id: help-ua-fpv-team-garrison
+map: demo-town
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 17, y: 26, zoom: 3 }
+entities:
+  - { player: 0, type: ua-fpv-team, atCenti: [1500, 2800] }
+  - { player: 0, type: ua-fpv-team, atCenti: [1750, 2800] }

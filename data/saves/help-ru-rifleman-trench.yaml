@@ -1,0 +1,23 @@
+# Spec 48: help card of the Russian rifleman. A squad holds a trench line: two in the roofed shelter, two in the open piece, while Ukrainian infantry advances.
+id: help-ru-rifleman-trench
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 43, y: 20.5, zoom: 3 }
+trenches:
+  - { at: [39, 20] }
+  - { at: [41, 20], variant: 1 }
+  - { at: [43, 20] }
+  - { at: [45, 20] }
+entities:
+  - { player: 1, type: ru-rifleman, atCenti: [3900, 2300], order: { garrison: [39, 20] } }
+  - { player: 1, type: ru-rifleman, atCenti: [4000, 2300], order: { garrison: [39, 20] } }
+  - { player: 1, type: ru-rifleman, atCenti: [4100, 2300], order: { garrison: [41, 20] } }
+  - { player: 1, type: ru-rifleman, atCenti: [4200, 2300], order: { garrison: [41, 20] } }
+  - { player: 0, type: ua-rifleman, atCenti: [5000, 2000], order: { moveCenti: [4700, 2050] } }
+  - { player: 0, type: ua-rifleman, atCenti: [5100, 2100], order: { moveCenti: [4750, 2100] } }
+  - { player: 0, type: ua-rifleman, atCenti: [5000, 2200], order: { moveCenti: [4700, 2150] } }

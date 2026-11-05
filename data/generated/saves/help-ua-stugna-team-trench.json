@@ -1,0 +1,87 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ua-stugna-team-trench",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 44,
+      "y": 20.5,
+      "zoom": 3
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-stugna-team",
+        "atCenti": [
+          4033,
+          2050
+        ],
+        "order": {
+          "garrison": [
+            40,
+            20
+          ]
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          4650,
+          2000
+        ],
+        "hpPercent": 15
+      }
+    ],
+    "trenches": [
+      {
+        "at": [
+          38,
+          20
+        ]
+      },
+      {
+        "at": [
+          40,
+          20
+        ],
+        "variant": 1
+      },
+      {
+        "at": [
+          42,
+          20
+        ]
+      },
+      {
+        "at": [
+          44,
+          20
+        ]
+      }
+    ]
+  }
+}

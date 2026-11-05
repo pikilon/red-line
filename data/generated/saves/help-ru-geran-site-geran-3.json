@@ -1,0 +1,78 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ru-geran-site-geran-3",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 1,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 47,
+      "y": 18.5,
+      "zoom": 2.4
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "credits": [
+      0,
+      5000
+    ],
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-patriot",
+        "origin": [
+          52,
+          17
+        ],
+        "label": "patriot"
+      },
+      {
+        "player": 0,
+        "type": "ua-sting-nest",
+        "origin": [
+          56,
+          21
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-geran-site",
+        "origin": [
+          33,
+          16
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-geran-3",
+        "atCenti": [
+          4200,
+          1750
+        ],
+        "label": "jet",
+        "order": {
+          "attack": "patriot"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+# Spec 48: help card of the Russian dozer. It repairs the broken road bridge.
+id: help-ru-dozer-bridge
+map: demo-bridges
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 30.5, y: 9, zoom: 3 }
+features:
+  - { at: [30, 9], hpPercent: 0 }
+entities:
+  - { player: 1, type: ru-dozer, atCenti: [2600, 900], order: { repair: [30, 9] } }

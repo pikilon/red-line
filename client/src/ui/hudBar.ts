@@ -27,6 +27,8 @@ export function autoTab(current: HudTab, offer: TabOffer): HudTab {
 export interface HudBar {
   /** `#hud-radar`: holds the minimap, left of the bar or above it. */
   readonly radar: HTMLElement;
+  /** `#hud-help`: arms help (spec 48 §3.1). */
+  readonly help: HTMLButtonElement;
   /** `#hud-menu`: holds the menu button. */
   readonly menu: HTMLElement;
   /** `#hud-status`: holds the player, credits and power. */
@@ -116,6 +118,12 @@ export function createHudBar(parent: HTMLElement, storage?: Storage): HudBar {
       { ...loadSettings(storage), hudMinimal: minimal, hudVertical: vertical },
       storage,
     );
+  // Spec 48 §3.1: arms help; the caller decides what a press does.
+  const help = tool("hud-help", () => {});
+  help.textContent = "?";
+  help.setAttribute("aria-label", t("help.button"));
+  help.title = t("help.button");
+  help.setAttribute("aria-pressed", "false");
   const dock = tool("hud-dock", () => {
     vertical = !vertical;
     remember();
@@ -172,6 +180,7 @@ export function createHudBar(parent: HTMLElement, storage?: Storage): HudBar {
 
   return {
     radar,
+    help,
     menu,
     status,
     selection,

@@ -1,0 +1,110 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "help-ru-pantsir-wave",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 1,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 52,
+      "y": 20,
+      "zoom": 2.6
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "credits": [
+      0,
+      5000
+    ],
+    "ai": [],
+    "entities": [
+      {
+        "player": 1,
+        "type": "ru-pantsir",
+        "atCenti": [
+          4500,
+          2000
+        ],
+        "label": "pantsir"
+      },
+      {
+        "player": 0,
+        "type": "ua-fpv",
+        "atCenti": [
+          5600,
+          1700
+        ],
+        "label": "drone0",
+        "order": {
+          "attack": "pantsir"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-fpv",
+        "atCenti": [
+          5700,
+          1900
+        ],
+        "label": "drone1",
+        "order": {
+          "attack": "pantsir"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-fpv",
+        "atCenti": [
+          5800,
+          2100
+        ],
+        "label": "drone2",
+        "order": {
+          "attack": "pantsir"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-fpv",
+        "atCenti": [
+          5900,
+          2300
+        ],
+        "label": "drone3",
+        "order": {
+          "attack": "pantsir"
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-fpv",
+        "atCenti": [
+          6100,
+          2000
+        ],
+        "label": "drone4",
+        "order": {
+          "attack": "pantsir"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+# Spec 48: help card of the Patriot. A second missile chases a Su-34 that is circling the battery.
+id: help-ua-patriot-su34
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 47.5, y: 20.5, zoom: 2.8 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [30, 19] }
+  - { player: 0, type: ua-patriot, origin: [40, 19], label: patriot }
+  - { player: 1, type: ru-su-34, atCenti: [6100, 2000], label: jet, order: { moveCenti: [5000, 2000] } }

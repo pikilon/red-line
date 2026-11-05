@@ -1,0 +1,13 @@
+# Spec 48: help card of the Russian barracks. Select it to see Sell in the structure row.
+id: help-ru-barracks-sell
+map: showcase
+victory: false
+debug: true
+starts: false
+credits: [0, 5000]
+client:
+  controlled: 1
+  revealed: true
+  camera: { x: 46, y: 19, zoom: 2.2 }
+entities:
+  - { player: 1, type: ru-barracks, origin: [45, 18] }
