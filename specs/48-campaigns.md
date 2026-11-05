@@ -82,7 +82,8 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
 ## 5. Assumptions
 
 * Missions reuse the existing maps (first-line, river-port, demo-coast,
-  demo-town, demo-bridges, showcase); no map was drawn for the campaign.
+  demo-town, demo-bridges, showcase); the exception is mission 1 of both
+  campaigns, which plays on its own map `hostomel` (§6).
 * The game has no ships: the cruiser Moskva is played as the Black Sea Fleet
   command post on the shore; Snake Island is the coast of demo-coast.
 * Stand-ins for units the game lacks: Su-34 for the Tu-95 and Tu-22M3 of
@@ -96,3 +97,27 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
 * Difficulty is fixed per mission (credits and AI personality in the save);
   there is no difficulty selector, voice-over or score screen yet.
 * Progress lives in the browser like the settings, not in a save slot.
+
+## 6. Map `hostomel` (issue #450)
+
+`data/maps/hostomel.yaml`, 128 x 128, same HQ cells as first-line, so both
+Hostomel saves keep their bases. It sketches the Antonov Airport (Hostomel,
+24 Feb 2022) with existing feature types only:
+
+* A 100-cell concrete runway runs NW to SE, with a parallel asphalt taxiway,
+  three connectors and a concrete apron on its north-east side.
+* Four hangars (`warehouse-barn`, garrisonable), a control tower
+  (`office-tower`), two terminal/maintenance buildings (`factory`), crates,
+  lamp posts and a second hangar pair at the SE end of the taxiway.
+* The town of Hostomel fills the south-east: main street with houses,
+  townhouses, shops, a church and apartment blocks, joined to the runway end
+  by an airport road; pine woods north and south-west, birch/oak/poplar
+  groves around.
+* Campaign wiring: Ukraine 1 is unchanged (hold the airfield, destroy the
+  landing zone, which sits on the open ground between the base and the
+  runway). In Russia 1 the two Ukrainian "towers" and the "hangar" targets now
+  stand on the apron and hangar yard, so "destroy the airport" means the
+  airfield itself.
+* Assumptions: neutral capturable buildings do not exist, so hangars and the
+  terminal are plain garrisonable map features, not objectives; the runway is
+  a ground patch (no aircraft takeoff mechanics).

@@ -387,7 +387,7 @@
     },
     {
       "id": "campaign-ru-01-hostomel",
-      "map": "first-line",
+      "map": "hostomel",
       "form": "setup",
       "entities": 31
     },
@@ -447,7 +447,7 @@
     },
     {
       "id": "campaign-ua-01-hostomel",
-      "map": "first-line",
+      "map": "hostomel",
       "form": "setup",
       "entities": 30
     },

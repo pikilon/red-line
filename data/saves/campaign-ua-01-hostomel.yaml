@@ -1,6 +1,6 @@
 # Spec 48: Ukraine 1: hold the Antonov airport against the VDV landing, then clear the landing zone.
 id: campaign-ua-01-hostomel
-map: first-line
+map: hostomel
 victory: true
 debug: false
 starts: false

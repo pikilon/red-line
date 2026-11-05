@@ -1,6 +1,6 @@
 # Spec 48: Russia 1: the VDV air assault on the Antonov airport at Hostomel.
 id: campaign-ru-01-hostomel
-map: first-line
+map: hostomel
 victory: true
 debug: false
 starts: false
@@ -34,11 +34,11 @@ entities:
   - { player: 0, type: ua-supply-center, origin: [16, 56] }
   - { player: 0, type: ua-barracks, origin: [5, 63] }
   - { player: 0, type: ua-dozer, atCenti: [1850, 6150] }
-  - { player: 0, type: ua-defense, origin: [36, 56], label: tower1 }
-  - { player: 0, type: ua-defense, origin: [36, 64], label: tower2 }
-  - { player: 0, type: ua-barracks, origin: [30, 60], label: hangar }
-  - { player: 0, type: ua-rifleman, atCenti: [3400, 5800] }
-  - { player: 0, type: ua-rifleman, atCenti: [3400, 5900] }
-  - { player: 0, type: ua-rifleman, atCenti: [3400, 6000] }
-  - { player: 0, type: ua-rifleman, atCenti: [3400, 6100] }
-  - { player: 0, type: ua-stugna-team, atCenti: [3400, 6300] }
+  - { player: 0, type: ua-defense, origin: [62, 25], label: tower1 }
+  - { player: 0, type: ua-defense, origin: [80, 41], label: tower2 }
+  - { player: 0, type: ua-barracks, origin: [86, 39], label: hangar }
+  - { player: 0, type: ua-rifleman, atCenti: [6000, 3300] }
+  - { player: 0, type: ua-rifleman, atCenti: [6100, 3300] }
+  - { player: 0, type: ua-rifleman, atCenti: [7400, 4700] }
+  - { player: 0, type: ua-rifleman, atCenti: [7500, 4700] }
+  - { player: 0, type: ua-stugna-team, atCenti: [8400, 4000] }
