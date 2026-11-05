@@ -65,11 +65,13 @@ function createFakeDom(): FakeDom {
   };
 }
 
-/** The four `<button>` children of the menu panel, in document order. */
+/** Every `<button>` of the menu pages (main, then debug), in document order. */
 function buttonsOf(root: HTMLElement): FakeElement[] {
   const panel = (root as unknown as FakeElement).children[0];
   if (panel === undefined) throw new Error("missing menu panel");
-  return panel.children.filter((child) => child.tagName === "button");
+  return panel.children
+    .flatMap((page) => page.children)
+    .filter((child) => child.tagName === "button");
 }
 
 describe("game menu", () => {
@@ -93,13 +95,15 @@ describe("game menu", () => {
     expect(menu.root.id).toBe("game-menu");
     expect(menu.root.hidden).toBe(true);
 
-    // Four buttons in the §3.1/§3.3 order.
+    // Main page (Resume, Debug, Restart), then the Debug page (§3.10).
     let buttons = buttonsOf(menu.root);
     expect(buttons.map((button) => button.textContent)).toEqual([
       "Resume",
+      "Debug",
+      "Restart match",
       "Gore: off",
       "AI: on",
-      "Restart match",
+      "Back",
     ]);
 
     // The first render establishes the view; an equal view does not touch the
@@ -118,26 +122,26 @@ describe("game menu", () => {
 
     // The gore label follows the view.
     menu.render({ open: true, gore: true, ai: true });
-    expect(buttonsOf(menu.root)[1]?.textContent).toBe("Gore: on");
+    expect(buttonsOf(menu.root)[3]?.textContent).toBe("Gore: on");
     menu.render({ open: true, gore: false, ai: true });
-    expect(buttonsOf(menu.root)[1]?.textContent).toBe("Gore: off");
+    expect(buttonsOf(menu.root)[3]?.textContent).toBe("Gore: off");
 
     // The AI label follows the view; `ai: null` hides the AI button.
     menu.render({ open: true, gore: false, ai: false });
-    expect(buttonsOf(menu.root)[2]?.textContent).toBe("AI: off");
-    expect(buttonsOf(menu.root)[2]?.hidden).toBe(false);
+    expect(buttonsOf(menu.root)[4]?.textContent).toBe("AI: off");
+    expect(buttonsOf(menu.root)[4]?.hidden).toBe(false);
     menu.render({ open: true, gore: false, ai: null });
-    expect(buttonsOf(menu.root)[2]?.hidden).toBe(true);
+    expect(buttonsOf(menu.root)[4]?.hidden).toBe(true);
     menu.render({ open: true, gore: false, ai: true });
-    expect(buttonsOf(menu.root)[2]?.textContent).toBe("AI: on");
-    expect(buttonsOf(menu.root)[2]?.hidden).toBe(false);
+    expect(buttonsOf(menu.root)[4]?.textContent).toBe("AI: on");
+    expect(buttonsOf(menu.root)[4]?.hidden).toBe(false);
 
     // Clicking each button calls its action once.
     buttons = buttonsOf(menu.root);
     buttons[0]?.click();
-    buttons[1]?.click();
-    buttons[2]?.click();
     buttons[3]?.click();
+    buttons[4]?.click();
+    buttons[2]?.click();
     expect(actions.resume).toHaveBeenCalledTimes(1);
     expect(actions.toggleGore).toHaveBeenCalledTimes(1);
     expect(actions.toggleAi).toHaveBeenCalledTimes(1);

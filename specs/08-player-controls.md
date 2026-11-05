@@ -539,6 +539,18 @@ selects it; the `contextmenu` raised by a long press issues no order of its own
 left click selects the unit; left click empty ground moves it; right click
 does nothing.
 
+## 3.10 Esc menu with the main menu look (amends §3.1, owner request 2026-11-04)
+
+* The Esc menu uses the look of the main menu (spec 45): dark panel with a red
+  top edge, condensed uppercase buttons, yellow hover.
+* Main page: Resume, Save game, Load game, **Sound**, **Debug**, Restart match.
+* **Sound** opens the five volume sliders (spec 25 §10) with a Back button.
+* **Debug** holds the developer and demo switches: Gore, AI, Textures, Switch
+  side, Reveal map, Snow and FPS panel, with a Back button.
+* Reopening the menu always starts on the main page. Esc still resumes from any
+  page.
+* Assumption: the pages swap inside one panel, as the main menu does.
+
 ## 4. Acceptance criteria
 
 **AC-08-01 Worker pause.** Given a skirmish worker handler at speed 1, after
