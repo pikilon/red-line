@@ -124,7 +124,7 @@ export function createController(options: ControllerOptions): Controller {
   });
 
   // Spec 08 §3.11: the right click deselects, as in the skirmish.
-  canvas.addEventListener("pointerup", (event) => {
+  canvas.addEventListener("pointerdown", (event) => {
     if (event.button !== RIGHT_BUTTON || event.pointerType === "touch") return;
     dragStart = null;
     setSelection([]);

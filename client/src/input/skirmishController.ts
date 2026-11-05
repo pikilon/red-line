@@ -729,7 +729,8 @@ export function createSkirmishController(
     return false;
   }
 
-  canvas.addEventListener("pointerup", (event) => {
+  // On pointerdown: some platforms raise contextmenu and swallow the release.
+  canvas.addEventListener("pointerdown", (event) => {
     if (event.button !== RIGHT_BUTTON || event.pointerType === "touch") return;
     dragStart = null;
     options.selectionBox.show(null);

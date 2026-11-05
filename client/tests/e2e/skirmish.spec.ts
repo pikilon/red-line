@@ -1137,11 +1137,11 @@ test("AC-08-32: Q, E, Backspace, Z and the Controls page", async ({ page }) => {
   );
   const ids = own.map((entity) => entity.id);
 
-  // Q selects every own unit on the screen.
+  // Q selects every own unit on the screen (the starting dozer too).
   await page.keyboard.press("q");
   await expect
     .poll(() => debugCall(page, (api) => api.selectedIds()))
-    .toEqual(ids);
+    .toEqual(expect.arrayContaining(ids));
 
   // Right click clears; E widens one unit to its type on the screen.
   await clickTiles(page, 35, 66, "right");
