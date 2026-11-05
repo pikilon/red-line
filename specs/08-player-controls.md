@@ -571,6 +571,9 @@ S stop, 0-9 / Ctrl+0-9 / Shift+0-9 groups.
 * Assumption: Zero Hour's `S` for Stop stays with the panning keys (WASD), so
   Stop is `Z`. Attack move, Guard, Scatter and Deploy keys wait for those
   commands (spec 41 A1).
+* **Same in every mode.** The skirmish and the tech slice share this: right
+  click deselects, `Q` and `Backspace` work in both. `E` and `Z` need unit
+  types and the stop order, so they exist only where those do (skirmish).
 * **AC-08-32.** Right click on the map with units selected clears the
   selection; during placement it leaves placement and keeps the selection;
   `Q`, `E`, `Backspace` and `Z` act as above. (Supersedes AC-08-29's

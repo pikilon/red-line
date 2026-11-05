@@ -48,6 +48,7 @@ export interface Controller {
 }
 
 const LEFT_BUTTON = 0;
+const RIGHT_BUTTON = 2;
 const GROUND = new Plane(new Vector3(0, 1, 0), 0);
 
 export function createController(options: ControllerOptions): Controller {
@@ -119,11 +120,49 @@ export function createController(options: ControllerOptions): Controller {
   });
 
   canvas.addEventListener("contextmenu", (event) => {
-    // The right button is inert (spec 08 §3.9); only hide the browser menu.
     event.preventDefault();
   });
 
+  // Spec 08 §3.11: the right click deselects, as in the skirmish.
+  canvas.addEventListener("pointerup", (event) => {
+    if (event.button !== RIGHT_BUTTON || event.pointerType === "touch") return;
+    dragStart = null;
+    setSelection([]);
+  });
+
   options.keyTarget.addEventListener("keydown", (event) => {
+    if (
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.altKey &&
+      (event.code === "KeyQ" || event.code === "Backspace")
+    ) {
+      event.preventDefault();
+      if (event.code === "KeyQ") {
+        const rect = canvas.getBoundingClientRect();
+        setSelection(
+          unitsInRect(
+            options.units(),
+            {
+              minX: rect.left,
+              minY: rect.top,
+              maxX: rect.right,
+              maxY: rect.bottom,
+            },
+            worldToScreen,
+          ),
+        );
+      } else {
+        const chosen = options.units().filter((unit) => selected.has(unit.id));
+        if (chosen.length > 0) {
+          setTarget(
+            chosen.reduce((sum, unit) => sum + unit.x, 0) / chosen.length,
+            chosen.reduce((sum, unit) => sum + unit.y, 0) / chosen.length,
+          );
+        }
+      }
+      return;
+    }
     if (isSelectAllShortcut(event)) {
       event.preventDefault();
       setSelection(selectAll(options.units()));
