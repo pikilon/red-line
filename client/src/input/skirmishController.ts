@@ -147,6 +147,9 @@ export function createSkirmishController(
   const target = { x: 0, y: 0 };
   const raycaster = new Raycaster();
   let dragStart: ScreenPoint | null = null;
+  // Spec 35: the ground point where a trench-line drag began, kept in world
+  // coordinates so camera pans during the drag leave it fixed.
+  let digStartWorld: { x: number; y: number } | null = null;
   // Pointer events carry sub-pixel coordinates; the previews use them.
   let lastPointer: ScreenPoint | null = null;
   // Zero Hour's held force-attack mode (spec 20 §3): while Ctrl is down the
@@ -433,6 +436,7 @@ export function createSkirmishController(
     },
     begin() {
       dragStart = null;
+      digStartWorld = null;
       forceFireArmed = false;
       options.selectionBox.show(null);
     },
@@ -457,6 +461,7 @@ export function createSkirmishController(
   canvas.addEventListener("pointercancel", () => {
     pinch.cancel();
     dragStart = null;
+    digStartWorld = null;
     forceFireArmed = false;
     options.selectionBox.show(null);
   });
@@ -465,6 +470,7 @@ export function createSkirmishController(
   window.addEventListener("blur", () => {
     pinch.cancel();
     dragStart = null;
+    digStartWorld = null;
     forceFireArmed = false;
   });
   window.addEventListener("pointerup", () => {
@@ -475,6 +481,7 @@ export function createSkirmishController(
     lastPointer = { x: event.clientX, y: event.clientY };
     if (pinch.down(event)) {
       dragStart = null;
+      digStartWorld = null;
       options.selectionBox.show(null);
       return;
     }
@@ -486,6 +493,9 @@ export function createSkirmishController(
       options.placementKind() === null;
     if (event.button !== LEFT_BUTTON || forceFireArmed) return;
     dragStart = { x: event.clientX, y: event.clientY };
+    digStartWorld = digArmed
+      ? groundAt({ x: event.clientX, y: event.clientY })
+      : null;
   });
 
   canvas.addEventListener("pointerup", (event) => {
@@ -495,6 +505,7 @@ export function createSkirmishController(
       forceFireArmed = false;
       armedMode = null;
       dragStart = null;
+      digStartWorld = null;
       options.selectionBox.show(null);
       forceFireAt({ x: event.clientX, y: event.clientY });
       return;
@@ -505,8 +516,9 @@ export function createSkirmishController(
     dragStart = null;
     options.selectionBox.show(null);
     if (digArmed && isDrag(start, end)) {
-      const from = groundAt(start);
+      const from = digStartWorld;
       const to = groundAt(end);
+      digStartWorld = null;
       digArmed = event.shiftKey;
       if (from === null || to === null) return;
       const line = resolveDigLine({
@@ -733,6 +745,7 @@ export function createSkirmishController(
   canvas.addEventListener("pointerdown", (event) => {
     if (event.button !== RIGHT_BUTTON || event.pointerType === "touch") return;
     dragStart = null;
+    digStartWorld = null;
     options.selectionBox.show(null);
     cancelOrDeselect();
   });
@@ -810,7 +823,7 @@ export function createSkirmishController(
     digPreview() {
       if (!digArmed || dragStart === null || lastPointer === null) return null;
       if (!isDrag(dragStart, lastPointer)) return null;
-      const from = groundAt(dragStart);
+      const from = digStartWorld;
       const to = groundAt(lastPointer);
       if (from === null || to === null) return null;
       // The ghost runs on over trenches already there: they join the line.
