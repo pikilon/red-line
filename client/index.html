@@ -174,6 +174,27 @@
       #tutorial.complete #tutorial-hint { font-size: 18px; font-weight: 700; }
       #tutorial button { margin: 8px 8px 0 0; padding: 8px 12px; border: 1px solid #4a525a; background: #262e35; color: #e6edf2; font: 700 13px/1 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
       #tutorial button:hover { border-color: #facc15; }
+      /* Spec 48 §4: campaign pages and the pre-mission briefing. */
+      #main-menu-panel[hidden] { display: none; }
+      #main-menu-campaigns { max-height: min(70vh, 640px); overflow-y: auto; padding-right: 4px; }
+      #main-menu-campaigns button { padding: 9px 12px; font-size: 13px; }
+      #main-menu-campaigns button:disabled { opacity: 0.45; cursor: not-allowed; }
+      #main-menu-campaigns button:disabled:hover { border-color: #4a525a; background: #262e35; }
+      .main-menu-aim { margin: 0; color: #c7d0d6; font: 13px/1.35 system-ui, sans-serif; }
+      #campaign-briefing { width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow-y: auto; box-sizing: border-box; padding: 22px 26px; border: 1px solid #4a525a; border-top: 4px solid #c62828; background: linear-gradient(180deg, rgba(29, 35, 41, 0.96), rgba(20, 24, 28, 0.96)); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6); color: #e6edf2; font: 15px/1.5 system-ui, sans-serif; }
+      #campaign-briefing[hidden] { display: none; }
+      #campaign-briefing h2 { margin: 2px 0 4px; color: #fff; font: 800 26px/1.1 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
+      #campaign-briefing h3 { margin: 16px 0 6px; color: #facc15; font: 700 13px/1 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.25em; text-transform: uppercase; }
+      #campaign-briefing p { margin: 0; }
+      .campaign-briefing-army { color: #c62828; font: 700 12px/1 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.35em; text-transform: uppercase; }
+      .campaign-briefing-when { color: #8a949c; font-size: 13px; }
+      .campaign-briefing-video { padding: 10px 14px; border-left: 3px solid #4a525a; background: rgba(0, 0, 0, 0.35); color: #c7d0d6; font-style: italic; }
+      #campaign-briefing ol { margin: 0; padding-left: 22px; }
+      .campaign-briefing-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+      .campaign-briefing-buttons button { padding: 12px 16px; border: 1px solid #4a525a; background: #262e35; color: #e6edf2; font: 700 15px/1 "Arial Narrow", "Roboto Condensed", system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; }
+      .campaign-briefing-buttons button:first-child { border-color: #facc15; }
+      .campaign-briefing-buttons button:hover { background: #323c45; color: #fff; }
+      @media (max-width: 600px) { #campaign-briefing { padding: 16px; font-size: 14px; } }
       @media (max-width: 600px) { #main-menu { justify-content: center; padding: 0 16px; background: rgba(0, 0, 0, 0.45); } }
       #game-menu-panel { display: flex; flex-direction: column; gap: 10px; width: min(300px, calc(100vw - 32px)); max-height: calc(100vh - 24px); overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; box-sizing: border-box; padding: 22px 20px; border: 1px solid #4a525a; border-top: 4px solid #c62828; background: linear-gradient(180deg, rgba(29, 35, 41, 0.94), rgba(20, 24, 28, 0.94)); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6); }
       @supports (height: 100dvh) {

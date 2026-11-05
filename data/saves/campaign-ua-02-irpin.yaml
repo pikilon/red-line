@@ -1,0 +1,35 @@
+# Spec 48: Ukraine 2: Aerorozvidka drone teams ambush the convoy on the far bank of the Irpin.
+id: campaign-ua-02-irpin
+map: demo-bridges
+victory: true
+debug: false
+starts: false
+credits: [3000, 4000]
+ai: [{ player: 1, personality: russia-balanced, active: true }]
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 12, y: 18, zoom: 1 }
+entities:
+  - { player: 0, type: ua-hq, origin: [4, 14], label: hq }
+  - { player: 0, type: ua-power-plant, origin: [4, 20] }
+  - { player: 0, type: ua-barracks, origin: [9, 14] }
+  - { player: 0, type: ua-supply-center, origin: [4, 25] }
+  - { player: 0, type: ua-dozer, atCenti: [1000, 2000] }
+  - { player: 0, type: ua-rifleman, atCenti: [2000, 1200] }
+  - { player: 0, type: ua-rifleman, atCenti: [2000, 1300] }
+  - { player: 0, type: ua-rifleman, atCenti: [2000, 1400] }
+  - { player: 0, type: ua-rifleman, atCenti: [2000, 1500] }
+  - { player: 0, type: ua-stugna-team, atCenti: [2000, 1800] }
+  - { player: 0, type: ua-stugna-team, atCenti: [2000, 1900] }
+  - { player: 1, type: ru-hq, origin: [57, 14] }
+  - { player: 1, type: ru-power-plant, origin: [57, 20] }
+  - { player: 1, type: ru-barracks, origin: [52, 8] }
+  - { player: 1, type: ru-dozer, atCenti: [5500, 2600] }
+  - { player: 1, type: ru-supply-truck, atCenti: [4000, 3000], label: convoy1 }
+  - { player: 1, type: ru-supply-truck, atCenti: [4200, 3000], label: convoy2 }
+  - { player: 1, type: ru-supply-truck, atCenti: [4400, 3000], label: convoy3 }
+  - { player: 1, type: ru-supply-truck, atCenti: [4600, 3000], label: convoy4 }
+  - { player: 1, type: ru-bmp-2, atCenti: [4000, 3300] }
+  - { player: 1, type: ru-bmp-2, atCenti: [4400, 3300] }
+  - { player: 1, type: ru-t-72b3, atCenti: [5000, 3000] }

@@ -1,0 +1,46 @@
+# Spec 48: Ukraine 5: the Kharkiv counteroffensive punches through Balakliia, Izium and Kupiansk.
+id: campaign-ua-05-kharkiv
+map: first-line
+victory: true
+debug: false
+starts: false
+credits: [5000, 5000]
+ai: [{ player: 1, personality: russia-balanced, active: true }]
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 24, y: 60, zoom: 1 }
+entities:
+  - { player: 0, type: ua-hq, origin: [10, 58], label: ua-hq }
+  - { player: 0, type: ua-power-plant, origin: [5, 58] }
+  - { player: 0, type: ua-supply-center, origin: [16, 56] }
+  - { player: 0, type: ua-barracks, origin: [5, 63] }
+  - { player: 0, type: ua-vehicle-factory, origin: [11, 64] }
+  - { player: 0, type: ua-dozer, atCenti: [1850, 6150] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [2600, 5600] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [2600, 5800] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [2600, 6000] }
+  - { player: 0, type: ua-bradley, atCenti: [2800, 5700] }
+  - { player: 0, type: ua-bradley, atCenti: [2800, 5900] }
+  - { player: 0, type: ua-bradley, atCenti: [2800, 6100] }
+  - { player: 0, type: ua-rifleman, atCenti: [2400, 5700] }
+  - { player: 0, type: ua-rifleman, atCenti: [2400, 5800] }
+  - { player: 0, type: ua-rifleman, atCenti: [2400, 5900] }
+  - { player: 0, type: ua-rifleman, atCenti: [2400, 6000] }
+  - { player: 1, type: ru-hq, origin: [114, 66], label: ru-hq }
+  - { player: 1, type: ru-power-plant, origin: [120, 67] }
+  - { player: 1, type: ru-supply-center, origin: [108, 69] }
+  - { player: 1, type: ru-barracks, origin: [120, 62] }
+  - { player: 1, type: ru-vehicle-factory, origin: [113, 60] }
+  - { player: 1, type: ru-dozer, atCenti: [10950, 6650] }
+  - { player: 1, type: ru-supply-center, origin: [76, 30], label: balakliia }
+  - { player: 1, type: ru-supply-center, origin: [78, 64], label: izium }
+  - { player: 1, type: ru-supply-center, origin: [76, 96], label: kupiansk }
+  - { player: 1, type: ru-t-72b3, atCenti: [7400, 3400] }
+  - { player: 1, type: ru-t-72b3, atCenti: [7600, 3400] }
+  - { player: 1, type: ru-bmp-2, atCenti: [7400, 6800] }
+  - { player: 1, type: ru-bmp-2, atCenti: [7600, 6800] }
+  - { player: 1, type: ru-rifleman, atCenti: [7400, 10000] }
+  - { player: 1, type: ru-rifleman, atCenti: [7500, 10000] }
+  - { player: 1, type: ru-rifleman, atCenti: [7600, 10000] }
+  - { player: 1, type: ru-rifleman, atCenti: [7700, 10000] }

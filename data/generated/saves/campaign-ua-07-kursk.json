@@ -1,0 +1,318 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "campaign-ua-07-kursk",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "first-line",
+    "seed": "1",
+    "debug": false,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": false,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": false,
+    "camera": {
+      "x": 24,
+      "y": 60,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "first-line",
+    "seed": "1",
+    "victory": true,
+    "debug": false,
+    "starts": false,
+    "credits": [
+      6000,
+      6000
+    ],
+    "ai": [
+      {
+        "player": 1,
+        "personality": "russia-balanced",
+        "active": true
+      }
+    ],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-hq",
+        "origin": [
+          10,
+          58
+        ],
+        "label": "ua-hq"
+      },
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          5,
+          58
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-center",
+        "origin": [
+          16,
+          56
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-barracks",
+        "origin": [
+          5,
+          63
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-vehicle-factory",
+        "origin": [
+          11,
+          64
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-dozer",
+        "atCenti": [
+          1850,
+          6150
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          2800,
+          5600
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          2800,
+          5800
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          2800,
+          6000
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-kozak-scout",
+        "atCenti": [
+          2600,
+          5700
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-kozak-scout",
+        "atCenti": [
+          2600,
+          6000
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2400,
+          5600
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2400,
+          5700
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2400,
+          5800
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2400,
+          5900
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2400,
+          6000
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2400,
+          6100
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-fpv-team",
+        "atCenti": [
+          2200,
+          6200
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-hq",
+        "origin": [
+          114,
+          66
+        ],
+        "label": "ru-hq"
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          120,
+          67
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-supply-center",
+        "origin": [
+          108,
+          69
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-barracks",
+        "origin": [
+          120,
+          62
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-vehicle-factory",
+        "origin": [
+          113,
+          60
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-dozer",
+        "atCenti": [
+          10950,
+          6650
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-defense",
+        "origin": [
+          72,
+          50
+        ],
+        "label": "post1"
+      },
+      {
+        "player": 1,
+        "type": "ru-defense",
+        "origin": [
+          72,
+          62
+        ],
+        "label": "post2"
+      },
+      {
+        "player": 1,
+        "type": "ru-defense",
+        "origin": [
+          72,
+          74
+        ],
+        "label": "post3"
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          86,
+          66
+        ],
+        "label": "sudzha"
+      },
+      {
+        "player": 1,
+        "type": "ru-barracks",
+        "origin": [
+          86,
+          72
+        ],
+        "label": "sudzha-garrison"
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          7400,
+          5600
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          7400,
+          5900
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          7400,
+          6200
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          7400,
+          6500
+        ]
+      }
+    ]
+  }
+}

@@ -5,7 +5,7 @@ import {
   type EntityState,
   type MatchSnapshot,
 } from "../sim/matchSnapshot";
-import type { SimCommand } from "../sim/protocol";
+import { type SimCommand, TICK_RATE_HZ } from "../sim/protocol";
 import { appendDiv } from "./dom";
 
 /** One objective of a tutorial (spec 46 §3), like a Zero Hour one-shot
@@ -16,6 +16,12 @@ import { appendDiv } from "./dom";
 export type TutorialGoal = (
   | { kind: "own"; type: string; count: number }
   | { kind: "destroy"; entities: readonly number[]; text: MessageKey }
+  /** Holds once `ticks` passed since it became the current step, like a
+   *  Zero Hour timer script (spec 48 §3). */
+  | { kind: "survive"; ticks: number; text: MessageKey }
+  /** Holds once the sim names the player the winner: every enemy building
+   *  is gone (spec 48 §3). */
+  | { kind: "victory" }
 ) & { hint?: MessageKey };
 
 /** Enemy units the mission sends at the player once `after` steps are done,
@@ -192,12 +198,29 @@ export interface TutorialView {
   built(kind: number): number;
   /** Whether save entity `index` is dead; false until the sim answered. */
   dead(index: number): boolean;
+  /** Whether step `step` has been current for `ticks` ticks; the first call
+   *  for a step starts its clock. Absent: never. */
+  held?(step: number, ticks: number): boolean;
+  /** Whether the sim named the player the winner. Absent: never. */
+  won?(): boolean;
 }
 
 /** Whether `goal` holds in `view`. */
-export function goalMet(goal: TutorialGoal, view: TutorialView): boolean {
-  if (goal.kind === "destroy") return goal.entities.every(view.dead);
-  return view.built(typeIndex(goal.type)) >= goal.count;
+export function goalMet(
+  goal: TutorialGoal,
+  view: TutorialView,
+  step = 0,
+): boolean {
+  switch (goal.kind) {
+    case "destroy":
+      return goal.entities.every(view.dead);
+    case "survive":
+      return view.held?.(step, goal.ticks) ?? false;
+    case "victory":
+      return view.won?.() ?? false;
+    case "own":
+      return view.built(typeIndex(goal.type)) >= goal.count;
+  }
 }
 
 /** Records every finished entity of `player` by type (BUILT_BY_PLAYER). */
@@ -233,16 +256,24 @@ export function advance(
   let step = done;
   while (
     step < mission.goals.length &&
-    goalMet(mission.goals[step] as TutorialGoal, view)
+    goalMet(mission.goals[step] as TutorialGoal, view, step)
   ) {
     step++;
   }
   return step;
 }
 
+/** `ticks` as m:ss. */
+function clock(ticks: number): string {
+  const seconds = Math.ceil(ticks / TICK_RATE_HZ);
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
 /** The objective line of `goal`. */
-function goalText(goal: TutorialGoal): string {
+export function goalText(goal: TutorialGoal): string {
   if (goal.kind === "destroy") return t(goal.text);
+  if (goal.kind === "survive") return t(goal.text, { time: clock(goal.ticks) });
+  if (goal.kind === "victory") return t("campaign.goal.victory");
   const kind = typeIndex(goal.type);
   const name = typeName(kind);
   const building = typeDef(kind).category === "building";
@@ -253,6 +284,8 @@ function goalText(goal: TutorialGoal): string {
 /** How to reach `goal`. */
 function hintText(goal: TutorialGoal, mission: TutorialMission): string {
   if (goal.hint !== undefined) return t(goal.hint);
+  if (goal.kind === "survive") return t("campaign.hint.survive");
+  if (goal.kind === "victory") return t("campaign.hint.victory");
   if (goal.kind === "destroy") {
     // Ukraine starts in the west of first-line, Russia in the east.
     const east = mission.faction === "ukraine";
@@ -268,8 +301,12 @@ function hintText(goal: TutorialGoal, mission: TutorialMission): string {
 }
 
 export interface TutorialActions {
-  /** Opens `mission`. */
-  play(mission: TutorialMission): void;
+  /** What comes after `mission` is won: null for nothing (spec 48 §4). */
+  next(mission: TutorialMission): { label: MessageKey; go(): void } | null;
+  /** Called once when every step is done or the player wins (spec 48 §4). */
+  won?(mission: TutorialMission): void;
+  /** Restarts the mission after a defeat (spec 48 §4). */
+  retry?(): void;
   /** Back to the main menu. */
   menu(): void;
   /** Issues a command to the sim, as a mission script would. */
@@ -309,9 +346,19 @@ export function createTutorialPanel(
   /** Entity id of the save's first entity, the player's HQ. */
   let firstId: number | null = null;
   const built = createBuiltTracker();
+  /** Tick each survive step became current, and the latest tick seen. */
+  const stepStarts = new Map<number, number>();
+  let tick = 0;
+  let winner = false;
   const view: TutorialView = {
     built: built.built,
     dead: (index) => dead.has(index),
+    held: (step, ticks) => {
+      const start = stepStarts.get(step) ?? tick;
+      stepStarts.set(step, start);
+      return tick - start >= ticks;
+    },
+    won: () => winner,
   };
 
   /** Asks the sim which entities of the current `destroy` goal live. */
@@ -349,20 +396,17 @@ export function createTutorialPanel(
     actions.command({ kind: "attack", player: 1 - player, units, target });
   }
 
-  function complete(): void {
-    hint.textContent = t("tutorial.complete");
-    const next = nextTutorial(mission);
-    const buttons: [MessageKey, () => void][] = [
-      ...(next === null
-        ? []
-        : [
-            ["tutorial.next", () => actions.play(next)] as [
-              MessageKey,
-              () => void,
-            ],
-          ]),
-      ["tutorial.menu", actions.menu],
-    ];
+  /** Ends the mission: won shows what comes next, lost offers a retry. */
+  function finish(won: boolean): void {
+    finished = true;
+    if (won) actions.won?.(mission);
+    hint.textContent = t(won ? "tutorial.complete" : "campaign.failed");
+    const next = won ? actions.next(mission) : null;
+    const buttons: [MessageKey, () => void][] = [];
+    if (next !== null) buttons.push([next.label, next.go]);
+    if (!won && actions.retry !== undefined)
+      buttons.push(["campaign.retry", actions.retry]);
+    buttons.push(["tutorial.menu", actions.menu]);
     for (const [key, action] of buttons) {
       const button = document.createElement("button");
       button.type = "button";
@@ -373,8 +417,20 @@ export function createTutorialPanel(
     element.classList.add("complete");
   }
 
+  let finished = false;
+
   return {
     update(snapshot, player) {
+      if (finished) return;
+      tick = snapshot.tick;
+      if (snapshot.outcome !== "ongoing") {
+        winner = snapshot.outcome === "winner" && snapshot.winner === player;
+        // Spec 48 §4: the sim's victory wins the mission, its defeat loses it.
+        if (!winner) {
+          finish(false);
+          return;
+        }
+      }
       built.update(snapshot.entities, player);
       for (const entity of snapshot.entities) {
         if (entity.owner !== player) continue;
@@ -387,6 +443,20 @@ export function createTutorialPanel(
         orderWave(wave, snapshot, player, firstId);
       }
       poll(mission.goals[step], firstId);
+      if (winner) {
+        for (const item of items) item.className = "done";
+        finish(true);
+        return;
+      }
+      const current = mission.goals[step];
+      if (current?.kind === "survive") {
+        // Spec 48 §4: a survive step counts down in its line.
+        const start = stepStarts.get(step) ?? tick;
+        const left = Math.max(0, current.ticks - (tick - start));
+        const item = items[step];
+        if (item !== undefined)
+          item.textContent = t(current.text, { time: clock(left) });
+      }
       if (step === done) return;
       done = step;
       items.forEach((item, index) => {
@@ -394,7 +464,7 @@ export function createTutorialPanel(
           index < step ? "done" : index === step ? "current" : "";
       });
       const goal = mission.goals[step];
-      if (goal === undefined) complete();
+      if (goal === undefined) finish(true);
       else hint.textContent = hintText(goal, mission);
     },
   };

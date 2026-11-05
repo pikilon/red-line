@@ -202,6 +202,12 @@ import {
 } from "../sim/skirmishClient";
 import { MAX_SPEED } from "../sim/workerHandler";
 import {
+  campaignUrl,
+  createCampaignProgress,
+  findCampaignMission,
+  nextCampaignMission,
+} from "../ui/campaign";
+import {
   commandButtons,
   createCommandPanel,
   isComplete,
@@ -225,6 +231,7 @@ import { createTouchControls, isTouchDevice } from "../ui/touchControls";
 import {
   createTutorialPanel,
   findTutorial,
+  nextTutorial,
   type TutorialMission,
 } from "../ui/tutorial";
 import { createCameraMemory, homeView } from "./cameraMemory";
@@ -577,12 +584,39 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let lastOrderVoiceAtMs = -Infinity;
 
   /** Objectives of a tutorial mission loaded by `?load` (spec 46). */
-  const tutorialMission = findTutorial(boot.loadedId);
+  // A campaign mission is a tutorial mission with a briefing (spec 48).
+  const campaignMission = findCampaignMission(boot.loadedId);
+  const campaignProgress = createCampaignProgress();
+  const tutorialMission = campaignMission ?? findTutorial(boot.loadedId);
   const tutorialPanel =
     tutorialMission === null
       ? null
       : createTutorialPanel(document.body, tutorialMission, {
-          play: playTutorial,
+          next: (mission) => {
+            if (campaignMission === null) {
+              const following = nextTutorial(mission);
+              return following === null
+                ? null
+                : { label: "tutorial.next", go: () => playTutorial(following) };
+            }
+            // Spec 48 §4: the next briefing, or the epilogue after the last.
+            const following = nextCampaignMission(campaignMission);
+            return {
+              label: following === null ? "campaign.epilogue" : "tutorial.next",
+              go: () =>
+                window.location.assign(
+                  campaignUrl(
+                    following ??
+                      (campaignMission.faction as "ukraine" | "russia"),
+                  ),
+                ),
+            };
+          },
+          won: () => {
+            if (campaignMission !== null)
+              campaignProgress.record(campaignMission);
+          },
+          retry: () => window.location.reload(),
           menu: () => window.location.assign(window.location.pathname),
           command: (command) => interact.command(command),
           alive: (ids) => interact.requestAlive(ids),
@@ -2309,6 +2343,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         uiClick();
         playTutorial(mission);
       },
+      campaign: (mission) => {
+        uiClick();
+        playTutorial(mission);
+      },
+      progress: createCampaignProgress(),
+      openCampaign: pageParams.get("campaign"),
       getVolume: (channel) =>
         settings[channel] ??
         {
