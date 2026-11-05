@@ -609,6 +609,8 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
     dockRangeCenti: globals.dockRangeCenti,
     aimToleranceDeg: globals.aimToleranceDeg ?? 0,
     turretRecenterTicks: globals.turretRecenterTicks ?? 0,
+    // Spec 49 §3.2: guard radii (percent of sight) and chase time.
+    ...(globals.guard ? { guard: globals.guard } : {}),
     // Spec 31 block 3: only what the sim reads; omitted without the balance file.
     ...(environment
       ? {

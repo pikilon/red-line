@@ -105,7 +105,8 @@ transparent background) and cached; a type with no model shows its initials.
 
 ## 4. Assumptions
 
-* A1: Attack Move, Guard and Scatter are not offered until the sim has them.
+* A1: Scatter is not offered until the sim has it. Attack Move and Guard
+  arrived with spec 49 (Units section, after Force fire).
 * A2: "Same type everywhere" uses the whole map, matching Alt+double-click.
 * A3: Mouse double-click on a unit keeps the Generals behaviour (screen first,
   map when none on screen).

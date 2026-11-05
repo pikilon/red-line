@@ -1034,6 +1034,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         uiClick();
         controller?.toggleForceFire();
       },
+      onMode: (mode) => {
+        uiClick();
+        controller?.toggleMode(mode);
+      },
       onRally: () => {
         uiClick();
         controller?.toggleRally();
@@ -1627,7 +1631,9 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
           ready &&
           (command.kind === "move" ||
             command.kind === "attack" ||
-            command.kind === "attackGround")
+            command.kind === "attackGround" ||
+            command.kind === "attackMove" ||
+            command.kind === "guard")
         ) {
           const nowMs = performance.now();
           // Group orders dispatch one command per unit in the same click; only the group leader speaks.

@@ -58,6 +58,22 @@ export type SimCommand =
       yRaw: number;
     }
   | { kind: "stop"; player: number; units: number[] }
+  /** Spec 49 §3.1: move to the point, fighting what is met on the way. */
+  | {
+      kind: "attackMove";
+      player: number;
+      units: number[];
+      xRaw: number;
+      yRaw: number;
+    }
+  /** Spec 49 §3.2: guard the area around the point. */
+  | {
+      kind: "guard";
+      player: number;
+      units: number[];
+      xRaw: number;
+      yRaw: number;
+    }
   /** Spec 43 §4.6: units with rounds or charges missing go and reload now. */
   | { kind: "reload"; player: number; units: number[] }
   /** Spec 31 block 2: infantry walk to feature `feature` (map row index) and garrison it. */

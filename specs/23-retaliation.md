@@ -6,7 +6,8 @@
   the shooter, even when the shooter is outside their weapon range: they walk
   until it is in range and fire (an ordinary `Attack` order).
 * Responders are own units that are armed (weapon able to hurt the shooter),
-  mobile and idle (no order). Units with an order (move, attack, harvest,
+  mobile and idle (no order), plus guards with no target, which take the
+  shooter as their guard target instead of an Attack order (spec 49 §3.2). Units with an order (move, attack, harvest,
   build...) keep it. Buildings never move, so they only use normal targeting.
 * The shooter must be at most 9 tiles from the victim (so far artillery is not
   chased). It does **not** need to be visible: a shot gives it away, and an

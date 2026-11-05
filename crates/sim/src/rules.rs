@@ -824,6 +824,31 @@ pub struct Ruleset {
     /// Spec 31 block 3: high ground and cover (`data/balance/environment.yaml`).
     #[serde(default)]
     pub environment: EnvironmentDef,
+    /// Spec 49 §3.2: guard radii and chase time (`guard` in `globals.yaml`).
+    #[serde(default)]
+    pub guard: GuardRules,
+}
+
+/// Spec 49 §3.2: a guarding unit attacks enemies within `inner_percent` of its
+/// sight around its post, chases them while they stay within `outer_percent`
+/// of its sight from the post, and gives up after `chase_ticks` spent outside
+/// the inner radius. The default is Zero Hour's human-player `AIData.ini`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GuardRules {
+    pub inner_percent: u32,
+    pub outer_percent: u32,
+    pub chase_ticks: u32,
+}
+
+impl Default for GuardRules {
+    fn default() -> Self {
+        GuardRules {
+            inner_percent: 180,
+            outer_percent: 220,
+            chase_ticks: 150,
+        }
+    }
 }
 
 /// Spec 31 block 3: balance of height and cover. The default changes nothing.
