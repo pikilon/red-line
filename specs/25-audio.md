@@ -115,9 +115,10 @@ and `INIZH.big` (Zero Hour 1.04). Facts unless marked inference.
 2. Generated audio instead of EA's recorded assets (D-02 forbids EA's sounds).
    The event table, flags and rules are copied; the content is original. EA's
    sounds are only a local reference while tuning (§4.2).
-3. Voices speak the faction's language (Ukrainian for Ukraine, Russian for
-   Russia) with strong language, and carry optional translated subtitles
-   (the original ships one language set per installation).
+3. Voices and EVA speak English with a Slavic accent (Ukrainian accent for
+   Ukraine and the `common` sets, Russian accent for Russia), soldiers with
+   strong English profanity, EVA always clean (owner, 2026-11-04; replaces the
+   earlier Ukrainian/Russian-language lines).
 4. The original's voice is on the unit's owner only as a UI sound; we keep it,
    but `underFire` and `die` are positional world sounds heard by the owner only
    when on screen (an assumption, §13).
@@ -266,11 +267,16 @@ untouched under `AUDIO_GEN_ROOT/raw/`; `process.py` re-applies every effect,
 so a filter can be changed or undone without regenerating. It writes
 `client/public/audio/manifest.json` (event -> files, plus the `explicit`
 list), which the loader resolves before the reference pack. Assumption: the
-`common` fallback voice sets speak Ukrainian.
+`common` fallback voice sets speak with a Ukrainian accent. Accented English
+(2026-11-04): `english_lines.py <faction>` rewrites the lines, `gen_voice.py
+<faction> --force` reads `speak`, `qa_voices.py --listen <faction>` checks them
+with Whisper in English, `process.py --force --kinds voice,eva` re-encodes.
 
 1. **Brief and script.** `data/audio/inventory.yaml` (phase 2) holds the brief
    per event; voice and EVA lines live in `data/audio/lines/<faction>.yaml`
-   in the faction's language (§5.3).
+   in English (`text`) with a phonetic Cyrillic respelling (`speak`) that
+   Piper's Russian/Ukrainian voices read, which gives the Slavic accent
+   (`english_lines.py`, local Gemma; §5.3).
 2. **Generate.** `scripts/audio/gen.mjs` (new, runs locally only, never in CI)
    reads the inventory and calls the chosen source for every event whose output
    file is missing or whose brief/script hash changed, N takes per line.
