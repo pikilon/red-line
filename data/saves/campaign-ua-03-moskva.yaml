@@ -25,6 +25,6 @@ entities:
   - { player: 1, type: ru-dozer, atCenti: [5100, 3300] }
   - { player: 1, type: ru-pantsir, atCenti: [4600, 2400], label: radar1 }
   - { player: 1, type: ru-pantsir, atCenti: [4600, 3400], label: radar2 }
-  - { player: 1, type: ru-rifleman, atCenti: [4400, 2800] }
-  - { player: 1, type: ru-rifleman, atCenti: [4400, 2900] }
-  - { player: 1, type: ru-rifleman, atCenti: [4400, 3000] }
+  - { player: 1, type: ru-rifleman, atCenti: [4700, 2800] }
+  - { player: 1, type: ru-rifleman, atCenti: [4600, 2900] }
+  - { player: 1, type: ru-rifleman, atCenti: [4300, 3000] }

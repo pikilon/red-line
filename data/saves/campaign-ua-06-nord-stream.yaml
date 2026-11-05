@@ -20,9 +20,9 @@ entities:
   - { player: 0, type: ua-stugna-team, atCenti: [1500, 3300] }
   - { player: 0, type: ua-ratel, atCenti: [1300, 3400] }
   - { player: 1, type: ru-hq, origin: [52, 28] }
-  - { player: 1, type: ru-power-plant, origin: [30, 10], label: line1 }
-  - { player: 1, type: ru-power-plant, origin: [40, 20], label: line2 }
-  - { player: 1, type: ru-power-plant, origin: [44, 44], label: line3 }
+  - { player: 1, type: ru-power-plant, origin: [30, 12], label: line1 }
+  - { player: 1, type: ru-power-plant, origin: [39, 20], label: line2 }
+  - { player: 1, type: ru-power-plant, origin: [47, 44], label: line3 }
   - { player: 1, type: ru-rifleman, atCenti: [3400, 1200] }
   - { player: 1, type: ru-rifleman, atCenti: [3400, 1300] }
   - { player: 1, type: ru-rifleman, atCenti: [3800, 2400] }

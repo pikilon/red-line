@@ -29,9 +29,9 @@ entities:
   - { player: 0, type: ua-power-plant, origin: [2, 6] }
   - { player: 0, type: ua-defense, origin: [24, 4], label: bunker1 }
   - { player: 0, type: ua-defense, origin: [24, 9], label: bunker2 }
-  - { player: 0, type: ua-dozer, atCenti: [1300, 800] }
+  - { player: 0, type: ua-dozer, atCenti: [1300, 700] }
   - { player: 0, type: ua-rifleman, atCenti: [1600, 600] }
   - { player: 0, type: ua-rifleman, atCenti: [1600, 700] }
   - { player: 0, type: ua-rifleman, atCenti: [1600, 800] }
   - { player: 0, type: ua-rifleman, atCenti: [1600, 900] }
-  - { player: 0, type: ua-stugna-team, atCenti: [1500, 1000] }
+  - { player: 0, type: ua-stugna-team, atCenti: [1500, 1100] }

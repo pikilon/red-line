@@ -111,7 +111,7 @@
         "player": 1,
         "type": "ru-defense",
         "origin": [
-          46,
+          47,
           32
         ]
       },
@@ -137,7 +137,7 @@
         "player": 1,
         "type": "ru-rifleman",
         "atCenti": [
-          4400,
+          4200,
           2700
         ]
       },
@@ -145,7 +145,7 @@
         "player": 1,
         "type": "ru-rifleman",
         "atCenti": [
-          4400,
+          4600,
           2900
         ]
       },
@@ -153,7 +153,7 @@
         "player": 1,
         "type": "ru-rifleman",
         "atCenti": [
-          4400,
+          4300,
           3100
         ]
       },
@@ -161,7 +161,7 @@
         "player": 1,
         "type": "ru-rifleman",
         "atCenti": [
-          4400,
+          4300,
           3300
         ]
       }

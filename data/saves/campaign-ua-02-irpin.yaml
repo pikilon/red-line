@@ -29,7 +29,7 @@ entities:
   - { player: 1, type: ru-supply-truck, atCenti: [4000, 3000], label: convoy1 }
   - { player: 1, type: ru-supply-truck, atCenti: [4200, 3000], label: convoy2 }
   - { player: 1, type: ru-supply-truck, atCenti: [4400, 3000], label: convoy3 }
-  - { player: 1, type: ru-supply-truck, atCenti: [4600, 3000], label: convoy4 }
+  - { player: 1, type: ru-supply-truck, atCenti: [4700, 3000], label: convoy4 }
   - { player: 1, type: ru-bmp-2, atCenti: [4000, 3300] }
-  - { player: 1, type: ru-bmp-2, atCenti: [4400, 3300] }
+  - { player: 1, type: ru-bmp-2, atCenti: [4300, 3300] }
   - { player: 1, type: ru-t-72b3, atCenti: [5000, 3000] }

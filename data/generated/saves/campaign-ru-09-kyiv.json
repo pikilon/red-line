@@ -96,14 +96,14 @@
         "type": "ru-tos-1a",
         "atCenti": [
           10400,
-          4000
+          3800
         ]
       },
       {
         "player": 1,
         "type": "ru-tos-1a",
         "atCenti": [
-          10400,
+          10600,
           4300
         ]
       },
@@ -128,7 +128,7 @@
         "player": 0,
         "type": "ua-patriot",
         "origin": [
-          20,
+          19,
           36
         ],
         "label": "patriot"
@@ -137,7 +137,7 @@
         "player": 0,
         "type": "ua-leopard-2a4",
         "atCenti": [
-          2600,
+          2700,
           4000
         ]
       },

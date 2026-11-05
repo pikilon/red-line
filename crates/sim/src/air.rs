@@ -591,15 +591,10 @@ impl World {
             return self.plan_home(index, None);
         }
         match entity.order {
-            // Spec 44: a fixed-wing one-way flyer sent to a point flies there
-            // and dives into it (a Shahed flies to its coordinates); it never
-            // circles. A rotorcraft one hovers there instead.
-            Order::Move { target, .. } if ty.one_way.is_some() && ty.is_fixed_wing() => Plan::Go {
-                goal: target,
-                entity: None,
-                within: contact,
-                arrival: Arrival::Detonate(None),
-            },
+            // Spec 44 §4.4: a plain move never attacks. A one-way fixed-wing
+            // flyer (it cannot hover) orbits the point like any other wing;
+            // a one-way rotorcraft hovers there. Only an attack order, on an
+            // enemy or an explicit force-fire point, makes it dive.
             Order::Move {
                 order_id, target, ..
             } if ty.is_fixed_wing() => Plan::Go {
@@ -997,9 +992,7 @@ impl World {
                 Some(victim) => self.entity_distance(entity.pos, victim),
                 None => return altitude,
             },
-            Order::AttackGround { target, .. } | Order::Move { target, .. } => {
-                (target - entity.pos).length()
-            }
+            Order::AttackGround { target, .. } => (target - entity.pos).length(),
             _ => return altitude,
         };
         let dive = fx_centi(DIVE_CENTI);

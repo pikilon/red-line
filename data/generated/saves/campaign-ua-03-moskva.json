@@ -162,7 +162,7 @@
         "player": 1,
         "type": "ru-rifleman",
         "atCenti": [
-          4400,
+          4700,
           2800
         ]
       },
@@ -170,7 +170,7 @@
         "player": 1,
         "type": "ru-rifleman",
         "atCenti": [
-          4400,
+          4600,
           2900
         ]
       },
@@ -178,7 +178,7 @@
         "player": 1,
         "type": "ru-rifleman",
         "atCenti": [
-          4400,
+          4300,
           3000
         ]
       }

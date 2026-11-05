@@ -19,10 +19,10 @@ entities:
   - { player: 0, type: ua-gepard, atCenti: [1500, 2800] }
   - { player: 1, type: ru-hq, origin: [52, 28] }
   - { player: 1, type: ru-defense, origin: [46, 26] }
-  - { player: 1, type: ru-defense, origin: [46, 32] }
+  - { player: 1, type: ru-defense, origin: [47, 32] }
   - { player: 1, type: ru-pantsir, atCenti: [5000, 2400], label: tor1 }
   - { player: 1, type: ru-pantsir, atCenti: [5000, 3500], label: tor2 }
-  - { player: 1, type: ru-rifleman, atCenti: [4400, 2700] }
-  - { player: 1, type: ru-rifleman, atCenti: [4400, 2900] }
-  - { player: 1, type: ru-rifleman, atCenti: [4400, 3100] }
-  - { player: 1, type: ru-rifleman, atCenti: [4400, 3300] }
+  - { player: 1, type: ru-rifleman, atCenti: [4200, 2700] }
+  - { player: 1, type: ru-rifleman, atCenti: [4600, 2900] }
+  - { player: 1, type: ru-rifleman, atCenti: [4300, 3100] }
+  - { player: 1, type: ru-rifleman, atCenti: [4300, 3300] }

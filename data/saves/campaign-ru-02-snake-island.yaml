@@ -15,14 +15,14 @@ entities:
   - { player: 1, type: ru-power-plant, origin: [58, 28] }
   - { player: 1, type: ru-vehicle-factory, origin: [52, 34] }
   - { player: 1, type: ru-dozer, atCenti: [5100, 4000] }
-  - { player: 1, type: ru-tos-1a, atCenti: [4600, 2600] }
-  - { player: 1, type: ru-tos-1a, atCenti: [4600, 3000] }
-  - { player: 1, type: ru-bmp-2, atCenti: [4400, 2700] }
-  - { player: 1, type: ru-bmp-2, atCenti: [4400, 3100] }
-  - { player: 1, type: ru-rifleman, atCenti: [4300, 3000] }
-  - { player: 1, type: ru-rifleman, atCenti: [4300, 3100] }
-  - { player: 1, type: ru-rifleman, atCenti: [4300, 3200] }
-  - { player: 1, type: ru-rifleman, atCenti: [4300, 3300] }
+  - { player: 1, type: ru-tos-1a, atCenti: [4900, 2600] }
+  - { player: 1, type: ru-tos-1a, atCenti: [4900, 3000] }
+  - { player: 1, type: ru-bmp-2, atCenti: [4800, 2700] }
+  - { player: 1, type: ru-bmp-2, atCenti: [4800, 3100] }
+  - { player: 1, type: ru-rifleman, atCenti: [4700, 3000] }
+  - { player: 1, type: ru-rifleman, atCenti: [4700, 3100] }
+  - { player: 1, type: ru-rifleman, atCenti: [4700, 3200] }
+  - { player: 1, type: ru-rifleman, atCenti: [4700, 3300] }
   - { player: 0, type: ua-hq, origin: [8, 28], label: zmiinyi }
   - { player: 0, type: ua-defense, origin: [16, 24], label: guard1 }
   - { player: 0, type: ua-defense, origin: [16, 34], label: guard2 }
