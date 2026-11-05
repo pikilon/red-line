@@ -50,6 +50,8 @@
     "sellRefundPercent": { "$ref": "#/$defs/percent" },
     "aimToleranceDeg": { "$ref": "#/$defs/aimDeg" },
     "turretRecenterTicks": { "type": "integer", "minimum": 0 },
+    "crushDodgeLookaheadCenti": { "type": "integer", "minimum": 0 },
+    "crushDodgeMissOneIn": { "type": "integer", "minimum": 0 },
     "locomotors": { "type": "object", "additionalProperties": { "$ref": "#/$defs/locomotor" } },
     "commonTypes": { "type": "array", "items": { "$ref": "faction.schema.json#/$defs/type" } },
     "lateTypes": {

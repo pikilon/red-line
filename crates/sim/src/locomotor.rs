@@ -47,7 +47,21 @@ pub(crate) fn drive(
                 unit.speed = Fx::ZERO;
                 return true;
             }
-            unit.pos = unit.pos + desired.scale(motion.max_speed);
+            // A target on a cell edge (a move clamped to the map border) can
+            // lie outside the cell the unit is in, so `in_goal` alone does not
+            // stop the last step: land on the target instead of overshooting
+            // it, and never step off the map (issue #456: a rifleman left
+            // the map and the whole match froze).
+            let next = if remaining <= motion.max_speed {
+                target
+            } else {
+                unit.pos + desired.scale(motion.max_speed)
+            };
+            if !nav.in_bounds(cell_of(next)) {
+                unit.speed = Fx::ZERO;
+                return false;
+            }
+            unit.pos = next;
             unit.speed = motion.max_speed;
             false
         }

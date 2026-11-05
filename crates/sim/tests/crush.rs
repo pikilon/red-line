@@ -15,13 +15,72 @@ fn centre(x: i32, y: i32) -> FxVec2 {
 }
 
 /// Two players on an open map, with every weapon removed so that only the
-/// vehicles' contact hurts the soldiers.
+/// vehicles' contact hurts the soldiers. Soldiers do not dodge (spec 28 §6
+/// is tested on its own below).
 fn sandbox() -> World {
+    dodge_sandbox(0, 0)
+}
+
+/// `sandbox` with the dodge of spec 28 §6 set to `lookahead` and `miss`.
+fn dodge_sandbox(lookahead: u32, miss: u32) -> World {
     let mut rules = Ruleset::builtin();
     for ty in &mut rules.types {
         ty.weapon = -1;
     }
+    rules.crush_dodge_lookahead_centi = lookahead;
+    rules.crush_dodge_miss_one_in = miss;
     World::sandbox(rules, MapGrid::open(40, 40), &[0, 1])
+}
+
+/// Drives a tank from (10, 20) to (22, 20) at an enemy rifleman on (15, 20)
+/// who walks to `walk_to` (or stands, with `None`); true if he survives.
+fn soldier_survives_tank(world: &mut World, walk_to: Option<FxVec2>) -> bool {
+    let tank = kind(world, "ua-leopard-2a4");
+    let rifleman = kind(world, "ru-rifleman");
+    let car = world.spawn(0, tank, centre(10, 20));
+    let soldier = world.spawn(1, rifleman, centre(15, 20));
+    world.enqueue(Command::Move {
+        units: vec![car],
+        target: centre(22, 20),
+    });
+    if let Some(target) = walk_to {
+        world.enqueue_as(
+            1,
+            Command::Move {
+                units: vec![soldier],
+                target,
+            },
+        );
+    }
+    for _ in 0..600 {
+        world.step();
+    }
+    world.unit(soldier).is_some()
+}
+
+#[test]
+fn ac_28_09_an_idle_soldier_steps_out_of_a_tanks_way() {
+    let mut world = dodge_sandbox(150, 0);
+    assert!(soldier_survives_tank(&mut world, None));
+}
+
+#[test]
+fn ac_28_10_a_walking_soldier_sidesteps_a_tank() {
+    let mut world = dodge_sandbox(150, 0);
+    assert!(soldier_survives_tank(&mut world, Some(centre(5, 20))));
+}
+
+#[test]
+fn ac_28_11_a_soldier_who_never_reacts_is_crushed() {
+    let mut world = dodge_sandbox(150, 1);
+    assert!(!soldier_survives_tank(&mut world, None));
+}
+
+#[test]
+fn ac_28_12_the_shipped_rules_make_soldiers_dodge() {
+    let rules = Ruleset::builtin();
+    assert!(rules.crush_dodge_lookahead_centi > 0);
+    assert!(rules.crush_dodge_miss_one_in > 1);
 }
 
 fn kind(world: &World, id: &str) -> TypeId {

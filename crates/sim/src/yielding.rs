@@ -3,11 +3,12 @@
 
 use std::collections::BTreeSet;
 
+use crate::crush::{crushable, runner, velocity};
 use crate::entity::Order;
 use crate::fixed::{Fx, FxVec2};
 use crate::locomotor;
 use crate::map::{Cell, cell_center, cell_of};
-use crate::rules::LocoKind;
+use crate::rules::{LocoKind, fx_centi};
 use crate::world::{Layer, World};
 
 /// How far ahead of a moving unit idle allies are asked to step aside.
@@ -16,6 +17,8 @@ pub const YIELD_LOOKAHEAD: Fx = Fx::from_raw(3 * 65536);
 pub const YIELD_CLEARANCE_LOOKAHEAD: Fx = Fx::from_raw(6 * 65536);
 /// Largest Chebyshev ring searched for the cell a yielder steps to.
 pub const YIELD_SEARCH_RING: i32 = 4;
+/// Ticks of one reaction window of a soldier dodging a vehicle (half a second).
+pub const CRUSH_DODGE_WINDOW_TICKS: u32 = 15;
 
 impl World {
     /// Phase 2a: every unit on a `Move` order looks `YIELD_LOOKAHEAD` along its
@@ -82,6 +85,104 @@ impl World {
                 claimed.insert(cell);
                 self.order_yield(b, cell);
             }
+        }
+    }
+
+    /// Spec 28 §6 (issue #453): soldiers try to get out of the way of an
+    /// enemy vehicle that would run them over. Every live, moving runner (a
+    /// crusher or a shoving hull) looks `crushDodgeLookaheadCenti` past its
+    /// nose along its velocity; each enemy soldier its body would touch on
+    /// that stretch reacts, unless this is one of his slow moments
+    /// (`crushDodgeMissOneIn`: one id-and-time window in N, so a fast or
+    /// close vehicle still catches some of them). An idle soldier is sent to
+    /// the nearest clear cell off the vehicle's line, as Zero Hour's
+    /// `aiMoveAwayFromUnit` does for allies; a soldier on a move sidesteps
+    /// away from the line this tick and keeps his order.
+    pub(crate) fn dodge_crushers(&mut self) {
+        let lookahead = fx_centi(self.rules.crush_dodge_lookahead_centi);
+        if lookahead <= Fx::ZERO {
+            return;
+        }
+        let miss = self.rules.crush_dodge_miss_one_in;
+        let window = self.tick / CRUSH_DODGE_WINDOW_TICKS;
+        let positions: Vec<FxVec2> = self.entities.iter().map(|unit| unit.pos).collect();
+        let buckets = self.bucket_by_cell(&positions);
+        let radius = self.unit_radii();
+        let mut claimed: BTreeSet<Cell> = BTreeSet::new();
+        let mut handled: BTreeSet<usize> = BTreeSet::new();
+        for a in 0..self.entities.len() {
+            if runner(&self.rules, &self.entities[a]).is_none() {
+                continue;
+            }
+            let heading = velocity(&self.entities[a]).normalize();
+            if heading == FxVec2::ZERO {
+                continue;
+            }
+            let owner = self.entities[a].owner;
+            let start = positions[a];
+            let nose = start + heading.scale(radius[a] + lookahead);
+            let path = [start, nose];
+            let steps = (radius[a] + lookahead).raw() / 65536 + 1;
+            let candidates: BTreeSet<usize> = (0..=steps)
+                .flat_map(|k| {
+                    let point = start + heading.scale(Fx::from_raw(k * 65536));
+                    self.neighbours(&buckets, cell_of(point))
+                        .collect::<Vec<_>>()
+                })
+                .collect();
+            for b in candidates {
+                let soldier = &self.entities[b];
+                if soldier.owner == owner
+                    || handled.contains(&b)
+                    || !crushable(&self.rules, soldier)
+                    || !path_hits(&path, positions[b], radius[a] + radius[b])
+                {
+                    continue;
+                }
+                if miss > 0 && soldier.id.wrapping_add(window).is_multiple_of(miss) {
+                    continue;
+                }
+                handled.insert(b);
+                match soldier.order {
+                    Order::Idle { .. } => {
+                        let others = self.bodies_around(b, &positions, &radius, &buckets);
+                        if let Some(cell) = self.yield_cell(
+                            Layer::Foot,
+                            positions[b],
+                            start,
+                            &path,
+                            radius[a] + radius[b],
+                            cell_of(nose),
+                            &buckets,
+                            &claimed,
+                            &others,
+                        ) {
+                            claimed.insert(cell);
+                            self.order_yield(b, cell);
+                        }
+                    }
+                    Order::Move { .. } => self.sidestep(b, start, heading),
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    /// Moves soldier `index` one step at his speed sideways, away from the
+    /// line of a vehicle at `from` driving along `heading`.
+    fn sidestep(&mut self, index: usize, from: FxVec2, heading: FxVec2) {
+        let soldier = &self.entities[index];
+        let speed = self.rules.ty(soldier.kind).motion.max_speed;
+        let side = FxVec2::new(Fx::ZERO - heading.y, heading.x);
+        let lateral = dot(soldier.pos - from, side);
+        let side = if lateral > 0 || (lateral == 0 && soldier.id.is_multiple_of(2)) {
+            side
+        } else {
+            FxVec2::ZERO - side
+        };
+        let next = soldier.pos + side.scale(speed);
+        if self.grid(Layer::Foot).is_passable(cell_of(next)) {
+            self.entities[index].pos = next;
         }
     }
 
