@@ -363,7 +363,8 @@ test("AC-03-56: builds a power plant through the UI", async ({ page }) => {
   await expect(plantButton).toBeEnabled();
   await plantButton.click();
   // A right click on the map leaves placement (spec 08 §3.11).
-  await clickTiles(page, 25.5, 68.5, "right");
+  // On a tile the next left click already uses, clear of the HUD panels.
+  await clickTiles(page, 19.5, 58.5, "right");
   await expect(plantButton).toHaveAttribute("aria-pressed", "false");
   await page.keyboard.press("Escape");
   await clickTiles(page, 19.5, 58.5);
