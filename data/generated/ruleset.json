@@ -76,6 +76,11 @@
   "crushDodgeMissOneIn": 3,
   "aimToleranceDeg": 2,
   "turretRecenterTicks": 30,
+  "guard": {
+    "innerPercent": 180,
+    "outerPercent": 220,
+    "chaseTicks": 150
+  },
   "environment": {
     "highGround": {
       "minTiles": 2,

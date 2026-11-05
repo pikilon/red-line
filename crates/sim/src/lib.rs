@@ -18,6 +18,7 @@ pub mod hash;
 pub mod infirmary;
 pub mod locomotor;
 pub mod map;
+mod modes;
 pub mod nav;
 pub mod player;
 mod reload;

@@ -280,6 +280,18 @@ pub enum OrderState {
     ReturnToBase {
         order_id: u32,
     },
+    AttackMove {
+        order_id: u32,
+        target: [i32; 2],
+        goal: [i32; 2],
+        engaging: Option<u32>,
+    },
+    Guard {
+        order_id: u32,
+        post: [i32; 2],
+        target: Option<u32>,
+        chase: u32,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -419,6 +431,14 @@ pub enum CommandState {
     },
     Stop {
         units: Vec<u32>,
+    },
+    AttackMove {
+        units: Vec<u32>,
+        target: [i32; 2],
+    },
+    Guard {
+        units: Vec<u32>,
+        target: [i32; 2],
     },
     Reload {
         units: Vec<u32>,
@@ -916,6 +936,28 @@ fn save_order(order: Order) -> OrderState {
             remaining,
         },
         Order::ReturnToBase { order_id } => OrderState::ReturnToBase { order_id },
+        Order::AttackMove {
+            order_id,
+            target,
+            goal,
+            engaging,
+        } => OrderState::AttackMove {
+            order_id,
+            target: vec2(target),
+            goal: cell(goal),
+            engaging,
+        },
+        Order::Guard {
+            order_id,
+            post,
+            target,
+            chase,
+        } => OrderState::Guard {
+            order_id,
+            post: vec2(post),
+            target,
+            chase,
+        },
     }
 }
 
@@ -984,6 +1026,28 @@ fn load_order(order: OrderState) -> Order {
             remaining,
         },
         OrderState::ReturnToBase { order_id } => Order::ReturnToBase { order_id },
+        OrderState::AttackMove {
+            order_id,
+            target,
+            goal,
+            engaging,
+        } => Order::AttackMove {
+            order_id,
+            target: fx_vec2(target),
+            goal: to_cell(goal),
+            engaging,
+        },
+        OrderState::Guard {
+            order_id,
+            post,
+            target,
+            chase,
+        } => Order::Guard {
+            order_id,
+            post: fx_vec2(post),
+            target,
+            chase,
+        },
     }
 }
 
@@ -1187,6 +1251,14 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
             units: units.clone(),
             target: vec2(*target),
         },
+        Command::AttackMove { units, target } => CommandState::AttackMove {
+            units: units.clone(),
+            target: vec2(*target),
+        },
+        Command::Guard { units, target } => CommandState::Guard {
+            units: units.clone(),
+            target: vec2(*target),
+        },
         Command::Harvest { units, depot } => CommandState::Harvest {
             units: units.clone(),
             depot: *depot,
@@ -1277,6 +1349,14 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
             target: fx_vec2(*target),
         },
         CommandState::AttackGround { units, target } => Command::AttackGround {
+            units: units.clone(),
+            target: fx_vec2(*target),
+        },
+        CommandState::AttackMove { units, target } => Command::AttackMove {
+            units: units.clone(),
+            target: fx_vec2(*target),
+        },
+        CommandState::Guard { units, target } => Command::Guard {
             units: units.clone(),
             target: fx_vec2(*target),
         },

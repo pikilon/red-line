@@ -187,6 +187,34 @@ impl World {
         if self.entities[index].owner != player {
             return;
         }
+        // Spec 37 §7: Cancel Construction on a foundation refunds the full cost.
+        let unfinished = self.entities[index]
+            .site
+            .as_ref()
+            .is_some_and(|site| !site.complete);
+        if unfinished {
+            let entity = &mut self.entities[index];
+            if entity.hp == 0 {
+                return;
+            }
+            let (id, kind) = (entity.id, entity.kind);
+            entity.last_hit = None;
+            entity.hp = 0;
+            let refund = self.rules.ty(kind).cost;
+            if let Some(owner) = self.players.get_mut(usize::from(player)) {
+                owner.credits = owner.credits.saturating_add(refund);
+            }
+            for unit in &mut self.entities {
+                if let Order::Build { order_id, building } = unit.order
+                    && building == id
+                {
+                    unit.order = Order::Idle {
+                        last_order_id: order_id,
+                    };
+                }
+            }
+            return;
+        }
         let Some(item) = self.entities[index]
             .site
             .as_mut()
@@ -432,6 +460,8 @@ impl World {
                 | Order::RepairBuilding { order_id, .. }
                 | Order::Heal { order_id, .. }
                 | Order::RepairVehicle { order_id, .. }
+                | Order::AttackMove { order_id, .. }
+                | Order::Guard { order_id, .. }
                 | Order::ReturnToBase { order_id } => order_id,
             };
             unit.order = Order::Idle { last_order_id };

@@ -61,6 +61,16 @@ pub enum Command {
         units: Vec<EntityId>,
         target: FxVec2,
     },
+    /// Spec 49 §3.1: move to a point, attacking what is met on the way.
+    AttackMove {
+        units: Vec<EntityId>,
+        target: FxVec2,
+    },
+    /// Spec 49 §3.2: guard the area around a point.
+    Guard {
+        units: Vec<EntityId>,
+        target: FxVec2,
+    },
     Harvest {
         units: Vec<EntityId>,
         depot: EntityId,
@@ -918,6 +928,10 @@ impl World {
                 Command::AttackGround { units, target } => {
                     self.apply_attack_ground(player, &units, target);
                 }
+                Command::AttackMove { units, target } => {
+                    self.apply_attack_move(player, &units, target);
+                }
+                Command::Guard { units, target } => self.apply_guard(player, &units, target),
                 Command::DebugSpawn { kind, pos } => self.apply_debug_spawn(player, kind, pos),
                 Command::DebugSetHp { entity, hp } => self.apply_debug_set_hp(entity, hp),
             }
@@ -1269,6 +1283,8 @@ impl World {
                 Order::Harvest { .. } => self.step_harvest(index),
                 Order::Attack { order_id, target } => self.step_attack(index, order_id, target),
                 Order::AttackGround { target, .. } => self.step_attack_ground(index, target),
+                Order::AttackMove { .. } => self.step_attack_move(index),
+                Order::Guard { .. } => self.step_guard(index),
                 _ => {}
             }
             // Spec 11 §5.2: a reverse move lasts for its Move order only, and a unit
@@ -1307,7 +1323,7 @@ impl World {
     /// Spec §5.10 `Attack`: back to idle when the target is gone, dead or
     /// hidden to the owner; no move inside the weapon range; a step toward the
     /// target's goal beyond it.
-    fn step_attack(&mut self, index: usize, order_id: u32, target: EntityId) {
+    pub(crate) fn step_attack(&mut self, index: usize, order_id: u32, target: EntityId) {
         let (pos, kind) = {
             let unit = &self.entities[index];
             (unit.pos, unit.kind)
@@ -1404,7 +1420,7 @@ impl World {
     /// `Move` (spec 11 §5.2): the delta to the target inside the goal cell or
     /// when the straight line is passable, otherwise the flow direction, is
     /// handed to the locomotor of the type with the straight-line distance.
-    fn step_move(&mut self, index: usize, order_id: u32, target: FxVec2, goal: Cell) {
+    pub(crate) fn step_move(&mut self, index: usize, order_id: u32, target: FxVec2, goal: Cell) {
         let pos = self.entities[index].pos;
         let kind = self.entities[index].kind;
         let motion = self.rules.ty(kind).motion;
@@ -1715,6 +1731,16 @@ impl World {
             .filter_map(|index| {
                 let goal = match self.entities[index].order {
                     Order::Move { goal, .. } => Some(self.nav.index(goal)),
+                    Order::AttackMove {
+                        engaging: Some(target),
+                        ..
+                    }
+                    | Order::Guard {
+                        target: Some(target),
+                        ..
+                    } => self.attack_goal(target).map(|goal| self.nav.index(goal)),
+                    Order::AttackMove { goal, .. } => Some(self.nav.index(goal)),
+                    Order::Guard { post, .. } => Some(self.nav.index(cell_of(post))),
                     Order::Build { building, .. } => {
                         self.build_goal(building).map(|goal| self.nav.index(goal))
                     }

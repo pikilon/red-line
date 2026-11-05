@@ -25,5 +25,7 @@ describe("orderHint", () => {
     expect(cursorFor("garrison")).toContain("svg");
     expect(cursorFor("repair")).not.toBe(cursorFor("garrison"));
     expect(cursorFor(null)).toBe("");
+    expect(cursorFor("attackMove")).toContain("crosshair");
+    expect(cursorFor("guard")).not.toBe(cursorFor("attackMove"));
   });
 });

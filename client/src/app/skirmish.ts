@@ -225,6 +225,7 @@ import {
 import { createGameMenu } from "../ui/gameMenu";
 import { createHelpCard } from "../ui/helpCard";
 import { createHudBar } from "../ui/hudBar";
+import { disableLeaveGuard, enableLeaveGuard } from "../ui/leaveGuard";
 import { createMainMenu } from "../ui/mainMenu";
 import { createMinimap, type MinimapTerrain } from "../ui/minimap";
 import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
@@ -544,6 +545,9 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   const { seed, mapId, debug } = boot;
   const pageParams = new URLSearchParams(window.location.search);
   const restored = boot.client;
+  // A match asks before an accidental reload/close; the menu shell does not.
+  if (boot.shell) disableLeaveGuard();
+  else enableLeaveGuard();
 
   const renderer = new WebGLRenderer({ antialias: true });
   // Remastered look (spec 10 §3): hard PCF shadows and ACES tone mapping.
@@ -685,11 +689,18 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
             };
           },
           won: () => {
+            disableLeaveGuard();
             if (campaignMission !== null)
               campaignProgress.record(campaignMission);
           },
-          retry: () => window.location.reload(),
-          menu: () => window.location.assign(window.location.pathname),
+          retry: () => {
+            disableLeaveGuard();
+            window.location.reload();
+          },
+          menu: () => {
+            disableLeaveGuard();
+            window.location.assign(window.location.pathname);
+          },
           command: (command) => interact.command(command),
           alive: (ids) => interact.requestAlive(ids),
         });
@@ -742,6 +753,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     },
     restart: () => {
       uiClick();
+      disableLeaveGuard();
       window.location.reload();
     },
     report: reportsEnabled()
@@ -776,6 +788,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     rename: (slot, name) =>
       void store.rename(slot, name).then(() => renderSaves()),
     load: (id) => {
+      disableLeaveGuard();
       window.location.assign(`?load=${encodeURIComponent(id)}`);
     },
     copy: (id) => void copySave(id),
@@ -1053,6 +1066,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         uiClick();
         controller?.toggleForceFire();
       },
+      onMode: (mode) => {
+        uiClick();
+        controller?.toggleMode(mode);
+      },
       onRally: () => {
         uiClick();
         controller?.toggleRally();
@@ -1136,6 +1153,18 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         if (building === undefined) return;
         interact.command({
           kind: "sell",
+          player: controlled,
+          building: building.id,
+        });
+      },
+      onCancelBuild: () => {
+        uiClick();
+        const building = selectedEntities().find(
+          (entity) => typeDef(entity.kind).category === "building",
+        );
+        if (building === undefined) return;
+        interact.command({
+          kind: "cancel",
           player: controlled,
           building: building.id,
         });
@@ -1646,7 +1675,9 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
           ready &&
           (command.kind === "move" ||
             command.kind === "attack" ||
-            command.kind === "attackGround")
+            command.kind === "attackGround" ||
+            command.kind === "attackMove" ||
+            command.kind === "guard")
         ) {
           const nowMs = performance.now();
           // Group orders dispatch one command per unit in the same click; only the group leader speaks.
@@ -2162,6 +2193,11 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       if (!boot.shell) {
         audioMixer.updateMusic(factionId, audioBatch.combatActive, musicResult);
       }
+    }
+    // The guard follows the match: on while it runs, off on victory/defeat.
+    if (!boot.shell) {
+      if (snapshot.outcome === "ongoing") enableLeaveGuard();
+      else disableLeaveGuard();
     }
     refreshOverlay();
   });

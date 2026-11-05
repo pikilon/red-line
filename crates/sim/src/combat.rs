@@ -249,7 +249,15 @@ impl World {
     /// dies or leaves.
     fn sticky_target(&mut self, index: usize, weapon: &WeaponDef) -> Option<usize> {
         let ordered = match self.entities[index].order {
-            Order::Attack { target, .. } => self
+            Order::Attack { target, .. }
+            | Order::AttackMove {
+                engaging: Some(target),
+                ..
+            }
+            | Order::Guard {
+                target: Some(target),
+                ..
+            } => self
                 .index_of(target)
                 .filter(|&target_index| self.is_valid_target(index, target_index, weapon)),
             _ => None,
@@ -306,7 +314,14 @@ impl World {
         }
         if matches!(
             entity.order,
-            Order::Idle { .. } | Order::Attack { .. } | Order::AttackGround { .. }
+            Order::Idle { .. }
+                | Order::Attack { .. }
+                | Order::AttackGround { .. }
+                | Order::AttackMove {
+                    engaging: Some(_),
+                    ..
+                }
+                | Order::Guard { .. }
         ) {
             entity.heading = entity.heading.turn_towards(bearing, motion.turn_step);
         }
@@ -632,7 +647,10 @@ impl World {
                     && unit.site.is_none()
                     && ty.speed_centi > 0
                     && !ty.is_air()
-                    && matches!(unit.order, Order::Idle { .. })
+                    && matches!(
+                        unit.order,
+                        Order::Idle { .. } | Order::Guard { target: None, .. }
+                    )
                     && self.rules.weapon_of(unit.kind).is_some_and(|weapon| {
                         self.rules.modifier(weapon.damage_type, armor) > 0
                             && self.can_engage(weapon, shooter_index)
@@ -645,10 +663,20 @@ impl World {
         }
         let order_id = self.next_order_id;
         self.next_order_id += 1;
+        let chase_ticks = self.rules.guard.chase_ticks;
         for i in responders {
-            self.entities[i].order = Order::Attack {
-                order_id,
-                target: shooter,
+            // Spec 49 §3.2: a guard answers the shooter but keeps its post.
+            self.entities[i].order = match self.entities[i].order {
+                Order::Guard { order_id, post, .. } => Order::Guard {
+                    order_id,
+                    post,
+                    target: Some(shooter),
+                    chase: chase_ticks,
+                },
+                _ => Order::Attack {
+                    order_id,
+                    target: shooter,
+                },
             };
         }
     }

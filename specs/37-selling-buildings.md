@@ -69,3 +69,20 @@ AC-37-01..05: exact building plus whole-queue refund exactly once; rejected
 invalid targets; pending-sale save continuity; complete/non-producing and
 multi-selection panel cases plus worker dispatch; mouse-driven sale removes the
 building and returns credits. The example joins the generic save round trips.
+
+## 7. Cancel Construction (tester report #455)
+
+Precedent: Zero Hour shows **Cancel Construction** instead of Sell for an
+unfinished building (`ControlBar.cpp:1740-1745,1850-1900`;
+`ControlBarUnderConstruction.cpp:70-99`) and refunds the money spent.
+
+* `Command::Cancel { building }` on an own, incomplete building removes it and
+  refunds its full cost (saturating); dozers building it go idle; footprints
+  open and navigation rebuilds through ordinary death cleanup. Repeats and
+  enemy targets are ignored. On a complete building `Cancel` keeps popping the
+  last queue item (spec 03 §5.8).
+* The command panel offers **Cancel construction (refund N)** for exactly one
+  selected own unfinished building, with no confirmation (as in Zero Hour).
+  Queued unit items are still cancelled by the `-` step or the right click on
+  the build tile.
+* Assumption: no scaffold animation, same as D1.

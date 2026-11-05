@@ -202,6 +202,28 @@ impl Sim {
         );
     }
 
+    /// Spec 49 §3.1: attack-move the units to a point.
+    pub fn command_attack_move(&mut self, player: u8, unit_ids: &[u32], x_raw: i32, y_raw: i32) {
+        self.world.enqueue_as(
+            player,
+            Command::AttackMove {
+                units: unit_ids.to_vec(),
+                target: FxVec2::new(Fx::from_raw(x_raw), Fx::from_raw(y_raw)),
+            },
+        );
+    }
+
+    /// Spec 49 §3.2: the units guard the area around a point.
+    pub fn command_guard(&mut self, player: u8, unit_ids: &[u32], x_raw: i32, y_raw: i32) {
+        self.world.enqueue_as(
+            player,
+            Command::Guard {
+                units: unit_ids.to_vec(),
+                target: FxVec2::new(Fx::from_raw(x_raw), Fx::from_raw(y_raw)),
+            },
+        );
+    }
+
     pub fn command_attack_ground(&mut self, player: u8, unit_ids: &[u32], x_raw: i32, y_raw: i32) {
         self.world.enqueue_as(
             player,
