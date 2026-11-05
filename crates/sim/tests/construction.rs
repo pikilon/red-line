@@ -276,3 +276,30 @@ fn ac_03_23_free_unit_on_completion() {
         }
     );
 }
+
+/// Cancel Construction (spec 37 §7): a foundation is removed with a full refund
+/// and the dozer stops building it.
+#[test]
+fn cancel_construction_refunds_in_full_and_frees_the_dozer() {
+    let (mut world, dozer) = with_dozer(950, 650);
+    let building = world.next_entity_id();
+    world.enqueue(construct(dozer, 3, 10, 6));
+    steps(&mut world, 2);
+    assert_eq!(world.player(0).unwrap().credits, 700);
+    assert!(!complete(&world, building));
+
+    world.enqueue(Command::Cancel { building });
+    steps(&mut world, 2);
+    assert_eq!(world.player(0).unwrap().credits, 1000);
+    assert!(world.entity(building).is_none());
+    assert!(world.map().is_passable(cell(10, 6)));
+    assert!(matches!(
+        world.entity(dozer).unwrap().order,
+        Order::Idle { .. }
+    ));
+
+    // A repeated cancel is ignored.
+    world.enqueue(Command::Cancel { building });
+    steps(&mut world, 1);
+    assert_eq!(world.player(0).unwrap().credits, 1000);
+}

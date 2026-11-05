@@ -200,7 +200,7 @@ describe("command panel", () => {
     expect(multiple.some((button) => button.action === "sell")).toBe(false);
   });
 
-  it("AC-03-51: gives no buttons for an under-construction barracks", () => {
+  it("AC-03-51: offers only cancel for an under-construction barracks", () => {
     const barracks = entity({
       id: 10,
       owner: 0,
@@ -216,7 +216,7 @@ describe("command panel", () => {
       queue: { building: 10, headPermille: 0, items: [] },
     });
 
-    expect(buttons).toEqual([]);
+    expect(buttons.map((b) => b.action)).toEqual(["cancelBuild"]);
   });
 
   it("AC-03-51: gives no buttons for an enemy entity", () => {
@@ -333,8 +333,8 @@ describe("command panel", () => {
         ownEntities: [unfinishedHq],
         credits: 5000,
         queue: { building: 4, headPermille: 0, items: [] },
-      }),
-    ).toEqual([]);
+      }).map((b) => b.action),
+    ).toEqual(["cancelBuild"]);
     const almostBarracks = entity({
       id: 5,
       owner: 0,
@@ -348,8 +348,8 @@ describe("command panel", () => {
         ownEntities: [almostBarracks],
         credits: 5000,
         queue: { building: 5, headPermille: 0, items: [] },
-      }),
-    ).toEqual([]);
+      }).map((b) => b.action),
+    ).toEqual(["cancelBuild"]);
   });
 });
 

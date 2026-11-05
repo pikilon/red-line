@@ -48,6 +48,7 @@
   "ui.dig": "Dig trench",
   "ui.repairVehicle": "Repair at factory",
   "ui.sell": "Sell ({refund})",
+  "ui.cancelConstruction": "Cancel construction (refund {refund})",
   "ui.victory": "Victory",
   "ui.defeat": "Defeat",
   "ui.draw": "Draw",

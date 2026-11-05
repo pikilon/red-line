@@ -1121,6 +1121,18 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
           building: building.id,
         });
       },
+      onCancelBuild: () => {
+        uiClick();
+        const building = selectedEntities().find(
+          (entity) => typeDef(entity.kind).category === "building",
+        );
+        if (building === undefined) return;
+        interact.command({
+          kind: "cancel",
+          player: controlled,
+          building: building.id,
+        });
+      },
       onCancel: () => {
         uiClick();
         const queue = selectedQueue();

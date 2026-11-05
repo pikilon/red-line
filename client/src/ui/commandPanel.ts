@@ -32,7 +32,8 @@ export interface CommandButton {
     | "disembark"
     | "dig"
     | "repair"
-    | "sell";
+    | "sell"
+    | "cancelBuild";
   /** Feature index the garrison and evacuate buttons act on; for Sell, the
    *  building's entity id (so a changed selection cancels an armed sale). */
   feature?: number;
@@ -190,6 +191,22 @@ export function commandButtons({
       cost: 0,
       enabled: true,
       action: "sell",
+      feature: subject.id,
+    });
+  }
+  if (
+    subject !== undefined &&
+    ownEntities.some((entity) => entity.id === subject.id) &&
+    typeDef(subject.kind).category === "building" &&
+    !isComplete(subject)
+  ) {
+    // Zero Hour "Cancel Construction": the whole cost comes back.
+    extra.push({
+      typeIndex: -1,
+      label: t("ui.cancelConstruction", { refund: typeDef(subject.kind).cost }),
+      cost: 0,
+      enabled: true,
+      action: "cancelBuild",
       feature: subject.id,
     });
   }
@@ -380,6 +397,8 @@ export interface CommandPanelHandlers {
   onCancel(): void;
   /** Spec 37: sell the selected complete building (after the second tap). */
   onSell(): void;
+  /** Cancel Construction on the selected unfinished building (full refund). */
+  onCancelBuild?(): void;
   /** Spec 31 block 2: the Garrison button was pressed for `feature`. */
   onGarrison?(feature: number): void;
   /** Spec 31 block 2: the Evacuate button was pressed for `feature`. */
@@ -841,6 +860,17 @@ export function createCommandPanel(
         handlers.onSell();
       });
       element.classList.toggle("danger", sellArmed);
+      structureRows.push(element);
+    }
+    const cancelBuild = has("cancelBuild");
+    if (cancelBuild !== undefined) {
+      const element = actionButton(
+        "cancelBuild",
+        "sell",
+        cancelBuild.label,
+        () => handlers.onCancelBuild?.(),
+      );
+      element.classList.add("danger");
       structureRows.push(element);
     }
     if (evacuate !== undefined) {
