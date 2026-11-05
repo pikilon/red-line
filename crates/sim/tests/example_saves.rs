@@ -527,3 +527,13 @@ fn tutorial_waves_reach_the_power_plant() {
         assert!(hit, "{id}: the wave reaches the power plant");
     }
 }
+
+/// Issue #456: on Irpin an AI rifleman sent to a cell on the map border
+/// stepped past its edge target and left the map at tick 3647, which froze
+/// the whole match. Every unit must stay inside the map.
+#[test]
+fn foot_units_never_leave_the_map() {
+    let (mut world, _, mut ais) = load_example("campaign-ua-02-irpin");
+    run(&mut world, &mut ais, 4000);
+    assert!(world.tick() >= 4000);
+}
