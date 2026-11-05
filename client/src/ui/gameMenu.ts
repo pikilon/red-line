@@ -1,4 +1,4 @@
-import { t } from "../i18n";
+import { type MessageKey, t } from "../i18n";
 import {
   DEFAULT_AUDIO_AMBIENT,
   DEFAULT_AUDIO_MASTER,
@@ -92,6 +92,23 @@ interface VolumeSliderRow {
   defaultVal: number;
 }
 
+/** The Controls page lines, in order (spec 08 §3.11). */
+export const CONTROL_LINES: readonly MessageKey[] = [
+  "controls.groupSet",
+  "controls.groupSelect",
+  "controls.groupAdd",
+  "controls.selectScreen",
+  "controls.selectAll",
+  "controls.sameType",
+  "controls.centre",
+  "controls.stop",
+  "controls.deselect",
+  "controls.cancel",
+  "controls.forceFire",
+  "controls.pan",
+  "controls.pause",
+];
+
 /** The full-screen game menu: a backdrop with a centred panel holding the
  *  title and the Resume, Gore, AI and Restart buttons (§3.3). Buttons are
  *  created once, so they stay clickable with a real mouse (spec 08 §3.1,
@@ -119,7 +136,8 @@ export function createGameMenu(
   const panel = makePage("game-menu-main");
   const soundPage = makePage("game-menu-sound");
   const debugPage = makePage("game-menu-debug");
-  const pages = [panel, soundPage, debugPage];
+  const controlsPage = makePage("game-menu-controls");
+  const pages = [panel, soundPage, debugPage, controlsPage];
   const report = actions.report;
   if (report !== undefined) pages.push(report.page);
   const showPage = (page: HTMLElement): void => {
@@ -278,6 +296,19 @@ export function createGameMenu(
       ),
     );
   }
+  // Spec 08 §3.11: the keys and mouse actions, one line each.
+  for (const key of CONTROL_LINES) {
+    const line = document.createElement("div");
+    line.className = "game-menu-control";
+    line.textContent = t(key);
+    controlsPage.appendChild(line);
+  }
+  controlsPage.appendChild(backButton("game-menu-controls-back"));
+  panel.appendChild(
+    createButton("game-menu-controls-open", t("menu.controls"), () =>
+      showPage(controlsPage),
+    ),
+  );
   debugPage.appendChild(backButton("game-menu-debug-back"));
   panel.appendChild(
     createButton("game-menu-debug-open", t("menu.debug"), () =>

@@ -99,10 +99,12 @@ describe("game menu", () => {
     let buttons = buttonsOf(menu.root);
     expect(buttons.map((button) => button.textContent)).toEqual([
       "Resume",
+      "Controls",
       "Debug",
       "Restart match",
       "Gore: off",
       "AI: on",
+      "Back",
       "Back",
     ]);
 
@@ -122,26 +124,26 @@ describe("game menu", () => {
 
     // The gore label follows the view.
     menu.render({ open: true, gore: true, ai: true });
-    expect(buttonsOf(menu.root)[3]?.textContent).toBe("Gore: on");
+    expect(buttonsOf(menu.root)[4]?.textContent).toBe("Gore: on");
     menu.render({ open: true, gore: false, ai: true });
-    expect(buttonsOf(menu.root)[3]?.textContent).toBe("Gore: off");
+    expect(buttonsOf(menu.root)[4]?.textContent).toBe("Gore: off");
 
     // The AI label follows the view; `ai: null` hides the AI button.
     menu.render({ open: true, gore: false, ai: false });
-    expect(buttonsOf(menu.root)[4]?.textContent).toBe("AI: off");
-    expect(buttonsOf(menu.root)[4]?.hidden).toBe(false);
+    expect(buttonsOf(menu.root)[5]?.textContent).toBe("AI: off");
+    expect(buttonsOf(menu.root)[5]?.hidden).toBe(false);
     menu.render({ open: true, gore: false, ai: null });
-    expect(buttonsOf(menu.root)[4]?.hidden).toBe(true);
+    expect(buttonsOf(menu.root)[5]?.hidden).toBe(true);
     menu.render({ open: true, gore: false, ai: true });
-    expect(buttonsOf(menu.root)[4]?.textContent).toBe("AI: on");
-    expect(buttonsOf(menu.root)[4]?.hidden).toBe(false);
+    expect(buttonsOf(menu.root)[5]?.textContent).toBe("AI: on");
+    expect(buttonsOf(menu.root)[5]?.hidden).toBe(false);
 
     // Clicking each button calls its action once.
     buttons = buttonsOf(menu.root);
     buttons[0]?.click();
-    buttons[3]?.click();
     buttons[4]?.click();
-    buttons[2]?.click();
+    buttons[5]?.click();
+    buttons[3]?.click();
     expect(actions.resume).toHaveBeenCalledTimes(1);
     expect(actions.toggleGore).toHaveBeenCalledTimes(1);
     expect(actions.toggleAi).toHaveBeenCalledTimes(1);
@@ -150,5 +152,37 @@ describe("game menu", () => {
     // `open: false` sets `hidden`.
     menu.render({ open: false, gore: false, ai: true });
     expect(menu.root.hidden).toBe(true);
+  });
+  it("AC-08-33: the Controls page lists the keys and mouse actions", () => {
+    const dom = createFakeDom();
+    vi.stubGlobal("document", {
+      createElement: (tagName: string) => dom.element(tagName),
+    });
+    const actions: GameMenuActions = {
+      resume: vi.fn(),
+      toggleGore: vi.fn(),
+      toggleAi: vi.fn(),
+      restart: vi.fn(),
+    };
+    const menu = createGameMenu(
+      dom.element() as unknown as HTMLElement,
+      actions,
+    );
+    const panel = (menu.root as unknown as FakeElement).children[0];
+    const lines = (panel?.children ?? [])
+      .flatMap((page) => page.children)
+      .filter((child) => child.tagName === "div")
+      .map((child) => child.textContent);
+    for (const key of [
+      "Ctrl + 1-9",
+      "Q ·",
+      "E ·",
+      "Backspace ·",
+      "Z ·",
+      "Right click",
+      "Esc ·",
+    ]) {
+      expect(lines.some((line) => line.startsWith(key))).toBe(true);
+    }
   });
 });

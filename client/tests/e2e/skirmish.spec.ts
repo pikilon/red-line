@@ -362,9 +362,10 @@ test("AC-03-56: builds a power plant through the UI", async ({ page }) => {
   }
   await expect(plantButton).toBeEnabled();
   await plantButton.click();
-  // The right button is inert: it does not cancel placement.
-  await clickTiles(page, 25.5, 68.5, "right");
-  await expect(plantButton).toHaveAttribute("aria-pressed", "true");
+  // A right click on the map leaves placement (spec 08 §3.11).
+  // On a tile the next left click already uses, clear of the HUD panels.
+  await clickTiles(page, 19.5, 58.5, "right");
+  await expect(plantButton).toHaveAttribute("aria-pressed", "false");
   await page.keyboard.press("Escape");
   await clickTiles(page, 19.5, 58.5);
   await page.waitForTimeout(1000);
@@ -646,7 +647,7 @@ test("AC-03-59: attacks with a left click", async ({ page }) => {
   expect(await entityCount(page, 0, leopardKind)).toBeGreaterThan(0);
 });
 
-test("AC-08-26: left click moves, attacks and selects; right is inert", async ({
+test("AC-08-26: left click moves, attacks and selects; right deselects", async ({
   page,
 }) => {
   await bootDebug(page, "debug=1&speed=4");
@@ -715,13 +716,15 @@ test("AC-08-26: left click moves, attacks and selects; right is inert", async ({
     .poll(() => debugCall(page, (api) => api.selectedIds()))
     .toEqual([second.id]);
 
-  // The right button does nothing: no order and no deselection.
+  // A right click gives no order and clears the selection (spec 08 §3.11).
   await clickTiles(page, 35, 66, "right");
   await page.waitForTimeout(ms(300));
   expect((await savedOrder(page, second.id))?.kind ?? null).not.toBe("move");
-  expect(await debugCall(page, (api) => api.selectedIds())).toEqual([
-    second.id,
-  ]);
+  expect(await debugCall(page, (api) => api.selectedIds())).toEqual([]);
+  await clickTiles(page, second.x, second.y);
+  await expect
+    .poll(() => debugCall(page, (api) => api.selectedIds()))
+    .toEqual([second.id]);
 
   // An enemy is attacked by a plain left click.
   await clickTiles(page, enemy.x, enemy.y);
@@ -832,8 +835,7 @@ test("AC-20-03: force-fires with Ctrl and the left button", async ({
     .toBe("attack");
   expect((await savedOrder(page, himars.id))?.target).toBe(plant.id);
 
-  // The right button is inert: Ctrl + right click neither force-fires nor
-  // clears the selection.
+  // Ctrl + right click does not force-fire; it deselects like a right click.
   await debugCall(
     page,
     (api, id: number) => {
@@ -853,7 +855,8 @@ test("AC-20-03: force-fires with Ctrl and the left button", async ({
       (api, id: number) => api.selectedIds().includes(id),
       himars.id,
     ),
-  ).toBe(true);
+  ).toBe(false);
+  await clickTiles(page, himars.x, himars.y);
 
   // A plain left click on the enemy is enough to attack it (owner request).
   await clickTiles(page, plant.x, plant.y);
@@ -1125,4 +1128,72 @@ test("AC-03-67: draws the selection box while dragging", async ({ page }) => {
   await expect(page.locator("#picked")).toHaveText(
     "Territorial Defense rifleman x 2",
   );
+});
+
+test("AC-08-32: Q, E, Backspace, Z and the Controls page", async ({ page }) => {
+  await bootDebug(page, "debug=1&speed=4&ai=off");
+  const rifleKind = await kindOf(page, "ua-rifleman");
+  await spawnAt(page, 0, rifleKind, 30.5, 62.5);
+  await spawnAt(page, 0, rifleKind, 32.5, 62.5);
+  await expect
+    .poll(() => entityCount(page, 0, rifleKind), { timeout: ms(5000) })
+    .toBe(2);
+  await debugCall(page, (api) => api.setCameraTarget(31.5, 62.5));
+  const own = await debugCall(
+    page,
+    (api, kind: number) =>
+      api
+        .entities()
+        .filter((entity) => entity.owner === 0 && entity.kind === kind)
+        .sort((a, b) => a.x - b.x),
+    rifleKind,
+  );
+  const ids = own.map((entity) => entity.id);
+
+  // Q selects every own unit on the screen (the starting dozer too).
+  await page.keyboard.press("q");
+  await expect
+    .poll(() => debugCall(page, (api) => api.selectedIds()))
+    .toEqual(expect.arrayContaining(ids));
+
+  // Right click clears; E widens one unit to its type on the screen.
+  await clickTiles(page, 35, 66, "right");
+  await expect
+    .poll(() => debugCall(page, (api) => api.selectedIds()))
+    .toEqual([]);
+  await clickTiles(page, own[0]?.x ?? 0, own[0]?.y ?? 0);
+  await page.keyboard.press("e");
+  await expect
+    .poll(() => debugCall(page, (api) => api.selectedIds()))
+    .toEqual(ids);
+
+  // Backspace centres the camera on the selection.
+  await debugCall(page, (api) => api.setCameraTarget(10, 10));
+  await page.keyboard.press("Backspace");
+  await expect
+    .poll(async () => (await debugCall(page, (api) => api.cameraTarget())).x)
+    .toBeGreaterThan(25);
+
+  // Z stops: a move order is replaced.
+  await clickTiles(page, 35, 66);
+  await expect
+    .poll(async () => (await savedOrder(page, ids[0] ?? -1))?.kind, {
+      timeout: ms(5000),
+    })
+    .toBe("move");
+  await page.keyboard.press("z");
+  await expect
+    .poll(async () => (await savedOrder(page, ids[0] ?? -1))?.kind ?? null, {
+      timeout: ms(5000),
+    })
+    .not.toBe("move");
+
+  // The Esc menu lists the keys (Controls page).
+  await page.keyboard.press("Escape");
+  await page.locator("#game-menu-controls-open").click();
+  await expect(page.locator("#game-menu-controls")).toContainText(
+    "Backspace · Centre the camera on the selection",
+  );
+  await page.locator("#game-menu-controls-back").click();
+  await expect(page.locator("#game-menu-main")).toBeVisible();
 });

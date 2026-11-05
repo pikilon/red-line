@@ -135,6 +135,14 @@ test("AC-02-41: moves selected units with left click", async ({ page }) => {
   await page.waitForTimeout(ms(300));
   expect(await debugCall(page, (api) => api.isMoving(0))).toBe(false);
   expect(await debugCall(page, (api) => api.unitPosition(0))).toEqual(unit);
+  // The right click deselects (spec 08 §3.11): select the unit again.
+  await expect
+    .poll(() => debugCall(page, (api) => api.selectedIds()))
+    .toEqual([]);
+  await page.mouse.click(point.x, point.y);
+  await expect
+    .poll(() => debugCall(page, (api) => api.selectedIds()))
+    .toEqual([0]);
 
   await page.mouse.click(target.x, target.y);
   await expect
