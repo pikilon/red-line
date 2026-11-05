@@ -46,6 +46,8 @@ export interface SkirmishSimLike {
   /** Spec 46: 1 per alive id; newer sims only. */
   alive?(ids: Uint32Array): Uint8Array;
   attach_ai(player: number, personality: string): void;
+  /** Spec 05 §9: newer sims only. */
+  set_ai_difficulty?(player: number, difficulty: string): void;
   set_ai_active(player: number, active: boolean): boolean;
   snapshot_for(viewer: number): Int32Array;
   fog_for(viewer: number): Uint8Array;
@@ -445,6 +447,9 @@ export function createWorkerHandler(
       if (message.ai != null) {
         try {
           created.attach_ai(AI_PLAYER, message.ai);
+          if (message.difficulty !== undefined) {
+            created.set_ai_difficulty?.(AI_PLAYER, message.difficulty);
+          }
           aiPlayers.add(AI_PLAYER);
           if (message.demoAi !== undefined) {
             created.attach_ai(0, message.demoAi);
@@ -522,6 +527,9 @@ export function createWorkerHandler(
       if (!aiPlayers.has(opponent)) {
         try {
           skirmish.attach_ai(opponent, message.personality);
+          if (message.difficulty !== undefined) {
+            skirmish.set_ai_difficulty?.(opponent, message.difficulty);
+          }
           aiPlayers.add(opponent);
         } catch (error) {
           post({ type: "error", detail: String(error) });

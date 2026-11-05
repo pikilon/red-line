@@ -12,8 +12,9 @@ import { goalText, TUTORIALS, type TutorialMission } from "./tutorial";
 
 /** Callbacks of the main menu buttons (spec 45 §4). */
 export interface MainMenuActions {
-  /** Leaves the shell battle for a new skirmish. */
-  skirmish(): void;
+  /** Leaves the shell battle for a new skirmish against an AI of
+   *  `difficulty` (spec 05 §9). */
+  skirmish(difficulty: string): void;
   /** Opens the save manager in load mode (spec 19 §5.5). */
   loadGame(): void;
   /** Starts a tutorial mission (spec 46). */
@@ -29,6 +30,14 @@ export interface MainMenuActions {
   /** Sets a bus volume 0..100. */
   setVolume(channel: VolumeSliderChannel, value: number): void;
 }
+
+/** Spec 05 §9: Zero Hour's skirmish armies, easiest first, plus Brutal. */
+const DIFFICULTY_ROWS: [string, MessageKey][] = [
+  ["easy", "mainMenu.difficultyEasy"],
+  ["medium", "mainMenu.difficultyMedium"],
+  ["hard", "mainMenu.difficultyHard"],
+  ["brutal", "mainMenu.difficultyBrutal"],
+];
 
 const VOLUME_ROWS: [VolumeSliderChannel, MessageKey][] = [
   ["audioMaster", "menu.volumeMaster"],
@@ -73,8 +82,13 @@ export function createMainMenu(
   const campaigns = document.createElement("div");
   campaigns.className = "main-menu-page";
   campaigns.hidden = true;
+  const skirmish = document.createElement("div");
+  skirmish.className = "main-menu-page";
+  skirmish.id = "main-menu-skirmish-page";
+  skirmish.hidden = true;
   const show = (page: HTMLElement): void => {
     main.hidden = page !== main;
+    skirmish.hidden = page !== skirmish;
     tutorials.hidden = page !== tutorials;
     sound.hidden = page !== sound;
     campaigns.hidden = page !== campaigns;
@@ -99,7 +113,7 @@ export function createMainMenu(
         show(campaigns);
       },
     ],
-    ["main-menu-skirmish", "mainMenu.skirmish", actions.skirmish],
+    ["main-menu-skirmish", "mainMenu.skirmish", () => show(skirmish)],
     ["main-menu-tutorials", "mainMenu.tutorials", () => show(tutorials)],
     ["main-menu-load", "mainMenu.loadGame", actions.loadGame],
     ["main-menu-sound", "menu.sound", () => show(sound)],
@@ -125,6 +139,20 @@ export function createMainMenu(
   tutorials.appendChild(
     menuButton("main-menu-back", t("mainMenu.back"), () => show(main)),
   );
+  // Spec 05 §9: pick the opponent's difficulty, as Zero Hour's skirmish slots.
+  const opponent = document.createElement("h2");
+  opponent.textContent = t("mainMenu.opponent");
+  skirmish.appendChild(opponent);
+  for (const [difficulty, key] of DIFFICULTY_ROWS) {
+    skirmish.appendChild(
+      menuButton(`main-menu-difficulty-${difficulty}`, t(key), () =>
+        actions.skirmish(difficulty),
+      ),
+    );
+  }
+  skirmish.appendChild(
+    menuButton("main-menu-skirmish-back", t("mainMenu.back"), () => show(main)),
+  );
   for (const [channel, key] of VOLUME_ROWS) {
     const label = document.createElement("label");
     const input = document.createElement("input");
@@ -147,7 +175,7 @@ export function createMainMenu(
   sound.appendChild(
     menuButton("main-menu-sound-back", t("mainMenu.back"), () => show(main)),
   );
-  panel.append(main, tutorials, sound, campaigns);
+  panel.append(main, skirmish, tutorials, sound, campaigns);
   element.appendChild(panel);
   const open = actions.openCampaign ?? null;
   const target = findCampaignMission(open);

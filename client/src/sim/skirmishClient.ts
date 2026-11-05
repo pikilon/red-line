@@ -30,7 +30,7 @@ export interface SkirmishClient {
   /** Pauses or resumes the skirmish AI (spec 08 §3.3). */
   setAiActive(active: boolean): void;
   /** Gives the AI the side opposite `human` (spec 08 §3.5). */
-  setAiSide(human: number, personality: string): void;
+  setAiSide(human: number, personality: string, difficulty?: string): void;
   requestHash(): Promise<string>;
   /** Which of `ids` are alive, regardless of fog (spec 46). */
   requestAlive(ids: readonly number[]): Promise<boolean[]>;
@@ -70,6 +70,8 @@ export type SkirmishStart =
       ai?: string | null;
       /** Personality attached to player 0 as well (spec 45 §3). */
       demoAi?: string;
+      /** Difficulty of the player 1 AI (spec 05 §9). */
+      difficulty?: string;
     }
   | {
       save: { form: "world" | "setup"; json: string };
@@ -177,6 +179,9 @@ export function createSkirmishClient(
     if (options.demoAi !== undefined) {
       init.demoAi = options.demoAi;
     }
+    if (options.difficulty !== undefined) {
+      init.difficulty = options.difficulty;
+    }
     worker.postMessage(init);
   }
 
@@ -198,12 +203,15 @@ export function createSkirmishClient(
       const message: SetAiActiveMessage = { type: "setAiActive", active };
       worker.postMessage(message);
     },
-    setAiSide(human: number, personality: string) {
+    setAiSide(human: number, personality: string, difficulty?: string) {
       const message: SetAiSideMessage = {
         type: "setAiSide",
         human,
         personality,
       };
+      if (difficulty !== undefined) {
+        message.difficulty = difficulty;
+      }
       worker.postMessage(message);
     },
     requestHash() {

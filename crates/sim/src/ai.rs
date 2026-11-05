@@ -12,7 +12,9 @@ use crate::fixed::{Fx, FxVec2};
 use crate::map::{Cell, cell_of};
 use crate::nav::footprint_center;
 use crate::rng::SplitMix64;
-use crate::rules::{AiDef, Category, FactionId, LocoKind, Ruleset, TypeId, fx_centi};
+use crate::rules::{
+    AiDef, AiDifficultyDef, Category, FactionId, LocoKind, Ruleset, TypeId, fx_centi,
+};
 use crate::save::AiState;
 use crate::world::{Command, Outcome, World};
 
@@ -39,6 +41,24 @@ pub struct Ai {
     active: bool,
     /// Spec 43 §5: indices of the `once` triggers already taken.
     opened: Vec<u16>,
+    /// Spec 05 §9: the difficulty level this AI plays at.
+    tuning: AiDifficultyDef,
+}
+
+/// Spec 05 §9: the difficulty `id` of `rules`. `medium` falls back to the
+/// built-in Medium for rulesets without difficulty levels.
+fn difficulty_of(rules: &Ruleset, id: &str) -> Result<AiDifficultyDef, String> {
+    match rules.ai_difficulty_index(id) {
+        Some(index) => Ok(rules.ai_difficulties[index].clone()),
+        None if id == "medium" => Ok(AiDifficultyDef::default()),
+        None => Err(format!("unknown difficulty {id}")),
+    }
+}
+
+/// `count` scaled by `percent`, rounded up and at least 1 (spec 05 §9).
+fn scaled_count(count: u32, percent: u32) -> u32 {
+    let scaled = (u64::from(count) * u64::from(percent)).div_ceil(100);
+    u32::try_from(scaled).unwrap_or(u32::MAX).max(1)
 }
 
 impl core::fmt::Debug for Ai {
@@ -81,7 +101,19 @@ impl Ai {
             attackers: Vec::new(),
             active: true,
             opened: Vec::new(),
+            tuning: difficulty_of(world.rules(), "medium")?,
         })
+    }
+
+    /// Spec 05 §9: plays at the difficulty `id`, or errors naming it.
+    pub fn set_difficulty(&mut self, rules: &Ruleset, id: &str) -> Result<(), String> {
+        self.tuning = difficulty_of(rules, id)?;
+        Ok(())
+    }
+
+    /// Spec 05 §9: the difficulty level this AI plays at.
+    pub fn difficulty(&self) -> &AiDifficultyDef {
+        &self.tuning
     }
 
     /// Saved state (spec 19 §3.2). Destructures exhaustively so a new field
@@ -95,6 +127,7 @@ impl Ai {
             attackers,
             active,
             opened,
+            tuning,
         } = self;
         AiState {
             player: *player,
@@ -104,6 +137,7 @@ impl Ai {
             attackers: attackers.clone(),
             active: *active,
             opened: opened.clone(),
+            difficulty: tuning.id.clone(),
         }
     }
 
@@ -124,6 +158,8 @@ impl Ai {
             attackers: state.attackers.clone(),
             active: state.active,
             opened: state.opened.clone(),
+            tuning: difficulty_of(rules, &state.difficulty)
+                .map_err(|_| format!("unknown ai difficulty: {}", state.difficulty))?,
         })
     }
 
@@ -198,7 +234,8 @@ impl Ai {
 
         // 2. Trucks: keep `harvesters` of them, queued ones included.
         if let Some(truck) = truck_kind(rules, faction)
-            && count_kind(world, player, truck) + queued(world, player, truck) < def.harvesters
+            && count_kind(world, player, truck) + queued(world, player, truck)
+                < def.harvesters + self.tuning.extra_harvesters
             && let Some(producer) = producer_of(world, player, truck)
         {
             let cost = rules.ty(truck).cost;
@@ -366,13 +403,35 @@ impl Ai {
         if !defending || stranded {
             // 6. Production: select a task force, then produce its missing
             // units, stopping when the budget or the producers run out.
+            // Spec 05 §9 (Hard and Brutal): only task forces the base can
+            // build now are chosen, and one that became unbuildable (its
+            // factory lost) is dropped instead of waited for.
+            let smart = self.tuning.buildable_forces_only;
+            let buildable = |index: u16| {
+                !smart
+                    || def.task_forces[usize::from(index)]
+                        .units
+                        .iter()
+                        .all(|&(kind, _)| can_produce(world, player, kind))
+            };
+            if self.force.is_some_and(|index| !buildable(index)) {
+                self.force = None;
+            }
             if self.force.is_none() {
-                self.force = choose_force(def, world.tick(), &mut self.rng, &mut self.opened);
+                self.force = choose_force(
+                    def,
+                    world.tick(),
+                    self.tuning.trigger_delay_percent,
+                    &buildable,
+                    &mut self.rng,
+                    &mut self.opened,
+                );
             }
             if let Some(force_index) = self.force {
                 let force = &def.task_forces[usize::from(force_index)];
                 let mut extra: BTreeMap<EntityId, u32> = BTreeMap::new();
                 'produce: for &(kind, count) in &force.units {
+                    let count = scaled_count(count, self.tuning.force_percent);
                     let have = pool_of_kind(world, player, faction, &self.attackers, kind)
                         + queued(world, player, kind);
                     let missing = count.saturating_sub(have);
@@ -397,8 +456,10 @@ impl Ai {
             // 7. Launch: once the whole force waits in the pool, commit it.
             if !defending && let Some(force_index) = self.force {
                 let force = &def.task_forces[usize::from(force_index)];
+                let percent = self.tuning.force_percent;
                 let ready = force.units.iter().all(|&(kind, count)| {
-                    pool_of_kind(world, player, faction, &self.attackers, kind) >= count
+                    pool_of_kind(world, player, faction, &self.attackers, kind)
+                        >= scaled_count(count, percent)
                 });
                 if ready {
                     let members = pool(world, player, faction, &self.attackers);
@@ -410,13 +471,36 @@ impl Ai {
                                 .filter(|&id| {
                                     world.entity(id).is_some_and(|entity| entity.kind == kind)
                                 })
-                                .take(count as usize),
+                                .take(scaled_count(count, percent) as usize),
                         );
                     }
                     self.attackers.extend(launched.iter().copied());
                     self.force = None;
                     commands.extend(launch_orders(world, player, &launched));
                 }
+            }
+        }
+
+        // 7a. Retreat (spec 05 §9, Hard and Brutal): attackers worn below the
+        // threshold leave the attack and dock at a factory to be repaired.
+        if self.tuning.retreat_hp_percent > 0 {
+            let percent = self.tuning.retreat_hp_percent;
+            let worn: Vec<EntityId> = self
+                .attackers
+                .iter()
+                .copied()
+                .filter(|id| !launched.contains(id))
+                .filter(|&id| {
+                    world.entity(id).is_some_and(|entity| {
+                        !is_strike(world, entity)
+                            && u64::from(entity.hp) * 100
+                                < u64::from(rules.ty(entity.kind).hp) * u64::from(percent)
+                    })
+                })
+                .collect();
+            for (factory, units) in retreat_plan(world, player, &worn) {
+                self.attackers.retain(|id| !units.contains(id));
+                commands.push(Command::RepairVehicle { units, factory });
             }
         }
 
@@ -454,17 +538,20 @@ impl Ai {
     }
 }
 
-/// When `world.tick() % AI_THINK_INTERVAL == 0`, each active AI in slice order thinks
-/// and its commands are enqueued with `enqueue_as(ai.player(), ..)`; then
-/// `world.step()` runs once.
+/// Each active AI whose think interval divides `world.tick()` thinks, in slice
+/// order, and its commands are enqueued with `enqueue_as(ai.player(), ..)`;
+/// then `world.step()` runs once. The interval is its difficulty's
+/// `think_ticks` (spec 05 §9; Medium keeps `AI_THINK_INTERVAL`).
 pub fn step_with_ai(world: &mut World, ais: &mut [Ai]) {
-    if world.tick().is_multiple_of(AI_THINK_INTERVAL) {
-        for ai in ais.iter_mut().filter(|ai| ai.is_active()) {
-            let player = ai.player();
-            let commands = ai.think(world);
-            for command in commands {
-                world.enqueue_as(player, command);
-            }
+    let tick = world.tick();
+    for ai in ais
+        .iter_mut()
+        .filter(|ai| ai.is_active() && tick.is_multiple_of(ai.tuning.think_ticks.max(1)))
+    {
+        let player = ai.player();
+        let commands = ai.think(world);
+        for command in commands {
+            world.enqueue_as(player, command);
         }
     }
     world.step();
@@ -523,6 +610,15 @@ fn producer_of(world: &World, player: PlayerId, kind: TypeId) -> Option<EntityId
         }
     }
     best.map(|(_, id)| id)
+}
+
+/// Whether a completed own building produces `kind` (spec 05 §9).
+fn can_produce(world: &World, player: PlayerId, kind: TypeId) -> bool {
+    world.entities().iter().any(|entity| {
+        entity.owner == player
+            && entity.site.as_ref().is_some_and(|site| site.complete)
+            && world.rules().ty(entity.kind).produces.contains(&kind)
+    })
 }
 
 /// Nearest depot with `hp > 0` by squared distance, ties the lowest id.
@@ -720,6 +816,8 @@ fn pool(
                 && entity.master.is_none()
                 && !is_guard(rules, faction, entity.kind)
                 && !attackers.contains(&entity.id)
+                // Spec 05 §9: a retreated vehicle stays docked until repaired.
+                && !matches!(entity.order, Order::RepairVehicle { .. })
         })
         .map(|entity| entity.id)
         .collect()
@@ -991,20 +1089,28 @@ fn threats_in(world: &World, player: PlayerId, radius_centi: u32, airborne: bool
 fn choose_force(
     def: &AiDef,
     tick: u32,
+    delay_percent: u32,
+    buildable: &dyn Fn(u16) -> bool,
     rng: &mut SplitMix64,
     opened: &mut Vec<u16>,
 ) -> Option<u16> {
+    // Spec 05 §9: the difficulty stretches or shortens every `minTick`.
+    let due =
+        |min_tick: u32| u64::from(min_tick) * u64::from(delay_percent) / 100 <= u64::from(tick);
     let opening = def.triggers.iter().enumerate().find(|&(index, trigger)| {
-        trigger.once && trigger.min_tick <= tick && !opened.contains(&(index as u16))
+        trigger.once
+            && due(trigger.min_tick)
+            && !opened.contains(&(index as u16))
+            && buildable(trigger.task_force)
     });
     if let Some((index, trigger)) = opening {
         opened.push(index as u16);
         return Some(trigger.task_force);
     }
     let weighted = || {
-        def.triggers
-            .iter()
-            .filter(|trigger| !trigger.once && trigger.min_tick <= tick)
+        def.triggers.iter().filter(|trigger| {
+            !trigger.once && due(trigger.min_tick) && buildable(trigger.task_force)
+        })
     };
     let total: u64 = weighted().map(|trigger| u64::from(trigger.weight)).sum();
     if total == 0 {
@@ -1110,6 +1216,32 @@ fn target_from_centroid(world: &World, player: PlayerId, c: FxVec2) -> Option<Or
     }
     // 4. The first map start that is not `player`.
     enemy_start_center(world, player).map(OrderTarget::Position)
+}
+
+/// Spec 05 §9: each worn unit an own repair factory takes (the lowest id
+/// that does), grouped per factory. Units nothing can repair keep fighting, so
+/// they never shuttle between the front and a base that cannot mend them.
+fn retreat_plan(
+    world: &World,
+    player: PlayerId,
+    units: &[EntityId],
+) -> BTreeMap<EntityId, Vec<EntityId>> {
+    let factories: Vec<EntityId> = world
+        .entities()
+        .iter()
+        .filter(|entity| entity.owner == player && world.rules().ty(entity.kind).repairs_vehicles)
+        .map(|entity| entity.id)
+        .collect();
+    let mut docking: BTreeMap<EntityId, Vec<EntityId>> = BTreeMap::new();
+    for &id in units {
+        if let Some(&factory) = factories
+            .iter()
+            .find(|&&factory| world.can_repair_vehicle_at(id, factory))
+        {
+            docking.entry(factory).or_default().push(id);
+        }
+    }
+    docking
 }
 
 /// Least-dist² visible entity matching `accept`, ties the lowest id.

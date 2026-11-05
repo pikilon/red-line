@@ -247,6 +247,16 @@ export const DEFAULT_MAP = "river-port";
 export const DEFAULT_SEED = 1;
 /** Opponent personality attached to player 1 by default (spec 05 §7). */
 export const DEFAULT_AI = "russia-balanced";
+/** Spec 05 §9: the `?difficulty=` levels; anything else plays Medium. */
+export const AI_DIFFICULTIES = ["easy", "medium", "hard", "brutal"] as const;
+export type AiDifficulty = (typeof AI_DIFFICULTIES)[number];
+export const DEFAULT_DIFFICULTY: AiDifficulty = "medium";
+
+/** The `?difficulty=` level, Medium when absent or unknown. */
+function readDifficulty(params: URLSearchParams): AiDifficulty {
+  const value = params.get("difficulty");
+  return AI_DIFFICULTIES.find((d) => d === value) ?? DEFAULT_DIFFICULTY;
+}
 
 /** Ids of the example saves, in menu order (spec 19 §4.3). */
 const EXAMPLE_IDS: readonly string[] = savesIndex.saves.map((save) => save.id);
@@ -378,6 +388,7 @@ function paramsBoot(params: URLSearchParams): SkirmishBoot {
   // `?ai=off` keeps the Phase 2 hot-seat behaviour (spec 05 §7).
   const aiParam = params.get("ai");
   const ai = aiParam === "off" ? null : (aiParam ?? DEFAULT_AI);
+  const difficulty = readDifficulty(params);
   const speed = debug
     ? Math.min(MAX_SPEED_SKIRMISH, Math.max(1, readInt(params, "speed", 1)))
     : 1;
@@ -388,7 +399,15 @@ function paramsBoot(params: URLSearchParams): SkirmishBoot {
     debug,
     speed,
     aiActive: ai === null ? null : true,
-    start: { seed, mapId, viewer: loadSettings().side ?? 0, speed, debug, ai },
+    start: {
+      seed,
+      mapId,
+      viewer: loadSettings().side ?? 0,
+      speed,
+      debug,
+      ai,
+      difficulty,
+    },
     client: null,
     applySettings: false,
     loadedId: null,
@@ -1736,6 +1755,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     interact.setAiSide(
       controlled,
       `${RULES.factions[opponent]?.id ?? "russia"}-${suffix}`,
+      "difficulty" in boot.start ? boot.start.difficulty : undefined,
     );
   }
 
@@ -2435,9 +2455,9 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       { capture: true },
     );
     createMainMenu(document.body, {
-      skirmish: () => {
+      skirmish: (difficulty) => {
         uiClick();
-        window.location.assign("?mode=skirmish");
+        window.location.assign(`?mode=skirmish&difficulty=${difficulty}`);
       },
       loadGame: () => {
         uiClick();

@@ -129,6 +129,14 @@ export function buildRuleset(sources) {
   const featureTypes = checkFeatureTypes(sources.features ?? [], featureFiles, fail, globals);
   const layers = sources.maps.map((source, i) => checkMap(source.file, maps[i], globals, factions, featureTypes, fail));
   (sources.ai ?? []).forEach((source, i) => checkAi(source.file, ai[i], factions, fail));
+  // Spec 05 §9: unique difficulty ids, one of them the default `medium`.
+  const difficulties = (globals.aiDifficulties ?? []).map((d) => d.id);
+  difficulties.forEach((id, i) => {
+    if (difficulties.indexOf(id) !== i) fail(sources.globals.file, `/aiDifficulties/${i}/id`, "duplicate-id", `duplicate difficulty ${id}`);
+  });
+  if (difficulties.length > 0 && !difficulties.includes("medium")) {
+    fail(sources.globals.file, "/aiDifficulties", "invalid-value", "aiDifficulties needs a medium entry");
+  }
   if (errors.length > 0) return { ruleset: null, errors };
 
   return { ruleset: assemble(globals, factions, maps, ai, featureTypes, layers, environment), errors };
@@ -801,6 +809,21 @@ const assemble = (globals, factions, maps, ai, featureTypes, layers, environment
         ...(t.once === true ? { once: true } : {}),
       })),
     })),
+    // Spec 05 §9: AI difficulty levels, easiest first; omitted when absent.
+    ...(globals.aiDifficulties === undefined
+      ? {}
+      : {
+          aiDifficulties: globals.aiDifficulties.map((d) => ({
+            id: d.id,
+            thinkTicks: d.thinkTicks,
+            forcePercent: d.forcePercent,
+            triggerDelayPercent: d.triggerDelayPercent,
+            extraHarvesters: d.extraHarvesters ?? 0,
+            incomePercent: d.incomePercent,
+            retreatHpPercent: d.retreatHpPercent ?? 0,
+            buildableForcesOnly: d.buildableForcesOnly ?? false,
+          })),
+        }),
   };
 };
 

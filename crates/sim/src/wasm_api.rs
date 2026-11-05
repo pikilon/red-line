@@ -96,9 +96,23 @@ impl Sim {
     /// AI; attaching again replaces it (§5.7).
     pub fn attach_ai(&mut self, player: u8, personality: &str) -> Result<(), String> {
         let ai = Ai::new(&self.world, player, personality, self.seed)?;
+        self.world
+            .set_income_percent(player, ai.difficulty().income_percent);
         self.ais.retain(|existing| existing.player() != player);
         self.ais.push(ai);
         self.ais.sort_by_key(Ai::player);
+        Ok(())
+    }
+
+    /// Spec 05 §9: sets the difficulty (`easy`, `medium`, `hard`, `brutal`) of
+    /// the AI of `player`. Errors when `player` has no AI or the id is unknown.
+    pub fn set_ai_difficulty(&mut self, player: u8, difficulty: &str) -> Result<(), String> {
+        let Some(ai) = self.ais.iter_mut().find(|ai| ai.player() == player) else {
+            return Err(format!("player {player} has no ai"));
+        };
+        ai.set_difficulty(self.world.rules(), difficulty)?;
+        let income = ai.difficulty().income_percent;
+        self.world.set_income_percent(player, income);
         Ok(())
     }
 

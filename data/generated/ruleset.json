@@ -28879,5 +28879,47 @@
         }
       ]
     }
+  ],
+  "aiDifficulties": [
+    {
+      "id": "easy",
+      "thinkTicks": 15,
+      "forcePercent": 100,
+      "triggerDelayPercent": 100,
+      "extraHarvesters": 0,
+      "incomePercent": 75,
+      "retreatHpPercent": 0,
+      "buildableForcesOnly": false
+    },
+    {
+      "id": "medium",
+      "thinkTicks": 15,
+      "forcePercent": 100,
+      "triggerDelayPercent": 100,
+      "extraHarvesters": 0,
+      "incomePercent": 100,
+      "retreatHpPercent": 0,
+      "buildableForcesOnly": false
+    },
+    {
+      "id": "hard",
+      "thinkTicks": 15,
+      "forcePercent": 100,
+      "triggerDelayPercent": 100,
+      "extraHarvesters": 1,
+      "incomePercent": 100,
+      "retreatHpPercent": 30,
+      "buildableForcesOnly": true
+    },
+    {
+      "id": "brutal",
+      "thinkTicks": 10,
+      "forcePercent": 100,
+      "triggerDelayPercent": 100,
+      "extraHarvesters": 2,
+      "incomePercent": 125,
+      "retreatHpPercent": 35,
+      "buildableForcesOnly": true
+    }
   ]
 }

@@ -118,6 +118,8 @@ export type InitSkirmishMessage = {
   /** Personality also attached to player 0: the main menu's AI-vs-AI battle
    *  (spec 45 §3). */
   demoAi?: string;
+  /** Difficulty of the player 1 AI (spec 05 §9); Medium when absent. */
+  difficulty?: string;
 };
 /** Builds the skirmish from a save (spec 19 §5.4); AIs come from the state. */
 export type InitFromSaveMessage = {
@@ -141,6 +143,8 @@ export type SetAiSideMessage = {
   type: "setAiSide";
   human: number;
   personality: string;
+  /** Difficulty of a newly attached AI (spec 05 §9). */
+  difficulty?: string;
 };
 export type MainToWorker =
   | InitMessage
