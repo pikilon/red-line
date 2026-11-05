@@ -1,0 +1,27 @@
+# Spec 48: Russia 9: the alternate-history march on the government quarter in Kyiv.
+id: campaign-ru-09-kyiv
+map: river-port
+victory: true
+debug: false
+starts: false
+credits: [15000, 12000]
+ai: [{ player: 0, personality: ukraine-balanced, active: true }]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 106, y: 44, zoom: 1 }
+entities:
+  - { player: 1, type: ru-hq, origin: [112, 42], label: hq }
+  - { player: 1, type: ru-dozer, atCenti: [10950, 4450] }
+  - { player: 1, type: ru-t-72b3, atCenti: [10000, 3800] }
+  - { player: 1, type: ru-t-72b3, atCenti: [10000, 4000] }
+  - { player: 1, type: ru-t-72b3, atCenti: [10000, 4200] }
+  - { player: 1, type: ru-t-72b3, atCenti: [10000, 4400] }
+  - { player: 1, type: ru-tos-1a, atCenti: [10400, 4000] }
+  - { player: 1, type: ru-tos-1a, atCenti: [10400, 4300] }
+  - { player: 0, type: ua-hq, origin: [12, 42], label: bankova }
+  - { player: 0, type: ua-dozer, atCenti: [1850, 4350] }
+  - { player: 0, type: ua-patriot, origin: [20, 36], label: patriot }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [2600, 4000] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [2600, 4200] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [2600, 4400] }

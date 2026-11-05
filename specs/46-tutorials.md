@@ -67,6 +67,6 @@ guided, what stops it (jammer, small arms, interceptors) and how to use it.
   presentation over example saves and has no balance numbers.
 * The step list lives in code because it names save entities by index; a
   test checks every index against the save.
-* No voice-over or briefing screen; the hint line plays the role of the
+* No voice-over or briefing screen (campaigns add one, spec 48); the hint line plays the role of the
   military captions.
 * The mission has no defeat: the player can reload it from the game menu.

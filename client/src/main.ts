@@ -18,7 +18,8 @@ const params = new URLSearchParams(location.search);
  *  menu over an AI-vs-AI battle (spec 45). */
 function main(): void {
   installMobileShell();
-  if (params.size === 0) {
+  // Spec 48 §4: `?campaign=` alone opens a campaign page of the main menu.
+  if (params.size === 0 || (params.size === 1 && params.has("campaign"))) {
     startShell();
     return;
   }

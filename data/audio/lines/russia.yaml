@@ -1,780 +1,1020 @@
-# Russian voice/EVA script (spec 25 §5.3); drafted by a local model, review by ear.
+# Russia voice/EVA script in Slavic-accented English (spec 25 §5.3): `text` is the line, `speak` its phonetic respelling for the TTS voice. Drafted by a local model, review by ear.
 eva.baseUnderAttack:
 - explicit: false
   id: 1
-  text: Внимание, база под обстрелом!
+  speak: А-тен-шн, бэйс из ан-дер фай-ер!
+  text: Attention, base is under fire!
 - explicit: false
   id: 2
-  text: Обнаружена атака на объект! По базе ведут огонь!
+  speak: Бэйс из би-инг шеллд!
+  text: Base is being shelled!
 - explicit: false
   id: 3
-  text: Проникновение на базу! Активируйте защиту!
+  speak: Брич детектед! Активейт дефенс!
+  text: Breach detected! Activate defense!
 - explicit: false
   id: 4
-  text: База под обстрелом! Всем занять позиции!
+  speak: Бэйс андер атак! Тейк позишнс!
+  text: Base under attack! Take positions!
 eva.buildingLost:
 - explicit: false
   id: 1
-  text: Объект потерян
+  speak: Обджект лост.
+  text: Objective lost.
 eva.buildingReady:
 - explicit: false
   id: 1
-  text: Объект готов. К эксплуатации приступаем.
+  speak: Стракчер рэди. Комменсинг оперейшнс.
+  text: Structure ready. Commencing operations.
 eva.constructionComplete:
 - explicit: false
   id: 1
-  text: Строительство завершено в полном объеме.
+  speak: Констракшн из дан.
+  text: Construction is done.
 - explicit: false
   id: 2
-  text: Объект готов к работе, сэр.
+  speak: Обджект из рэди, сэр.
+  text: Object is ready, sir.
 - explicit: false
   id: 3
-  text: Новый сектор полностью функционирует.
+  speak: Нью сектор из ап.
+  text: New sector is up.
 - explicit: false
   id: 4
-  text: Работы по строительству завершены.
+  speak: Олл билдинг ворк финишт.
+  text: All building work finished.
 eva.defeat:
 - explicit: false
   id: 1
-  text: Критический сбой. Мы
+  speak: Критикал фэйлиар. Уи ар лост.
+  text: Critical failure. We are lost.
 eva.insufficientFunds:
 - explicit: false
   id: 1
-  text: Ресурсов не хватает,. Операция невозможна
+  speak: Нот инаф рисорсиз. Оперейшн импоссибл.
+  text: Not enough resources. Operation impossible.
 eva.lowPower:
 - explicit: false
   id: 1
-  text: Внимание, критический уровень заряда., мы сейчас сдохнем
+  speak: Критикал пауэр левел. Системс фэйлинг.
+  text: Critical power level. Systems failing.
 eva.productionComplete:
 - explicit: false
   id: 1
-  text: Подкрепление готово к выходу.
+  speak: Рейнфорсментс рэди ту мув.
+  text: Reinforcements ready to move.
 eva.unitLost:
 - explicit: false
   id: 1
-  text: Потери в личном составе
+  speak: Персонел лоссиз рекордед.
+  text: Personnel losses recorded.
 eva.upgradeComplete:
 - explicit: false
   id: 1
-  text: Оборудование модернизировано. Работаем дальше.
+  speak: Ги-ар ап-грей-дид. Му-винг он.
+  text: Gear upgraded. Moving on.
 eva.victory:
 - explicit: false
   id: 1
-  text: Цель достигнута. Победа за нами.
+  speak: Тар-гет хит. Уи вон.
+  text: Target hit. We won.
 ru-bmp-2.attack:
 - explicit: true
   id: 1
-  text: Приехали, сука. Погнали!
+  speak: Ви ар хиэр, бич. Летс гоу!
+  text: We're here, bitch. Let's go!
 - explicit: false
   id: 2
-  text: Пора им немного накидать.
+  speak: Тайм ту гив зем сам хел.
+  text: Time to give them some hell.
 - explicit: true
   id: 3
-  text: Разгружаемся прямо на них, блять!
+  speak: Анлоудинг райт он зем, фак!
+  text: Unloading right on them, fuck!
 - explicit: true
   id: 4
-  text: Зайдём в гости, нахуй.
+  speak: Гоуинг фор а визит, факерс.
+  text: Going for a visit, fuckers.
 - explicit: false
   id: 5
-  text: Они мешают, надо снести их к ебеням.
+  speak: Зей ар ин зе вэй, вайп зем аут.
+  text: They're in the way, wipe them out.
 ru-bmp-2.created:
 - explicit: false
   id: 1
-  text: По машинам,! В бой!
+  speak: Гет ин! Ту комбат!
+  text: Get in! To combat!
 ru-bmp-2.die:
 - explicit: true
   id: 1
-  text: Сука!
+  speak: Бич!
+  text: Bitch!
 - explicit: true
   id: 2
-  text: Блять!
+  speak: Фак!
+  text: Fuck!
 - explicit: true
   id: 3
-  text: Пиздец...
+  speak: Пис оф шит...
+  text: Piece of shit...
 - explicit: true
   id: 4
-  text: А-а-а, нахуй!
+  speak: А, фак ми!
+  text: Ah, fuck me!
 - explicit: false
   id: 5
-  text: Твою мать!
+  speak: Мазерфакер!
+  text: Motherfucker!
 - explicit: true
   id: 6
-  text: Ёб твою мать!
+  speak: Холи мазерфакинг шит!
+  text: Holy motherfucking shit!
 ru-bmp-2.move:
 - explicit: false
   id: 1
-  text: Понял, выдвигаемся.
+  speak: Копи, мувинг аут.
+  text: Copy, moving out.
 - explicit: true
   id: 2
-  text: Куда ещё тащиться, блять?
+  speak: Уэр зе фак ви гоуинг?
+  text: Where the fuck we going?
 - explicit: false
   id: 3
-  text: Что дальше, командир?
+  speak: Уотс некст, ко-ман-дер?
+  text: What's next, commander?
 - explicit: true
   id: 4
-  text: Эй, там все живы, сука?
+  speak: Хей, эвриван алайв, шит?
+  text: Hey, everyone alive, shit?
 - explicit: false
   id: 5
-  text: Пристегнулись! Погнали!
+  speak: Бак-лд ап! Летс гоу!
+  text: Buckled up! Let's go!
 ru-bmp-2.select:
 - explicit: false
   id: 1
-  text: БМП на связи.
+  speak: Би-эм-пи из ин контакт.
+  text: BMP is in contact.
 - explicit: true
   id: 2
-  text: От них не спрятаться, блять.
+  speak: Ноувэр ту хайд, фак!
+  text: Nowhere to hide, fuck!
 - explicit: false
   id: 3
-  text: Двигаем на передний край.
+  speak: Мувинг ту зэ франт лайн.
+  text: Moving to the front line.
 - explicit: true
   id: 4
-  text: Броня готова, нахуй.
+  speak: Армор из рэди, фак еа!
+  text: Armor is ready, fuck yeah!
 - explicit: true
   id: 5
-  text: Места всем хватит, сука.
+  speak: Пленти оф рум, бич!
+  text: Plenty of room, bitch!
 ru-bmp-2.underFire:
 - explicit: false
   id: 1
-  text: Нас обстреливают!
+  speak: Ви ар андер файер!
+  text: We are under fire!
 - explicit: true
   id: 2
-  text: Блять, по нам бьют!
+  speak: Фак, зей ар хит-инг ас!
+  text: Fuck, they're hitting us!
 - explicit: true
   id: 3
-  text: Сука, прикрой! Снаряд рядом!
+  speak: Фак, ка-вер ми! Шэл ни-ар-бай!
+  text: Fuck, cover me! Shell nearby!
 - explicit: true
   id: 4
-  text: Пиздец, они нас засекли!
+  speak: Шит, зей спот-тед ас!
+  text: Shit, they spotted us!
 - explicit: false
   id: 5
-  text: Твою мать, уходим!
+  speak: Дэм ит, ви ар аут!
+  text: Damn it, we're out!
 ru-brdm-scout.attack:
 - explicit: false
   id: 1
-  text: Огонь открывай!
+  speak: Оу-пен фай-ер!
+  text: Open fire!
 - explicit: true
   id: 2
-  text: Дави их, сука!
+  speak: Краш зем, бич!
+  text: Crush them, bitch!
 - explicit: true
   id: 3
-  text: По лентам работай, блять!
+  speak: Кип зэ бэлтс мувинг, фак!
+  text: Keep the belts moving, fuck!
 - explicit: true
   id: 4
-  text: Пали во всё, нахуй!
+  speak: Файер эврисинг, фак ит!
+  text: Fire everything, fuck it!
 - explicit: false
   id: 5
-  text: Не останавливайся, пока не сдохнут!
+  speak: Доунт стоп антил зэй ар дед!
+  text: Don't stop until they're dead!
 ru-brdm-scout.created:
 - explicit: false
   id: 1
-  text: Патронов завались, погнали!
+  speak: Ам-мо из плен-ти, летс мув!
+  text: Ammo is plenty, let's move!
 ru-brdm-scout.die:
 - explicit: true
   id: 1
-  text: Сука!
+  speak: Бич!
+  text: Bitch!
 - explicit: true
   id: 2
-  text: Блять!
+  speak: Фак!
+  text: Fuck!
 - explicit: true
   id: 3
-  text: Пиздец...
+  speak: Пис оф шит...
+  text: Piece of shit...
 - explicit: true
   id: 4
-  text: А-а-а, нахуй!
+  speak: А, фак ит!
+  text: Ah, fuck it!
 - explicit: false
   id: 5
-  text: Твою мать!
+  speak: Мазерфакер!
+  text: Motherfucker!
 - explicit: true
   id: 6
-  text: Ёб твою мать!
+  speak: Хо-ли фак-инг шит!
+  text: Holy fucking shit!
 ru-brdm-scout.move:
 - explicit: false
   id: 1
-  text: Понял, выдвигаюсь.
+  speak: Копи, мувинг аут.
+  text: Copy, moving out.
 - explicit: true
   id: 2
-  text: Окей, погнали, блять.
+  speak: Окей, летс факин гоу.
+  text: Okay, let's fucking go.
 - explicit: false
   id: 3
-  text: Есть, заводимся!
+  speak: Роджер, стартинг ап!
+  text: Roger, starting up!
 - explicit: true
   id: 4
-  text: По коням, сука.
+  speak: Мув ит, мазерфакерс.
+  text: Move it, motherfuckers.
 ru-brdm-scout.select:
 - explicit: false
   id: 1
-  text: БРДМ на связи.
+  speak: БРДМ ин контакт.
+  text: BRDM in contact.
 - explicit: true
   id: 2
-  text: Пушка готова, блять.
+  speak: Ган из рэди, фак!
+  text: Gun is ready, fuck.
 - explicit: true
   id: 3
-  text: Жду приказа, нахуй.
+  speak: Вейтинг фор ордерс, фак.
+  text: Waiting for orders, fuck.
 - explicit: false
   id: 4
-  text: Всё готово, работаем.
+  speak: Ол сет, летс ворк.
+  text: All set, let's work.
 ru-brdm-scout.underFire:
 - explicit: false
   id: 1
-  text: По нам работают!, прижмись!
+  speak: Зэй ар хиттинг ас! Гет даун!
+  text: They're hitting us! Get down!
 - explicit: true
   id: 2
-  text: Давай, стреляй, блять, по ним!
+  speak: Шут эм, фак-инг шут!
+  text: Shoot them, fucking shoot!
 - explicit: true
   id: 3
-  text: Быстрее, нахуй, быстрее!
+  speak: Фастер, факинг фастер!
+  text: Faster, fucking faster!
 ru-dozer.attack:
 - explicit: true
   id: 1
-  text: Всё к хуям разнесём.
+  speak: Уилл смэш эврисинг ту факин писиз.
+  text: We'll smash everything to fucking pieces.
 - explicit: true
   id: 2
-  text: Отличная позиция, сука.
+  speak: Грейт фак-инг по-зи-шн, бич.
+  text: Great fucking position, bitch.
 - explicit: true
   id: 3
-  text: Погнали, блять!
+  speak: Летс фак-инг гоу!
+  text: Let's fucking go!
 - explicit: false
   id: 4
-  text: Принято, товарищ генерал.
+  speak: Копи зэт, Коморад Дженерал.
+  text: Copy that, Comrade General.
 - explicit: true
   id: 5
-  text: Сейчас всё тут нахуй сравняем.
+  speak: Уилл левел зис хоул факин плэйс.
+  text: We'll level this whole fucking place.
 ru-dozer.created:
 - explicit: false
   id: 1
-  text: Новая машина готова
+  speak: Нью ма-шин из ре-ди
+  text: New machine is ready
 ru-dozer.die:
 - explicit: true
   id: 1
-  text: Сука!
+  speak: Бич!
+  text: Bitch!
 - explicit: true
   id: 2
-  text: Блять!
+  speak: Фак!
+  text: Fuck!
 - explicit: true
   id: 3
-  text: Пиздец...
+  speak: Пис оф шит...
+  text: Piece of shit...
 - explicit: false
   id: 4
-  text: А-а-а!
+  speak: А-а-а-а!
+  text: Aaaaaah!
 - explicit: true
   id: 5
-  text: Нахуй!
+  speak: Фак ит!
+  text: Fuck it!
 - explicit: true
   id: 6
-  text: Ёб твою мать!
+  speak: Мазерфакер!
+  text: Motherfucker!
 ru-dozer.move:
 - explicit: false
   id: 1
-  text: Понял, выдвигаюсь.
+  speak: Копи, мувинг аут.
+  text: Copy, moving out.
 - explicit: true
   id: 2
-  text: Едем, блять.
+  speak: Мувинг, фак.
+  text: Moving, fuck.
 - explicit: true
   id: 3
-  text: Есть, сука!
+  speak: Йес, бич!
+  text: Yes, bitch!
 - explicit: false
   id: 4
-  text: Принято, работаем.
+  speak: Роджер, воркинг.
+  text: Roger, working.
 - explicit: true
   id: 5
-  text: В путь, нахуй.
+  speak: Он ау-эр уэй, фак.
+  text: On our way, fuck.
 ru-dozer.select:
 - explicit: false
   id: 1
-  text: Техника к бою готова.
+  speak: Викли ту рэди фор комбат.
+  text: Vehicle ready for combat.
 - explicit: true
   id: 2
-  text: Ждём приказа, блять.
+  speak: Вэйтинг фор ордэрс, фак!
+  text: Waiting for orders, fuck.
 - explicit: false
   id: 3
-  text: На связи.
+  speak: Рэйдио ин контакт.
+  text: Radio in contact.
 - explicit: true
   id: 4
-  text: Ну что там, сука?
+  speak: Уот зе фак из ап?
+  text: What the fuck is up?
 - explicit: false
   id: 5
-  text: К строительству готовы.
+  speak: Рэди ту билд.
+  text: Ready to build.
 ru-dozer.underFire:
 - explicit: true
   id: 1
-  text: Нас обстреливают, блять!
+  speak: Ви ар андер файер, фак!
+  text: We're under fire, fuck!
 - explicit: true
   id: 2
-  text: Тут нельзя строить, сука!
+  speak: Кэнт билд хиар, бич!
+  text: Can't build here, bitch!
 - explicit: false
   id: 3
-  text: Хуево прилетело!
+  speak: Зэт хит хард!
+  text: That hit hard!
 - explicit: true
   id: 4
-  text: Слишком много огня, пиздец!
+  speak: Ту мач файер, холи шит!
+  text: Too much fire, holy shit!
 ru-rifleman.attack:
 - explicit: false
   id: 1
-  text: В атаку!
+  speak: А-ттак!
+  text: Attack!
 - explicit: true
   id: 2
-  text: Убить сук!
+  speak: Кил зоуз бич-из!
+  text: Kill those bitches!
 - explicit: true
   id: 3
-  text: За Родину, блять!
+  speak: Фор зэ Мазерлэнд, фак!
+  text: For the Motherland, fuck!
 - explicit: false
   id: 4
-  text: Всё их перестреляем!
+  speak: Уи шут зэм ол!
+  text: We shoot them all!
 - explicit: true
   id: 5
-  text: Немцев этих нахуй!
+  speak: Фак зиз джер-манс!
+  text: Fuck these Germans!
 - explicit: false
   id: 6
-  text: Их смерть близко!
+  speak: Зэар дес из ниэр!
+  text: Their death is near!
 - explicit: true
   id: 7
-  text: Разнести этих тварей в пизду!
+  speak: Ди-строй зиз фак-кинг бас-тардс!
+  text: Destroy these fucking bastards!
 ru-rifleman.created:
 - explicit: false
   id: 1
-  text: Мы вместе,!
+  speak: Ви а ре тугетэр!
+  text: We are together!
 ru-rifleman.die:
 - explicit: false
   id: 1
-  text: А-а-а!
+  speak: Аааа!
+  text: Aaaah!
 - explicit: true
   id: 2
-  text: Блять!
+  speak: Фак!
+  text: Fuck!
 - explicit: true
   id: 3
-  text: Сука!
+  speak: Бич!
+  text: Bitch!
 - explicit: true
   id: 4
-  text: Пиздец...
+  speak: Пис оф шит...
+  text: Piece of shit...
 - explicit: false
   id: 5
-  text: Мать твою!
+  speak: Мазерфакер!
+  text: Motherfucker!
 - explicit: false
   id: 6
-  text: Ах!
+  speak: Ах!
+  text: Ah!
 - explicit: true
   id: 7
-  text: Ёб твою мать!
+  speak: Фак ё мазер!
+  text: Fuck your mother!
 - explicit: false
   id: 8
-  text: Грх!
+  speak: Гррх!
+  text: Grrh!
 - explicit: true
   id: 9
-  text: Нахуй всё...
+  speak: Фак ит ол...
+  text: Fuck it all...
 - explicit: false
   id: 10
-  text: Ой!
+  speak: Оу!
+  text: Oh!
 - explicit: true
   id: 11
-  text: Сука-а!
+  speak: Сан оф а бич!
+  text: Son of a bitch!
 - explicit: false
   id: 12
-  text: Твою мать!
+  speak: Дэм ит!
+  text: Damn it!
 ru-rifleman.move:
 - explicit: false
   id: 1
-  text: Понял.
+  speak: Копи зэт.
+  text: Copy that.
 - explicit: false
   id: 2
-  text: Есть, командир!
+  speak: Йес, ко-ман-дер!
+  text: Yes, commander!
 - explicit: false
   id: 3
-  text: Уже выдвигаемся.
+  speak: Му-винг аут нау.
+  text: Moving out now.
 - explicit: true
   id: 4
-  text: Погнали, блять.
+  speak: Летс факин гоу.
+  text: Let's fucking go.
 - explicit: true
   id: 5
-  text: Принято, сука.
+  speak: Роджер зэт, бич.
+  text: Roger that, bitch.
 ru-rifleman.select:
 - explicit: false
   id: 1
-  text: Есть!
+  speak: Ко-пи зэт!
+  text: Copy that!
 - explicit: false
   id: 2
-  text: Держим рубеж.
+  speak: Холдинг зэ лайн.
+  text: Holding the line.
 - explicit: false
   id: 3
-  text: На связи!
+  speak: Айм он комс!
+  text: I'm on comms!
 - explicit: true
   id: 4
-  text: Готовы к бою, блять.
+  speak: Реди фор комбат, фак.
+  text: Ready for combat, fuck.
 - explicit: false
   id: 5
-  text: Слышим вас.
+  speak: Уи хиар ю.
+  text: We hear you.
 - explicit: true
   id: 6
-  text: Приказывайте, сука.
+  speak: Гив ордерс, бич.
+  text: Give orders, bitch.
 ru-rifleman.underFire:
 - explicit: false
   id: 1
-  text: Нас обстреливают!
+  speak: Ви а:р андер файер!
+  text: We are under fire!
 - explicit: true
   id: 2
-  text: Блять, по нам бьют!
+  speak: Фак, зэй а:р хиттинг ас!
+  text: Fuck, they're hitting us!
 - explicit: true
   id: 3
-  text: Помогите, сука!
+  speak: Хелп ас, фак!
+  text: Help us, fuck!
 - explicit: true
   id: 4
-  text: Нас сейчас нахуй разнесут!
+  speak: Зэй а гон-на фак-ин де-строй ас!
+  text: They're gonna fucking destroy us!
 - explicit: true
   id: 5
-  text: Уходим, пиздец!
+  speak: Ритрит, итс э шитшоу!
+  text: Retreat, it's a shitshow!
 ru-rpg-gunner.attack:
 - explicit: false
   id: 1
-  text: В атаку! Пли!
+  speak: Ат-так! Фай-ер!
+  text: Attack! Fire!
 - explicit: true
   id: 2
-  text: Всё, сука, приехали!
+  speak: Дэтс ит, фак!
+  text: That's it, fuck!
 - explicit: true
   id: 3
-  text: Цель вижу! Нахуй их!
+  speak: Тар-гет спот-тед! Фак зем!
+  text: Target spotted! Fuck them!
 - explicit: true
   id: 4
-  text: В лоб пошли, блять!
+  speak: Зэй ар камминг хед-он, шит!
+  text: They're coming head-on, shit!
 - explicit: false
   id: 5
-  text: Разнести эту тварь в щепки!
+  speak: Смэш дис бист ту писез!
+  text: Smash this beast to pieces!
 ru-rpg-gunner.created:
 - explicit: false
   id: 1
-  text: Прошьём их броню к
+  speak: Уил пирс зеар ар-мор!
+  text: We'll pierce their armor!
 ru-rpg-gunner.die:
 - explicit: false
   id: 1
-  text: Ааагх!
+  speak: Ааагх!
+  text: Argh!
 - explicit: true
   id: 2
-  text: Блять!
+  speak: Фак!
+  text: Fuck!
 - explicit: true
   id: 3
-  text: Сука!
+  speak: Бич!
+  text: Bitch!
 - explicit: true
   id: 4
-  text: Пиздец...
+  speak: Холи шит...
+  text: Holy shit...
 - explicit: true
   id: 5
-  text: Ёб твою мать!
+  speak: Мазерфакер!
+  text: Motherfucker!
 ru-rpg-gunner.move:
 - explicit: false
   id: 1
-  text: Выдвигаюсь на позицию.
+  speak: Мувинг ту позишн.
+  text: Moving to position.
 - explicit: true
   id: 2
-  text: Пошли, сука, танки искать.
+  speak: Летс файнд зоуз фанкин танкс.
+  text: Let's find those fucking tanks.
 - explicit: false
   id: 3
-  text: Принял, меняю точку.
+  speak: Ко-пи, чейндж-ин поинт.
+  text: Copy, changing point.
 - explicit: true
   id: 4
-  text: На охоту, блять!
+  speak: Тайм ту хант, фак!
+  text: Time to hunt, fuck!
 - explicit: false
   id: 5
-  text: Погнали искать этих ублюдков.
+  speak: Летс гоу файнд зоуз бастардс.
+  text: Let's go find those bastards.
 ru-rpg-gunner.select:
 - explicit: false
   id: 1
-  text: РПГ наготове.
+  speak: Ар-Пи-Джи рэди.
+  text: RPG ready.
 - explicit: true
   id: 2
-  text: Я тут по броне, сука.
+  speak: Хит зэ армор, бич!
+  text: Hit the armor, bitch!
 - explicit: true
   id: 3
-  text: Вижу жирные цели, блять.
+  speak: Си биг тар-гетс, фак!
+  text: See big targets, fuck!
 - explicit: true
   id: 4
-  text: Дайте мне только танк, нахуй.
+  speak: Джаст гив ми э тэнк, фак!
+  text: Just give me a tank, fuck!
 - explicit: false
   id: 5
-  text: Слушаю, командир.
+  speak: Лисэнинг, командер.
+  text: Listening, commander.
 ru-rpg-gunner.underFire:
 - explicit: true
   id: 1
-  text: Ой, блять!
+  speak: Оу, фак!
+  text: Oh, fuck!
 - explicit: true
   id: 2
-  text: Сука, по нам работают!
+  speak: Бич, зэй ар хит-инг ас!
+  text: Bitch, they're hitting us!
 - explicit: true
   id: 3
-  text: Попали, блять!
+  speak: Фак-кинг хит!
+  text: Fucking hit!
 - explicit: true
   id: 4
-  text: Пиздец, нас сейчас разнесут!
+  speak: Шит, ви ар гона гет вайпт!
+  text: Shit, we're gonna get wiped!
 - explicit: false
   id: 5
-  text: Твою мать, прикрой меня!
+  speak: Дэм ит, кавер ми!
+  text: Damn it, cover me!
 ru-supply-truck.attack:
 - explicit: false
   id: 1
-  text: Погнали, везём снарягу!
+  speak: Летс гоу, холдин гир!
+  text: Let's go, hauling gear!
 - explicit: true
   id: 2
-  text: Доставим всё, блять, в лучшем виде!
+  speak: Де-ли-ве-ринг эв-ри-синг, фак-кинг пер-фект!
+  text: Delivering everything, fucking perfect!
 - explicit: true
   id: 3
-  text: Пусть жрут свинец, сука!
+  speak: Лет дем ит лид, бич!
+  text: Let them eat lead, bitch!
 - explicit: true
   id: 4
-  text: Маршрут чист, нахуй их всех!
+  speak: Раут из клир, фак дем ол!
+  text: Route is clear, fuck them all!
 ru-supply-truck.created:
 - explicit: false
   id: 1
-  text: Грузим хабар и в путь.
+  speak: Лодинг ап зэ лут, мувинг аут.
+  text: Loading up the loot, moving out.
 ru-supply-truck.die:
 - explicit: true
   id: 1
-  text: Сука!
+  speak: Бич!
+  text: Bitch!
 - explicit: true
   id: 2
-  text: Пиздец...
+  speak: Холи шит...
+  text: Holy shit...
 - explicit: true
   id: 3
-  text: Блять!
+  speak: Фак!
+  text: Fuck!
 - explicit: true
   id: 4
-  text: А-а-а, нахуй!
+  speak: А, фак ми!
+  text: Ah, fuck me!
 - explicit: true
   id: 5
-  text: Ёб твою мать!
+  speak: Мазерфакер!
+  text: Motherfucker!
 - explicit: false
   id: 6
-  text: Твою же мать...!
+  speak: Год дам ит...!
+  text: God damn it...!
 ru-supply-truck.move:
 - explicit: false
   id: 1
-  text: Едем, экономно.
+  speak: Драй-винг стэ-ди, и-зи.
+  text: Driving steady, easy.
 - explicit: true
   id: 2
-  text: Где тут ближайший склад, бля?
+  speak: Уэр из зэ ниарэст дэпо, фак?
+  text: Where is the nearest depot, fuck?
 - explicit: true
   id: 3
-  text: Весь товар наш, сука.
+  speak: Ол зис шит из ау-эрс.
+  text: All this shit is ours.
 - explicit: true
   id: 4
-  text: Это короче или я ебанутый?
+  speak: Из зис шорт ор эм ай факин крейзи?
+  text: Is this short or am I fucking crazy?
 - explicit: false
   id: 5
-  text: Груз везем, не мешайте.
+  speak: Мувинг карго, стэй клиэр.
+  text: Moving cargo, stay clear.
 ru-supply-truck.select:
 - explicit: false
   id: 1
-  text: Фуры на связи.
+  speak: Тракс он комс.
+  text: Trucks on comms.
 - explicit: false
   id: 2
-  text: Бабки капают, работаем.
+  speak: Мани каминг ин, уи ар воркинг.
+  text: Money coming in, we're working.
 - explicit: true
   id: 3
-  text: График плотный, блять.
+  speak: Тайт скеджул, фак!
+  text: Tight schedule, fuck!
 - explicit: true
   id: 4
-  text: Зашиваемся тут, сука.
+  speak: Геттинг свомпт хиар, бич!
+  text: Getting swamped here, bitch!
 - explicit: true
   id: 5
-  text: Куда грузить-то, нахуй?
+  speak: Уэр зе фак ту ан-лоад?
+  text: Where the fuck to unload?
 ru-supply-truck.underFire:
 - explicit: false
   id: 1
-  text: Нас обстреливают!
+  speak: Уи ар ан-дер фай-ер!
+  text: We are under fire!
 - explicit: true
   id: 2
-  text: Блять, по нам лупят!
+  speak: Фак, зэй ар хит-инг ас!
+  text: Fuck, they're hitting us!
 - explicit: true
   id: 3
-  text: Сука, прикрывайте нас!
+  speak: Бич, ка-вер ас!
+  text: Bitch, cover us!
 - explicit: true
   id: 4
-  text: Пиздец, по нам работают!
+  speak: Шит, зэй ар эн-гей-джинг ас!
+  text: Shit, they're engaging us!
 - explicit: true
   id: 5
-  text: Ёб твою мать, уходим!
+  speak: Фак, ви ар геттинг аут!
+  text: Fuck, we're getting out!
 ru-t-72b3.attack:
 - explicit: true
   id: 1
-  text: В атаку, блять!
+  speak: А-тэк, фак!
+  text: Attack, fuck!
 - explicit: true
   id: 2
-  text: Пошли их всех нахуй!
+  speak: Фак зем ол!
+  text: Fuck them all!
 - explicit: true
   id: 3
-  text: Работаем, сука!
+  speak: Ворк ит, бич!
+  text: Work it, bitch!
 - explicit: false
   id: 4
-  text: Разнести их в щепки!
+  speak: Смэш зем ту писиз!
+  text: Smash them to pieces!
 - explicit: true
   id: 5
-  text: Огонь на поражение, ёб твою мать!
+  speak: Файер эт вилл, мазерфакер!
+  text: Fire at will, motherfucker!
 - explicit: false
   id: 6
-  text: Смерть врагам!
+  speak: Дэс ту э-не-миз!
+  text: Death to enemies!
 - explicit: true
   id: 7
-  text: Давай, жги их, пиздец!
+  speak: Берн зем, хо-ли шит!
+  text: Burn them, holy shit!
 - explicit: false
   id: 8
-  text: Полный вперёд!
+  speak: Фул спид эхэд!
+  text: Full speed ahead!
 ru-t-72b3.created:
 - explicit: false
   id: 1
-  text: Т-72 готов к работе
+  speak: Ти-сэвэнти-ту из рэди фор экшн
+  text: T-72 is ready for action
 ru-t-72b3.die:
 - explicit: true
   id: 1
-  text: Сука!
+  speak: Бич!
+  text: Bitch!
 - explicit: true
   id: 2
-  text: Пиздец...
+  speak: Пис оф шит...
+  text: Piece of shit...
 - explicit: true
   id: 3
-  text: А-а-а, нахуй!
+  speak: А, фак!
+  text: Ah, fuck!
 - explicit: true
   id: 4
-  text: Блять!
+  speak: Фак!
+  text: Fuck!
 - explicit: true
   id: 5
-  text: Ёб твою мать!
+  speak: Мазерфакер!
+  text: Motherfucker!
 - explicit: false
   id: 6
-  text: Ах!
+  speak: А!
+  text: Ah!
 ru-t-72b3.move:
 - explicit: false
   id: 1
-  text: Понял, выдвигаюсь.
+  speak: Копи, мувинг аут.
+  text: Copy, moving out.
 - explicit: false
   id: 2
-  text: Есть, командир!
+  speak: Йес, командер!
+  text: Yes, commander!
 - explicit: true
   id: 3
-  text: В машину, блять, погнали!
+  speak: Гет ин зэ факин кар, летс гоу!
+  text: Get in the fucking car, let's go!
 - explicit: false
   id: 4
-  text: Иду к цели.
+  speak: Хед-инг ту тар-гет.
+  text: Heading to target.
 - explicit: true
   id: 5
-  text: Всё, сука, погнали.
+  speak: Олрайт, бич, летс гоу.
+  text: Alright, bitch, let's go.
 - explicit: false
   id: 6
-  text: Будем на месте через минуту.
+  speak: Уил би зээр ин уан минит.
+  text: Will be there in one minute.
 ru-t-72b3.select:
 - explicit: false
   id: 1
-  text: Т-72 на связи.
+  speak: Ти-севенти-ту, радио чек.
+  text: T-72, radio check.
 - explicit: true
   id: 2
-  text: Готов к бою, блять.
+  speak: Рэди фор комбат, фак!
+  text: Ready for combat, fuck.
 - explicit: true
   id: 3
-  text: Танк готов, какого хуя вы молчите?
+  speak: Танк рэди, вай зе фак ар ю сайлент?
+  text: Tank ready, why the fuck are you silent?
 - explicit: true
   id: 4
-  text: Жду приказа, сука.
+  speak: Вейтинг фор ордерс, бич.
+  text: Waiting for orders, bitch.
 - explicit: false
   id: 5
-  text: Я на позиции.
+  speak: Ин позишн.
+  text: In position.
 ru-t-72b3.underFire:
 - explicit: false
   id: 1
-  text: Нас обстреливают!
+  speak: Уи ар ан-дер фай-эр!
+  text: We are under fire!
 - explicit: true
   id: 2
-  text: Блять, по нам ведут огонь!
+  speak: Фак, зэй ар шутинг эт ас!
+  text: Fuck, they're shooting at us!
 - explicit: true
   id: 3
-  text: Сука, прикрой нас!
+  speak: Фак, кавер ас!
+  text: Fuck, cover us!
 - explicit: false
   id: 4
-  text: Твою мать, они повсюду!
+  speak: Мазефакер, зэй ар эвривэар!
+  text: Motherfucker, they are everywhere!
 - explicit: true
   id: 5
-  text: Пиздец, уходим!
+  speak: Шит, ви а геттинг аут!
+  text: Shit, we're getting out!
 ru-tos-1a.attack:
 - explicit: false
   id: 1
-  text: Всё в огне! Пошли,!
+  speak: Эврисинг из он файер! Летс гоу!
+  text: Everything is on fire! Let's go!
 - explicit: true
   id: 2
-  text: Сейчас мы их нахуй сожжём!
+  speak: Ви ар гона берн зем ол ту фак!
+  text: We're gonna burn them all to fuck!
 - explicit: true
   id: 3
-  text: Давай, залей их огнём, сука!
+  speak: Берн зем, ю факен бич!
+  text: Burn them, you fucking bitch!
 - explicit: true
   id: 4
-  text: Огонь на поражение! Пиздец им!
+  speak: Файер эт вилл! Зей ар факен дед!
+  text: Fire at will! They're fucking dead!
 - explicit: true
   id: 5
-  text: Смерть им! Жги, блять!
+  speak: Дес ту зем! Берн, мазерфакер!
+  text: Death to them! Burn, motherfucker!
 ru-tos-1a.created:
 - explicit: false
   id: 1
-  text: Сейчас мы здесь настоящий ад устроим.
+  speak: Ви-эр гон-на мейк хэл хи-эр.
+  text: We're gonna make hell here.
 ru-tos-1a.die:
 - explicit: true
   id: 1
-  text: Сука!
+  speak: Бич!
+  text: Bitch!
 - explicit: true
   id: 2
-  text: Блять!
+  speak: Фак!
+  text: Fuck!
 - explicit: true
   id: 3
-  text: А-а-а, ёб твою мать!
+  speak: А, мазерфакер!
+  text: Ah, motherfucker!
 - explicit: true
   id: 4
-  text: Пиздец...
+  speak: Хоули шит...
+  text: Holy shit...
 - explicit: true
   id: 5
-  text: Нахуй!
+  speak: Фак ит!
+  text: Fuck it!
 - explicit: false
   id: 6
-  text: А-а-а-агх!
+  speak: Ааааргх!
+  text: Aaargh!
 ru-tos-1a.move:
 - explicit: false
   id: 1
-  text: Понял, выдвигаюсь.
+  speak: Роджер, мувинг аут.
+  text: Roger, moving out.
 - explicit: false
   id: 2
-  text: Будем на месте, не ссы.
+  speak: Ви вил би зэа, донт во-ри.
+  text: We will be there, don't worry.
 - explicit: true
   id: 3
-  text: Двигаемся, блять, быстрее!
+  speak: Мув факин фастер!
+  text: Move fucking faster!
 - explicit: false
   id: 4
-  text: Принято. Погнали.
+  speak: Ко-пи зэт. Летс гоу.
+  text: Copy that. Let's go.
 - explicit: true
   id: 5
-  text: Всё, едем, сука.
+  speak: Олрайт, вир мувинг, бич.
+  text: Alright, we're moving, bitch.
 - explicit: false
   id: 6
-  text: В пути.
+  speak: Он зэ уэй.
+  text: On the way.
 ru-tos-1a.select:
 - explicit: false
   id: 1
-  text: Орудия готовы.
+  speak: Ганс реди.
+  text: Guns ready.
 - explicit: true
   id: 2
-  text: Ха-ха-ха, блять, заебись!
+  speak: Ха-ха, фак еа!
+  text: Ha-ha, fuck yeah!
 - explicit: true
   id: 3
-  text: Ждём приказа, сука.
+  speak: Вэйтинг фор ордерс, бич.
+  text: Waiting for orders, bitch.
 - explicit: true
   id: 4
-  text: Всё нахуй сгорит!
+  speak: Эврифинг вил бёрн ту шит!
+  text: Everything will burn to shit!
 - explicit: false
   id: 5
-  text: Ну, когда начинаем?
+  speak: Соу, вэн ду ви старт?
+  text: So, when do we start?
 ru-tos-1a.underFire:
 - explicit: false
   id: 1
-  text: Нас обстреливают!
+  speak: Ви а ар андер файер!
+  text: We are under fire!
 - explicit: true
   id: 2
-  text: Блять, по нам лупят!
+  speak: Фак, зэй а хиттинг ас!
+  text: Fuck, they are hitting us!
 - explicit: true
   id: 3
-  text: Сука, прикрой нас!
+  speak: Бич, кавер ас!
+  text: Bitch, cover us!
 - explicit: true
   id: 4
-  text: Пиздец, они повсюду!
+  speak: Хо-ли шит, зэй ар эв-ри-веа!
+  text: Holy shit, they are everywhere!
 - explicit: false
   id: 5
-  text: Твою мать, уходим!
+  speak: Дэм ит, ви ар ли-винг!
+  text: Damn it, we are leaving!

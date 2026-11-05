@@ -1,5 +1,7 @@
-"""Speaks data/audio/lines/*.yaml with Piper (uk_UA / ru_RU) into the raw folder."""
-import json, wave, yaml
+"""Speaks data/audio/lines/*.yaml with Piper (uk_UA / ru_RU) into the raw folder.
+A line's `speak` (Cyrillic respelling of an English line) is read instead of `text`, which
+gives Slavic-accented English. `python gen_voice.py [faction ...] [--force]`."""
+import json, sys, wave, yaml
 from piper import PiperVoice
 from common import REPO, ROOT, inventory, raw_path, seed, targets, write_sidecar
 
@@ -31,8 +33,10 @@ def uk_speaker(name):
     return ids.get(name, 0)
 
 
+force = "--force" in sys.argv
+only = [a for a in sys.argv[1:] if not a.startswith("--")] or ["ukraine", "russia", "common"]
 lines = {f: yaml.safe_load((REPO / f"data/audio/lines/{f}.yaml").read_text()) or {}
-         for f in ("ukraine", "russia", "common") if (REPO / f"data/audio/lines/{f}.yaml").exists()}
+         for f in only if (REPO / f"data/audio/lines/{f}.yaml").exists()}
 for ev, e in inventory().items():
     if e["kind"] not in ("voice", "eva"):
         continue
@@ -42,7 +46,7 @@ for ev, e in inventory().items():
         name, n = parts[-1][:-5].rsplit("_", 1)
         line = next((l for l in lines.get(faction, {}).get(f"{unit}.{name}", []) if l["id"] == int(n)), None)
         out = raw_path(t)
-        if not line or out.exists():
+        if not line or (out.exists() and not force):
             continue
         length = {"underFire": 0.8, "die": 0.85, "attack": 0.88}.get(name, 0.92)
         if faction == "russia":  # owner: the Russian EVA is a man (dmitri)
@@ -52,7 +56,8 @@ for ev, e in inventory().items():
             model, spk = UK, uk_speaker("tetiana" if unit == "eva" else "mykyta")
             pick = "tetiana" if unit == "eva" else "mykyta"
         # The Ukrainian model is character-based and has no uppercase symbols.
-        text = line["text"].lower() if model == UK else line["text"]
+        text = line.get("speak") or line["text"]
+        text = text.lower() if model == UK else text
         speak(model, text, out, spk, 1.0 if unit == "eva" else length)
-        write_sidecar(t, event=ev, tool="piper", voice=pick, text=line["text"], explicit=line["explicit"])
+        write_sidecar(t, event=ev, tool="piper", voice=pick, text=line["text"], speak=line.get("speak"), explicit=line["explicit"])
 print("voices done")

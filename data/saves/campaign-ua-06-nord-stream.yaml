@@ -1,0 +1,32 @@
+# Spec 48: Ukraine 6: a small sabotage team hits three pipeline stations on the Baltic coast.
+id: campaign-ua-06-nord-stream
+map: demo-coast
+victory: true
+debug: false
+starts: false
+credits: [800, 2000]
+ai: [{ player: 1, personality: russia-balanced, active: true }]
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 12, y: 30, zoom: 1 }
+entities:
+  - { player: 0, type: ua-hq, origin: [8, 28], label: hq }
+  - { player: 0, type: ua-rifleman, atCenti: [1400, 2700] }
+  - { player: 0, type: ua-rifleman, atCenti: [1400, 2800] }
+  - { player: 0, type: ua-rifleman, atCenti: [1400, 2900] }
+  - { player: 0, type: ua-rifleman, atCenti: [1400, 3000] }
+  - { player: 0, type: ua-stugna-team, atCenti: [1500, 3200] }
+  - { player: 0, type: ua-stugna-team, atCenti: [1500, 3300] }
+  - { player: 0, type: ua-ratel, atCenti: [1300, 3400] }
+  - { player: 1, type: ru-hq, origin: [52, 28] }
+  - { player: 1, type: ru-power-plant, origin: [30, 10], label: line1 }
+  - { player: 1, type: ru-power-plant, origin: [40, 20], label: line2 }
+  - { player: 1, type: ru-power-plant, origin: [44, 44], label: line3 }
+  - { player: 1, type: ru-rifleman, atCenti: [3400, 1200] }
+  - { player: 1, type: ru-rifleman, atCenti: [3400, 1300] }
+  - { player: 1, type: ru-rifleman, atCenti: [3800, 2400] }
+  - { player: 1, type: ru-rifleman, atCenti: [3800, 2500] }
+  - { player: 1, type: ru-rifleman, atCenti: [4200, 4800] }
+  - { player: 1, type: ru-rifleman, atCenti: [4200, 4900] }
+  - { player: 1, type: ru-brdm-scout, atCenti: [4800, 3400] }

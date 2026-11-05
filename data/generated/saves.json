@@ -386,6 +386,126 @@
       "entities": 12
     },
     {
+      "id": "campaign-ru-01-hostomel",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 31
+    },
+    {
+      "id": "campaign-ru-02-snake-island",
+      "map": "demo-coast",
+      "form": "setup",
+      "entities": 21
+    },
+    {
+      "id": "campaign-ru-03-mariupol",
+      "map": "demo-town",
+      "form": "setup",
+      "entities": 24
+    },
+    {
+      "id": "campaign-ru-04-bakhmut",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 28
+    },
+    {
+      "id": "campaign-ru-05-surovikin-line",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 30
+    },
+    {
+      "id": "campaign-ru-06-avdiivka",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 28
+    },
+    {
+      "id": "campaign-ru-07-kursk-pipe",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 32
+    },
+    {
+      "id": "campaign-ru-08-oreshnik",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 21
+    },
+    {
+      "id": "campaign-ru-09-kyiv",
+      "map": "river-port",
+      "form": "setup",
+      "entities": 14
+    },
+    {
+      "id": "campaign-ru-10-narva",
+      "map": "demo-bridges",
+      "form": "setup",
+      "entities": 21
+    },
+    {
+      "id": "campaign-ua-01-hostomel",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 30
+    },
+    {
+      "id": "campaign-ua-02-irpin",
+      "map": "demo-bridges",
+      "form": "setup",
+      "entities": 22
+    },
+    {
+      "id": "campaign-ua-03-moskva",
+      "map": "demo-coast",
+      "form": "setup",
+      "entities": 17
+    },
+    {
+      "id": "campaign-ua-04-snake-island",
+      "map": "demo-coast",
+      "form": "setup",
+      "entities": 15
+    },
+    {
+      "id": "campaign-ua-05-kharkiv",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 33
+    },
+    {
+      "id": "campaign-ua-06-nord-stream",
+      "map": "demo-coast",
+      "form": "setup",
+      "entities": 19
+    },
+    {
+      "id": "campaign-ua-07-kursk",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 33
+    },
+    {
+      "id": "campaign-ua-08-spiderweb",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 20
+    },
+    {
+      "id": "campaign-ua-09-long-arm",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 23
+    },
+    {
+      "id": "campaign-ua-10-moscow",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 34
+    },
+    {
       "id": "help-ru-airfield-build",
       "map": "showcase",
       "form": "setup",

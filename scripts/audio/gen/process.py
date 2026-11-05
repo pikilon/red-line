@@ -5,6 +5,7 @@ from common import RAW, REPO, inventory, targets
 
 PUB = REPO / "client/public/audio"
 force = "--force" in sys.argv
+kinds = sys.argv[sys.argv.index("--kinds") + 1].split(",") if "--kinds" in sys.argv else None
 
 
 def dur(p):
@@ -40,7 +41,7 @@ for ev, e in inventory().items():
             continue
         src, out = srcs[0], PUB / t[len("audio/"):]
         done.append((ev, t))
-        if out.exists() and not force:
+        if out.exists() and (not force or (kinds and e["kind"] not in kinds)):
             continue
         k = e["kind"]
         if k == "voice":

@@ -1,0 +1,41 @@
+# Spec 48: Russia 4: Wagner's meat grinder in Bakhmut.
+id: campaign-ru-04-bakhmut
+map: first-line
+victory: true
+debug: false
+starts: false
+credits: [6000, 5000]
+ai: [{ player: 0, personality: ukraine-balanced, active: true }]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 104, y: 64, zoom: 1 }
+entities:
+  - { player: 1, type: ru-hq, origin: [114, 66], label: ru-hq }
+  - { player: 1, type: ru-power-plant, origin: [120, 67] }
+  - { player: 1, type: ru-supply-center, origin: [108, 69] }
+  - { player: 1, type: ru-barracks, origin: [120, 62] }
+  - { player: 1, type: ru-vehicle-factory, origin: [113, 60] }
+  - { player: 1, type: ru-dozer, atCenti: [10950, 6650] }
+  - { player: 1, type: ru-rifleman, atCenti: [10000, 6000] }
+  - { player: 1, type: ru-rifleman, atCenti: [10000, 6100] }
+  - { player: 1, type: ru-rifleman, atCenti: [10000, 6200] }
+  - { player: 1, type: ru-rifleman, atCenti: [10000, 6300] }
+  - { player: 1, type: ru-rifleman, atCenti: [10000, 6400] }
+  - { player: 1, type: ru-rifleman, atCenti: [10000, 6500] }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [10100, 6600] }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [10100, 6700] }
+  - { player: 0, type: ua-hq, origin: [10, 58], label: ua-hq }
+  - { player: 0, type: ua-power-plant, origin: [5, 58] }
+  - { player: 0, type: ua-supply-center, origin: [16, 56] }
+  - { player: 0, type: ua-barracks, origin: [5, 63] }
+  - { player: 0, type: ua-vehicle-factory, origin: [11, 64] }
+  - { player: 0, type: ua-dozer, atCenti: [1850, 6150] }
+  - { player: 0, type: ua-defense, origin: [46, 52], label: strongpoint1 }
+  - { player: 0, type: ua-defense, origin: [46, 62], label: strongpoint2 }
+  - { player: 0, type: ua-defense, origin: [46, 76], label: strongpoint3 }
+  - { player: 0, type: ua-barracks, origin: [36, 62], label: artemivsk }
+  - { player: 0, type: ua-rifleman, atCenti: [4400, 5600] }
+  - { player: 0, type: ua-rifleman, atCenti: [4400, 5900] }
+  - { player: 0, type: ua-rifleman, atCenti: [4400, 6200] }
+  - { player: 0, type: ua-rifleman, atCenti: [4400, 6500] }

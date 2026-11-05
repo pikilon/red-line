@@ -1,0 +1,170 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "campaign-ua-04-snake-island",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "demo-coast",
+    "seed": "1",
+    "debug": false,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": false,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": false,
+    "camera": {
+      "x": 14,
+      "y": 30,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "demo-coast",
+    "seed": "1",
+    "victory": true,
+    "debug": false,
+    "starts": false,
+    "credits": [
+      5000,
+      1500
+    ],
+    "ai": [
+      {
+        "player": 1,
+        "personality": "russia-balanced",
+        "active": true
+      }
+    ],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-hq",
+        "origin": [
+          8,
+          28
+        ],
+        "label": "hq"
+      },
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          3,
+          28
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-center",
+        "origin": [
+          8,
+          34
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-vehicle-factory",
+        "origin": [
+          2,
+          34
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-dozer",
+        "atCenti": [
+          1350,
+          3300
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-gepard",
+        "atCenti": [
+          1500,
+          2800
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-hq",
+        "origin": [
+          52,
+          28
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-defense",
+        "origin": [
+          46,
+          26
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-defense",
+        "origin": [
+          46,
+          32
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-pantsir",
+        "atCenti": [
+          5000,
+          2400
+        ],
+        "label": "tor1"
+      },
+      {
+        "player": 1,
+        "type": "ru-pantsir",
+        "atCenti": [
+          5000,
+          3500
+        ],
+        "label": "tor2"
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4400,
+          2700
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4400,
+          2900
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4400,
+          3100
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4400,
+          3300
+        ]
+      }
+    ]
+  }
+}

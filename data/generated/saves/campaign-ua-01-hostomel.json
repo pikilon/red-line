@@ -1,0 +1,329 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "campaign-ua-01-hostomel",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "first-line",
+    "seed": "1",
+    "debug": false,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": false,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": false,
+    "camera": {
+      "x": 16,
+      "y": 60,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "first-line",
+    "seed": "1",
+    "victory": true,
+    "debug": false,
+    "starts": false,
+    "credits": [
+      2000,
+      2500
+    ],
+    "ai": [
+      {
+        "player": 1,
+        "personality": "russia-rush",
+        "active": true
+      }
+    ],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-hq",
+        "origin": [
+          10,
+          58
+        ],
+        "label": "ua-hq"
+      },
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          5,
+          58
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-center",
+        "origin": [
+          16,
+          56
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-barracks",
+        "origin": [
+          5,
+          63
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-dozer",
+        "atCenti": [
+          1850,
+          6150
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2200,
+          5700
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2200,
+          5800
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2200,
+          5900
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2200,
+          6000
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2200,
+          6100
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2200,
+          6200
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-stugna-team",
+        "atCenti": [
+          2300,
+          5900
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-stugna-team",
+        "atCenti": [
+          2300,
+          6000
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-defense",
+        "origin": [
+          22,
+          64
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-hq",
+        "origin": [
+          44,
+          56
+        ],
+        "label": "lz"
+      },
+      {
+        "player": 1,
+        "type": "ru-barracks",
+        "origin": [
+          44,
+          62
+        ],
+        "label": "lz-barracks"
+      },
+      {
+        "player": 1,
+        "type": "ru-dozer",
+        "atCenti": [
+          4950,
+          6050
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          3600,
+          5400
+        ],
+        "order": {
+          "attack": "ua-hq"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          3600,
+          5500
+        ],
+        "order": {
+          "attack": "ua-hq"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          3600,
+          5600
+        ],
+        "order": {
+          "attack": "ua-hq"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          3600,
+          5700
+        ],
+        "order": {
+          "attack": "ua-hq"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          3600,
+          5800
+        ],
+        "order": {
+          "attack": "ua-hq"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          3600,
+          5900
+        ],
+        "order": {
+          "attack": "ua-hq"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          3600,
+          6000
+        ],
+        "order": {
+          "attack": "ua-hq"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          3600,
+          6100
+        ],
+        "order": {
+          "attack": "ua-hq"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rpg-gunner",
+        "atCenti": [
+          3700,
+          5600
+        ],
+        "order": {
+          "attack": "ua-hq"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-rpg-gunner",
+        "atCenti": [
+          3700,
+          5700
+        ],
+        "order": {
+          "attack": "ua-hq"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          4000,
+          5500
+        ],
+        "order": {
+          "attack": "ua-hq"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          4000,
+          5800
+        ],
+        "order": {
+          "attack": "ua-hq"
+        }
+      },
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          4000,
+          6100
+        ],
+        "order": {
+          "attack": "ua-hq"
+        }
+      }
+    ]
+  }
+}
