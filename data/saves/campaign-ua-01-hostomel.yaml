@@ -1,0 +1,43 @@
+# Spec 48: Ukraine 1: hold the Antonov airport against the VDV landing, then clear the landing zone.
+id: campaign-ua-01-hostomel
+map: first-line
+victory: true
+debug: false
+starts: false
+credits: [2000, 2500]
+ai: [{ player: 1, personality: russia-rush, active: true }]
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 16, y: 60, zoom: 1 }
+entities:
+  - { player: 0, type: ua-hq, origin: [10, 58], label: ua-hq }
+  - { player: 0, type: ua-power-plant, origin: [5, 58] }
+  - { player: 0, type: ua-supply-center, origin: [16, 56] }
+  - { player: 0, type: ua-barracks, origin: [5, 63] }
+  - { player: 0, type: ua-dozer, atCenti: [1850, 6150] }
+  - { player: 0, type: ua-rifleman, atCenti: [2200, 5700] }
+  - { player: 0, type: ua-rifleman, atCenti: [2200, 5800] }
+  - { player: 0, type: ua-rifleman, atCenti: [2200, 5900] }
+  - { player: 0, type: ua-rifleman, atCenti: [2200, 6000] }
+  - { player: 0, type: ua-rifleman, atCenti: [2200, 6100] }
+  - { player: 0, type: ua-rifleman, atCenti: [2200, 6200] }
+  - { player: 0, type: ua-stugna-team, atCenti: [2300, 5900] }
+  - { player: 0, type: ua-stugna-team, atCenti: [2300, 6000] }
+  - { player: 0, type: ua-defense, origin: [22, 64] }
+  - { player: 1, type: ru-hq, origin: [44, 56], label: lz }
+  - { player: 1, type: ru-barracks, origin: [44, 62], label: lz-barracks }
+  - { player: 1, type: ru-dozer, atCenti: [4950, 6050] }
+  - { player: 1, type: ru-rifleman, atCenti: [3600, 5400], order: { attack: ua-hq } }
+  - { player: 1, type: ru-rifleman, atCenti: [3600, 5500], order: { attack: ua-hq } }
+  - { player: 1, type: ru-rifleman, atCenti: [3600, 5600], order: { attack: ua-hq } }
+  - { player: 1, type: ru-rifleman, atCenti: [3600, 5700], order: { attack: ua-hq } }
+  - { player: 1, type: ru-rifleman, atCenti: [3600, 5800], order: { attack: ua-hq } }
+  - { player: 1, type: ru-rifleman, atCenti: [3600, 5900], order: { attack: ua-hq } }
+  - { player: 1, type: ru-rifleman, atCenti: [3600, 6000], order: { attack: ua-hq } }
+  - { player: 1, type: ru-rifleman, atCenti: [3600, 6100], order: { attack: ua-hq } }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [3700, 5600], order: { attack: ua-hq } }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [3700, 5700], order: { attack: ua-hq } }
+  - { player: 1, type: ru-bmp-2, atCenti: [4000, 5500], order: { attack: ua-hq } }
+  - { player: 1, type: ru-bmp-2, atCenti: [4000, 5800], order: { attack: ua-hq } }
+  - { player: 1, type: ru-bmp-2, atCenti: [4000, 6100], order: { attack: ua-hq } }

@@ -1,0 +1,37 @@
+# Spec 48: Russia 3: the siege of Mariupol ends at the Azovstal steelworks.
+id: campaign-ru-03-mariupol
+map: demo-town
+victory: true
+debug: false
+starts: false
+credits: [4000, 5000]
+ai: [{ player: 0, personality: ukraine-balanced, active: true }]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 46, y: 8, zoom: 1 }
+entities:
+  - { player: 1, type: ru-hq, origin: [50, 3], label: hq }
+  - { player: 1, type: ru-power-plant, origin: [54, 3] }
+  - { player: 1, type: ru-barracks, origin: [44, 2] }
+  - { player: 1, type: ru-vehicle-factory, origin: [44, 7] }
+  - { player: 1, type: ru-dozer, atCenti: [4900, 1300] }
+  - { player: 1, type: ru-t-72b3, atCenti: [4000, 600] }
+  - { player: 1, type: ru-t-72b3, atCenti: [4000, 900] }
+  - { player: 1, type: ru-rifleman, atCenti: [3800, 500] }
+  - { player: 1, type: ru-rifleman, atCenti: [3800, 600] }
+  - { player: 1, type: ru-rifleman, atCenti: [3800, 700] }
+  - { player: 1, type: ru-rifleman, atCenti: [3800, 800] }
+  - { player: 1, type: ru-rifleman, atCenti: [3800, 900] }
+  - { player: 1, type: ru-rifleman, atCenti: [3800, 1000] }
+  - { player: 0, type: ua-hq, origin: [8, 3], label: command }
+  - { player: 0, type: ua-vehicle-factory, origin: [14, 2], label: azovstal }
+  - { player: 0, type: ua-power-plant, origin: [2, 6] }
+  - { player: 0, type: ua-defense, origin: [24, 4], label: bunker1 }
+  - { player: 0, type: ua-defense, origin: [24, 9], label: bunker2 }
+  - { player: 0, type: ua-dozer, atCenti: [1300, 800] }
+  - { player: 0, type: ua-rifleman, atCenti: [1600, 600] }
+  - { player: 0, type: ua-rifleman, atCenti: [1600, 700] }
+  - { player: 0, type: ua-rifleman, atCenti: [1600, 800] }
+  - { player: 0, type: ua-rifleman, atCenti: [1600, 900] }
+  - { player: 0, type: ua-stugna-team, atCenti: [1500, 1000] }

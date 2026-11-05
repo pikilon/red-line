@@ -57,7 +57,9 @@ Two docked panels, each with a fold tab. Touch targets are ≥ 44 px.
 * **Selection strip:** one chip per selected type with its cameo and a count
   badge. Tapping a chip narrows the selection to that type.
 * **Units section** (shown when the selection holds own vehicles or infantry):
-  Stop; Force fire (arms the next map tap as a Ctrl+click force attack, the
+  Stop; Reload (only when a selected unit has a clip or drone charges not full,
+  spec 43 §4.7: the unit goes to the nearest base or supply to refill, with
+  the error sound when there is none); Force fire (arms the next map tap as a Ctrl+click force attack, the
   button stays lit until it fires or is tapped again); Same type on screen;
   Same type everywhere; plus the contextual Garrison, Dig and Unload buttons.
 * **Structures section** (shown for one own building, a garrisoned building or
@@ -117,6 +119,9 @@ transparent background) and cached; a type with no model shows its initials.
 
 * AC-41-01: Selecting a unit shows the Units section with Stop, Force fire and
   both same-type buttons; selecting a building shows the Structure section.
+* AC-41-11: With a part-empty Baba Yaga or FPV team selected the Units section
+  shows Reload; it sends the flyer to its workshop or the crew to a supply truck
+  and the unit ends idle with the clip or charges full. A full unit hides it.
 * AC-41-02: Force fire then a tap on the ground orders an attack-ground, as
   Ctrl+click does.
 * AC-41-03: Rally point then a tap sets the building's rally point.

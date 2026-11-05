@@ -92,6 +92,10 @@ pub enum Command {
     Stop {
         units: Vec<EntityId>,
     },
+    /// Spec 43 §4.6: units with rounds or charges missing go and reload now.
+    Reload {
+        units: Vec<EntityId>,
+    },
     /// Spec 31 block 2: infantry walk to map feature `feature` (index into
     /// `World::features`) and garrison it.
     Garrison {
@@ -517,6 +521,15 @@ impl World {
 
     /// Test seam (like `set_hp`): the charges left of the launcher `id` (spec 43
     /// §4.4), clamped to its type's maximum.
+    /// Sets the rounds left in a sortie flyer's clip (tests and tools), capped
+    /// at the clip.
+    pub fn set_ammo(&mut self, id: EntityId, ammo: u32) {
+        if let Some(index) = self.index_of(id) {
+            let clip = self.rules.ty(self.entities[index].kind).sortie;
+            self.entities[index].ammo = ammo.min(clip.map_or(0, |s| s.clip));
+        }
+    }
+
     pub fn set_charges(&mut self, id: EntityId, charges: u32) {
         if let Some(index) = self.index_of(id) {
             let max = self.rules.ty(self.entities[index].kind).charges;
@@ -878,6 +891,7 @@ impl World {
                 } => self.apply_construct(player, dozer, kind, origin),
                 Command::Resume { units, building } => self.apply_resume(player, &units, building),
                 Command::Stop { units } => self.apply_stop(player, &units),
+                Command::Reload { units } => self.apply_reload(player, &units),
                 Command::Harvest { units, depot } => self.apply_harvest(player, &units, depot),
                 Command::Attack { units, target } => self.apply_attack(player, &units, target),
                 Command::Garrison { units, feature } => {

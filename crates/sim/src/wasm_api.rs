@@ -380,6 +380,15 @@ impl Sim {
         );
     }
 
+    pub fn command_reload(&mut self, player: u8, unit_ids: &[u32]) {
+        self.world.enqueue_as(
+            player,
+            Command::Reload {
+                units: unit_ids.to_vec(),
+            },
+        );
+    }
+
     pub fn debug_spawn(&mut self, player: u8, kind: TypeId, x_raw: i32, y_raw: i32) {
         self.world.enqueue_as(
             player,

@@ -1,1005 +1,1320 @@
-# Ukrainian voice/EVA script (spec 25 §5.3); drafted by a local model, review by ear.
+# Ukraine voice/EVA script in Slavic-accented English (spec 25 §5.3): `text` is the line, `speak` its phonetic respelling for the TTS voice. Drafted by a local model, review by ear.
 eva.baseUnderAttack:
 - explicit: false
   id: 1
-  text: Увага, базу атакують!
+  speak: бейз андер етак!
+  text: Base under attack!
 - explicit: false
   id: 2
-  text: Командире, нас атакують! Ворог на підході!
+  speak: командер, зей ар камін!
+  text: Commander, they are coming!
 - explicit: false
   id: 3
-  text: Ворог проривається до бази! Тривога!
+  speak: енемі брейкінс тру! аларм!
+  text: Enemy breaking through! Alarm!
 - explicit: false
   id: 4
-  text: Об'єкт під вогнем, загроза критична!
+  speak: бейз із андер файер! крітікал!
+  text: Base is under fire! Critical!
 eva.buildingLost:
 - explicit: false
   id: 1
-  text: Об'єкт втрачено
+  speak: обджект лост.
+  text: Object lost.
 eva.buildingReady:
 - explicit: false
   id: 1
-  text: Об'єкт готовий. Виберіть ціль.
+  speak: обджект реді. селект тарґет.
+  text: Object ready. Select target.
 eva.constructionComplete:
 - explicit: false
   id: 1
-  text: Об'єкт готовий. Можна працювати.
+  speak: обджект реді. реді ту ворк.
+  text: Object ready. Ready to work.
 - explicit: false
   id: 2
-  text: Будівництво закінчено, все стоїть.
+  speak: констракшн дан. еврісінг із сет.
+  text: Construction done. Everything is set.
 - explicit: false
   id: 3
-  text: Готово. Чекаю на накази.
+  speak: дан. вейтінг фор ордерс.
+  text: Done. Waiting for orders.
 eva.defeat:
 - explicit: false
   id: 1
-  text: Місія провалена. Базу втрачено
+  speak: мішн фейлд. бейс із лост.
+  text: Mission failed. Base is lost.
 eva.insufficientFunds:
 - explicit: false
   id: 1
-  text: ресурсів не вистачає на цю операцію
+  speak: нот інаф рісорс ез фор зіс.
+  text: Not enough resources for this.
 eva.lowPower:
 - explicit: false
   id: 1
-  text: Увага! Критичний рівень енергопостачання!
+  speak: аттеншн! крітікал пауер левел!
+  text: Attention! Critical power level!
 eva.productionComplete:
 - explicit: false
   id: 1
-  text: Підкріплення готове до розгортання.
+  speak: реінфорсментс ар реді.
+  text: Reinforcements are ready.
 eva.unitLost:
 - explicit: false
   id: 1
-  text: Втрата одиниці підрозділу
+  speak: юніт лост.
+  text: Unit lost.
 eva.upgradeComplete:
 - explicit: false
   id: 1
-  text: Модернізацію завершено. Системи оновлено.
+  speak: апгрейдс дан. сістемс онлайн.
+  text: Upgrades done. Systems online.
 eva.victory:
 - explicit: false
   id: 1
-  text: Перемога за нами. Сектор під контролем.
+  speak: вікторі сес ауарс. сектор сек'юрд.
+  text: Victory is ours. Sector secured.
 ua-bradley.attack:
 - explicit: true
   id: 1
-  text: За волю, блять!
+  speak: фор фрідом, фак!
+  text: For freedom, fuck!
 - explicit: true
   id: 2
-  text: Покладися на нас, сука!
+  speak: траст ас, біч!
+  text: Trust us, bitch!
 - explicit: true
   id: 3
-  text: Ми їх рознесемо нахуй!
+  speak: віл блоу зем зе фак ап!
+  text: We'll blow them the fuck up!
 - explicit: false
   id: 4
-  text: Працюємо, пішли!
+  speak: летс ворк, мув!
+  text: Let's work, move!
 - explicit: true
   id: 5
-  text: Ми робимо правильну справу, йобаний в рот!
+  speak: вір доуінг зе райт сінг, фак!
+  text: We're doing the right thing, fuck!
 ua-bradley.created:
 - explicit: false
   id: 1
-  text: Захищаємо свободу, в рот!
+  speak: дефендінг фрідом, фак!
+  text: Defending freedom, fuck!
 ua-bradley.die:
 - explicit: true
   id: 1
-  text: Сука!
+  speak: бітч!
+  text: Bitch!
 - explicit: true
   id: 2
-  text: Пиздець...
+  speak: холі шіт...
+  text: Holy shit...
 - explicit: true
   id: 3
-  text: Блядь!
+  speak: фак!
+  text: Fuck!
 - explicit: false
   id: 4
-  text: Твою мать!
+  speak: мазерфакер!
+  text: Motherfucker!
 - explicit: true
   id: 5
-  text: А-а-а, нахуй!
+  speak: а, фак іт!
+  text: Ah, fuck it!
 - explicit: true
   id: 6
-  text: Пиздець, тут усе...
+  speak: фак, ітс ол гон...
+  text: Fuck, it's all gone...
 ua-bradley.move:
 - explicit: false
   id: 1
-  text: Скорочуємо дистанцію.
+  speak: клоузінг зе дістанс.
+  text: Closing the distance.
 - explicit: true
   id: 2
-  text: Підтверджую, бля.
+  speak: копі дет, фак.
+  text: Copy that, fuck.
 - explicit: false
   id: 3
-  text: Є, командире!
+  speak: єс, командер!
+  text: Yes, commander!
 - explicit: true
   id: 4
-  text: Заводи її, сука.
+  speak: старт іт ап, біч.
+  text: Start it up, bitch.
 - explicit: true
   id: 5
-  text: Рухаємось, нахуй!
+  speak: мувінг аут, фак!
+  text: Moving out, fuck!
 ua-bradley.select:
 - explicit: false
   id: 1
-  text: Бредлі на позиції.
+  speak: бредлі ін позішн.
+  text: Bradley in position.
 - explicit: true
   id: 2
-  text: За народ, блять!
+  speak: фор зе піпл, фак!
+  text: For the people, fuck!
 - explicit: true
   id: 3
-  text: Є загроза, сука?
+  speak: срет детектед, біч?
+  text: Threat detected, bitch?
 - explicit: false
   id: 4
-  text: Чисто, готово.
+  speak: кліар, реді.
+  text: Clear, ready.
 - explicit: true
   id: 5
-  text: Тримаємо дистанцію, сука.
+  speak: кіп дістанс, мазерфакер.
+  text: Keep distance, motherfucker.
 - explicit: true
   id: 6
-  text: Все працює, нахуй.
+  speak: еврісінг із воркін, фак!
+  text: Everything is working, fuck!
 ua-bradley.underFire:
 - explicit: false
   id: 1
-  text: Нас обстрілюють!
+  speak: ві ар андер файер!
+  text: We are under fire!
 - explicit: true
   id: 2
-  text: Бля, по нам б'ють!
+  speak: фак, зей ар хітінг ас!
+  text: Fuck, they're hitting us!
 - explicit: true
   id: 3
-  text: Сука, прикривайте нас!
+  speak: біч, кавер ас!
+  text: Bitch, cover us!
 - explicit: true
   id: 4
-  text: Йобаний пиздець, вогонь по них!
+  speak: холі шіт, файер он зем!
+  text: Holy shit, fire on them!
 - explicit: true
   id: 5
-  text: Нас затискають, блядь!
+  speak: ві ар геттінг пінд даун, фак!
+  text: We're getting pinned down, fuck!
 - explicit: false
   id: 6
-  text: Твою мать, ховайся!
+  speak: демміт, тейк кавер!
+  text: Dammit, take cover!
 ua-dozer.attack:
 - explicit: false
   id: 1
-  text: Зараз ми їм все розрівняємо.
+  speak: ві віл флетен зем ол.
+  text: We will flatten them all.
 - explicit: true
   id: 2
-  text: Погнали, сука, рознесемо їх!
+  speak: летс гоу, факерз, смеш зем!
+  text: Let's go, fuckers, smash them!
 - explicit: false
   id: 3
-  text: Зараз підлатаємо і в бій.
+  speak: фіксінг ап нау, бек ту файт.
+  text: Fixing up now, back to fight.
 - explicit: true
   id: 4
-  text: Зробимо з них фарш, блядь.
+  speak: терн зем інту міт, фак!
+  text: Turn them into meat, fuck!
 - explicit: false
   id: 5
-  text: Буде як новенький, не хвилюйся.
+  speak: лайк нью, донт ворі.
+  text: Like new, don't worry.
 ua-dozer.created:
 - explicit: false
   id: 1
-  text: Погнали працювати
+  speak: летс гет ту ворк
+  text: Let's get to work
 ua-dozer.die:
 - explicit: true
   id: 1
-  text: Пиздець...
+  speak: холі шіт...
+  text: Holy shit...
 - explicit: true
   id: 2
-  text: Сука!
+  speak: фак!
+  text: Fuck!
 - explicit: true
   id: 3
-  text: А-а-а, блядь!
+  speak: а, фак!
+  text: Ah, fuck!
 - explicit: true
   id: 4
-  text: Йобаний рот!
+  speak: мазерфакер!
+  text: Motherfucker!
 - explicit: false
   id: 5
-  text: Твою мать...
+  speak: дем іт...
+  text: Damn it...
 - explicit: false
   id: 6
-  text: А-а-а-а!
+  speak: ааааа!
+  text: Aaaaaah!
 ua-dozer.move:
 - explicit: false
   id: 1
-  text: Зрозумів, рушаємо.
+  speak: копі дет, мувінг аут.
+  text: Copy that, moving out.
 - explicit: true
   id: 2
-  text: Прийнято, блядь.
+  speak: роджер дет, фак.
+  text: Roger that, fuck.
 - explicit: false
   id: 3
-  text: Сам прокладу собі шлях.
+  speak: айл клір май оун вей.
+  text: I'll clear my own way.
 - explicit: true
   id: 4
-  text: Буду де скажеш, сука.
+  speak: айл бі зер, біч.
+  text: I'll be there, bitch.
 - explicit: false
   id: 5
-  text: Вже працюємо по маршруту.
+  speak: воркінг он зе раут нау.
+  text: Working on the route now.
 - explicit: true
   id: 6
-  text: Погнали, йобаний краний.
+  speak: летс гоу, факінг хел.
+  text: Let's go, fucking hell.
 ua-dozer.select:
 - explicit: false
   id: 1
-  text: Так, я на зв'язку.
+  speak: є, айм он.
+  text: Yeah, I'm on.
 - explicit: true
   id: 2
-  text: Фундамент закладено, бля.
+  speak: фаундейшн із сет, фак.
+  text: Foundation is set, fuck.
 - explicit: false
   id: 3
-  text: Хочеш щось змінити?
+  speak: ю вонт ту чейндж самсінг?
+  text: You want to change something?
 - explicit: true
   id: 4
-  text: Давай будувати, нахуй.
+  speak: летс білд, фак іт.
+  text: Let's build, fuck it.
 - explicit: false
   id: 5
-  text: Готовий до нових об'єктів.
+  speak: реді фор нью тарґетс.
+  text: Ready for new targets.
 - explicit: true
   id: 6
-  text: Кажи, де копати, сука.
+  speak: тел мі веар ту діґ, біч.
+  text: Tell me where to dig, bitch.
 - explicit: false
   id: 7
-  text: Я на зв'язку.
+  speak: айм он рейдіо.
+  text: I'm on radio.
 - explicit: true
   id: 8
-  text: Все чітко, блядь.
+  speak: еврісінг із кліар, шіт.
+  text: Everything is clear, shit.
 - explicit: false
   id: 9
-  text: Чекаю на наказ.
+  speak: вейтінг фор ордерс.
+  text: Waiting for orders.
 ua-dozer.underFire:
 - explicit: false
   id: 1
-  text: прилет!
+  speak: інкамінг!
+  text: Incoming!
 - explicit: true
   id: 2
-  text: Тут не побудуєш, блядь!
+  speak: кант білд шіт хіа!
+  text: Can't build shit here!
 - explicit: true
   id: 3
-  text: Під обстрілом, сука!
+  speak: андер файа, фак!
+  text: Under fire, fuck!
 - explicit: true
   id: 4
-  text: Треба відходити, пиздець!
+  speak: ві гата гоу, фак!
+  text: We gotta go, fuck!
 ua-himars.attack:
 - explicit: false
   id: 1
-  text: Зрозумів, виїжджаємо.
+  speak: копі дет, мувінг аут.
+  text: Copy that, moving out.
 - explicit: true
   id: 2
-  text: Цикл запуску розпочато, блять.
+  speak: лонч сайкл стартід, фак.
+  text: Launch cycle started, fuck.
 - explicit: true
   id: 3
-  text: Ракети на старті, сука.
+  speak: рокетс ар евей, біч.
+  text: Rockets are away, bitch.
 - explicit: true
   id: 4
-  text: Розрахунок швидкості йде, йобаний рот.
+  speak: калкюлейтінг спід, факін хел.
+  text: Calculating speed, fucking hell.
 - explicit: true
   id: 5
-  text: Коригую вітер, сука підступна.
+  speak: аджастінг фор вінд, факін біч.
+  text: Adjusting for wind, fucking bitch.
 - explicit: true
   id: 6
-  text: Готуємо пекло для них, нахуй.
+  speak: сендінг хел зеер вей, фак.
+  text: Sending hell their way, fuck.
 ua-himars.created:
 - explicit: false
   id: 1
-  text: Дальня артилерія на зв'язку.
+  speak: лонг рейндж артилері он комс.
+  text: Long range artillery on comms.
 ua-himars.die:
 - explicit: false
   id: 1
-  text: Так точно!
+  speak: єс, сер!
+  text: Yes, sir!
 - explicit: true
   id: 2
-  text: Сука!
+  speak: фак!
+  text: Fuck!
 - explicit: true
   id: 3
-  text: Пиздець...
+  speak: холі шіт...
+  text: Holy shit...
 - explicit: true
   id: 4
-  text: Йобаний рот!
+  speak: мазерфакер!
+  text: Motherfucker!
 - explicit: true
   id: 5
-  text: Аааа, нахуй!
+  speak: а, фак іт!
+  text: Ah, fuck it!
 - explicit: true
   id: 6
-  text: Пиздец нам...
+  speak: ві ар фаакт...
+  text: We are fucked...
 ua-himars.move:
 - explicit: false
   id: 1
-  text: Оновлюю координати сітки.
+  speak: апдейтінг грід коордінейтс.
+  text: Updating grid coordinates.
 - explicit: true
   id: 2
-  text: Там зможемо шмальнути, бля.
+  speak: ві кен блест зем зеар, фак.
+  text: We can blast them there, fuck.
 - explicit: true
   id: 3
-  text: Ракета в русі, сука.
+  speak: місайл із мувінг, біч.
+  text: Missile is moving, bitch.
 - explicit: false
   id: 4
-  text: Координати прийняв.
+  speak: коордінейтс ресівд.
+  text: Coordinates received.
 - explicit: false
   id: 5
-  text: Боєприпаси в полі, погнали.
+  speak: амо із реді, летс гоу.
+  text: Ammo is ready, let's go.
 ua-himars.select:
 - explicit: false
   id: 1
-  text: HIMARS у мережі.
+  speak: хаймарс із онлайт.
+  text: HIMARS is online.
 - explicit: true
   id: 2
-  text: Ракети готові, блядь.
+  speak: місайлз ар реді, фак.
+  text: Missiles are ready, fuck.
 - explicit: false
   id: 3
-  text: Чекаю на координати.
+  speak: вейтінг фор коордінейтс.
+  text: Waiting for coordinates.
 - explicit: true
   id: 4
-  text: Наведення підтягнуто, сука.
+  speak: таргет локт, біч.
+  text: Target locked, bitch.
 - explicit: false
   id: 5
-  text: Пускова готова до пуску.
+  speak: лончер реді ту фаєр.
+  text: Launcher ready to fire.
 ua-himars.underFire:
 - explicit: false
   id: 1
-  text: Нас обстрілюють,!
+  speak: ві ар біїнг шеллд!
+  text: We're being shelled!
 - explicit: true
   id: 2
-  text: Сука, по нам працюють!
+  speak: фак, зей ар хітінг ас!
+  text: Fuck, they're hitting us!
 - explicit: true
   id: 3
-  text: Прикрий нас, нахуй!
+  speak: кавер ас, фак!
+  text: Cover us, fuck!
 - explicit: true
   id: 4
-  text: Пиздець, вони нас знайшли!
+  speak: шит, зей фаунд ас!
+  text: Shit, they found us!
 - explicit: true
   id: 5
-  text: Відходжу під вогнем, бля!
+  speak: рітрітінг анде файер, фак!
+  text: Retreating under fire, fuck!
 ua-kozak-scout.attack:
 - explicit: false
   id: 1
-  text: Погнали, рознесемо їх!
+  speak: летс гоу, летс краш зем!
+  text: Let's go, let's crush them!
 - explicit: true
   id: 2
-  text: Хочеш спробувати? Ну давай, сука!
+  speak: ю вонт е піс? кам он, біч!
+  text: You want a piece? Come on, bitch!
 - explicit: true
   id: 3
-  text: Зараз ми їх нахуй розітремо!
+  speak: віар гонна факін грайнд зем даун!
+  text: We're gonna fucking grind them down!
 - explicit: true
   id: 4
-  text: Буде весело, бля!
+  speak: зіс із гонна бі фан, фак!
+  text: This is gonna be fun, fuck!
 - explicit: true
   id: 5
-  text: Тримай подачу, йобаний ворог!
+  speak: тейк зіс, ю факін енемі!
+  text: Take this, you fucking enemy!
 - explicit: false
   id: 6
-  text: Розривай їх вщент!
+  speak: теар зем ту пісіз!
+  text: Tear them to pieces!
 ua-kozak-scout.created:
 - explicit: false
   id: 1
-  text: Погнали, заводи цей хрін!
+  speak: летс гоу, старт зис шіт!
+  text: Let's go, start this shit!
 ua-kozak-scout.die:
 - explicit: true
   id: 1
-  text: Сука!
+  speak: біч!
+  text: Bitch!
 - explicit: true
   id: 2
-  text: Пиздець...
+  speak: тотал шіт...
+  text: Total shit...
 - explicit: true
   id: 3
-  text: Блядь!
+  speak: фак!
+  text: Fuck!
 - explicit: false
   id: 4
-  text: Твою мать...
+  speak: мазерфакер...
+  text: Motherfucker...
 - explicit: true
   id: 5
-  text: Йобаний рот!
+  speak: факін хел!
+  text: Fucking hell!
 - explicit: true
   id: 6
-  text: А-а-а, нахуй!
+  speak: а, фак іт!
+  text: Ah, fuck it!
 ua-kozak-scout.move:
 - explicit: false
   id: 1
-  text: Рухаємось!
+  speak: мувінг аут!
+  text: Moving out!
 - explicit: true
   id: 2
-  text: Тільки обережно, бля.
+  speak: вотч іт, фак.
+  text: Watch it, fuck.
 - explicit: true
   id: 3
-  text: Погнали, сука!
+  speak: летс гоу, бітч!
+  text: Let's go, bitch!
 - explicit: true
   id: 4
-  text: Давай, газуй нахуй!
+  speak: педал ту зе метал, фак!
+  text: Pedal to the metal, fuck!
 - explicit: true
   id: 5
-  text: Нормальний маршрут, бля.
+  speak: гуд раут, шіт.
+  text: Good route, shit.
 - explicit: false
   id: 6
-  text: Вперёд!
+  speak: форвард!
+  text: Forward!
 - explicit: false
   id: 7
-  text: Йдемо потихеньку.
+  speak: мувінг слоу.
+  text: Moving slow.
 ua-kozak-scout.select:
 - explicit: false
   id: 1
-  text: Я на зв'язку.
+  speak: айм он комз.
+  text: I'm on comms.
 - explicit: true
   id: 2
-  text: Козак готовий, бля.
+  speak: козак із реді, фак.
+  text: Kozak is ready, fuck.
 - explicit: false
   id: 3
-  text: Що там по ситуації?
+  speak: вотс зе сітуейшн?
+  text: What's the situation?
 - explicit: false
   id: 4
-  text: Кажи, куди підігнати.
+  speak: тел мі веар ту гоу.
+  text: Tell me where to go.
 ua-kozak-scout.underFire:
 - explicit: false
   id: 1
-  text: Нас обстрілюють,!
+  speak: ві ар андер файер!
+  text: We're under fire!
 - explicit: true
   id: 2
-  text: Бля, по нам стріляють!
+  speak: фак, зей ар шутінг ет ас!
+  text: Fuck, they're shooting at us!
 - explicit: true
   id: 3
-  text: Пиздец, нас притиснули!
+  speak: шіт, ві ар пінд даун!
+  text: Shit, we're pinned down!
 - explicit: true
   id: 4
-  text: Прикрий, блядь!
+  speak: кавер мі, фак!
+  text: Cover me, fuck!
 ua-leopard-2a4.attack:
 - explicit: false
   id: 1
-  text: Зараз ми їх розбудимо!
+  speak: тайм ту вейк зем ап!
+  text: Time to wake them up!
 - explicit: true
   id: 2
-  text: Давай, випускай снаряд, блять!
+  speak: сенд іт, фак!
+  text: Send it, fuck!
 - explicit: true
   id: 3
-  text: Рознесемо їх нахуй в щепки!
+  speak: блоу зем ол ту факінг пісіз!
+  text: Blow them all to fucking pieces!
 - explicit: true
   id: 4
-  text: Засмажимо цих сук!
+  speak: берн діз бастардс!
+  text: Burn these bastards!
 - explicit: false
   id: 5
-  text: Бачу ціль, працюю по ній!
+  speak: таргет споттед, енгейджинг!
+  text: Target spotted, engaging!
 - explicit: true
   id: 6
-  text: По цілі, сука, вогонь!
+  speak: таргет локт, файер, шіт!
+  text: Target locked, fire, shit!
 ua-leopard-2a4.created:
 - explicit: false
   id: 1
-  text: Леопард на зв'язку, прийом!
+  speak: ліопард ін контакт, овер!
+  text: Leopard in contact, over!
 ua-leopard-2a4.die:
 - explicit: true
   id: 1
-  text: Сука!
+  speak: біч!
+  text: Bitch!
 - explicit: true
   id: 2
-  text: Блядь!
+  speak: фак!
+  text: Fuck!
 - explicit: true
   id: 3
-  text: Пиздець...
+  speak: тотал шіт...
+  text: Total shit...
 - explicit: true
   id: 4
-  text: Йобаний рот!
+  speak: мазерфакер!
+  text: Motherfucker!
 - explicit: true
   id: 5
-  text: А-а-а, нахуй!
+  speak: а, фак іт!
+  text: Ah, fuck it!
 - explicit: false
   id: 6
-  text: Твою мать...
+  speak: холі шіт...
+  text: Holy shit...
 ua-leopard-2a4.move:
 - explicit: false
   id: 1
-  text: Висуваємось на позицію.
+  speak: мувінг ту позішн.
+  text: Moving to position.
 - explicit: false
   id: 2
-  text: Буде зроблено, командире.
+  speak: копі зет, командер.
+  text: Copy that, commander.
 - explicit: true
   id: 3
-  text: Йдемо вперед, бля!
+  speak: мувінг форвард, фак!
+  text: Moving forward, fuck!
 - explicit: false
   id: 4
-  text: Зачищаємо сектор.
+  speak: клірінг зе сектор.
+  text: Clearing the sector.
 - explicit: true
   id: 5
-  text: Займаємо нову точку, сука.
+  speak: тейкінг нью пойнт, бітч!
+  text: Taking new point, bitch!
 ua-leopard-2a4.select:
 - explicit: false
   id: 1
-  text: Леопард готовий.
+  speak: ліопард із реді.
+  text: Leopard is ready.
 - explicit: true
   id: 2
-  text: Зв'язок є, бля.
+  speak: ґот комс, фак!
+  text: Got comms, fuck!
 - explicit: true
   id: 3
-  text: Покажемо їм силу, нахуй!
+  speak: шоу зем сам факін пауер!
+  text: Show them some fucking power!
 - explicit: false
   id: 4
-  text: Чекаємо на команду.
+  speak: вейтінґ фор ордерс.
+  text: Waiting for orders.
 - explicit: false
   id: 5
-  text: Ваш наказ, командире.
+  speak: йо вер ордерс, командер.
+  text: Your orders, commander.
 ua-leopard-2a4.underFire:
 - explicit: false
   id: 1
-  text: Нас обстрілюють,!
+  speak: ві ар тейкінг файер!
+  text: We're taking fire!
 - explicit: true
   id: 2
-  text: Броня тримається, сука!
+  speak: арморз холдінг, бітч!
+  text: Armor's holding, bitch!
 - explicit: true
   id: 3
-  text: Нас підбивають, пиздець!
+  speak: ві ар геттінг хіт, фак!
+  text: We're getting hit, fuck!
 - explicit: true
   id: 4
-  text: Вогонь по ворогу, швидше, сука!
+  speak: файер он зем, фастер, фак!
+  text: Fire on them, faster, fuck!
 - explicit: true
   id: 5
-  text: Йобаний приліт, блядь!
+  speak: факін хіт, шіт!
+  text: Fucking hit, shit!
 ua-rifleman.attack:
 - explicit: false
   id: 1
-  text: Починаємо штурм!
+  speak: стартінг ді ассалт!
+  text: Starting the assault!
 - explicit: true
   id: 2
-  text: Вбиваємо цих сук!
+  speak: кіл діз бічіз!
+  text: Kill these bitches!
 - explicit: false
   id: 3
-  text: Ціль бачу, працюю по ній!
+  speak: таргет ін сайт, енгейджинг!
+  text: Target in sight, engaging!
 - explicit: true
   id: 4
-  text: Всіх нахуй рознесемо!
+  speak: фак ем ол!
+  text: Fuck 'em all!
 - explicit: false
   id: 5
-  text: Ворог на виду, йдемо в бій!
+  speak: енемі ін сайт, мувінг аут!
+  text: Enemy in sight, moving out!
 - explicit: true
   id: 6
-  text: Давай, пиздуй на них!
+  speak: гоу, фак зем!
+  text: Go, fuck them!
 - explicit: true
   id: 7
-  text: Зачистити все, блять!
+  speak: кліар еверісінг, фак!
+  text: Clear everything, fuck!
 ua-rifleman.created:
 - explicit: false
   id: 1
-  text: Яке завдання, командире?
+  speak: ватс зе мішн, командер?
+  text: What's the mission, commander?
 ua-rifleman.die:
 - explicit: false
   id: 1
-  text: А-а-а!
+  speak: а-а-а!
+  text: Aaaah!
 - explicit: true
   id: 2
-  text: Сука!
+  speak: біч!
+  text: Bitch!
 - explicit: true
   id: 3
-  text: Бля!
+  speak: фак!
+  text: Fuck!
 - explicit: true
   id: 4
-  text: Пиздець...
+  speak: холі шіт...
+  text: Holy shit...
 - explicit: true
   id: 5
-  text: Йобаний рот!
+  speak: факінг хел!
+  text: Fucking hell!
 - explicit: true
   id: 6
-  text: Ой, бля!
+  speak: оу, фак!
+  text: Oh, fuck!
 - explicit: false
   id: 7
-  text: Мамочки...
+  speak: оу год...
+  text: Oh god...
 - explicit: true
   id: 8
-  text: Нахуй все!
+  speak: фак іт ол!
+  text: Fuck it all!
 - explicit: false
   id: 9
-  text: Арх!
+  speak: арг!
+  text: Argh!
 - explicit: false
   id: 10
-  text: Твою мать!
+  speak: мазерфакер!
+  text: Motherfucker!
 - explicit: true
   id: 11
-  text: Срака...
+  speak: шіт...
+  text: Shit...
 - explicit: true
   id: 12
-  text: Хрін йобаний!
+  speak: факінг піс оф шіт!
+  text: Fucking piece of shit!
 ua-rifleman.move:
 - explicit: false
   id: 1
-  text: Вирушаємо!
+  speak: мувінг аут!
+  text: Moving out!
 - explicit: true
   id: 2
-  text: Змінюємо позицію, бля!
+  speak: чейнджін позишн, фак!
+  text: Changing position, fuck!
 - explicit: false
   id: 3
-  text: До точки, руш!
+  speak: ту зе пойнт, мув!
+  text: To the point, move!
 - explicit: true
   id: 4
-  text: Йдемо вперед, сука!
+  speak: мувінг форвард, біч!
+  text: Moving forward, bitch!
 - explicit: false
   id: 5
-  text: Прийнято, пришвидшуємось!
+  speak: роджер, спідінг ап!
+  text: Roger, speeding up!
 ua-rifleman.select:
 - explicit: false
   id: 1
-  text: На зв'язку!
+  speak: копі дет!
+  text: Copy that!
 - explicit: true
   id: 2
-  text: Я готовий, бля!
+  speak: айм реді, фак!
+  text: I'm ready, fuck!
 - explicit: false
   id: 3
-  text: Що там у нас?
+  speak: вотс зе сітуейшн?
+  text: What's the situation?
 - explicit: false
   id: 4
-  text: Кажи, я на зв'язку!
+  speak: ток ту мі, айм хіар!
+  text: Talk to me, I'm here!
 - explicit: true
   id: 5
-  text: Чекаю на команду, сука!
+  speak: вейтінг фор ордерс, біч!
+  text: Waiting for orders, bitch!
 ua-rifleman.underFire:
 - explicit: false
   id: 1
-  text: По нам працюють!
+  speak: зей хітінг ас!
+  text: They're hitting us!
 - explicit: true
   id: 2
-  text: Блядь, де прикриття?!
+  speak: фак! вер із зе кавер?!
+  text: Fuck, where is the cover?!
 - explicit: true
   id: 3
-  text: По нас стріляють, сука!
+  speak: зей шутінг ет ас, біч!
+  text: They're shooting at us, bitch!
 - explicit: true
   id: 4
-  text: Допоможіть, блядь!
+  speak: хелп ас, фак!
+  text: Help us, fuck!
 - explicit: true
   id: 5
-  text: Це пиздець, вони всюди!
+  speak: ітс е шітшоу, зей ар еврівеар!
+  text: It's a shitshow, they're everywhere!
 - explicit: true
   id: 6
-  text: Прикрийте мене, нахуй!
+  speak: кавер мі, фак!
+  text: Cover me, fuck!
 - explicit: true
   id: 7
-  text: Де наші, сука?!
+  speak: веар ар ауер гайз, біч?!
+  text: Where are our guys, bitch?!
 ua-stugna-team.attack:
 - explicit: false
   id: 1
-  text: Починаємо роботу!
+  speak: стартінг ворк!
+  text: Starting work!
 - explicit: true
   id: 2
-  text: Лови подарунок, сука!
+  speak: тейк зіс, ю біч!
+  text: Take this, you bitch!
 - explicit: true
   id: 3
-  text: Зараз буде феєрверк, бля!
+  speak: файерворкс камінг, фак!
+  text: Fireworks coming, fuck!
 - explicit: false
   id: 4
-  text: Танк на прицілі, працюємо!
+  speak: тенк ін сайт, енгейджинг!
+  text: Tank in sight, engaging!
 - explicit: true
   id: 5
-  text: Давай, пускай її, нахуй!
+  speak: файер іт, фак!
+  text: Fire it, fuck!
 - explicit: false
   id: 6
-  text: Заряжай! Зараз рознесемо їх!
+  speak: лоуд іт! ві блоу зем!
+  text: Load it! We blow them!
 - explicit: true
   id: 7
-  text: Приготуйтеся до пиздеця!
+  speak: гет реді фор тотал шіт!
+  text: Get ready for total shit!
 - explicit: false
   id: 8
-  text: Випалюємо їх дотла!
+  speak: берн зем ту ашіз!
+  text: Burn them to ashes!
 ua-stugna-team.created:
 - explicit: false
   id: 1
-  text: Стугна на позиції, готова до розносу!
+  speak: стугна ін позішн, реді ту рек зем!
+  text: Stugna in position, ready to wreck them!
 ua-stugna-team.die:
 - explicit: true
   id: 1
-  text: Бля!
+  speak: фак!
+  text: Fuck!
 - explicit: true
   id: 2
-  text: Сука!
+  speak: біч!
+  text: Bitch!
 - explicit: true
   id: 3
-  text: Пиздець...
+  speak: холі шіт...
+  text: Holy shit...
 - explicit: false
   id: 4
-  text: А-а-а-а!
+  speak: ааааа!
+  text: Aaaaaah!
 - explicit: true
   id: 5
-  text: Йобаний рот!
+  speak: факінг хел!
+  text: Fucking hell!
 - explicit: false
   id: 6
-  text: Твою мать!
+  speak: демет!
+  text: Dammit!
 - explicit: true
   id: 7
-  text: Ой, бля!
+  speak: оу, фак!
+  text: Oh, fuck!
 - explicit: false
   id: 8
-  text: А-ах!
+  speak: а!
+  text: Ah!
 - explicit: true
   id: 9
-  text: Нахуй все!
+  speak: фак іт ол!
+  text: Fuck it all!
 - explicit: false
   id: 10
-  text: Грххх!
+  speak: грррх!
+  text: Grrrgh!
 - explicit: true
   id: 11
-  text: Курва!
+  speak: мазерфакер!
+  text: Motherfucker!
 - explicit: true
   id: 12
-  text: Курва!
+  speak: фак!
+  text: Fuck!
 ua-stugna-team.move:
 - explicit: false
   id: 1
-  text: Рухаємось.
+  speak: мувінг аут.
+  text: Moving out.
 - explicit: true
   id: 2
-  text: Йдемо вперед, бля.
+  speak: мувінг форвард, фак.
+  text: Moving forward, fuck.
 - explicit: false
   id: 3
-  text: Змінюємо позицію.
+  speak: чейнджінг позішн.
+  text: Changing position.
 - explicit: false
   id: 4
-  text: По коліях, погнали.
+  speak: он рейлс, летс гоу.
+  text: On rails, let's go.
 - explicit: true
   id: 5
-  text: Вже на підході, сука.
+  speak: олмоуст зер, біч.
+  text: Almost there, bitch.
 - explicit: false
   id: 6
-  text: Вирушаємо на завдання.
+  speak: хедінг ту мішн.
+  text: Heading to mission.
 ua-stugna-team.select:
 - explicit: false
   id: 1
-  text: Ціль у полі зору, чекаю команди.
+  speak: таргет ін сайт, вейтінг фор ордерс.
+  text: Target in sight, waiting for orders.
 - explicit: false
   id: 2
-  text: Ну що там, давай бахнемо вже?
+  speak: кам он, летс блоу іт олреді.
+  text: Come on, let's blow it already.
 - explicit: true
   id: 3
-  text: Дайте мені хоч щось підірвати, сука!
+  speak: ґів мі самсінг ту блоу ап, біч!
+  text: Give me something to blow up, bitch!
 - explicit: true
   id: 4
-  text: Готовий шматувати їх нахуй.
+  speak: реді ту теар зем зе фак ап.
+  text: Ready to tear them the fuck up.
 - explicit: false
   id: 5
-  text: Кажи, куди стріляти?
+  speak: тел мі, веар ту шут?
+  text: Tell me, where to shoot?
 ua-stugna-team.underFire:
 - explicit: false
   id: 1
-  text: Нас обстрілюють,!
+  speak: ві ар андер файер!
+  text: We're under fire!
 - explicit: true
   id: 2
-  text: Ми під вогнем, сука!
+  speak: ві ар андер файер, фак!
+  text: We're under fire, fuck!
 - explicit: true
   id: 3
-  text: Підмога потрібна, швидше, блядь!
+  speak: нід бек-ап, факінг харрі!
+  text: Need backup, fucking hurry!
 ua-supply-truck.attack:
 - explicit: false
   id: 1
-  text: Зрозумів, виїжджаємо!
+  speak: андерстуд, мувінг аут!
+  text: Understood, moving out!
 - explicit: true
   id: 2
-  text: Погнали, сука!
+  speak: летс гоу, бітч!
+  text: Let's go, bitch!
 - explicit: false
   id: 3
-  text: Зараз ми їм покажемо.
+  speak: ві віл шоу зем.
+  text: We will show them.
 - explicit: true
   id: 4
-  text: Давай швидше, бля!
+  speak: фастер, фак!
+  text: Faster, fuck!
 - explicit: false
   id: 5
-  text: Прийнято, висуваємось.
+  speak: копі дет, адвансінг.
+  text: Copy that, advancing.
 - explicit: true
   id: 6
-  text: Повний вперед, йобаний рот!
+  speak: фул сротел, мазерфакер!
+  text: Full throttle, motherfucker!
 - explicit: false
   id: 7
-  text: Готові до бою.
+  speak: реді фор комбат.
+  text: Ready for combat.
 - explicit: true
   id: 8
-  text: Розносимо їх нахуй!
+  speak: дестрой зем ол, фак!
+  text: Destroy them all, fuck!
 - explicit: false
   id: 9
-  text: Виконуємо!
+  speak: екзекутінг!
+  text: Executing!
 - explicit: true
   id: 10
-  text: Пиздець їм зараз.
+  speak: зей ар факд.
+  text: They are fucked.
 - explicit: false
   id: 11
-  text: Виходимо на ціль.
+  speak: гедін ту тарґет.
+  text: Heading to target.
 - explicit: true
   id: 12
-  text: Тисни на газ, блядь!
+  speak: степ он іт, шіт!
+  text: Step on it, shit!
 - explicit: false
   id: 13
-  text: Погнали в бій.
+  speak: гоінг інту бетел.
+  text: Going into battle.
 - explicit: false
   id: 14
-  text: До зустрічі в пеклі!
+  speak: сі ю ін хел!
+  text: See you in hell!
 ua-supply-truck.created:
 - explicit: false
   id: 1
-  text: Машина готова.
+  speak: віікл із реді.
+  text: Vehicle is ready.
 - explicit: false
   id: 2
-  text: Заправили, перевірили, виїжджаємо.
+  speak: фюелд ап, чект, мувінг аут.
+  text: Fueled up, checked, moving out.
 - explicit: true
   id: 3
-  text: В строю, сука!
+  speak: ін формейшн, біч!
+  text: In formation, bitch!
 - explicit: false
   id: 4
-  text: Фуру підготували.
+  speak: трак із препеард.
+  text: Truck is prepared.
 - explicit: true
   id: 5
-  text: Все працює, бля.
+  speak: еврісінг із воркінг, фак.
+  text: Everything is working, fuck.
 - explicit: false
   id: 6
-  text: Виходимо на маршрут.
+  speak: хедінг ту зе раут.
+  text: Heading to the route.
 - explicit: false
   id: 7
-  text: Нова тачка, нова робота.
+  speak: нью трак, нью джоб.
+  text: New truck, new job.
 - explicit: true
   id: 8
-  text: Ну що, погнали, нахуй!
+  speak: олрайт, летс гоу, фак іт!
+  text: Alright, let's go, fuck it!
 - explicit: false
   id: 9
-  text: Техніка в нормі.
+  speak: віікл із файн.
+  text: Vehicle is fine.
 - explicit: true
   id: 10
-  text: Всі на місці, блядь.
+  speak: евріван із хіер, шіт.
+  text: Everyone is here, shit.
 - explicit: false
   id: 11
-  text: Готові до роботи.
+  speak: реді фор ворк.
+  text: Ready for work.
 - explicit: false
   id: 12
-  text: Рушаємо.
+  speak: мувінг.
+  text: Moving.
 ua-supply-truck.die:
 - explicit: true
   id: 1
-  text: Блядь!
+  speak: фак!
+  text: Fuck!
 - explicit: true
   id: 2
-  text: Сука!
+  speak: піс оф шіт!
+  text: Piece of shit!
 - explicit: true
   id: 3
-  text: Пиздець...
+  speak: холі шіт...
+  text: Holy shit...
 - explicit: true
   id: 4
-  text: Йобаний рот!
+  speak: мазерфакер!
+  text: Motherfucker!
 - explicit: false
   id: 5
-  text: А-а-а!
+  speak: а-а-а!
+  text: Aaaah!
 - explicit: true
   id: 6
-  text: Нахуй все!
+  speak: фак іт ол!
+  text: Fuck it all!
 ua-supply-truck.move:
 - explicit: false
   id: 1
-  text: Зрозумів, рухаюсь.
+  speak: копі дет, мувінг.
+  text: Copy that, moving.
 - explicit: false
   id: 2
-  text: Прийнято, їдемо.
+  speak: роджер, ві а ролінг.
+  text: Roger, we are rolling.
 - explicit: true
   id: 3
-  text: Тисну на газ, бля.
+  speak: степінг он іт, фак.
+  text: Stepping on it, fuck.
 - explicit: false
   id: 4
-  text: Маршрут прокладено.
+  speak: раут із сет.
+  text: Route is set.
 - explicit: true
   id: 5
-  text: Йдемо далі, сука.
+  speak: мувінг нау, біч.
+  text: Moving now, bitch.
 - explicit: false
   id: 6
-  text: Рухаємось на точку.
+  speak: хедінг ту зе пойнт.
+  text: Heading to the point.
 - explicit: false
   id: 7
-  text: Вже в дорозі.
+  speak: олреді он зе вей.
+  text: Already on the way.
 - explicit: true
   id: 8
-  text: Погнали, блядь!
+  speak: летс факінг го!
+  text: Let's fucking go!
 - explicit: false
   id: 9
-  text: Змінюю позицію.
+  speak: чейнджінг позішн.
+  text: Changing position.
 - explicit: true
   id: 10
-  text: Всі на ходу, нахуй.
+  speak: евріванз мувінг, фак.
+  text: Everyone's moving, fuck.
 - explicit: false
   id: 11
-  text: Повний вперед.
+  speak: фул спіт хед.
+  text: Full speed ahead.
 - explicit: true
   id: 12
-  text: Все під контролем, бля.
+  speak: еврісінг із файн, шіт.
+  text: Everything is fine, shit.
 - explicit: false
   id: 13
-  text: Змінюємо позицію.
+  speak: рілокейтінг нау.
+  text: Relocating now.
 - explicit: true
   id: 14
-  text: По коням, сука!
+  speak: мув іт, біч!
+  text: Move it, bitch!
 - explicit: false
   id: 15
-  text: Тримаємо темп.
+  speak: кіпінг зе пейс.
+  text: Keeping the pace.
 - explicit: true
   id: 16
-  text: Йдемо, блядь!
+  speak: мувінг, фак!
+  text: Moving, fuck!
 - explicit: false
   id: 17
-  text: Виконую маневр.
+  speak: екзекутінг манувер.
+  text: Executing maneuver.
 ua-supply-truck.select:
 - explicit: false
   id: 1
-  text: Я тут.
+  speak: айм хіар.
+  text: I'm here.
 - explicit: false
   id: 2
-  text: Слухаю вас.
+  speak: ліссінін.
+  text: Listening.
 - explicit: true
   id: 3
-  text: Чекаю на наказ, бля.
+  speak: вейтін фор ордерс, фак.
+  text: Waiting for orders, fuck.
 - explicit: false
   id: 4
-  text: Готовий до роботи.
+  speak: реді ту ворк.
+  text: Ready to work.
 - explicit: true
   id: 5
-  text: Що там, сука?
+  speak: ват зе фак?
+  text: What the fuck?
 - explicit: false
   id: 6
-  text: На зв'язку.
+  speak: копі зет.
+  text: Copy that.
 - explicit: true
   id: 7
-  text: Я на місці, блядь.
+  speak: айм хіар, фор факс сейк.
+  text: I'm here, for fuck's sake.
 - explicit: false
   id: 8
-  text: Що робити?
+  speak: ват ту ду?
+  text: What to do?
 - explicit: true
   id: 9
-  text: Готовий, нахуй.
+  speak: реді, фак єа.
+  text: Ready, fuck yeah.
 - explicit: false
   id: 10
-  text: На зв'язку, командире.
+  speak: копі, командер.
+  text: Copy, commander.
 - explicit: true
   id: 11
-  text: Чекаю, блядь.
+  speak: вейтін, дем іт.
+  text: Waiting, damn it.
 - explicit: false
   id: 12
-  text: Машина під контролем.
+  speak: трак із контролд.
+  text: Truck is controlled.
 - explicit: true
   id: 13
-  text: Яка задача, сука?
+  speak: ватс зе таск, біч?
+  text: What's the task, bitch?
 - explicit: false
   id: 14
-  text: На зв'язку, працюю.
+  speak: копі, воркін.
+  text: Copy, working.
 - explicit: true
   id: 15
-  text: Всі тут, блядь.
+  speak: евріванз хіар, шіт.
+  text: Everyone's here, shit.
 - explicit: false
   id: 16
-  text: Готовий до виїзду.
+  speak: реді ту рол.
+  text: Ready to roll.
 - explicit: true
   id: 17
-  text: Кажи вже, бля!
+  speak: джаст факін сей іт!
+  text: Just fucking say it!
 ua-supply-truck.underFire:
 - explicit: false
   id: 1
-  text: Нас обстрілюють!
+  speak: ві'р тейкінг фаєр!
+  text: We're taking fire!
 - explicit: true
   id: 2
-  text: Сука, по нам стріляють!
+  speak: фак, зей'р шутінг ет ас!
+  text: Fuck, they're shooting at us!
 - explicit: true
   id: 3
-  text: Бля, залізо летить!
+  speak: шит, інкамінґ метал!
+  text: Shit, incoming metal!
 - explicit: false
   id: 4
-  text: Ми під вогнем!
+  speak: ві ар андер фаєр!
+  text: We are under fire!
 - explicit: true
   id: 5
-  text: Пиздець, вони нас знайшли!
+  speak: фак, зей фаунд ас!
+  text: Fuck, they found us!
 - explicit: true
   id: 6
-  text: Прикривайте, блядь!
+  speak: кавер ас, фак!
+  text: Cover us, fuck!
 - explicit: true
   id: 7
-  text: Де вони, сука?!
+  speak: веа ар зей, біч?!
+  text: Where are they, bitch?!
 - explicit: true
   id: 8
-  text: Відступаємо, бля!
+  speak: рітрітінг, шіт!
+  text: Retreating, shit!
 - explicit: false
   id: 9
-  text: Нас затиснули!
+  speak: ві ар пінд даун!
+  text: We are pinned down!
 - explicit: true
   id: 10
-  text: Блядь, куди вони цілять?!
+  speak: фак, веа ар зей еймінг?!
+  text: Fuck, where are they aiming?!
 - explicit: true
   id: 11
-  text: Машина під вогнем, нахуй!
+  speak: трак із андер фаєр, фак!
+  text: Truck is under fire, fuck!
 - explicit: true
   id: 12
-  text: Швидше, блядь, газуй!
+  speak: фастер, факін драйв!
+  text: Faster, fucking drive!
 - explicit: false
   id: 13
-  text: Вони нас бачать!
+  speak: зей сі ас!
+  text: They see us!
 - explicit: true
   id: 14
-  text: Йобаний пиздець, прикривайте!
+  speak: холі фак, кавер ас!
+  text: Holy fuck, cover us!
 - explicit: false
   id: 15
-  text: Занадто багато вогню!
+  speak: ту мач фаєр!
+  text: Too much fire!
 - explicit: true
   id: 16
-  text: Бля, забагато пуль!
+  speak: шіт, ту мені бул літс!
+  text: Shit, too many bullets!
 - explicit: true
   id: 17
-  text: Сховайте нас, сука!
+  speak: гайд ас, біч!
+  text: Hide us, bitch!
