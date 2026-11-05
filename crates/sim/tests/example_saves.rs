@@ -94,21 +94,15 @@ fn ac_19_14_infantry_vs_armor() {
 
 #[test]
 fn ac_25_08_run_over() {
-    // Spec 25: the tank's lane is crushed; the truck's lane is shoved, hurt, alive.
+    // Spec 25: the tank crushes riflemen, though some dodge it (spec 28 §6);
+    // the truck kills nobody: its lane is shoved aside or steps away.
     let (mut world, _, mut ais) = load_example("run-over");
-    run(&mut world, &mut ais, 900);
-    let rules = world.rules();
-    let soldiers: Vec<_> = world.entities().iter().filter(|e| e.owner == 1).collect();
-    let lane = fx_centi(2000);
-    assert!(
-        soldiers.iter().all(|e| e.pos.y > lane),
-        "no rifleman survives the tank"
-    );
-    assert!(!soldiers.is_empty(), "the truck does not crush");
-    assert!(
-        soldiers.iter().any(|e| e.hp < rules.ty(e.kind).hp),
-        "the truck's shove hurts"
-    );
+    let riflemen = |world: &World| world.entities().iter().filter(|e| e.owner == 1).count();
+    let before = riflemen(&world);
+    let deaths = run(&mut world, &mut ais, 900);
+    assert!(deaths > 0, "the tank crushes riflemen");
+    assert!(riflemen(&world) > 0, "the truck does not crush");
+    assert!(riflemen(&world) < before);
 }
 
 #[test]

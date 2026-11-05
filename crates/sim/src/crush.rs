@@ -15,7 +15,7 @@ const FEATURE_REACH: Fx = Fx::from_raw(16384);
 
 /// Velocity of a hull this tick (spec 11 §5.2): along the heading, backwards
 /// while reversing.
-fn velocity(unit: &Entity) -> FxVec2 {
+pub(crate) fn velocity(unit: &Entity) -> FxVec2 {
     let forward = unit.heading.dir().scale(unit.speed);
     if unit.reversing {
         FxVec2::ZERO - forward
@@ -25,7 +25,7 @@ fn velocity(unit: &Entity) -> FxVec2 {
 }
 
 /// The motion profile of a live, moving vehicle that can run soldiers over.
-fn runner<'a>(rules: &'a Ruleset, unit: &Entity) -> Option<&'a Motion> {
+pub(crate) fn runner<'a>(rules: &'a Ruleset, unit: &Entity) -> Option<&'a Motion> {
     if unit.site.is_some() || unit.hp == 0 || unit.speed <= Fx::ZERO {
         return None;
     }
@@ -35,7 +35,7 @@ fn runner<'a>(rules: &'a Ruleset, unit: &Entity) -> Option<&'a Motion> {
 }
 
 /// A soldier on foot (Zero Hour `CrushableLevel = 0`).
-fn crushable(rules: &Ruleset, unit: &Entity) -> bool {
+pub(crate) fn crushable(rules: &Ruleset, unit: &Entity) -> bool {
     unit.site.is_none()
         && !unit.contained()
         && unit.hp > 0

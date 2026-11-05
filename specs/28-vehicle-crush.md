@@ -67,6 +67,31 @@ the normal separation of spec 04 (getting out of the way is the movement
 yielding work, not this spec). With no alliances yet, "ally" means "same
 player".
 
+## 4a. Dodging (issue #453) — Difference
+
+Zero Hour never makes infantry dodge an enemy crusher: `AIUpdateInterface::
+blockedBy` returns early when the mover `canCrushOrSquish` the other unit, so
+`SquishCollide::onCollide` kills him; only allies get `aiMoveAwayFromUnit`
+(`AIUpdate.cpp` `processCollision`, `Pathfinder::getMoveAwayFromPath`,
+generals-precedent note of 2026-11-05). The owner asked that soldiers *try*
+to get out of the way instead of letting a column be flattened, so Red Line
+reuses that move-out-of-the-way for enemies:
+
+* Every live, moving runner (crusher or shoving hull) looks
+  `crushDodgeLookaheadCenti` (data/rules/globals.yaml, 150) past its nose
+  along its velocity. Each enemy soldier its body would touch on that
+  stretch reacts (sim phase `dodge_crushers`, right after movement).
+* An idle soldier (also one firing from where he stands) gets the
+  spec 04 §5.3 yield: a short move to the nearest clear cell off the
+  vehicle's line, never toward the vehicle.
+* A soldier on a move sidesteps one step at his speed away from the line
+  each tick he is threatened, and keeps his order.
+* Garrisoned, boarded or trench soldiers do not react; soldiers on other
+  orders (attack, build, harvest...) do not either.
+* Failure: in one half-second window in `crushDodgeMissOneIn` (3) a soldier
+  is slow to react (`(id + tick / 15) mod N == 0`, deterministic); together
+  with a fast hull or a blocked side this means some still get run over.
+
 ## 5. Client (`deaths.ts`, `corpses.ts`)
 
 The death and hit causes of spec 22 §2 learn two more kinds from the
@@ -103,7 +128,11 @@ locomotor) and touched the soldier in the last 0.6 s is the cause.
   death.
 * AC-28-07: a friendly tank is no crush cause; a wheeled truck is a `shove`
   pushing away from it, forgotten after 0.6 s.
-* AC-28-08: the `run-over` example save: after 900 ticks no rifleman of the
-  tank's lane lives and the truck's lane has hurt survivors.
+* AC-28-08: the `run-over` example save: after 900 ticks the tank has
+  crushed riflemen and the truck has killed nobody (some dodge, §4a).
+* AC-28-09: an idle enemy rifleman in a tank's path steps aside and lives.
+* AC-28-10: a rifleman walking head-on at a tank sidesteps and lives.
+* AC-28-11: a soldier who never reacts (`crushDodgeMissOneIn: 1`) is crushed.
+* AC-28-12: the shipped rules make soldiers dodge and sometimes fail.
 
 Try it: `?load=run-over`.
