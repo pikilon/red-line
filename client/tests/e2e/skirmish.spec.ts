@@ -362,9 +362,9 @@ test("AC-03-56: builds a power plant through the UI", async ({ page }) => {
   }
   await expect(plantButton).toBeEnabled();
   await plantButton.click();
-  // The right button is inert: it does not cancel placement.
+  // A right click on the map leaves placement (spec 08 §3.11).
   await clickTiles(page, 25.5, 68.5, "right");
-  await expect(plantButton).toHaveAttribute("aria-pressed", "true");
+  await expect(plantButton).toHaveAttribute("aria-pressed", "false");
   await page.keyboard.press("Escape");
   await clickTiles(page, 19.5, 58.5);
   await page.waitForTimeout(1000);
@@ -646,7 +646,7 @@ test("AC-03-59: attacks with a left click", async ({ page }) => {
   expect(await entityCount(page, 0, leopardKind)).toBeGreaterThan(0);
 });
 
-test("AC-08-26: left click moves, attacks and selects; right is inert", async ({
+test("AC-08-26: left click moves, attacks and selects; right deselects", async ({
   page,
 }) => {
   await bootDebug(page, "debug=1&speed=4");
@@ -703,13 +703,15 @@ test("AC-08-26: left click moves, attacks and selects; right is inert", async ({
     .poll(() => debugCall(page, (api) => api.selectedIds()))
     .toEqual([second.id]);
 
-  // The right button does nothing: no order and no deselection.
+  // A right click gives no order and clears the selection (spec 08 §3.11).
   await clickTiles(page, 35, 66, "right");
   await page.waitForTimeout(ms(300));
   expect((await savedOrder(page, second.id))?.kind ?? null).not.toBe("move");
-  expect(await debugCall(page, (api) => api.selectedIds())).toEqual([
-    second.id,
-  ]);
+  expect(await debugCall(page, (api) => api.selectedIds())).toEqual([]);
+  await clickTiles(page, second.x, second.y);
+  await expect
+    .poll(() => debugCall(page, (api) => api.selectedIds()))
+    .toEqual([second.id]);
 
   // An enemy is attacked by a plain left click.
   await clickTiles(page, enemy.x, enemy.y);
@@ -820,8 +822,7 @@ test("AC-20-03: force-fires with Ctrl and the left button", async ({
     .toBe("attack");
   expect((await savedOrder(page, himars.id))?.target).toBe(plant.id);
 
-  // The right button is inert: Ctrl + right click neither force-fires nor
-  // clears the selection.
+  // Ctrl + right click does not force-fire; it deselects like a right click.
   await debugCall(
     page,
     (api, id: number) => {
@@ -841,7 +842,8 @@ test("AC-20-03: force-fires with Ctrl and the left button", async ({
       (api, id: number) => api.selectedIds().includes(id),
       himars.id,
     ),
-  ).toBe(true);
+  ).toBe(false);
+  await clickTiles(page, himars.x, himars.y);
 
   // A plain left click on the enemy is enough to attack it (owner request).
   await clickTiles(page, plant.x, plant.y);
