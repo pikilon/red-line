@@ -1,0 +1,219 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "campaign-ru-02-snake-island",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "demo-coast",
+    "seed": "1",
+    "debug": false,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 1,
+    "revealed": false,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": false,
+    "camera": {
+      "x": 46,
+      "y": 30,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "demo-coast",
+    "seed": "1",
+    "victory": true,
+    "debug": false,
+    "starts": false,
+    "credits": [
+      2000,
+      3000
+    ],
+    "ai": [
+      {
+        "player": 0,
+        "personality": "ukraine-balanced",
+        "active": true
+      }
+    ],
+    "entities": [
+      {
+        "player": 1,
+        "type": "ru-hq",
+        "origin": [
+          52,
+          28
+        ],
+        "label": "hq"
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          58,
+          28
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-vehicle-factory",
+        "origin": [
+          52,
+          34
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-dozer",
+        "atCenti": [
+          5100,
+          4000
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-tos-1a",
+        "atCenti": [
+          4600,
+          2600
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-tos-1a",
+        "atCenti": [
+          4600,
+          3000
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          4400,
+          2700
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-bmp-2",
+        "atCenti": [
+          4400,
+          3100
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4300,
+          3000
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4300,
+          3100
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4300,
+          3200
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4300,
+          3300
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-hq",
+        "origin": [
+          8,
+          28
+        ],
+        "label": "zmiinyi"
+      },
+      {
+        "player": 0,
+        "type": "ua-defense",
+        "origin": [
+          16,
+          24
+        ],
+        "label": "guard1"
+      },
+      {
+        "player": 0,
+        "type": "ua-defense",
+        "origin": [
+          16,
+          34
+        ],
+        "label": "guard2"
+      },
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          3,
+          28
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-dozer",
+        "atCenti": [
+          1350,
+          3300
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1400,
+          2700
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1400,
+          2900
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1400,
+          3100
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          1400,
+          3300
+        ]
+      }
+    ]
+  }
+}

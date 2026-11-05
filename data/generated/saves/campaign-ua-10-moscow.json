@@ -1,0 +1,325 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "campaign-ua-10-moscow",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "first-line",
+    "seed": "1",
+    "debug": false,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": false,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": false,
+    "camera": {
+      "x": 16,
+      "y": 60,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "first-line",
+    "seed": "1",
+    "victory": true,
+    "debug": false,
+    "starts": false,
+    "credits": [
+      12000,
+      15000
+    ],
+    "ai": [
+      {
+        "player": 1,
+        "personality": "russia-balanced",
+        "active": true
+      }
+    ],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-hq",
+        "origin": [
+          10,
+          58
+        ],
+        "label": "ua-hq"
+      },
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          5,
+          58
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-center",
+        "origin": [
+          16,
+          56
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-barracks",
+        "origin": [
+          5,
+          63
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-vehicle-factory",
+        "origin": [
+          11,
+          64
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-drone-workshop",
+        "origin": [
+          5,
+          68
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-missile-site",
+        "origin": [
+          16,
+          66
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-dozer",
+        "atCenti": [
+          1850,
+          6150
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          2600,
+          5600
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          2600,
+          5800
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          2600,
+          6000
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          2600,
+          6200
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-himars",
+        "atCenti": [
+          2200,
+          5400
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-himars",
+        "atCenti": [
+          2200,
+          5600
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-patriot",
+        "origin": [
+          22,
+          70
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-hq",
+        "origin": [
+          114,
+          66
+        ],
+        "label": "ru-hq"
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          120,
+          67
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-supply-center",
+        "origin": [
+          108,
+          69
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-barracks",
+        "origin": [
+          120,
+          62
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-vehicle-factory",
+        "origin": [
+          113,
+          60
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-geran-site",
+        "origin": [
+          109,
+          74
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-airfield",
+        "origin": [
+          104,
+          62
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-dozer",
+        "atCenti": [
+          10950,
+          6650
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-hq",
+        "origin": [
+          100,
+          74
+        ],
+        "label": "kremlin"
+      },
+      {
+        "player": 1,
+        "type": "ru-defense",
+        "origin": [
+          96,
+          70
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-defense",
+        "origin": [
+          96,
+          78
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-defense",
+        "origin": [
+          106,
+          78
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-pantsir",
+        "atCenti": [
+          9400,
+          7600
+        ],
+        "label": "shield1"
+      },
+      {
+        "player": 1,
+        "type": "ru-pantsir",
+        "atCenti": [
+          10400,
+          7200
+        ],
+        "label": "shield2"
+      },
+      {
+        "player": 1,
+        "type": "ru-pantsir",
+        "atCenti": [
+          10400,
+          8400
+        ],
+        "label": "shield3"
+      },
+      {
+        "player": 1,
+        "type": "ru-pole-21",
+        "atCenti": [
+          10000,
+          7000
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          9000,
+          7000
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          9000,
+          7400
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          9000,
+          7800
+        ]
+      }
+    ]
+  }
+}

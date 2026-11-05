@@ -1,0 +1,44 @@
+# Spec 48: Russia 1: the VDV air assault on the Antonov airport at Hostomel.
+id: campaign-ru-01-hostomel
+map: first-line
+victory: true
+debug: false
+starts: false
+credits: [2500, 2500]
+ai: [{ player: 0, personality: ukraine-rush, active: true }]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 52, y: 60, zoom: 1 }
+entities:
+  - { player: 1, type: ru-hq, origin: [56, 56], label: hq }
+  - { player: 1, type: ru-barracks, origin: [56, 62] }
+  - { player: 1, type: ru-power-plant, origin: [52, 56] }
+  - { player: 1, type: ru-dozer, atCenti: [5450, 6650] }
+  - { player: 1, type: ru-rifleman, atCenti: [4600, 5600] }
+  - { player: 1, type: ru-rifleman, atCenti: [4600, 5700] }
+  - { player: 1, type: ru-rifleman, atCenti: [4600, 5800] }
+  - { player: 1, type: ru-rifleman, atCenti: [4600, 5900] }
+  - { player: 1, type: ru-rifleman, atCenti: [4600, 6000] }
+  - { player: 1, type: ru-rifleman, atCenti: [4600, 6100] }
+  - { player: 1, type: ru-rifleman, atCenti: [4600, 6200] }
+  - { player: 1, type: ru-rifleman, atCenti: [4600, 6300] }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [4700, 5800] }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [4700, 5900] }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [4700, 6000] }
+  - { player: 1, type: ru-bmp-2, atCenti: [5000, 5500] }
+  - { player: 1, type: ru-bmp-2, atCenti: [5000, 5800] }
+  - { player: 1, type: ru-bmp-2, atCenti: [5000, 6100] }
+  - { player: 0, type: ua-hq, origin: [10, 58], label: ua-hq }
+  - { player: 0, type: ua-power-plant, origin: [5, 58] }
+  - { player: 0, type: ua-supply-center, origin: [16, 56] }
+  - { player: 0, type: ua-barracks, origin: [5, 63] }
+  - { player: 0, type: ua-dozer, atCenti: [1850, 6150] }
+  - { player: 0, type: ua-defense, origin: [36, 56], label: tower1 }
+  - { player: 0, type: ua-defense, origin: [36, 64], label: tower2 }
+  - { player: 0, type: ua-barracks, origin: [30, 60], label: hangar }
+  - { player: 0, type: ua-rifleman, atCenti: [3400, 5800] }
+  - { player: 0, type: ua-rifleman, atCenti: [3400, 5900] }
+  - { player: 0, type: ua-rifleman, atCenti: [3400, 6000] }
+  - { player: 0, type: ua-rifleman, atCenti: [3400, 6100] }
+  - { player: 0, type: ua-stugna-team, atCenti: [3400, 6300] }

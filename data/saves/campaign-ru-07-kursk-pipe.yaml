@@ -1,0 +1,45 @@
+# Spec 48: Russia 7: Operation Stream, assault troops crawl through the gas pipeline to Sudzha.
+id: campaign-ru-07-kursk-pipe
+map: first-line
+victory: true
+debug: false
+starts: false
+credits: [4000, 4000]
+ai: [{ player: 0, personality: ukraine-balanced, active: true }]
+client:
+  controlled: 1
+  revealed: false
+  camera: { x: 74, y: 62, zoom: 1 }
+entities:
+  - { player: 1, type: ru-hq, origin: [114, 66], label: ru-hq }
+  - { player: 1, type: ru-power-plant, origin: [120, 67] }
+  - { player: 1, type: ru-supply-center, origin: [108, 69] }
+  - { player: 1, type: ru-barracks, origin: [120, 62] }
+  - { player: 1, type: ru-vehicle-factory, origin: [113, 60] }
+  - { player: 1, type: ru-dozer, atCenti: [10950, 6650] }
+  - { player: 1, type: ru-rifleman, atCenti: [7000, 6000] }
+  - { player: 1, type: ru-rifleman, atCenti: [7000, 6100] }
+  - { player: 1, type: ru-rifleman, atCenti: [7000, 6200] }
+  - { player: 1, type: ru-rifleman, atCenti: [7000, 6300] }
+  - { player: 1, type: ru-rifleman, atCenti: [7000, 6400] }
+  - { player: 1, type: ru-rifleman, atCenti: [7000, 6500] }
+  - { player: 1, type: ru-rifleman, atCenti: [7000, 6600] }
+  - { player: 1, type: ru-rifleman, atCenti: [7000, 6700] }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [7100, 6200] }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [7100, 6300] }
+  - { player: 1, type: ru-rpg-gunner, atCenti: [7100, 6400] }
+  - { player: 0, type: ua-hq, origin: [10, 58], label: ua-hq }
+  - { player: 0, type: ua-power-plant, origin: [5, 58] }
+  - { player: 0, type: ua-supply-center, origin: [16, 56] }
+  - { player: 0, type: ua-barracks, origin: [5, 63] }
+  - { player: 0, type: ua-vehicle-factory, origin: [11, 64] }
+  - { player: 0, type: ua-dozer, atCenti: [1850, 6150] }
+  - { player: 0, type: ua-hq, origin: [76, 60], label: sudzha }
+  - { player: 0, type: ua-defense, origin: [82, 60], label: trench1 }
+  - { player: 0, type: ua-defense, origin: [82, 66], label: trench2 }
+  - { player: 0, type: ua-rifleman, atCenti: [8000, 6200] }
+  - { player: 0, type: ua-rifleman, atCenti: [8000, 6300] }
+  - { player: 0, type: ua-rifleman, atCenti: [8000, 6400] }
+  - { player: 0, type: ua-rifleman, atCenti: [8000, 6500] }
+  - { player: 0, type: ua-bradley, atCenti: [8400, 6200] }
+  - { player: 0, type: ua-bradley, atCenti: [8400, 6500] }

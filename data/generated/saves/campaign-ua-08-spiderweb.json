@@ -1,0 +1,214 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "campaign-ua-08-spiderweb",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": false,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": false,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": false,
+    "camera": {
+      "x": 56,
+      "y": 20,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": true,
+    "debug": false,
+    "starts": false,
+    "credits": [
+      1000,
+      2000
+    ],
+    "ai": [
+      {
+        "player": 1,
+        "personality": "russia-balanced",
+        "active": false
+      }
+    ],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-hq",
+        "origin": [
+          4,
+          6
+        ],
+        "label": "hq"
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-truck",
+        "atCenti": [
+          5000,
+          1200
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-supply-truck",
+        "atCenti": [
+          5000,
+          2800
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-fpv-team",
+        "atCenti": [
+          5200,
+          1000
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-fpv-team",
+        "atCenti": [
+          5200,
+          1200
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-fpv-team",
+        "atCenti": [
+          5200,
+          1400
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-fpv-team",
+        "atCenti": [
+          5200,
+          2600
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-fpv-team",
+        "atCenti": [
+          5200,
+          2800
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-fpv-team",
+        "atCenti": [
+          5200,
+          3000
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-hq",
+        "origin": [
+          90,
+          6
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-airfield",
+        "origin": [
+          66,
+          8
+        ],
+        "label": "olenya"
+      },
+      {
+        "player": 1,
+        "type": "ru-airfield",
+        "origin": [
+          66,
+          26
+        ],
+        "label": "belaya"
+      },
+      {
+        "player": 1,
+        "type": "ru-su-34",
+        "atCenti": [
+          7400,
+          900
+        ],
+        "label": "bomber-n1"
+      },
+      {
+        "player": 1,
+        "type": "ru-su-34",
+        "atCenti": [
+          7400,
+          1100
+        ],
+        "label": "bomber-n2"
+      },
+      {
+        "player": 1,
+        "type": "ru-su-34",
+        "atCenti": [
+          7400,
+          2700
+        ],
+        "label": "bomber-s1"
+      },
+      {
+        "player": 1,
+        "type": "ru-su-34",
+        "atCenti": [
+          7400,
+          2900
+        ],
+        "label": "bomber-s2"
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          6400,
+          1800
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          6600,
+          1800
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          6800,
+          1800
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-pole-21",
+        "atCenti": [
+          8000,
+          1800
+        ]
+      }
+    ]
+  }
+}
