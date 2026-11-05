@@ -398,6 +398,8 @@
   "campaign.video": "Cinematic",
   "campaign.briefing": "Briefing",
   "campaign.objectives": "Objectives",
+  "campaign.hideObjectives": "Hide objectives",
+  "campaign.showObjectives": "Show objectives",
   "campaign.start": "Start mission",
   "campaign.failed": "Mission failed.",
   "campaign.retry": "Retry",
