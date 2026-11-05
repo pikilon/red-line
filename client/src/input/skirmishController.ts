@@ -5,6 +5,7 @@ import { typeDef } from "../rules";
 import { ENTITY_FLAGS, type EntityState, hasFlag } from "../sim/matchSnapshot";
 import type { SimCommand } from "../sim/protocol";
 import { panDelta } from "./cameraPan";
+import { centreOf } from "./controlGroups";
 import { boxSelect, clickSelect, selectAllOwnUnits } from "./entitySelection";
 import {
   blockSelection,
@@ -128,6 +129,7 @@ export interface SkirmishController {
 }
 
 const LEFT_BUTTON = 0;
+const RIGHT_BUTTON = 2;
 /** A flyer is picked within this many tiles of its drawn centre, at least
  *  `FLYER_PICK_MIN_PX` pixels (spec 43). */
 const FLYER_PICK_TILES = 0.7;
@@ -672,29 +674,88 @@ export function createSkirmishController(
   );
 
   canvas.addEventListener("contextmenu", (event) => {
-    // The right button is inert (spec 08 §3.9): only keep the browser menu out.
+    // Only keep the browser menu out; the right click acts on pointerup
+    // (spec 08 §3.11), so macOS Ctrl+click (force fire) never deselects.
     event.preventDefault();
   });
 
-  options.keyTarget.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && options.placementKind() !== null) {
-      event.preventDefault();
+  /** Spec 08 §3.11: Esc and the right click leave placement, else disarm a
+   *  pending command, else clear the selection (Zero Hour's right click). */
+  function cancelOrDeselect(): void {
+    if (options.placementKind() !== null) {
       options.exitPlacement();
-      return;
+    } else if (armedMode !== null || digArmed) {
+      armedMode = null;
+      digArmed = false;
+    } else {
+      setSelection([]);
     }
+  }
+
+  /** Spec 08 §3.11: Zero Hour's selection and order keys. Q selects every
+   *  own unit on the screen, E the selected types on the screen, Backspace
+   *  centres the camera on the selection, Z stops it (S pans). Returns
+   *  whether the key was one of them. */
+  function orderHotkey(code: string): boolean {
+    const entities = options.entities();
+    const player = options.player();
+    if (code === "KeyQ") {
+      const kinds = new Set<number>();
+      for (const id of selectAllOwnUnits(entities, player)) {
+        const entity = entities.find((row) => row.id === id);
+        if (entity !== undefined) kinds.add(entity.kind);
+      }
+      if (kinds.size > 0) setSelection(sameOnScreen([...kinds]));
+      return true;
+    }
+    if (code === "KeyE") {
+      const kinds = selectedUnitKinds(entities, selected);
+      if (kinds.length > 0) setSelection(sameOnScreen(kinds));
+      return true;
+    }
+    if (code === "Backspace") {
+      const point = centreOf([...selected], entities);
+      if (point !== null) setTarget(point.x, point.y);
+      return true;
+    }
+    if (code === "KeyZ") {
+      const units = [...selected].filter((id) => {
+        const entity = entities.find((row) => row.id === id);
+        return entity !== undefined && typeDef(entity.kind).category === "unit";
+      });
+      if (units.length > 0) options.command({ kind: "stop", player, units });
+      return true;
+    }
+    return false;
+  }
+
+  canvas.addEventListener("pointerup", (event) => {
+    if (event.button !== RIGHT_BUTTON || event.pointerType === "touch") return;
+    dragStart = null;
+    options.selectionBox.show(null);
+    cancelOrDeselect();
+  });
+
+  options.keyTarget.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       event.preventDefault();
-      if (armedMode !== null || digArmed) {
-        armedMode = null;
-        digArmed = false;
-      } else {
-        setSelection([]);
-      }
+      cancelOrDeselect();
       return;
     }
     if (isSelectAllShortcut(event)) {
       event.preventDefault();
       setSelection(selectAllOwnUnits(options.entities(), options.player()));
+      return;
+    }
+    if (
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.altKey &&
+      !(event.target instanceof HTMLInputElement) &&
+      !(event.target instanceof HTMLTextAreaElement) &&
+      orderHotkey(event.code)
+    ) {
+      event.preventDefault();
       return;
     }
     if (options.debug && event.key === "F2") {

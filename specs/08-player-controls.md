@@ -551,6 +551,31 @@ does nothing.
   page.
 * Assumption: the pages swap inside one panel, as the main menu does.
 
+## 3.11 Right-click cancel and Zero Hour keys (amends §3.9 D1, owner request 2026-11-05)
+
+Precedent (`generals-precedent`, Zero Hour; key letters unverified, action
+names from `MetaEvent.cpp`/`MessageStream.h`): short right click cancels the
+pending command or placement, else deselects (`SelectionXlat.cpp:1027-1049`);
+Q select all on screen, E same type on screen, Backspace centre on selection,
+S stop, 0-9 / Ctrl+0-9 / Shift+0-9 groups.
+
+* **Right click (mouse, on the map).** Released without a drag: leaves
+  placement, else disarms Force fire / Rally / Dig, else clears the selection.
+  Same as `Esc`. Supersedes D1 "inert right button"; the HUD panels and the
+  touch long press stay inert, and macOS Ctrl+click still force-fires.
+* **Control groups.** Ctrl+digit sets, digit selects, double digit centres,
+  Shift+digit adds (already in spec 41 §3.2).
+* **New keys.** `Q` selects every own unit on the screen; `E` the selected
+  unit types on the screen; `Backspace` centres the camera on the selection;
+  `Z` stops the selected units.
+* Assumption: Zero Hour's `S` for Stop stays with the panning keys (WASD), so
+  Stop is `Z`. Attack move, Guard, Scatter and Deploy keys wait for those
+  commands (spec 41 A1).
+* **AC-08-32.** Right click on the map with units selected clears the
+  selection; during placement it leaves placement and keeps the selection;
+  `Q`, `E`, `Backspace` and `Z` act as above. (Supersedes AC-08-29's
+  right-click-on-map lines.)
+
 ## 4. Acceptance criteria
 
 **AC-08-01 Worker pause.** Given a skirmish worker handler at speed 1, after
