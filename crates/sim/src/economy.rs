@@ -606,7 +606,10 @@ impl World {
                     if timer == 0 {
                         let cargo = std::mem::take(&mut self.entities[index].cargo);
                         if let Some(player) = self.players.get_mut(usize::from(owner)) {
-                            player.credits = player.credits.saturating_add(cargo);
+                            // Spec 05 §9: a Brutal AI is paid more per load.
+                            let paid = u64::from(cargo) * u64::from(player.income_percent) / 100;
+                            let paid = u32::try_from(paid).unwrap_or(u32::MAX);
+                            player.credits = player.credits.saturating_add(paid);
                         }
                         phase = HarvestPhase::ToDepot;
                     }

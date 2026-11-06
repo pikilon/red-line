@@ -792,6 +792,49 @@ fn default_sell_refund_percent() -> u32 {
     50
 }
 
+/// Spec 05 §9: one AI difficulty level (Zero Hour's Easy / Medium / Hard
+/// skirmish armies, plus Brutal). The default is Medium: today's AI.
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct AiDifficultyDef {
+    pub id: String,
+    /// Ticks between two decision passes.
+    pub think_ticks: u32,
+    /// Task-force unit counts, in percent (rounded up, at least 1).
+    pub force_percent: u32,
+    /// Trigger `minTick`s, in percent: below 100 attacks start earlier.
+    pub trigger_delay_percent: u32,
+    /// Supply trucks kept on top of the personality's `harvesters`.
+    #[serde(default)]
+    pub extra_harvesters: u32,
+    /// Credits a delivery pays the AI player, in percent of its cargo.
+    pub income_percent: u32,
+    /// Attackers below this percent of their hit points fall back to be
+    /// repaired; `0` turns retreat off.
+    #[serde(default)]
+    pub retreat_hp_percent: u32,
+    /// Only task forces the base can build now are chosen, and one that
+    /// became unbuildable is dropped (Medium waits for it, as before).
+    #[serde(default)]
+    pub buildable_forces_only: bool,
+}
+
+impl Default for AiDifficultyDef {
+    /// Medium: the AI as it played before difficulty levels.
+    fn default() -> AiDifficultyDef {
+        AiDifficultyDef {
+            id: "medium".to_string(),
+            think_ticks: 15,
+            force_percent: 100,
+            trigger_delay_percent: 100,
+            extra_harvesters: 0,
+            income_percent: 100,
+            retreat_hp_percent: 0,
+            buildable_forces_only: false,
+        }
+    }
+}
+
 /// The full ruleset: weapons, types, factions and maps.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -824,6 +867,9 @@ pub struct Ruleset {
     pub feature_types: Vec<FeatureTypeDef>,
     #[serde(default)]
     pub ai: Vec<AiDef>,
+    /// Spec 05 §9: difficulty levels, easiest first.
+    #[serde(default)]
+    pub ai_difficulties: Vec<AiDifficultyDef>,
     #[serde(default)]
     pub locomotors: Vec<LocomotorDef>,
     #[serde(default)]
@@ -999,6 +1045,13 @@ impl Ruleset {
     /// First AI personality whose `id` matches, or `None`.
     pub fn ai_index(&self, id: &str) -> Option<usize> {
         self.ai.iter().position(|ai| ai.id == id)
+    }
+
+    /// Index of the difficulty `id` in `ai_difficulties` (spec 05 §9).
+    pub fn ai_difficulty_index(&self, id: &str) -> Option<usize> {
+        self.ai_difficulties
+            .iter()
+            .position(|difficulty| difficulty.id == id)
     }
 
     /// Type at `kind`; panics out of range.

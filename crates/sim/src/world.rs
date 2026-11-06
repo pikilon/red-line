@@ -1809,6 +1809,14 @@ impl World {
         self.players.get(usize::from(id))
     }
 
+    /// Spec 05 §9: the percent of each delivered cargo credited to `id` (the
+    /// Brutal AI's resource bonus). Unknown players are ignored.
+    pub fn set_income_percent(&mut self, id: PlayerId, percent: u32) {
+        if let Some(player) = self.players.get_mut(usize::from(id)) {
+            player.income_percent = percent;
+        }
+    }
+
     pub fn entities(&self) -> &[Entity] {
         &self.entities
     }

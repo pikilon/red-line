@@ -37,7 +37,8 @@ In:
 * A first balance report and data tuning.
 
 Out (later): influence maps (D-06 "improved with influence maps" is Phase 3.5),
-difficulty levels, scouting logic, retreat, AI using artillery minimum range
+difficulty levels (added later, see §9), scouting logic, retreat (§9 adds
+it for Hard and Brutal), AI using artillery minimum range
 smartly, multiple AIs per team, AI chat/taunts, expansion to remote depots by
 building new supply centers.
 
@@ -505,3 +506,128 @@ and outrange or out-damage their Russian counterparts; Russia units are cheaper
 with equal or more hit points per credit; a scout never has more hit points
 than its faction's IFV); every stat change is listed in the report with its
 reason. This criterion is checked by review, not CI.
+
+## 9. Difficulty levels (issue #451)
+
+Status: built (owner request 2026-11-05, issue #451: "the AI is quite stupid
+and easy to beat; let me play against different difficulty levels, like Zero
+Hour").
+
+### 9.1 Precedent (`generals-precedent` method, Zero Hour)
+
+Source: `electronicarts/CnC_Generals_Zero_Hour@0a05454d8`; data: INIZH.big
+(Zero Hour 1.04) and `Data/Scripts/SkirmishScripts.scb` of the owner's copy.
+
+* The skirmish lobby offers three AI slots, Easy / Medium / Hard army; the
+  Hard slot is internally `SLOT_BRUTAL_AI` and maps to `DIFFICULTY_HARD`
+  (`GameLogic/System/GameLogic.cpp:1429-1431`). The difficulty is stored per
+  AI player (`Common/RTS/Player.cpp:908-916`, `AI/AIPlayer.cpp:104,3201`) and
+  saved with it (`AIPlayer.cpp:3453`). [fact]
+* Engine code barely reads it: only the supply gatherers per side
+  (`AIPlayer.cpp:203-212`, `AIData.ini` `ResourceGatherersEasy/Normal/Hard`,
+  all equal: 2 for USA/China, 5 for GLA, INIZH.big:Data\INI\Default\AIData.ini:68-70,96-98,123-125).
+  Build and team timers (`StructureSeconds = 0`, `TeamSeconds = 10`,
+  wealthy/poor rates, AIData.ini:7-15) are the same for every level. [fact]
+* The difference lives in the skirmish scripts: per side and level there are
+  separate "Build Conditions - Easy/Normal/Hard" and "Base Building -
+  Easy/Normal/Hard" script groups; Easy plans 3 attack waves, Normal 4, Hard 5
+  (`_USA_1ST_WAVE_E` .. `_5TH_WAVE_H`); only Hard has "Hard Base Expander" 1-4
+  (taking extra supply), and a script note says Hard fires its superweapon
+  "right when the attack starts, a smarter way to use the power". Easy waves
+  wait on the escalation flag, Hard waves are allowed to build at once. [fact
+  from the script strings; exact per-team counts are not readable without a
+  .scb parser]
+* No resource cheat exists in skirmish: the `SOLO_AI_EASY/NORMAL/HARD`
+  rate-of-fire bonus (80 / 100 / 120 %, GameData.ini:346-348) and the human
+  health bonus apply only to single-player campaign games
+  (`Player.cpp:3370-3399`, `isInSinglePlayerGame`). [fact]
+
+Red Line recommendation followed: keep one AI with the level as a per-player,
+saved setting; express the levels as data that changes how much the AI builds
+and how well it uses it (more gatherers, better wave choice) rather than new
+code paths per level. Brutal is a Red Line addition (the owner asked for it;
+Zero Hour's "brutal" is only the internal name of Hard) and is the one level
+that bends the economy, as Brutal AIs of later C&C games do.
+
+### 9.2 Behaviour
+
+`data/rules/globals.yaml` `aiDifficulties` lists the levels, easiest first.
+Each AI player plays at one level; Medium is the default and is exactly the AI
+of §5 (`AiDifficultyDef::default()` equals the `medium` entry, so every old
+save, test and tournament plays as before).
+
+| field | meaning | easy | medium | hard | brutal |
+|---|---|---|---|---|---|
+| `thinkTicks` | ticks between decision passes | 15 | 15 | 15 | 10 |
+| `incomePercent` | credits paid per delivered cargo | 75 | 100 | 100 | 125 |
+| `extraHarvesters` | trucks kept on top of the personality's | 0 | 0 | 1 | 2 |
+| `buildableForcesOnly` | choose only task forces the base can build now; drop one whose factory is lost | no | no | yes | yes |
+| `retreatHpPercent` | attackers below this share of hit points dock at an own repair factory (spec 39) | 0 | 0 | 30 | 35 |
+| `forcePercent` | task-force unit counts (rounded up, >= 1) | 100 | 100 | 100 | 100 |
+| `triggerDelayPercent` | trigger `minTick`s | 100 | 100 | 100 | 100 |
+
+* `buildableForcesOnly` fixes the main reason the Medium AI felt stupid: it
+  rolls a task force that needs a vehicle factory before it has one and then
+  sits on its infantry and credits waiting for it. Opening (`once`) triggers
+  that are not buildable yet stay pending, not spent.
+* Retreat only applies to units a factory accepts (`can_repair_vehicle_at`);
+  infantry and anything else keep fighting, so nothing shuttles between the
+  front and a base that cannot mend it. A docked unit leaves the attack and
+  the pool until repaired, then rejoins the pool for the next task force.
+* `incomePercent` is a `Player` field (`income_percent`, default 100) applied
+  when a truck unloads; it is saved as `incomePercent` (omitted at 100) and
+  not hashed separately (it only shows through `credits`).
+* `forcePercent` and `triggerDelayPercent` stay at 100: bigger forces and
+  earlier triggers made the AI weaker in the runs of §9.4 (it waits longer
+  before launching), so they are kept only as tunables.
+
+### 9.3 Setup, saves and UI
+
+* Sim: `Ai::set_difficulty(rules, id)` and `Ai::difficulty()`; unknown ids
+  error `unknown difficulty <id>`. `World::set_income_percent(player, pct)`.
+  `step_with_ai` lets each AI think when `tick % thinkTicks == 0`.
+* Saves: `AiState.difficulty` and setup `ai[].difficulty` (both omitted for
+  `medium`, defaulting to it), so existing saves load unchanged.
+* WASM: `Sim::set_ai_difficulty(player, id)` (sets the AI's level and the
+  player's income). `attach_ai` resets the player to Medium.
+* Client: the main menu's Skirmish button opens an "Opponent" page with Easy
+  army / Medium army / Hard army / Brutal army (strings in `client/src/i18n`);
+  each opens `?mode=skirmish&difficulty=<id>`. A missing or unknown
+  `difficulty` plays Medium. The level follows the AI if it changes side.
+* Campaign missions and tutorials keep their authored AI (Medium unless a
+  save names a level); no campaign difficulty choice yet.
+
+### 9.4 Tuning record
+
+`first-line`, `ukraine-balanced` (p0) against `russia-balanced` (p1), seeds
+1-6, 27 000-tick cap, each candidate on both sides (wins/losses, the rest
+draws). Before this change Medium vs Medium was 2-0 for Russia with 4 draws.
+
+* Medium vs Easy: Medium 2W/0L as Ukraine, 4W/0L as Russia.
+* Hard vs Medium: Hard 4W/0L as Ukraine, 4W/1L as Russia.
+* Brutal vs Hard: Brutal 2W/0L as Ukraine, 5W/0L as Russia.
+
+Re-run with the ignored `ladder` test in `crates/sim/tests/ai_difficulty.rs`.
+
+### 9.5 Assumptions
+
+* Four levels rather than Zero Hour's three: the owner's brief named Brutal.
+* Medium keeps today's AI byte for byte; making today's AI "Easy" was
+  rejected because Zero Hour's Easy is weaker than its default and saves and
+  tests rely on today's behaviour.
+* The level is chosen per match from the main menu (one AI opponent); there is
+  no per-slot lobby yet, as there is no multi-AI skirmish.
+
+### 9.6 Acceptance criteria
+
+**AC-05-23 Levels in data.** The ruleset lists `easy, medium, hard, brutal`;
+`medium` equals the built-in default; a new AI plays Medium; an unknown id is
+refused.
+
+**AC-05-24 Stronger levels build more.** Against a passive opponent for 3600
+ticks, Easy owns less than Medium, Brutal more than Medium, and Hard keeps
+more trucks than Medium.
+
+**AC-05-25 Determinism and saves.** Two Hard-vs-Brutal runs reach the same
+hash; a save keeps each AI's level and income, and the loaded match continues
+with the same hash as the original.

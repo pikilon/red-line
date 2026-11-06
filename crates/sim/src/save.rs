@@ -109,6 +109,28 @@ pub struct PlayerState {
     pub power: [u32; 2],
     /// Ascending entity.
     pub ghosts: Vec<GhostState>,
+    /// Spec 05 §9: percent of a delivered cargo credited; omitted at 100.
+    #[serde(
+        default = "default_income_percent",
+        skip_serializing_if = "is_default_income_percent"
+    )]
+    pub income_percent: u32,
+}
+
+fn default_income_percent() -> u32 {
+    100
+}
+
+fn is_default_income_percent(value: &u32) -> bool {
+    *value == 100
+}
+
+fn default_difficulty() -> String {
+    "medium".to_string()
+}
+
+fn is_default_difficulty(value: &str) -> bool {
+    value == "medium"
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -444,6 +466,12 @@ pub struct AiState {
     /// Spec 43 §5: indices of the `once` triggers already taken.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub opened: Vec<u16>,
+    /// Spec 05 §9: difficulty id; omitted for `medium`.
+    #[serde(
+        default = "default_difficulty",
+        skip_serializing_if = "is_default_difficulty"
+    )]
+    pub difficulty: String,
 }
 
 /// The state of `world` and its AIs. Errors with
@@ -789,6 +817,7 @@ fn save_player(player: &Player, rules: &Ruleset) -> PlayerState {
         explored,
         visible,
         ghosts,
+        income_percent,
     } = player;
     PlayerState {
         id: *id,
@@ -807,6 +836,7 @@ fn save_player(player: &Player, rules: &Ruleset) -> PlayerState {
                 origin: cell(ghost.origin),
             })
             .collect(),
+        income_percent: *income_percent,
     }
 }
 
@@ -837,6 +867,7 @@ fn load_player(state: &PlayerState, rules: &Ruleset, cells: usize) -> Result<Pla
         explored: decode_runs("explored", &state.explored, cells)?,
         visible: decode_runs("visible", &state.visible, cells)?,
         ghosts,
+        income_percent: state.income_percent,
     })
 }
 
@@ -1476,6 +1507,12 @@ pub struct SetupAi {
     pub player: u8,
     pub personality: String,
     pub active: bool,
+    /// Spec 05 §9: difficulty id; omitted for `medium`.
+    #[serde(
+        default = "default_difficulty",
+        skip_serializing_if = "is_default_difficulty"
+    )]
+    pub difficulty: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -1532,7 +1569,7 @@ pub fn from_setup(setup: &Setup) -> Result<(World, u64, Vec<Ai>), String> {
         .seed
         .parse::<u64>()
         .map_err(|_| format!("invalid setup: seed {}", setup.seed))?;
-    let world = World::from_setup(Ruleset::builtin(), setup).map_err(|e| e.to_string())?;
+    let mut world = World::from_setup(Ruleset::builtin(), setup).map_err(|e| e.to_string())?;
     let mut ais: Vec<Ai> = Vec::with_capacity(setup.ai.len());
     for (index, entry) in setup.ai.iter().enumerate() {
         let mut ai = Ai::new(&world, entry.player, &entry.personality, seed).map_err(|e| {
@@ -1543,6 +1580,9 @@ pub fn from_setup(setup: &Setup) -> Result<(World, u64, Vec<Ai>), String> {
             };
             format!("invalid setup: ai[{index}]: {detail}")
         })?;
+        ai.set_difficulty(&world.rules, &entry.difficulty)
+            .map_err(|e| format!("invalid setup: ai[{index}]: {e}"))?;
+        world.set_income_percent(entry.player, ai.difficulty().income_percent);
         // A fresh AI has no attackers, so pausing it issues no command.
         let _ = ai.set_active(entry.active);
         ais.retain(|existing| existing.player() != entry.player);

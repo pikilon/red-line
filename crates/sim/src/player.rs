@@ -18,6 +18,9 @@ pub struct Player {
     /// Derived each vision phase, not hashed.
     pub(crate) visible: Vec<bool>,
     pub(crate) ghosts: BTreeMap<EntityId, Ghost>,
+    /// Spec 05 §9: percent of a delivered cargo credited (100 but for a
+    /// Brutal AI). Not hashed: it only shows through `credits`.
+    pub(crate) income_percent: u32,
 }
 
 impl Player {
@@ -33,7 +36,13 @@ impl Player {
             explored: vec![false; cells],
             visible: vec![false; cells],
             ghosts: BTreeMap::new(),
+            income_percent: 100,
         }
+    }
+
+    /// Spec 05 §9: percent of a delivered cargo credited.
+    pub fn income_percent(&self) -> u32 {
+        self.income_percent
     }
 
     /// (produced, consumed)
