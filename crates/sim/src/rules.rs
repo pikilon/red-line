@@ -118,6 +118,54 @@ pub struct ChargesDef {
     pub refill_radius_centi: u32,
 }
 
+/// Spec 50 §3.1: what a type is worth and needs in experience. `value[rank]`
+/// goes to the enemy that destroys it while it holds `rank`; `required[n]` is
+/// the total experience for rank `n + 1`. A type without `required` is never
+/// promoted (Zero Hour `IsTrainable = No`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExperienceDef {
+    pub value: [u32; 4],
+    #[serde(default)]
+    pub required: Option<[u32; 3]>,
+}
+
+/// Highest rank (heroic); ranks are `0..=MAX_RANK` (spec 50 §3.2).
+pub const MAX_RANK: u8 = 3;
+
+/// Spec 50 §3.3: the bonuses of each rank, regular first, in percent
+/// (`veterancy` in `globals.yaml`). The default changes nothing.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VeterancyRules {
+    pub health_percent: [u32; 4],
+    pub damage_percent: [u32; 4],
+    pub rate_of_fire_percent: [u32; 4],
+    #[serde(default)]
+    pub self_heal: Option<SelfHealDef>,
+}
+
+impl Default for VeterancyRules {
+    fn default() -> Self {
+        VeterancyRules {
+            health_percent: [100; 4],
+            damage_percent: [100; 4],
+            rate_of_fire_percent: [100; 4],
+            self_heal: None,
+        }
+    }
+}
+
+/// Spec 50 §3.4: units of `from_rank` or higher get `permille` of their
+/// maximum hit points back every `interval_ticks`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SelfHealDef {
+    pub from_rank: u8,
+    pub interval_ticks: u32,
+    pub permille: u32,
+}
+
 /// Spec 43 §4.5: an electronic-warfare vehicle.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -449,6 +497,9 @@ pub struct TypeDef {
     /// Spec 43 §4.4: units with charges refill next to this one (own side only).
     #[serde(default)]
     pub resupplies: bool,
+    /// Spec 50 §3.1: experience this type is worth and needs.
+    #[serde(default)]
+    pub experience: Option<ExperienceDef>,
     /// Spec 43 §4.1: a rotorcraft, the only flyer that may hover. Every other
     /// flyer is fixed-wing and never stops while airborne.
     #[serde(default)]
@@ -880,6 +931,9 @@ pub struct Ruleset {
     /// Spec 49 §3.2: guard radii and chase time (`guard` in `globals.yaml`).
     #[serde(default)]
     pub guard: GuardRules,
+    /// Spec 50 §3.3: rank bonuses (`veterancy` in `globals.yaml`).
+    #[serde(default)]
+    pub veterancy: VeterancyRules,
 }
 
 /// Spec 49 §3.2: a guarding unit attacks enemies within `inner_percent` of its
@@ -1227,6 +1281,33 @@ impl Ruleset {
                     i,
                     f.dozer,
                     n_types.saturating_sub(1)
+                ));
+            }
+        }
+
+        // Spec 50: bonuses are positive and thresholds strictly ascending.
+        let vet = &self.veterancy;
+        if vet
+            .health_percent
+            .iter()
+            .chain(&vet.damage_percent)
+            .chain(&vet.rate_of_fire_percent)
+            .any(|&percent| percent == 0)
+        {
+            return Err("veterancy percentages must be positive".to_owned());
+        }
+        if vet
+            .self_heal
+            .is_some_and(|heal| heal.interval_ticks == 0 || heal.from_rank > MAX_RANK)
+        {
+            return Err("veterancy.selfHeal is out of range".to_owned());
+        }
+        for (i, t) in self.types.iter().enumerate() {
+            if let Some([veteran, elite, heroic]) = t.experience.and_then(|e| e.required)
+                && !(0 < veteran && veteran < elite && elite < heroic)
+            {
+                return Err(format!(
+                    "types[{i}].experience.required must be ascending and positive"
                 ));
             }
         }

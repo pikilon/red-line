@@ -187,6 +187,12 @@ pub struct EntityState {
     /// Spec 43 §4.4: ticks towards the next charge.
     #[serde(default, skip_serializing_if = "is_zero")]
     pub charge_clock: u32,
+    /// Spec 50: experience earned from kills.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub xp: u32,
+    /// Spec 50: rank, `0` regular to `3` heroic.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub rank: u32,
 }
 
 fn is_zero(value: &u32) -> bool {
@@ -1114,6 +1120,8 @@ fn save_entity(entity: &Entity, rules: &Ruleset) -> EntityState {
         fuel: entity.fuel,
         charges: rules.ty(entity.kind).charges.map(|_| entity.charges),
         charge_clock: entity.charge_clock,
+        xp: entity.xp,
+        rank: u32::from(entity.rank),
     }
 }
 
@@ -1195,6 +1203,13 @@ fn load_entity(state: &EntityState, rules: &Ruleset) -> Result<Entity, String> {
             state.charges.unwrap_or(charges.max).min(charges.max)
         }),
         charge_clock: state.charge_clock,
+        xp: state.xp,
+        // Only a type that can be promoted holds a rank.
+        rank: if rules.ty(kind).experience.is_some_and(|e| e.required.is_some()) {
+            state.rank.min(u32::from(crate::rules::MAX_RANK)) as u8
+        } else {
+            0
+        },
     })
 }
 
@@ -1535,6 +1550,10 @@ pub struct SetupEntity {
     /// Buildings only, 0..=100, default 100.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub build_percent: Option<u32>,
+    /// Spec 50: units only, the rank it starts with (1 veteran, 2 elite,
+    /// 3 heroic); default regular.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rank: Option<u8>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub order: Option<SetupOrder>,
 }
@@ -1692,6 +1711,16 @@ impl World {
                         return Err(at("too many entities".to_owned()));
                     }
                     let id = world.spawn(entry.player, kind, pos);
+                    if let Some(rank) = entry.rank {
+                        let trainable = ty.experience.is_some_and(|e| e.required.is_some());
+                        if rank == 0 || rank > crate::rules::MAX_RANK || !trainable {
+                            return Err(at(format!("rank {rank} is not valid for {}", entry.kind)));
+                        }
+                        world.set_rank(id, rank);
+                    }
+                    // `hpPercent` is of the hit points its rank gives it.
+                    let max = world.entity(id).map_or(ty.hp, |unit| world.max_hp(unit));
+                    let hp = (u64::from(max) * u64::from(hp_percent) / 100).max(1) as u32;
                     world.set_hp(id, hp);
                     id
                 }

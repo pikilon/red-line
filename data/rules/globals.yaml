@@ -30,6 +30,10 @@ crushDodgeMissOneIn: 3               # optional, >= 0: one half-second window in
 aimToleranceDeg: 2                   # required, 1..45: default weapon aim tolerance (spec 11 §4.1)
 turretRecenterTicks: 30              # required, >= 0: idle ticks before a stationary turret recenters (spec 11 §4.1)
 guard: { innerPercent: 180, outerPercent: 220, chaseTicks: 150 }   # optional (spec 49 §3.2): Zero Hour AIData.ini human guard — attack within 180% of sight from the post, chase within 220%, give up after 10 s (150 ticks) outside the inner radius
+# Spec 50 §3.3: what each rank gives, regular / veteran / elite / heroic, in percent (Zero Hour GameData.ini
+# HealthBonus_* and the VETERAN / ELITE / HERO weapon bonuses). selfHeal: from that rank on (2 = elite) a unit
+# gets permille of its maximum hit points back every intervalTicks.
+veterancy: { healthPercent: [100, 120, 130, 150], damagePercent: [100, 110, 120, 130], rateOfFirePercent: [100, 120, 140, 160], selfHeal: { fromRank: 2, intervalTicks: 15, permille: 10 } }
 locomotors:                          # required, ids referenced by unit types (spec 11 §4.1)
   foot: { kind: foot }
   tracked: { kind: tracks, pivotAngleDeg: 45, accelCenti: 2, brakingCenti: 4, reverseAngleDeg: 120, reverseMaxCenti: 300, reverseSpeedPercent: 50, crusherLevel: 1 }   # crushes enemy infantry (spec 28)

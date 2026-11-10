@@ -210,7 +210,7 @@ impl World {
                 let Some(index) = self.index_of(id) else {
                     continue;
                 };
-                let max_hp = self.rules.ty(self.entities[index].kind).hp;
+                let max_hp = self.max_hp_at(index);
                 let loss = (u64::from(max_hp) * u64::from(damage_pct) / 100) as u32;
                 let free = self.free_cell_around(cell.x, cell.y, 1, 1, &used);
                 let entity = &mut self.entities[index];

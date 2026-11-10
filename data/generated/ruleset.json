@@ -81,6 +81,31 @@
     "outerPercent": 220,
     "chaseTicks": 150
   },
+  "veterancy": {
+    "healthPercent": [
+      100,
+      120,
+      130,
+      150
+    ],
+    "damagePercent": [
+      100,
+      110,
+      120,
+      130
+    ],
+    "rateOfFirePercent": [
+      100,
+      120,
+      140,
+      160
+    ],
+    "selfHeal": {
+      "fromRank": 2,
+      "intervalTicks": 15,
+      "permille": 10
+    }
+  },
   "environment": {
     "highGround": {
       "minTiles": 2,
@@ -1085,6 +1110,19 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          10,
+          20,
+          30,
+          40
+        ],
+        "required": [
+          20,
+          40,
+          80
+        ]
+      },
       "render": {
         "size": [
           30,
@@ -1126,6 +1164,19 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          35,
+          70,
+          105,
+          140
+        ],
+        "required": [
+          70,
+          140,
+          280
+        ]
+      },
       "render": {
         "size": [
           40,
@@ -1172,6 +1223,19 @@
         "damagePct": 100,
         "exitTicks": 4
       },
+      "experience": {
+        "value": [
+          40,
+          80,
+          120,
+          160
+        ],
+        "required": [
+          80,
+          160,
+          320
+        ]
+      },
       "render": {
         "size": [
           60,
@@ -1217,6 +1281,19 @@
         "damagePct": 10,
         "exitTicks": 4
       },
+      "experience": {
+        "value": [
+          80,
+          160,
+          240,
+          320
+        ],
+        "required": [
+          160,
+          320,
+          640
+        ]
+      },
       "render": {
         "size": [
           70,
@@ -1257,6 +1334,19 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          120,
+          240,
+          360,
+          480
+        ],
+        "required": [
+          240,
+          480,
+          960
+        ]
+      },
       "render": {
         "size": [
           80,
@@ -1297,6 +1387,19 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          150,
+          300,
+          450,
+          600
+        ],
+        "required": [
+          300,
+          600,
+          1200
+        ]
+      },
       "render": {
         "size": [
           60,
@@ -1347,6 +1450,14 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          80,
+          160,
+          240,
+          320
+        ]
+      },
       "render": {
         "size": [
           80,
@@ -1388,6 +1499,14 @@
       "unloadTicks": 15,
       "freeUnit": -1,
       "resupplies": true,
+      "experience": {
+        "value": [
+          60,
+          120,
+          180,
+          240
+        ]
+      },
       "render": {
         "size": [
           60,
@@ -1430,6 +1549,14 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          40,
+          80,
+          120,
+          160
+        ]
+      },
       "render": {
         "size": [
           400,
@@ -1470,6 +1597,14 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          60,
+          120,
+          180,
+          240
+        ]
+      },
       "render": {
         "size": [
           300,
@@ -1513,6 +1648,14 @@
       "unloadTicks": 0,
       "freeUnit": 9,
       "resupplies": true,
+      "experience": {
+        "value": [
+          150,
+          300,
+          450,
+          600
+        ]
+      },
       "render": {
         "size": [
           400,
@@ -1561,6 +1704,14 @@
       "freeUnit": -1,
       "healsInfantry": true,
       "resupplies": true,
+      "experience": {
+        "value": [
+          50,
+          100,
+          150,
+          200
+        ]
+      },
       "render": {
         "size": [
           300,
@@ -1610,6 +1761,14 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "repairsVehicles": true,
+      "experience": {
+        "value": [
+          200,
+          400,
+          600,
+          800
+        ]
+      },
       "render": {
         "size": [
           400,
@@ -1652,6 +1811,14 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          80,
+          160,
+          240,
+          320
+        ]
+      },
       "render": {
         "size": [
           200,
@@ -1692,6 +1859,19 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          10,
+          20,
+          30,
+          40
+        ],
+        "required": [
+          20,
+          40,
+          80
+        ]
+      },
       "render": {
         "size": [
           30,
@@ -1733,6 +1913,19 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          20,
+          40,
+          60,
+          80
+        ],
+        "required": [
+          40,
+          80,
+          160
+        ]
+      },
       "render": {
         "size": [
           40,
@@ -1780,6 +1973,19 @@
         "damagePct": 100,
         "exitTicks": 4
       },
+      "experience": {
+        "value": [
+          30,
+          60,
+          90,
+          120
+        ],
+        "required": [
+          60,
+          120,
+          240
+        ]
+      },
       "render": {
         "size": [
           60,
@@ -1826,6 +2032,19 @@
         "damagePct": 10,
         "exitTicks": 4
       },
+      "experience": {
+        "value": [
+          60,
+          120,
+          180,
+          240
+        ],
+        "required": [
+          120,
+          240,
+          480
+        ]
+      },
       "render": {
         "size": [
           70,
@@ -1866,6 +2085,19 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          90,
+          180,
+          270,
+          360
+        ],
+        "required": [
+          180,
+          360,
+          720
+        ]
+      },
       "render": {
         "size": [
           80,
@@ -1906,6 +2138,19 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          140,
+          280,
+          420,
+          560
+        ],
+        "required": [
+          280,
+          560,
+          1120
+        ]
+      },
       "render": {
         "size": [
           80,
@@ -1954,6 +2199,14 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          80,
+          160,
+          240,
+          320
+        ]
+      },
       "render": {
         "size": [
           80,
@@ -1995,6 +2248,14 @@
       "unloadTicks": 15,
       "freeUnit": -1,
       "resupplies": true,
+      "experience": {
+        "value": [
+          60,
+          120,
+          180,
+          240
+        ]
+      },
       "render": {
         "size": [
           60,
@@ -2037,6 +2298,14 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          40,
+          80,
+          120,
+          160
+        ]
+      },
       "render": {
         "size": [
           400,
@@ -2077,6 +2346,14 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          60,
+          120,
+          180,
+          240
+        ]
+      },
       "render": {
         "size": [
           300,
@@ -2120,6 +2397,14 @@
       "unloadTicks": 0,
       "freeUnit": 23,
       "resupplies": true,
+      "experience": {
+        "value": [
+          150,
+          300,
+          450,
+          600
+        ]
+      },
       "render": {
         "size": [
           400,
@@ -2168,6 +2453,14 @@
       "freeUnit": -1,
       "healsInfantry": true,
       "resupplies": true,
+      "experience": {
+        "value": [
+          50,
+          100,
+          150,
+          200
+        ]
+      },
       "render": {
         "size": [
           300,
@@ -2218,6 +2511,14 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "repairsVehicles": true,
+      "experience": {
+        "value": [
+          200,
+          400,
+          600,
+          800
+        ]
+      },
       "render": {
         "size": [
           400,
@@ -2260,6 +2561,14 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          80,
+          160,
+          240,
+          320
+        ]
+      },
       "render": {
         "size": [
           200,
@@ -2347,6 +2656,14 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          140,
+          280,
+          420,
+          560
+        ]
+      },
       "render": {
         "size": [
           300,
@@ -2394,6 +2711,14 @@
         "refillTicks": 60,
         "refillRadiusCenti": 0
       },
+      "experience": {
+        "value": [
+          90,
+          180,
+          270,
+          360
+        ]
+      },
       "render": {
         "size": [
           200,
@@ -2436,6 +2761,14 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          350,
+          700,
+          1050,
+          1400
+        ]
+      },
       "render": {
         "size": [
           300,
@@ -2481,6 +2814,14 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          160,
+          320,
+          480,
+          640
+        ]
+      },
       "render": {
         "size": [
           300,
@@ -2527,6 +2868,14 @@
         "armTiles": 0
       },
       "link": "radio",
+      "experience": {
+        "value": [
+          45,
+          90,
+          135,
+          180
+        ]
+      },
       "render": {
         "size": [
           40,
@@ -2568,6 +2917,19 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "link": "radio",
+      "experience": {
+        "value": [
+          50,
+          100,
+          150,
+          200
+        ],
+        "required": [
+          100,
+          200,
+          400
+        ]
+      },
       "render": {
         "size": [
           46,
@@ -2613,6 +2975,19 @@
         "reloadTicks": 360
       },
       "hover": true,
+      "experience": {
+        "value": [
+          70,
+          140,
+          210,
+          280
+        ],
+        "required": [
+          140,
+          280,
+          560
+        ]
+      },
       "render": {
         "size": [
           124,
@@ -2658,6 +3033,19 @@
         "max": 4,
         "refillTicks": 300,
         "refillRadiusCenti": 500
+      },
+      "experience": {
+        "value": [
+          30,
+          60,
+          90,
+          120
+        ],
+        "required": [
+          60,
+          120,
+          240
+        ]
       },
       "render": {
         "size": [
@@ -2706,6 +3094,14 @@
       },
       "link": "radio",
       "hover": true,
+      "experience": {
+        "value": [
+          5,
+          10,
+          15,
+          20
+        ]
+      },
       "render": {
         "size": [
           46,
@@ -2753,6 +3149,14 @@
       },
       "link": "autonomous",
       "hover": true,
+      "experience": {
+        "value": [
+          5,
+          10,
+          15,
+          20
+        ]
+      },
       "render": {
         "size": [
           36,
@@ -2793,6 +3197,19 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          110,
+          220,
+          330,
+          440
+        ],
+        "required": [
+          220,
+          440,
+          880
+        ]
+      },
       "render": {
         "size": [
           84,
@@ -2840,6 +3257,14 @@
       },
       "link": "gnss",
       "gnssScatterCenti": 600,
+      "experience": {
+        "value": [
+          220,
+          440,
+          660,
+          880
+        ]
+      },
       "render": {
         "size": [
           130,
@@ -2888,6 +3313,14 @@
       "link": "gnss",
       "gnssScatterCenti": 300,
       "lowObservable": true,
+      "experience": {
+        "value": [
+          180,
+          360,
+          540,
+          720
+        ]
+      },
       "render": {
         "size": [
           100,
@@ -2933,6 +3366,14 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          300,
+          600,
+          900,
+          1200
+        ]
+      },
       "render": {
         "size": [
           600,
@@ -2978,6 +3419,14 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          120,
+          240,
+          360,
+          480
+        ]
+      },
       "render": {
         "size": [
           300,
@@ -3022,6 +3471,19 @@
         "clip": 2,
         "reloadTicks": 450
       },
+      "experience": {
+        "value": [
+          220,
+          440,
+          660,
+          880
+        ],
+        "required": [
+          440,
+          880,
+          1760
+        ]
+      },
       "render": {
         "size": [
           170,
@@ -3062,6 +3524,14 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          35,
+          70,
+          105,
+          140
+        ]
+      },
       "render": {
         "size": [
           130,
@@ -3109,6 +3579,14 @@
       },
       "link": "gnss",
       "gnssScatterCenti": 250,
+      "experience": {
+        "value": [
+          20,
+          40,
+          60,
+          80
+        ]
+      },
       "render": {
         "size": [
           100,
@@ -3156,6 +3634,14 @@
       },
       "link": "gnss",
       "gnssScatterCenti": 200,
+      "experience": {
+        "value": [
+          70,
+          140,
+          210,
+          280
+        ]
+      },
       "render": {
         "size": [
           100,
@@ -3201,6 +3687,19 @@
         "max": 3,
         "refillTicks": 360,
         "refillRadiusCenti": 500
+      },
+      "experience": {
+        "value": [
+          25,
+          50,
+          75,
+          100
+        ],
+        "required": [
+          50,
+          100,
+          200
+        ]
       },
       "render": {
         "size": [
@@ -3248,6 +3747,14 @@
         "armTiles": 0
       },
       "link": "fibre",
+      "experience": {
+        "value": [
+          5,
+          10,
+          15,
+          20
+        ]
+      },
       "render": {
         "size": [
           80,
@@ -3288,6 +3795,19 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "experience": {
+        "value": [
+          150,
+          300,
+          450,
+          600
+        ],
+        "required": [
+          300,
+          600,
+          1200
+        ]
+      },
       "render": {
         "size": [
           80,
@@ -3330,6 +3850,14 @@
       "freeUnit": -1,
       "jammer": {
         "radiusCenti": 900
+      },
+      "experience": {
+        "value": [
+          90,
+          180,
+          270,
+          360
+        ]
       },
       "render": {
         "size": [

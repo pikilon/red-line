@@ -46,7 +46,7 @@ impl World {
         patient.owner == infirmary.owner
             && patient.owner != NEUTRAL
             && patient.hp > 0
-            && patient.hp < patient_ty.hp
+            && patient.hp < self.max_hp(patient)
             && !patient.contained()
             && patient_ty.category == Category::Unit
             && patient_ty.motion.kind == LocoKind::Foot
@@ -112,7 +112,7 @@ impl World {
         };
         let pos = self.entities[index].pos;
         if footprint_distance(pos, origin, size) <= fx_centi(ENTER_RANGE_CENTI) {
-            let max = self.rules.ty(self.entities[index].kind).hp;
+            let max = self.max_hp_at(index);
             let hp = self.entities[index].hp;
             let entity = &mut self.entities[index];
             entity.aboard = Some(building);
@@ -169,7 +169,7 @@ impl World {
                 // A dead building is ejected by the death pass this tick.
                 continue;
             }
-            let max = self.rules.ty(self.entities[index].kind).hp;
+            let max = self.max_hp_at(index);
             if remaining > 1 {
                 let done = u64::from(ticks.saturating_sub(remaining));
                 let before = u64::from(missing) * done / u64::from(ticks);

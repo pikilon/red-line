@@ -173,7 +173,7 @@ impl World {
         let pad_ty = self.rules.ty(pad.kind);
         vehicle.owner == pad.owner
             && vehicle.hp > 0
-            && vehicle.hp < vehicle_ty.hp
+            && vehicle.hp < self.max_hp(vehicle)
             && !vehicle.contained()
             && vehicle_ty.category == Category::Unit
             && vehicle_ty.motion.kind != LocoKind::Foot
@@ -664,7 +664,7 @@ impl World {
             else {
                 continue;
             };
-            let max = self.rules.ty(self.entities[index].kind).hp;
+            let max = self.max_hp_at(index);
             let ticks = repair.vehicle_repair_ticks.max(1);
             let remaining = remaining.max(1);
             // The rate is fixed when the cycle starts: the share of the initial

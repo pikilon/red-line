@@ -494,7 +494,7 @@ impl Ai {
                     world.entity(id).is_some_and(|entity| {
                         !is_strike(world, entity)
                             && u64::from(entity.hp) * 100
-                                < u64::from(rules.ty(entity.kind).hp) * u64::from(percent)
+                                < u64::from(world.max_hp(entity)) * u64::from(percent)
                     })
                 })
                 .collect();

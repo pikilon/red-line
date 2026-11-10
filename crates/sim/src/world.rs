@@ -634,6 +634,8 @@ impl World {
             fuel: 0,
             charges: self.rules.ty(kind).charges.map_or(0, |charges| charges.max),
             charge_clock: 0,
+            xp: 0,
+            rank: 0,
         });
         id
     }
@@ -801,6 +803,7 @@ impl World {
         self.repair_works();
         self.repair_vehicles();
         self.heal_infirmaries();
+        self.heal_veterans();
         self.separate_units();
         self.arrive_on_contact();
         self.update_visibility();
@@ -821,6 +824,7 @@ impl World {
     /// Each removed unit or building emits a `Death` event first, in ascending
     /// id order (spec 17 §4.5).
     fn remove_dead(&mut self) {
+        self.score_kills();
         let mut removed_building = false;
         let mut kept = Vec::with_capacity(self.entities.len());
         for entity in std::mem::take(&mut self.entities) {
