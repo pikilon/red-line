@@ -67,7 +67,7 @@ Out (later phases):
 | `PERF_PANEL_UPDATE_MS` | `250` | `client/src/perfPanel.ts` |
 
 Performance target (AC-02-44) is measured only on the reference machine
-(Apple M2 Max, D-09) by `node --run test:perf`; CI runs on GPU-less runners, so
+(D-09) by `node --run test:perf`; CI runs on GPU-less runners, so
 CI enforces the hardware-independent proxy AC-02-42 (draw calls) instead.
 
 ## 4. Simulation design (`crates/sim`)
