@@ -175,6 +175,16 @@
             "refillRadiusCenti": { "$ref": "#/$defs/positive" }
           }
         },
+        "experience": {
+          "description": "Spec 50 §3.1: value is the experience an enemy gets for destroying this type at each rank (regular, veteran, elite, heroic); required is the total experience for veteran, elite and heroic. Without required the type is never promoted.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value"],
+          "properties": {
+            "value": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "integer", "minimum": 0 } },
+            "required": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/$defs/positive" } }
+          }
+        },
         "resupplies": { "description": "Spec 43 §4.4: launcher units of the same side refill their charges next to this one.", "type": "boolean" },
         "hover": { "description": "Spec 43 §4.1: a rotorcraft. Only these flyers may hover; every other flyer is fixed-wing and never stops while airborne.", "type": "boolean" },
         "lowObservable": { "description": "Spec 43 §4.1: enemy weapons engage it only inside a third of their range.", "type": "boolean" },

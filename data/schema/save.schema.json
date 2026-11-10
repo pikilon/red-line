@@ -90,6 +90,7 @@
           "label": { "$ref": "#/$defs/id" },
           "hpPercent": { "type": "integer", "minimum": 1, "maximum": 100 },
           "buildPercent": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "rank": { "description": "Spec 50: a unit's starting rank (1 veteran, 2 elite, 3 heroic).", "type": "integer", "minimum": 1, "maximum": 3 },
           "order": {
             "type": "object",
             "minProperties": 1,

@@ -61,6 +61,8 @@ export interface TypeDef {
   charges?: { max: number; refillTicks: number; refillRadiusCenti: number };
   /** Spec 43 §4.4: launcher crews refill their charges next to this unit or building. */
   resupplies?: boolean;
+  /** Spec 50 §3.1: experience worth per rank and the totals for each promotion. */
+  experience?: { value: number[]; required?: number[] };
   render: { size: [number, number, number] };
 }
 

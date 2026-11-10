@@ -506,6 +506,12 @@
       "entities": 34
     },
     {
+      "id": "veterancy",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 24
+    },
+    {
       "id": "help-ru-airfield-build",
       "map": "showcase",
       "form": "setup",

@@ -168,6 +168,14 @@ fn put_entity(out: &mut Vec<u8>, entity: &Entity, world: &World) {
         out.push(9);
         put_u32(out, entity.charge_clock);
     }
+    // Spec 50: experience and rank, written only once earned.
+    if entity.xp > 0 {
+        out.push(10);
+        put_u32(out, entity.xp);
+    }
+    if entity.rank > 0 {
+        out.extend_from_slice(&[11, entity.rank]);
+    }
 }
 
 fn put_order(out: &mut Vec<u8>, order: &Order) {
