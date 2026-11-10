@@ -83,6 +83,37 @@ uses decals).
    `data/render/impacts.json` (`unitDeathCrater`) is dug under the wreck; a
    non-explosive death leaves no crater. Owner request, 2026-10-25.
 
+## 3b. Ground fire (issue #335, owner request 2026-10-25)
+
+Zero Hour missiles detonate with an explosion and a smoke particle system
+(§2), never with bare dust. The `highExplosive` (HIMARS GMLRS) and
+`thermobaric` (TOS) profiles in `data/render/impacts.json` gain a `fire`
+section, spawned with the rest of the ground layer (not on a building wall):
+
+* `fireball`: the spec 07 `explosion` quad at ground level, bright orange and
+  yellow, sized `max(minTiles, splash × splashFactor)`, living `durationMs`
+  (500 ms HE, 700 ms thermobaric).
+* `flames`: `count` additive `flame` tongues scattered over `spreadTiles`,
+  rising `riseTiles` while they shrink and flicker, 1.4–1.6 s: the crater
+  keeps burning after the fireball is gone.
+* `embers`: `count` small glowing `ember` sparks thrown on a ballistic arc.
+* `smoke`: `count` dark soot puffs (dust kind, tinted near black) that start
+  `delayMs` later, once the flames die down, and rise slowly.
+* Flames and embers draw above the dust (render order 3 over 2), and the
+  dust keeps its crater, scorch and clods, so it never hides the fire.
+* Small arms, autocannon and anti-tank shells have no `fire` section.
+
+Precedent (`generals-precedent`, `FXList.ini:3329`, `ParticleSystem.ini`):
+`WeaponFX_RocketBuggyMissileDetonation` plays `BuggyMissileExplosion` (white
+additive `EXexplo03` sprites, size 5–10, ~100-frame life, 3 in one burst),
+`BuggyMissileExplosionSmoke` (grey alpha cloud, size 10–15, 2 puffs) and a
+short additive lens flare; `FX_ArtilleryBarrage` (`:6541`) adds a light pulse
+(255,128,51), debris and dust. So: bright additive fireball first, grey smoke
+after, with the fire dominant at the start.
+
+Assumption: sizes, counts and times are a first pass in data only, scaled to
+this game's tiles rather than copied frame for frame.
+
 ## 4. Crater relief (replaces spec 24 §3.1)
 
 * Craters are dug into a fine height grid, 4 samples per tile side. Every
@@ -164,3 +195,6 @@ uses decals).
   footprint at that spot (unit tests).
 * AC-29-08: a crater at least 0.6 tiles in radius has 3–4 smaller bowls on
   its rim, and the shared fine-patch outline stays free of seams (unit test).
+* AC-29-09: an HE rocket or thermobaric hit spawns a fireball, flames and
+  embers that burn out within seconds, and then smoke; a rifle hit spawns
+  none (unit test; `?load=weapon-impacts`).

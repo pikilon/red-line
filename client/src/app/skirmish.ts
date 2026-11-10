@@ -296,6 +296,8 @@ const NO_EFFECT_COUNTS: Record<EffectKind, number> = {
   launchSmoke: 0,
   trail: 0,
   clod: 0,
+  flame: 0,
+  ember: 0,
 };
 /** The builtin ruleset type without a committed `.glb` (spec 06 §3). */
 const PLACEHOLDER_TYPE = "tech-slice-placeholder";

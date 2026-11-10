@@ -24,7 +24,10 @@
         "durationMs": 650,
         "alpha": 0.85
       },
-      "pock": { "radiusTiles": 0.11, "alpha": 0.8 }
+      "pock": {
+        "radiusTiles": 0.11,
+        "alpha": 0.8
+      }
     },
     "autocannon": {
       "scatterTiles": 0.35,
@@ -42,7 +45,10 @@
         "speed": 1.6,
         "durationMs": 2500
       },
-      "pock": { "radiusTiles": 0.2, "alpha": 0.85 }
+      "pock": {
+        "radiusTiles": 0.2,
+        "alpha": 0.85
+      }
     },
     "antiTank": {
       "dust": {
@@ -108,6 +114,35 @@
         "depthPerRadius": 0.09,
         "rim": 0.22,
         "decal": true
+      },
+      "fire": {
+        "fireball": {
+          "splashFactor": 0.7,
+          "minTiles": 1.4,
+          "durationMs": 500
+        },
+        "flames": {
+          "count": 9,
+          "sizeTiles": 0.8,
+          "spreadTiles": 0.9,
+          "riseTiles": 0.7,
+          "durationMs": 1400
+        },
+        "embers": {
+          "count": 14,
+          "sizeTiles": 0.07,
+          "speed": 3.2,
+          "durationMs": 1100
+        },
+        "smoke": {
+          "count": 6,
+          "sizeTiles": 1.1,
+          "spreadTiles": 0.7,
+          "riseTiles": 1.2,
+          "delayMs": 700,
+          "durationMs": 2600,
+          "alpha": 0.5
+        }
       }
     },
     "thermobaric": {
@@ -145,12 +180,51 @@
         "depthPerRadius": 0.02,
         "rim": 0.15,
         "decal": false
+      },
+      "fire": {
+        "fireball": {
+          "splashFactor": 0.8,
+          "minTiles": 2.4,
+          "durationMs": 700
+        },
+        "flames": {
+          "count": 12,
+          "sizeTiles": 1.1,
+          "spreadTiles": 1.6,
+          "riseTiles": 0.9,
+          "durationMs": 1600
+        },
+        "embers": {
+          "count": 10,
+          "sizeTiles": 0.08,
+          "speed": 3.0,
+          "durationMs": 1200
+        },
+        "smoke": {
+          "count": 6,
+          "sizeTiles": 1.4,
+          "spreadTiles": 1.2,
+          "riseTiles": 1.3,
+          "delayMs": 900,
+          "durationMs": 3000,
+          "alpha": 0.45
+        }
       }
     }
   },
   "byWeapon": {
-    "ua-kozak-hmg": { "pock": { "radiusTiles": 0.14, "alpha": 0.85 } },
-    "ru-kpvt": { "pock": { "radiusTiles": 0.15, "alpha": 0.85 } },
+    "ua-kozak-hmg": {
+      "pock": {
+        "radiusTiles": 0.14,
+        "alpha": 0.85
+      }
+    },
+    "ru-kpvt": {
+      "pock": {
+        "radiusTiles": 0.15,
+        "alpha": 0.85
+      }
+    },
     "ua-rh120": {
       "crater": {
         "radiusTiles": 0.75,

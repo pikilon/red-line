@@ -105,6 +105,27 @@ describe("ground impacts per weapon (spec 29)", () => {
     expect(relief?.heightAt(16, 16) ?? 0).toBeLessThan(-0.1);
   });
 
+  it("lights a ground fire for HE rockets and not for bullets (AC-29-09)", () => {
+    const { effects, impacts } = setup();
+    impacts.record(snapshotWith([]), detonation(weapon("ru-ak74"), 10, 10), 0);
+    effects.update(10);
+    expect(effects.counts().explosion).toBe(0);
+    expect(effects.counts().flame).toBe(0);
+    impacts.record(snapshotWith([]), detonation(weapon("ua-gmlrs"), 16, 16), 0);
+    effects.update(100);
+    const counts = effects.counts();
+    expect(counts.explosion).toBeGreaterThan(0);
+    expect(counts.flame).toBeGreaterThan(0);
+    expect(counts.ember).toBeGreaterThan(0);
+    // The smoke starts after the flames and is already queued as dust.
+    effects.update(1500);
+    expect(effects.counts().flame).toBeGreaterThan(0);
+    effects.update(30_000);
+    expect(effects.counts().flame).toBe(0);
+    expect(impactProfile(weapon("ua-gmlrs"))?.fire).toBeDefined();
+    expect(impactProfile(weapon("ru-tos-thermobaric"))?.fire).toBeDefined();
+  });
+
   it("keeps craters shallow and marks their floor black", () => {
     // A tank shell leaves a shallow bowl with a scorch and the soot floor.
     const tank = setup();
