@@ -17,7 +17,7 @@ The server entry is always the same: command `~/.local/bin/comfy-mcp`, env
 
 * Claude Code: the repository's `.mcp.json` already has it (approve it on first use).
 * OpenCode: add the same command and env under `mcp` in `~/.config/opencode/opencode.json`
-  (`{"comfyui": {"type": "local", "command": ["/Users/<you>/.local/bin/comfy-mcp"], "environment": {...}}}`).
+  (`{"comfyui": {"type": "local", "command": ["/home/<you>/.local/bin/comfy-mcp"], "environment": {...}}}`).
 * DeepSeek Harness, Antigravity and others: register a stdio server with the same command and env
   in their own user-level MCP settings; do not add agent-specific files to the repository.
 
@@ -27,6 +27,7 @@ The server entry is always the same: command `~/.local/bin/comfy-mcp`, env
   or any partner-API node: they spend Comfy credits on remote infrastructure (D-11 needs the
   owner's confirmation for that run).
 * Do not use `download_model` / `download` / `install_node` / `update_comfyui` without asking the
-  owner: weights live on the external SSD (`RED_LINE_MODELS_DIR`), never in the Mac's disk or the repo.
+  owner: weights live in `RED_LINE_MODELS_DIR`, never in the repo. The machine has 8 GB of VRAM
+  (D-09): pick models and settings that fit in it.
 * Output goes to `~/.local/share/comfyui/ComfyUI/output/`; copy only what a task needs into `assets/`
   and keep the model licence in `LICENSES.md` valid (CC BY-SA redistribution).

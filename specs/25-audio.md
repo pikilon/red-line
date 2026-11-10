@@ -235,18 +235,21 @@ stays accurate; CC-BY sources are credited there.
   nodes). AudioLDM2 / MMAudio as alternatives (check licence).
 * **Music, local:** ACE-Step (Apache-2.0; ComfyUI template available) for
   instrumental loops; Stable Audio Open for short stingers.
-* **Post-processing:** `ffmpeg` (present: `/opt/homebrew/bin/ffmpeg`) for the
+* **Post-processing:** `ffmpeg` (present on `PATH`) for the
   radio filter, loudness normalization (EBU R128), trimming, loop crossfades and
   encoding. `sox` is not installed and is not needed.
 
-### 4.4 What exists locally (checked, nothing heavy run)
+### 4.4 What exists locally (checked 2026-11-10, nothing heavy run)
 
-* ComfyUI core v0.39.0 at `~/.local/share/comfyui/ComfyUI` (comfy-cli 1.22),
-  server **not running**, **no audio checkpoints** (the `checkpoints`,
-  `audio_encoders`, `text_encoders` folders are empty) and only the example
-  custom node. Machine: Apple M2 Max, 64 GB unified memory: enough for Stable
-  Audio Open, ACE-Step and the TTS candidates locally.
-* So phase 3 starts by downloading models (hundreds of MB to a few GB each),
+* The owner changed machine on 2026-11-10 (D-09): Linux, Intel Core
+  i9-14900HX, 32 GB RAM, NVIDIA RTX 4060 with 8 GB VRAM. Nothing of the audio
+  toolchain is installed on it yet: no ComfyUI, no checkpoints, no LM Studio;
+  only `ffmpeg` and `uv`. The scripts of §4.5 were written for the previous
+  Mac (MLX Whisper and Gemma, `/Volumes/...` default paths) and are ported in
+  issue #470.
+* 8 GB of VRAM is enough for Piper (CPU), Whisper large-v3-turbo and the
+  audio generators one at a time; each model's fit is confirmed in #470.
+* So generation starts by downloading models (hundreds of MB to a few GB each),
   which needs the owner's go-ahead per download (name, source, size).
   Piper can also run as plain Python via `uv` without ComfyUI.
 

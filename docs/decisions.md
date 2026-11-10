@@ -85,10 +85,19 @@ approval, and record the change here with its date.
   traceability tables, a pre-screened issue queue, an overnight runner and a
   local verification runner) was removed on 2026-10-24.
 
-## D-09 Hardware (2026-10-09)
+## D-09 Hardware (2026-10-09; amended 2026-11-10)
 
-* Owner machine: Apple M2 Max, 64 GB unified memory. Local LLMs up to ~30B
-  quantized run well. LLM work and asset generation are not run concurrently.
+* Owner machine (since 2026-11-10): Linux laptop, Intel Core i9-14900HX, 32 GB
+  RAM, NVIDIA RTX 4060 with 8 GB VRAM (CUDA). It replaces the Apple M2 Max with
+  64 GB unified memory.
+* The limit is the 8 GB of VRAM, not system RAM. Local generators must fit in
+  it: SDXL-class image models, small or quantized LLMs (about 8B fully on the
+  GPU; larger ones spill to the CPU and are slow), speech and audio models.
+  Anything that needs more (the ~30B LLMs the Mac ran, Hunyuan3D-2 texturing)
+  needs a low-VRAM variant or is dropped.
+* LLM work and asset generation are not run concurrently.
+* Tooling written for the Mac (MPS and MLX backends, `/Volumes/...` default
+  paths, Homebrew hints) is ported in issue #470.
 
 ## D-10 Phase 2 game design (2026-10-09)
 

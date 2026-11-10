@@ -34,7 +34,8 @@ asymmetric armies. It runs fully offline in the browser once loaded (D-03).
 * Camera: fixed orthographic isometric view (2.5D), low-poly real-time 3D, with
   an optional pixel-art post-process (D-05).
 * Performance: 60 fps with at least 500 units on screen on the owner's
-  reference machine (Apple M2 Max, D-09) in a current Chromium browser.
+  reference machine (Intel Core i9-14900HX with an NVIDIA RTX 4060, D-09) in a
+  current Chromium browser.
 * Simulation runs off the main thread (Web Worker) so input and rendering never
   stall on game logic.
 * Tone: more violent than Red Alert 2, with a gore filter setting (D-03).
