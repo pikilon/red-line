@@ -35,11 +35,25 @@ maximum), `maxCover`, `coverOpacity`.
   in world space and wrapped around the camera target, so panning shows no
   popping. Small, soft, low alpha (≤ 0.7) and faded near the ground so they
   do not hide units; `depthWrite` off.
-* Cover: one plane at y = 0.012 (under the fog plane) with a per-cell
-  threshold mask (value noise; rock cells never cover). The fragment shader
-  shows white where `cover > threshold`, with a soft edge, so snow settles in
-  patches that merge as `cover` grows. The terrain mesh is not modified.
-  Decals and craters of other layers draw after it (`renderOrder -1`).
+* Cover (rework, issue #336): a mesh with 2 samples per tile side lifted
+  0.012 over the ground **and its relief** (`heightAt`, spec 24), updated
+  through `onChange`, so snow lies in and around crater bowls and on their
+  rims instead of leaving bare holes. Per-cell thresholds (value noise, scaled
+  to at most 0.85; rock cells never cover) are bent by broad noise in the
+  shader, so snow is patchy and drifted while settling and `maxCover` 1 leaves
+  the ground continuously white at the end; only rock and steep slopes stay
+  bare. The terrain mesh is not modified. Decals and craters of other layers
+  draw after it (`renderOrder -1`).
+* Snow surface: opacity 0.98 (the cracked dirt below never shows) with its own
+  procedural look: fbm hollows tinted blue, fine grain, and lighting from the
+  screen-space normal (sun from the north-west) so rims catch light and bowl
+  slopes in shade go blue-grey. A crater floor sunk ≥ 0.13 tiles shows fresh
+  dark dirt (`bareDirt`), fading as snow settles; it is never olive.
+* Flakes: varied sizes (`flakeSize` × 0.45..2.55, rare big ones), big flakes
+  slower and softer, Gaussian soft edge, alpha varies with size, slow fall
+  (`fallSpeed` 2.4) with a gentle sway.
+* Tracks on snow use the compacted grey-blue surface (`decals.json`, `snow`
+  colour `0x7d8da1`).
 
 ## 5. Precedent (`generals-precedent` note, Zero Hour)
 
@@ -55,14 +69,17 @@ maximum), `maxCover`, `coverOpacity`.
 
 ## 6. Assumptions
 
-* The cover is flat at y = 0.012: when the relief session lands heights, the
-  cover must follow `heightAt` (follow-up).
+* Style reference (RA Remastered / Zero Hour snow maps): continuous white
+  ground with blue shading and darker compacted trails. Copied; our
+  difference is the live settling and the fresh dark crater floors.
 * Snow does not stop on pause: the clock only advances while the game runs.
 
 ## 7. Acceptance criteria
 
 * AC-22-01..04 in `client/src/render/weather.test.ts`: snow opt-in by URL
   parameter, cover growth, determinism, density clamp.
+* AC-22-05: thresholds stay below 0.85, final cover ≥ 0.99, fresh crater dirt
+  only on deep floors (`weather.test.ts`).
 * Manual: `?load=infantry-vs-armor&weather=snow` shows falling snow and the
   ground whitening; menu → Snow: off removes it, and the same URL without
   `weather` stays clear.

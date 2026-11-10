@@ -52,7 +52,36 @@ export interface CraterSpec {
   decal: boolean;
 }
 
+/** The fire of an explosive impact (spec 29 §3b): a fireball, flames burning
+ *  in the crater, flying embers and the dark smoke that takes over. */
+export interface FireSpec {
+  fireball: { splashFactor: number; minTiles: number; durationMs: number };
+  flames: {
+    count: number;
+    sizeTiles: number;
+    spreadTiles: number;
+    riseTiles: number;
+    durationMs: number;
+  };
+  embers: {
+    count: number;
+    sizeTiles: number;
+    speed: number;
+    durationMs: number;
+  };
+  smoke: {
+    count: number;
+    sizeTiles: number;
+    spreadTiles: number;
+    riseTiles: number;
+    delayMs: number;
+    durationMs: number;
+    alpha: number;
+  };
+}
+
 export interface ImpactProfile {
+  fire?: FireSpec;
   /** Shots spread this far around the point they hit (near misses). */
   scatterTiles?: number;
   dust?: DustSpec;
@@ -176,6 +205,94 @@ export function createGroundImpacts(
     }
   }
 
+  /** Fireball, burning flames, embers, then smoke (spec 29 §3b). */
+  function spawnFire(
+    spec: FireSpec,
+    splash: number,
+    x: number,
+    y: number,
+    nowMs: number,
+  ): void {
+    const ground = groundAt(x, y);
+    const ball = Math.max(
+      spec.fireball.minTiles,
+      splash * spec.fireball.splashFactor,
+    );
+    effects.spawn("explosion", {
+      x,
+      y,
+      size: ball,
+      z: ball * 0.4,
+      startMs: nowMs,
+      durationMs: spec.fireball.durationMs,
+      fadeMs: spec.fireball.durationMs * 0.6,
+    });
+    const flames = spec.flames;
+    for (let i = 0; i < flames.count; i++) {
+      const angle = rng() * Math.PI * 2;
+      const reach = flames.spreadTiles * Math.sqrt(rng());
+      const size = flames.sizeTiles * (0.6 + 0.7 * rng());
+      const durationMs = flames.durationMs * (0.6 + 0.8 * rng());
+      effects.spawn("flame", {
+        x: x + Math.cos(angle) * reach,
+        y: y + Math.sin(angle) * reach,
+        size,
+        z: size * 0.35,
+        rotationY: rng() * Math.PI * 2,
+        startMs: nowMs + rng() * 120,
+        durationMs,
+        fadeMs: durationMs * 0.5,
+        velocity: [
+          0,
+          0,
+          (flames.riseTiles * (0.6 + 0.8 * rng())) / (durationMs / 1000),
+        ],
+      });
+    }
+    const embers = spec.embers;
+    for (let i = 0; i < embers.count; i++) {
+      const angle = rng() * Math.PI * 2;
+      const speed = embers.speed * (0.4 + 0.6 * rng());
+      effects.spawn("ember", {
+        x,
+        y,
+        size: embers.sizeTiles * (0.6 + 0.8 * rng()),
+        z: 0.1,
+        startMs: nowMs,
+        durationMs: embers.durationMs * (0.6 + 0.8 * rng()),
+        velocity: [
+          Math.cos(angle) * speed * 0.6,
+          Math.sin(angle) * speed * 0.6,
+          speed * (0.9 + 0.8 * rng()),
+        ],
+        color: rng() < 0.5 ? 0xffb040 : 0xffe080,
+      });
+    }
+    const smoke = spec.smoke;
+    for (let i = 0; i < smoke.count; i++) {
+      const angle = rng() * Math.PI * 2;
+      const reach = smoke.spreadTiles * Math.sqrt(rng());
+      const size = smoke.sizeTiles * (0.7 + 0.6 * rng());
+      const durationMs = smoke.durationMs * (0.75 + 0.5 * rng());
+      effects.spawn("dust", {
+        x: x + Math.cos(angle) * reach * 0.3,
+        y: y + Math.sin(angle) * reach * 0.3,
+        height: ground + size * 0.35,
+        size,
+        rotationY: rng() * Math.PI * 2,
+        startMs: nowMs + smoke.delayMs * (0.7 + 0.6 * rng()),
+        durationMs,
+        velocity: [
+          (Math.cos(angle) * reach) / (durationMs / 1000),
+          (Math.sin(angle) * reach) / (durationMs / 1000),
+          (smoke.riseTiles * (0.6 + 0.8 * rng())) / (durationMs / 1000),
+        ],
+        color: shade(0x3a3633, 0.8 + 0.4 * rng()),
+        alpha: smoke.alpha,
+      });
+    }
+  }
+
   function spawnClods(spec: ClodSpec, x: number, y: number, nowMs: number) {
     const ground = groundAt(x, y);
     for (let i = 0; i < spec.count; i++) {
@@ -292,6 +409,8 @@ export function createGroundImpacts(
       spawnDust(profile.ring, x, y, color, true, nowMs);
     }
     if (onBuilding) return;
+    if (profile.fire !== undefined)
+      spawnFire(profile.fire, splash, x, y, nowMs);
     // Rock shows scorches but keeps no pocks, clods or craters.
     const soil = sample.strength > 0;
     if (profile.clods !== undefined && soil) {
