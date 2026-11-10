@@ -46,6 +46,8 @@ export const EFFECT_KINDS = [
   "launchSmoke",
   "trail",
   "clod",
+  "flame",
+  "ember",
 ] as const;
 export type EffectKind = (typeof EFFECT_KINDS)[number];
 
@@ -194,6 +196,22 @@ const EFFECT_STYLES: Readonly<Record<EffectKind, EffectStyle>> = {
     color: 0x2e2014,
     additive: false,
   },
+  // A tongue of flame left burning in a crater: rises and shrinks (spec 29 §3b).
+  flame: {
+    durationMs: 1200,
+    fadeMs: 700,
+    size: [0.5, 0.5, 0.5],
+    color: 0xffffff,
+    additive: true,
+  },
+  // A glowing spark thrown by a blast: ballistic, cools as it falls (spec 29 §3b).
+  ember: {
+    durationMs: 1000,
+    fadeMs: 500,
+    size: [0.06, 0.06, 0.06],
+    color: 0xffb040,
+    additive: true,
+  },
 };
 
 /** Kinds drawn as camera-facing puffs that fade through per-instance opacity. */
@@ -204,7 +222,12 @@ const PUFF_KINDS: ReadonlySet<EffectKind> = new Set([
 ]);
 /** Explosions drawn as camera-facing fireballs instead of boxes (owner
  *  request 2026-10-25). */
-const FIREBALL_KINDS: ReadonlySet<EffectKind> = new Set(["blast", "explosion"]);
+const FIREBALL_KINDS: ReadonlySet<EffectKind> = new Set([
+  "blast",
+  "explosion",
+  "flame",
+  "ember",
+]);
 /** Camera-facing kinds, including the additive backblast flash and fireballs. */
 const BILLBOARD_KINDS: ReadonlySet<EffectKind> = new Set([
   ...PUFF_KINDS,
@@ -399,6 +422,8 @@ export function createEffects(): Effects {
     mesh.castShadow = kind === "wreck" || kind === "debris";
     // Dust is drawn after the ground marks and solid effects.
     if (puff) mesh.renderOrder = 2;
+    // Flames and sparks are drawn over the dust so it never hides the fire.
+    if (kind === "flame" || kind === "ember") mesh.renderOrder = 3;
     meshes[kind] = mesh;
     pools[kind] = [];
     group.add(mesh);
@@ -512,6 +537,12 @@ export function createEffects(): Effects {
           growth =
             DUST_GROWTH_START + (1 - DUST_GROWTH_START) * easeOut(progress);
         }
+        if (kind === "flame") {
+          growth = 1 - 0.55 * progress ** 1.2;
+          // Quick flicker so the fire reads as burning, not a static sprite.
+          growth *=
+            1 + 0.12 * Math.sin(nowMs / 70 + instance.x * 11 + instance.y * 5);
+        }
         // Additive tints fade to black; opaque decals shrink away instead,
         // and puffs fade through their own opacity.
         const shrink = style.additive || puff ? 1 : fade;
@@ -549,6 +580,34 @@ export function createEffects(): Effects {
           if (kind !== "backblast") {
             puffAlpha(kind)?.setX(visible, instance.alpha * fade);
           }
+        } else if (kind === "flame") {
+          // Rises in a flickering column and shrinks as it burns out.
+          const age = elapsed / 1000;
+          position.set(
+            instance.x + instance.vx * age,
+            instance.base + instance.z + instance.vz * age,
+            instance.y + instance.vy * age,
+          );
+          rotation.setFromAxisAngle(Z_AXIS, instance.rotationY);
+          rotation.premultiply(FACE_CAMERA);
+        } else if (kind === "ember") {
+          const flight = Math.min(
+            elapsed / 1000,
+            landingTime(instance.vz, instance.z),
+          );
+          position.set(
+            instance.x + instance.vx * flight,
+            instance.base +
+              Math.max(
+                0,
+                instance.z +
+                  instance.vz * flight -
+                  0.5 * CLOD_GRAVITY * flight * flight,
+              ),
+            instance.y + instance.vy * flight,
+          );
+          rotation.setFromAxisAngle(Z_AXIS, 0);
+          rotation.premultiply(FACE_CAMERA);
         } else if (kind === "blast" || kind === "explosion") {
           // A fireball, not a lit box: the quad faces the camera (owner
           // request 2026-10-25).
