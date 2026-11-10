@@ -2,6 +2,7 @@ import { RULES, typeDef } from "../rules";
 import type { FeatureRow } from "../sim/featureSnapshot";
 import { ENTITY_FLAGS, type EntityState, hasFlag } from "../sim/matchSnapshot";
 import type { SimCommand } from "../sim/protocol";
+import { maxHpOf } from "../sim/veterancy";
 import { ORDER_PICK_RADIUS_TILES, pickEntity } from "./entitySelection";
 
 /** Spec 35: a repairable map feature (a bridge) and the cells it covers. */
@@ -170,7 +171,7 @@ export function isHealableInfantry(entity: EntityState): boolean {
     def.category === "unit" &&
     RULES.locomotors[def.locomotor]?.kind === "foot" &&
     entity.hp > 0 &&
-    entity.hp < def.hp &&
+    entity.hp < maxHpOf(entity) &&
     !hasFlag(entity, ENTITY_FLAGS.inside)
   );
 }
@@ -224,7 +225,7 @@ function repairableVehicles(
       def.category === "unit" &&
       RULES.locomotors[def.locomotor]?.kind !== "foot" &&
       entity.hp > 0 &&
-      entity.hp < def.hp &&
+      entity.hp < maxHpOf(entity) &&
       !hasFlag(entity, ENTITY_FLAGS.inside)
     );
   });
@@ -315,7 +316,7 @@ export function resolveVehicleRepairClick(args: {
         def.category === "unit" &&
         RULES.locomotors[def.locomotor]?.kind !== "foot" &&
         entity.hp > 0 &&
-        entity.hp < def.hp &&
+        entity.hp < maxHpOf(entity) &&
         !hasFlag(entity, ENTITY_FLAGS.inside)
       );
     })

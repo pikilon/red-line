@@ -1205,7 +1205,11 @@ fn load_entity(state: &EntityState, rules: &Ruleset) -> Result<Entity, String> {
         charge_clock: state.charge_clock,
         xp: state.xp,
         // Only a type that can be promoted holds a rank.
-        rank: if rules.ty(kind).experience.is_some_and(|e| e.required.is_some()) {
+        rank: if rules
+            .ty(kind)
+            .experience
+            .is_some_and(|e| e.required.is_some())
+        {
             state.rank.min(u32::from(crate::rules::MAX_RANK)) as u8
         } else {
             0

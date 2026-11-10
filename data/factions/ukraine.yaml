@@ -23,7 +23,7 @@ types:                               # required
     turnRateDeg: 720
     weapon: ua-rifle
     render: { size: [30, 60, 30] }
-    experience: { value: [10, 20, 30, 40], required: [20, 40, 80] }
+    experience: { value: [10, 20, 30, 40], required: [40, 80, 160] }
   - id: ua-stugna-team
     category: unit
     locomotor: foot
@@ -39,7 +39,7 @@ types:                               # required
     trenchWeapon: ua-sidearm
     radiusCenti: 25
     render: { size: [40, 50, 40] }
-    experience: { value: [35, 70, 105, 140], required: [70, 140, 280] }
+    experience: { value: [35, 70, 105, 140], required: [140, 280, 560] }
   - id: ua-kozak-scout
     category: unit
     locomotor: wheeled
@@ -55,7 +55,7 @@ types:                               # required
     radiusCenti: 34
     transport: { slots: 5, fireFromInside: true, damagePct: 100, exitTicks: 4 }   # spec 34: Humvee-like
     render: { size: [60, 50, 90] }
-    experience: { value: [40, 80, 120, 160], required: [80, 160, 320] }
+    experience: { value: [40, 80, 120, 160], required: [160, 320, 640] }
   - id: ua-bradley
     category: unit
     locomotor: tracked
@@ -71,7 +71,7 @@ types:                               # required
     radiusCenti: 41
     transport: { slots: 6, damagePct: 10, exitTicks: 4 }   # spec 34: Troop Crawler-like
     render: { size: [70, 60, 110] }
-    experience: { value: [80, 160, 240, 320], required: [160, 320, 640] }
+    experience: { value: [80, 160, 240, 320], required: [320, 640, 1280] }
   - id: ua-leopard-2a4
     category: unit
     locomotor: tracked
@@ -86,7 +86,7 @@ types:                               # required
     weapon: ua-rh120
     radiusCenti: 45
     render: { size: [80, 55, 130] }
-    experience: { value: [120, 240, 360, 480], required: [240, 480, 960] }
+    experience: { value: [120, 240, 360, 480], required: [480, 960, 1920] }
   - id: ua-himars
     category: unit
     locomotor: wheeled
@@ -102,7 +102,7 @@ types:                               # required
     articulation: launcher
     radiusCenti: 45
     render: { size: [60, 70, 120] }
-    experience: { value: [150, 300, 450, 600], required: [300, 600, 1200] }
+    experience: { value: [150, 300, 450, 600], required: [600, 1200, 2400] }
   - id: ua-dozer
     category: unit
     locomotor: tracked
@@ -316,7 +316,7 @@ lateTypes:                           # spec 43: after the common late types, so 
     radiusCenti: 30
     link: radio
     render: { size: [46, 62, 70] }
-    experience: { value: [50, 100, 150, 200], required: [100, 200, 400] }
+    experience: { value: [50, 100, 150, 200], required: [200, 400, 800] }
   - id: ua-baba-yaga                 # heavy hexacopter bomber: slow, drops on what it hangs over, any low weapon downs it
     category: unit
     locomotor: airLow
@@ -331,7 +331,7 @@ lateTypes:                           # spec 43: after the common late types, so 
     weapon: ua-baba-yaga-bomb
     sortie: { clip: 4, reloadTicks: 360 }
     render: { size: [124, 36, 124] }
-    experience: { value: [70, 140, 210, 280], required: [140, 280, 560] }
+    experience: { value: [70, 140, 210, 280], required: [280, 560, 1120] }
   - id: ua-fpv-team                  # launches radio-guided FPV drones from far; strong against armour
     category: unit
     locomotor: foot
@@ -347,7 +347,7 @@ lateTypes:                           # spec 43: after the common late types, so 
     trenchWeapon: ua-sidearm
     radiusCenti: 25
     render: { size: [40, 50, 40] }
-    experience: { value: [30, 60, 90, 120], required: [60, 120, 240] }
+    experience: { value: [30, 60, 90, 120], required: [120, 240, 480] }
   - id: ua-fpv                       # racing quad: a jammer kills them all, small arms too
     category: unit
     locomotor: airLow
@@ -388,7 +388,7 @@ lateTypes:                           # spec 43: after the common late types, so 
     weapon: ua-gepard-gun
     radiusCenti: 41
     render: { size: [84, 80, 130] }
-    experience: { value: [110, 220, 330, 440], required: [220, 440, 880] }
+    experience: { value: [110, 220, 330, 440], required: [440, 880, 1760] }
   - id: ua-flamingo                  # huge warhead, map-wide, inaccurate, gnss; big and easy to hit
     category: unit
     locomotor: airHigh

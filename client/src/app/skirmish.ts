@@ -145,6 +145,7 @@ import {
   type Projectiles,
 } from "../render/projectiles";
 import { createRallyMarker, type RallyMarker } from "../render/rallyMarker";
+import { createRankMarkers, type RankMarkers } from "../render/rankMarkers";
 import { poseOnDeath } from "../render/rig";
 import {
   createTerrain,
@@ -206,6 +207,7 @@ import {
   type SkirmishClient,
   type SkirmishStart,
 } from "../sim/skirmishClient";
+import { rankedName, rankOf } from "../sim/veterancy";
 import { MAX_SPEED } from "../sim/workerHandler";
 import {
   campaignUrl,
@@ -1254,6 +1256,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let effects: Effects | null = null;
   let attackMarker: AttackMarker | null = null;
   let airOverlay: AirOverlay | null = null;
+  let rankMarkers: RankMarkers | null = null;
   let rallyMarker: RallyMarker | null = null;
   let garrisonMarkers: GarrisonMarkers | null = null;
   let garrisonMarkersAt = Number.NEGATIVE_INFINITY;
@@ -1536,6 +1539,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     scene.add(entities.group);
     airOverlay = createAirOverlay();
     scene.add(airOverlay.group);
+    rankMarkers = createRankMarkers();
+    scene.add(rankMarkers.group);
     scene.add(vehicleFx.group);
     effects = createEffects();
     scene.add(effects.group);
@@ -1862,7 +1867,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     return selectionLabel(
       next.entities
         .filter((entity) => active.selected.has(entity.id))
-        .map((entity) => typeName(entity.kind)),
+        .map((entity) => rankedName(typeName(entity.kind), rankOf(entity))),
     );
   }
 
@@ -2379,6 +2384,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         effectTime(now),
         camera.quaternion,
         controlled,
+      );
+      rankMarkers?.update(
+        drawn,
+        (entity) => entities?.flyers.altitudeOf(entity) ?? 0,
+        effectTime(now),
+        camera.quaternion,
       );
       vehicleFx.update(
         drawn,
