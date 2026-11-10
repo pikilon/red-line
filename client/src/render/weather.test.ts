@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  bareDirt,
   climateFor,
   coverAfter,
   coverThresholds,
@@ -42,5 +43,16 @@ describe("weather (spec 22)", () => {
     expect(densityFrom(new URLSearchParams("snow=0.5"))).toBe(0.5);
     expect(densityFrom(new URLSearchParams("snow=9"))).toBe(2);
     expect(densityFrom(new URLSearchParams("snow=abc"))).toBe(1);
+  });
+
+  it("AC-22-05: the cover is nearly complete at the end and craters keep dirt only on fresh floors", () => {
+    const climate = climateFor(snow);
+    if (climate === null) throw new Error("no climate");
+    const thresholds = coverThresholds(32, 32, new Uint8Array(32 * 32), 9);
+    expect(Math.max(...thresholds) / 255).toBeLessThanOrEqual(0.85);
+    expect(coverAfter(1e9, climate)).toBeGreaterThanOrEqual(0.99);
+    expect(bareDirt(0)).toBe(0);
+    expect(bareDirt(0.02)).toBe(0);
+    expect(bareDirt(0.2)).toBe(1);
   });
 });
