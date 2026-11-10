@@ -1,20 +1,20 @@
 {
   "climates": {
     "snow": {
-      "flakes": 5000,
-      "fallSpeed": 3.5,
-      "windX": 0.8,
+      "flakes": 4200,
+      "fallSpeed": 2.4,
+      "windX": 0.5,
       "windZ": 0.3,
-      "swayAmplitude": 0.6,
+      "swayAmplitude": 0.9,
       "boxTiles": 44,
       "boxHeight": 22,
-      "flakeSize": 3,
-      "flakeAlpha": 0.7,
+      "flakeSize": 4.5,
+      "flakeAlpha": 0.85,
       "flakeColor": "#ffffff",
       "coverColor": "#eef3fa",
       "coverSeconds": 300,
-      "maxCover": 0.9,
-      "coverOpacity": 0.92
+      "maxCover": 1,
+      "coverOpacity": 0.98
     }
   }
 }

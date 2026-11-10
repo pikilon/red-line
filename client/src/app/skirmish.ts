@@ -1578,6 +1578,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         densityFrom(pageParams),
         startSecondsFrom(pageParams, climate),
         elevation,
+        relief,
       );
       weather.setEnabled(settings.weather !== false);
       scene.add(weather.group);
