@@ -1,6 +1,6 @@
 id: russia-balanced
 faction: russia
-harvesters: 4
+harvesters: 6
 defenseRadiusCenti: 2000
 garrisonRadiusCenti: 800
 # Spec 43 §5: the Shahed site and the airfield come right after the vehicle factory.
@@ -18,13 +18,13 @@ guards:                                                      # spec 43: stay hom
   - { unit: ru-pole-21, count: 1, minTick: 6000 }
 triggers:
   - { taskForce: infantry, weight: 50, minTick: 0 }
-  - { taskForce: mechanized, weight: 40, minTick: 2700 }
-  - { taskForce: armor, weight: 40, minTick: 4500 }
+  - { taskForce: mechanized, weight: 60, minTick: 2700 }
+  - { taskForce: armor, weight: 60, minTick: 4500 }
   - { taskForce: fires, weight: 20, minTick: 6300 }
   # Spec 43 §5: openings, then the arms join the weighted roll.
   - { taskForce: waves, weight: 1, minTick: 3000, once: true }
   - { taskForce: fibre, weight: 1, minTick: 4200, once: true }
   - { taskForce: air-strike, weight: 1, minTick: 4800, once: true }
-  - { taskForce: waves, weight: 40, minTick: 3000 }
+  - { taskForce: waves, weight: 20, minTick: 3000 }
   - { taskForce: fibre, weight: 15, minTick: 4200 }
-  - { taskForce: air-strike, weight: 25, minTick: 4800 }
+  - { taskForce: air-strike, weight: 15, minTick: 4800 }

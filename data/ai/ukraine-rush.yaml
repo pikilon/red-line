@@ -6,7 +6,7 @@ garrisonRadiusCenti: 800
 buildOrder: [ua-power-plant, ua-barracks, ua-supply-center, ua-vehicle-factory, ua-barracks, ua-power-plant, ua-sting-nest]
 taskForces:
   - { id: rifles, units: { ua-rifleman: 8 } }
-  - { id: raid, units: { ua-bradley: 3, ua-rifleman: 4 } }
+  - { id: raid, units: { ua-bradley: 2, ua-rifleman: 4 } }
   - { id: hunters, units: { ua-stugna-team: 3, ua-rifleman: 4 } }
   - { id: armor, units: { ua-leopard-2a4: 2, ua-bradley: 2 } }
   - { id: fpv, units: { ua-fpv-team: 3 } }
@@ -14,7 +14,7 @@ guards:                                                      # spec 43
   - { unit: ua-gepard, count: 1, minTick: 5400 }
 triggers:
   - { taskForce: rifles, weight: 60, minTick: 0 }
-  - { taskForce: raid, weight: 50, minTick: 1800 }
+  - { taskForce: raid, weight: 50, minTick: 2400 }
   - { taskForce: hunters, weight: 30, minTick: 2700 }
   - { taskForce: armor, weight: 40, minTick: 3600 }
   - { taskForce: fpv, weight: 20, minTick: 3600 }

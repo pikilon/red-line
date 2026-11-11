@@ -1,10 +1,10 @@
 id: ukraine-balanced
 faction: ukraine
-harvesters: 4
+harvesters: 6
 defenseRadiusCenti: 2000
 garrisonRadiusCenti: 800
 # Spec 43 §5: interceptors early, then the missile site and the workshop; the Patriot closes the order.
-buildOrder: [ua-power-plant, ua-supply-center, ua-barracks, ua-power-plant, ua-vehicle-factory, ua-defense, ua-power-plant, ua-defense, ua-sting-nest, ua-missile-site, ua-power-plant, ua-drone-workshop, ua-patriot, ua-power-plant]
+buildOrder: [ua-power-plant, ua-supply-center, ua-barracks, ua-power-plant, ua-vehicle-factory, ua-power-plant, ua-defense, ua-drone-workshop, ua-sting-nest, ua-power-plant]
 taskForces:
   - { id: infantry, units: { ua-rifleman: 4, ua-stugna-team: 2 } }
   - { id: mechanized, units: { ua-bradley: 3, ua-rifleman: 4 } }
@@ -18,19 +18,15 @@ taskForces:
 guards:                                                      # spec 43
   - { unit: ua-gepard, count: 1, minTick: 3600 }
 triggers:
-  - { taskForce: infantry, weight: 50, minTick: 0 }
-  - { taskForce: mechanized, weight: 40, minTick: 2700 }
-  - { taskForce: armor, weight: 40, minTick: 4500 }
+  - { taskForce: infantry, weight: 80, minTick: 0 }
+  - { taskForce: mechanized, weight: 60, minTick: 2700 }
+  - { taskForce: armor, weight: 50, minTick: 4500 }
   - { taskForce: fires, weight: 20, minTick: 6300 }
   # Spec 43 §5: openings, one of each arm in turn, spaced so the ground forces still get their turns.
   - { taskForce: fpv, weight: 1, minTick: 3000, once: true }
-  - { taskForce: flamingo, weight: 1, minTick: 3600, once: true }
   - { taskForce: bombers, weight: 1, minTick: 4800, once: true }
-  - { taskForce: storm-shadow, weight: 1, minTick: 5400, once: true }
   - { taskForce: robots, weight: 1, minTick: 6000, once: true }
   # ... and afterwards the arms join the weighted roll.
-  - { taskForce: fpv, weight: 15, minTick: 3000 }
-  - { taskForce: flamingo, weight: 15, minTick: 3600 }
-  - { taskForce: storm-shadow, weight: 15, minTick: 5400 }
-  - { taskForce: bombers, weight: 15, minTick: 4800 }
-  - { taskForce: robots, weight: 15, minTick: 6000 }
+  - { taskForce: fpv, weight: 8, minTick: 3000 }
+  - { taskForce: bombers, weight: 8, minTick: 4800 }
+  - { taskForce: robots, weight: 8, minTick: 6000 }
