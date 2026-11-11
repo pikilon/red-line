@@ -370,7 +370,7 @@ impl World {
             let Some(sortie) = ty.sortie else {
                 return;
             };
-            (sortie, ty.hp)
+            (sortie, self.max_hp_at(index))
         };
         let order = self.entities[index].order;
         let empty = self.entities[index].ammo == 0;

@@ -81,6 +81,8 @@ impl World {
             return;
         }
         let weapon = self.garrison_weapon(self.entities[index].id, weapon);
+        // Spec 50 §3.3: a promoted unit hits harder and fires faster.
+        let weapon = self.rank_weapon(self.entities[index].id, weapon);
         if let Order::AttackGround { target, .. } = self.entities[index].order {
             self.fire_ground(index, weapon_id, &weapon, target);
             return;
@@ -451,6 +453,7 @@ impl World {
             return;
         };
         let weapon = self.garrison_weapon(projectile.shooter, weapon);
+        let weapon = self.rank_weapon(projectile.shooter, weapon);
         self.hit_features(projectile.impact, &weapon);
         let hit = if weapon.splash_centi > 0 {
             self.apply_splash(

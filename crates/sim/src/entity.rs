@@ -189,6 +189,10 @@ pub struct Entity {
     pub charges: u32,
     /// Spec 43 §4.4: ticks towards the next charge.
     pub charge_clock: u32,
+    /// Spec 50: experience earned from kills.
+    pub xp: u32,
+    /// Spec 50: `0` regular, `1` veteran, `2` elite, `3` heroic.
+    pub rank: u8,
 }
 
 /// The locomotion and turret state of an entity (spec 11 §5.1). Read and written

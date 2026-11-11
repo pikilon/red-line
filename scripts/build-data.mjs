@@ -1047,6 +1047,8 @@ const assemble = (
 		turretRecenterTicks: globals.turretRecenterTicks ?? 0,
 		// Spec 49 §3.2: guard radii (percent of sight) and chase time.
 		...(globals.guard ? { guard: globals.guard } : {}),
+		// Spec 50 §3.3: rank bonuses.
+		...(globals.veterancy ? { veterancy: globals.veterancy } : {}),
 		// Spec 31 block 3: only what the sim reads; omitted without the balance file.
 		...(environment
 			? {
@@ -1206,6 +1208,8 @@ const assemble = (
 						},
 					}),
 			...(t.resupplies === undefined ? {} : { resupplies: t.resupplies }),
+			// Spec 50 §3.1: experience worth and thresholds.
+			...(t.experience === undefined ? {} : { experience: t.experience }),
 			render: { size: renderSize(t) },
 		})),
 		factions: factions.map((f) => ({

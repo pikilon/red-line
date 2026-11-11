@@ -158,6 +158,9 @@ pub const FLAG_ABOARD: i32 = 64;
 pub const FLAG_AIRBORNE: i32 = 128;
 /// Spec 43 §4.5: a `radio` or `gnss` unit inside a hostile jammer's radius.
 pub const FLAG_JAMMED: i32 = 256;
+/// Spec 50: the rank (0 regular to 3 heroic) sits in the two bits from this
+/// shift: `(flags >> RANK_SHIFT) & 3`.
+pub const RANK_SHIFT: u32 = 9;
 /// One air record, after the rallies (the count and the records are left out when there are none): `entity id, ammo, clip, fuel left in
 /// permille (1000 without a fuel limit), master id (-1 for none)`.
 pub const AIR_STRIDE: usize = 5;
@@ -505,6 +508,7 @@ fn entity_flags(world: &World, entity: &Entity) -> i32 {
     if world.is_jammed(entity.id) {
         flags |= FLAG_JAMMED;
     }
+    flags |= i32::from(entity.rank.min(3)) << RANK_SHIFT;
     flags
 }
 

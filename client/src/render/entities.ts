@@ -28,6 +28,7 @@ import {
   hasFlag,
   NEUTRAL,
 } from "../sim/matchSnapshot";
+import { maxHpOf } from "../sim/veterancy";
 import type { Animator, Pose } from "./animation";
 import { createCageMaterial, createCageTexture } from "./cage";
 import {
@@ -1428,10 +1429,11 @@ export function createEntityRenderer(
 
         if (
           type.category !== "depot" &&
-          (isSelected || entity.hp < type.hp) &&
+          (isSelected || entity.hp < maxHpOf(entity)) &&
           counts.bars < capacity
         ) {
-          const ratio = type.hp > 0 ? entity.hp / type.hp : 0;
+          const maxHp = maxHpOf(entity);
+          const ratio = maxHp > 0 ? entity.hp / maxHp : 0;
           position.set(entity.x, ground + h + BAR_GAP, entity.y);
           scale.set(Math.max(BAR_MIN_SCALE, ratio), 1, 1);
           placeBox(bars, counts.bars++, healthColor(ratio), facing);
