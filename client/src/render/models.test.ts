@@ -4,6 +4,8 @@ import {
   Mesh,
   MeshLambertMaterial,
   type Object3D,
+  SRGBColorSpace,
+  Texture,
 } from "three";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { typeDef, typeIndex } from "../rules";
@@ -136,5 +138,27 @@ describe("model registry", () => {
     const rotorGeometry = props[0]?.parts.get("dark")?.geometry;
     rotorGeometry?.computeBoundingBox();
     expect(rotorGeometry?.boundingBox?.min.x).toBeCloseTo(-0.14, 6);
+  });
+
+  it("extracts embedded Meshy baseColor textures onto ModelPart.map", async () => {
+    const tex = new Texture();
+    const scene = new Group();
+    const root = new Group();
+    root.name = "ua-bradley";
+    root.add(
+      new Mesh(
+        new BoxGeometry(1, 1, 1),
+        new MeshLambertMaterial({ color: 0xffffff, name: "body", map: tex }),
+      ),
+    );
+    scene.add(root);
+
+    const registry = await loadModels(
+      [typeDef(typeIndex("ua-bradley"))],
+      fakeLoader(new Map([["ua-bradley", scene]])),
+    );
+    const bradley = registry.get("ua-bradley");
+    expect(bradley?.parts.get("body")?.map).toBe(tex);
+    expect(tex.colorSpace).toBe(SRGBColorSpace);
   });
 });

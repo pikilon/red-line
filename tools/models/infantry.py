@@ -10,12 +10,16 @@ Front is -Y, +Z up, same as lib.py. Joint coordinates below are figure units.
 """
 
 import math
+import os
+import sys
 
 import bmesh
 import bpy
 from mathutils import Matrix, Vector
 
 import lib
+
+MESHY_DIR = os.path.join(lib.REPO, "client", "public", "models", "meshy")
 
 # Faceted limbs read as polygons; smooth across tube segments, sharp at caps
 # and box edges (anything sharper than this angle).
@@ -468,6 +472,164 @@ def _soldier_legs(rig, name, mats, segments, hips, left, right):
         rig.add(f"shin_{side}", shin, knee, f"thigh_{side}")
 
 
+def _current_script_id():
+    for arg in sys.argv:
+        if arg.endswith(".py") and not arg.endswith("meshy_import.py"):
+            return os.path.splitext(os.path.basename(arg))[0]
+    return ""
+
+
+def _find_meshy_glb(name, faction):
+    script_id = _current_script_id()
+    fallback = "ua-rifleman" if faction == "ukraine" else "ru-rifleman"
+    for candidate in (script_id, name, fallback):
+        if not candidate:
+            continue
+        path = os.path.join(MESHY_DIR, f"{candidate}.glb")
+        if os.path.exists(path):
+            return path
+    return None
+
+
+def _attach_meshy_texture(body_mat):
+    for mat in bpy.data.materials:
+        if mat == body_mat:
+            continue
+        tree = getattr(mat, "node_tree", None)
+        if tree is None:
+            continue
+        for node in tree.nodes:
+            if node.type == "TEX_IMAGE" and getattr(node, "image", None) is not None:
+                img = node.image
+                try:
+                    img.scale(512, 512)
+                    img.pack()
+                except Exception:
+                    pass
+                body_mat.use_nodes = True
+                btree = body_mat.node_tree
+                bsdf = btree.nodes.get("Principled BSDF")
+                if bsdf is not None:
+                    tex = None
+                    for n in btree.nodes:
+                        if n.type == "TEX_IMAGE":
+                            tex = n
+                            break
+                    if tex is None:
+                        tex = btree.nodes.new("ShaderNodeTexImage")
+                    tex.image = img
+                    bsdf.inputs["Base Color"].default_value = (1.0, 1.0, 1.0, 1.0)
+                    btree.links.new(bsdf.inputs["Base Color"], tex.outputs["Color"])
+                return
+
+
+def _slice_mesh(source_obj, name, mat, predicate):
+    bm = bmesh.new()
+    bm.from_mesh(source_obj.data)
+    drop = [f for f in bm.faces if not predicate(f.calc_center_median())]
+    if len(drop) == len(bm.faces):
+        bm.free()
+        return None
+    if drop:
+        bmesh.ops.delete(bm, geom=drop, context="FACES")
+    loose = [v for v in bm.verts if not v.link_faces]
+    if loose:
+        bmesh.ops.delete(bm, geom=loose, context="VERTS")
+    bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    mesh = bpy.data.meshes.new(name)
+    bm.to_mesh(mesh)
+    bm.free()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.scene.collection.objects.link(obj)
+    mesh.materials.append(mat)
+    for poly in mesh.polygons:
+        poly.material_index = 0
+    return obj
+
+
+def _load_meshy_soldier_slices(glb_path, name, mats, target_tris):
+    try:
+        before = set(bpy.data.objects)
+        bpy.ops.import_scene.gltf(filepath=glb_path)
+        imported = [obj for obj in bpy.data.objects if obj not in before]
+        meshes = [obj for obj in imported if obj.type == "MESH" and len(obj.data.polygons) > 0]
+        if not meshes:
+            return None
+        _attach_meshy_texture(mats["body"])
+        bpy.ops.object.select_all(action="DESELECT")
+        for obj in meshes:
+            obj.select_set(True)
+            bpy.context.view_layer.objects.active = obj
+            for mod in list(obj.modifiers):
+                if mod.type == "ARMATURE":
+                    obj.modifiers.remove(mod)
+        bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        if len(meshes) > 1:
+            bpy.ops.object.join()
+        merged = bpy.context.active_object
+        for obj in list(imported):
+            if obj != merged and obj.name in bpy.data.objects:
+                bpy.data.objects.remove(obj, do_unlink=True)
+
+        bm = bmesh.new()
+        bm.from_mesh(merged.data)
+        loose = [v for v in bm.verts if not v.link_faces]
+        if loose:
+            bmesh.ops.delete(bm, geom=loose, context="VERTS")
+        if not bm.loops.layers.uv:
+            bm.loops.layers.uv.new("UVMap")
+        bmesh.ops.triangulate(bm, faces=bm.faces[:])
+        bm.to_mesh(merged.data)
+        bm.free()
+
+        while len(merged.data.polygons) > target_tris:
+            ratio = max(0.03, min(0.88, (target_tris * 0.9) / len(merged.data.polygons)))
+            mod = merged.modifiers.new("decimate", "DECIMATE")
+            mod.ratio = ratio
+            bpy.context.view_layer.objects.active = merged
+            bpy.ops.object.modifier_apply(modifier=mod.name)
+            bm = bmesh.new()
+            bm.from_mesh(merged.data)
+            bmesh.ops.triangulate(bm, faces=bm.faces[:])
+            bm.to_mesh(merged.data)
+            bm.free()
+
+        verts = merged.data.vertices
+        xs = [v.co.x for v in verts]
+        ys = [v.co.y for v in verts]
+        zs = [v.co.z for v in verts]
+        cx = (min(xs) + max(xs)) / 2
+        cy = (min(ys) + max(ys)) / 2
+        min_z = min(zs)
+        span_z = max(max(zs) - min_z, 1e-4)
+        scale = 0.96 / span_z
+        for v in verts:
+            v.co.x = (v.co.x - cx) * scale
+            v.co.y = (v.co.y - cy) * scale
+            v.co.z = 0.02 + (v.co.z - min_z) * scale
+        merged.data.update()
+
+        body_mat = mats["body"]
+        slices = {
+            "hips": _slice_mesh(merged, f"{name}_m_hips", body_mat, lambda c: c.z >= 0.48 and abs(c.x) <= 0.14),
+            "thigh_l": _slice_mesh(merged, f"{name}_m_thigh_l", body_mat, lambda c: c.x < 0 and 0.26 <= c.z < 0.48),
+            "shin_l": _slice_mesh(merged, f"{name}_m_shin_l", body_mat, lambda c: c.x < 0 and c.z < 0.26),
+            "thigh_r": _slice_mesh(merged, f"{name}_m_thigh_r", body_mat, lambda c: c.x >= 0 and 0.26 <= c.z < 0.48),
+            "shin_r": _slice_mesh(merged, f"{name}_m_shin_r", body_mat, lambda c: c.x >= 0 and c.z < 0.26),
+        }
+        bpy.data.objects.remove(merged, do_unlink=True)
+        if any(v is None for v in slices.values()):
+            for v in slices.values():
+                if v is not None and v.name in bpy.data.objects:
+                    bpy.data.objects.remove(v, do_unlink=True)
+            return None
+        return slices
+    except Exception as exc:
+        print(f"warning: Meshy slice fallback for {name}: {exc}", file=sys.stderr)
+        return None
+
+
 def soldier(name, mats, weapon="rifle", segments=8, pack="assault", earcups=True, spare=False):
     """Standing soldier rig, the neutral pose of every pose the game shows:
     hips (torso, head, gear), arms (both arms and the weapon), thigh_l/r and
@@ -478,16 +640,33 @@ def soldier(name, mats, weapon="rifle", segments=8, pack="assault", earcups=True
     lean = {"rifle": 0.08, "rpg": 0.05, "console": 0.1}[weapon]
     body_parts, right, left = upper_body(name, mats, pelvis, lean, segments, pack, earcups=earcups)
     rig = Rig()
-    rig.add("hips", body_parts, pelvis)
-    _soldier_legs(
-        rig,
-        name,
-        mats,
-        segments,
-        "hips",
-        ((-0.066, 0.0, 0.5), (-0.074, -0.085, 0.28), (-0.078, -0.07, 0.06)),
-        ((0.066, 0.01, 0.5), (0.088, 0.03, 0.272), (0.098, 0.075, 0.06)),
-    )
+    meshy_glb = _find_meshy_glb(name, mats.get("faction", "ukraine"))
+    script_id = _current_script_id()
+    target_tris = 240 if script_id == "ru-rpg-gunner" else 420
+    meshy_slices = _load_meshy_soldier_slices(meshy_glb, name, mats, target_tris) if meshy_glb else None
+
+    if meshy_slices is not None:
+        # Keep the team/mark insignia from body_parts and pair with the realistic Meshy torso/head
+        insignia = [obj for obj in body_parts if obj.data.materials and obj.data.materials[0].name in ("team", "mark")]
+        for obj in body_parts:
+            if obj not in insignia and obj.name in bpy.data.objects:
+                bpy.data.objects.remove(obj, do_unlink=True)
+        rig.add("hips", [meshy_slices["hips"], *insignia], pelvis)
+        rig.add("thigh_l", [meshy_slices["thigh_l"]], (-0.066, 0.0, 0.5), "hips")
+        rig.add("shin_l", [meshy_slices["shin_l"]], (-0.074, -0.085, 0.28), "thigh_l")
+        rig.add("thigh_r", [meshy_slices["thigh_r"]], (0.066, 0.01, 0.5), "hips")
+        rig.add("shin_r", [meshy_slices["shin_r"]], (0.088, 0.03, 0.272), "thigh_r")
+    else:
+        rig.add("hips", body_parts, pelvis)
+        _soldier_legs(
+            rig,
+            name,
+            mats,
+            segments,
+            "hips",
+            ((-0.066, 0.0, 0.5), (-0.074, -0.085, 0.28), (-0.078, -0.07, 0.06)),
+            ((0.066, 0.01, 0.5), (0.088, 0.03, 0.272), (0.098, 0.075, 0.06)),
+        )
     if spare:
         # A round the assistant pulls from his rocket carrier to hand over: its
         # own limb hanging from the hull, standing between the two in the rack.

@@ -5,6 +5,8 @@ import {
   type Mesh,
   type MeshStandardMaterial,
   type Object3D,
+  SRGBColorSpace,
+  type Texture,
   Vector3,
 } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -20,6 +22,8 @@ export interface ModelPart {
   readonly geometry: BufferGeometry;
   /** Source material colour as 0xRRGGBB; `team` is always white. */
   readonly color: number;
+  /** Embedded UV-mapped baseColor texture from a realistic GLB (Meshy). */
+  readonly map?: Texture | null;
 }
 
 /** Name prefix of the glTF nodes that are rigid limbs (spec 20). */
@@ -88,6 +92,7 @@ export interface ModelLoader {
 interface BucketEntry {
   readonly geometries: BufferGeometry[];
   readonly color: number;
+  map: Texture | null;
 }
 
 type Bucket = Map<MaterialName, BucketEntry>;
@@ -113,17 +118,27 @@ function isDescendant(node: Object3D, ancestor: Object3D): boolean {
   return false;
 }
 
+function extractMap(material: MeshStandardMaterial): Texture | null {
+  const map = material.map ?? null;
+  if (map !== null) {
+    map.colorSpace = SRGBColorSpace;
+  }
+  return map;
+}
+
 function addToBucket(
   bucket: Bucket,
   material: MaterialName,
   geometry: BufferGeometry,
   color: number,
+  map: Texture | null = null,
 ): void {
   const entry = bucket.get(material);
   if (entry === undefined) {
-    bucket.set(material, { geometries: [geometry], color });
+    bucket.set(material, { geometries: [geometry], color, map });
     return;
   }
+  if (entry.map === null && map !== null) entry.map = map;
   entry.geometries.push(geometry);
 }
 
@@ -136,7 +151,12 @@ function mergeBucket(bucket: Bucket): ReadonlyMap<MaterialName, ModelPart> {
       entry.geometries.length === 1
         ? first
         : (mergeGeometries(entry.geometries, false) ?? first);
-    parts.set(material, { material, geometry, color: entry.color });
+    parts.set(material, {
+      material,
+      geometry,
+      color: entry.color,
+      ...(entry.map === null ? {} : { map: entry.map }),
+    });
   }
   return parts;
 }
@@ -205,8 +225,15 @@ function extractProps(scene: Object3D): PropModel[] {
       if (!isMaterialName(name)) return;
       const geometry = object.geometry.clone();
       geometry.applyMatrix4(inverse.clone().multiply(object.matrixWorld));
-      const color = (material as MeshStandardMaterial).color?.getHex();
-      addToBucket(bucket, name, geometry, color ?? 0xffffff);
+      const standard = material as MeshStandardMaterial;
+      const color = standard.color?.getHex();
+      addToBucket(
+        bucket,
+        name,
+        geometry,
+        color ?? 0xffffff,
+        extractMap(standard),
+      );
     });
     const parts = mergeBucket(bucket);
     if (parts.size === 0) continue;
@@ -242,8 +269,15 @@ function extractLimbs(scene: Object3D): LimbModel[] {
       if (!isMaterialName(name)) return;
       const geometry = object.geometry.clone();
       geometry.applyMatrix4(inverse.clone().multiply(object.matrixWorld));
-      const color = (material as MeshStandardMaterial).color?.getHex();
-      addToBucket(bucket, name, geometry, color ?? 0xffffff);
+      const standard = material as MeshStandardMaterial;
+      const color = standard.color?.getHex();
+      addToBucket(
+        bucket,
+        name,
+        geometry,
+        color ?? 0xffffff,
+        extractMap(standard),
+      );
     });
     const parentNode = limbOf(node.parent ?? node);
     const world = new Vector3().setFromMatrixPosition(
@@ -307,16 +341,17 @@ function extractModel(scene: Object3D): TypeModel | null {
     const geometry = object.geometry.clone();
     const standard = material as MeshStandardMaterial;
     const color = standard.color?.getHex() ?? 0xffffff;
+    const map = extractMap(standard);
     if (
       turretNode !== null &&
       turretInverse !== null &&
       isDescendant(object, turretNode)
     ) {
       geometry.applyMatrix4(turretInverse.clone().multiply(object.matrixWorld));
-      addToBucket(turret, name, geometry, color);
+      addToBucket(turret, name, geometry, color, map);
     } else {
       geometry.applyMatrix4(sceneInverse.clone().multiply(object.matrixWorld));
-      addToBucket(hull, name, geometry, color);
+      addToBucket(hull, name, geometry, color, map);
     }
   });
 

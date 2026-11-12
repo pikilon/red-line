@@ -77,6 +77,32 @@ describe("walk cycle", () => {
       expect(Math.abs(out.y)).toBeLessThan(0.01);
     }
   });
+
+  it("amplifies stride, knee flex and forward lean when running", () => {
+    const walkThigh = pose("ua-rifleman", "m_thigh_l", {
+      walk: 1,
+      run: 0,
+      phase: 0.25,
+    });
+    const runThigh = pose("ua-rifleman", "m_thigh_l", {
+      walk: 1,
+      run: 1,
+      phase: 0.25,
+    });
+    expect(Math.abs(runThigh.rx)).toBeGreaterThan(Math.abs(walkThigh.rx));
+
+    const walkHips = pose("ua-rifleman", "m_hips", {
+      walk: 1,
+      run: 0,
+      phase: 0.25,
+    });
+    const runHips = pose("ua-rifleman", "m_hips", {
+      walk: 1,
+      run: 1,
+      phase: 0.25,
+    });
+    expect(runHips.rx).toBeGreaterThan(walkHips.rx);
+  });
 });
 
 describe("kneeling teams", () => {

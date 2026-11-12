@@ -19,6 +19,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { climateFor } from "../../weather";
 import type { FeatureContext, FeatureInstance } from "../layers";
 import { registerFeatureRenderer } from "../registry";
+import { loadTerrainModel } from "../terrainModels";
 
 /** Procedural vegetation (spec 26 §5.3, Phase 6): ten low-poly types built from
  *  cones, cylinders and lumpy icospheres, merged into one geometry per type and
@@ -636,6 +637,23 @@ export function vegetationRenderer(
     mesh.onBeforeRender = () => {
       uniforms.uTime.value = performance.now() / 1000;
     };
+    if (
+      modelId === "oak" ||
+      modelId === "pine" ||
+      modelId === "fir" ||
+      modelId === "birch" ||
+      modelId === "poplar"
+    ) {
+      void loadTerrainModel("terrain-tree", 1).then((loaded) => {
+        if (loaded === null) return;
+        mesh.geometry = loaded.geometry;
+        if (loaded.map !== null && material.map !== loaded.map) {
+          material.map = loaded.map;
+          material.flatShading = false;
+          material.needsUpdate = true;
+        }
+      });
+    }
     root.add(mesh);
   }
   return root;

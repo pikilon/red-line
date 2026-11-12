@@ -207,6 +207,8 @@ interface MeshSlot extends ModelInstance {
   bandOn?: InstancedBufferAttribute;
   /** Per-instance fade and blood of a limb slot (spec 22 §5). */
   fx?: LimbFx;
+  /** Embedded UV-mapped baseColor texture from a realistic GLB (Meshy). */
+  embeddedMap?: Texture;
 }
 
 /** Fade (1 opaque) and blood (0 clean .. 1 soaked) of one soldier. */
@@ -358,9 +360,12 @@ function withColor(
   geometry: BufferGeometry,
   hex: number,
   dark: number,
+  keepUv = false,
 ): BufferGeometry {
   const source =
     geometry.index !== null ? geometry.toNonIndexed() : geometry.clone();
+  if (!source.hasAttribute("normal")) source.computeVertexNormals();
+  if (keepUv && !source.hasAttribute("uv")) boxProjectUvs(source);
   const position = source.getAttribute("position");
   const occlusion = source.hasAttribute("color")
     ? source.getAttribute("color")
@@ -389,19 +394,29 @@ function opaqueGeometry(
   teamAsBody = false,
 ): BufferGeometry | null {
   const sources: BufferGeometry[] = [];
-  const bodyColor = parts.get("body")?.color;
+  const bodyPart = parts.get("body");
+  const hasEmbeddedMap = (bodyPart?.map ?? null) !== null;
+  const bodyColor = hasEmbeddedMap ? 0xffffff : bodyPart?.color;
   for (const material of ["body", "team", "dark", "mark"] as const) {
     if (material === "team" && !teamAsBody) continue;
     const part = parts.get(material);
     if (part === undefined) continue;
     // Vehicles paint their `team` parts (skirts, ERA) in the body colour.
-    const color = material === "team" ? (bodyColor ?? part.color) : part.color;
-    sources.push(withColor(part.geometry, color, SURFACE_MASK[material]));
+    const color =
+      material === "body" && hasEmbeddedMap
+        ? 0xffffff
+        : material === "team"
+          ? (bodyColor ?? part.color)
+          : part.color;
+    sources.push(
+      withColor(part.geometry, color, SURFACE_MASK[material], hasEmbeddedMap),
+    );
   }
   const first = sources[0];
   if (first === undefined) return null;
   const merged =
     sources.length === 1 ? first : (mergeGeometries(sources, false) ?? first);
+  if (hasEmbeddedMap && merged.hasAttribute("uv")) return merged;
   return boxProjectUvs(merged);
 }
 
@@ -827,6 +842,11 @@ export function createEntityRenderer(
   function texturize(slot: MeshSlot): void {
     if (slot.material !== "body") return;
     const material = slot.mesh.material as MeshLambertMaterial;
+    if (slot.embeddedMap !== undefined) {
+      applyBodyTextures(material, slot.embeddedMap, generated?.["dark-metal"]);
+      applyFacade(material, null);
+      return;
+    }
     const type = RULES.types.find((entry) => entry.id === slot.typeId);
     if (generated === null || type === undefined) {
       applyBodyTextures(material, undefined, undefined);
@@ -866,11 +886,14 @@ export function createEntityRenderer(
     const type = RULES.types.find((entry) => entry.id === typeId);
     const livery =
       type === undefined ? null : liveryOf(type.id, type.category, type.armor);
+    const embeddedMap = parts.get("body")?.map ?? null;
     const opaque = opaqueGeometry(parts, livery !== null);
     const infantry =
       type !== undefined && isInfantry(type.category, type.armor);
     if (opaque !== null && livery !== null) {
-      boxProjectUvs(opaque, VEHICLE_TILE);
+      if (embeddedMap === null || !opaque.hasAttribute("uv")) {
+        boxProjectUvs(opaque, VEHICLE_TILE);
+      }
       addLiveryAttribute(
         opaque,
         livery,
@@ -911,7 +934,11 @@ export function createEntityRenderer(
         geometry,
         material === "cage"
           ? createCageMaterial(cageTexture())
-          : modelMaterial(material, geometry, !infantry),
+          : modelMaterial(
+              material,
+              geometry,
+              !infantry && embeddedMap === null,
+            ),
         capacity,
       );
       mesh.count = 0;
@@ -927,6 +954,7 @@ export function createEntityRenderer(
         material,
         mesh,
         count: 0,
+        ...(material === "body" && embeddedMap !== null ? { embeddedMap } : {}),
         ...(limb === undefined
           ? {}
           : kind === "prop"
@@ -955,6 +983,7 @@ export function createEntityRenderer(
       const bodyColor = parts.get("body")?.color;
       if (
         material === "body" &&
+        embeddedMap === null &&
         bodyColor !== undefined &&
         type !== undefined &&
         facadeTextureIds(type.id, type.category) !== null

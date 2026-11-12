@@ -10,6 +10,8 @@ import type { TypeModel } from "./models";
 export interface RigState {
   /** 0 at rest .. 1 walking. */
   readonly walk: number;
+  /** 0 walking .. 1 running/sprinting (from Meshy run animation). */
+  readonly run?: number;
   /** Walk cycle position, in turns (one turn = two steps). */
   readonly phase: number;
   /** 0 kneeling .. 1 standing; only kneeling teams ever leave 1. */
@@ -36,6 +38,7 @@ export interface RigState {
 
 export const REST_RIG: RigState = {
   walk: 0,
+  run: 0,
   phase: 0,
   stance: 1,
   aim: 0,
@@ -356,38 +359,45 @@ function pose(
   // straightens and throws the earth (stroke 1).
   const stroke = -Math.cos(2 * Math.PI * (s.digPhase + man.phase));
   const dig = s.dig;
+  const run = s.run ?? 0;
+  const swing = SWING * (1 + 0.35 * run);
+  const flex = FLEX * (1 + 0.35 * run);
   switch (part) {
     case "hips":
       out.y =
-        (-KNEEL_DROP * k + STEP_BOB * s.walk * Math.cos(2 * turn)) * man.height;
+        (-KNEEL_DROP * k +
+          STEP_BOB * (1 + 0.25 * run) * s.walk * Math.cos(2 * turn)) *
+        man.height;
       out.rx =
-        0.06 * s.walk +
+        (0.06 + 0.12 * run) * s.walk +
         KNEEL_LEAN[man.weapon] * k +
         0.55 * bend +
         dig * (0.45 - 0.25 * stroke);
       out.y -= dig * 0.04 * (1 - stroke) * man.height;
       out.ry =
-        0.1 * s.walk * Math.sin(turn) + g.launcherTurn * bend - 0.8 * hand;
+        (0.1 + 0.06 * run) * s.walk * Math.sin(turn) +
+        g.launcherTurn * bend -
+        0.8 * hand;
       break;
     case "thigh_l":
       out.rx =
-        -SWING * s.walk * Math.sin(turn) +
+        -swing * s.walk * Math.sin(turn) +
         KNEEL.thighL * k -
         dig * (0.35 - 0.1 * stroke);
       break;
     case "thigh_r":
-      out.rx = SWING * s.walk * Math.sin(turn) + KNEEL.thighR * k - dig * 0.15;
+      out.rx = swing * s.walk * Math.sin(turn) + KNEEL.thighR * k - dig * 0.15;
       break;
     case "shin_l":
       out.rx =
-        FLEX * s.walk * Math.max(0, Math.cos(turn)) +
+        flex * s.walk * Math.max(0, Math.cos(turn)) +
         KNEEL.shinL * k +
         0.35 * jolt +
         dig * (0.4 - 0.1 * stroke);
       break;
     case "shin_r":
       out.rx =
-        FLEX * s.walk * Math.max(0, -Math.cos(turn)) +
+        flex * s.walk * Math.max(0, -Math.cos(turn)) +
         KNEEL.shinR * k +
         0.35 * jolt +
         dig * 0.2;
@@ -406,17 +416,21 @@ function pose(
         break;
       }
       if (man.weapon === "rifle") {
-        // Low ready, raised on a target; the walk swings it a little. The
+        // Low ready, raised on a target; the walk/run swings it. The
         // assistant lifts his arms out to the gunner while he hands a round over.
         out.rx =
-          -0.55 * s.aim + 0.1 * s.walk - 0.05 * kick - 0.7 * hand - 0.9 * jolt;
-        out.ry = -0.06 * s.walk * Math.sin(turn);
+          -0.55 * s.aim +
+          (0.1 + 0.12 * run) * s.walk -
+          0.05 * kick -
+          0.7 * hand -
+          0.9 * jolt;
+        out.ry = -(0.06 + 0.08 * run) * s.walk * Math.sin(turn);
         out.z = -0.012 * kick;
       } else if (man.weapon === "rpg") {
         out.rx = rpgPitch(s) - 0.5 * jolt;
         out.z = -0.02 * kick;
       } else {
-        out.rx = 0.08 * s.walk + 0.9 * bend;
+        out.rx = (0.08 + 0.1 * run) * s.walk + 0.9 * bend;
       }
       break;
     }

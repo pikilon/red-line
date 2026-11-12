@@ -22,10 +22,10 @@ hips.append(infantry.box("goggles_strap", (0.165, 0.09, 0.022), head + Vector((0
 for side in (-1, 1):
     tip = head + Vector((side * 0.05, -0.11, 0.18))
     hips.append(infantry.rod(f"goggle_ant_{side}", 0.008, head + Vector((side * 0.05, -0.1, 0.05)), tip, dark, 4))
-limbs = infantry.place(op, "o", 0.46, (0.11, 0.07))
+limbs = infantry.place(op, "o", 0.46, (0.085, 0.08))
 
 # The quad waits on a crate; the launch lifts it off (`x_quad`), the crate stays.
-qx, qy, qz = -0.1, -0.09, 0.075
+qx, qy, qz = -0.08, -0.10, 0.075
 crate = [
     infantry.box("crate", (0.11, 0.1, 0.06), (qx, qy, 0.03), body),
     infantry.box("crate_band", (0.112, 0.016, 0.062), (qx, qy, 0.03), m["mark"]),

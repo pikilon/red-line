@@ -46,9 +46,10 @@ const PUT_DOWN_EASE = 1.2;
 const STOW_FOLLOW = 3;
 /** Pick-up progress at which the team may walk off. */
 const PICKUP_DONE = 0.95;
-/** Ground speed above which a soldier walks, tiles per second, and the rate
- *  at which the measured speed follows the instant one. */
+/** Ground speed above which a soldier walks or runs, tiles per second, and the
+ *  rate at which the measured speed follows the instant one. */
 const WALK_SPEED = 0.3;
+const RUN_SPEED = 0.75;
 const SPEED_SMOOTHING = 10;
 /** A soldier keeps aiming this long after a shot. */
 const AIM_HOLD_MS = 1500;
@@ -112,6 +113,7 @@ export function createAnimator(): Animator {
     /** Smoothed ground speed, tiles per second. */
     speed: number;
     walk: number;
+    run: number;
     phase: number;
     stance: number;
     aim: number;
@@ -173,6 +175,7 @@ export function createAnimator(): Animator {
         y: entity.y,
         speed: 0,
         walk: 0,
+        run: 0,
         phase: entity.id * 0.37,
         stance: 0,
         aim: 0,
@@ -196,6 +199,7 @@ export function createAnimator(): Animator {
       entry.y = entity.y;
     }
     const walking = entry.speed > WALK_SPEED;
+    const running = entry.speed > RUN_SPEED;
     // A missile team stows its launcher before it walks and sets it up after
     // it stops; the simulation holds it still meanwhile and reports how far
     // along it is in `progress` (permille).
@@ -205,7 +209,9 @@ export function createAnimator(): Animator {
     // A team that picks something up stays put until it has it.
     const ready = !picksUp(type.id) || entry.carry >= PICKUP_DONE;
     entry.walk = ease(entry.walk, walking && ready ? 1 : 0, WALK_EASE, dt);
-    entry.phase += dt * entry.walk * WALK_CYCLES_PER_SECOND;
+    entry.run = ease(entry.run, running && ready ? 1 : 0, WALK_EASE, dt);
+    entry.phase +=
+      dt * entry.walk * WALK_CYCLES_PER_SECOND * (1 + 0.35 * entry.run);
     entry.stance = ease(
       entry.stance,
       moving ? 1 : 0,
@@ -239,6 +245,7 @@ export function createAnimator(): Animator {
         : 0;
     return {
       walk: entry.walk,
+      run: entry.run,
       phase: entry.phase,
       stance: entry.stance,
       aim: entry.aim,
