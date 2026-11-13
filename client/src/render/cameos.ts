@@ -2,8 +2,10 @@ import {
   AmbientLight,
   Box3,
   DirectionalLight,
+  LinearFilter,
   type Material,
   type Mesh,
+  type MeshStandardMaterial,
   type Object3D,
   PerspectiveCamera,
   Scene,
@@ -54,14 +56,10 @@ export interface CameoStore {
 export type IdleScheduler = (run: () => void) => void;
 
 /** Upper bound on waiting for idle time: a busy match still gets its cameo. */
-export const CAMEO_IDLE_TIMEOUT_MS = 1000;
+export const CAMEO_IDLE_TIMEOUT_MS = 50;
 
 function scheduleIdle(run: () => void): void {
-  if (typeof requestIdleCallback === "function") {
-    requestIdleCallback(run, { timeout: CAMEO_IDLE_TIMEOUT_MS });
-  } else {
-    setTimeout(run, 0);
-  }
+  setTimeout(run, 0);
 }
 
 /**
@@ -100,13 +98,20 @@ export function createCameoStore(
   };
 }
 
+function disposeMaterial(material: Material): void {
+  const std = material as MeshStandardMaterial;
+  std.map?.dispose();
+  material.dispose();
+}
+
 function disposeTree(root: Object3D): void {
   root.traverse((node) => {
     const mesh = node as Mesh;
     mesh.geometry?.dispose();
     const material = mesh.material as Material | Material[] | undefined;
-    if (Array.isArray(material)) for (const entry of material) entry.dispose();
-    else material?.dispose();
+    if (Array.isArray(material))
+      for (const entry of material) disposeMaterial(entry);
+    else if (material !== undefined) disposeMaterial(material);
   });
 }
 
@@ -127,7 +132,7 @@ export function createGlbRasterizer(): Rasterizer {
     const gltf = await loader.loadAsync(`models/${typeId}.glb`);
     renderer ??= new WebGLRenderer({
       alpha: true,
-      antialias: true,
+      antialias: false,
       preserveDrawingBuffer: true,
     });
     const gl = renderer;
@@ -135,6 +140,13 @@ export function createGlbRasterizer(): Rasterizer {
     gl.setSize(CAMEO_SIZE, CAMEO_SIZE, false);
     gl.setClearColor(0x000000, 0);
     const model = gltf.scene;
+    model.traverse((node) => {
+      const mat = (node as Mesh).material as MeshStandardMaterial | undefined;
+      if (mat?.map !== null && mat?.map !== undefined) {
+        mat.map.generateMipmaps = false;
+        mat.map.minFilter = LinearFilter;
+      }
+    });
     scene.add(model);
     try {
       model.updateMatrixWorld(true);
