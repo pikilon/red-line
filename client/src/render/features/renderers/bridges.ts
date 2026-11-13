@@ -11,6 +11,7 @@ import { type Deck, deckLookup, deckOf } from "../bridge/deck";
 import { type BridgeBuild, bridgeGeometry } from "../bridge/model";
 import type { FeatureContext, FeatureInstance } from "../layers";
 import { registerFeatureRenderer } from "../registry";
+import { loadTerrainModel } from "../terrainModels";
 
 /** Spec 26 section 17: river bridges (family `bridge`): `road-bridge`,
  *  `wooden-bridge`, `stone-arch`. All bridges of a map are one merged mesh
@@ -59,6 +60,13 @@ export function createBridges(
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     mesh.name = "bridges";
+    void loadTerrainModel("terrain-bridge", 0).then((loaded) => {
+      if (loaded?.map !== null && loaded?.map !== undefined) {
+        const mat = mesh.material as MeshLambertMaterial;
+        mat.map = loaded.map;
+        mat.needsUpdate = true;
+      }
+    });
     group.add(mesh);
   }
   return group;
