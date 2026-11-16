@@ -630,5 +630,18 @@
   "saves.campaign-ua-09-long-arm.name": "Campaign (Ukraine) 9: The Long Arm",
   "saves.campaign-ua-09-long-arm.description": "long-range drones and Flamingo missiles burn refineries and Wildberries warehouses.",
   "saves.campaign-ua-10-moscow.name": "Campaign (Ukraine) 10: The Bunker",
-  "saves.campaign-ua-10-moscow.description": "the final assault on the bunker under the Kremlin."
+  "saves.campaign-ua-10-moscow.description": "the final assault on the bunker under the Kremlin.",
+  "mainMenu.multiplayer": "Multiplayer",
+  "net.title": "Multiplayer",
+  "net.inviteHint": "Send this link to your opponent. The match starts as soon as they open it.",
+  "net.copy": "Copy link",
+  "net.copied": "Link copied",
+  "net.waitingGuest": "Waiting for your opponent…",
+  "net.connecting": "Connecting to your opponent…",
+  "net.starting": "Connected. Starting the match…",
+  "net.failed": "Could not connect. The link may have expired, or one of the networks blocks direct connections.",
+  "net.waiting": "Waiting for your opponent…",
+  "net.opponentLeft": "Your opponent left the match.",
+  "net.desync": "The match is no longer identical on both screens.",
+  "net.menu": "Main menu"
 }

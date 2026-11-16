@@ -5,6 +5,7 @@ import {
   type InitFromSaveMessage,
   type InitMessage,
   type InitSkirmishMessage,
+  type LockstepConfig,
   MAX_STEPS_PER_ADVANCE,
   type MainToWorker,
   type MoveMessage,
@@ -16,6 +17,8 @@ import {
   type SimCommand,
   type SnapshotMessage,
   TICK_MS,
+  type TurnMessage,
+  type TurnStartedMessage,
   type WorkerToMain,
 } from "./protocol";
 
@@ -361,6 +364,51 @@ export function createWorkerHandler(
   const aiPlayers = new Set<number>();
   let aiPlayer = AI_PLAYER;
   let aiOn = true;
+  /** Spec 51: set for a networked match. */
+  let lockstep: LockstepConfig | null = null;
+  /** Orders received per turn, one slot per player (spec 51 §3.2). */
+  const turnOrders = new Map<number, (SimCommand[] | undefined)[]>();
+  let begunTurn = -1;
+  let waiting = false;
+
+  /** Spec 51 §3.3: at a turn boundary the turn begins only once every
+   *  player's orders for it are here; they run in player order, then in the
+   *  order given. Returns whether the next tick may run. */
+  const beginTurnIfDue = (target: SkirmishSimLike): boolean => {
+    if (lockstep === null) return true;
+    const tick = target.tick();
+    if (tick % lockstep.turnTicks !== 0) return true;
+    const turn = tick / lockstep.turnTicks;
+    if (turn === begunTurn) return true;
+    const slots = turnOrders.get(turn) ?? [];
+    if (turn >= lockstep.delayTurns) {
+      for (let player = 0; player < lockstep.players; player++) {
+        if (slots[player] === undefined) return false;
+      }
+    }
+    turnOrders.delete(turn);
+    const message: TurnStartedMessage = { type: "turnStarted", turn };
+    if (turn % lockstep.hashEveryTurns === 0) {
+      message.hash = target.state_hash_hex();
+    }
+    for (const orders of slots) {
+      for (const command of orders ?? []) {
+        if (command.kind === "debugSpawn" || command.kind === "debugSetHp") {
+          continue;
+        }
+        (COMMANDS[command.kind] as Dispatch)(target, command);
+      }
+    }
+    begunTurn = turn;
+    post(message);
+    return true;
+  };
+
+  const setWaiting = (value: boolean): void => {
+    if (waiting === value) return;
+    waiting = value;
+    post({ type: "waiting", waiting: value });
+  };
 
   const postSnapshot = (target: SimLike): void => {
     const data = target.snapshot();
@@ -471,7 +519,9 @@ export function createWorkerHandler(
       }
       viewer = message.viewer;
       speed = Math.min(MAX_SPEED, Math.max(1, message.speed));
-      if (message.debug) {
+      lockstep = message.lockstep ?? null;
+      if (lockstep !== null) speed = 1;
+      if (message.debug && lockstep === null) {
         created.enable_debug_commands();
       }
       if (message.ai != null) {
@@ -527,7 +577,8 @@ export function createWorkerHandler(
       }
     },
     command: (message: CommandMessage): void => {
-      if (skirmish === null) {
+      // A networked match takes orders only through turns (spec 51 §3.2).
+      if (skirmish === null || lockstep !== null) {
         return;
       }
       (COMMANDS[message.command.kind] as Dispatch)(skirmish, message.command);
@@ -540,7 +591,14 @@ export function createWorkerHandler(
       postSkirmishSnapshot(skirmish);
     },
     setPaused: (message: SetPausedMessage): void => {
-      paused = message.paused;
+      // Nobody pauses a networked match (spec 51 §5).
+      paused = lockstep === null && message.paused;
+    },
+    turn: (message: TurnMessage): void => {
+      if (lockstep === null || message.turn <= begunTurn) return;
+      const slots = turnOrders.get(message.turn) ?? [];
+      slots[message.player] = message.commands;
+      turnOrders.set(message.turn, slots);
     },
     setAiActive: (message: SetAiActiveMessage): void => {
       aiOn = message.active;
@@ -598,12 +656,22 @@ export function createWorkerHandler(
         Math.floor(accumulatorMs / TICK_MS),
         MAX_STEPS_PER_ADVANCE,
       );
-      for (let i = 0; i < steps; i++) {
+      let ran = 0;
+      let stalled = false;
+      for (; ran < steps; ran++) {
+        if (skirmish !== null && !beginTurnIfDue(skirmish)) {
+          stalled = true;
+          break;
+        }
         target.step();
       }
-      accumulatorMs =
-        steps === MAX_STEPS_PER_ADVANCE ? 0 : accumulatorMs - steps * TICK_MS;
-      if (steps === 0) {
+      if (lockstep !== null) setWaiting(stalled || (steps === 0 && waiting));
+      accumulatorMs = stalled
+        ? Math.min(accumulatorMs, TICK_MS)
+        : steps === MAX_STEPS_PER_ADVANCE
+          ? 0
+          : accumulatorMs - steps * TICK_MS;
+      if (ran === 0) {
         return;
       }
       if (skirmish === null) {

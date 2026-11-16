@@ -114,6 +114,12 @@ export function createMainMenu(
       },
     ],
     ["main-menu-skirmish", "mainMenu.skirmish", () => show(skirmish)],
+    // Spec 51 §2: opens the lobby, which creates a room and its invite link.
+    [
+      "main-menu-multiplayer",
+      "mainMenu.multiplayer",
+      () => window.location.assign("?mode=multiplayer"),
+    ],
     ["main-menu-tutorials", "mainMenu.tutorials", () => show(tutorials)],
     ["main-menu-load", "mainMenu.loadGame", actions.loadGame],
     ["main-menu-sound", "menu.sound", () => show(sound)],

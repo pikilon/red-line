@@ -136,6 +136,23 @@ export type InitSkirmishMessage = {
   demoAi?: string;
   /** Difficulty of the player 1 AI (spec 05 §9); Medium when absent. */
   difficulty?: string;
+  /** Spec 51: networked match; ticks only run once every player's orders
+   *  for the turn arrived. */
+  lockstep?: LockstepConfig;
+};
+/** Spec 51 §3: turn length, input delay and desync-check cadence. */
+export type LockstepConfig = {
+  players: number;
+  turnTicks: number;
+  delayTurns: number;
+  hashEveryTurns: number;
+};
+/** Spec 51 §3.2: the orders `player` gives for `turn`. */
+export type TurnMessage = {
+  type: "turn";
+  turn: number;
+  player: number;
+  commands: SimCommand[];
 };
 /** Builds the skirmish from a save (spec 19 §5.4); AIs come from the state. */
 export type InitFromSaveMessage = {
@@ -174,7 +191,8 @@ export type MainToWorker =
   | SetViewerMessage
   | SetPausedMessage
   | SetAiActiveMessage
-  | SetAiSideMessage;
+  | SetAiSideMessage
+  | TurnMessage;
 
 export type ReadyMessage = {
   type: "ready";
@@ -206,8 +224,18 @@ export type SaveStateMessage = {
   world: string | null;
   error?: string;
 };
+/** Spec 51 §3.2: the worker began `turn`; `hash` every `hashEveryTurns`. */
+export type TurnStartedMessage = {
+  type: "turnStarted";
+  turn: number;
+  hash?: string;
+};
+/** Spec 51 §3.4: the worker stopped (or resumed) waiting for orders. */
+export type WaitingMessage = { type: "waiting"; waiting: boolean };
 export type WorkerToMain =
   | ReadyMessage
+  | TurnStartedMessage
+  | WaitingMessage
   | SnapshotMessage
   | HashMessage
   | AliveMessage

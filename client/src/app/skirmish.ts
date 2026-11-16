@@ -65,6 +65,7 @@ import {
   type SkirmishController,
 } from "../input/skirmishController";
 import { disembarkOffer } from "../input/transport";
+import { LOCKSTEP } from "../net/lockstep";
 import { createPerfPanel } from "../perfPanel";
 import { type AirOverlay, createAirOverlay } from "../render/airOverlay";
 import { type Animator, createAnimator } from "../render/animation";
@@ -245,6 +246,7 @@ import {
   type TutorialMission,
 } from "../ui/tutorial";
 import { createCameraMemory, homeView } from "./cameraMemory";
+import { attachNetMatch, type NetBoot } from "./netMatch";
 
 export const DEFAULT_MAP = "river-port";
 export const DEFAULT_SEED = 1;
@@ -383,6 +385,8 @@ interface SkirmishBoot {
   loadedId: string | null;
   /** The main menu's AI-vs-AI shell battle (spec 45). */
   shell?: boolean;
+  /** Spec 51: a match against another browser. */
+  net?: NetBoot;
 }
 
 /** A fresh skirmish from the URL parameters (spec §6.7). */
@@ -494,6 +498,40 @@ function shellBoot(): SkirmishBoot {
  *  the page has no URL parameters (spec 45). */
 export function startShell(): void {
   runSkirmish(shellBoot(), createIndexedDbSaveStore());
+}
+
+/** Spec 51: a match against another browser over `net`; both browsers pass
+ *  the same seed and map, the host plays player 0. */
+export function startNetSkirmish(
+  seed: number,
+  mapId: string,
+  net: NetBoot,
+): void {
+  const viewer = net.localPlayer;
+  runSkirmish(
+    {
+      seed,
+      seedText: String(seed),
+      mapId,
+      debug: false,
+      speed: 1,
+      aiActive: null,
+      start: {
+        seed,
+        mapId,
+        viewer,
+        speed: 1,
+        debug: false,
+        ai: null,
+        lockstep: LOCKSTEP,
+      },
+      client: null,
+      applySettings: false,
+      loadedId: null,
+      net,
+    },
+    createIndexedDbSaveStore(),
+  );
 }
 
 /** Opens a tutorial mission: its example save (spec 46 §2). */
@@ -713,14 +751,25 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       uiClick();
       setMenuOpen(false);
     },
-    openSaveGame: () => {
-      uiClick();
-      openSaves("save");
-    },
-    openLoadGame: () => {
-      uiClick();
-      openSaves("load");
-    },
+    // A networked match has no saves, side switch or reveal (spec 51 §5).
+    ...(boot.net === undefined && {
+      openSaveGame: () => {
+        uiClick();
+        openSaves("save");
+      },
+      openLoadGame: () => {
+        uiClick();
+        openSaves("load");
+      },
+      switchSide: () => {
+        uiClick();
+        switchSide();
+      },
+      toggleReveal: () => {
+        uiClick();
+        toggleReveal();
+      },
+    }),
     toggleGore: () => {
       uiClick();
       toggleGore();
@@ -732,14 +781,6 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     toggleTextures: () => {
       uiClick();
       toggleTextures();
-    },
-    switchSide: () => {
-      uiClick();
-      switchSide();
-    },
-    toggleReveal: () => {
-      uiClick();
-      toggleReveal();
     },
     toggleFpsPanel: () => {
       uiClick();
@@ -757,6 +798,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     },
     restart: () => {
       uiClick();
+      if (boot.net !== undefined) {
+        leaveToMenu();
+        return;
+      }
       disableLeaveGuard();
       window.location.reload();
     },
@@ -1005,12 +1050,20 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   /** True after F2 to a player with no stored view: the next snapshot built
    *  for that player centres the camera on their base. */
   let centrePending = false;
-  const interact: SkirmishClient = createSkirmishClient(
+  const local: SkirmishClient = createSkirmishClient(
     new Worker(new URL("../sim/sim.worker.ts", import.meta.url), {
       type: "module",
     }),
     boot.start,
   );
+  const leaveToMenu = (): void => {
+    disableLeaveGuard();
+    window.location.assign(window.location.pathname);
+  };
+  const interact: SkirmishClient =
+    boot.net === undefined
+      ? local
+      : attachNetMatch(local, boot.net, document.body, leaveToMenu);
   // A saved side of 1 means the AI starts on the other base (fresh matches).
   if (restored === null && controlled === 1 && !boot.shell) moveAiToOpponent();
   let uiRenders = 0;
