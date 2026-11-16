@@ -626,6 +626,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let viewer = boot.start.viewer;
   const audioMixer = new AudioMixer(AUDIO_CATALOG, {
     ...resolveAudioVolumes(settings),
+    // `?mute=1` starts silent without touching the saved volumes.
+    ...(pageParams.get("mute") === "1" && { audioMaster: 0 }),
     strongLanguage: settings.strongLanguage,
   });
   audioMixer.setMenuMix(boot.shell === true);

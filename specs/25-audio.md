@@ -500,6 +500,9 @@ fall back through a chain so every weapon sounds like something:
 
 ## 10. Mixing and ducking
 
+* `?mute=1` in the URL (owner request 2026-11-16) starts the page with the
+  master bus at 0 without changing the saved volumes; the main menu still
+  opens with `?mute=1` alone.
 * Buses: `master` (compressor/limiter at the end) <- `sfx`, `voice`, `eva`,
   `ui`, `ambient`, `music`. Settings sliders per bus in `client/src/settings.ts`
   (master, effects, ambient, voices, music). The game starts quiet by owner
