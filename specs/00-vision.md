@@ -19,7 +19,7 @@ asymmetric armies. It runs fully offline in the browser once loaded (D-03).
 | P2 | Modern, real factions | Real countries grouped into blocks (D-04). Every country has at least one unique unit or ability. First matchup: Ukraine vs Russia. |
 | P3 | Fair by construction | Every advantage is paid for with a weakness. Balance is measured, not argued: headless bot-vs-bot tournaments (D-04, D-06). |
 | P4 | Deterministic core | One Rust simulation, fixed-point, identical results in the browser (WASM) and natively (headless, replays, tournaments). This enables lockstep multiplayer and reproducible balance (D-05). |
-| P5 | Web-native and offline | PWA, no install, no server, no account. LAN multiplayer later via WebRTC with manual/QR signalling (D-03). |
+| P5 | Web-native and offline | PWA, no install, no server, no account. Multiplayer peer to peer via WebRTC: invite link (spec 51), later manual/QR signalling offline (D-03). |
 | P6 | Open and reproducible | Code AGPL-3.0-or-later, assets CC BY-SA 4.0 (D-02). Assets are generated locally from versioned scripts (D-07). |
 
 ## 3. Audience

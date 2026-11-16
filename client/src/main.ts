@@ -1,4 +1,5 @@
 import { installMobileShell } from "./app/mobileShell";
+import { startMultiplayer } from "./app/multiplayer";
 import { startShell, startSkirmish } from "./app/skirmish";
 import { startTechSlice } from "./app/techSlice";
 import { consumeInviteParam } from "./report/api";
@@ -7,6 +8,7 @@ import { consumeInviteParam } from "./report/api";
 const modes = {
   "tech-slice": startTechSlice,
   skirmish: startSkirmish,
+  multiplayer: startMultiplayer,
 } as const;
 
 // A tester invite link is stored and removed before anything reads the URL

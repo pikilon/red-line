@@ -75,6 +75,9 @@ export function createSimClient(
     saveState: (): void => {},
     // Nor runs tutorials (spec 46).
     alive: (): void => {},
+    // Nor plays networked matches (spec 51).
+    turnStarted: (): void => {},
+    waiting: (): void => {},
   } as const;
 
   worker.onmessage = (event) => {

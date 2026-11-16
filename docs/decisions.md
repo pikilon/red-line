@@ -32,6 +32,10 @@ approval, and record the change here with its date.
 * Single player vs computer, campaigns per army, and later LAN multiplayer via
   WebRTC with manual/QR signaling (no internet required) using deterministic
   lockstep.
+* Amendment 2026-11-16 (owner): multiplayer over the internet by invite
+  link. Signalling goes over a Supabase Realtime broadcast channel (nothing
+  stored); game traffic stays peer to peer over WebRTC (spec 51). Manual/QR
+  signalling remains the future offline option.
 * Real countries and real factions, as realistic as possible, including active
   conflicts. More violent than Red Alert 2, with a gore filter setting.
 * No real public figures in the first versions. No official logos of

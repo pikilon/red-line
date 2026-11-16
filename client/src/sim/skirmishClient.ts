@@ -10,6 +10,7 @@ import {
   type HashMessage,
   type InitFromSaveMessage,
   type InitSkirmishMessage,
+  type LockstepConfig,
   type ReadyMessage,
   type SaveStateMessage,
   type SetAiActiveMessage,
@@ -18,6 +19,9 @@ import {
   type SetViewerMessage,
   type SimCommand,
   type SnapshotMessage,
+  type TurnMessage,
+  type TurnStartedMessage,
+  type WaitingMessage,
   type WorkerToMain,
 } from "./protocol";
 import type { WorkerLike } from "./simClient";
@@ -36,6 +40,10 @@ export interface SkirmishClient {
   requestAlive(ids: readonly number[]): Promise<boolean[]>;
   /** `Sim::save_state` JSON; rejects with the sim's error (spec 19 §5.4). */
   saveState(): Promise<string>;
+  /** Spec 51: hands a turn's orders to the worker. */
+  sendTurn(message: TurnMessage): void;
+  /** Spec 51: turn starts and waiting changes of a networked match. */
+  onLockstep(listener: (message: LockstepEvent) => void): void;
   /** Returns an unsubscribe function. */
   onSnapshot(
     listener: (
@@ -56,6 +64,8 @@ type SnapshotListener = (
   features: readonly FeatureRow[] | null,
 ) => void;
 
+export type LockstepEvent = TurnStartedMessage | WaitingMessage;
+
 const EMPTY_COMBAT: CombatSnapshot = { projectiles: [], events: [] };
 
 /** A new skirmish, or one built from a save's `world` or `setup` (spec 19). */
@@ -72,6 +82,8 @@ export type SkirmishStart =
       demoAi?: string;
       /** Difficulty of the player 1 AI (spec 05 §9). */
       difficulty?: string;
+      /** Spec 51: a networked match. */
+      lockstep?: LockstepConfig;
     }
   | {
       save: { form: "world" | "setup"; json: string };
@@ -97,9 +109,15 @@ export function createSkirmishClient(
     { resolve: (world: string) => void; reject: (error: Error) => void }
   >();
   const listeners = new Set<SnapshotListener>();
+  const lockstepListeners = new Set<(message: LockstepEvent) => void>();
   let nextRequestId = 1;
+  const emitLockstep = (message: LockstepEvent): void => {
+    for (const listener of lockstepListeners) listener(message);
+  };
 
   const handlers = {
+    turnStarted: emitLockstep,
+    waiting: emitLockstep,
     ready: (message: ReadyMessage): void => {
       if (message.apiVersion === EXPECTED_API_VERSION) {
         resolveReady(message);
@@ -182,6 +200,9 @@ export function createSkirmishClient(
     if (options.difficulty !== undefined) {
       init.difficulty = options.difficulty;
     }
+    if (options.lockstep !== undefined) {
+      init.lockstep = options.lockstep;
+    }
     worker.postMessage(init);
   }
 
@@ -239,6 +260,12 @@ export function createSkirmishClient(
         pendingSaves.set(requestId, { resolve, reject });
         worker.postMessage({ type: "saveRequest", requestId });
       });
+    },
+    sendTurn(message) {
+      worker.postMessage(message);
+    },
+    onLockstep(listener) {
+      lockstepListeners.add(listener);
     },
     onSnapshot(listener) {
       listeners.add(listener);
