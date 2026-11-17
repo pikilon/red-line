@@ -64,7 +64,7 @@ function radiusOf(kind: number): number {
 
 /** Whether `vehicle` touches `soldier`: within its reach (its radius for a
  *  crush, both radii for a shove) plus the snapshot slack. */
-function touches(vehicle: EntityState, soldier: EntityState): boolean {
+export function touches(vehicle: EntityState, soldier: EntityState): boolean {
   const mode = runOverOf(vehicle.kind);
   if (mode === null || vehicle.owner === soldier.owner) return false;
   const reach =
