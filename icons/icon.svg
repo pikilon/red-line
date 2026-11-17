@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Modern Conquest: Red Line">
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d1520"/>
+      <stop offset="1" stop-color="#060a10"/>
+    </linearGradient>
+    <linearGradient id="line" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#be1222"/>
+      <stop offset="1" stop-color="#e11d2e"/>
+    </linearGradient>
+    <clipPath id="card">
+      <rect width="512" height="512" rx="96"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#card)">
+    <rect width="512" height="512" fill="url(#background)"/>
+    <g stroke="#2e425a" stroke-opacity="0.22" stroke-width="1">
+      <path d="M-20 100 412 532M-20 160 352 532M-20 220 292 532M-20 280 232 532M-20 340 172 532M-20 400 112 532M-20 460 52 532"/>
+      <path d="M20 -20 532 492M80 -20 532 432M140 -20 532 372M200 -20 532 312M260 -20 532 252M320 -20 532 192M380 -20 532 132"/>
+    </g>
+    <polygon points="84.4 494.8 484.4 70.8 427.6 17.2 27.6 441.2" fill="#be1222" opacity="0.85"/>
+    <polygon points="77 487.9 477 63.9 435 24.1 35 448.1" fill="url(#line)"/>
+    <polygon points="61.8 473.5 461.8 49.5 450.2 38.5 50.2 462.5" fill="#ff5e68" opacity="0.85"/>
+    <g stroke="#fff" stroke-width="11" stroke-linecap="round">
+      <path d="M230.5 376.2 137.5 288.4"/>
+      <path d="M302.5 299.9 209.5 212.1"/>
+      <path d="M374.5 223.6 281.5 135.8"/>
+    </g>
+  </g>
+</svg>
