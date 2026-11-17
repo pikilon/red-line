@@ -447,6 +447,13 @@ const POOL_SPREAD_MS = 1400;
 const BLOOD_DECALS = 3;
 /** Rubble pieces scattered around a destroyed building (spec 09 §6). */
 const DEBRIS_PIECES = 8;
+/** The ruin of a building stays this long, then fades (spec 09 §6). */
+const RUIN_MS = 90_000;
+const RUIN_FADE_MS = 6000;
+/** Most pieces one ruin spawns, however big the building. */
+const RUIN_MAX_PIECES = 36;
+/** Dark scorch patches laid under a ruin. */
+const SCORCH_PATCHES = 3;
 /** Pieces thrown off a wreck by the blast that killed it (spec 17 §7.5). */
 const WRECK_DEBRIS = 4;
 /** Tiles per second the debris of a death flies away from the killer
@@ -640,19 +647,78 @@ function spawnDebris(
   push?: { readonly x: number; readonly y: number },
 ): void {
   const id = entity.id;
-  for (let i = 0; i < DEBRIS_PIECES; i++) {
-    const angle = (i * 2 * Math.PI) / 8 + id * 0.7;
-    const radius = ((0.25 + 0.15 * (i % 3)) * Math.min(width, depth)) / 2;
-    const s = 0.2 + 0.1 * ((id + i) % 3);
+  // Cheap deterministic scatter: client-only look, never fed back to the sim.
+  const rand = (i: number): number => {
+    const v = Math.sin((id + 1) * 12.9898 + i * 78.233) * 43758.5453;
+    return v - Math.floor(v);
+  };
+  const half = Math.min(width, depth) / 2;
+  const pieces = Math.min(
+    RUIN_MAX_PIECES,
+    Math.max(DEBRIS_PIECES, Math.round(DEBRIS_PIECES + 3 * width * depth)),
+  );
+  const common = {
+    startMs: nowMs,
+    durationMs: RUIN_MS,
+    fadeMs: RUIN_FADE_MS,
+  };
+  const velocity =
+    push === undefined
+      ? {}
+      : { vx: push.x * DEBRIS_PUSH, vy: push.y * DEBRIS_PUSH };
+  // Charred foundation: a few overlapping dark scorch patches under the ruin.
+  for (let i = 0; i < SCORCH_PATCHES; i++) {
+    const a = rand(100 + i) * Math.PI * 2;
+    const r = rand(110 + i) * 0.35 * half;
+    effects.spawn("debris", {
+      x: entity.x + Math.cos(a) * r,
+      y: entity.y + Math.sin(a) * r,
+      sizeXYZ: [
+        width * (0.55 + 0.3 * rand(120 + i)),
+        0.02,
+        depth * (0.55 + 0.3 * rand(130 + i)),
+      ],
+      rotationY: rand(140 + i) * Math.PI,
+      color: i % 2 === 0 ? 0x2a241e : 0x332b24,
+      ...common,
+    });
+  }
+  for (let i = 0; i < pieces; i++) {
+    const angle = rand(i) * Math.PI * 2;
+    // Heaps cluster towards the middle; wall stubs sit near the footprint edge.
+    const kind = i % 6;
+    const radius =
+      (kind === 5 ? 0.85 + 0.25 * rand(i + 40) : 0.15 + 0.7 * rand(i + 40)) *
+      half;
+    const s = 0.14 + 0.2 * rand(i + 80);
+    let sizeXYZ: [number, number, number];
+    let color: number;
+    if (kind === 0) {
+      // A shattered concrete slab, lying flat and tilted by its yaw.
+      sizeXYZ = [s * 2.4, 0.07 + 0.05 * rand(i + 60), s * 1.8];
+      color = 0x8a857c;
+    } else if (kind === 3) {
+      // A twisted girder or rebar bundle: long, thin and rusty.
+      sizeXYZ = [s * 3.2, 0.05, 0.05];
+      color = 0x5a3a28;
+    } else if (kind === 5) {
+      // A broken wall stub standing at the edge of the old walls.
+      sizeXYZ = [s * 1.8, 0.2 + 0.3 * rand(i + 60), 0.09];
+      color = 0x6e6a62;
+    } else {
+      // A chunk of masonry, charred or pale.
+      sizeXYZ = [s, s * (0.5 + 0.6 * rand(i + 60)), s * 0.9];
+      color = i % 2 === 0 ? 0x4a4038 : 0x76706a;
+    }
     effects.spawn("debris", {
       x: entity.x + Math.cos(angle) * radius,
       y: entity.y + Math.sin(angle) * radius,
-      sizeXYZ: [s, s * 0.8, s],
-      rotationY: angle,
-      ...(push === undefined
-        ? {}
-        : { vx: push.x * DEBRIS_PUSH, vy: push.y * DEBRIS_PUSH }),
-      startMs: nowMs,
+      sizeXYZ,
+      rotationY: rand(i + 20) * Math.PI,
+      color,
+      z: sizeXYZ[1] / 2,
+      ...velocity,
+      ...common,
     });
   }
 }
