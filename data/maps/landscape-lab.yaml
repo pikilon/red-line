@@ -20,7 +20,7 @@ terrain:
   water:
     - { kind: sea, depth: deep, rect: [0, 0, 63, 2] }
     - { kind: sea, depth: shallow, rect: [0, 3, 63, 3] }
-    - { kind: river, depth: deep, path: [[30, 4], [31, 63]], width: 4, fords: [[31, 35, 3]] }
+    - { kind: river, depth: deep, path: [[30, 2], [31, 63]], width: 4, fords: [[31, 35, 3]] }
     - { kind: lake, depth: deep, rect: [43, 47, 49, 53] }
 features:
   - { type: road-bridge, from: [25, 24], to: [35, 24], variant: 0 }

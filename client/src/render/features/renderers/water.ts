@@ -363,7 +363,9 @@ export function createWater(
   });
   const mesh = new Mesh(geometry, material);
   mesh.name = "water";
-  mesh.renderOrder = 1;
+  // Above ground materials (1) and roads (2), so a muddy bank or a ford
+  // road never paints over the water.
+  mesh.renderOrder = 3;
   mesh.frustumCulled = false;
   const origin = typeof performance !== "undefined" ? performance.now() : 0;
   mesh.onBeforeRender = () => {
