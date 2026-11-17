@@ -301,6 +301,16 @@ the last base and re-checks once a second. Afterwards it stays parked and idle
 unless a command was pending (a command given while empty, or a guard/hunt
 interrupted by the return).
 
+**Parking pads (assumption, issues #497-#499).** A base holds two landed
+sortie flyers: two pads just outside its south edge, 1.5 tiles left and right of
+its centre. A returning flyer lands on the pad it stands on, else the first pad
+no other own flyer occupies; a third flyer lands beside the base as before. A
+hit on a docked flyer restarts its reload and stops its repair for 15 ticks, so
+sustained ground fire (a Bradley's autocannon) is not out-healed by the base. A
+one-way flyer with an attack order reports its victim in the snapshot target
+(without the fired flag) and the client lowers it without easing in its final
+`DIVE_CENTI`.
+
 Red Line adds the button (a mobile-friendly card has no right click) and keeps
 the rest:
 

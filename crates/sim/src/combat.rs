@@ -616,6 +616,7 @@ impl World {
         let damage = reduce_damage(damage, cover);
         self.entities[target_index].hp = self.entities[target_index].hp.saturating_sub(damage);
         self.entities[target_index].last_hit = Some((shooter, weapon_id));
+        self.interrupt_dock_repair(target_index);
         self.retaliate(target_index, shooter);
     }
 
@@ -724,6 +725,7 @@ impl World {
             let damage = reduce_damage(damage, cover);
             self.entities[index].hp = self.entities[index].hp.saturating_sub(damage);
             self.entities[index].last_hit = Some((shooter, weapon_id));
+            self.interrupt_dock_repair(index);
             self.retaliate(index, shooter);
         }
     }

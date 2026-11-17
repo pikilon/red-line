@@ -21,8 +21,16 @@ use crate::world::{CombatEvent, MAX_UNITS, TICK_RATE_HZ, World};
 
 /// Distance from a base's footprint within which a flyer is docked (parked).
 pub const DOCK_RANGE_CENTI: u32 = 250;
+/// A docked flyer that was hit restarts its reload and gets no repair for this
+/// many ticks, so sustained fire on a parked aircraft is not out-healed.
+pub const REPAIR_GRACE_TICKS: u32 = 15;
 /// Distance from a base's footprint at which a returning flyer lands.
 const LAND_CENTI: u32 = 100;
+/// Spec 43 §4.3: a base has two parking pads, this far left and right of its
+/// centre, just outside its south edge; a flyer is parked once it is within `PAD_CENTI` of its pad.
+const PAD_SPACING_CENTI: u32 = 150;
+const PAD_CENTI: u32 = 60;
+const PAD_EDGE_CENTI: u32 = 40;
 /// A one-way unit detonates when this close to its target (or one step, if more).
 const CONTACT_CENTI: u32 = 60;
 /// A ground one-way unit is kept off its target by separation, so it goes off
@@ -361,6 +369,14 @@ impl World {
         self.entities[index].last_hit = None;
     }
 
+    /// A hit on a sortie flyer restarts its reload and repair (a parked
+    /// aircraft under fire is not healed faster than it is damaged).
+    pub(crate) fn interrupt_dock_repair(&mut self, index: usize) {
+        if self.rules.ty(self.entities[index].kind).sortie.is_some() {
+            self.entities[index].reload = 0;
+        }
+    }
+
     /// Spec 43 §4.3 for entity `index`: reload and repair at a base, fly
     /// home when idle away from it, starve when there is no base at all.
     fn sortie_step(&mut self, index: usize) {
@@ -385,9 +401,14 @@ impl World {
             let entity = &mut self.entities[index];
             if entity.ammo < sortie.clip || entity.hp < max_hp {
                 entity.reload += 1;
-                // Repaired evenly: the missing hit points over the ticks left.
+                // Repaired evenly: the missing hit points over the ticks left;
+                // none for a moment after the last hit.
                 let left = sortie.reload_ticks.saturating_sub(entity.reload - 1).max(1);
-                let heal = max_hp.saturating_sub(entity.hp).div_ceil(left);
+                let heal = if entity.reload > REPAIR_GRACE_TICKS {
+                    max_hp.saturating_sub(entity.hp).div_ceil(left)
+                } else {
+                    0
+                };
                 entity.hp = entity.hp.saturating_add(heal).min(max_hp);
                 if entity.reload >= sortie.reload_ticks {
                     entity.ammo = sortie.clip;
@@ -672,8 +693,20 @@ impl World {
         let Some((base, distance)) = self.nearest_base(index) else {
             return order_id.map_or(Plan::Hold, Plan::Finish);
         };
+        let done = || order_id.map_or(Plan::Hold, Plan::Finish);
+        if let Some(pad) = self.parking_pad(index, base) {
+            if (pad - self.entities[index].pos).length() <= fx_centi(PAD_CENTI) {
+                return done();
+            }
+            return Plan::Go {
+                goal: pad,
+                entity: None,
+                within: fx_centi(PAD_CENTI),
+                arrival: order_id.map_or(Arrival::Stay, Arrival::Done),
+            };
+        }
         if distance <= fx_centi(LAND_CENTI) {
-            return order_id.map_or(Plan::Hold, Plan::Finish);
+            return done();
         }
         Plan::Go {
             goal: self.entities[base].pos,
@@ -681,6 +714,36 @@ impl World {
             within: fx_centi(LAND_CENTI),
             arrival: order_id.map_or(Arrival::Stay, Arrival::Done),
         }
+    }
+
+    /// The parking pad flyer `index` lands on at `base`: the one it already
+    /// stands on, else the first of its two pads that no other own flyer
+    /// occupies. `None` when the base is full (it then lands beside it).
+    fn parking_pad(&self, index: usize, base: usize) -> Option<FxVec2> {
+        let centre = self.entities[base].pos;
+        let owner = self.entities[index].owner;
+        let radius = fx_centi(PAD_CENTI);
+        // Just outside the south edge, where a flyer used to stop: shooters
+        // reach a parked aircraft as they did, and the building stays clear.
+        let rows = u32::from(self.rules.ty(self.entities[base].kind).footprint[1]);
+        let dy = fx_centi(rows * 50 + PAD_EDGE_CENTI);
+        let dx = fx_centi(PAD_SPACING_CENTI);
+        let pads = [-dx, dx].map(|dx| centre + FxVec2::new(dx, dy));
+        if let Some(own) = pads
+            .iter()
+            .find(|pad| (**pad - self.entities[index].pos).length() <= radius)
+        {
+            return Some(*own);
+        }
+        pads.into_iter().find(|pad| {
+            !self.entities.iter().enumerate().any(|(other, entity)| {
+                other != index
+                    && entity.owner == owner
+                    && entity.hp > 0
+                    && self.rules.ty(entity.kind).sortie.is_some()
+                    && (entity.pos - *pad).length() <= radius
+            })
+        })
     }
 
     /// Moves flyer `index` one tick towards `goal` (heading turns at the
