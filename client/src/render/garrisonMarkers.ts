@@ -56,6 +56,15 @@ export function showsMarker(feature: GarrisonMarkerSource): boolean {
   return feature.trench !== true && feature.closed !== true;
 }
 
+/** Empty buildings keep their pips hidden until occupied or ready to take
+ *  the selection (#503). */
+export function markerVisible(
+  feature: GarrisonMarkerSource,
+  ready: boolean,
+): boolean {
+  return (feature.occupants ?? 0) > 0 || ready;
+}
+
 /** True when `player`'s infantry could still join: room left and empty or
  *  held by the same player. */
 export function acceptsRiders(
@@ -165,8 +174,9 @@ export function createGarrisonMarkers(): GarrisonMarkers {
       const live = new Set<number>();
       for (const feature of features) {
         if (!showsMarker(feature)) continue;
-        live.add(feature.index);
         const occupants = feature.occupants ?? 0;
+        if (!markerVisible(feature, options.ready(feature))) continue;
+        live.add(feature.index);
         const owner = feature.owner ?? FEATURE_NO_OWNER;
         const key = markerKey(feature.slots, occupants, owner);
         const opacity = options.ready(feature)
