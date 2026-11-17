@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   acceptsRiders,
   markerKey,
+  markerVisible,
   pipRows,
   showsMarker,
 } from "./garrisonMarkers";
@@ -40,5 +41,12 @@ describe("garrison markers", () => {
     expect(acceptsRiders({ ...building, owner: 0, occupants: 1 }, 0)).toBe(
       true,
     );
+  });
+
+  it("hides pips of an empty building unless a selection could garrison it", () => {
+    expect(markerVisible({ ...building, occupants: 0 }, false)).toBe(false);
+    expect(markerVisible(building, false)).toBe(false);
+    expect(markerVisible({ ...building, occupants: 0 }, true)).toBe(true);
+    expect(markerVisible({ ...building, occupants: 1 }, false)).toBe(true);
   });
 });

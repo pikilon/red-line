@@ -90,6 +90,19 @@ describe("flyers (spec 43)", () => {
     expect(targetAltitude(flying)).toBeCloseTo(3.7, 9);
   });
 
+  it("dives a one-way missile onto its target without easing", () => {
+    const flyers = createFlyers();
+    const victim = flyer(9, "ru-t-72b3", { x: 20, y: 10, flags: 0 });
+    const cruise = targetAltitude(flyer(1, "ua-storm-shadow"));
+    const cruising = flyer(1, "ua-storm-shadow", { x: 10, target: 9 });
+    flyers.update([cruising, victim], 0);
+    expect(flyers.altitudeOf(cruising)).toBeCloseTo(cruise);
+    // One short frame later it is 1 tile from the target: it is already low.
+    const diving = { ...cruising, x: 19 };
+    flyers.update([diving, victim], 16);
+    expect(flyers.altitudeOf(diving)).toBeLessThan(cruise / 3);
+  });
+
   it("approaches an altitude smoothly and always arrives", () => {
     let altitude = 0;
     const history: number[] = [];

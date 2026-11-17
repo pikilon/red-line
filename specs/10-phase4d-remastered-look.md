@@ -139,9 +139,13 @@ export function createTerrainTextures(seed: number): Record<TerrainKind, Texture
 
 ## 6. Building death (amends spec 09 §6)
 
-A dead building spawns only its 8 `debris` pieces (no `wreck`); vehicles keep
-the `wreck`. The `debris` colour becomes `0x4a4038` and each piece's height is
-`s × 0.8`.
+A dead building spawns only `debris` pieces (no `wreck`); vehicles keep the
+`wreck`. Issue #500 replaces the 8 uniform boxes with a ruin: 3 flat dark scorch
+patches under the footprint plus 8 to 36 pieces (more for bigger footprints) of
+mixed shape and tint: flat concrete slabs, masonry chunks (charred or pale),
+thin rusty girders and wall stubs standing near the footprint edge. Placement
+is a client-only pseudo-random scatter seeded by the entity id. The ruin lasts
+90 s and fades over the last 6 s.
 
 ## 7. Classic mode (replaces spec 09 §7–8)
 
@@ -194,8 +198,8 @@ models; every model has a `COLOR_0` attribute with values in [0.55, 1]
 `COLOR_0 = 0.5`, the rendered instance geometry's colour is half the material
 colour; without `COLOR_0` it equals today's.
 
-**AC-10-05 Building debris only.** A dead building spawns 8 `debris` and no
-`wreck`; a dead vehicle still spawns one `wreck`.
+**AC-10-05 Building debris only.** A dead building spawns a ruin of more than 8 `debris`
+(varied tints) and no `wreck`; a dead vehicle still spawns one `wreck`.
 
 **AC-10-06 Classic mode (postponed indefinitely, 2026-10-25).** Spec 09 AC-09-06 with `COLOR_LEVELS = 8`
 (`posterize(0.5)` = 4/7) and the `classic` setting defaulting to false.
