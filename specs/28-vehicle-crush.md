@@ -107,6 +107,18 @@ locomotor) and touched the soldier in the last 0.6 s is the cause.
 * A full-hp soldier that vanishes under an enemy crusher counts as a death
   (`detectDeaths`).
 
+## 5a. Knock-back slide (issue #334)
+
+The sim still moves a shoved soldier in one tick (a deterministic impulse;
+damage and the `shove` cause are unchanged), but the client no longer shows
+that as a snap (`render/knockback.ts`): a soldier that moves more than
+`KNOCK_JUMP` (0.2 tiles) in one snapshot with a wheeled vehicle touching him
+is drawn from where he stood and eased out (ease-out cubic, `KNOCK_MS` 380)
+to where the sim put him, so he is struck and slides clear. The truck is not
+touched; a soldier who dies keeps the existing `shove` fall at his final spot.
+Assumption: a presentation-only slide, no tumble pose beyond the existing
+shove jolt; no sim or snapshot change.
+
 ## 6. Assumptions
 
 * Crushable means "on foot"; there are no trees, walls or crushable vehicles
@@ -134,5 +146,7 @@ locomotor) and touched the soldier in the last 0.6 s is the cause.
 * AC-28-10: a rifleman walking head-on at a tank sidesteps and lives.
 * AC-28-11: a soldier who never reacts (`crushDodgeMissOneIn: 1`) is crushed.
 * AC-28-12: the shipped rules make soldiers dodge and sometimes fail.
+* AC-28-13: a soldier thrown by a truck is drawn sliding to his new spot over
+  `KNOCK_MS`, not snapped (`client/src/render/knockback.test.ts`).
 
 Try it: `?load=run-over`.

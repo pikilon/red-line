@@ -138,6 +138,7 @@ import {
   createGroundImpacts,
   type GroundImpacts,
 } from "../render/groundImpacts";
+import { createKnockback } from "../render/knockback";
 import { loadModels, type ModelRegistry } from "../render/models";
 import {
   createProjectiles,
@@ -1296,6 +1297,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let animator: Animator;
   const corpses = createCorpses();
   const deathCauses = createDeathCauses();
+  const knockback = createKnockback();
   /** Vehicle sparks, rocking, damage smoke and hulks (spec 27). */
   const vehicleFx = createVehicleFx();
   let entities: EntityRenderer | null = null;
@@ -2130,6 +2132,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       groundImpacts?.record(snapshot, combat, atMs);
       animator.recordShots(snapshot.entities, at);
       deathCauses.record(snapshot.entities, atMs);
+      if (previous !== null) knockback.record(previous, snapshot, atMs);
       vehicleFx.ricochet(detectRicochets(snapshot));
       if (previous !== null) {
         const hits = detectHits(previous, snapshot, deathCauses, atMs);
@@ -2423,6 +2426,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     if (next !== null && prev !== null && entities !== null) {
       const alpha = (now - receivedAt) / TICK_MS;
       const drawn = interpolateEntities(prev, next, alpha);
+      knockback.apply(drawn, effectTime(now));
       decals?.recordMovers(drawn, effectTime(now));
       relief?.press(pressSourcesOf(drawn), effectTime(now));
       entities.update(
