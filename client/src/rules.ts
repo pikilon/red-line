@@ -4,7 +4,7 @@ import { type MessageKey, t } from "./i18n";
 export interface TypeDef {
   id: string;
   faction: number;
-  category: "unit" | "building" | "depot";
+  category: "unit" | "building" | "depot" | "upgrade";
   armor: number;
   hp: number;
   sightCenti: number;
@@ -63,6 +63,12 @@ export interface TypeDef {
   resupplies?: boolean;
   /** Spec 50 §3.1: experience worth per rank and the totals for each promotion. */
   experience?: { value: number[]; required?: number[] };
+  /** Spec 52: what an upgrade improves once owned. */
+  upgrade?: {
+    appliesTo: number[];
+    healthPercent: number;
+    damagePercent: number;
+  };
   render: { size: [number, number, number] };
 }
 

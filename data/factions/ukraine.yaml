@@ -183,7 +183,7 @@ types:                               # required
     buildTicks: 150
     footprint: [3, 3]
     power: -2
-    produces: [ua-rifleman, ua-stugna-team, ua-fpv-team]
+    produces: [ua-rifleman, ua-stugna-team, ua-fpv-team, ua-western-optics]
     healsInfantry: true
     requires: [ua-power-plant]
     render: { height: 90 }
@@ -197,7 +197,7 @@ types:                               # required
     buildTicks: 300
     footprint: [4, 4]
     power: -4
-    produces: [ua-kozak-scout, ua-bradley, ua-leopard-2a4, ua-himars, ua-gepard]
+    produces: [ua-kozak-scout, ua-bradley, ua-leopard-2a4, ua-himars, ua-gepard, ua-western-ammo]
     repairsVehicles: true
     requires: [ua-supply-center]
     render: { height: 110 }
@@ -420,3 +420,14 @@ lateTypes:                           # spec 43: after the common late types, so 
     lowObservable: true
     render: { size: [100, 28, 140] }
     experience: { value: [180, 360, 540, 720] }
+upgrades:                            # spec 52: bought at buildings; after every other type, so earlier type indices stay
+  - id: ua-western-optics            # thermal sights and red dots for the infantry
+    category: upgrade
+    cost: 800
+    buildTicks: 450
+    upgrade: { appliesTo: [ua-rifleman, ua-stugna-team, ua-fpv-team], damagePercent: 120 }
+  - id: ua-western-ammo              # Western tank rounds and autocannon ammunition
+    category: upgrade
+    cost: 1200
+    buildTicks: 600
+    upgrade: { appliesTo: [ua-kozak-scout, ua-bradley, ua-leopard-2a4], damagePercent: 120 }

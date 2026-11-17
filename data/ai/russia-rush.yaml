@@ -12,6 +12,9 @@ taskForces:
   - { id: waves, units: { ru-geran-2: 8 } }
 guards:                                                      # spec 43
   - { unit: ru-pantsir, count: 1, minTick: 5400 }
+upgrades:                                                    # spec 52: bought at an idle producer from minTick on
+  - { upgrade: ru-ratnik-armor, minTick: 5400 }
+  - { upgrade: ru-kontakt-5, minTick: 7200 }
 triggers:
   - { taskForce: rifles, weight: 60, minTick: 0 }
   - { taskForce: raid, weight: 50, minTick: 2400 }

@@ -1688,7 +1688,8 @@
       "produces": [
         2,
         3,
-        38
+        38,
+        54
       ],
       "builds": [],
       "footprint": [
@@ -1746,7 +1747,8 @@
         5,
         6,
         7,
-        41
+        41,
+        55
       ],
       "builds": [],
       "footprint": [
@@ -2437,7 +2439,8 @@
       "produces": [
         16,
         17,
-        50
+        50,
+        56
       ],
       "builds": [],
       "footprint": [
@@ -2496,7 +2499,8 @@
         20,
         21,
         52,
-        53
+        53,
+        57
       ],
       "builds": [],
       "footprint": [
@@ -3864,6 +3868,202 @@
           75,
           110,
           110
+        ]
+      }
+    },
+    {
+      "id": "ua-western-optics",
+      "faction": 0,
+      "category": "upgrade",
+      "armor": 0,
+      "hp": 0,
+      "sightCenti": 0,
+      "cost": 800,
+      "buildTicks": 450,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "upgrade": {
+        "appliesTo": [
+          2,
+          3,
+          38
+        ],
+        "healthPercent": 100,
+        "damagePercent": 120
+      },
+      "render": {
+        "size": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "ua-western-ammo",
+      "faction": 0,
+      "category": "upgrade",
+      "armor": 0,
+      "hp": 0,
+      "sightCenti": 0,
+      "cost": 1200,
+      "buildTicks": 600,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "upgrade": {
+        "appliesTo": [
+          4,
+          5,
+          6
+        ],
+        "healthPercent": 100,
+        "damagePercent": 120
+      },
+      "render": {
+        "size": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "ru-ratnik-armor",
+      "faction": 1,
+      "category": "upgrade",
+      "armor": 0,
+      "hp": 0,
+      "sightCenti": 0,
+      "cost": 800,
+      "buildTicks": 450,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "upgrade": {
+        "appliesTo": [
+          16,
+          17,
+          50
+        ],
+        "healthPercent": 125,
+        "damagePercent": 100
+      },
+      "render": {
+        "size": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "ru-kontakt-5",
+      "faction": 1,
+      "category": "upgrade",
+      "armor": 0,
+      "hp": 0,
+      "sightCenti": 0,
+      "cost": 1200,
+      "buildTicks": 600,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "upgrade": {
+        "appliesTo": [
+          18,
+          19,
+          20
+        ],
+        "healthPercent": 125,
+        "damagePercent": 100
+      },
+      "render": {
+        "size": [
+          0,
+          0,
+          0
         ]
       }
     }
@@ -28820,6 +29020,16 @@
         33,
         11
       ],
+      "upgrades": [
+        {
+          "upgrade": 54,
+          "minTick": 3600
+        },
+        {
+          "upgrade": 55,
+          "minTick": 6000
+        }
+      ],
       "taskForces": [
         {
           "id": "infantry",
@@ -29031,6 +29241,16 @@
         11,
         32
       ],
+      "upgrades": [
+        {
+          "upgrade": 54,
+          "minTick": 5400
+        },
+        {
+          "upgrade": 55,
+          "minTick": 7200
+        }
+      ],
       "taskForces": [
         {
           "id": "rifles",
@@ -29141,6 +29361,16 @@
         45,
         44,
         25
+      ],
+      "upgrades": [
+        {
+          "upgrade": 56,
+          "minTick": 3600
+        },
+        {
+          "upgrade": 57,
+          "minTick": 6000
+        }
       ],
       "taskForces": [
         {
@@ -29315,6 +29545,16 @@
         29,
         45,
         25
+      ],
+      "upgrades": [
+        {
+          "upgrade": 56,
+          "minTick": 5400
+        },
+        {
+          "upgrade": 57,
+          "minTick": 7200
+        }
       ],
       "taskForces": [
         {

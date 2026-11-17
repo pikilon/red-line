@@ -75,6 +75,7 @@ describe("matchSnapshot", () => {
       queues: [{ building: 12, headPermille: 500, items: [3, 4] }],
       rallies: [{ building: 12, x: 30, y: 40 }],
       air: [],
+      upgrades: [],
     });
 
     // Observer viewer (255): credits and power are 0, no queues.
@@ -128,6 +129,7 @@ describe("matchSnapshot", () => {
       queues: [],
       rallies: [],
       air: [],
+      upgrades: [],
     });
 
     // Layout constants.

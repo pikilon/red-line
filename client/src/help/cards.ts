@@ -63,7 +63,9 @@ export function helpedTypes(): string[] {
   return RULES.types
     .filter(
       (type) =>
-        type.category !== "depot" && type.id !== "tech-slice-placeholder",
+        type.category !== "depot" &&
+        type.category !== "upgrade" &&
+        type.id !== "tech-slice-placeholder",
     )
     .map((type) => type.id);
 }

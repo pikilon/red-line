@@ -286,6 +286,10 @@ test("AC-05-01: personality sources build", () => {
       defenseRadiusCenti: source.defenseRadiusCenti,
       ...(source.garrisonRadiusCenti === undefined ? {} : { garrisonRadiusCenti: source.garrisonRadiusCenti }),
       buildOrder: buildOrder(source.buildOrder),
+      // Spec 52: upgrades the AI buys, only when the personality has them.
+      ...((source.upgrades ?? []).length === 0
+        ? {}
+        : { upgrades: source.upgrades.map((u) => ({ upgrade: typeIndex.get(u.upgrade), minTick: u.minTick })) }),
       taskForces: source.taskForces.map((force) => ({ id: force.id, units: kinds(Object.entries(force.units)) })),
       // Spec 43 §5: units kept at home, only when the personality has them.
       ...((source.guards ?? []).length === 0
@@ -680,7 +684,7 @@ test("AC-19-02: showcase example", () => {
 
   map.starts.forEach((start, player) => {
     const faction = ruleset.factions[start.faction];
-    const own = ruleset.types.filter((t) => t.faction === start.faction && t.category !== "depot");
+    const own = ruleset.types.filter((t) => t.faction === start.faction && t.category !== "depot" && t.category !== "upgrade");
     const expected = own
       .map((t) => t.id)
       .filter((id) => id !== ruleset.types[faction.hq].id && id !== ruleset.types[faction.dozer].id)

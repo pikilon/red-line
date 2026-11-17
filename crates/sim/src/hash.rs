@@ -97,6 +97,13 @@ fn put_player(out: &mut Vec<u8>, player: &Player) {
         put_i32(out, ghost.origin.x);
         put_i32(out, ghost.origin.y);
     }
+    // Spec 52: only when there are any, so older matches keep their hashes.
+    if !player.upgrades.is_empty() {
+        put_u32(out, player.upgrades.len() as u32);
+        for &kind in &player.upgrades {
+            put_u16(out, kind);
+        }
+    }
 }
 
 fn put_entity(out: &mut Vec<u8>, entity: &Entity, world: &World) {

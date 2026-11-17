@@ -184,7 +184,7 @@ types:                               # required
     buildTicks: 150
     footprint: [3, 3]
     power: -2
-    produces: [ru-rifleman, ru-rpg-gunner, ru-molniya-crew]
+    produces: [ru-rifleman, ru-rpg-gunner, ru-molniya-crew, ru-ratnik-armor]
     healsInfantry: true
     requires: [ru-power-plant]
     render: { height: 90 }
@@ -198,7 +198,7 @@ types:                               # required
     buildTicks: 300
     footprint: [4, 4]
     power: -4
-    produces: [ru-brdm-scout, ru-bmp-2, ru-t-72b3, ru-tos-1a, ru-pantsir, ru-pole-21]
+    produces: [ru-brdm-scout, ru-bmp-2, ru-t-72b3, ru-tos-1a, ru-pantsir, ru-pole-21, ru-kontakt-5]
     repairsVehicles: true
     requires: [ru-supply-center]
     render: { height: 110 }
@@ -367,3 +367,14 @@ lateTypes:                           # spec 43: after the common late types, so 
     jammer: { radiusCenti: 900 }
     render: { size: [75, 110, 110] }
     experience: { value: [90, 180, 270, 360] }
+upgrades:                            # spec 52: bought at buildings; after every other type, so earlier type indices stay
+  - id: ru-ratnik-armor              # Ratnik body armour and helmets for the infantry
+    category: upgrade
+    cost: 800
+    buildTicks: 450
+    upgrade: { appliesTo: [ru-rifleman, ru-rpg-gunner, ru-molniya-crew], healthPercent: 125 }
+  - id: ru-kontakt-5                 # Kontakt-5 explosive reactive armour on the armoured vehicles
+    category: upgrade
+    cost: 1200
+    buildTicks: 600
+    upgrade: { appliesTo: [ru-brdm-scout, ru-bmp-2, ru-t-72b3], healthPercent: 125 }

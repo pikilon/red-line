@@ -483,7 +483,8 @@ impl World {
             (self.entities.len() as u32) < MAX_UNITS,
             "MAX_UNITS entities exist"
         );
-        let hp = ty.hp;
+        // Spec 52: an owned health upgrade raises a new unit's hit points.
+        let hp = self.upgraded(owner, kind, ty.hp, |def| def.health_percent);
         self.push_entity(owner, kind, pos, hp, None)
     }
 
@@ -843,6 +844,17 @@ impl World {
                     weapon,
                 });
                 removed_building |= entity.site.is_some();
+                // Spec 52: a destroyed producer refunds its queue, as in Zero Hour.
+                if let Some(site) = &entity.site {
+                    let refund: u32 = site
+                        .queue
+                        .iter()
+                        .map(|item| self.rules.ty(item.kind).cost)
+                        .fold(0, u32::saturating_add);
+                    if let Some(owner) = self.players.get_mut(usize::from(entity.owner)) {
+                        owner.credits = owner.credits.saturating_add(refund);
+                    }
+                }
             } else {
                 kept.push(entity);
             }

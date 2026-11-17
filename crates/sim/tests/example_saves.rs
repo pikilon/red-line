@@ -54,7 +54,8 @@ fn showcase_contract(id: &str) {
         let mut expected: Vec<u16> = (0..rules.types.len() as u16)
             .filter(|&k| {
                 let ty = rules.ty(k);
-                ty.faction == faction as i32 && ty.category != Category::Depot
+                ty.faction == faction as i32
+                    && !matches!(ty.category, Category::Depot | Category::Upgrade)
             })
             .collect();
         expected.sort_unstable();

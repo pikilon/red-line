@@ -1,0 +1,26 @@
+# Spec 52: Ukraine already owns Western optics (its riflemen hit harder); Russia owns Ratnik body armour
+# (its riflemen have longer health bars). Select the vehicle factory and buy Western ammunition, or open the
+# barracks to see the optics tile marked done.
+id: upgrades
+map: first-line
+victory: false
+debug: true
+starts: true
+credits: [5000, 5000]
+upgrades: [[ua-western-optics], [ru-ratnik-armor]]
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 16, y: 63, zoom: 1.15 }
+entities:
+  - { player: 0, type: ua-power-plant, origin: [6, 60] }
+  - { player: 0, type: ua-power-plant, origin: [6, 56] }
+  - { player: 0, type: ua-barracks, origin: [6, 65] }
+  - { player: 0, type: ua-vehicle-factory, origin: [12, 66] }
+  - { player: 0, type: ua-rifleman, atCenti: [1900, 6150] }
+  - { player: 0, type: ua-rifleman, atCenti: [1900, 6250] }
+  - { player: 0, type: ua-rifleman, atCenti: [1900, 6350] }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [1750, 6450] }
+  - { player: 1, type: ru-rifleman, atCenti: [2600, 6150] }
+  - { player: 1, type: ru-rifleman, atCenti: [2600, 6250] }
+  - { player: 1, type: ru-rifleman, atCenti: [2600, 6350] }

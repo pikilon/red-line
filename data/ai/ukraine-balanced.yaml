@@ -17,6 +17,9 @@ taskForces:
   - { id: bombers, units: { ua-baba-yaga: 2 } }
 guards:                                                      # spec 43
   - { unit: ua-gepard, count: 1, minTick: 3600 }
+upgrades:                                                    # spec 52: bought at an idle producer from minTick on
+  - { upgrade: ua-western-optics, minTick: 3600 }
+  - { upgrade: ua-western-ammo, minTick: 6000 }
 triggers:
   - { taskForce: infantry, weight: 50, minTick: 0 }
   - { taskForce: mechanized, weight: 40, minTick: 2700 }

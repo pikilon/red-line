@@ -319,10 +319,27 @@ pub fn encode_match_snapshot_with_shots(
             entity.master.map_or(-1, |master| master as i32),
         ]);
     }
+    // Spec 52: every player's upgrades follow the air tail, which is then
+    // always written: `count, (player, type)*`. Upgrades are public, as in
+    // Zero Hour, so every client sizes health bars right. Both are left out
+    // when empty, so older layouts stay.
+    let upgrades: Vec<i32> = world
+        .players()
+        .iter()
+        .flat_map(|p| {
+            p.upgrades()
+                .iter()
+                .flat_map(|&kind| [i32::from(p.id), i32::from(kind)])
+        })
+        .collect();
     // Written only when there is one, so a match without flyers keeps its layout.
-    if air_count > 0 {
+    if air_count > 0 || !upgrades.is_empty() {
         out.push(air_count);
         out.extend_from_slice(&air);
+    }
+    if !upgrades.is_empty() {
+        out.push((upgrades.len() / 2) as i32);
+        out.extend_from_slice(&upgrades);
     }
     out
 }

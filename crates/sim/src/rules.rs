@@ -293,6 +293,8 @@ pub enum Category {
     Unit,
     Building,
     Depot,
+    /// Spec 52: bought in a producer's queue; nothing spawns.
+    Upgrade,
 }
 
 /// How a weapon's projectiles deliver their damage (spec 17 §4.1). The generated
@@ -504,9 +506,23 @@ pub struct TypeDef {
     /// flyer is fixed-wing and never stops while airborne.
     #[serde(default)]
     pub hover: bool,
+    /// Spec 52: what an upgrade type improves once owned.
+    #[serde(default)]
+    pub upgrade: Option<UpgradeDef>,
     /// Precomputed at load (`Ruleset::from_json`), never read from the wire.
     #[serde(skip)]
     pub motion: Motion,
+}
+
+/// Spec 52: a player upgrade raises the health and damage of `applies_to`.
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpgradeDef {
+    pub applies_to: Vec<TypeId>,
+    #[serde(default = "hundred")]
+    pub health_percent: u32,
+    #[serde(default = "hundred")]
+    pub damage_percent: u32,
 }
 
 /// A faction's HQ and starting dozer type.
@@ -819,6 +835,14 @@ pub struct GuardDef {
     pub min_tick: u32,
 }
 
+/// Spec 52: an upgrade the AI buys from `min_tick` on.
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct AiUpgradeDef {
+    pub upgrade: TypeId,
+    pub min_tick: u32,
+}
+
 /// An AI personality (spec 05 §5.1).
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -832,6 +856,9 @@ pub struct AiDef {
     #[serde(default)]
     pub garrison_radius_centi: u32,
     pub build_order: Vec<TypeId>,
+    /// Spec 52: upgrades bought in list order.
+    #[serde(default)]
+    pub upgrades: Vec<AiUpgradeDef>,
     pub task_forces: Vec<TaskForceDef>,
     pub triggers: Vec<TriggerDef>,
     /// Spec 43 §5: units kept at home.

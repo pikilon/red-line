@@ -3,7 +3,7 @@
 use std::collections::BTreeMap;
 
 use crate::entity::{EntityId, Ghost, PlayerId};
-use crate::rules::FactionId;
+use crate::rules::{FactionId, TypeId};
 
 pub struct Player {
     pub id: PlayerId,
@@ -21,6 +21,8 @@ pub struct Player {
     /// Spec 05 §9: percent of a delivered cargo credited (100 but for a
     /// Brutal AI). Not hashed: it only shows through `credits`.
     pub(crate) income_percent: u32,
+    /// Spec 52: upgrade types this player owns, ascending.
+    pub(crate) upgrades: Vec<TypeId>,
 }
 
 impl Player {
@@ -37,7 +39,13 @@ impl Player {
             visible: vec![false; cells],
             ghosts: BTreeMap::new(),
             income_percent: 100,
+            upgrades: Vec::new(),
         }
+    }
+
+    /// Spec 52: the upgrade types this player owns, ascending.
+    pub fn upgrades(&self) -> &[TypeId] {
+        &self.upgrades
     }
 
     /// Spec 05 §9: percent of a delivered cargo credited.
