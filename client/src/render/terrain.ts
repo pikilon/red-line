@@ -306,8 +306,7 @@ function attachAntiTile(material: MeshLambertMaterial): void {
   {
     vec2 atUvB = mat2(0.8, -0.6, 0.6, 0.8) * vMapUv * 0.37 + vec2(0.31, 0.17);
     vec4 atAlt = texture2D(map, atUvB);
-    vec2 atP = vMapUv * 0.23;
-    float atMask = 0.5 + 0.25 * (sin(atP.x * 2.1 + sin(atP.y * 1.7) * 2.0) + sin(atP.y * 1.3 - atP.x * 0.9 + 1.7));
+    float atMask = 0.5 + 0.5 * sin(vMapUv.x * 0.48 + sin(vMapUv.y * 0.39) * 2.0);
     float atDrift = 1.0 + 0.06 * sin(vMapUv.x * 0.19 + 0.8) * sin(vMapUv.y * 0.23 + 2.1);
     diffuseColor.rgb = atBase * mix(sampledDiffuseColor.rgb, atAlt.rgb, clamp(atMask, 0.0, 1.0)) * atDrift;
   }
@@ -436,7 +435,6 @@ export function createTerrain(
       depthWrite: false,
     }),
   );
-  attachAntiTile(dirt.material as MeshLambertMaterial);
   dirt.name = "dirt";
   dirt.receiveShadow = true;
 
