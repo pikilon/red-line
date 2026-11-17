@@ -66,7 +66,7 @@ describe("terrain renderer", () => {
         height = Math.max(height, positions.getY(box * 8 + vertex) ?? 0);
       }
       expect(height).toBeGreaterThanOrEqual(0.27);
-      expect(height).toBeLessThanOrEqual(0.83);
+      expect(height).toBeLessThanOrEqual(1.25);
     }
     expect(rock.material).toMatchObject({ flatShading: true });
   });

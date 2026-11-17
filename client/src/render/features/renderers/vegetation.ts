@@ -576,6 +576,10 @@ export function vegetationRenderer(
 ): Object3D {
   uniforms.uSnow.value = Math.max(uniforms.uSnow.value, snowFromPage());
   const material = vegetationMaterial();
+  // Textured tree models need their own material: the glb carries UVs, the
+  // procedural vegetation (palm, bush, hedge...) does not, so sharing one
+  // `map` would render those black.
+  let treeMaterial: MeshStandardMaterial | null = null;
   const byType = new Map<number, FeatureInstance[]>();
   for (const instance of instances) {
     const list = byType.get(instance.typeIndex);
@@ -595,7 +599,18 @@ export function vegetationRenderer(
     const targetHeight = numberOf(type.render.height, model.height);
     const baseScale = targetHeight / model.height;
     const keepWidth = KEEP_WIDTH.has(modelId);
-    const mesh = new InstancedMesh(model.geometry, material, list.length);
+    const isTree =
+      modelId === "oak" ||
+      modelId === "pine" ||
+      modelId === "fir" ||
+      modelId === "birch" ||
+      modelId === "poplar";
+    if (isTree && treeMaterial === null) treeMaterial = vegetationMaterial();
+    const mesh = new InstancedMesh(
+      model.geometry,
+      isTree && treeMaterial !== null ? treeMaterial : material,
+      list.length,
+    );
     list.forEach((instance, index) => {
       const hash = cellHash(instance.x, instance.y, instance.typeIndex + 1);
       const variantCount = Math.max(
@@ -637,20 +652,15 @@ export function vegetationRenderer(
     mesh.onBeforeRender = () => {
       uniforms.uTime.value = performance.now() / 1000;
     };
-    if (
-      modelId === "oak" ||
-      modelId === "pine" ||
-      modelId === "fir" ||
-      modelId === "birch" ||
-      modelId === "poplar"
-    ) {
+    if (isTree && treeMaterial !== null) {
+      const own = treeMaterial;
       void loadTerrainModel("terrain-tree", 1).then((loaded) => {
         if (loaded === null) return;
         mesh.geometry = loaded.geometry;
-        if (loaded.map !== null && material.map !== loaded.map) {
-          material.map = loaded.map;
-          material.flatShading = false;
-          material.needsUpdate = true;
+        if (loaded.map !== null && own.map !== loaded.map) {
+          own.map = loaded.map;
+          own.flatShading = false;
+          own.needsUpdate = true;
         }
       });
     }

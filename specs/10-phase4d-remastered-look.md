@@ -108,9 +108,11 @@ export function createTerrainTextures(seed: number): Record<TerrainKind, Texture
   occupied by buildings and depots. `createTerrain(width, height, rockCells,
   seed)` takes a `Uint8Array` (1 = rock) built from those rectangles by
   `rockCellsOf(map)` in `terrain.ts`.
-* Rock tiles become rock: one mesh of boxes, tile footprint, height
-  `0.35 + 0.4 × valueNoise(x, z, 3 tiles, seed + 1)` tiles, top vertices
-  jittered ±0.08 tiles by the PRNG, `rock` texture, flat shading, cast and
+* Rock tiles become rock: one mesh of boxes, tile footprint, top
+  vertices shared between neighbouring tiles so rocks merge into one craggy
+  mass (issue 507): height `0.4 + 0.75 × (0.55 × broad + 0.35 × ridge + 0.1 ×
+  grain)` tiles from three value-noise octaves at the vertex position, each
+  top vertex jittered ±0.22 tiles by a hash of its position, `rock` texture, flat shading, cast and
   receive shadows.
 * `PASSABLE_COLOR` and `BLOCKED_COLOR` remain exported (minimap and tests).
 * Picking is unchanged (rays still hit the y = 0 plane).
@@ -178,7 +180,7 @@ map's `blocked` rectangles (first-line: the river and the four woods, nothing
 under the start HQs or depots). `createTerrain` on a 4 × 4 map with two blocked
 tiles returns a group with a grass mesh of 14 tiles, a dirt overlay of the same
 14 tiles whose vertex alphas are in [0, 1], and a rock mesh of 2 boxes whose
-heights are within [0.27, 0.83]; the ground meshes receive shadows and the
+heights are within [0.27, 1.25]; the ground meshes receive shadows and the
 rock mesh casts them.
 
 **AC-10-02b Terrain performance.** The terrain is built once at start (no

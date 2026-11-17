@@ -11,7 +11,6 @@ import {
 import { type Elevation, flatElevation, SHADING_RELIEF } from "./elevation";
 import { attachTerrainDeformer, type TerrainDeformer } from "./terrainDeform";
 import {
-  createRng,
   createTerrainTextures,
   TERRAIN_KINDS,
   type TerrainKind,
@@ -33,10 +32,21 @@ const DIRT_ALPHA_LOW = 0.55;
 const DIRT_ALPHA_HIGH = 0.7;
 /** Period of the rock height noise, in tiles (spec §4). */
 const ROCK_NOISE_PERIOD = 3;
-const ROCK_HEIGHT_BASE = 0.35;
-const ROCK_HEIGHT_RANGE = 0.4;
+const ROCK_HEIGHT_BASE = 0.4;
+const ROCK_HEIGHT_RANGE = 0.75;
 /** Rock top vertices jitter by up to this many tiles (spec §4). */
-const ROCK_JITTER = 0.08;
+const ROCK_JITTER = 0.22;
+
+/** Deterministic hash of a lattice corner in [0, 1). */
+function cornerHash(x: number, z: number, seed: number): number {
+  let h =
+    (Math.imul(x | 0, 374761393) +
+      Math.imul(z | 0, 668265263) +
+      Math.imul(seed, 2246822519)) |
+    0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
 
 /** The map definition the rock cells are derived from (`ruleset.maps[i]`). */
 export interface RockMap {
@@ -280,6 +290,34 @@ function attachCliffMix(
   };
 }
 
+/** Hides the repetition of a ground texture (issue 495): the map is sampled a
+ *  second time at another scale and rotation and the two are blended by a
+ *  slow noise, with a faint low-frequency brightness drift. Chains after any
+ *  existing `onBeforeCompile`. */
+function attachAntiTile(material: MeshLambertMaterial): void {
+  const previous = material.onBeforeCompile;
+  material.onBeforeCompile = (shader, renderer) => {
+    previous.call(material, shader, renderer);
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <map_fragment>",
+      `vec3 atBase = diffuseColor.rgb;
+#include <map_fragment>
+#ifdef USE_MAP
+  {
+    vec2 atUvB = mat2(0.8, -0.6, 0.6, 0.8) * vMapUv * 0.37 + vec2(0.31, 0.17);
+    vec4 atAlt = texture2D(map, atUvB);
+    float atMask = 0.5 + 0.5 * sin(vMapUv.x * 0.48 + sin(vMapUv.y * 0.39) * 2.0);
+    float atDrift = 1.0 + 0.06 * sin(vMapUv.x * 0.19 + 0.8) * sin(vMapUv.y * 0.23 + 2.1);
+    diffuseColor.rgb = atBase * mix(sampledDiffuseColor.rgb, atAlt.rgb, clamp(atMask, 0.0, 1.0)) * atDrift;
+  }
+#endif`,
+    );
+  };
+  const cliff = material.userData.cliffMap !== undefined;
+  material.customProgramCacheKey = () =>
+    cliff ? "ground-anti-tile-cliff" : "ground-anti-tile";
+}
+
 /** One merged box per rock tile, with a jittered top and a noise height. */
 function rockGeometry(
   width: number,
@@ -308,32 +346,40 @@ function rockGeometry(
     return empty;
   }
 
-  const rng = createRng(seed * 2 + 1);
   const positions = new Float32Array(cells.length * VERTICES_PER_ROCK * 3);
   const uvs = new Float32Array(cells.length * VERTICES_PER_ROCK * 2);
   const indices = new Uint32Array(cells.length * INDICES_PER_ROCK);
 
   cells.forEach((cell, slot) => {
-    const boxHeight =
-      ROCK_HEIGHT_BASE +
-      ROCK_HEIGHT_RANGE *
-        valueNoise(cell.x, cell.z, ROCK_NOISE_PERIOD, seed + 1);
-    const jitter = (): number => (rng() - 0.5) * 2 * ROCK_JITTER;
-    // Rocks stand on the ground they cover (spec 30 §4).
+    // Rocks stand on the ground they cover (spec 30 §4). Every top vertex
+    // takes its height and jitter from its world position, so neighbouring
+    // rock tiles share them and merge into one craggy mass (issue 507).
     const ground = (dx: number, dz: number): number =>
       elevation.corner(cell.x + dx, cell.z + dz);
-    const top =
-      Math.max(ground(0, 0), ground(1, 0), ground(1, 1), ground(0, 1)) +
-      boxHeight;
+    const crag = (dx: number, dz: number): [number, number, number] => {
+      const x = cell.x + dx;
+      const z = cell.z + dz;
+      const broad = valueNoise(x, z, ROCK_NOISE_PERIOD, seed + 1);
+      const ridge = 1 - Math.abs(2 * valueNoise(x, z, 1.5, seed + 3) - 1);
+      const grain = valueNoise(x, z, 0.75, seed + 5);
+      const height =
+        ROCK_HEIGHT_BASE +
+        ROCK_HEIGHT_RANGE * (0.55 * broad + 0.35 * ridge + 0.1 * grain);
+      return [
+        x + (cornerHash(x, z, seed) - 0.5) * 2 * ROCK_JITTER,
+        ground(dx, dz) + height,
+        z + (cornerHash(x, z, seed + 7) - 0.5) * 2 * ROCK_JITTER,
+      ];
+    };
     const corners: [number, number, number][] = [
       [cell.x, ground(0, 0), cell.z],
       [cell.x + 1, ground(1, 0), cell.z],
       [cell.x + 1, ground(1, 1), cell.z + 1],
       [cell.x, ground(0, 1), cell.z + 1],
-      [cell.x + jitter(), top, cell.z + jitter()],
-      [cell.x + 1 + jitter(), top, cell.z + jitter()],
-      [cell.x + 1 + jitter(), top, cell.z + 1 + jitter()],
-      [cell.x + jitter(), top, cell.z + 1 + jitter()],
+      crag(0, 0),
+      crag(1, 0),
+      crag(1, 1),
+      crag(0, 1),
     ];
     corners.forEach(([cx, cy, cz], corner) => {
       const vertex = slot * VERTICES_PER_ROCK + corner;
@@ -378,6 +424,8 @@ export function createTerrain(
     attachCliffMix(grass.material as MeshLambertMaterial, textures.rock);
   }
 
+  attachAntiTile(grass.material as MeshLambertMaterial);
+
   const dirt = new Mesh(
     groundGeometry(width, height, rockCells, "dirt", seed, elevation),
     new MeshLambertMaterial({
@@ -394,6 +442,7 @@ export function createTerrain(
     rockGeometry(width, height, rockCells, seed, elevation),
     new MeshLambertMaterial({ map: textures.rock, flatShading: true }),
   );
+  attachAntiTile(rock.material as MeshLambertMaterial);
   rock.name = "rock";
   rock.castShadow = true;
   rock.receiveShadow = true;
