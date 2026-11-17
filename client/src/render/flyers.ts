@@ -253,11 +253,13 @@ export function createFlyers(): Flyers {
         const type = typeDef(entity.kind);
         if (!isFlyerType(type)) continue;
         seen.add(entity.id);
+        const cruise = targetAltitude(entity);
         const target = diveAltitude(
           entity,
           entity.target === null ? undefined : byId.get(entity.target),
-          targetAltitude(entity),
+          cruise,
         );
+        const diving = target < cruise;
         let state = states.get(entity.id);
         if (state === undefined) {
           // A unit launched mid-match climbs from its rail; one that was
@@ -275,7 +277,12 @@ export function createFlyers(): Flyers {
         }
         if (dt <= 0) continue;
         const before = state.altitude;
-        state.altitude = approachAltitude(before, target, dt);
+        // A dive is never eased: a fast missile covers the dive distance in
+        // well under a second and must reach the ground with its target.
+        state.altitude = Math.min(
+          approachAltitude(before, target, dt),
+          diving ? target : Infinity,
+        );
         const climb = (state.altitude - before) / dt;
         state.pitch +=
           (-clamp(climb * PITCH_GAIN, PITCH_MAX) - state.pitch) *

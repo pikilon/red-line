@@ -1972,3 +1972,105 @@ fn reload_is_refused_for_a_full_crew_a_foreign_unit_and_a_crew_with_no_supply() 
         Order::Idle { .. }
     ));
 }
+
+#[test]
+fn a_bradley_damages_a_parked_aircraft() {
+    let mut world = sandbox();
+    build(&mut world, 1, "ru-airfield", 40, 20);
+    let jet = put(&mut world, 1, "ru-su-34", 4300, 1850);
+    put(&mut world, 0, "ua-bradley", 4300, 1250);
+    steps(&mut world, 120);
+    assert!(!world.is_airborne(jet));
+    assert!(
+        hp(&world, jet) < 400,
+        "autocannon fire is not out-healed by the airfield: {}",
+        hp(&world, jet)
+    );
+}
+
+#[test]
+fn an_airfield_holds_two_landed_aircraft_and_reloads_them() {
+    let mut world = sandbox();
+    build(&mut world, 1, "ru-airfield", 40, 20);
+    let a = put(&mut world, 1, "ru-su-34", 4300, 1850);
+    let b = put(&mut world, 1, "ru-su-34", 4500, 1850);
+    for jet in [a, b] {
+        world.set_ammo(jet, 0);
+    }
+    steps(&mut world, 460);
+    for jet in [a, b] {
+        assert!(!world.is_airborne(jet), "parked");
+        assert_eq!(world.entity(jet).map(|e| e.ammo), Some(2), "reloaded");
+    }
+}
+
+#[test]
+fn a_russian_jet_flies_home_lands_and_reloads() {
+    let mut world = sandbox();
+    build(&mut world, 1, "ru-airfield", 40, 20);
+    let jet = put(&mut world, 1, "ru-su-34", 4300, 1850);
+    let tank = put(&mut world, 0, "ua-leopard-2a4", 7000, 2000);
+    order(
+        &mut world,
+        1,
+        Command::Attack {
+            units: vec![jet],
+            target: tank,
+        },
+    );
+    let mut landed = false;
+    for _ in 0..3000 {
+        world.step();
+        let e = world.entity(jet).expect("jet");
+        if e.ammo == 0 && !world.is_airborne(jet) {
+            landed = true;
+        }
+        if landed && e.ammo == 2 {
+            return;
+        }
+    }
+    panic!("never landed and reloaded: landed={landed}");
+}
+
+#[test]
+fn a_one_way_missile_reports_its_victim_as_target_without_firing() {
+    use sim::snapshot::{ENTITY_STRIDE, FLAG_FIRED, MATCH_HEADER_LEN, encode_match_snapshot};
+    let mut world = sandbox();
+    let missile = put(&mut world, 0, "ua-storm-shadow", 1000, 2000);
+    let tank = put(&mut world, 1, "ru-t-72b3", 5000, 2000);
+    order(
+        &mut world,
+        0,
+        Command::Attack {
+            units: vec![missile],
+            target: tank,
+        },
+    );
+    steps(&mut world, 3);
+    let snapshot = encode_match_snapshot(&world, 0);
+    let count = snapshot[MATCH_HEADER_LEN - 1] as usize;
+    let row = (0..count)
+        .map(|i| &snapshot[MATCH_HEADER_LEN + i * ENTITY_STRIDE..][..ENTITY_STRIDE])
+        .find(|row| row[0] == missile as i32)
+        .expect("missile row");
+    assert_eq!(row[8], tank as i32, "the client can draw the dive");
+    assert_eq!(row[6] & FLAG_FIRED, 0, "but it is not shooting");
+}
+
+#[test]
+fn an_airfield_parks_two_jets_on_separate_pads_and_reloads_both() {
+    let mut world = sandbox();
+    build(&mut world, 1, "ru-airfield", 40, 20);
+    let a = put(&mut world, 1, "ru-su-34", 3000, 3000);
+    let b = put(&mut world, 1, "ru-su-34", 3000, 3200);
+    for jet in [a, b] {
+        world.set_ammo(jet, 0);
+    }
+    steps(&mut world, 1500);
+    let pos = |id| world.entity(id).map(|e| e.pos).expect("jet");
+    for jet in [a, b] {
+        assert!(!world.is_airborne(jet), "landed");
+        assert_eq!(world.entity(jet).map(|e| e.ammo), Some(2), "reloaded");
+    }
+    assert!((pos(a) - pos(b)).length() >= fx_centi(200), "separate pads");
+}

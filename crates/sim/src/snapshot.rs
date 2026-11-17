@@ -445,6 +445,14 @@ fn entity_row(
         .last_target
         .or_else(|| shots.get(&entity.id).copied());
     let fired = if target.is_some() { FLAG_FIRED } else { 0 };
+    // A one-way flyer never fires: its ordered victim goes out as the target
+    // (without the fired flag) so the client can draw the terminal dive.
+    let target = target.or_else(|| match entity.order {
+        Order::Attack { target, .. } if world.rules().ty(entity.kind).one_way.is_some() => {
+            Some(target)
+        }
+        _ => None,
+    });
     [
         entity.id as i32,
         i32::from(entity.owner),
