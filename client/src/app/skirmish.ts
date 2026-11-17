@@ -209,7 +209,7 @@ import {
   type SkirmishClient,
   type SkirmishStart,
 } from "../sim/skirmishClient";
-import { rankedName, rankOf } from "../sim/veterancy";
+import { rankedName, rankOf, setUpgrades } from "../sim/veterancy";
 import { MAX_SPEED } from "../sim/workerHandler";
 import {
   campaignUrl,
@@ -1351,7 +1351,9 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let modelsReady = false;
   const registry: ModelRegistry = { get: (typeId) => models?.get(typeId) };
   void loadModels(
-    RULES.types.filter((type) => type.id !== PLACEHOLDER_TYPE),
+    RULES.types.filter(
+      (type) => type.id !== PLACEHOLDER_TYPE && type.category !== "upgrade",
+    ),
   ).then((loaded) => {
     models = loaded;
     modelsReady = true;
@@ -2006,6 +2008,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
               ),
               credits: next.credits,
               queue,
+              upgrades: upgradeOffers(next, controlled),
               garrison: garrisonOffers({
                 player: controlled,
                 selected: [...(controller?.selected ?? [])],
@@ -2122,6 +2125,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     flying = combat.projectiles;
     prev = previous ?? snapshot;
     next = snapshot;
+    // Spec 52: health bars count every player's upgrades.
+    setUpgrades(snapshot.upgrades ?? []);
     // The worker transfers a fresh ArrayBuffer per snapshot (spec §6.3).
     fog = receivedFog as Uint8Array<ArrayBuffer>;
     receivedAt = at;
@@ -2713,4 +2718,19 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     };
     installSkirmishDebugApi(window as { __redline?: SkirmishDebug }, api);
   }
+}
+
+/** Spec 52: the upgrades `player` owns and those queued in any of its buildings. */
+function upgradeOffers(
+  snapshot: MatchSnapshot,
+  player: number,
+): { owned: number[]; queued: number[] } {
+  return {
+    owned: (snapshot.upgrades ?? [])
+      .filter((upgrade) => upgrade.player === player)
+      .map((upgrade) => upgrade.kind),
+    queued: snapshot.queues.flatMap((queue) =>
+      queue.items.filter((kind) => typeDef(kind).category === "upgrade"),
+    ),
+  };
 }

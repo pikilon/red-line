@@ -55,6 +55,7 @@ const SNAPSHOT: MatchSnapshot = {
   queues: [],
   rallies: [],
   air: [],
+  upgrades: [],
 };
 
 describe("skirmish client", () => {

@@ -114,7 +114,11 @@ export function readSources(rootDir) {
 }
 
 /** Spec 43: every type of a faction, the late ones (added after the rest so earlier type indices stay) last. */
-const allTypes = (faction) => [...faction.types, ...(faction.lateTypes ?? [])];
+const allTypes = (faction) => [
+	...faction.types,
+	...(faction.lateTypes ?? []),
+	...(faction.upgrades ?? []),
+];
 /** Spec 43: every weapon of a faction. */
 const allWeapons = (faction) => [
 	...faction.weapons,
@@ -462,6 +466,17 @@ function checkReferences(sources, globals, factions, fail) {
 			});
 		}
 	});
+	// Spec 52: upgrades come after every late type, so earlier indices stay.
+	factions.forEach((faction, i) => {
+		if ((faction.upgrades ?? []).length > 0) {
+			owners.push({
+				file: sources.factions[i].file,
+				list: "upgrades",
+				types: faction.upgrades,
+				weapons: [],
+			});
+		}
+	});
 	for (const owner of owners) {
 		owner.weapons.forEach((w, i) =>
 			declare(
@@ -515,7 +530,7 @@ function checkReferences(sources, globals, factions, fail) {
 			known(
 				new Set(globals.armorClasses),
 				"armour class",
-				[t.armor],
+				single(t.armor),
 				owner.file,
 				() => `${at}/armor`,
 			);
@@ -546,6 +561,13 @@ function checkReferences(sources, globals, factions, fail) {
 				single(t.oneWay?.warhead),
 				owner.file,
 				() => `${at}/oneWay/warhead`,
+			);
+			known(
+				types,
+				"type",
+				t.upgrade?.appliesTo ?? [],
+				owner.file,
+				(j) => `${at}/upgrade/appliesTo/${j}`,
 			);
 			for (const key of ["requires", "produces", "builds"]) {
 				known(
@@ -981,6 +1003,18 @@ function checkAi(file, ai, factions, fail) {
 			);
 		}
 	});
+	// Spec 52: an AI upgrade is an upgrade some building of its faction offers.
+	(ai.upgrades ?? []).forEach((entry, i) => {
+		const type = allTypes(faction).find((t) => t.id === entry.upgrade);
+		if (!type || type.category !== "upgrade" || !produced(entry.upgrade)) {
+			fail(
+				file,
+				`/upgrades/${i}/upgrade`,
+				"invalid-value",
+				`${entry.upgrade} is not an upgrade offered by faction ${ai.faction}`,
+			);
+		}
+	});
 	ai.triggers.forEach((trigger, i) => {
 		if (!taskForces.has(trigger.taskForce)) {
 			fail(
@@ -1015,6 +1049,10 @@ const assemble = (
 		...factions.flatMap((f, faction) =>
 			(f.lateTypes ?? []).map((t) => ({ t, faction })),
 		),
+		// Spec 52: upgrades last of all.
+		...factions.flatMap((f, faction) =>
+			(f.upgrades ?? []).map((t) => ({ t, faction })),
+		),
 	];
 	const weaponIndex = new Map(weaponList.map((w, i) => [w.id, i]));
 	const typeIndex = new Map(typeList.map(({ t }, i) => [t.id, i]));
@@ -1024,7 +1062,9 @@ const assemble = (
 		id === undefined ? -1 : locomotorNames.indexOf(id);
 	const types = (ids = []) => ids.map((id) => typeIndex.get(id));
 	const renderSize = (t) =>
-		t.category === "unit"
+		t.category === "upgrade"
+			? [0, 0, 0]
+			: t.category === "unit"
 			? t.render.size
 			: [t.footprint[0] * 100, t.render.height, t.footprint[1] * 100];
 
@@ -1135,7 +1175,8 @@ const assemble = (
 			id: t.id,
 			faction,
 			category: t.category,
-			armor: armorIndex(t.armor),
+			// Spec 52: an upgrade has no armour; 0 keeps the field a valid index.
+			armor: t.category === "upgrade" ? 0 : armorIndex(t.armor),
 			hp: t.hp ?? 0,
 			sightCenti: t.sightCenti ?? 0,
 			cost: t.cost ?? 0,
@@ -1210,6 +1251,16 @@ const assemble = (
 			...(t.resupplies === undefined ? {} : { resupplies: t.resupplies }),
 			// Spec 50 §3.1: experience worth and thresholds.
 			...(t.experience === undefined ? {} : { experience: t.experience }),
+			// Spec 52: what an upgrade improves.
+			...(t.upgrade === undefined
+				? {}
+				: {
+						upgrade: {
+							appliesTo: types(t.upgrade.appliesTo),
+							healthPercent: t.upgrade.healthPercent ?? 100,
+							damagePercent: t.upgrade.damagePercent ?? 100,
+						},
+					}),
 			render: { size: renderSize(t) },
 		})),
 		factions: factions.map((f) => ({
@@ -1303,6 +1354,15 @@ const assemble = (
 				? {}
 				: { garrisonRadiusCenti: a.garrisonRadiusCenti }),
 			buildOrder: types(a.buildOrder),
+			// Spec 52: upgrades the AI buys; omitted when there are none.
+			...((a.upgrades ?? []).length === 0
+				? {}
+				: {
+						upgrades: a.upgrades.map((u) => ({
+							upgrade: typeIndex.get(u.upgrade),
+							minTick: u.minTick,
+						})),
+					}),
 			taskForces: a.taskForces.map((tf) => ({
 				id: tf.id,
 				units: Object.entries(tf.units).map(([id, count]) => [
@@ -1503,6 +1563,8 @@ function setupSave(source, id, ruleset, validate, fail) {
 		entities: data.entities ?? [],
 		...(data.features === undefined ? {} : { features: data.features }),
 		...(data.trenches === undefined ? {} : { trenches: data.trenches }),
+		// Spec 52: upgrade type ids each start owns at tick 0.
+		...(data.upgrades === undefined ? {} : { upgrades: data.upgrades }),
 	};
 	return {
 		format: SAVE_FILE_FORMAT,

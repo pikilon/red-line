@@ -263,6 +263,18 @@ impl Ai {
             }
         }
 
+        // Spec 52: the first listed upgrade not yet taken, at an idle producer.
+        if let Some((producer, kind)) = next_upgrade(world, player, def) {
+            let cost = rules.ty(kind).cost;
+            if budget >= cost {
+                budget -= cost;
+                commands.push(Command::Produce {
+                    building: producer,
+                    kind,
+                });
+            }
+        }
+
         // 4. Build: resume an orphan site, else follow the build order.
         if let Some(dozer) = lowest_idle_dozer(world, player, dozer_kind) {
             if let Some(building) = lowest_incomplete_building(world, player) {
@@ -610,6 +622,29 @@ fn producer_of(world: &World, player: PlayerId, kind: TypeId) -> Option<EntityId
         }
     }
     best.map(|(_, id)| id)
+}
+
+/// Spec 52: the first upgrade of `def` past its `min_tick` that `player`
+/// neither owns nor has queued, with an own complete producer whose queue is
+/// empty (lowest id), so units are not held up for long.
+fn next_upgrade(world: &World, player: PlayerId, def: &AiDef) -> Option<(EntityId, TypeId)> {
+    let entry = def.upgrades.iter().find(|entry| {
+        world.tick() >= entry.min_tick && !world.upgrade_taken(player, entry.upgrade)
+    })?;
+    let producer = world.entities().iter().find(|entity| {
+        entity.owner == player
+            && entity.hp > 0
+            && entity
+                .site
+                .as_ref()
+                .is_some_and(|site| site.complete && site.queue.is_empty())
+            && world
+                .rules()
+                .ty(entity.kind)
+                .produces
+                .contains(&entry.upgrade)
+    })?;
+    Some((producer.id, entry.upgrade))
 }
 
 /// Whether a completed own building produces `kind` (spec 05 §9).

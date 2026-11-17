@@ -29,6 +29,19 @@
       "description": "Spec 43 §5: units the AI keeps built at home and never launches (anti-air vehicles, jammers); wanted from minTick on, or at once while enemy flyers are over the base.",
       "type": "array",
       "items": { "$ref": "#/$defs/guard" }
+    },
+    "upgrades": {
+      "description": "Spec 52: upgrades the AI buys in list order from minTick on, at an idle producer.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["upgrade", "minTick"],
+        "properties": {
+          "upgrade": { "$ref": "faction.schema.json#/$defs/id" },
+          "minTick": { "type": "integer", "minimum": 0 }
+        }
+      }
     }
   },
   "$defs": {

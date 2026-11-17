@@ -22,6 +22,8 @@ const VEHICLE_FACTORY = 14;
 const DEFENSE = 15;
 // Spec 43: the air-war roster appended to the ruleset (`lateTypes`).
 const FPV_TEAM = typeIndex("ua-fpv-team");
+// Spec 52: the barracks upgrade, listed after every other type.
+const OPTICS = typeIndex("ua-western-optics");
 const LATE_BUILDS = typeDef(DOZER).builds.slice(5);
 
 function entity(overrides: Partial<EntityState>): EntityState {
@@ -111,9 +113,11 @@ describe("command panel", () => {
       RIFLEMAN,
       STUGNA_TEAM,
       FPV_TEAM,
+      OPTICS,
       -1,
     ]);
     expect(buttons.map((button) => button.action)).toEqual([
+      "produce",
       "produce",
       "produce",
       "produce",
@@ -124,7 +128,33 @@ describe("command panel", () => {
       true,
       true,
       true,
+      true,
     ]);
+  });
+
+  it("AC-52-08: an owned or queued upgrade cannot be bought again", () => {
+    const barracks = entity({
+      id: 10,
+      owner: 0,
+      kind: BARRACKS,
+      progress: complete(BARRACKS),
+    });
+    const args = {
+      selected: [barracks],
+      ownEntities: [barracks],
+      credits: 5000,
+      queue: { building: 10, headPermille: 0, items: [] },
+    };
+    const optics = (upgrades: { owned: number[]; queued: number[] }) =>
+      commandButtons({ ...args, upgrades }).find(
+        (button) => button.typeIndex === OPTICS,
+      );
+    expect(optics({ owned: [], queued: [] })?.enabled).toBe(true);
+    expect(optics({ owned: [], queued: [OPTICS] })?.enabled).toBe(false);
+    const owned = optics({ owned: [OPTICS], queued: [] });
+    expect(owned?.enabled).toBe(false);
+    expect(owned?.owned).toBe(true);
+    expect(owned?.label).toBe("Western optics (done)");
   });
 
   it("AC-03-51: disables produce buttons when the queue is full", () => {
@@ -158,6 +188,7 @@ describe("command panel", () => {
     });
 
     expect(buttons.map((button) => button.enabled)).toEqual([
+      false,
       false,
       false,
       false,
@@ -322,6 +353,7 @@ describe("command panel", () => {
       RIFLEMAN,
       STUGNA_TEAM,
       FPV_TEAM,
+      OPTICS,
       -1,
     ]);
 

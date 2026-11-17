@@ -16,6 +16,9 @@ taskForces:
 guards:                                                      # spec 43: stay home; wanted at once when enemy flyers show up
   - { unit: ru-pantsir, count: 2, minTick: 4800 }
   - { unit: ru-pole-21, count: 1, minTick: 6000 }
+upgrades:                                                    # spec 52: bought at an idle producer from minTick on
+  - { upgrade: ru-ratnik-armor, minTick: 3600 }
+  - { upgrade: ru-kontakt-5, minTick: 6000 }
 triggers:
   - { taskForce: infantry, weight: 50, minTick: 0 }
   - { taskForce: mechanized, weight: 40, minTick: 2700 }

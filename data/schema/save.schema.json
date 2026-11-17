@@ -61,6 +61,11 @@
         }
       }
     },
+    "upgrades": {
+      "description": "Spec 52: upgrade type ids each start owns at tick 0 (index = start).",
+      "type": "array",
+      "items": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" } }
+    },
     "trenches": {
       "description": "Spec 35 5b: trenches already dug at tick 0 (2x1 earthwork rows).",
       "type": "array",

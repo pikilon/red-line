@@ -20,7 +20,13 @@ fn scaled(base: u32, percent: u32) -> u32 {
 impl World {
     /// Maximum hit points of `entity`: its type's, raised by its rank.
     pub fn max_hp(&self, entity: &Entity) -> u32 {
-        let base = self.rules.ty(entity.kind).hp;
+        // Spec 52: owned upgrades first, then the rank.
+        let base = self.upgraded(
+            entity.owner,
+            entity.kind,
+            self.rules.ty(entity.kind).hp,
+            |def| def.health_percent,
+        );
         let percent = self.rules.veterancy.health_percent[usize::from(entity.rank.min(MAX_RANK))];
         scaled(base, percent)
     }
@@ -33,7 +39,14 @@ impl World {
     /// The weapon as `shooter` fires it at its rank: more damage and a
     /// shorter cooldown (spec 50 §3.3). A missing shooter fires it as is.
     pub(crate) fn rank_weapon(&self, shooter: EntityId, mut weapon: WeaponDef) -> WeaponDef {
-        let rank = self.entity(shooter).map_or(0, |entity| entity.rank);
+        let Some(entity) = self.entity(shooter) else {
+            return weapon;
+        };
+        // Spec 52: owned upgrades raise the damage before the rank does.
+        weapon.damage = self.upgraded(entity.owner, entity.kind, weapon.damage, |def| {
+            def.damage_percent
+        });
+        let rank = entity.rank;
         if rank == 0 {
             return weapon;
         }

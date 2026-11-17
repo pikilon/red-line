@@ -19,9 +19,35 @@
       "type": "array",
       "items": { "$ref": "#/$defs/factionType" }
     },
-    "types": { "type": "array", "items": { "$ref": "#/$defs/factionType" } }
+    "types": { "type": "array", "items": { "$ref": "#/$defs/factionType" } },
+    "upgrades": {
+      "description": "Spec 52: upgrades bought at buildings, listed after every other type so earlier type indices stay.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/upgrade" }
+    }
   },
   "$defs": {
+    "upgrade": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "category", "cost", "buildTicks", "upgrade"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "category": { "const": "upgrade" },
+        "cost": { "$ref": "#/$defs/positive" },
+        "buildTicks": { "$ref": "#/$defs/positive" },
+        "upgrade": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["appliesTo"],
+          "properties": {
+            "appliesTo": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/id" } },
+            "healthPercent": { "type": "integer", "minimum": 100, "maximum": 400 },
+            "damagePercent": { "type": "integer", "minimum": 100, "maximum": 400 }
+          }
+        }
+      }
+    },
     "factionType": {
             "allOf": [
               { "$ref": "#/$defs/type" },

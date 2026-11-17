@@ -39,6 +39,8 @@ export interface CommandButton {
   feature?: number;
   /** Spec 34: vehicle the Unload button empties. */
   carrier?: number;
+  /** Spec 52: an upgrade the player already owns (shown done, disabled). */
+  owned?: boolean;
 }
 
 /** One selected type with its count (the selection strip, spec 41 §3.1). */
@@ -130,7 +132,8 @@ export function samePanelInput(a: PanelInput, b: PanelInput): boolean {
       button.enabled === other.enabled &&
       button.action === other.action &&
       button.feature === other.feature &&
-      button.carrier === other.carrier
+      button.carrier === other.carrier &&
+      button.owned === other.owned
     );
   });
   if (!sameButtons) return false;
@@ -161,6 +164,8 @@ export interface CommandPanelArgs {
   dig?: boolean;
   /** Spec 39: the selection holds damaged vehicles with a factory to dock at. */
   repair?: boolean;
+  /** Spec 52: upgrades the player owns, and those queued in any building. */
+  upgrades?: { owned: readonly number[]; queued: readonly number[] };
 }
 
 /** Builds the construct/produce buttons for the current selection (spec §6.6). */
@@ -173,12 +178,14 @@ export function commandButtons({
   disembark,
   dig,
   repair,
+  upgrades,
 }: CommandPanelArgs): CommandButton[] {
   const buttons = productionButtons({
     selected,
     ownEntities,
     credits,
     queue,
+    upgrades,
   });
   const extra: CommandButton[] = [];
   const subject = selected.length === 1 ? selected[0] : undefined;
@@ -274,6 +281,7 @@ function productionButtons({
   ownEntities,
   credits,
   queue,
+  upgrades,
 }: CommandPanelArgs): CommandButton[] {
   // An enemy entity in the selection gives no buttons.
   const ownIds = new Set(ownEntities.map((entity) => entity.id));
@@ -315,6 +323,7 @@ function productionButtons({
       credits,
       ownEntities,
       queueFull,
+      upgrades,
     );
   }
 
@@ -328,9 +337,25 @@ function buildButtons(
   credits: number,
   ownEntities: EntityState[],
   queueFull = false,
+  upgrades: CommandPanelArgs["upgrades"] = undefined,
 ): CommandButton[] {
   return targetKinds.map((kind) => {
     const def = typeDef(kind);
+    // Spec 52: an upgrade is bought once; owned or queued anywhere, it is off.
+    if (def.category === "upgrade") {
+      const owned = upgrades?.owned.includes(kind) ?? false;
+      const queued = upgrades?.queued.includes(kind) ?? false;
+      return {
+        typeIndex: kind,
+        label: owned
+          ? t("ui.upgradeOwned", { name: typeName(kind) })
+          : t("ui.buttonLabel", { name: typeName(kind), cost: def.cost }),
+        cost: def.cost,
+        enabled: !owned && !queued && !queueFull && credits >= def.cost,
+        action,
+        ...(owned ? { owned: true } : {}),
+      };
+    }
     const enabled =
       credits >= def.cost &&
       requiresSatisfied(def.requires, ownEntities) &&
@@ -395,6 +420,11 @@ const ICONS = {
   sell: '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 9c-1-1.500-5-1.500-5.500.500S14 12 14.500 14s-4 2-5.500.500M12 6v12" fill="none" stroke="currentColor" stroke-width="2"/>',
 } as const;
 type IconName = keyof typeof ICONS;
+
+/** Spec 52: the cameo of every upgrade, a shield with a rising chevron. */
+const UPGRADE_BADGE = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.500 9-8 11-4.500-2-8-6-8-11V5z" fill="#2c4a63" stroke="#e8d27a" stroke-width="1.400" stroke-linejoin="round"/><path d="M7.500 14l4.500-4.500 4.500 4.500M7.500 10l4.500-4.500 4.500 4.500" fill="none" stroke="#e8d27a" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+)}`;
 
 function iconSvg(name: IconName): string {
   return `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">${ICONS[name]}</svg>`;
@@ -612,6 +642,14 @@ export function createCommandPanel(
     initials.textContent = cameoInitials(typeId);
     img.removeAttribute("src");
     host.classList.remove("has-image");
+    // Spec 52: an upgrade has no model; it shows the upgrade badge.
+    const upgradeBadge =
+      RULES.types.find((type) => type.id === typeId)?.category === "upgrade";
+    if (upgradeBadge) {
+      img.src = UPGRADE_BADGE;
+      host.classList.add("has-image");
+      return;
+    }
     const apply = (url: string | null | undefined): void => {
       if (url === undefined || url === null) return;
       if (host.dataset.cameo !== typeId) return;
@@ -689,7 +727,7 @@ export function createCommandPanel(
     if (nameEl !== null && nameEl.textContent !== typeName(b.typeIndex))
       nameEl.textContent = typeName(b.typeIndex);
     paintTileQueue(element, b, queue);
-    const costText = String(b.cost);
+    const costText = b.owned === true ? "✓" : String(b.cost);
     const cost = element.querySelector(".cost");
     if (cost !== null && cost.textContent !== costText)
       cost.textContent = costText;
@@ -698,7 +736,15 @@ export function createCommandPanel(
     const box = element.querySelector<HTMLElement>(".cameo");
     if (box !== null && def !== undefined) setCameo(box, def.id);
     element.disabled = !b.enabled;
-    element.classList.toggle("short", !b.enabled && b.cost > 0);
+    // Spec 52: an owned or queued upgrade is off but not short of credits.
+    const upgradeTaken =
+      def?.category === "upgrade" &&
+      (b.owned === true || (queue?.items.includes(b.typeIndex) ?? false));
+    element.classList.toggle(
+      "short",
+      !b.enabled && b.cost > 0 && !upgradeTaken,
+    );
+    element.classList.toggle("owned", b.owned === true);
     const active = b.action === "construct" && b.typeIndex === placing;
     element.classList.toggle("active", active);
     element.setAttribute("aria-pressed", String(active));

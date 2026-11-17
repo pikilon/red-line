@@ -29,6 +29,7 @@ pub mod save;
 pub mod snapshot;
 pub mod transport;
 pub mod trench;
+mod upgrades;
 pub mod veterancy;
 pub mod vision;
 pub mod wasm_api;

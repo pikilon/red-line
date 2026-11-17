@@ -115,6 +115,9 @@ pub struct PlayerState {
         skip_serializing_if = "is_default_income_percent"
     )]
     pub income_percent: u32,
+    /// Spec 52: owned upgrade type ids, ascending; omitted when none.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub upgrades: Vec<String>,
 }
 
 fn default_income_percent() -> u32 {
@@ -824,6 +827,7 @@ fn save_player(player: &Player, rules: &Ruleset) -> PlayerState {
         visible,
         ghosts,
         income_percent,
+        upgrades,
     } = player;
     PlayerState {
         id: *id,
@@ -843,6 +847,7 @@ fn save_player(player: &Player, rules: &Ruleset) -> PlayerState {
             })
             .collect(),
         income_percent: *income_percent,
+        upgrades: upgrades.iter().map(|&kind| type_id(rules, kind)).collect(),
     }
 }
 
@@ -874,6 +879,16 @@ fn load_player(state: &PlayerState, rules: &Ruleset, cells: usize) -> Result<Pla
         visible: decode_runs("visible", &state.visible, cells)?,
         ghosts,
         income_percent: state.income_percent,
+        upgrades: {
+            let mut upgrades = state
+                .upgrades
+                .iter()
+                .map(|id| type_index(rules, id))
+                .collect::<Result<Vec<_>, _>>()?;
+            upgrades.sort_unstable();
+            upgrades.dedup();
+            upgrades
+        },
     })
 }
 
@@ -1493,6 +1508,9 @@ pub struct Setup {
     /// Spec 35 §5b: trenches already dug at tick 0 (rows past the map's).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub trenches: Vec<SetupTrench>,
+    /// Spec 52: upgrade type ids each start owns at tick 0 (index = start).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub upgrades: Vec<Vec<String>>,
 }
 
 /// A trench (2x1 earthwork) at `at`, at `hp_percent` of its hit points.
@@ -1635,6 +1653,22 @@ impl World {
                 world.players[player].credits = amount;
             }
         }
+        if setup.upgrades.len() > starts {
+            return Err(invalid(format!(
+                "upgrades: {} entries for {starts} starts",
+                setup.upgrades.len()
+            )));
+        }
+        for (player, ids) in setup.upgrades.iter().enumerate() {
+            for id in ids {
+                let kind = world
+                    .rules
+                    .type_index(id)
+                    .filter(|&kind| world.rules.ty(kind).category == Category::Upgrade)
+                    .ok_or_else(|| invalid(format!("upgrades: {id} is not an upgrade")))?;
+                world.grant_upgrade(player as crate::entity::PlayerId, kind);
+            }
+        }
 
         let mut labels: BTreeMap<String, EntityId> = BTreeMap::new();
         let mut depots = 0;
@@ -1674,6 +1708,12 @@ impl World {
             let hp = (u64::from(ty.hp) * u64::from(hp_percent) / 100).max(1) as u32;
             let id = match ty.category {
                 Category::Depot => return Err(at(format!("type {} is a depot", entry.kind))),
+                Category::Upgrade => {
+                    return Err(at(format!(
+                        "type {} is an upgrade; use upgrades",
+                        entry.kind
+                    )));
+                }
                 Category::Building => {
                     let origin = entry
                         .origin

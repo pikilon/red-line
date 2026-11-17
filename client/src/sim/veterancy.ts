@@ -5,7 +5,7 @@
 import ruleset from "@data/ruleset.json";
 import { type MessageKey, t } from "../i18n";
 import { typeDef } from "../rules";
-import type { EntityState } from "./matchSnapshot";
+import type { EntityState, UpgradeState } from "./matchSnapshot";
 
 /** The rank sits in two bits of the entity flags from this shift. */
 export const RANK_SHIFT = 9;
@@ -21,15 +21,33 @@ export function rankOf(entity: Pick<EntityState, "flags">): number {
   return (entity.flags >> RANK_SHIFT) & MAX_RANK;
 }
 
-/** Maximum hit points of a `kind` unit at `rank`, as the simulation counts them. */
-export function maxHpAt(kind: number, rank: number): number {
+/** Spec 52: the upgrades of the latest snapshot, set by the match. */
+let owned: readonly UpgradeState[] = [];
+
+/** Spec 52: remembers every player's upgrades for `maxHpOf`. */
+export function setUpgrades(upgrades: readonly UpgradeState[]): void {
+  owned = upgrades;
+}
+
+/** Maximum hit points of a `kind` unit at `rank` owned by `owner`, as the
+ *  simulation counts them: upgrades first, then the rank. */
+export function maxHpAt(kind: number, rank: number, owner = -1): number {
+  let hp = typeDef(kind).hp;
+  for (const upgrade of owned) {
+    if (upgrade.player !== owner) continue;
+    const def = typeDef(upgrade.kind).upgrade;
+    if (def?.appliesTo.includes(kind))
+      hp = Math.floor((hp * def.healthPercent) / 100);
+  }
   const percent = HEALTH_PERCENT[Math.min(MAX_RANK, Math.max(0, rank))] ?? 100;
-  return Math.floor((typeDef(kind).hp * percent) / 100);
+  return Math.floor((hp * percent) / 100);
 }
 
 /** Maximum hit points of `entity` at its rank. */
-export function maxHpOf(entity: Pick<EntityState, "kind" | "flags">): number {
-  return maxHpAt(entity.kind, rankOf(entity));
+export function maxHpOf(
+  entity: Pick<EntityState, "kind" | "flags"> & { owner?: number },
+): number {
+  return maxHpAt(entity.kind, rankOf(entity), entity.owner ?? -1);
 }
 
 const RANK_KEYS: readonly (MessageKey | null)[] = [

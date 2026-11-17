@@ -58,6 +58,12 @@ export interface RallyState {
 }
 
 /** Ammo, fuel and master of a flyer or launched drone (spec 43 §5). */
+/** Spec 52: player `player` owns upgrade type `kind`. */
+export interface UpgradeState {
+  player: number;
+  kind: number;
+}
+
 export interface AirState {
   id: number;
   /** Rounds left in the clip. */
@@ -84,6 +90,8 @@ export interface MatchSnapshot {
   /** The air tail: one record per sortie flyer, one-way unit or launched
    *  drone. The decoder always sets it; hand-built snapshots may omit it. */
   air?: AirState[];
+  /** Spec 52: the upgrades every player owns. */
+  upgrades?: UpgradeState[];
 }
 
 // decodeMatchSnapshot(data): per spec §5.15 — header (8), entity_count entities (11 each),
@@ -159,6 +167,15 @@ export function decodeMatchSnapshot(data: Int32Array): MatchSnapshot {
     });
   }
 
+  // Spec 52: every player's upgrades follow the air tail; absent when none.
+  const upgradeBase = airBase + 1 + airCount * AIR_STRIDE;
+  const upgradeCount = data[upgradeBase] ?? 0;
+  const upgrades: UpgradeState[] = [];
+  for (let i = 0; i < upgradeCount; i++) {
+    const base = upgradeBase + 1 + i * 2;
+    upgrades.push({ player: data[base] ?? 0, kind: data[base + 1] ?? 0 });
+  }
+
   return {
     tick: data[0] ?? 0,
     viewer,
@@ -171,6 +188,7 @@ export function decodeMatchSnapshot(data: Int32Array): MatchSnapshot {
     queues,
     rallies,
     air,
+    upgrades,
   };
 }
 

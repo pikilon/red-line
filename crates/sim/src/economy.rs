@@ -73,7 +73,18 @@ impl World {
             let total = self.rules.ty(head.kind).build_ticks * 100;
             let progress = (head.progress + self.production_speed(owner)).min(total);
             self.queue_head(index).progress = progress;
-            if progress < total || self.entities.len() as u32 >= MAX_UNITS {
+            if progress < total {
+                continue;
+            }
+            // Spec 52: a finished upgrade belongs to the player; nothing spawns.
+            if self.rules.ty(head.kind).category == Category::Upgrade {
+                if let Some(site) = self.entities[index].site.as_mut() {
+                    site.queue.remove(0);
+                }
+                self.grant_upgrade(owner, head.kind);
+                continue;
+            }
+            if self.entities.len() as u32 >= MAX_UNITS {
                 continue;
             }
             let Some(exit) = exit_cell(&self.nav, origin, size) else {
@@ -168,9 +179,11 @@ impl World {
             return;
         };
         let (cost, requires) = (target.cost, target.requires.clone());
+        let target_is_upgrade = target.category == Category::Upgrade;
         if queue_len as u32 >= self.rules.max_queue
             || owner.credits < cost
             || !self.requirements_met(player, &requires)
+            || (target_is_upgrade && self.upgrade_taken(player, kind))
         {
             return;
         }
