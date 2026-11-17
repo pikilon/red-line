@@ -248,6 +248,7 @@ import {
 } from "../ui/tutorial";
 import { createCameraMemory, homeView } from "./cameraMemory";
 import { attachNetMatch, type NetBoot } from "./netMatch";
+import { sideParam, withSideParam } from "./sideParam";
 
 export const DEFAULT_MAP = "river-port";
 export const DEFAULT_SEED = 1;
@@ -384,6 +385,8 @@ interface SkirmishBoot {
   applySettings: boolean;
   /** The `?load` id once applied. */
   loadedId: string | null;
+  /** The side came from the `side` URL parameter, not from the save. */
+  sideFromUrl?: boolean;
   /** The main menu's AI-vs-AI shell battle (spec 45). */
   shell?: boolean;
   /** Spec 51: a match against another browser. */
@@ -435,8 +438,16 @@ function savedAiActive(save: SaveFile): boolean | null {
 }
 
 /** A skirmish restored from `save`, loaded as `?load=<id>` (spec 19 §5.3). */
-function saveBoot(save: SaveFile, id: string): SkirmishBoot {
-  const { match, client } = save;
+function saveBoot(
+  save: SaveFile,
+  id: string,
+  side: 0 | 1 | null = null,
+): SkirmishBoot {
+  const { match } = save;
+  // `&side=` (written when the player switches side) outranks the save's side
+  // so a reload keeps the faction being played (#496).
+  const client =
+    side === null ? save.client : { ...save.client, controlled: side };
   const speed = match.debug
     ? Math.min(MAX_SPEED_SKIRMISH, Math.max(1, match.speed))
     : 1;
@@ -456,6 +467,7 @@ function saveBoot(save: SaveFile, id: string): SkirmishBoot {
     client,
     applySettings: form === "world",
     loadedId: id,
+    sideFromUrl: side !== null,
   };
 }
 
@@ -565,7 +577,7 @@ export function startSkirmish(params: SkirmishOptions): void {
       : readSave(source, store);
   void read.then((result) => {
     if (result.ok) {
-      runSkirmish(saveBoot(result.save, load), store);
+      runSkirmish(saveBoot(result.save, load, sideParam(params)), store);
       return;
     }
     showLoadError(result.error);
@@ -1068,7 +1080,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       ? local
       : attachNetMatch(local, boot.net, document.body, leaveToMenu);
   // A saved side of 1 means the AI starts on the other base (fresh matches).
-  if (restored === null && controlled === 1 && !boot.shell) moveAiToOpponent();
+  if (
+    (restored === null || boot.sideFromUrl === true) &&
+    controlled === 1 &&
+    !boot.shell
+  )
+    moveAiToOpponent();
   let uiRenders = 0;
   /** Garrisonable buildings as placed on the map, in the sim's feature row order (spec 31 block 2). */
   const placedGarrisons = garrisonFeaturesOf(
@@ -1866,6 +1883,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       else delete settings.side;
       saveSettings(settings);
       moveAiToOpponent();
+      const search = withSideParam(window.location.search, player);
+      if (search !== window.location.search) {
+        window.history.replaceState(null, "", search);
+      }
     }
     if (view === null) {
       centrePending = true;
