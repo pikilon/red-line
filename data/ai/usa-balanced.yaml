@@ -1,0 +1,19 @@
+id: usa-balanced
+faction: usa
+harvesters: 4
+defenseRadiusCenti: 2000
+garrisonRadiusCenti: 800
+buildOrder: [us-power-plant, us-supply-center, us-barracks, us-power-plant, us-vehicle-factory, us-firebase, us-power-plant, us-firebase]
+taskForces:
+  - { id: infantry, units: { us-ranger: 4, us-javelin-team: 2 } }
+  - { id: mechanized, units: { us-stryker: 3, us-ranger: 4 } }
+  - { id: armor, units: { us-abrams: 3, us-stryker: 2 } }
+  - { id: fires, units: { us-paladin: 2, us-abrams: 2, us-javelin-team: 3 } }
+upgrades:                                                    # spec 52: bought at an idle producer from minTick on
+  - { upgrade: us-advanced-optics, minTick: 3600 }
+  - { upgrade: us-reactive-armor, minTick: 6000 }
+triggers:
+  - { taskForce: infantry, weight: 50, minTick: 0 }
+  - { taskForce: mechanized, weight: 40, minTick: 2700 }
+  - { taskForce: armor, weight: 40, minTick: 4500 }
+  - { taskForce: fires, weight: 20, minTick: 6300 }

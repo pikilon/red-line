@@ -984,12 +984,12 @@ fn every_new_type_is_defined_and_the_old_indices_hold() {
         "ua-storm-shadow",
     ] {
         let kind = rules.type_index(id).unwrap_or_else(|| panic!("{id}"));
-        // They all come after the 31 types of the previous ruleset.
+        // They all come after the 31 types of the previous ruleset (the USA types sit between Russia's and the port depot).
         assert!(kind >= 31, "{id} is a late type");
     }
     assert_eq!(rules.type_index("ua-rifleman"), Some(2));
     assert_eq!(rules.type_index("ru-defense"), Some(29));
-    assert_eq!(rules.type_index("port-depot"), Some(30));
+    assert_eq!(rules.type_index("port-depot"), Some(44));
     assert_eq!(rules.weapons[0].id, "ua-rifle");
     assert!(
         rules
