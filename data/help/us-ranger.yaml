@@ -1,0 +1,9 @@
+# Spec 54: help card screenshots of the Ranger. `node --run help:shots -- --type us-ranger`
+- { id: us-ranger-fight, save: help-us-ranger-fight, ticks: 40, select: [us-ranger] }
+- { id: us-ranger-air, save: help-us-ranger-air, ticks: 18, select: [us-ranger] }
+- { id: us-ranger-board, save: help-us-ranger-board, ticks: 30, select: [us-ranger] }
+- { id: us-ranger-garrison, save: help-us-ranger-garrison, ticks: 10, select: [us-ranger], hud: true }
+- { id: us-ranger-dig, save: help-us-ranger-dig, ticks: 100, select: [us-ranger] }
+- { id: us-ranger-trench, save: help-us-ranger-trench, ticks: 120, select: [us-ranger] }
+- { id: us-ranger-bridge, save: help-us-ranger-bridge, ticks: 60, select: [us-ranger] }
+- { id: us-ranger-heal, save: help-us-ranger-heal, ticks: 10, select: [us-ranger] }

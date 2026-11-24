@@ -1,0 +1,13 @@
+# Spec 48: help card of the supply center. A damaged center waits for its dozer.
+id: help-us-supply-center-repair
+map: showcase-usa
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45.5, y: 19.5, zoom: 2.2 }
+entities:
+  - { player: 0, type: us-supply-center, origin: [45, 18], hpPercent: 40 }
+  - { player: 0, type: us-dozer, atCenti: [4300, 2100] }

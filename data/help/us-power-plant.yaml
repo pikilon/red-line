@@ -1,0 +1,5 @@
+# Spec 54: help card screenshots of the power plant. `node --run help:shots -- --type us-power-plant`
+- { id: us-power-plant-power, save: help-us-power-plant-power, ticks: 5, select: [us-power-plant], hud: true }
+- { id: us-power-plant-low, save: help-us-power-plant-low, ticks: 5, select: [], hud: true }
+- { id: us-power-plant-repair, save: help-us-power-plant-repair, ticks: 5, select: [us-dozer] }
+- { id: us-power-plant-sell, save: help-us-power-plant-sell, ticks: 5, select: [us-power-plant], hud: true, tab: orders }

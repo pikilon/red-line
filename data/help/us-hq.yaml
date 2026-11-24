@@ -1,0 +1,5 @@
+# Spec 54: help card screenshots of the Command Center. `node --run help:shots -- --type us-hq`
+- { id: us-hq-build, save: help-us-hq-build, ticks: 5, select: [us-hq], hud: true, tab: build }
+- { id: us-hq-rally, save: help-us-hq-rally, ticks: 5, select: [us-hq], hud: true, tab: orders }
+- { id: us-hq-repair, save: help-us-hq-repair, ticks: 5, select: [us-dozer] }
+- { id: us-hq-sell, save: help-us-hq-sell, ticks: 5, select: [us-hq], hud: true, tab: orders }

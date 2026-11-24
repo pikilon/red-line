@@ -1,0 +1,6 @@
+# Spec 54: help card screenshots of the vehicle factory. `node --run help:shots -- --type us-vehicle-factory`
+- { id: us-vehicle-factory-produce, save: help-us-vehicle-factory-build, ticks: 5, select: [us-vehicle-factory], hud: true, tab: build }
+- { id: us-vehicle-factory-rally, save: help-us-vehicle-factory-rally, ticks: 5, select: [us-vehicle-factory], hud: true, tab: orders }
+- { id: us-vehicle-factory-repair, save: help-us-vehicle-factory-repair, ticks: 10, select: [us-stryker], hud: true, tab: orders }
+- { id: us-vehicle-factory-repair-dozer, save: help-us-vehicle-factory-repair-dozer, ticks: 10, select: [us-dozer] }
+- { id: us-vehicle-factory-sell, save: help-us-vehicle-factory-sell, ticks: 5, select: [us-vehicle-factory], hud: true, tab: orders }

@@ -1,0 +1,7 @@
+# Spec 54: help card screenshots of the dozer. `node --run help:shots -- --type us-dozer`
+- { id: us-dozer-build, save: help-us-dozer-build, ticks: 5, select: [us-dozer], hud: true, tab: build }
+- { id: us-dozer-resume, save: help-us-dozer-build, ticks: 10, select: [us-dozer] }
+- { id: us-dozer-repair-building, save: help-us-dozer-repair-building, ticks: 10, select: [us-dozer] }
+- { id: us-dozer-dig, save: help-us-dozer-dig, ticks: 100, select: [us-dozer] }
+- { id: us-dozer-bridge, save: help-us-dozer-bridge, ticks: 300, select: [us-dozer] }
+- { id: us-dozer-repair, save: help-us-dozer-repair, ticks: 10, select: [us-dozer], hud: true, tab: orders }

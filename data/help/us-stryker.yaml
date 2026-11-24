@@ -1,0 +1,5 @@
+# Spec 54: help card screenshots of the Stryker. `node --run help:shots -- --type us-stryker`
+- { id: us-stryker-fight, save: help-us-stryker-fight, ticks: 40, select: [us-stryker] }
+- { id: us-stryker-board, save: help-us-stryker-carry, ticks: 12, select: [us-ranger, us-javelin-team] }
+- { id: us-stryker-unload, save: help-us-stryker-carry, ticks: 200, select: [us-stryker], hud: true }
+- { id: us-stryker-repair, save: help-us-stryker-repair, ticks: 10, select: [us-stryker], hud: true }

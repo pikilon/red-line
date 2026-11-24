@@ -1,0 +1,4 @@
+# Spec 54: help card screenshots of the Abrams. `node --run help:shots -- --type us-abrams`
+- { id: us-abrams-fight, save: help-us-abrams-fight, ticks: 55, select: [us-abrams] }
+- { id: us-abrams-crush, save: help-us-abrams-crush, ticks: 40, select: [us-abrams] }
+- { id: us-abrams-repair, save: help-us-abrams-repair, ticks: 10, select: [us-abrams], hud: true }

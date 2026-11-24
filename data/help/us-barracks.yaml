@@ -1,0 +1,6 @@
+# Spec 54: help card screenshots of the barracks. `node --run help:shots -- --type us-barracks`
+- { id: us-barracks-train, save: help-us-barracks-train, ticks: 5, select: [us-barracks], hud: true, tab: build }
+- { id: us-barracks-rally, save: help-us-barracks-rally, ticks: 5, select: [us-barracks], hud: true, tab: orders }
+- { id: us-barracks-heal, save: help-us-barracks-heal, ticks: 10, select: [us-ranger] }
+- { id: us-barracks-repair, save: help-us-barracks-repair, ticks: 10, select: [us-dozer] }
+- { id: us-barracks-sell, save: help-us-barracks-sell, ticks: 5, select: [us-barracks], hud: true, tab: orders }

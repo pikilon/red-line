@@ -1,0 +1,13 @@
+# Spec 48: help card of the dozer. A damaged dozer beside its repair factory.
+id: help-us-dozer-repair
+map: showcase-usa
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 48, y: 19, zoom: 3 }
+entities:
+  - { player: 0, type: us-vehicle-factory, origin: [47, 17] }
+  - { player: 0, type: us-dozer, atCenti: [4400, 2000], hpPercent: 40 }

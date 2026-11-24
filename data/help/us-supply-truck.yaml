@@ -1,0 +1,4 @@
+# Spec 54: help card screenshots of the supply truck. `node --run help:shots -- --type us-supply-truck`
+- { id: us-supply-truck-harvest, save: help-us-supply-truck-harvest, ticks: 8, select: [us-supply-truck] }
+- { id: us-supply-truck-unload, save: help-us-supply-truck-harvest, ticks: 75, select: [us-supply-truck] }
+- { id: us-supply-truck-repair, save: help-us-supply-truck-repair, ticks: 10, select: [us-supply-truck], hud: true, tab: orders }
