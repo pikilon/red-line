@@ -133,6 +133,12 @@ Image: `nano-banana` (prompt = brief + the common suffix below); mesh: `meshy-t2
 | `us-barracks` | US Army barracks, tan modular prefab building with sandbags and a flagless pole | `01a20f2e-b342-75a2-a241-e9042a3608f6` | `01a20f2e-f44a-70d0-aafc-8ce4964a0b51` |
 | `us-vehicle-factory` | military vehicle maintenance hangar, large tan hangar with open bay door, crane gantry | `01a20f2e-b62c-76a2-b978-0b35eeee4257` | `01a20f2e-f841-7244-aa5c-d7f64570629d` |
 | `us-firebase` | sandbagged artillery fire base with a towed 155 mm howitzer under camouflage netting, gun barrel pointing toward the lower-left | `01a20f2e-b91f-77dc-bd96-dca033b53794` | `01a20f2f-6815-73db-b71e-766abb722b5a` |
+| `us-dozer` | armoured military bulldozer, olive drab, armoured cab with slit windows, large front blade (3000 triangles) | `01a20f2e-b811-741d-bb6c-39cb5bdde0bd` | `01a20f2e-f1b9-72f5-b841-18adc610f7aa` |
+| `us-supply-truck` | olive drab 8x8 heavy military cargo truck with covered cargo bed (3000 triangles) | `01a20f2e-baca-722c-b6fe-64bcb0dfa48c` | `01a20f2e-f624-7481-8d72-28905a186148` |
+| `us-humvee` | olive drab 4x4 light military utility vehicle with a roof gun turret and heavy machine gun, gun pointing forward (3000 triangles) | `01a20f2e-be0d-734a-85a3-aecb51b90e08` | `01a20f2e-f9bd-77ba-9d95-d94389533642` |
+| `us-stryker` | olive drab 8x8 wheeled armoured personnel carrier with a remote weapon station turret, gun pointing forward (3000 triangles) | `01a20f2f-f39d-7731-a640-0bd0282bbf3d` | `01a20f30-0d31-74a7-86dd-17c7132a61a4` |
+| `us-abrams` | olive drab modern main battle tank, angular turret, long 120 mm gun pointing forward, side skirts, small turret-mounted protection launchers (3000 triangles) | `01a20f2f-f6c4-73e0-bfc3-4e9f12675050` | `01a20f30-21ee-75d7-96b1-4388a6616b6d` |
+| `us-paladin` | olive drab tracked self-propelled howitzer, large boxy turret, long 155 mm gun pointing forward (3000 triangles) | `01a20f2f-f99a-7341-8261-f597370b9632` | `01a20f30-1421-7404-8c89-848185d80661` |
 
 ## 7. Balance
 

@@ -15,3 +15,7 @@ Fix: check those two in the preview/game before blaming a new model.
 ### 2026-11-24 Meshy queue holds 5 tasks
 Problem: launching 6 image-to-3d tasks at once failed on the sixth (queue full), uncharged.
 Fix: start at most 5, then launch the rest once any finishes; meshy-t2 at 5000 triangles finishes in under a minute.
+
+### 2026-11-24 Meshy queue holds only about 3 tasks
+Problem: with several modelers in parallel, creating 6 image/mesh tasks at once fails with "task queue is full" or "input task is not succeeded".
+Fix: start at most 3-4 tasks, wait for them, then start the rest; check the image task succeeded before image_to_3d.
