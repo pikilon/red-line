@@ -51,18 +51,26 @@ pub fn run_match(
     ai0: &str,
     ai1: &str,
 ) -> Result<MatchReport, String> {
-    run_match_at(map, seed, max_ticks, [(ai0, "medium"), (ai1, "medium")])
+    run_match_at(
+        map,
+        seed,
+        max_ticks,
+        [(ai0, "medium"), (ai1, "medium")],
+        &[],
+    )
 }
 
-/// `run_match` with a difficulty id (spec 05 §9) per player.
+/// `run_match` with a difficulty id (spec 05 §9) per player and optional
+/// `armies` (one faction id per start; empty keeps the map's factions).
 pub fn run_match_at(
     map: &str,
     seed: u32,
     max_ticks: u32,
     players: [(&str, &str); 2],
+    armies: &[String],
 ) -> Result<MatchReport, String> {
     let mut world =
-        World::skirmish(Ruleset::builtin(), map, u64::from(seed)).map_err(|error| match error {
+        World::skirmish_armies(Ruleset::builtin(), map, armies).map_err(|error| match error {
             SimError::UnknownMap { id } => format!("unknown map: {id}"),
             other => format!("cannot set up the match: {other:?}"),
         })?;
@@ -121,6 +129,9 @@ pub struct TournamentConfig {
     pub difficulty0: Vec<String>,
     #[serde(default = "medium_only")]
     pub difficulty1: Vec<String>,
+    /// Faction id of each start (spec 53); empty keeps the map's factions.
+    #[serde(default)]
+    pub armies: Vec<String>,
 }
 
 fn medium_only() -> Vec<String> {
@@ -198,6 +209,7 @@ pub fn run_tournament(config: &TournamentConfig) -> Result<TournamentReport, Str
                             *seed,
                             config.max_ticks,
                             [(ai0, d0), (ai1, d1)],
+                            &config.armies,
                         )?;
                         match report.winner {
                             Some(0) => row.wins0 += 1,
