@@ -2806,6 +2806,10 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "flashBang": {
+        "rangeCenti": 400,
+        "stunTicks": 120
+      },
       "experience": {
         "value": [
           13,

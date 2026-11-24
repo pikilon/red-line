@@ -34,6 +34,8 @@ export interface TypeDef {
   locomotor: number;
   /** Collision radius in centi-tiles; 0 uses the sim default. */
   radiusCenti?: number;
+  /** Spec 54 §5.2: the unit throws a flash-bang at an enemy-held building. */
+  flashBang?: { rangeCenti: number; stunTicks: number };
   /** Spec 40: damaged infantry heal inside this building. */
   healsInfantry?: boolean;
   /** Spec 39: this building repairs damaged vehicles. */

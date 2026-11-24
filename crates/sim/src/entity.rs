@@ -69,6 +69,12 @@ pub enum Order {
         order_id: u32,
         feature: u32,
     },
+    /// Spec 54 §5.2: walk within flash-bang range of the enemy-held feature
+    /// `feature` and throw it.
+    FlashBang {
+        order_id: u32,
+        feature: u32,
+    },
     /// Spec 38: walk to an own damaged entity building and repair it.
     RepairBuilding {
         order_id: u32,
@@ -193,6 +199,9 @@ pub struct Entity {
     pub xp: u32,
     /// Spec 50: `0` regular, `1` veteran, `2` elite, `3` heroic.
     pub rank: u8,
+    /// Spec 54 §5.2: ticks left stunned by a flash-bang; a stunned unit
+    /// neither moves nor fires.
+    pub stun: u32,
 }
 
 /// The locomotion and turret state of an entity (spec 11 §5.1). Read and written

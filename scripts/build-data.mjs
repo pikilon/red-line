@@ -1226,6 +1226,15 @@ const assemble = (
 							}),
 						},
 					}),
+			// Spec 54 §5.2: flash-bang that clears an enemy-held building.
+			...(t.flashBang === undefined
+				? {}
+				: {
+						flashBang: {
+							rangeCenti: t.flashBang.rangeCenti,
+							stunTicks: t.flashBang.stunTicks,
+						},
+					}),
 			// Spec 39: a completed vehicle-repair pad.
 			...(t.repairsVehicles === undefined
 				? {}

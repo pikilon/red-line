@@ -22,6 +22,7 @@ types:                               # required
     speedCenti: 8
     turnRateDeg: 720
     weapon: us-rifle
+    flashBang: { rangeCenti: 400, stunTicks: 120 }   # spec 54 §5.2: 8 s at 15 ticks/s
     render: { size: [30, 60, 30] }
     experience: { value: [13, 26, 39, 52], required: [52, 104, 208] }
   - id: us-javelin-team

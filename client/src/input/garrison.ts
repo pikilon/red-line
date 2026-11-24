@@ -274,6 +274,40 @@ export function resolveGarrisonClick(args: {
   });
 }
 
+/** Spec 54 §5.2: left click on a building another player holds, with
+ *  flash-bang throwers selected (Rangers), sends them to clear it. */
+export function resolveFlashBangClick(args: {
+  player: number;
+  selected: readonly number[];
+  entities: readonly EntityState[];
+  features: readonly GarrisonFeature[];
+  x: number;
+  y: number;
+}): SimCommand[] {
+  const { player, selected, entities, features, x, y } = args;
+  const feature = featureUnder(features, x, y);
+  if (
+    feature === null ||
+    feature.closed === true ||
+    feature.owner === undefined ||
+    feature.owner === FEATURE_NO_OWNER ||
+    feature.owner === player ||
+    (feature.occupants ?? 0) === 0
+  ) {
+    return [];
+  }
+  const units = ownSelected(selected, entities, player)
+    .filter(
+      (entity) =>
+        !isInside(entity) && typeDef(entity.kind).flashBang !== undefined,
+    )
+    .map((entity) => entity.id)
+    .sort((a, b) => a - b);
+  return units.length === 0
+    ? []
+    : [{ kind: "flashBang", player, units, feature: feature.index }];
+}
+
 /** Left click on an own garrisoned building selects its occupants, so the
  *  Evacuate button appears. Empty for any other point. */
 export function selectOccupantsAt(args: {

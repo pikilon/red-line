@@ -196,6 +196,9 @@ pub struct EntityState {
     /// Spec 50: rank, `0` regular to `3` heroic.
     #[serde(default, skip_serializing_if = "is_zero")]
     pub rank: u32,
+    /// Spec 54 §5.2: ticks left stunned.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub stun: u32,
 }
 
 fn is_zero(value: &u32) -> bool {
@@ -267,6 +270,10 @@ pub enum OrderState {
         carrier: u32,
     },
     Repair {
+        order_id: u32,
+        feature: u32,
+    },
+    FlashBang {
         order_id: u32,
         feature: u32,
     },
@@ -391,6 +398,10 @@ pub enum CommandState {
         carrier: u32,
     },
     Repair {
+        units: Vec<u32>,
+        feature: u32,
+    },
+    FlashBang {
         units: Vec<u32>,
         feature: u32,
     },
@@ -931,6 +942,7 @@ fn save_order(order: Order) -> OrderState {
         Order::Garrison { order_id, feature } => OrderState::Garrison { order_id, feature },
         Order::Board { order_id, carrier } => OrderState::Board { order_id, carrier },
         Order::Repair { order_id, feature } => OrderState::Repair { order_id, feature },
+        Order::FlashBang { order_id, feature } => OrderState::FlashBang { order_id, feature },
         Order::RepairBuilding { order_id, building } => {
             OrderState::RepairBuilding { order_id, building }
         }
@@ -1021,6 +1033,7 @@ fn load_order(order: OrderState) -> Order {
         OrderState::Garrison { order_id, feature } => Order::Garrison { order_id, feature },
         OrderState::Board { order_id, carrier } => Order::Board { order_id, carrier },
         OrderState::Repair { order_id, feature } => Order::Repair { order_id, feature },
+        OrderState::FlashBang { order_id, feature } => Order::FlashBang { order_id, feature },
         OrderState::RepairBuilding { order_id, building } => {
             Order::RepairBuilding { order_id, building }
         }
@@ -1137,6 +1150,7 @@ fn save_entity(entity: &Entity, rules: &Ruleset) -> EntityState {
         charge_clock: entity.charge_clock,
         xp: entity.xp,
         rank: u32::from(entity.rank),
+        stun: entity.stun,
     }
 }
 
@@ -1218,6 +1232,7 @@ fn load_entity(state: &EntityState, rules: &Ruleset) -> Result<Entity, String> {
             state.charges.unwrap_or(charges.max).min(charges.max)
         }),
         charge_clock: state.charge_clock,
+        stun: state.stun,
         xp: state.xp,
         // Only a type that can be promoted holds a rank.
         rank: if rules
@@ -1344,6 +1359,10 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
             units: units.clone(),
             feature: *feature,
         },
+        Command::FlashBang { units, feature } => CommandState::FlashBang {
+            units: units.clone(),
+            feature: *feature,
+        },
         Command::RepairBuilding { units, building } => CommandState::RepairBuilding {
             units: units.clone(),
             building: *building,
@@ -1446,6 +1465,10 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
         },
         CommandState::Disembark { carrier } => Command::Disembark { carrier: *carrier },
         CommandState::Repair { units, feature } => Command::Repair {
+            units: units.clone(),
+            feature: *feature,
+        },
+        CommandState::FlashBang { units, feature } => Command::FlashBang {
             units: units.clone(),
             feature: *feature,
         },

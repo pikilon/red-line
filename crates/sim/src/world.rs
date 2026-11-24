@@ -141,6 +141,12 @@ pub enum Command {
         units: Vec<EntityId>,
         feature: u32,
     },
+    /// Spec 54 §5.2: units with a flash-bang throw it at the enemy-held
+    /// feature `feature`, forcing its occupants out stunned.
+    FlashBang {
+        units: Vec<EntityId>,
+        feature: u32,
+    },
     /// Spec 38: dozers repair an own damaged entity building.
     RepairBuilding {
         units: Vec<EntityId>,
@@ -679,6 +685,7 @@ impl World {
             charge_clock: 0,
             xp: 0,
             rank: 0,
+            stun: 0,
         });
         id
     }
@@ -970,6 +977,9 @@ impl World {
                 Command::Board { units, carrier } => self.apply_board(player, &units, carrier),
                 Command::Disembark { carrier } => self.apply_disembark(player, carrier),
                 Command::Repair { units, feature } => self.apply_repair(player, &units, feature),
+                Command::FlashBang { units, feature } => {
+                    self.apply_flash_bang(player, &units, feature);
+                }
                 Command::RepairBuilding { units, building } => {
                     self.apply_repair_building(player, &units, building);
                 }
@@ -1325,6 +1335,12 @@ impl World {
             if self.entities[index].contained() {
                 continue;
             }
+            // Spec 54 §5.2: a stunned unit stands still until it recovers.
+            if self.entities[index].stun > 0 {
+                self.entities[index].stun -= 1;
+                self.entities[index].speed = Fx::ZERO;
+                continue;
+            }
             // Spec 43 §4.5: a jammed `radio` ground unit stands still.
             if self.jam_stopped(index) {
                 self.entities[index].speed = Fx::ZERO;
@@ -1349,6 +1365,9 @@ impl World {
                 }
                 Order::Board { order_id, carrier } => self.step_board(index, order_id, carrier),
                 Order::Repair { order_id, feature } => self.step_repair(index, order_id, feature),
+                Order::FlashBang { order_id, feature } => {
+                    self.step_flash_bang(index, order_id, feature);
+                }
                 Order::RepairBuilding { order_id, building } => {
                     self.step_repair_building(index, order_id, building);
                 }
@@ -1838,6 +1857,9 @@ impl World {
                     }
                     Order::Repair { feature, .. } => self
                         .repair_goal(index, feature)
+                        .map(|goal| self.nav.index(goal)),
+                    Order::FlashBang { feature, .. } => self
+                        .garrison_goal(self.entities[index].pos, feature)
                         .map(|goal| self.nav.index(goal)),
                     Order::RepairBuilding { building, .. } => {
                         self.build_goal(building).map(|goal| self.nav.index(goal))

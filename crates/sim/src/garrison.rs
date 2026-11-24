@@ -409,6 +409,77 @@ impl World {
     }
 }
 
+impl World {
+    /// True when `unit` can flash-bang `feature`: it carries a flash-bang and
+    /// the building is held by another player.
+    pub fn can_flash_bang(&self, unit: EntityId, feature: u32) -> bool {
+        let Some(entity) = self.entity(unit) else {
+            return false;
+        };
+        entity.hp > 0
+            && !entity.contained()
+            && entity.owner != NEUTRAL
+            && self.rules.ty(entity.kind).flash_bang.is_some()
+            && self.garrison_def(feature).is_some()
+            && !self.occupants(feature).is_empty()
+            && self.feature_owner(feature) != entity.owner
+    }
+
+    /// `FlashBang` command: every listed unit of `player` that can walks to
+    /// the building and throws it.
+    pub(crate) fn apply_flash_bang(&mut self, player: PlayerId, units: &[EntityId], feature: u32) {
+        let order_id = self.next_order_id;
+        self.next_order_id += 1;
+        for &id in units {
+            let Some(index) = self.index_of(id) else {
+                continue;
+            };
+            if self.entities[index].owner == player && self.can_flash_bang(id, feature) {
+                self.entities[index].order = Order::FlashBang { order_id, feature };
+            }
+        }
+    }
+
+    /// `FlashBang` order step: walk within range, then throw: every occupant
+    /// leaves the building stunned and the building stays standing (Zero Hour
+    /// Ranger flash-bang).
+    pub(crate) fn step_flash_bang(&mut self, index: usize, order_id: u32, feature: u32) {
+        let id = self.entities[index].id;
+        let idle = Order::Idle {
+            last_order_id: order_id,
+        };
+        if !self.can_flash_bang(id, feature) {
+            self.entities[index].order = idle;
+            return;
+        }
+        let Some(def) = self.rules.ty(self.entities[index].kind).flash_bang else {
+            return;
+        };
+        let row = self.features[feature as usize];
+        let size = footprint(&self.rules.feature_types[row.kind as usize], row.rot);
+        let origin = Cell { x: row.x, y: row.y };
+        let pos = self.entities[index].pos;
+        let span = [size.0 as u16, size.1 as u16];
+        if footprint_distance(pos, origin, span) <= fx_centi(def.range_centi) {
+            let inside = self.occupants(feature);
+            self.evict_feature(feature, false, size);
+            for occupant in inside {
+                if let Some(at) = self.index_of(occupant)
+                    && self.entities[at].inside.is_none()
+                {
+                    self.entities[at].stun = def.stun_ticks;
+                }
+            }
+            self.entities[index].order = idle;
+            self.entities[index].speed = Fx::ZERO;
+            return;
+        }
+        if let Some(goal) = self.garrison_goal(pos, feature) {
+            self.step_toward_goal(index, goal);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -818,5 +889,84 @@ mod tests {
             }]
         );
         assert!(garrison_orders_for_test(&world, 0, 0).is_empty());
+    }
+
+    /// Spec 54 §5.2: the flash-bang empties an enemy garrison, stuns it and
+    /// leaves the building standing.
+    #[test]
+    fn ac_54_02_flash_bang_empties_the_building_and_stuns_the_occupants() {
+        let (mut world, feature) = town(false);
+        let foe = rifleman(&mut world, 1, 1650, 2750);
+        world.enqueue_as(
+            1,
+            Command::Garrison {
+                units: vec![foe],
+                feature,
+            },
+        );
+        run(&mut world, 120);
+        assert_eq!(world.occupants(feature), vec![foe]);
+        let kind = world.rules.type_index("us-ranger").unwrap();
+        let ranger = world.spawn(0, kind, at(1650, 3300));
+        let stun = world.rules.ty(kind).flash_bang.unwrap().stun_ticks;
+
+        world.enqueue_as(
+            0,
+            Command::FlashBang {
+                units: vec![ranger],
+                feature,
+            },
+        );
+        let mut thrown = false;
+        for _ in 0..300 {
+            world.step();
+            if world.occupants(feature).is_empty() {
+                thrown = true;
+                break;
+            }
+        }
+        assert!(thrown, "the garrison is forced out");
+        assert!(world.garrison_def(feature).is_some(), "building stands");
+        let out = world.entity(foe).unwrap();
+        assert_eq!(out.inside, None);
+        assert!(out.stun > 0 && out.stun <= stun);
+        assert!(matches!(
+            world.entity(ranger).unwrap().order,
+            Order::Idle { .. }
+        ));
+
+        // Stunned: no movement while it lasts, free again afterwards.
+        let held = out.pos;
+        world.enqueue_as(
+            1,
+            Command::Move {
+                units: vec![foe],
+                target: at(300, 300),
+            },
+        );
+        run(&mut world, 1);
+        assert_eq!(world.entity(foe).unwrap().pos, held);
+        run(&mut world, stun);
+        assert_eq!(world.entity(foe).unwrap().stun, 0);
+        run(&mut world, 30);
+        assert_ne!(world.entity(foe).unwrap().pos, held);
+    }
+
+    #[test]
+    fn ac_54_03_flash_bang_ignores_own_or_empty_buildings() {
+        let (mut world, feature) = town(false);
+        let kind = world.rules.type_index("us-ranger").unwrap();
+        let ranger = world.spawn(0, kind, at(1650, 3300));
+        assert!(!world.can_flash_bang(ranger, feature), "empty building");
+        let own = rifleman(&mut world, 0, 1650, 2750);
+        world.enqueue_as(
+            0,
+            Command::Garrison {
+                units: vec![own],
+                feature,
+            },
+        );
+        run(&mut world, 120);
+        assert!(!world.can_flash_bang(ranger, feature), "own garrison");
     }
 }

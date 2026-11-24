@@ -78,6 +78,8 @@ export type SimCommand =
   | { kind: "reload"; player: number; units: number[] }
   /** Spec 31 block 2: infantry walk to feature `feature` (map row index) and garrison it. */
   | { kind: "garrison"; player: number; units: number[]; feature: number }
+  /** Spec 54 §5.2: units throw a flash-bang at the enemy-held feature `feature`. */
+  | { kind: "flashBang"; player: number; units: number[]; feature: number }
   /** Spec 31 block 2: evacuate the garrisoned feature `feature`. */
   | { kind: "unload"; player: number; feature: number }
   /** Spec 34: infantry walk to the own vehicle `carrier` and board it. */

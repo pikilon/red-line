@@ -98,7 +98,17 @@ reloads).
 
 Rangers can throw a flash-bang at a garrisoned building: the occupants are
 forced out stunned for a short time and the building stays standing (Zero Hour
-Ranger flash-bang clears garrisons). Built after 5.1 if budget allows.
+Ranger flash-bang clears garrisons).
+
+* Command `flashBang { units, feature }` (left click on an enemy-held garrison
+  building with Rangers selected): they walk within `flashBang.rangeCenti` of
+  the footprint, throw, and every occupant leaves the building stunned for
+  `stunTicks` (`Entity::stun`: no movement, no fire). The building stays up.
+* Numbers in data: `flashBang: { rangeCenti: 400, stunTicks: 120 }` (assumed,
+  no INI available; 8 s of stun).
+* Acceptance: a Ranger sent at a building held by an enemy rifleman empties it;
+  the rifleman ignores orders until the stun ends. Own or empty buildings are
+  refused.
 
 ## 6. Assets (stages 2-4)
 
