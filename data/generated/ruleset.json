@@ -254,6 +254,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
+      "interceptable": true,
       "render": {
         "model": "atgm",
         "flight": "loft",
@@ -395,6 +396,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
+      "interceptable": true,
       "render": {
         "model": "atgm",
         "flight": "loft",
@@ -442,6 +444,7 @@
       "scatterCenti": 25,
       "salvo": 1,
       "salvoIntervalTicks": 0,
+      "interceptable": true,
       "render": {
         "model": "rpg",
         "flight": "boost",
@@ -583,6 +586,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
+      "interceptable": true,
       "render": {
         "model": "atgm",
         "flight": "loft",
@@ -630,6 +634,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
+      "interceptable": true,
       "render": {
         "model": "atgm",
         "flight": "topAttack",
@@ -3025,6 +3030,13 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "activeProtection": {
+        "reloadTicks": 300,
+        "rangeCenti": 150,
+        "stops": [
+          2
+        ]
+      },
       "experience": {
         "value": [
           150,

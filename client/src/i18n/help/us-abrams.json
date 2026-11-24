@@ -14,6 +14,11 @@
       "body": "While it moves, the Abrams runs over enemy soldiers in its path and kills them outright. It never hurts friendly infantry, and it cannot crush other vehicles."
     },
     {
+      "title": "Active protection",
+      "how": "Nothing to press: it works on its own whenever an anti-tank missile or rocket flies at the Abrams.",
+      "body": "The protection system shoots the incoming missile down before it hits, so that missile does no damage. It then needs about 20 seconds to reload, and a second missile in that time hits normally. Tank shells, bullets and artillery are not stopped."
+    },
+    {
       "title": "Repair at the vehicle factory",
       "how": "Select the damaged Abrams and press Repair at factory, or left-click your vehicle factory.",
       "body": "The Abrams drives to the factory and is repaired for half its price, paid as the health comes back."

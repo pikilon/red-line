@@ -432,6 +432,10 @@ impl World {
             }
         }
 
+        // Spec 54 §5.1: active protection reloads, then destroys one
+        // interceptable projectile that closes on its unit.
+        self.step_active_protection();
+
         // Step 3.3: due projectiles hit, in creation order, and are removed.
         let mut flying = Vec::with_capacity(self.projectiles.len());
         for projectile in std::mem::take(&mut self.projectiles) {
@@ -442,6 +446,77 @@ impl World {
             }
         }
         self.projectiles = flying;
+    }
+
+    /// Spec 54 §5.1 (Zero Hour `PointDefenseLaserUpdate`: scan, kill one,
+    /// reload). `Entity::reload` counts down the ticks until the system is
+    /// loaded again. A launched interceptable projectile of a stopped damage
+    /// type whose flight position is within range of its target is removed
+    /// without damage and a `Detonate` event with no hit marks the spot.
+    fn step_active_protection(&mut self) {
+        let tick = self.tick;
+        for index in 0..self.entities.len() {
+            if self.entities[index].reload > 0
+                && self
+                    .rules
+                    .ty(self.entities[index].kind)
+                    .active_protection
+                    .is_some()
+            {
+                self.entities[index].reload -= 1;
+            }
+        }
+        let mut flying = Vec::with_capacity(self.projectiles.len());
+        for projectile in std::mem::take(&mut self.projectiles) {
+            if projectile.launch_tick > tick
+                || projectile.impact_tick <= tick
+                || !self.try_intercept(&projectile, tick)
+            {
+                flying.push(projectile);
+            }
+        }
+        self.projectiles = flying;
+    }
+
+    /// `true` when `projectile` was destroyed by its target's protection.
+    fn try_intercept(&mut self, projectile: &Projectile, tick: u32) -> bool {
+        let Some(weapon) = self.weapon_def(projectile.weapon) else {
+            return false;
+        };
+        if !weapon.interceptable {
+            return false;
+        }
+        let Some(target) = self.index_of(projectile.target) else {
+            return false;
+        };
+        let entity = &self.entities[target];
+        let Some(protection) = self.rules.ty(entity.kind).active_protection.as_ref() else {
+            return false;
+        };
+        if entity.hp == 0
+            || entity.reload > 0
+            || entity.owner == projectile.owner
+            || !protection.stops.contains(&weapon.damage_type)
+        {
+            return false;
+        }
+        let span = i64::from(projectile.impact_tick - projectile.launch_tick);
+        let done = i64::from(tick - projectile.launch_tick);
+        let fraction = Fx::from_raw(((done << 16) / span) as i32);
+        let pos = projectile.origin + (projectile.impact - projectile.origin).scale(fraction);
+        if (pos - entity.pos).length() > fx_centi(protection.range_centi) {
+            return false;
+        }
+        let reload = protection.reload_ticks;
+        self.entities[target].reload = reload;
+        self.events.push(CombatEvent::Detonate {
+            projectile: projectile.id,
+            owner: projectile.owner,
+            weapon: projectile.weapon,
+            pos,
+            hit: None,
+        });
+        true
     }
 
     /// Spec 17 §4.3: splash around `impact` for either delivery; otherwise a

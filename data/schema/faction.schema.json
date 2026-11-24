@@ -89,6 +89,7 @@
         "salvoIntervalTicks": { "$ref": "#/$defs/count" },
         "antiAir": { "description": "Spec 43 §4.1: which airborne units the weapon reaches.", "enum": ["none", "low", "all"] },
         "antiGround": { "description": "Spec 43 §4.1: default true.", "type": "boolean" },
+        "interceptable": { "description": "Spec 54 §5.1: a missile or rocket that an active protection system can destroy in flight.", "type": "boolean" },
         "launches": { "description": "Spec 43 §4.4: firing spawns this unit type instead of a projectile.", "$ref": "#/$defs/id" },
         "render": { "$ref": "#/$defs/weaponRender" }
       },
@@ -159,6 +160,17 @@
         "requiresPower": { "type": "boolean" },
         "dropOff": { "type": "boolean" },
         "freeUnit": { "$ref": "#/$defs/id" },
+        "activeProtection": {
+          "description": "Spec 54 §5.1: hard-kill system that destroys one interceptable projectile of a stopped damage type, then reloads.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["reloadTicks", "rangeCenti", "stops"],
+          "properties": {
+            "reloadTicks": { "$ref": "#/$defs/positive" },
+            "rangeCenti": { "$ref": "#/$defs/positive" },
+            "stops": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/key" } }
+          }
+        },
         "repairsVehicles": { "description": "Spec 39: this building is a vehicle repair pad.", "type": "boolean" },
         "amphibious": { "description": "Spec 36: the vehicle drives over deep water too (Zero Hour Surfaces = GROUND WATER).", "type": "boolean" },
         "infinite": { "description": "Spec 36: a depot that never runs out (a port).", "type": "boolean" },

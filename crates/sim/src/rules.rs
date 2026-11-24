@@ -341,6 +341,8 @@ pub struct WeaponDef {
     pub anti_air: AntiAir,
     /// Spec 43 §4.1: whether the weapon reaches ground targets.
     pub anti_ground: bool,
+    /// Spec 54 §5.1: a missile or rocket an active protection system can destroy.
+    pub interceptable: bool,
     /// Spec 43 §4.4: index of the unit type that firing launches instead of a
     /// projectile; `-1` for an ordinary weapon.
     pub launches: i32,
@@ -374,6 +376,8 @@ struct WeaponDefWire {
     anti_air: AntiAir,
     #[serde(default = "default_true")]
     anti_ground: bool,
+    #[serde(default)]
+    interceptable: bool,
     #[serde(default = "no_locomotor")]
     launches: i32,
 }
@@ -406,12 +410,24 @@ impl From<WeaponDefWire> for WeaponDef {
             aim_tolerance: deg_to_units(w.aim_tolerance_deg),
             anti_air: w.anti_air,
             anti_ground: w.anti_ground,
+            interceptable: w.interceptable,
             launches: w.launches,
         }
     }
 }
 
 /// A buildable/controllable thing, indexed in `Ruleset::types` by `TypeId`.
+/// Spec 54 §5.1: destroys one interceptable projectile of a stopped damage
+/// type that closes within `range_centi`, then needs `reload_ticks`.
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ActiveProtection {
+    pub reload_ticks: u32,
+    pub range_centi: u32,
+    /// Indices of `Ruleset::damage_types`.
+    pub stops: Vec<u8>,
+}
+
 /// The `render` field is unknown to the sim and ignored on parse.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -469,6 +485,9 @@ pub struct TypeDef {
     /// Spec 40: this completed building heals damaged infantry that enters it.
     #[serde(default)]
     pub heals_infantry: bool,
+    /// Spec 54 §5.1: hard-kill protection against interceptable projectiles.
+    #[serde(default)]
+    pub active_protection: Option<ActiveProtection>,
     /// Spec 39: this completed building is a vehicle repair pad.
     #[serde(default)]
     pub repairs_vehicles: bool,
