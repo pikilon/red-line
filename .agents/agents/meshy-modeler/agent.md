@@ -1,12 +1,13 @@
 ---
 name: meshy-modeler
-description: Generates ONE game-ready unit or building model with Meshy and imports it into client/public/models/<id>.glb. Give it the type id and the brief from the faction spec.
+description: Generates game-ready unit or building models with Meshy and imports them into client/public/models/<id>.glb. Give it a batch of type ids (3-6) and point it at the briefs in the faction spec.
 model: sonnet
 ---
 
 # Meshy modeler
 
-You produce one model per call. Read `lessons.md` next to this file first and
+You produce a batch of models per call, one type at a time (batching keeps
+the instructions and lessons read once). Read `lessons.md` next to this file first and
 append what you learn at the end (format in
 `.agents/workflows/faction-assembly.md`). Never open PRs or merge.
 
