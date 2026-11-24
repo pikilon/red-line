@@ -980,3 +980,47 @@ events:
     volume: 60
     priority: high
     type: [ui, everyone]
+
+  building.select.hq.usa:
+    sounds: [synth:click]
+    limit: 1
+    volume: 40
+    type: [ui, player]
+
+  building.select.barracks.usa:
+    sounds: [synth:click]
+    limit: 1
+    volume: 50
+    type: [ui, player]
+
+  building.select.factory.usa:
+    sounds: [synth:click]
+    limit: 1
+    volume: 45
+    type: [ui, player]
+
+  music.calm.usa:
+    sounds: [synth:music]
+    volume: 55
+    priority: normal
+    control: [loop]
+    type: [ui, everyone]
+
+  music.combat.usa:
+    sounds: [synth:music]
+    volume: 55
+    priority: normal
+    control: [loop]
+    type: [ui, everyone]
+
+  music.victory.usa:
+    sounds: [synth:music]
+    volume: 60
+    priority: high
+    type: [ui, everyone]
+
+  music.defeat.usa:
+    sounds: [synth:music]
+    volume: 60
+    priority: high
+    type: [ui, everyone]

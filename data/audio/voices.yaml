@@ -73,6 +73,70 @@ sets:
     die:       { sounds: [synth:explosion], volume: 100, volumeShift: -20, pitchShift: [-10, 10], limit: 3, priority: low, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
     created:   { sounds: [synth:voice], volume: 110, minVolume: 100, limit: 1, priority: high, type: [world, global, voice, player], control: [random] }
 
+  us-ranger:
+    select:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    move:      { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    attack:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    underFire: { sounds: [synth:voice], volume: 100, minVolume: 80, limit: 1, priority: normal, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
+    die:       { sounds: [synth:scream], volume: 100, volumeShift: -20, pitchShift: [-10, 10], limit: 3, priority: low, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
+    created:   { sounds: [synth:voice], volume: 110, minVolume: 100, limit: 1, priority: high, type: [world, global, voice, player], control: [random] }
+
+  us-javelin-team:
+    select:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    move:      { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    attack:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    underFire: { sounds: [synth:voice], volume: 100, minVolume: 80, limit: 1, priority: normal, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
+    die:       { sounds: [synth:scream], volume: 100, volumeShift: -20, pitchShift: [-10, 10], limit: 3, priority: low, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
+    created:   { sounds: [synth:voice], volume: 110, minVolume: 100, limit: 1, priority: high, type: [world, global, voice, player], control: [random] }
+
+  us-humvee:
+    select:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    move:      { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    attack:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    underFire: { sounds: [synth:voice], volume: 100, minVolume: 80, limit: 1, priority: normal, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
+    die:       { sounds: [synth:explosion], volume: 100, volumeShift: -20, pitchShift: [-10, 10], limit: 3, priority: low, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
+    created:   { sounds: [synth:voice], volume: 110, minVolume: 100, limit: 1, priority: high, type: [world, global, voice, player], control: [random] }
+
+  us-stryker:
+    select:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    move:      { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    attack:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    underFire: { sounds: [synth:voice], volume: 100, minVolume: 80, limit: 1, priority: normal, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
+    die:       { sounds: [synth:explosion], volume: 100, volumeShift: -20, pitchShift: [-10, 10], limit: 3, priority: low, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
+    created:   { sounds: [synth:voice], volume: 110, minVolume: 100, limit: 1, priority: high, type: [world, global, voice, player], control: [random] }
+
+  us-abrams:
+    select:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    move:      { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    attack:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    underFire: { sounds: [synth:voice], volume: 100, minVolume: 80, limit: 1, priority: normal, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
+    die:       { sounds: [synth:explosion], volume: 100, volumeShift: -20, pitchShift: [-10, 10], limit: 3, priority: low, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
+    created:   { sounds: [synth:voice], volume: 110, minVolume: 100, limit: 1, priority: high, type: [world, global, voice, player], control: [random] }
+
+  us-paladin:
+    select:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    move:      { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    attack:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    underFire: { sounds: [synth:voice], volume: 100, minVolume: 80, limit: 1, priority: normal, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
+    die:       { sounds: [synth:explosion], volume: 100, volumeShift: -20, pitchShift: [-10, 10], limit: 3, priority: low, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
+    created:   { sounds: [synth:voice], volume: 110, minVolume: 100, limit: 1, priority: high, type: [world, global, voice, player], control: [random] }
+
+  us-dozer:
+    select:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    move:      { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    attack:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    underFire: { sounds: [synth:voice], volume: 100, minVolume: 80, limit: 1, priority: normal, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
+    die:       { sounds: [synth:explosion], volume: 100, volumeShift: -20, pitchShift: [-10, 10], limit: 3, priority: low, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
+    created:   { sounds: [synth:voice], volume: 110, minVolume: 100, limit: 1, priority: high, type: [world, global, voice, player], control: [random] }
+
+  us-supply-truck:
+    select:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    move:      { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    attack:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
+    underFire: { sounds: [synth:voice], volume: 100, minVolume: 80, limit: 1, priority: normal, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
+    die:       { sounds: [synth:explosion], volume: 100, volumeShift: -20, pitchShift: [-10, 10], limit: 3, priority: low, type: [world, voice, player], control: [random], minDistance: 4, maxDistance: 20 }
+    created:   { sounds: [synth:voice], volume: 110, minVolume: 100, limit: 1, priority: high, type: [world, global, voice, player], control: [random] }
+
   ru-rifleman:
     select:    { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }
     move:      { sounds: [synth:voice], volume: 90, limit: 1, priority: high, type: [ui, voice, player], control: [random, interrupt] }

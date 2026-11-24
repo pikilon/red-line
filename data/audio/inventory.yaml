@@ -2365,3 +2365,531 @@ entries:
       - launch
       - mechanical
       - heavy
+  eva.usa.baseUnderAttack:
+    category: eva
+    kind: eva
+    target: audio/eva/usa/baseUnderAttack_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  eva.usa.buildingLost:
+    category: eva
+    kind: eva
+    target: audio/eva/usa/buildingLost_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  eva.usa.buildingReady:
+    category: eva
+    kind: eva
+    target: audio/eva/usa/buildingReady_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  eva.usa.constructionComplete:
+    category: eva
+    kind: eva
+    target: audio/eva/usa/constructionComplete_<n>.webm
+    variants: 3
+    seconds: 3
+    loop: false
+    status: approved
+  eva.usa.defeat:
+    category: eva
+    kind: eva
+    target: audio/eva/usa/defeat_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  eva.usa.insufficientFunds:
+    category: eva
+    kind: eva
+    target: audio/eva/usa/insufficientFunds_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  eva.usa.lowPower:
+    category: eva
+    kind: eva
+    target: audio/eva/usa/lowPower_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  eva.usa.productionComplete:
+    category: eva
+    kind: eva
+    target: audio/eva/usa/productionComplete_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  eva.usa.unitLost:
+    category: eva
+    kind: eva
+    target: audio/eva/usa/unitLost_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  eva.usa.upgradeComplete:
+    category: eva
+    kind: eva
+    target: audio/eva/usa/upgradeComplete_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  eva.usa.victory:
+    category: eva
+    kind: eva
+    target: audio/eva/usa/victory_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-abrams.attack:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-abrams/attack_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-abrams.created:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-abrams/created_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-abrams.die:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-abrams/die_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-abrams.move:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-abrams/move_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-abrams.select:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-abrams/select_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-abrams.underFire:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-abrams/underFire_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-dozer.attack:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-dozer/attack_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-dozer.created:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-dozer/created_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-dozer.die:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-dozer/die_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-dozer.move:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-dozer/move_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-dozer.select:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-dozer/select_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-dozer.underFire:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-dozer/underFire_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-humvee.attack:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-humvee/attack_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-humvee.created:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-humvee/created_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-humvee.die:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-humvee/die_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-humvee.move:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-humvee/move_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-humvee.select:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-humvee/select_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-humvee.underFire:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-humvee/underFire_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-javelin-team.attack:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-javelin-team/attack_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-javelin-team.created:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-javelin-team/created_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-javelin-team.die:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-javelin-team/die_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-javelin-team.move:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-javelin-team/move_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-javelin-team.select:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-javelin-team/select_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-javelin-team.underFire:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-javelin-team/underFire_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-paladin.attack:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-paladin/attack_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-paladin.created:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-paladin/created_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-paladin.die:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-paladin/die_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-paladin.move:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-paladin/move_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-paladin.select:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-paladin/select_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-paladin.underFire:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-paladin/underFire_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-ranger.attack:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-ranger/attack_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-ranger.created:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-ranger/created_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-ranger.die:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-ranger/die_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-ranger.move:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-ranger/move_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-ranger.select:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-ranger/select_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-ranger.underFire:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-ranger/underFire_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-stryker.attack:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-stryker/attack_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-stryker.created:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-stryker/created_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-stryker.die:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-stryker/die_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-stryker.move:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-stryker/move_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-stryker.select:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-stryker/select_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-stryker.underFire:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-stryker/underFire_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-supply-truck.attack:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-supply-truck/attack_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-supply-truck.created:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-supply-truck/created_<n>.webm
+    variants: 1
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-supply-truck.die:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-supply-truck/die_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-supply-truck.move:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-supply-truck/move_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-supply-truck.select:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-supply-truck/select_<n>.webm
+    variants: 5
+    seconds: 3
+    loop: false
+    status: approved
+  voice.us-supply-truck.underFire:
+    category: voice
+    kind: voice
+    target: audio/voice/usa/us-supply-truck/underFire_<n>.webm
+    variants: 4
+    seconds: 3
+    loop: false
+    status: approved
+  building.select.hq.usa:
+    category: building
+    kind: sfx
+    target: audio/sfx/building.select.hq.usa_<n>.webm
+    variants: 1
+    seconds: 2
+    loop: false
+    status: todo
+  building.select.barracks.usa:
+    category: building
+    kind: sfx
+    target: audio/sfx/building.select.barracks.usa_<n>.webm
+    variants: 1
+    seconds: 2
+    loop: false
+    status: todo
+  building.select.factory.usa:
+    category: building
+    kind: sfx
+    target: audio/sfx/building.select.factory.usa_<n>.webm
+    variants: 1
+    seconds: 2
+    loop: false
+    status: todo
+  music.calm.usa:
+    category: music
+    kind: music
+    target: audio/music/calm.usa_<n>.webm
+    variants: 1
+    seconds: 2
+    loop: true
+    status: todo
+  music.combat.usa:
+    category: music
+    kind: music
+    target: audio/music/combat.usa_<n>.webm
+    variants: 1
+    seconds: 2
+    loop: true
+    status: todo
+  music.victory.usa:
+    category: music
+    kind: music
+    target: audio/music/victory.usa_<n>.webm
+    variants: 1
+    seconds: 2
+    loop: false
+    status: todo
+  music.defeat.usa:
+    category: music
+    kind: music
+    target: audio/music/defeat.usa_<n>.webm
+    variants: 1
+    seconds: 2
+    loop: false
+    status: todo
