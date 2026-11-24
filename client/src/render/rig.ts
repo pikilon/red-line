@@ -101,6 +101,13 @@ const RIGS: Readonly<Record<string, Readonly<Record<string, Man>>>> = {
     g: { weapon: "rpg", kneels: true, height: 0.5, phase: 0 },
     a: { weapon: "rifle", kneels: true, height: 0.5, phase: 0.37, feeds: true },
   },
+  "us-ranger": {
+    m: { weapon: "rifle", kneels: false, height: 0.54, phase: 0 },
+  },
+  "us-javelin-team": {
+    g: { weapon: "rpg", kneels: true, height: 0.5, phase: 0 },
+    a: { weapon: "rifle", kneels: true, height: 0.5, phase: 0.37 },
+  },
   "ua-stugna-team": {
     o: {
       weapon: "console",
