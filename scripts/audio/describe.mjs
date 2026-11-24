@@ -17,7 +17,7 @@ import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { spawn } from "node:child_process";
 import { parse, stringify } from "yaml";
-import { buildEntries, loadReference } from "./reference.mjs";
+import { buildEntries, FACTION_PREFIXES, loadReference } from "./reference.mjs";
 
 const ROOT = resolve(import.meta.dirname, "../..");
 const INVENTORY = join(ROOT, "data", "audio", "inventory.yaml");
@@ -95,7 +95,10 @@ function roleOf(id, record) {
       return "looping climate ambience bed";
     case "music": {
       const state = parts[1] === "calm" || parts[1] === "combat" ? parts[1] : parts[1];
-      const faction = parts[2] === "ukraine" ? "Ukrainian" : parts[2] === "russia" ? "Russian" : "";
+      const id = parts[2];
+      const faction = Object.values(FACTION_PREFIXES).includes(id)
+        ? id[0].toUpperCase() + id.slice(1)
+        : "";
       return `${faction} ${state} music state${record.loop ? ", looped" : ", stinger"}`.trim();
     }
     default:

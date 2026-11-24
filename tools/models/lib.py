@@ -19,7 +19,18 @@ from mathutils.bvhtree import BVHTree
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT_DIR = os.path.join(REPO, "client", "public", "models")
 
-FACTION_BODY = {"ukraine": "#5b6b3a", "russia": "#6b6650", "neutral": "#8b5a2b"}
+# Unknown factions fall back to the neutral colour (see `faction_body`).
+FACTION_BODY = {
+    "ukraine": "#5b6b3a",
+    "russia": "#6b6650",
+    "usa": "#4b5320",  # olive drab
+    "neutral": "#8b5a2b",
+}
+
+
+def faction_body(faction):
+    return FACTION_BODY.get(faction, FACTION_BODY["neutral"])
+
 TEAM = "#ffffff"
 DARK = "#2a2a2a"
 
@@ -71,7 +82,7 @@ def material(name, hex_color):
 def palette(faction):
     """The three contract materials for a faction."""
     return {
-        "body": material("body", FACTION_BODY[faction]),
+        "body": material("body", faction_body(faction)),
         "team": material("team", TEAM),
         "dark": material("dark", DARK),
         "cage": material("cage", DARK),

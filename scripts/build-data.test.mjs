@@ -13,7 +13,6 @@ import {
   readSources,
   serializeRuleset,
 } from "./build-data.mjs";
-import { TURRETED } from "../tools/models/check.mjs";
 
 // Repository root (this file lives in scripts/), used by the two criteria that
 // operate on the builtin data committed in the repository (specs/03 §7).
@@ -355,10 +354,8 @@ test("AC-06-09: turn rates from data", () => {
     assert.equal(type.turretTurnRateDeg, turret, `${id} turret turn rate`);
   }
 
-  // Faction units turn, buildings and depots do not; exactly the types of
-  // TURRETED turn their turret. (The tech-slice placeholder is not a unit of
+  // Faction units turn, buildings and depots do not. (The tech-slice placeholder is not a unit of
   // any faction, so it keeps both rates at 0.)
-  const turreted = new Set(TURRETED);
   for (const type of ruleset.types) {
     if (type.category === "unit" && type.faction >= 0) {
       assert.ok(type.turnRateDeg > 0, `${type.id} has no hull turn rate`);
@@ -366,7 +363,6 @@ test("AC-06-09: turn rates from data", () => {
     if (type.category !== "unit") {
       assert.equal(type.turnRateDeg, 0, `${type.id} is not a unit but has a hull turn rate`);
     }
-    assert.equal(type.turretTurnRateDeg > 0, turreted.has(type.id), `${type.id} turret turn rate`);
   }
 
   // The schema makes turnRateDeg mandatory for faction units and forbidden for

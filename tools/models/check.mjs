@@ -7,22 +7,6 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const MATERIALS = ["body", "team", "dark", "cage", "mark"];
-export const TURRETED = [
-  "ua-bradley",
-  "ua-leopard-2a4",
-  "ua-himars",
-  "ua-kozak-scout",
-  "ua-defense",
-  "ua-tw-12-7",
-  "ua-gepard",
-  "ua-patriot",
-  "ru-bmp-2",
-  "ru-t-72b3",
-  "ru-tos-1a",
-  "ru-brdm-scout",
-  "ru-defense",
-  "ru-pantsir",
-];
 export const BUDGETS = { unit: 1500, building: 3000, depot: 1000 };
 const FILL = 0.7;
 const EPS = 0.01;
@@ -234,7 +218,8 @@ export function checkModel(file, type, gltf) {
       "materials",
       `only ${MATERIALS.join(", ")} allowed, got ${bad.join(", ")}`,
     );
-  if (TURRETED.includes(type.id) && !s.nodeNames.includes("turret"))
+  // Turreted = the ruleset gives the type a turret turn rate.
+  if (type.turretTurnRateDeg > 0 && !s.nodeNames.includes("turret"))
     fail("turret", "missing 'turret' node");
   const budget = BUDGETS[type.category];
   if (s.triangles > budget)

@@ -68,7 +68,7 @@ test("AC-06-01: model check", () => {
   assert.deepEqual(rules(gltf({ materials: ["body", "chrome"] })), [
     "materials",
   ]);
-  assert.deepEqual(rules(gltf({ turret: false })), []); // x-tank is not in TURRETED
+  assert.deepEqual(rules(gltf({ turret: false })), []); // x-tank has no turret turn rate
   assert.deepEqual(rules(gltf({ tris: 900 })), ["budget"]); // two nodes share the mesh: 1800 > 1500
   assert.deepEqual(rules(gltf({ max: [0.5, 0.5, 0.6] })), ["bounds"]);
   assert.deepEqual(
@@ -77,7 +77,7 @@ test("AC-06-01: model check", () => {
   );
   assert.deepEqual(rules(gltf({ max: [0.4, 0.7, 0.6] })), ["bounds"]);
 
-  const turreted = { ...TYPE, id: "ru-t-72b3" };
+  const turreted = { ...TYPE, id: "ru-t-72b3", turretTurnRateDeg: 135 };
   assert.deepEqual(
     checkModel(
       "ru-t-72b3.glb",
