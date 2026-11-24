@@ -62,6 +62,7 @@ Assumptions:
 * The Chinook supply helicopter is deferred; the HEMTT truck harvests like
   every other faction until air harvesting exists.
 * The Ambulance, Avenger, aircraft and drones come in a later slice.
+* The Javelin team is two soldiers (gunner and spotter), like the Russian RPG team, so it fills its render box.
 
 ## 4. Numbers (starting point, D-05)
 
