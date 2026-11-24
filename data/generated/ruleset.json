@@ -592,6 +592,194 @@
       }
     },
     {
+      "id": "us-rifle",
+      "damageType": 0,
+      "damage": 11,
+      "rangeCenti": 450,
+      "minRangeCenti": 0,
+      "cooldownTicks": 15,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 400,
+      "aimToleranceDeg": 15,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "antiAir": "low",
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "us-javelin",
+      "damageType": 2,
+      "damage": 140,
+      "rangeCenti": 1000,
+      "minRangeCenti": 150,
+      "cooldownTicks": 90,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 45,
+      "aimToleranceDeg": 15,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "atgm",
+        "flight": "topAttack",
+        "apexCenti": 40,
+        "launch": "softLaunch",
+        "trail": "smoke"
+      }
+    },
+    {
+      "id": "us-m2-hmg",
+      "damageType": 0,
+      "damage": 12,
+      "rangeCenti": 550,
+      "minRangeCenti": 0,
+      "cooldownTicks": 10,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 450,
+      "aimToleranceDeg": 2,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "antiAir": "low",
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "us-stryker-cannon",
+      "damageType": 1,
+      "damage": 15,
+      "rangeCenti": 600,
+      "minRangeCenti": 0,
+      "cooldownTicks": 8,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 500,
+      "aimToleranceDeg": 2,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "antiAir": "low",
+      "render": {
+        "model": "tracerHeavy",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "us-m256",
+      "damageType": 2,
+      "damage": 110,
+      "rangeCenti": 750,
+      "minRangeCenti": 0,
+      "cooldownTicks": 30,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 900,
+      "aimToleranceDeg": 2,
+      "delivery": 1,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "shell",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "cannon",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "us-m109-155",
+      "damageType": 3,
+      "damage": 115,
+      "rangeCenti": 2600,
+      "minRangeCenti": 700,
+      "cooldownTicks": 180,
+      "splashCenti": 175,
+      "projectileTicks": 0,
+      "speedCenti": 60,
+      "aimToleranceDeg": 2,
+      "delivery": 1,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "shell",
+        "flight": "topAttack",
+        "apexCenti": 800,
+        "launch": "cannon",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "us-sidearm",
+      "damageType": 0,
+      "damage": 4,
+      "rangeCenti": 300,
+      "minRangeCenti": 0,
+      "cooldownTicks": 20,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 400,
+      "aimToleranceDeg": 2,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "antiAir": "low",
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "us-firebase-howitzer",
+      "damageType": 3,
+      "damage": 90,
+      "rangeCenti": 1800,
+      "minRangeCenti": 400,
+      "cooldownTicks": 150,
+      "splashCenti": 150,
+      "projectileTicks": 0,
+      "speedCenti": 60,
+      "aimToleranceDeg": 2,
+      "delivery": 1,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "shell",
+        "flight": "topAttack",
+        "apexCenti": 800,
+        "launch": "cannon",
+        "trail": "none"
+      }
+    },
+    {
       "id": "ua-ratel-warhead",
       "damageType": 3,
       "damage": 700,
@@ -676,7 +864,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
-      "launches": 39,
+      "launches": 53,
       "render": {
         "model": "tracer",
         "flight": "straight",
@@ -725,7 +913,7 @@
       "salvoIntervalTicks": 0,
       "antiAir": "low",
       "antiGround": false,
-      "launches": 40,
+      "launches": 54,
       "render": {
         "model": "tracer",
         "flight": "straight",
@@ -962,7 +1150,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
-      "launches": 51,
+      "launches": 65,
       "render": {
         "model": "tracer",
         "flight": "straight",
@@ -1434,10 +1622,10 @@
         13,
         14,
         15,
-        31,
-        32,
-        33,
-        34
+        45,
+        46,
+        47,
+        48
       ],
       "footprint": [
         0,
@@ -1688,8 +1876,8 @@
       "produces": [
         2,
         3,
-        38,
-        54
+        52,
+        68
       ],
       "builds": [],
       "footprint": [
@@ -1747,8 +1935,8 @@
         5,
         6,
         7,
-        41,
-        55
+        55,
+        69
       ],
       "builds": [],
       "footprint": [
@@ -2187,8 +2375,8 @@
         27,
         28,
         29,
-        44,
-        45
+        58,
+        59
       ],
       "footprint": [
         0,
@@ -2439,8 +2627,8 @@
       "produces": [
         16,
         17,
-        50,
-        56
+        64,
+        70
       ],
       "builds": [],
       "footprint": [
@@ -2498,9 +2686,9 @@
         19,
         20,
         21,
-        52,
-        53,
-        57
+        66,
+        67,
+        71
       ],
       "builds": [],
       "footprint": [
@@ -2582,6 +2770,748 @@
       }
     },
     {
+      "id": "us-ranger",
+      "faction": 2,
+      "category": "unit",
+      "armor": 0,
+      "hp": 115,
+      "sightCenti": 600,
+      "cost": 130,
+      "buildTicks": 75,
+      "speedCenti": 8,
+      "turnRateDeg": 720,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 0,
+      "weapon": 16,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          13,
+          26,
+          39,
+          52
+        ],
+        "required": [
+          52,
+          104,
+          208
+        ]
+      },
+      "render": {
+        "size": [
+          30,
+          60,
+          30
+        ]
+      }
+    },
+    {
+      "id": "us-javelin-team",
+      "faction": 2,
+      "category": "unit",
+      "armor": 0,
+      "hp": 90,
+      "sightCenti": 650,
+      "cost": 400,
+      "buildTicks": 150,
+      "speedCenti": 6,
+      "turnRateDeg": 540,
+      "radiusCenti": 25,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": true,
+      "stowTicks": 17,
+      "locomotor": 0,
+      "weapon": 17,
+      "trenchWeapon": 22,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          40,
+          80,
+          120,
+          160
+        ],
+        "required": [
+          160,
+          320,
+          640
+        ]
+      },
+      "render": {
+        "size": [
+          40,
+          50,
+          40
+        ]
+      }
+    },
+    {
+      "id": "us-humvee",
+      "faction": 2,
+      "category": "unit",
+      "armor": 1,
+      "hp": 280,
+      "sightCenti": 1200,
+      "cost": 450,
+      "buildTicks": 150,
+      "speedCenti": 27,
+      "turnRateDeg": 300,
+      "radiusCenti": 34,
+      "turretTurnRateDeg": 270,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 2,
+      "weapon": 18,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "transport": {
+        "slots": 5,
+        "fireFromInside": true,
+        "damagePct": 100,
+        "exitTicks": 4
+      },
+      "experience": {
+        "value": [
+          45,
+          90,
+          135,
+          180
+        ],
+        "required": [
+          180,
+          360,
+          720
+        ]
+      },
+      "render": {
+        "size": [
+          60,
+          50,
+          90
+        ]
+      }
+    },
+    {
+      "id": "us-stryker",
+      "faction": 2,
+      "category": "unit",
+      "armor": 1,
+      "hp": 480,
+      "sightCenti": 700,
+      "cost": 750,
+      "buildTicks": 220,
+      "speedCenti": 26,
+      "turnRateDeg": 220,
+      "radiusCenti": 41,
+      "turretTurnRateDeg": 180,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 2,
+      "weapon": 19,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "transport": {
+        "slots": 8,
+        "damagePct": 10,
+        "exitTicks": 4
+      },
+      "experience": {
+        "value": [
+          75,
+          150,
+          225,
+          300
+        ],
+        "required": [
+          300,
+          600,
+          1200
+        ]
+      },
+      "render": {
+        "size": [
+          70,
+          60,
+          110
+        ]
+      }
+    },
+    {
+      "id": "us-abrams",
+      "faction": 2,
+      "category": "unit",
+      "armor": 2,
+      "hp": 900,
+      "sightCenti": 700,
+      "cost": 1500,
+      "buildTicks": 330,
+      "speedCenti": 20,
+      "turnRateDeg": 180,
+      "radiusCenti": 45,
+      "turretTurnRateDeg": 135,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 1,
+      "weapon": 20,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          150,
+          300,
+          450,
+          600
+        ],
+        "required": [
+          600,
+          1200,
+          2400
+        ]
+      },
+      "render": {
+        "size": [
+          80,
+          55,
+          130
+        ]
+      }
+    },
+    {
+      "id": "us-paladin",
+      "faction": 2,
+      "category": "unit",
+      "armor": 1,
+      "hp": 320,
+      "sightCenti": 600,
+      "cost": 1500,
+      "buildTicks": 360,
+      "speedCenti": 16,
+      "turnRateDeg": 140,
+      "radiusCenti": 45,
+      "turretTurnRateDeg": 90,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 1,
+      "weapon": 21,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          150,
+          300,
+          450,
+          600
+        ],
+        "required": [
+          600,
+          1200,
+          2400
+        ]
+      },
+      "render": {
+        "size": [
+          75,
+          65,
+          125
+        ]
+      }
+    },
+    {
+      "id": "us-dozer",
+      "faction": 2,
+      "category": "unit",
+      "armor": 1,
+      "hp": 300,
+      "sightCenti": 500,
+      "cost": 800,
+      "buildTicks": 200,
+      "speedCenti": 15,
+      "turnRateDeg": 150,
+      "radiusCenti": 38,
+      "turretTurnRateDeg": 0,
+      "articulation": "blade",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [
+        39,
+        40,
+        41,
+        42,
+        43
+      ],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          80,
+          160,
+          240,
+          320
+        ]
+      },
+      "render": {
+        "size": [
+          80,
+          60,
+          100
+        ]
+      }
+    },
+    {
+      "id": "us-supply-truck",
+      "faction": 2,
+      "category": "unit",
+      "armor": 1,
+      "hp": 250,
+      "sightCenti": 500,
+      "cost": 600,
+      "buildTicks": 150,
+      "speedCenti": 20,
+      "turnRateDeg": 150,
+      "radiusCenti": 38,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 2,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 300,
+      "loadTicks": 45,
+      "unloadTicks": 15,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          60,
+          120,
+          180,
+          240
+        ]
+      },
+      "render": {
+        "size": [
+          60,
+          60,
+          100
+        ]
+      }
+    },
+    {
+      "id": "us-hq",
+      "faction": 2,
+      "category": "building",
+      "armor": 3,
+      "hp": 3000,
+      "sightCenti": 900,
+      "cost": 0,
+      "buildTicks": 0,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [
+        36
+      ],
+      "builds": [],
+      "footprint": [
+        4,
+        4
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          40,
+          80,
+          120,
+          160
+        ]
+      },
+      "render": {
+        "size": [
+          400,
+          150,
+          400
+        ]
+      }
+    },
+    {
+      "id": "us-power-plant",
+      "faction": 2,
+      "category": "building",
+      "armor": 3,
+      "hp": 1000,
+      "sightCenti": 500,
+      "cost": 600,
+      "buildTicks": 150,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        3,
+        3
+      ],
+      "power": 10,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          60,
+          120,
+          180,
+          240
+        ]
+      },
+      "render": {
+        "size": [
+          300,
+          120,
+          300
+        ]
+      }
+    },
+    {
+      "id": "us-supply-center",
+      "faction": 2,
+      "category": "building",
+      "armor": 3,
+      "hp": 1500,
+      "sightCenti": 500,
+      "cost": 1500,
+      "buildTicks": 225,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [
+        37
+      ],
+      "builds": [],
+      "footprint": [
+        4,
+        3
+      ],
+      "power": -2,
+      "requiresPower": false,
+      "dropOff": true,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": 37,
+      "experience": {
+        "value": [
+          150,
+          300,
+          450,
+          600
+        ]
+      },
+      "render": {
+        "size": [
+          400,
+          100,
+          300
+        ]
+      }
+    },
+    {
+      "id": "us-barracks",
+      "faction": 2,
+      "category": "building",
+      "armor": 3,
+      "hp": 1000,
+      "sightCenti": 500,
+      "cost": 500,
+      "buildTicks": 150,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [
+        39
+      ],
+      "produces": [
+        30,
+        31,
+        72
+      ],
+      "builds": [],
+      "footprint": [
+        3,
+        3
+      ],
+      "power": -2,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "healsInfantry": true,
+      "experience": {
+        "value": [
+          50,
+          100,
+          150,
+          200
+        ]
+      },
+      "render": {
+        "size": [
+          300,
+          90,
+          300
+        ]
+      }
+    },
+    {
+      "id": "us-vehicle-factory",
+      "faction": 2,
+      "category": "building",
+      "armor": 3,
+      "hp": 2000,
+      "sightCenti": 500,
+      "cost": 2000,
+      "buildTicks": 300,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [
+        40
+      ],
+      "produces": [
+        32,
+        33,
+        34,
+        35,
+        73
+      ],
+      "builds": [],
+      "footprint": [
+        4,
+        4
+      ],
+      "power": -4,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "repairsVehicles": true,
+      "experience": {
+        "value": [
+          200,
+          400,
+          600,
+          800
+        ]
+      },
+      "render": {
+        "size": [
+          400,
+          110,
+          400
+        ]
+      }
+    },
+    {
+      "id": "us-firebase",
+      "faction": 2,
+      "category": "building",
+      "armor": 3,
+      "hp": 1400,
+      "sightCenti": 1900,
+      "cost": 1000,
+      "buildTicks": 180,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 90,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": 23,
+      "requires": [
+        41
+      ],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        2,
+        2
+      ],
+      "power": -3,
+      "requiresPower": true,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          100,
+          200,
+          300,
+          400
+        ]
+      },
+      "render": {
+        "size": [
+          200,
+          80,
+          200
+        ]
+      }
+    },
+    {
       "id": "port-depot",
       "faction": -1,
       "category": "depot",
@@ -2644,9 +3574,9 @@
         13
       ],
       "produces": [
-        35,
-        36,
-        37
+        49,
+        50,
+        51
       ],
       "builds": [],
       "footprint": [
@@ -2693,7 +3623,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": -1,
-      "weapon": 21,
+      "weapon": 29,
       "requires": [
         12
       ],
@@ -2748,7 +3678,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": -1,
-      "weapon": 24,
+      "weapon": 32,
       "requires": [
         12
       ],
@@ -2803,8 +3733,8 @@
         14
       ],
       "produces": [
-        42,
-        43
+        56,
+        57
       ],
       "builds": [],
       "footprint": [
@@ -2867,7 +3797,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "oneWay": {
-        "warhead": 16,
+        "warhead": 24,
         "fuelTicks": 0,
         "armTiles": 0
       },
@@ -2905,7 +3835,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": 1,
-      "weapon": 17,
+      "weapon": 25,
       "requires": [],
       "produces": [],
       "builds": [],
@@ -2959,7 +3889,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": 3,
-      "weapon": 18,
+      "weapon": 26,
       "requires": [],
       "produces": [],
       "builds": [],
@@ -3017,7 +3947,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": 0,
-      "weapon": 19,
+      "weapon": 27,
       "trenchWeapon": 6,
       "requires": [],
       "produces": [],
@@ -3092,7 +4022,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "oneWay": {
-        "warhead": 20,
+        "warhead": 28,
         "fuelTicks": 300,
         "armTiles": 0
       },
@@ -3147,7 +4077,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "oneWay": {
-        "warhead": 22,
+        "warhead": 30,
         "fuelTicks": 150,
         "armTiles": 0
       },
@@ -3186,7 +4116,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": 2,
-      "weapon": 23,
+      "weapon": 31,
       "requires": [],
       "produces": [],
       "builds": [],
@@ -3255,7 +4185,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "oneWay": {
-        "warhead": 25,
+        "warhead": 33,
         "fuelTicks": 3000,
         "armTiles": 3
       },
@@ -3310,7 +4240,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "oneWay": {
-        "warhead": 26,
+        "warhead": 34,
         "fuelTicks": 3000,
         "armTiles": 3
       },
@@ -3355,8 +4285,8 @@
         28
       ],
       "produces": [
-        46,
-        47
+        60,
+        61
       ],
       "builds": [],
       "footprint": [
@@ -3408,8 +4338,8 @@
         26
       ],
       "produces": [
-        48,
-        49
+        62,
+        63
       ],
       "builds": [],
       "footprint": [
@@ -3456,7 +4386,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": 4,
-      "weapon": 27,
+      "weapon": 35,
       "requires": [],
       "produces": [],
       "builds": [],
@@ -3577,7 +4507,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "oneWay": {
-        "warhead": 28,
+        "warhead": 36,
         "fuelTicks": 1800,
         "armTiles": 3
       },
@@ -3632,7 +4562,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "oneWay": {
-        "warhead": 29,
+        "warhead": 37,
         "fuelTicks": 1500,
         "armTiles": 3
       },
@@ -3671,7 +4601,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": 0,
-      "weapon": 31,
+      "weapon": 39,
       "trenchWeapon": 14,
       "requires": [],
       "produces": [],
@@ -3746,7 +4676,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "oneWay": {
-        "warhead": 30,
+        "warhead": 38,
         "fuelTicks": 240,
         "armTiles": 0
       },
@@ -3784,7 +4714,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": 2,
-      "weapon": 32,
+      "weapon": 40,
       "requires": [],
       "produces": [],
       "builds": [],
@@ -3907,7 +4837,7 @@
         "appliesTo": [
           2,
           3,
-          38
+          52
         ],
         "healthPercent": 100,
         "damagePercent": 120
@@ -4005,7 +4935,7 @@
         "appliesTo": [
           16,
           17,
-          50
+          64
         ],
         "healthPercent": 125,
         "damagePercent": 100
@@ -4066,6 +4996,103 @@
           0
         ]
       }
+    },
+    {
+      "id": "us-advanced-optics",
+      "faction": 2,
+      "category": "upgrade",
+      "armor": 0,
+      "hp": 0,
+      "sightCenti": 0,
+      "cost": 900,
+      "buildTicks": 450,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "upgrade": {
+        "appliesTo": [
+          30,
+          31
+        ],
+        "healthPercent": 100,
+        "damagePercent": 120
+      },
+      "render": {
+        "size": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "us-reactive-armor",
+      "faction": 2,
+      "category": "upgrade",
+      "armor": 0,
+      "hp": 0,
+      "sightCenti": 0,
+      "cost": 1400,
+      "buildTicks": 600,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "upgrade": {
+        "appliesTo": [
+          32,
+          33,
+          34
+        ],
+        "healthPercent": 120,
+        "damagePercent": 100
+      },
+      "render": {
+        "size": [
+          0,
+          0,
+          0
+        ]
+      }
     }
   ],
   "factions": [
@@ -4078,6 +5105,11 @@
       "id": "russia",
       "hq": 24,
       "dozer": 22
+    },
+    {
+      "id": "usa",
+      "hq": 38,
+      "dozer": 36
     }
   ],
   "layerNames": {
@@ -29013,20 +30045,20 @@
         15,
         11,
         15,
-        32,
-        34,
+        46,
+        48,
         11,
-        31,
-        33,
+        45,
+        47,
         11
       ],
       "upgrades": [
         {
-          "upgrade": 54,
+          "upgrade": 68,
           "minTick": 3600
         },
         {
-          "upgrade": 55,
+          "upgrade": 69,
           "minTick": 6000
         }
       ],
@@ -29091,11 +30123,11 @@
           "id": "robots",
           "units": [
             [
-              35,
+              49,
               3
             ],
             [
-              36,
+              50,
               2
             ]
           ]
@@ -29104,7 +30136,7 @@
           "id": "fpv",
           "units": [
             [
-              38,
+              52,
               3
             ],
             [
@@ -29117,7 +30149,7 @@
           "id": "flamingo",
           "units": [
             [
-              42,
+              56,
               1
             ]
           ]
@@ -29126,7 +30158,7 @@
           "id": "storm-shadow",
           "units": [
             [
-              43,
+              57,
               1
             ]
           ]
@@ -29135,7 +30167,7 @@
           "id": "bombers",
           "units": [
             [
-              37,
+              51,
               2
             ]
           ]
@@ -29143,7 +30175,7 @@
       ],
       "guards": [
         {
-          "unit": 41,
+          "unit": 55,
           "count": 1,
           "minTick": 3600
         }
@@ -29239,15 +30271,15 @@
         14,
         13,
         11,
-        32
+        46
       ],
       "upgrades": [
         {
-          "upgrade": 54,
+          "upgrade": 68,
           "minTick": 5400
         },
         {
-          "upgrade": 55,
+          "upgrade": 69,
           "minTick": 7200
         }
       ],
@@ -29304,7 +30336,7 @@
           "id": "fpv",
           "units": [
             [
-              38,
+              52,
               3
             ]
           ]
@@ -29312,7 +30344,7 @@
       ],
       "guards": [
         {
-          "unit": 41,
+          "unit": 55,
           "count": 1,
           "minTick": 5400
         }
@@ -29358,17 +30390,17 @@
         25,
         28,
         25,
-        45,
-        44,
+        59,
+        58,
         25
       ],
       "upgrades": [
         {
-          "upgrade": 56,
+          "upgrade": 70,
           "minTick": 3600
         },
         {
-          "upgrade": 57,
+          "upgrade": 71,
           "minTick": 6000
         }
       ],
@@ -29429,7 +30461,7 @@
           "id": "waves",
           "units": [
             [
-              48,
+              62,
               6
             ]
           ]
@@ -29438,11 +30470,11 @@
           "id": "air-strike",
           "units": [
             [
-              46,
+              60,
               1
             ],
             [
-              49,
+              63,
               2
             ]
           ]
@@ -29451,7 +30483,7 @@
           "id": "fibre",
           "units": [
             [
-              50,
+              64,
               2
             ],
             [
@@ -29463,12 +30495,12 @@
       ],
       "guards": [
         {
-          "unit": 52,
+          "unit": 66,
           "count": 2,
           "minTick": 4800
         },
         {
-          "unit": 53,
+          "unit": 67,
           "count": 1,
           "minTick": 6000
         }
@@ -29543,16 +30575,16 @@
         27,
         25,
         29,
-        45,
+        59,
         25
       ],
       "upgrades": [
         {
-          "upgrade": 56,
+          "upgrade": 70,
           "minTick": 5400
         },
         {
-          "upgrade": 57,
+          "upgrade": 71,
           "minTick": 7200
         }
       ],
@@ -29613,7 +30645,7 @@
           "id": "waves",
           "units": [
             [
-              48,
+              62,
               8
             ]
           ]
@@ -29621,7 +30653,7 @@
       ],
       "guards": [
         {
-          "unit": 52,
+          "unit": 66,
           "count": 1,
           "minTick": 5400
         }
@@ -29651,6 +30683,211 @@
           "taskForce": 4,
           "weight": 50,
           "minTick": 2400
+        }
+      ]
+    },
+    {
+      "id": "usa-balanced",
+      "faction": 2,
+      "harvesters": 4,
+      "defenseRadiusCenti": 2000,
+      "garrisonRadiusCenti": 800,
+      "buildOrder": [
+        39,
+        40,
+        41,
+        39,
+        42,
+        43,
+        39,
+        43
+      ],
+      "upgrades": [
+        {
+          "upgrade": 72,
+          "minTick": 3600
+        },
+        {
+          "upgrade": 73,
+          "minTick": 6000
+        }
+      ],
+      "taskForces": [
+        {
+          "id": "infantry",
+          "units": [
+            [
+              30,
+              4
+            ],
+            [
+              31,
+              2
+            ]
+          ]
+        },
+        {
+          "id": "mechanized",
+          "units": [
+            [
+              33,
+              3
+            ],
+            [
+              30,
+              4
+            ]
+          ]
+        },
+        {
+          "id": "armor",
+          "units": [
+            [
+              34,
+              3
+            ],
+            [
+              33,
+              2
+            ]
+          ]
+        },
+        {
+          "id": "fires",
+          "units": [
+            [
+              35,
+              2
+            ],
+            [
+              34,
+              2
+            ],
+            [
+              31,
+              3
+            ]
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "taskForce": 0,
+          "weight": 50,
+          "minTick": 0
+        },
+        {
+          "taskForce": 1,
+          "weight": 40,
+          "minTick": 2700
+        },
+        {
+          "taskForce": 2,
+          "weight": 40,
+          "minTick": 4500
+        },
+        {
+          "taskForce": 3,
+          "weight": 20,
+          "minTick": 6300
+        }
+      ]
+    },
+    {
+      "id": "usa-rush",
+      "faction": 2,
+      "harvesters": 6,
+      "defenseRadiusCenti": 1500,
+      "garrisonRadiusCenti": 800,
+      "buildOrder": [
+        39,
+        41,
+        40,
+        42,
+        41,
+        39,
+        43
+      ],
+      "upgrades": [
+        {
+          "upgrade": 72,
+          "minTick": 5400
+        },
+        {
+          "upgrade": 73,
+          "minTick": 7200
+        }
+      ],
+      "taskForces": [
+        {
+          "id": "rifles",
+          "units": [
+            [
+              30,
+              8
+            ]
+          ]
+        },
+        {
+          "id": "raid",
+          "units": [
+            [
+              32,
+              3
+            ],
+            [
+              30,
+              4
+            ]
+          ]
+        },
+        {
+          "id": "hunters",
+          "units": [
+            [
+              31,
+              3
+            ],
+            [
+              30,
+              4
+            ]
+          ]
+        },
+        {
+          "id": "armor",
+          "units": [
+            [
+              34,
+              2
+            ],
+            [
+              33,
+              2
+            ]
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "taskForce": 0,
+          "weight": 60,
+          "minTick": 0
+        },
+        {
+          "taskForce": 1,
+          "weight": 50,
+          "minTick": 1800
+        },
+        {
+          "taskForce": 2,
+          "weight": 30,
+          "minTick": 2700
+        },
+        {
+          "taskForce": 3,
+          "weight": 40,
+          "minTick": 3600
         }
       ]
     }

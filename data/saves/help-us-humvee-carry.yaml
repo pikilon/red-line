@@ -1,0 +1,17 @@
+# Spec 48: help card of the Kozak-2 scout. A squad walks to board it; select the infantry to see the move.
+id: help-us-humvee-carry
+map: showcase
+armies: [usa, russia]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 44, y: 20, zoom: 3 }
+entities:
+  - { player: 0, type: us-humvee, atCenti: [4500, 2000], label: kozak }
+  - { player: 0, type: us-ranger, atCenti: [4050, 1850], order: { board: kozak } }
+  - { player: 0, type: us-ranger, atCenti: [4000, 2000], order: { board: kozak } }
+  - { player: 0, type: us-ranger, atCenti: [4050, 2150], order: { board: kozak } }
+  - { player: 0, type: us-javelin-team, atCenti: [3950, 2000], order: { board: kozak } }

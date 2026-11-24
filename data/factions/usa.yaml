@@ -1,0 +1,226 @@
+id: usa                              # required, must equal the file name
+hq: us-hq                            # required, a building type of this file
+dozer: us-dozer                      # required, a unit type of this file
+weapons:                             # required (spec 53 §4)
+  - { id: us-rifle, damageType: smallArms, damage: 11, rangeCenti: 450, cooldownTicks: 15, speedCenti: 400, antiAir: low, delivery: homing, aimToleranceDeg: 15 }
+  - { id: us-javelin, damageType: antiTank, damage: 140, rangeCenti: 1000, minRangeCenti: 150, cooldownTicks: 90, speedCenti: 45, delivery: homing, render: { model: atgm, flight: topAttack, apexCenti: 40, launch: softLaunch, trail: smoke }, aimToleranceDeg: 15 }
+  - { id: us-m2-hmg, damageType: smallArms, damage: 12, rangeCenti: 550, cooldownTicks: 10, speedCenti: 450, antiAir: low, delivery: homing }
+  - { id: us-stryker-cannon, damageType: autocannon, damage: 15, rangeCenti: 600, cooldownTicks: 8, speedCenti: 500, antiAir: low, delivery: homing, render: { model: tracerHeavy, flight: straight, apexCenti: 0, launch: muzzle, trail: none } }
+  - { id: us-m256, damageType: antiTank, damage: 110, rangeCenti: 750, cooldownTicks: 30, speedCenti: 900, delivery: ballistic, render: { model: shell, flight: straight, apexCenti: 0, launch: cannon, trail: none } }
+  - { id: us-m109-155, damageType: highExplosive, damage: 115, rangeCenti: 2600, minRangeCenti: 700, cooldownTicks: 180, splashCenti: 175, speedCenti: 60, delivery: ballistic, render: { model: shell, flight: topAttack, apexCenti: 800, launch: cannon, trail: none } }
+  - { id: us-sidearm, damageType: smallArms, damage: 4, rangeCenti: 300, cooldownTicks: 20, speedCenti: 400, antiAir: low, delivery: homing }   # spec 35 §5c: trench fights
+  - { id: us-firebase-howitzer, damageType: highExplosive, damage: 90, rangeCenti: 1800, minRangeCenti: 400, cooldownTicks: 150, splashCenti: 150, speedCenti: 60, delivery: ballistic, render: { model: shell, flight: topAttack, apexCenti: 800, launch: cannon, trail: none } }
+types:                               # required
+  - id: us-ranger
+    category: unit
+    locomotor: foot
+    armor: infantry
+    hp: 115
+    sightCenti: 600
+    cost: 130
+    buildTicks: 75
+    speedCenti: 8
+    turnRateDeg: 720
+    weapon: us-rifle
+    render: { size: [30, 60, 30] }
+    experience: { value: [13, 26, 39, 52], required: [52, 104, 208] }
+  - id: us-javelin-team
+    category: unit
+    locomotor: foot
+    armor: infantry
+    hp: 90
+    sightCenti: 650
+    cost: 400
+    buildTicks: 150
+    speedCenti: 6
+    turnRateDeg: 540
+    weapon: us-javelin
+    stowTicks: 17
+    trenchWeapon: us-sidearm
+    radiusCenti: 25
+    render: { size: [40, 50, 40] }
+    experience: { value: [40, 80, 120, 160], required: [160, 320, 640] }
+  - id: us-humvee
+    category: unit
+    locomotor: wheeled
+    armor: light
+    hp: 280
+    sightCenti: 1200
+    cost: 450
+    buildTicks: 150
+    speedCenti: 27
+    turnRateDeg: 300
+    turretTurnRateDeg: 270
+    weapon: us-m2-hmg
+    radiusCenti: 34
+    transport: { slots: 5, fireFromInside: true, damagePct: 100, exitTicks: 4 }
+    render: { size: [60, 50, 90] }
+    experience: { value: [45, 90, 135, 180], required: [180, 360, 720] }
+  - id: us-stryker
+    category: unit
+    locomotor: wheeled
+    armor: light
+    hp: 480
+    sightCenti: 700
+    cost: 750
+    buildTicks: 220
+    speedCenti: 26
+    turnRateDeg: 220
+    turretTurnRateDeg: 180
+    weapon: us-stryker-cannon
+    radiusCenti: 41
+    transport: { slots: 8, damagePct: 10, exitTicks: 4 }
+    render: { size: [70, 60, 110] }
+    experience: { value: [75, 150, 225, 300], required: [300, 600, 1200] }
+  - id: us-abrams
+    category: unit
+    locomotor: tracked
+    armor: armored
+    hp: 900
+    sightCenti: 700
+    cost: 1500
+    buildTicks: 330
+    speedCenti: 20
+    turnRateDeg: 180
+    turretTurnRateDeg: 135
+    weapon: us-m256
+    radiusCenti: 45
+    render: { size: [80, 55, 130] }
+    experience: { value: [150, 300, 450, 600], required: [600, 1200, 2400] }
+  - id: us-paladin
+    category: unit
+    locomotor: tracked
+    armor: light
+    hp: 320
+    sightCenti: 600
+    cost: 1500
+    buildTicks: 360
+    speedCenti: 16
+    turnRateDeg: 140
+    turretTurnRateDeg: 90
+    weapon: us-m109-155
+    radiusCenti: 45
+    render: { size: [75, 65, 125] }
+    experience: { value: [150, 300, 450, 600], required: [600, 1200, 2400] }
+  - id: us-dozer
+    category: unit
+    locomotor: tracked
+    armor: light
+    hp: 300
+    sightCenti: 500
+    cost: 800
+    buildTicks: 200
+    speedCenti: 15
+    turnRateDeg: 150
+    builds: [us-power-plant, us-supply-center, us-barracks, us-vehicle-factory, us-firebase]
+    articulation: blade
+    radiusCenti: 38
+    render: { size: [80, 60, 100] }
+    experience: { value: [80, 160, 240, 320] }
+  - id: us-supply-truck
+    category: unit
+    locomotor: wheeled
+    armor: light
+    hp: 250
+    sightCenti: 500
+    cost: 600
+    buildTicks: 150
+    speedCenti: 20
+    turnRateDeg: 150
+    capacity: 300
+    loadTicks: 45
+    unloadTicks: 15
+    radiusCenti: 38
+    render: { size: [60, 60, 100] }
+    experience: { value: [60, 120, 180, 240] }
+  - id: us-hq
+    category: building
+    armor: structure
+    hp: 3000
+    sightCenti: 900
+    cost: 0
+    buildTicks: 0
+    footprint: [4, 4]
+    power: 0
+    produces: [us-dozer]
+    render: { height: 150 }
+    experience: { value: [40, 80, 120, 160] }
+  - id: us-power-plant
+    category: building
+    armor: structure
+    hp: 1000
+    sightCenti: 500
+    cost: 600
+    buildTicks: 150
+    footprint: [3, 3]
+    power: 10
+    render: { height: 120 }
+    experience: { value: [60, 120, 180, 240] }
+  - id: us-supply-center
+    category: building
+    armor: structure
+    hp: 1500
+    sightCenti: 500
+    cost: 1500
+    buildTicks: 225
+    footprint: [4, 3]
+    power: -2
+    produces: [us-supply-truck]
+    dropOff: true
+    freeUnit: us-supply-truck
+    render: { height: 100 }
+    experience: { value: [150, 300, 450, 600] }
+  - id: us-barracks
+    category: building
+    armor: structure
+    hp: 1000
+    sightCenti: 500
+    cost: 500
+    buildTicks: 150
+    footprint: [3, 3]
+    power: -2
+    produces: [us-ranger, us-javelin-team, us-advanced-optics]
+    healsInfantry: true
+    requires: [us-power-plant]
+    render: { height: 90 }
+    experience: { value: [50, 100, 150, 200] }
+  - id: us-vehicle-factory
+    category: building
+    armor: structure
+    hp: 2000
+    sightCenti: 500
+    cost: 2000
+    buildTicks: 300
+    footprint: [4, 4]
+    power: -4
+    produces: [us-humvee, us-stryker, us-abrams, us-paladin, us-reactive-armor]
+    repairsVehicles: true
+    requires: [us-supply-center]
+    render: { height: 110 }
+    experience: { value: [200, 400, 600, 800] }
+  - id: us-firebase
+    category: building
+    armor: structure
+    hp: 1400
+    sightCenti: 1900
+    cost: 1000
+    buildTicks: 180
+    footprint: [2, 2]
+    power: -3
+    requires: [us-barracks]
+    requiresPower: true
+    weapon: us-firebase-howitzer
+    turretTurnRateDeg: 90
+    render: { height: 80 }
+    experience: { value: [100, 200, 300, 400] }
+upgrades:                            # spec 52
+  - id: us-advanced-optics           # thermal sights and better optics for the infantry
+    category: upgrade
+    cost: 900
+    buildTicks: 450
+    upgrade: { appliesTo: [us-ranger, us-javelin-team], damagePercent: 120 }
+  - id: us-reactive-armor            # reactive plates on the vehicles
+    category: upgrade
+    cost: 1400
+    buildTicks: 600
+    upgrade: { appliesTo: [us-humvee, us-stryker, us-abrams], healthPercent: 120 }

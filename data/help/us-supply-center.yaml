@@ -1,0 +1,6 @@
+# Spec 54: help card screenshots of the supply center. `node --run help:shots -- --type us-supply-center`
+- { id: us-supply-center-produce, save: help-us-supply-center-produce, ticks: 5, select: [us-supply-center], hud: true, tab: build }
+- { id: us-supply-center-dropoff, save: help-us-supply-center-dropoff, ticks: 95, select: [us-supply-truck] }
+- { id: us-supply-center-rally, save: help-us-supply-center-rally, ticks: 5, select: [us-supply-center], hud: true, tab: orders }
+- { id: us-supply-center-repair, save: help-us-supply-center-repair, ticks: 10, select: [us-dozer] }
+- { id: us-supply-center-sell, save: help-us-supply-center-sell, ticks: 5, select: [us-supply-center], hud: true, tab: orders }

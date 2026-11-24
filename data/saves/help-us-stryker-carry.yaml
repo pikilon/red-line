@@ -1,0 +1,17 @@
+# Spec 48: help card of the Bradley. A squad boards it; select the Bradley to see Unload (n).
+id: help-us-stryker-carry
+map: showcase
+armies: [usa, russia]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 44, y: 20, zoom: 3 }
+entities:
+  - { player: 0, type: us-stryker, atCenti: [4500, 2000], label: bradley }
+  - { player: 0, type: us-ranger, atCenti: [4000, 1850], order: { board: bradley } }
+  - { player: 0, type: us-ranger, atCenti: [4000, 2000], order: { board: bradley } }
+  - { player: 0, type: us-ranger, atCenti: [4000, 2150], order: { board: bradley } }
+  - { player: 0, type: us-javelin-team, atCenti: [3900, 2000], order: { board: bradley } }

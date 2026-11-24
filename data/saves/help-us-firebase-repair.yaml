@@ -1,0 +1,14 @@
+# Spec 48: help card of the Stugna-P emplacement. A damaged emplacement waits for its dozer.
+id: help-us-firebase-repair
+map: showcase
+armies: [usa, russia]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45.5, y: 19.5, zoom: 3 }
+entities:
+  - { player: 0, type: us-firebase, origin: [44, 17], hpPercent: 40 }
+  - { player: 0, type: us-dozer, atCenti: [4200, 1900] }

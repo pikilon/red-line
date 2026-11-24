@@ -1,0 +1,5 @@
+# Spec 54: help card screenshots of the Fire base. `node --run help:shots -- --type us-firebase`
+- { id: us-firebase-fight, save: help-us-firebase-fight, ticks: 20, select: [us-firebase] }
+- { id: us-firebase-power, save: help-us-firebase-power, ticks: 5, select: [us-firebase], hud: true }
+- { id: us-firebase-repair, save: help-us-firebase-repair, ticks: 10, select: [us-dozer] }
+- { id: us-firebase-sell, save: help-us-firebase-sell, ticks: 5, select: [us-firebase], hud: true, tab: orders }

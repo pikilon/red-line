@@ -23,12 +23,23 @@ import { RU_WHITE, UA_BLUE, UA_YELLOW } from "./liveries";
 
 export const RU_BLUE = 0x0039a6;
 export const RU_RED = 0xd52b1e;
+export const US_RED = 0xb22234;
+export const US_WHITE = 0xffffff;
+export const US_BLUE = 0x3c3b6e;
 
 /** Horizontal stripes of each faction's flag, top to bottom (spec 16 §4). */
 export const FLAGS = {
   ukraine: [UA_BLUE, UA_YELLOW],
   russia: [RU_WHITE, RU_BLUE, RU_RED],
+  usa: [US_RED, US_WHITE, US_RED, US_WHITE, US_RED, US_WHITE, US_RED],
 } as const satisfies Readonly<Record<string, readonly number[]>>;
+
+/** Upper-hoist canton of a flag's cloth texture (the USA's blue field), as a
+ *  fraction of the cloth: `width` from the pole, `height` from the top. */
+export const CANTONS: ReadonlyMap<
+  readonly number[],
+  { color: number; width: number; height: number }
+> = new Map([[FLAGS.usa, { color: US_BLUE, width: 0.4, height: 0.54 }]]);
 
 /** Plain white-over-grey cloth flown by a faction that has no flag of its own
  *  yet (a new army in the ruleset never crashes the renderer). */
@@ -83,9 +94,16 @@ function flagTexture(stripes: readonly number[]): DataTexture {
   const width = TEXTURE_SIZE;
   const height = TEXTURE_SIZE;
   const data = new Uint8Array(width * height * 4);
+  const canton = CANTONS.get(stripes);
   for (let y = 0; y < height; y++) {
-    const color = flagSample(stripes, (y + 0.5) / height);
+    const v = (y + 0.5) / height;
+    const stripe = flagSample(stripes, v);
     for (let x = 0; x < width; x++) {
+      const inCanton =
+        canton !== undefined &&
+        (x + 0.5) / width < canton.width &&
+        v > 1 - canton.height;
+      const color = inCanton ? canton.color : stripe;
       const i = (y * width + x) * 4;
       data[i] = (color >> 16) & 0xff;
       data[i + 1] = (color >> 8) & 0xff;

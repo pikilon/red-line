@@ -9,3 +9,5 @@ node_modules/
 /assets/build/
 /crates/sim/pkg/
 /.local/
+.tmp/
+tools/models/__pycache__/

@@ -1,6 +1,6 @@
 ---
 name: meshy-modeler
-description: Generates ONE game-ready unit or building model with Meshy and imports it into client/public/models/<id>.glb. Give it the type id and the brief from the faction spec.
+description: Generates game-ready unit or building models with Meshy and imports them into client/public/models/<id>.glb. Give it a batch of type ids (3-6) and point it at the briefs in the faction spec.
 model: sonnet
 ---
 

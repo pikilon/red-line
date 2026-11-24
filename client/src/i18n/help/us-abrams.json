@@ -1,0 +1,29 @@
+{
+  "id": "us-abrams",
+  "role": "Main battle tank",
+  "summary": "A main battle tank with a long 120 mm gun and heavy armour. It is built to win tank duels and can grind enemy infantry under its tracks, but it needs support against massed soldiers and anti-tank teams.",
+  "sections": [
+    {
+      "title": "120 mm cannon",
+      "how": "Select the Abrams and left-click an enemy, or let it fire at anything in range.",
+      "body": "The 120 mm smoothbore fires one armour-piercing shell at a time. It is made for tank duels and punches through light vehicles, but the shell does little against infantry, and the gun cannot fire at aircraft."
+    },
+    {
+      "title": "Crush infantry",
+      "how": "Select the Abrams and left-click the ground beyond the enemy infantry.",
+      "body": "While it moves, the Abrams runs over enemy soldiers in its path and kills them outright. It never hurts friendly infantry, and it cannot crush other vehicles."
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged Abrams and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The Abrams drives to the factory and is repaired for half its price, paid as the health comes back."
+    }
+  ],
+  "strong": ["Tanks and armoured vehicles", "Light vehicles"],
+  "weak": ["Anti-tank teams", "Massed infantry", "Aircraft"],
+  "tips": [
+    "Pair it with a Stryker or Rangers: the Abrams fights armour while they clear the enemy infantry around it.",
+    "Drive through enemy infantry instead of stopping to shoot them: a moving Abrams crushes them under its tracks.",
+    "Pull damaged Abrams back to the vehicle factory; repairs cost half the price."
+  ]
+}

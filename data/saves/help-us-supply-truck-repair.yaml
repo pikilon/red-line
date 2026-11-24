@@ -1,0 +1,14 @@
+# Spec 48: help card of the supply truck. A damaged truck waits beside its repair factory.
+id: help-us-supply-truck-repair
+map: showcase
+armies: [usa, russia]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 48, y: 19, zoom: 3 }
+entities:
+  - { player: 0, type: us-vehicle-factory, origin: [47, 17] }
+  - { player: 0, type: us-supply-truck, atCenti: [4400, 2000], hpPercent: 40 }

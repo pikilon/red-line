@@ -7,8 +7,12 @@ describe("rules", () => {
     // RULES is the imported @data/ruleset.json.
     expect(RULES.maxQueue).toBe(9);
     // 31 original types, then the air-war roster appended (spec 43).
-    expect(RULES.types.length).toBe(58);
-    expect(RULES.factions.map((f) => f.id)).toEqual(["ukraine", "russia"]);
+    expect(RULES.types.length).toBe(74);
+    expect(RULES.factions.map((f) => f.id)).toEqual([
+      "ukraine",
+      "russia",
+      "usa",
+    ]);
 
     // typeIndex(id): the index of a type by id, -1 if absent.
     expect(typeIndex("tech-slice-placeholder")).toBe(0);

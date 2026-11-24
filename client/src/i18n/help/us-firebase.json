@@ -1,0 +1,43 @@
+{
+  "id": "us-firebase",
+  "role": "Artillery emplacement",
+  "summary": "A sandbagged 155 mm howitzer that shells ground targets from far behind the line. It guards the base at long range, but it cannot hit aircraft or anything inside its minimum range, and it needs power.",
+  "sections": [
+    {
+      "title": "Shell the ground",
+      "how": "Select a dozer, open the Build tab, press Fire base and left-click the ground. Once built it fires on its own.",
+      "body": "The howitzer turns toward the nearest enemy it can see and fires one shell at a time. The blast covers a small area, so it is strong against infantry, buildings and parked vehicles. It cannot hit aircraft or drones, and it cannot fire at anything too close to it, so enemies that reach the emplacement are safe from it."
+    },
+    {
+      "title": "Needs power",
+      "how": "Watch the power reading in the HUD; keep production at least equal to consumption.",
+      "body": "The fire base draws power from the base. While the base consumes more than it produces, the reading turns red and the fire base holds its fire until the deficit is fixed. Build another power plant or sell something that draws power."
+    },
+    {
+      "title": "Repair with a dozer",
+      "how": "Select a dozer and left-click the damaged fire base.",
+      "body": "The dozer drives over and restores the fire base until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle."
+    },
+    {
+      "title": "Sell",
+      "how": "Select the fire base and press Sell twice.",
+      "body": "It sells for half its price and disappears at once, opening the ground it held. Selling your last building loses the match."
+    }
+  ],
+  "strong": [
+    "Long-range shelling of ground targets",
+    "Infantry and buildings",
+    "Holding the base from afar"
+  ],
+  "weak": [
+    "Aircraft and drones",
+    "Anything inside its minimum range",
+    "A power deficit"
+  ],
+  "tips": [
+    "Build a barracks first: the fire base needs one before a dozer can raise it.",
+    "Place it behind the line and cover its close approaches with Rangers or a Javelin team.",
+    "Keep enough power for it: while the base is short, the fire base holds its fire.",
+    "Keep a dozer nearby: the fire base cannot repair itself."
+  ]
+}

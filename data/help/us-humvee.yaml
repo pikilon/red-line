@@ -1,0 +1,6 @@
+# Spec 54: help card screenshots of the Humvee. `node --run help:shots -- --type us-humvee`
+- { id: us-humvee-fight, save: help-us-humvee-fight, ticks: 50, select: [us-humvee] }
+- { id: us-humvee-carry, save: help-us-humvee-carry, ticks: 12, select: [us-ranger] }
+- { id: us-humvee-fireports, save: help-us-humvee-fireports, ticks: 60, select: [us-humvee], hud: true }
+- { id: us-humvee-unload, save: help-us-humvee-carry, ticks: 200, select: [us-humvee], hud: true }
+- { id: us-humvee-repair, save: help-us-humvee-repair, ticks: 10, select: [us-humvee], hud: true }

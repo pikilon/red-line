@@ -1,0 +1,6 @@
+# Spec 54: help card screenshots of the Paladin. `node --run help:shots -- --type us-paladin`
+- { id: us-paladin-fight, save: help-us-paladin-fight, ticks: 43, select: [us-paladin] }
+- { id: us-paladin-splash, save: help-us-paladin-splash, ticks: 50, select: [us-paladin] }
+- { id: us-paladin-min-range, save: help-us-paladin-min-range, ticks: 8, select: [us-paladin] }
+- { id: us-paladin-attack-ground, save: help-us-paladin-attack-ground, ticks: 44, select: [us-paladin], hud: true, tab: orders }
+- { id: us-paladin-repair, save: help-us-paladin-repair, ticks: 10, select: [us-paladin], hud: true }

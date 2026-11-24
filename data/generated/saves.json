@@ -1836,6 +1836,378 @@
       "map": "showcase",
       "form": "setup",
       "entities": 1
+    },
+    {
+      "id": "help-us-abrams-crush",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-us-abrams-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-abrams-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-barracks-heal",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-us-barracks-rally",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-us-barracks-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-barracks-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-us-barracks-train",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-us-dozer-bridge",
+      "map": "demo-bridges",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-us-dozer-build",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 6
+    },
+    {
+      "id": "help-us-dozer-dig",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-us-dozer-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-dozer-repair-building",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-firebase-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-us-firebase-power",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-us-firebase-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-firebase-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-us-hq-build",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-us-hq-rally",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-us-hq-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-hq-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-us-humvee-carry",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-us-humvee-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-us-humvee-fireports",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 9
+    },
+    {
+      "id": "help-us-humvee-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-javelin-team-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-javelin-team-garrison",
+      "map": "demo-town",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-javelin-team-heal",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-us-javelin-team-move",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-us-javelin-team-trench",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-paladin-attack-ground",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-us-paladin-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-paladin-min-range",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-paladin-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-paladin-splash",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 6
+    },
+    {
+      "id": "help-us-power-plant-low",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-us-power-plant-power",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-us-power-plant-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-power-plant-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-us-ranger-air",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-us-ranger-board",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-us-ranger-bridge",
+      "map": "demo-bridges",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-us-ranger-dig",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 3
+    },
+    {
+      "id": "help-us-ranger-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-us-ranger-garrison",
+      "map": "demo-town",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-us-ranger-heal",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 4
+    },
+    {
+      "id": "help-us-ranger-trench",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 7
+    },
+    {
+      "id": "help-us-stryker-carry",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-us-stryker-fight",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-stryker-repair",
+      "map": "first-line",
+      "form": "setup",
+      "entities": 5
+    },
+    {
+      "id": "help-us-supply-center-dropoff",
+      "map": "demo-ground",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-supply-center-produce",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-supply-center-rally",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-us-supply-center-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-supply-center-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-us-supply-truck-harvest",
+      "map": "demo-ground",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-supply-truck-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-vehicle-factory-build",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-us-vehicle-factory-rally",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
+    },
+    {
+      "id": "help-us-vehicle-factory-repair",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-vehicle-factory-repair-dozer",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 2
+    },
+    {
+      "id": "help-us-vehicle-factory-sell",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 1
     }
   ]
 }

@@ -1,0 +1,6 @@
+# Spec 54: help card screenshots of the Javelin team. `node --run help:shots -- --type us-javelin-team`
+- { id: us-javelin-team-fight, save: help-us-javelin-team-fight, ticks: 30, select: [us-javelin-team] }
+- { id: us-javelin-team-move, save: help-us-javelin-team-move, ticks: 35, select: [us-javelin-team] }
+- { id: us-javelin-team-trench, save: help-us-javelin-team-trench, ticks: 40, select: [us-javelin-team] }
+- { id: us-javelin-team-garrison, save: help-us-javelin-team-garrison, ticks: 10, select: [us-javelin-team], hud: true, tab: orders }
+- { id: us-javelin-team-heal, save: help-us-javelin-team-heal, ticks: 10, select: [us-javelin-team] }

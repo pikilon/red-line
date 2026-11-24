@@ -1,0 +1,15 @@
+# Spec 54: help card of the Fire base. Its 155 mm shells hit a T-72B3.
+id: help-us-firebase-fight
+map: showcase
+armies: [usa, russia]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 46.5, y: 18.4, zoom: 3.5 }
+entities:
+  - { player: 0, type: us-power-plant, origin: [33, 14] }
+  - { player: 0, type: us-firebase, origin: [42, 17], label: defense, order: { attack: tank } }
+  - { player: 1, type: ru-t-72b3, atCenti: [5000, 1800], label: tank, hpPercent: 5 }

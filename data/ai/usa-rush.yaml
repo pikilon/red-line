@@ -1,0 +1,19 @@
+id: usa-rush
+faction: usa
+harvesters: 6
+defenseRadiusCenti: 1500
+garrisonRadiusCenti: 800
+buildOrder: [us-power-plant, us-barracks, us-supply-center, us-vehicle-factory, us-barracks, us-power-plant, us-firebase]
+taskForces:
+  - { id: rifles, units: { us-ranger: 8 } }
+  - { id: raid, units: { us-humvee: 3, us-ranger: 4 } }
+  - { id: hunters, units: { us-javelin-team: 3, us-ranger: 4 } }
+  - { id: armor, units: { us-abrams: 2, us-stryker: 2 } }
+upgrades:                                                    # spec 52: bought at an idle producer from minTick on
+  - { upgrade: us-advanced-optics, minTick: 5400 }
+  - { upgrade: us-reactive-armor, minTick: 7200 }
+triggers:
+  - { taskForce: rifles, weight: 60, minTick: 0 }
+  - { taskForce: raid, weight: 50, minTick: 1800 }
+  - { taskForce: hunters, weight: 30, minTick: 2700 }
+  - { taskForce: armor, weight: 40, minTick: 3600 }
