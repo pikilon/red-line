@@ -1820,6 +1820,89 @@
         "ui",
         "everyone"
       ]
+    },
+    "building.select.hq.usa": {
+      "sounds": [
+        "synth:click"
+      ],
+      "limit": 1,
+      "volume": 40,
+      "type": [
+        "ui",
+        "player"
+      ]
+    },
+    "building.select.barracks.usa": {
+      "sounds": [
+        "synth:click"
+      ],
+      "limit": 1,
+      "volume": 50,
+      "type": [
+        "ui",
+        "player"
+      ]
+    },
+    "building.select.factory.usa": {
+      "sounds": [
+        "synth:click"
+      ],
+      "limit": 1,
+      "volume": 45,
+      "type": [
+        "ui",
+        "player"
+      ]
+    },
+    "music.calm.usa": {
+      "sounds": [
+        "synth:music"
+      ],
+      "volume": 55,
+      "priority": "normal",
+      "control": [
+        "loop"
+      ],
+      "type": [
+        "ui",
+        "everyone"
+      ]
+    },
+    "music.combat.usa": {
+      "sounds": [
+        "synth:music"
+      ],
+      "volume": 55,
+      "priority": "normal",
+      "control": [
+        "loop"
+      ],
+      "type": [
+        "ui",
+        "everyone"
+      ]
+    },
+    "music.victory.usa": {
+      "sounds": [
+        "synth:music"
+      ],
+      "volume": 60,
+      "priority": "high",
+      "type": [
+        "ui",
+        "everyone"
+      ]
+    },
+    "music.defeat.usa": {
+      "sounds": [
+        "synth:music"
+      ],
+      "volume": 60,
+      "priority": "high",
+      "type": [
+        "ui",
+        "everyone"
+      ]
     }
   },
   "voices": {
@@ -2615,6 +2698,910 @@
       }
     },
     "ua-supply-truck": {
+      "select": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "move": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "attack": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "underFire": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 100,
+        "minVolume": 80,
+        "limit": 1,
+        "priority": "normal",
+        "type": [
+          "world",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ],
+        "minDistance": 4,
+        "maxDistance": 20
+      },
+      "die": {
+        "sounds": [
+          "synth:explosion"
+        ],
+        "volume": 100,
+        "volumeShift": -20,
+        "pitchShift": [
+          -10,
+          10
+        ],
+        "limit": 3,
+        "priority": "low",
+        "type": [
+          "world",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ],
+        "minDistance": 4,
+        "maxDistance": 20
+      },
+      "created": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 110,
+        "minVolume": 100,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "world",
+          "global",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ]
+      }
+    },
+    "us-ranger": {
+      "select": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "move": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "attack": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "underFire": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 100,
+        "minVolume": 80,
+        "limit": 1,
+        "priority": "normal",
+        "type": [
+          "world",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ],
+        "minDistance": 4,
+        "maxDistance": 20
+      },
+      "die": {
+        "sounds": [
+          "synth:scream"
+        ],
+        "volume": 100,
+        "volumeShift": -20,
+        "pitchShift": [
+          -10,
+          10
+        ],
+        "limit": 3,
+        "priority": "low",
+        "type": [
+          "world",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ],
+        "minDistance": 4,
+        "maxDistance": 20
+      },
+      "created": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 110,
+        "minVolume": 100,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "world",
+          "global",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ]
+      }
+    },
+    "us-javelin-team": {
+      "select": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "move": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "attack": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "underFire": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 100,
+        "minVolume": 80,
+        "limit": 1,
+        "priority": "normal",
+        "type": [
+          "world",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ],
+        "minDistance": 4,
+        "maxDistance": 20
+      },
+      "die": {
+        "sounds": [
+          "synth:scream"
+        ],
+        "volume": 100,
+        "volumeShift": -20,
+        "pitchShift": [
+          -10,
+          10
+        ],
+        "limit": 3,
+        "priority": "low",
+        "type": [
+          "world",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ],
+        "minDistance": 4,
+        "maxDistance": 20
+      },
+      "created": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 110,
+        "minVolume": 100,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "world",
+          "global",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ]
+      }
+    },
+    "us-humvee": {
+      "select": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "move": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "attack": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "underFire": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 100,
+        "minVolume": 80,
+        "limit": 1,
+        "priority": "normal",
+        "type": [
+          "world",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ],
+        "minDistance": 4,
+        "maxDistance": 20
+      },
+      "die": {
+        "sounds": [
+          "synth:explosion"
+        ],
+        "volume": 100,
+        "volumeShift": -20,
+        "pitchShift": [
+          -10,
+          10
+        ],
+        "limit": 3,
+        "priority": "low",
+        "type": [
+          "world",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ],
+        "minDistance": 4,
+        "maxDistance": 20
+      },
+      "created": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 110,
+        "minVolume": 100,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "world",
+          "global",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ]
+      }
+    },
+    "us-stryker": {
+      "select": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "move": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "attack": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "underFire": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 100,
+        "minVolume": 80,
+        "limit": 1,
+        "priority": "normal",
+        "type": [
+          "world",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ],
+        "minDistance": 4,
+        "maxDistance": 20
+      },
+      "die": {
+        "sounds": [
+          "synth:explosion"
+        ],
+        "volume": 100,
+        "volumeShift": -20,
+        "pitchShift": [
+          -10,
+          10
+        ],
+        "limit": 3,
+        "priority": "low",
+        "type": [
+          "world",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ],
+        "minDistance": 4,
+        "maxDistance": 20
+      },
+      "created": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 110,
+        "minVolume": 100,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "world",
+          "global",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ]
+      }
+    },
+    "us-abrams": {
+      "select": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "move": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "attack": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "underFire": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 100,
+        "minVolume": 80,
+        "limit": 1,
+        "priority": "normal",
+        "type": [
+          "world",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ],
+        "minDistance": 4,
+        "maxDistance": 20
+      },
+      "die": {
+        "sounds": [
+          "synth:explosion"
+        ],
+        "volume": 100,
+        "volumeShift": -20,
+        "pitchShift": [
+          -10,
+          10
+        ],
+        "limit": 3,
+        "priority": "low",
+        "type": [
+          "world",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ],
+        "minDistance": 4,
+        "maxDistance": 20
+      },
+      "created": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 110,
+        "minVolume": 100,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "world",
+          "global",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ]
+      }
+    },
+    "us-paladin": {
+      "select": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "move": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "attack": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "underFire": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 100,
+        "minVolume": 80,
+        "limit": 1,
+        "priority": "normal",
+        "type": [
+          "world",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ],
+        "minDistance": 4,
+        "maxDistance": 20
+      },
+      "die": {
+        "sounds": [
+          "synth:explosion"
+        ],
+        "volume": 100,
+        "volumeShift": -20,
+        "pitchShift": [
+          -10,
+          10
+        ],
+        "limit": 3,
+        "priority": "low",
+        "type": [
+          "world",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ],
+        "minDistance": 4,
+        "maxDistance": 20
+      },
+      "created": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 110,
+        "minVolume": 100,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "world",
+          "global",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ]
+      }
+    },
+    "us-dozer": {
+      "select": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "move": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "attack": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 90,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "ui",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random",
+          "interrupt"
+        ]
+      },
+      "underFire": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 100,
+        "minVolume": 80,
+        "limit": 1,
+        "priority": "normal",
+        "type": [
+          "world",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ],
+        "minDistance": 4,
+        "maxDistance": 20
+      },
+      "die": {
+        "sounds": [
+          "synth:explosion"
+        ],
+        "volume": 100,
+        "volumeShift": -20,
+        "pitchShift": [
+          -10,
+          10
+        ],
+        "limit": 3,
+        "priority": "low",
+        "type": [
+          "world",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ],
+        "minDistance": 4,
+        "maxDistance": 20
+      },
+      "created": {
+        "sounds": [
+          "synth:voice"
+        ],
+        "volume": 110,
+        "minVolume": 100,
+        "limit": 1,
+        "priority": "high",
+        "type": [
+          "world",
+          "global",
+          "voice",
+          "player"
+        ],
+        "control": [
+          "random"
+        ]
+      }
+    },
+    "us-supply-truck": {
       "select": {
         "sounds": [
           "synth:voice"
@@ -4574,7 +5561,73 @@
     "music.defeat.russia": "End_Chi_Failure",
     "move.loop.tracks": "GenericTankMoveLoop",
     "move.loop.wheels": "ConvoyTruckMoveLoop",
-    "move.turret": "TurretMoveLoop"
+    "move.turret": "TurretMoveLoop",
+    "voice.us-ranger.select": "RangerVoiceSelect",
+    "voice.us-ranger.move": "RangerVoiceMove",
+    "voice.us-ranger.attack": "RangerVoiceAttack",
+    "voice.us-ranger.underFire": "RangerVoiceFear",
+    "voice.us-ranger.die": "RangerVoiceDie",
+    "voice.us-ranger.created": "RangerVoiceCreate",
+    "voice.us-javelin-team.select": "MissileDefenderVoiceSelect",
+    "voice.us-javelin-team.move": "MissileDefenderVoiceMove",
+    "voice.us-javelin-team.attack": "MissileDefenderVoiceAttack",
+    "voice.us-javelin-team.underFire": "MissileDefenderVoiceFear",
+    "voice.us-javelin-team.die": "RangerVoiceDie",
+    "voice.us-javelin-team.created": "MissileDefenderVoiceCreate",
+    "voice.us-humvee.select": "HumveeVoiceSelect",
+    "voice.us-humvee.move": "HumveeVoiceMove",
+    "voice.us-humvee.attack": "HumveeVoiceAttack",
+    "voice.us-humvee.underFire": "HumveeVoiceSelect",
+    "voice.us-humvee.die": "Explosion",
+    "voice.us-humvee.created": "HumveeVoiceCreate",
+    "voice.us-stryker.select": "PaladinTankVoiceSelect",
+    "voice.us-stryker.move": "PaladinTankVoiceMove",
+    "voice.us-stryker.attack": "PaladinTankVoiceAttack",
+    "voice.us-stryker.underFire": "PaladinTankVoiceSelect",
+    "voice.us-stryker.die": "Explosion",
+    "voice.us-stryker.created": "PaladinTankVoiceCreate",
+    "voice.us-abrams.select": "CrusaderTankVoiceSelect",
+    "voice.us-abrams.move": "CrusaderTankVoiceMove",
+    "voice.us-abrams.attack": "CrusaderTankVoiceAttack",
+    "voice.us-abrams.underFire": "CrusaderTankVoiceSelect",
+    "voice.us-abrams.die": "Explosion",
+    "voice.us-abrams.created": "CrusaderTankVoiceCreate",
+    "voice.us-paladin.select": "TomahawkVoiceSelect",
+    "voice.us-paladin.move": "TomahawkVoiceMove",
+    "voice.us-paladin.attack": "TomahawkVoiceAttack",
+    "voice.us-paladin.underFire": "TomahawkVoiceSelect",
+    "voice.us-paladin.die": "Explosion",
+    "voice.us-paladin.created": "TomahawkVoiceCreate",
+    "voice.us-dozer.select": "DozerUSAVoiceSelect",
+    "voice.us-dozer.move": "DozerUSAVoiceMove",
+    "voice.us-dozer.attack": "DozerUSAVoiceRepair",
+    "voice.us-dozer.underFire": "DozerUSAVoiceBuildNot",
+    "voice.us-dozer.die": "Explosion",
+    "voice.us-dozer.created": "DozerUSAVoiceCreate",
+    "voice.us-supply-truck.select": "ChinookVoiceSelect",
+    "voice.us-supply-truck.move": "ChinookVoiceMove",
+    "voice.us-supply-truck.attack": "ChinookVoiceSupply",
+    "voice.us-supply-truck.underFire": "ChinookVoiceSelect",
+    "voice.us-supply-truck.die": "Explosion",
+    "voice.us-supply-truck.created": "ChinookVoiceCreate",
+    "eva.usa.baseUnderAttack": "RangerVoiceBaseAttack",
+    "eva.usa.lowPower": "EvaUSA_LowPower",
+    "eva.usa.insufficientFunds": "EvaUSA_InsufficientFunds",
+    "eva.usa.unitLost": "EvaUSA_UnitLost",
+    "eva.usa.buildingLost": "EvaUSA_BuildingDisabled",
+    "eva.usa.productionComplete": "EvaUSA_ReinforcementsHaveArrived",
+    "eva.usa.upgradeComplete": "EvaUSA_UpgradeComplete",
+    "eva.usa.constructionComplete": "DozerUSAVoiceBuildComplete",
+    "eva.usa.buildingReady": "EvaUSA_SelectTarget",
+    "eva.usa.victory": "EvaUSA_Victory",
+    "eva.usa.defeat": "EvaUSA_Defeat",
+    "building.select.hq.usa": "CommandCenterUSASelect",
+    "building.select.barracks.usa": "BarracksUSASelect",
+    "building.select.factory.usa": "WarFactoryUSASelect",
+    "music.calm.usa": "Game_USA_01",
+    "music.combat.usa": "Game_USA_02",
+    "music.victory.usa": "End_USA",
+    "music.defeat.usa": "End_USA_Failure"
   },
   "recipes": {
     "click": {
