@@ -121,6 +121,19 @@ Meshy credits for the 14 types. Briefs (`meshy-modeler`, `unit-animator`):
 | `us-abrams` | olive drab modern main battle tank, angular turret, long 120 mm gun, side skirts, small turret-mounted protection launchers |
 | `us-paladin` | olive drab tracked self-propelled howitzer, large boxy turret, long 155 mm gun |
 
+### Generation log
+
+Image: `nano-banana` (prompt = brief + the common suffix below); mesh: `meshy-t2` smart topology, `meshy-n1` texture, 5000 triangles. Suffix: `three-quarter top view from front-left, single object centred, plain white background, realistic military, no text, no logos, no people`.
+
+| Id | Final prompt | Image task | Mesh task |
+|---|---|---|---|
+| `us-hq` | modern US Army forward operating base headquarters, tan prefab buildings, sandbag walls, antenna masts, camouflage netting | `01a20f2e-aac1-7486-860f-53497d17ec5d` | `01a20f2e-e772-75ab-a6ae-ab44e5829d74` |
+| `us-power-plant` | compact military power station, tan containerised generators, cooling fans, cable runs, fuel tanks | `01a20f2e-ad67-75e7-a85a-eded59474ccf` | `01a20f2e-eb98-7052-993d-78168a53ab37` |
+| `us-supply-center` | military logistics depot, tan warehouse tent, stacked supply crates and pallets, loading ramp | `01a20f2e-b05c-72b5-916a-087edc44aa35` | `01a20f2e-efcd-7543-9f6f-705a19feaa0b` |
+| `us-barracks` | US Army barracks, tan modular prefab building with sandbags and a flagless pole | `01a20f2e-b342-75a2-a241-e9042a3608f6` | `01a20f2e-f44a-70d0-aafc-8ce4964a0b51` |
+| `us-vehicle-factory` | military vehicle maintenance hangar, large tan hangar with open bay door, crane gantry | `01a20f2e-b62c-76a2-b978-0b35eeee4257` | `01a20f2e-f841-7244-aa5c-d7f64570629d` |
+| `us-firebase` | sandbagged artillery fire base with a towed 155 mm howitzer under camouflage netting, gun barrel pointing toward the lower-left | `01a20f2e-b91f-77dc-bd96-dca033b53794` | `01a20f2f-6815-73db-b71e-766abb722b5a` |
+
 ## 7. Balance
 
 Tournaments USA vs Ukraine and USA vs Russia on every map, both

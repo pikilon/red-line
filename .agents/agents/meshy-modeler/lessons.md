@@ -11,3 +11,7 @@ Problem: `docs/meshy-issues.md` lists buildings visible through fog and black gr
 Fix: check those two in the preview/game before blaming a new model.
 
 - Model tooling is faction-agnostic: turreted/infantry/faction come from `data/generated/ruleset.json` (turretTurnRateDeg, locomotor kind foot, faction index). A new faction only needs a row in `lib.FACTION_BODY`, `infantry.UNIFORM`/`MARK` (unknown ones fall back to neutral) and `FACTION_PREFIXES` in `scripts/audio/reference.mjs`. Biome does not cover `scripts/` or `tools/`: do not run `biome --write` there (it reformats whole files).
+
+### 2026-11-24 Meshy queue holds 5 tasks
+Problem: launching 6 image-to-3d tasks at once failed on the sixth (queue full), uncharged.
+Fix: start at most 5, then launch the rest once any finishes; meshy-t2 at 5000 triangles finishes in under a minute.
