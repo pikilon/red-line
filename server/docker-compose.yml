@@ -1,0 +1,73 @@
+# Docker Compose project `red-line` on the owner's VPS (/docker/red-line),
+# deployed by `node --run deploy:server`. Traefik, its own project on the same
+# VPS, terminates TLS and routes the subdomain to `server`. Secrets live in
+# /docker/red-line/.env on the VPS (TURN_SECRET, GITHUB_TOKEN), never here.
+services:
+  server:
+    build: .
+    image: red-line-server:latest
+    restart: unless-stopped
+    environment:
+      PUBLIC_URL: https://red-line-server.pikilon.com
+      TURN_HOST: red-line-server.pikilon.com
+      TURN_SECRET: ${TURN_SECRET}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_PROJECT_ID: ${GITHUB_PROJECT_ID:-}
+    volumes:
+      - data:/data
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.redline.rule=Host(`red-line-server.pikilon.com`)
+      - traefik.http.routers.redline.entrypoints=websecure
+      - traefik.http.routers.redline.tls.certresolver=letsencrypt
+      - traefik.http.services.redline.loadbalancer.server.port=8080
+    mem_limit: 256m
+    cpus: 0.5
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: "2"
+
+  # Relay for players whose networks block a direct link (spec 51 §2). Port
+  # 3479: 3478 belongs to the openzh project on the same VPS.
+  turn:
+    image: coturn/coturn:4.6.3
+    restart: unless-stopped
+    network_mode: host
+    command:
+      - --listening-port=3479
+      - --min-port=49160
+      - --max-port=49200
+      - --relay-ip=69.62.106.16
+      - --external-ip=69.62.106.16
+      - --realm=red-line-server.pikilon.com
+      - --use-auth-secret
+      - --static-auth-secret=${TURN_SECRET}
+      - --fingerprint
+      - --no-tls
+      - --no-dtls
+      - --no-cli
+      - --no-multicast-peers
+      - --denied-peer-ip=0.0.0.0-0.255.255.255
+      - --denied-peer-ip=10.0.0.0-10.255.255.255
+      - --denied-peer-ip=100.64.0.0-100.127.255.255
+      - --denied-peer-ip=127.0.0.0-127.255.255.255
+      - --denied-peer-ip=169.254.0.0-169.254.255.255
+      - --denied-peer-ip=172.16.0.0-172.31.255.255
+      - --denied-peer-ip=192.168.0.0-192.168.255.255
+      - --user-quota=4
+      - --total-quota=40
+      - --max-bps=200000
+      - --log-file=stdout
+      - --simple-log
+    mem_limit: 128m
+    cpus: 0.5
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: "2"
+
+volumes:
+  data:

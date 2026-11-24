@@ -1,8 +1,8 @@
 /** Spec 51 §2: the introduction between the two browsers goes over a
- *  Supabase Realtime broadcast channel named after the room. Nothing is
- *  stored; once the direct connection exists the socket closes. Plain
- *  WebSocket (Phoenix protocol, JSON v1), so the client needs no SDK. */
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../report/api";
+ *  WebSocket room on the game's server (`/signal?room=redline-<room>`),
+ *  which relays every message to the other sockets in the room. Nothing is
+ *  stored; once the direct connection exists the socket closes. */
+import { SERVER_URL } from "./server";
 
 export type SignalMessage =
   | { kind: "hello"; from: string }
@@ -10,7 +10,7 @@ export type SignalMessage =
   | { kind: "answer"; from: string; to: string; sdp: string };
 
 export interface SignalChannel {
-  /** Resolves once the channel is joined. */
+  /** Resolves once the socket is open. */
   readonly joined: Promise<void>;
   send(message: SignalMessage): void;
   close(): void;
@@ -25,87 +25,57 @@ export interface SocketLike {
   close(): void;
 }
 
-const HEARTBEAT_MS = 25_000;
-const EVENT = "signal";
-
-export function realtimeUrl(): string {
-  const base = SUPABASE_URL.replace(/^http/, "ws");
-  return `${base}/realtime/v1/websocket?apikey=${SUPABASE_ANON_KEY}&vsn=1.0.0`;
+export function signalUrl(room: string): string {
+  const base = SERVER_URL.replace(/^http/, "ws");
+  return `${base}/signal?room=${encodeURIComponent(`redline-${room}`)}`;
 }
 
-/** Joins `realtime:redline-<room>` and relays broadcasts to `onMessage`. */
+function isSignal(value: unknown): value is SignalMessage {
+  if (value === null || typeof value !== "object") return false;
+  const kind = (value as { kind?: unknown }).kind;
+  return kind === "hello" || kind === "offer" || kind === "answer";
+}
+
+/** Joins the room and relays the other browsers' messages to `onMessage`. */
 export function openSignalChannel(
   room: string,
   onMessage: (message: SignalMessage) => void,
   connect: () => SocketLike = () =>
-    new WebSocket(realtimeUrl()) as unknown as SocketLike,
+    new WebSocket(signalUrl(room)) as unknown as SocketLike,
 ): SignalChannel {
-  const topic = `realtime:redline-${room}`;
   const socket = connect();
-  let ref = 0;
-  let heartbeat: ReturnType<typeof setInterval> | null = null;
+  let open = false;
   let resolveJoined: () => void = () => {};
   let rejectJoined: (error: Error) => void = () => {};
   const joined = new Promise<void>((resolve, reject) => {
     resolveJoined = resolve;
     rejectJoined = reject;
   });
-  const push = (event: string, payload: unknown, to = topic): void => {
-    ref += 1;
-    socket.send(
-      JSON.stringify({
-        topic: to,
-        event,
-        payload,
-        ref: String(ref),
-        join_ref: "1",
-      }),
-    );
-  };
   socket.onopen = () => {
-    push("phx_join", {
-      config: { broadcast: { self: false, ack: false }, private: false },
-      access_token: SUPABASE_ANON_KEY,
-    });
-    heartbeat = setInterval(
-      () => push("heartbeat", {}, "phoenix"),
-      HEARTBEAT_MS,
-    );
+    open = true;
+    resolveJoined();
   };
   socket.onmessage = (event) => {
-    const frame = JSON.parse(event.data) as {
-      topic: string;
-      event: string;
-      ref?: string | null;
-      payload: {
-        status?: string;
-        event?: string;
-        payload?: SignalMessage;
-      };
-    };
-    if (frame.topic !== topic) return;
-    if (frame.event === "phx_reply" && frame.ref === "1") {
-      if (frame.payload.status === "ok") resolveJoined();
-      else rejectJoined(new Error("signal join refused"));
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(event.data);
+    } catch {
       return;
     }
-    if (frame.event === "broadcast" && frame.payload.event === EVENT) {
-      const message = frame.payload.payload;
-      if (message !== undefined) onMessage(message);
-    }
+    if (isSignal(parsed)) onMessage(parsed);
   };
   socket.onerror = () => rejectJoined(new Error("signal socket error"));
   socket.onclose = () => {
-    if (heartbeat !== null) clearInterval(heartbeat);
+    open = false;
     rejectJoined(new Error("signal socket closed"));
   };
   return {
     joined,
     send(message) {
-      push("broadcast", { type: "broadcast", event: EVENT, payload: message });
+      if (open) socket.send(JSON.stringify(message));
     },
     close() {
-      if (heartbeat !== null) clearInterval(heartbeat);
+      open = false;
       socket.close();
     },
   };

@@ -5,7 +5,7 @@ import {
   type SkirmishSimLike,
 } from "../sim/workerHandler";
 import { createLockstep, LOCKSTEP, type PeerMessage } from "./lockstep";
-import { openSignalChannel, type SocketLike } from "./signal";
+import { openSignalChannel, type SocketLike, signalUrl } from "./signal";
 
 const TICK = 1000 / 15;
 
@@ -165,8 +165,8 @@ describe("lockstep coordinator", () => {
 });
 
 describe("signal channel", () => {
-  it("AC-51-06: joins the room topic and relays broadcasts", async () => {
-    const frames: Record<string, unknown>[] = [];
+  it("AC-51-06: joins the room socket and relays messages", async () => {
+    const frames: unknown[] = [];
     const socket: SocketLike = {
       onopen: null,
       onmessage: null,
@@ -177,31 +177,19 @@ describe("signal channel", () => {
     };
     const received = vi.fn();
     const channel = openSignalChannel("abc", received, () => socket);
+    expect(signalUrl("abc")).toBe(
+      "wss://red-line-server.pikilon.com/signal?room=redline-abc",
+    );
     socket.onopen?.();
-    expect(frames[0]).toMatchObject({
-      topic: "realtime:redline-abc",
-      event: "phx_join",
-      ref: "1",
-    });
-    const reply = (frame: unknown) =>
-      socket.onmessage?.({ data: JSON.stringify(frame) });
-    reply({
-      topic: "realtime:redline-abc",
-      event: "phx_reply",
-      ref: "1",
-      payload: { status: "ok" },
-    });
     await channel.joined;
     channel.send({ kind: "hello", from: "g" });
-    expect(frames[1]).toMatchObject({
-      event: "broadcast",
-      payload: { event: "signal", payload: { kind: "hello", from: "g" } },
-    });
-    reply({
-      topic: "realtime:redline-abc",
-      event: "broadcast",
-      payload: { event: "signal", payload: { kind: "hello", from: "x" } },
-    });
+    expect(frames).toEqual([{ kind: "hello", from: "g" }]);
+    const reply = (frame: unknown) =>
+      socket.onmessage?.({ data: JSON.stringify(frame) });
+    reply({ kind: "hello", from: "x" });
+    reply({ kind: "junk" });
+    socket.onmessage?.({ data: "not json" });
+    expect(received).toHaveBeenCalledTimes(1);
     expect(received).toHaveBeenCalledWith({ kind: "hello", from: "x" });
     channel.close();
   });

@@ -36,6 +36,12 @@ approval, and record the change here with its date.
   link. Signalling goes over a Supabase Realtime broadcast channel (nothing
   stored); game traffic stays peer to peer over WebRTC (spec 51). Manual/QR
   signalling remains the future offline option.
+* Amendment 2026-11-24 (owner): the backend moves from Supabase (its free tier
+  pauses idle projects) to the owner's Hostinger VPS, shared with other
+  projects: a Node server (`server/`) behind the existing Traefik handles
+  tester reports (spec 47) and signalling over a WebSocket room, plus a TURN
+  relay (coturn) for networks where a direct link fails. Save games may move
+  there later.
 * Real countries and real factions, as realistic as possible, including active
   conflicts. More violent than Red Alert 2, with a gore filter setting.
 * No real public figures in the first versions. No official logos of

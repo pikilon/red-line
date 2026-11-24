@@ -21,7 +21,7 @@
     "audio:inventory": "node scripts/audio/inventory.mjs",
     "audio:describe": "node scripts/audio/describe.mjs",
     "check:rules": "node scripts/check-rules.mjs",
-    "test:scripts": "node --test scripts/ tools/models/",
+    "test:scripts": "node --test scripts/ tools/models/ server/src/",
     "assets:build": "node tools/models/build.mjs",
     "assets:check": "node tools/models/check.mjs",
     "assets:comfyui:setup": "tools/asset-pipeline/setup-comfyui.sh",
@@ -39,6 +39,7 @@
     "testers:list": "node scripts/testers.mjs list",
     "testers:revoke": "node scripts/testers.mjs revoke",
     "deploy:pages": "node scripts/deploy-pages.mjs",
+    "deploy:server": "node scripts/deploy-server.mjs",
     "verify": "node --run check:rust && node --run check:rules && node --run test:scripts && node --run build:wasm && node --run check && node --run typecheck && node --run test:unit && node --run build && node --run test:e2e && node --run check:data && node --run check:audio && node --run assets:check -- --strict",
     "format": "cargo fmt --all && cd client && npx biome check --write ."
   },

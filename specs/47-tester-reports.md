@@ -53,13 +53,22 @@ so no generals-precedent note applies.
 
 ## 6. Backend
 
-* Supabase project `red-line`: table `testers` (name, SHA-256 of the invite
-  secret), public storage bucket `reports`, Edge Function `report` (no JWT;
-  the secret travels in the `x-tester-token` header).
+* The game server on the owner's VPS (`server/`, Docker Compose project
+  `red-line`, `https://red-line-server.pikilon.com`, deployed with
+  `node --run deploy:server`; D-03). Endpoint `/report`; the invite secret
+  travels in the `x-tester-token` header.
+* Testers live in `testers.json` on the server's data volume (name, SHA-256 of
+  the invite secret). `node --run testers:*` edits it over SSH; only the hash
+  leaves the owner's machine.
 * `GET` returns the tester's name; `POST` stores the files in
-  `reports/<date>/<uuid>/` and creates the issue with a GitHub token kept as a
-  function secret (`GITHUB_TOKEN`, optional `GITHUB_PROJECT_ID`). The game
-  only holds the publishable key.
+  `reports/<date>/<uuid>/` (served at `/files/...`, linked from the issue)
+  and creates the issue with a GitHub token kept in the server's `.env`
+  (`GITHUB_TOKEN`, optional `GITHUB_PROJECT_ID`). The game holds no secret.
+* If the issue cannot be created (no token yet, GitHub down) the report is
+  kept and retried every 10 minutes; the game then says "Received. It will
+  appear as an issue shortly." instead of linking the issue.
+* Reports sent before 2026-11-24 keep their attachments on the old Supabase
+  storage.
 
 ## 7. Assumptions
 

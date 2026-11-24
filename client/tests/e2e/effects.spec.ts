@@ -101,8 +101,24 @@ test("AC-07-06: effects in the skirmish", async ({ page }) => {
   expect(
     await page.evaluate(() => (window as DebugWindow).__redline?.gore()),
   ).toBe(true);
+  // The toast only lasts TOAST_MS; on a slow software-GL runner it can be gone
+  // before the first check, so record that it was shown instead of racing it.
+  await page.evaluate(() => {
+    const toast = document.getElementById("toast") as HTMLElement;
+    const seen = window as unknown as { __toastShown?: boolean };
+    seen.__toastShown = false;
+    new MutationObserver(() => {
+      if (toast.classList.contains("visible")) seen.__toastShown = true;
+    }).observe(toast, { attributes: true, attributeFilter: ["class"] });
+  });
   await page.keyboard.press("G");
-  await expect(page.locator("#toast")).toHaveClass(/visible/);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => (window as unknown as { __toastShown?: boolean }).__toastShown,
+      ),
+    )
+    .toBe(true);
   await expect(page.locator("#toast")).toHaveText("Gore off");
   await expect
     .poll(() => page.evaluate(() => (window as DebugWindow).__redline?.gore()))

@@ -423,6 +423,7 @@
   "report.send": "Send",
   "report.sending": "Sending…",
   "report.sent": "Sent as issue #{number} — open it",
+  "report.queued": "Received. It will appear as an issue shortly.",
   "report.another": "New report",
   "report.error.empty": "Title and description are required.",
   "report.error.not-tester": "This invite is no longer valid. Ask the owner for a new link.",
