@@ -19,3 +19,6 @@ Fix: start at most 5, then launch the rest once any finishes; meshy-t2 at 5000 t
 ### 2026-11-24 Meshy queue holds only about 3 tasks
 Problem: with several modelers in parallel, creating 6 image/mesh tasks at once fails with "task queue is full" or "input task is not succeeded".
 Fix: start at most 3-4 tasks, wait for them, then start the rest; check the image task succeeded before image_to_3d.
+
+### 2026-11-24 Infantry cost and params
+Reference image nano-banana with pose_mode a-pose (3 credits), image_to_3d from input_task_id with model_type smart-topology, meshy-t2.5, texture meshy-n1, target_polycount 3000, pose_mode a-pose (15 credits). The rest of the batch can run in parallel; URLs from rig/animate results are signed and short-lived, download right away with curl.
