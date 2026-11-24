@@ -47,3 +47,22 @@ Each `lessons.md` entry is three lines, newest last:
 Problem: what went wrong or cost a retry.
 Fix: what to do instead (command, setting, prompt wording).
 ```
+
+## Coordinator lessons (USA, 2026-11-24)
+
+* Run the whole `node --run test:unit` and `node --run test:scripts` before
+  opening the faction PR: tests pin the faction list (`armies.test.ts`,
+  `build-data.test.mjs` AC-03-04/AC-05-01) and a targeted run misses them.
+* A new faction fails `rig.test.ts` until its infantry are listed in `RIGS`
+  (`client/src/render/rig.ts`) and `cards.test.ts` until every type has help.
+* Help scenes and tournaments pick the armies with `armies: [a, b]` (saves,
+  headless config); never copy maps to change a start's faction.
+* The preview server in `.claude/launch.json` serves the main checkout; add a
+  configuration whose `cwd` is the worktree's `client/` to see a branch.
+* Branch every later stage (abilities, voices, balance) from the faction
+  branch and rebase it with `git rebase --onto origin/main origin/<faction-branch>`
+  once the faction PR is squash-merged.
+* Cost of the USA run: about 270 Meshy credits for 14 types (18 per building or
+  vehicle, 26 per rigged infantry) and about 10 % of a Pro week of Claude usage.
+* Subagents must not leave `Monitor` watches behind; they wake the coordinator
+  with empty notifications.

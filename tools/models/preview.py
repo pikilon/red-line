@@ -27,7 +27,8 @@ for i, type_id in enumerate(ids):
 scene = bpy.context.scene
 scene.render.engine = "BLENDER_WORKBENCH"
 scene.display.shading.light = "STUDIO"
-scene.display.shading.color_type = "MATERIAL"
+# TEXTURE shows the baked Meshy colours; untextured parts still use their material colour.
+scene.display.shading.color_type = "TEXTURE"
 scene.render.resolution_x, scene.render.resolution_y = 400 * max(len(ids), 1), 400
 cam = bpy.data.objects.new("cam", bpy.data.cameras.new("cam"))
 scene.collection.objects.link(cam)
