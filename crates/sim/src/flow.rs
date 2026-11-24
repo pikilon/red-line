@@ -202,3 +202,46 @@ impl FlowField {
         self.slot(cell).and_then(|slot| self.directions[slot])
     }
 }
+
+/// Spec 04 §5.2: the cell the unit standing on `from` can walk to that is
+/// closest to `goal` (squared cell distance; ties to the smaller `y`, then
+/// `x`), when `goal` itself is cut off from `from`. Breadth-first over the
+/// component of `from` with `can_step`, so it is exact and deterministic.
+/// `accept` filters candidates (cells already claimed by the same command).
+/// `None` when `from` is blocked or nothing acceptable is reachable.
+pub fn closest_reachable(
+    map: &MapGrid,
+    from: Cell,
+    goal: Cell,
+    mut accept: impl FnMut(Cell) -> bool,
+) -> Option<Cell> {
+    if !map.is_passable(from) {
+        return None;
+    }
+    let len = usize::from(map.width()) * usize::from(map.height());
+    let mut seen = vec![false; len];
+    let start = map.index(from);
+    seen[start as usize] = true;
+    let mut queue = std::collections::VecDeque::from([start]);
+    let mut best: Option<(i64, i32, i32)> = None;
+    while let Some(index) = queue.pop_front() {
+        let cell = map.cell(index);
+        let dx = i64::from(cell.x - goal.x);
+        let dy = i64::from(cell.y - goal.y);
+        let key = (dx * dx + dy * dy, cell.y, cell.x);
+        if best.is_none_or(|b| key < b) && accept(cell) {
+            best = Some(key);
+        }
+        for dir in Dir8::ALL {
+            if !can_step(map, cell, dir) {
+                continue;
+            }
+            let next = map.index(neighbour(cell, dir));
+            if !seen[next as usize] {
+                seen[next as usize] = true;
+                queue.push_back(next);
+            }
+        }
+    }
+    best.map(|(_, y, x)| Cell { x, y })
+}

@@ -1017,6 +1017,15 @@ impl World {
             self.apply_spread_move(player, units, target, true);
             return;
         }
+        // Spec 04 §5.2: a goal cut off from the unit becomes the closest
+        // reachable cell.
+        let (goal, target) = match commanded
+            .first()
+            .and_then(|&index| self.closest_goal(index, goal, &BTreeSet::new()))
+        {
+            Some(reached) if reached != goal => (reached, cell_center(reached)),
+            _ => (goal, target),
+        };
         self.field(layer, goal);
         let order_id = self.next_order_id;
         self.next_order_id += 1;
@@ -1089,6 +1098,18 @@ impl World {
             .collect()
     }
 
+    /// Spec 04 §5.2: `Some(cell)` closest to `goal` that unit `index` can
+    /// reach, when `goal` is cut off from it; `None` when `goal` is reachable
+    /// (or the unit cannot move at all).
+    fn closest_goal(&mut self, index: usize, goal: Cell, claimed: &BTreeSet<Cell>) -> Option<Cell> {
+        let layer = self.layer_of(index);
+        let from = cell_of(self.entities[index].pos);
+        if self.field(layer, goal).integration(from) != crate::flow::UNREACHABLE {
+            return None;
+        }
+        crate::flow::closest_reachable(self.grid(layer), from, goal, |c| !claimed.contains(&c))
+    }
+
     /// Spec 04 §5.1: a move into an impassable cell gives every commanded unit
     /// its own goal: centroid offset, near-to-far order, ring search over the
     /// cells not yet claimed by this command.
@@ -1146,6 +1167,7 @@ impl World {
             let Some(goal) = goal else {
                 continue;
             };
+            let goal = self.closest_goal(index, goal, &claimed).unwrap_or(goal);
             claimed.insert(goal);
             if gather && self.rules.ty(self.entities[index].kind).radius_centi >= 30 {
                 // Gathered vehicles leave one free cell between each other.
