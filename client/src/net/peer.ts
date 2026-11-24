@@ -2,13 +2,9 @@
  *  room, the guest says hello, the host offers, the guest answers; from then
  *  on every message goes peer to peer over one reliable, ordered channel. */
 import type { PeerMessage } from "./lockstep";
+import { iceServers } from "./server";
 import { openSignalChannel, type SignalMessage } from "./signal";
 
-/** Public STUN servers: they only tell a browser its public address. */
-const ICE_SERVERS: RTCIceServer[] = [
-  { urls: "stun:stun.l.google.com:19302" },
-  { urls: "stun:stun.cloudflare.com:3478" },
-];
 const HELLO_EVERY_MS = 2000;
 const ICE_GATHER_MS = 4000;
 export const CONNECT_TIMEOUT_MS = 30_000;
@@ -124,6 +120,7 @@ export function hostRoom(room: string): {
   cancel(): void;
 } {
   const id = `host-${newRoomCode()}`;
+  void iceServers();
   let connection: RTCPeerConnection | null = null;
   let resolveLink: (link: PeerLink) => void = () => {};
   const link = new Promise<PeerLink>((resolve) => {
@@ -132,10 +129,11 @@ export function hostRoom(room: string): {
   const signal = openSignalChannel(room, (message: SignalMessage) => {
     if (message.kind === "hello" && connection === null) {
       const guest = message.from;
-      const created = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+      const created = new RTCPeerConnection();
       connection = created;
       const channel = created.createDataChannel("game", { ordered: true });
       void (async () => {
+        created.setConfiguration({ iceServers: await iceServers() });
         await created.setLocalDescription(await created.createOffer());
         const sdp = await gathered(created);
         signal.send({ kind: "offer", from: id, to: guest, sdp });
@@ -165,7 +163,8 @@ export function hostRoom(room: string): {
 /** Guest side: joins `room` and connects to its host. */
 export function joinRoom(room: string): Promise<PeerLink> {
   const id = `guest-${newRoomCode()}`;
-  const connection = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+  const connection = new RTCPeerConnection();
+  const servers = iceServers();
   let answered = false;
   let hello: ReturnType<typeof setInterval> | null = null;
   const channelReady = new Promise<RTCDataChannel>((resolve) => {
@@ -176,6 +175,7 @@ export function joinRoom(room: string): Promise<PeerLink> {
     answered = true;
     if (hello !== null) clearInterval(hello);
     void (async () => {
+      connection.setConfiguration({ iceServers: await servers });
       await connection.setRemoteDescription({
         type: "offer",
         sdp: message.sdp,

@@ -4,21 +4,18 @@
 //   node --run testers:list               lists invited testers
 //   node --run testers:revoke -- "Name"   removes a tester; the link stops working
 //
-// Uses the Supabase CLI session on this machine (`supabase login`) and the
-// project linked in `supabase/` (`supabase link`).
+// Talks to the red-line server on the owner's VPS over SSH (this machine's
+// key must be authorized for root there, see scripts/deploy-server.mjs).
+// Only the SHA-256 of the secret leaves this machine.
 import { spawnSync } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
-import { dirname, join } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { pathToFileURL } from "node:url";
 
 export const GAME_URL = "https://red-line.pikilon.com/";
+const VPS = "root@69.62.106.16";
+const CONTAINER = "red-line-server-1";
 
-/** A tester name as an SQL string literal. */
-export function sqlString(text) {
-  return `'${text.replaceAll("'", "''")}'`;
-}
-
-/** A fresh invite secret and the hash the database keeps. */
+/** A fresh invite secret and the hash the server keeps. */
 export function newInvite() {
   const token = randomBytes(24).toString("base64url");
   const hash = createHash("sha256").update(token).digest("hex");
@@ -29,25 +26,23 @@ export function inviteUrl(token) {
   return `${GAME_URL}?invite=${token}`;
 }
 
-function query(root, sql) {
-  const result = spawnSync(
-    "supabase",
-    ["db", "query", "--remote", "--yes", "--agent", "no", "-o", "json", sql],
-    { cwd: root, encoding: "utf8" },
-  );
+/** A single-quoted shell word, for the remote command line. */
+export function shellWord(text) {
+  return `'${String(text).replaceAll("'", "'\\''")}'`;
+}
+
+function admin(args) {
+  const remote = ["docker", "exec", CONTAINER, "node", "src/admin.mjs", ...args]
+    .map(shellWord)
+    .join(" ");
+  const result = spawnSync("ssh", [VPS, remote], { encoding: "utf8" });
   if (result.error !== undefined) {
-    throw new Error(`supabase CLI not found: ${result.error.message}`);
+    throw new Error(`ssh not found: ${result.error.message}`);
   }
   if (result.status !== 0) {
     throw new Error((result.stderr || result.stdout).trim());
   }
-  // The CLI prints a bare array of rows, or an object with `rows` in agent
-  // mode; statements without results may print nothing.
-  const text = result.stdout.trim();
-  const start = text.search(/[[{]/);
-  if (start === -1) return [];
-  const parsed = JSON.parse(text.slice(start));
-  return Array.isArray(parsed) ? parsed : (parsed.rows ?? []);
+  return result.stdout.trim();
 }
 
 function cleanName(raw) {
@@ -58,24 +53,17 @@ function cleanName(raw) {
   return name;
 }
 
-function main(root, [command, ...args]) {
+function main([command, ...args]) {
   if (command === "invite") {
     const name = cleanName(args[0]);
     const { token, hash } = newInvite();
     // Inviting an existing tester again issues a new link and voids the old one.
-    query(
-      root,
-      `insert into public.testers (name, token_hash) values (${sqlString(name)}, ${sqlString(hash)})
-       on conflict (name) do update set token_hash = excluded.token_hash, added_at = now();`,
-    );
+    admin(["upsert", name, hash]);
     console.log(`Invite link for ${name} (send it privately):\n${inviteUrl(token)}`);
     return;
   }
   if (command === "list") {
-    const rows = query(
-      root,
-      "select name, added_at from public.testers order by added_at;",
-    );
+    const rows = JSON.parse(admin(["list"]));
     if (rows.length === 0) console.log("No testers yet.");
     for (const row of rows) {
       console.log(`${row.name}  (invited ${String(row.added_at).slice(0, 10)})`);
@@ -84,22 +72,16 @@ function main(root, [command, ...args]) {
   }
   if (command === "revoke") {
     const name = cleanName(args[0]);
-    const rows = query(
-      root,
-      `delete from public.testers where name = ${sqlString(name)} returning name;`,
-    );
-    console.log(
-      rows.length === 0 ? `No tester named ${name}.` : `Revoked ${name}.`,
-    );
+    const removed = admin(["revoke", name]) === "removed";
+    console.log(removed ? `Revoked ${name}.` : `No tester named ${name}.`);
     return;
   }
   throw new Error("usage: testers.mjs invite <name> | list | revoke <name>");
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const root = join(dirname(fileURLToPath(import.meta.url)), "..");
   try {
-    main(root, process.argv.slice(2));
+    main(process.argv.slice(2));
   } catch (error) {
     console.error(`testers: ${error instanceof Error ? error.message : error}`);
     process.exit(1);

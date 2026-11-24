@@ -3,6 +3,7 @@ import {
   loadInvite,
   ReportApiError,
   type ReportDraft,
+  type SentReport,
   submitReport,
   whoAmI,
 } from "../report/api";
@@ -19,7 +20,7 @@ export interface ReportPageDeps {
   capture(): Promise<ReportCapture>;
   /** Network calls; tests replace them. */
   whoAmI?: () => Promise<string>;
-  submit?: (draft: ReportDraft) => Promise<{ number: number; url: string }>;
+  submit?: (draft: ReportDraft) => Promise<SentReport>;
 }
 
 export interface ReportPage {
@@ -180,8 +181,13 @@ export function createReportPage(deps: ReportPageDeps): ReportPage {
       title.value = "";
       description.value = "";
       files.value = "";
-      doneLink.href = issue.url;
-      doneLink.textContent = t("report.sent", { number: issue.number });
+      if (issue === null) {
+        doneLink.removeAttribute("href");
+        doneLink.textContent = t("report.queued");
+      } else {
+        doneLink.href = issue.url;
+        doneLink.textContent = t("report.sent", { number: issue.number });
+      }
       status.textContent = "";
       show("done");
     } catch (error) {

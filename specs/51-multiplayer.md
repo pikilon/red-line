@@ -23,13 +23,17 @@ carries almost nothing.
 
 ### 2.2 Introduction (signalling)
 
-* The two browsers find each other over a Supabase Realtime **broadcast**
-  channel `redline-<code>` (the project already used for spec 47). Nothing
-  is stored: no table, no function. The guest repeats `hello` every 2 s; the
+* The two browsers find each other over a WebSocket room
+  `/signal?room=redline-<code>` on the game server (the one of spec 47 §6),
+  which relays each message to the other sockets in the room (8 at most).
+  Nothing is stored. The guest repeats `hello` every 2 s; the
   host answers with a WebRTC offer, the guest with its answer (whole SDP,
   addresses gathered first, up to 4 s). Then both close the socket.
 * Public STUN servers (Google, Cloudflare) tell each browser its public
-  address. There is no relay (TURN) yet.
+  address. When a direct link is impossible (strict NATs, some mobile and
+  office networks) the game server's relay (TURN, coturn on port 3479)
+  carries the traffic; the browser asks `/turn` for credentials valid 6 h.
+  If the server does not answer within 3 s, STUN alone is used.
 * The guest gives up after 30 s with "Could not connect…".
 
 ### 2.3 Start

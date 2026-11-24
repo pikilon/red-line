@@ -1,17 +1,13 @@
-/** Tester invites and report submission against the Supabase `report` Edge
- *  Function (spec 47). Plain `fetch`, so the client needs no SDK. */
+/** Tester invites and report submission against the game server's
+ *  `/report` endpoint (spec 47). */
+import { SERVER_URL } from "../net/server";
 
-/** Public project settings; the publishable key is meant to ship. */
-export const SUPABASE_URL: string = "https://uuoqsligbiiwkktovznu.supabase.co";
-export const SUPABASE_ANON_KEY: string =
-  "sb_publishable_4_gDq07hwapHIwnw3y1DFA_pH3Yg4_k";
-
-const FUNCTION_URL = `${SUPABASE_URL}/functions/v1/report`;
+const REPORT_URL = `${SERVER_URL}/report`;
 const INVITE_KEY = "redline.report.invite";
 
 /** Whether the report backend is configured (spec 47 §4). */
 export function reportsEnabled(): boolean {
-  return SUPABASE_URL !== "" && SUPABASE_ANON_KEY !== "";
+  return SERVER_URL !== "";
 }
 
 /** Failure codes the report page turns into messages. */
@@ -76,12 +72,12 @@ export function consumeInviteParam(): void {
 }
 
 function headers(invite: Invite): Record<string, string> {
-  return { apikey: SUPABASE_ANON_KEY, "x-tester-token": invite.token };
+  return { "x-tester-token": invite.token };
 }
 
 async function call(init: RequestInit): Promise<Response> {
   try {
-    return await fetch(FUNCTION_URL, init);
+    return await fetch(REPORT_URL, init);
   } catch {
     throw new ReportApiError("network");
   }
@@ -115,10 +111,12 @@ export interface ReportDraft {
   attachments: readonly File[];
 }
 
+/** The created issue, or `null` when the report was kept to be filed later
+ *  (spec 47 §5). */
+export type SentReport = { number: number; url: string } | null;
+
 /** Sends a report; resolves with the created issue (spec 47 §5). */
-export async function submitReport(
-  draft: ReportDraft,
-): Promise<{ number: number; url: string }> {
+export async function submitReport(draft: ReportDraft): Promise<SentReport> {
   const invite = loadInvite();
   if (invite === null) throw new ReportApiError("no-invite");
   const form = new FormData();
@@ -145,7 +143,9 @@ export async function submitReport(
   const data = (await response.json().catch(() => ({}))) as {
     number?: number;
     url?: string;
+    queued?: boolean;
   };
+  if (response.ok && data.queued === true) return null;
   if (response.ok && data.number !== undefined && data.url !== undefined) {
     return { number: data.number, url: data.url };
   }

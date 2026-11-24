@@ -1,0 +1,12 @@
+{
+  "name": "red-line-server",
+  "private": true,
+  "type": "module",
+  "description": "Red Line backend on the owner's VPS: tester reports, multiplayer introductions, relay credentials.",
+  "scripts": {
+    "start": "node src/main.mjs"
+  },
+  "dependencies": {
+    "ws": "8.18.3"
+  }
+}
