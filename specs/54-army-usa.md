@@ -1,4 +1,4 @@
-# 53 — New army: USA
+# 54 — New army: USA
 
 Status: in progress (issue #485). Built with the faction assembly line
 (`.agents/workflows/faction-assembly.md`). Depends on `50-veterancy.md`,

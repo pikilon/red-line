@@ -10,3 +10,4 @@ node_modules/
 /crates/sim/pkg/
 /.local/
 .tmp/
+tools/models/__pycache__/
