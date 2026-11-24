@@ -11,6 +11,7 @@ import {
   TextureLoader,
   UnsignedByteType,
 } from "three";
+import { artSetOf } from "./factionArt";
 
 /** Spec 12: the images of `client/public/textures/<id>.webp`. */
 export const GENERATED_TEXTURE_IDS = [
@@ -127,8 +128,9 @@ export function bodyTextureId(
   category: string,
   armor = INFANTRY_ARMOR,
 ): GeneratedTextureId {
-  // Type ids start with the faction prefix; neutral types use `ua`.
-  const prefix = typeId.startsWith("ru-") ? "ru" : "ua";
+  // Type ids start with the faction prefix; neutral and art-less types use the
+  // fallback set.
+  const prefix = artSetOf(typeId);
   if (category !== "unit") return `${prefix}-concrete` as GeneratedTextureId;
   if (isInfantry(category, armor))
     return `${prefix}-camo` as GeneratedTextureId;
@@ -159,7 +161,7 @@ export function bodyMapsOf(
       bump: bumpId === null ? undefined : textures[bumpId],
     };
   }
-  const prefix = typeId.startsWith("ru-") ? "ru" : "ua";
+  const prefix = artSetOf(typeId);
   return { paint: textures[`${prefix}-paint`], bump: undefined };
 }
 

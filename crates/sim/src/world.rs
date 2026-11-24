@@ -359,6 +359,27 @@ impl World {
         map_id: &str,
         starts: bool,
     ) -> Result<World, SimError> {
+        World::skirmish_as(rules, map_id, starts, &[])
+    }
+
+    /// `World::skirmish` with the army of each start chosen by faction id
+    /// (spec 53): `armies[i]` replaces `map.starts[i].faction`, so start `i`
+    /// places that faction's HQ and dozer. Empty keeps the map's factions;
+    /// otherwise one id per start, mirror matches allowed.
+    pub fn skirmish_armies(
+        rules: Ruleset,
+        map_id: &str,
+        armies: &[String],
+    ) -> Result<World, SimError> {
+        World::skirmish_as(rules, map_id, true, armies)
+    }
+
+    pub(crate) fn skirmish_as(
+        rules: Ruleset,
+        map_id: &str,
+        starts: bool,
+        armies: &[String],
+    ) -> Result<World, SimError> {
         let map = rules
             .map(map_id)
             .cloned()
@@ -369,7 +390,28 @@ impl World {
         let base = map_terrain(&map);
         let features = features::from_map(&rules, &map);
         let terrain = features::with_blocks(&base, &features, &rules);
-        let factions: Vec<FactionId> = map.starts.iter().map(|start| start.faction).collect();
+        let mut factions: Vec<FactionId> = map.starts.iter().map(|start| start.faction).collect();
+        if !armies.is_empty() {
+            if armies.len() != factions.len() {
+                return Err(SimError::InvalidSetup {
+                    detail: format!(
+                        "armies: {} entries for {} starts",
+                        armies.len(),
+                        factions.len()
+                    ),
+                });
+            }
+            for (slot, id) in factions.iter_mut().zip(armies) {
+                let index = rules
+                    .factions
+                    .iter()
+                    .position(|f| &f.id == id)
+                    .ok_or_else(|| SimError::InvalidSetup {
+                        detail: format!("armies: unknown faction {id}"),
+                    })?;
+                *slot = index as FactionId;
+            }
+        }
         let mut world = World::sandbox(rules, terrain, &factions);
         world.terrain_foot = features::foot_blocks(&base, &features, &world.rules);
         world.terrain_water = features::water_blocks(&base, &features, &world.rules);
@@ -402,7 +444,7 @@ impl World {
                 break;
             }
             let player = index as PlayerId;
-            let faction = &world.rules.factions[usize::from(start.faction)];
+            let faction = &world.rules.factions[usize::from(factions[index])];
             let (hq, dozer) = (faction.hq, faction.dozer);
             world.place_building(
                 player,

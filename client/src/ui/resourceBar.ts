@@ -2,7 +2,7 @@
 // delta into Zero Hour's `ui.cashUp` / `ui.cashDown` without the sim knowing
 // anything about audio.
 import { t } from "../i18n";
-import { FLAGS } from "../render/flags";
+import { flagOfFaction } from "../render/flags";
 import { factionName, RULES } from "../rules";
 import type { MatchSnapshot } from "../sim/matchSnapshot";
 import { appendDiv, setText } from "./dom";
@@ -50,9 +50,8 @@ export function resourceText(snapshot: MatchSnapshot): ResourceText {
 export function teamColors(
   factionId: string,
 ): { flag: string; accent: string } | null {
-  const stripes: readonly number[] | undefined =
-    FLAGS[factionId as keyof typeof FLAGS];
-  if (stripes === undefined) return null;
+  if (factionId === "") return null;
+  const stripes = flagOfFaction(factionId);
   const css = stripes.map(
     (stripe) => `#${stripe.toString(16).padStart(6, "0")}`,
   );

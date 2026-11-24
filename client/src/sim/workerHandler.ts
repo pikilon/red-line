@@ -143,7 +143,11 @@ export interface SkirmishSimLike {
 }
 
 export type SimFactory = (seed: number, unitCount: number) => SimLike;
-export type SkirmishFactory = (seed: number, mapId: string) => SkirmishSimLike;
+export type SkirmishFactory = (
+  seed: number,
+  mapId: string,
+  armies?: string[],
+) => SkirmishSimLike;
 /** `Sim.load_state` / `Sim.from_setup` (spec 19 §5.4). */
 export type SaveFactory = (
   form: "world" | "setup",
@@ -512,7 +516,7 @@ export function createWorkerHandler(
       }
       let created: SkirmishSimLike;
       try {
-        created = skirmishFactory(message.seed, message.mapId);
+        created = skirmishFactory(message.seed, message.mapId, message.armies);
       } catch (error) {
         post({ type: "error", detail: String(error) });
         return;

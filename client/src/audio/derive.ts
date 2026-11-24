@@ -18,6 +18,7 @@ import {
   type MatchSnapshot,
   OBSERVER,
 } from "../sim/matchSnapshot";
+import { audioFactionOf } from "./catalog";
 import type {
   AudioCatalog,
   AudioPlayRequest,
@@ -587,7 +588,9 @@ export function resolveCommandVoiceEvent(
     const def = typeDef(entity.kind);
     if (def.category === "building") {
       if (action !== "select") continue;
-      const faction = RULES.factions[def.faction]?.id ?? "ukraine";
+      const faction = audioFactionOf(
+        RULES.factions[def.faction]?.id ?? RULES.factions[0]?.id ?? "",
+      );
       if (def.id.endsWith("-hq")) {
         return {
           eventId: `building.select.hq.${faction}`,

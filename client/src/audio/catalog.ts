@@ -6,6 +6,7 @@
 
 import rawAudio from "@data/audio.json";
 import { ZOOM_MAX, ZOOM_MIN } from "../camera";
+import { RULES } from "../rules";
 import type {
   AudioCatalog,
   EvaEventDef,
@@ -32,10 +33,12 @@ function buildCatalog(): AudioCatalog {
     const sounds: Record<string, string> =
       r.sounds && !Array.isArray(r.sounds)
         ? { ...r.sounds }
-        : {
-            ukraine: refEvents[`eva.ukraine.${id}`] ?? defaultSound,
-            russia: refEvents[`eva.russia.${id}`] ?? defaultSound,
-          };
+        : Object.fromEntries(
+            RULES.factions.map((faction) => [
+              faction.id,
+              refEvents[`eva.${faction.id}.${id}`] ?? defaultSound,
+            ]),
+          );
     evaEvents[id] = {
       priority: r.priority,
       cooldownMs: r.cooldownMs,
@@ -110,3 +113,15 @@ function buildCatalog(): AudioCatalog {
 }
 
 export const AUDIO_CATALOG: AudioCatalog = buildCatalog();
+
+/** The faction whose voices, EVA and music play for `factionId`: itself when
+ *  the audio data covers it (it has calm music), else the first faction with
+ *  audio, so a faction without recordings never goes silent or crashes. */
+export function audioFactionOf(factionId: string): string {
+  const events = rawAudio.events as Record<string, unknown>;
+  if (`music.calm.${factionId}` in events) return factionId;
+  const covered = RULES.factions.find(
+    (faction) => `music.calm.${faction.id}` in events,
+  );
+  return covered?.id ?? factionId;
+}

@@ -254,7 +254,7 @@ describe("worker handler", () => {
       speed: 2,
       debug: true,
     });
-    expect(skirmishFactory).toHaveBeenCalledWith(3, "m");
+    expect(skirmishFactory).toHaveBeenCalledWith(3, "m", undefined);
     expect(enable_debug_commands).toHaveBeenCalledTimes(1);
     expect(posted.map((p) => p.message.type)).toEqual(["ready", "snapshot"]);
     expect(posted[0]?.message).toEqual({

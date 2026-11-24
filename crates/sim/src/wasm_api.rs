@@ -70,6 +70,14 @@ impl Sim {
         })
     }
 
+    /// Skirmish with the army of each start chosen by faction id (spec 53);
+    /// an empty list keeps the map's own factions.
+    pub fn skirmish_armies(seed: u32, map_id: &str, armies: Vec<String>) -> Result<Sim, String> {
+        let world =
+            World::skirmish_armies(Ruleset::builtin(), map_id, &armies).map_err(error_text)?;
+        Ok(Sim::wrap(world, u64::from(seed), Vec::new()))
+    }
+
     /// Setup-form world (spec 19 §3.5) from the JSON of a `Setup`.
     pub fn from_setup(json: &str) -> Result<Sim, String> {
         let setup: Setup = serde_json::from_str(json).map_err(|e| format!("invalid setup: {e}"))?;

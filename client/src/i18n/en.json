@@ -6,6 +6,8 @@
   "mainMenu.tutorials": "Tutorials",
   "mainMenu.back": "Back",
   "mainMenu.opponent": "Opponent",
+  "mainMenu.yourArmy": "Your army",
+  "mainMenu.enemyArmy": "Enemy army",
   "mainMenu.difficultyEasy": "Easy army",
   "mainMenu.difficultyMedium": "Medium army",
   "mainMenu.difficultyHard": "Hard army",
