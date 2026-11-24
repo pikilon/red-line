@@ -137,6 +137,31 @@ fn ac_05_19_tournament_subcommand() {
     assert_eq!(wins0 + wins1 + draws, 1);
 }
 
+#[test]
+fn tournament_armies_pass_through_to_world_creation() {
+    let dir = PathBuf::from(env!("CARGO_TARGET_TMPDIR"));
+    std::fs::create_dir_all(&dir).expect("target tmp dir");
+    let config = dir.join("tournament-armies.json");
+    let body = |armies: &str| {
+        format!(
+            r#"{{"map":"first-line","maxTicks":300,"seeds":[1],"ai0":["usa-rush"],"ai1":["ukraine-rush"],"armies":{armies}}}"#
+        )
+    };
+    let hash_for = |armies: &str| {
+        std::fs::write(&config, body(armies)).expect("config written");
+        let output = run(&["tournament", config.to_str().expect("utf-8 path")]);
+        (output.status.code(), output.stdout)
+    };
+    let (code, first) = hash_for(r#"["usa","ukraine"]"#);
+    assert_eq!(code, Some(0));
+    let (_, again) = hash_for(r#"["usa","ukraine"]"#);
+    assert_eq!(first, again, "deterministic");
+    let (_, swapped) = hash_for(r#"["ukraine","usa"]"#);
+    assert_ne!(first, swapped, "armies change the match");
+    let (bad, _) = hash_for(r#"["usa","nowhere"]"#);
+    assert_ne!(bad, Some(0), "unknown faction is rejected");
+}
+
 // AC-19-08: `headless save run` and `headless save check` (spec 19 §6.1).
 
 fn temp_dir(name: &str) -> PathBuf {
