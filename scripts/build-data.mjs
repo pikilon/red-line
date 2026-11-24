@@ -1160,6 +1160,9 @@ const assemble = (
 			// Spec 43: omitted at the defaults (none, ground, no launch), so older fixtures keep their shape.
 			...(w.antiAir === undefined ? {} : { antiAir: w.antiAir }),
 			...(w.antiGround === undefined ? {} : { antiGround: w.antiGround }),
+			...(w.interceptable === undefined
+				? {}
+				: { interceptable: w.interceptable }),
 			...(w.launches === undefined
 				? {}
 				: { launches: typeIndex.get(w.launches) }),
@@ -1207,6 +1210,22 @@ const assemble = (
 			...(t.infinite === undefined ? {} : { infinite: t.infinite }),
 			unloadTicks: t.unloadTicks ?? 0,
 			freeUnit: t.freeUnit === undefined ? -1 : typeIndex.get(t.freeUnit),
+			// Spec 54 §5.1: hard-kill active protection; stops are damage type indices.
+			...(t.activeProtection === undefined
+				? {}
+				: {
+						activeProtection: {
+							reloadTicks: t.activeProtection.reloadTicks,
+							rangeCenti: t.activeProtection.rangeCenti,
+							stops: t.activeProtection.stops.map((name) => {
+								const index = globals.damageTypes.indexOf(name);
+								if (index < 0) {
+									throw new Error(`unknown damage type ${name} in activeProtection of ${t.id}`);
+								}
+								return index;
+							}),
+						},
+					}),
 			// Spec 39: a completed vehicle-repair pad.
 			...(t.repairsVehicles === undefined
 				? {}
