@@ -30,7 +30,8 @@ describe("armies (spec 53)", () => {
   });
 
   it("AC-53-03: enemies are the factions an AI can play; personalities follow the faction", () => {
-    expect(enemyArmyIds()).toEqual(["ukraine", "russia"]);
+    expect(enemyArmyIds()).toEqual(["ukraine", "russia", "usa"]);
+    expect(personalityFor("usa", "rush")).toBe("usa-rush");
     expect(personalityFor("russia", "balanced")).toBe("russia-balanced");
     expect(personalityFor("ukraine", "rush")).toBe("ukraine-rush");
   });
