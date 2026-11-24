@@ -1,6 +1,7 @@
 # Spec 48: help card of the Leopard. Its tracks drive over a line of Russian riflemen.
 id: help-us-abrams-crush
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

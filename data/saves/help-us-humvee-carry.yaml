@@ -1,6 +1,7 @@
 # Spec 48: help card of the Kozak-2 scout. A squad walks to board it; select the infantry to see the move.
 id: help-us-humvee-carry
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

@@ -1,6 +1,7 @@
 # Spec 48: help card of the Kozak-2 scout. A loaded squad fires from its firing ports at Russian infantry.
 id: help-us-humvee-fireports
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

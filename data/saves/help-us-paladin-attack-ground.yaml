@@ -1,6 +1,7 @@
 # Spec 48: help card of the HIMARS. A scout spots the Russian base while the launcher shells a chosen point.
 id: help-us-paladin-attack-ground
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

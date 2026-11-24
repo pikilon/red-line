@@ -1,7 +1,8 @@
 # Spec 54 (from spec 39):  two damaged vehicles beside their repair factory. Select one or both and right click the factory.
 # The first docked vehicle repairs its initial deficit in five seconds; the second waits and production continues.
 id: help-us-stryker-repair
-map: first-line-usa
+map: first-line
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

@@ -1,6 +1,7 @@
 # Spec 48: help card of the Bradley. A squad boards it; select the Bradley to see Unload (n).
 id: help-us-stryker-carry
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

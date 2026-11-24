@@ -1,6 +1,7 @@
 # Spec 48: help card of the supply truck. A truck loads at a depot beside its supply center.
 id: help-us-supply-truck-harvest
-map: demo-ground-usa
+map: demo-ground
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

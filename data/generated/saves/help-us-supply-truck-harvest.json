@@ -5,7 +5,7 @@
   "savedAt": "1970-01-01T00:00:00.000Z",
   "tick": 0,
   "match": {
-    "mapId": "demo-ground-usa",
+    "mapId": "demo-ground",
     "seed": "1",
     "debug": true,
     "speed": 1
@@ -25,7 +25,7 @@
     "selected": []
   },
   "setup": {
-    "map": "demo-ground-usa",
+    "map": "demo-ground",
     "seed": "1",
     "victory": false,
     "debug": true,
@@ -52,6 +52,10 @@
           "harvest": "depot-0"
         }
       }
+    ],
+    "armies": [
+      "usa",
+      "russia"
     ]
   }
 }

@@ -1,7 +1,8 @@
 # Spec 48: help card of the dozer. A dozer beside a half-built barracks, with a
 # complete support base out of shot so the Build tab offers every structure.
 id: help-us-dozer-build
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

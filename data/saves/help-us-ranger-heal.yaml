@@ -1,6 +1,7 @@
 # Spec 48: help card of the rifleman. Two wounded riflemen wait beside their barracks to be healed.
 id: help-us-ranger-heal
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

@@ -1,6 +1,7 @@
 # Spec 48: help card of the rifleman. Riflemen fire at a low Orlan drone overhead.
 id: help-us-ranger-air
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

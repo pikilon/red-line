@@ -1,6 +1,7 @@
 # Spec 48: help card of the vehicle factory. Select it to see Sell in the structure row.
 id: help-us-vehicle-factory-sell
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

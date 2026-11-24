@@ -1,6 +1,7 @@
 # Spec 48: help card of the rifleman. A Ukrainian pair trades rifle fire with Russian infantry.
 id: help-us-ranger-fight
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

@@ -1,6 +1,7 @@
 # Spec 48: help card of the HIMARS. A damaged HIMARS waits beside its repair factory.
 id: help-us-paladin-repair
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

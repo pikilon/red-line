@@ -61,6 +61,11 @@
         }
       }
     },
+    "armies": {
+      "description": "Spec 53: faction id of each start's army (index = start); absent = the map's own.",
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" }
+    },
     "upgrades": {
       "description": "Spec 52: upgrade type ids each start owns at tick 0 (index = start).",
       "type": "array",

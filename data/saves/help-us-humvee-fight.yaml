@@ -1,6 +1,7 @@
 # Spec 48: help card of the Kozak-2 scout. Its heavy machine gun cuts into Russian infantry beside a scout vehicle.
 id: help-us-humvee-fight
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

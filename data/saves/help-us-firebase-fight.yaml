@@ -1,6 +1,7 @@
 # Spec 54: help card of the Fire base. Its 155 mm shells hit a T-72B3.
 id: help-us-firebase-fight
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

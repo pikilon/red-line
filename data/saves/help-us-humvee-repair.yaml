@@ -1,6 +1,7 @@
 # Spec 48: help card of the Kozak-2 scout. A damaged Kozak waits beside its repair factory.
 id: help-us-humvee-repair
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

@@ -1,6 +1,7 @@
 # Spec 48: help card of the supply truck. A damaged truck waits beside its repair factory.
 id: help-us-supply-truck-repair
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

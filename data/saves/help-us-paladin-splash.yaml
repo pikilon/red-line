@@ -1,6 +1,7 @@
 # Spec 48: help card of the HIMARS. Its rockets catch a cluster of Russian infantry.
 id: help-us-paladin-splash
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

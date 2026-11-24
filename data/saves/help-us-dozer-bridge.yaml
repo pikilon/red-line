@@ -1,6 +1,7 @@
 # Spec 48: help card of the dozer. It repairs the broken road bridge.
 id: help-us-dozer-bridge
-map: demo-bridges-usa
+map: demo-bridges
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

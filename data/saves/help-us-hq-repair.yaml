@@ -1,6 +1,7 @@
 # Spec 48: help card of the headquarters. A damaged headquarters waits for its dozer.
 id: help-us-hq-repair
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

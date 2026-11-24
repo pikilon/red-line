@@ -1,6 +1,7 @@
 # Spec 48: help card of the Leopard. Its 120 mm gun trades shells with a T-72B3.
 id: help-us-abrams-fight
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

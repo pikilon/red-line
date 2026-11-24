@@ -1,6 +1,7 @@
 # Spec 48: help card of the Bradley. Its Bushmaster autocannon shreds a BMP-2 and downs an Orlan drone overhead.
 id: help-us-stryker-fight
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

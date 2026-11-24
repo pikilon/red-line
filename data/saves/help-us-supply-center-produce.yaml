@@ -1,6 +1,7 @@
 # Spec 48: help card of the supply center. Select it to see the truck it produces.
 id: help-us-supply-center-produce
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

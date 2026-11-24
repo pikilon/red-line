@@ -1,6 +1,7 @@
 # Spec 48: help card of the Stugna team. The crew stows the launcher and walks toward a trench.
 id: help-us-javelin-team-move
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

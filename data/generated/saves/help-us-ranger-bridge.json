@@ -5,7 +5,7 @@
   "savedAt": "1970-01-01T00:00:00.000Z",
   "tick": 0,
   "match": {
-    "mapId": "demo-bridges-usa",
+    "mapId": "demo-bridges",
     "seed": "1",
     "debug": true,
     "speed": 1
@@ -25,7 +25,7 @@
     "selected": []
   },
   "setup": {
-    "map": "demo-bridges-usa",
+    "map": "demo-bridges",
     "seed": "1",
     "victory": false,
     "debug": true,
@@ -83,6 +83,10 @@
         ],
         "hpPercent": 55
       }
+    ],
+    "armies": [
+      "usa",
+      "russia"
     ]
   }
 }

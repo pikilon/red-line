@@ -1,6 +1,7 @@
 # Spec 48: help card of the barracks. Its rally point sits east of the building.
 id: help-us-barracks-rally
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

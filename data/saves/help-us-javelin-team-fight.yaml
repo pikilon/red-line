@@ -1,6 +1,7 @@
 # Spec 48: help card of the Stugna team. A crew fires its missile at a T-72 that has driven into sight.
 id: help-us-javelin-team-fight
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

@@ -200,6 +200,8 @@ test("AC-03-04: rosters and the first-line map follow the design", () => {
 
   // Per-faction roster: exactly the shape specs/03 §4.5 prescribes.
   ruleset.factions.forEach((faction, fi) => {
+    // The Phase 2 shape covers the first matchup; later armies follow their own spec (54+).
+    if (faction.id !== "ukraine" && faction.id !== "russia") return;
     // The original roster: the late types of spec 43 come after the port depot.
     const lateStart = ruleset.types.findIndex((t) => t.id === "port-depot") + 1;
     const mine = ruleset.types.filter((t, i) => t.faction === fi && i < lateStart);
@@ -273,7 +275,7 @@ test("AC-05-01: personality sources build", () => {
 
   // Personality values are tuned by the balance work (spec 05 §4.3), so this
   // checks the assembly against the YAML sources instead of pinning numbers.
-  const ids = ["ukraine-balanced", "ukraine-rush", "russia-balanced", "russia-rush"];
+  const ids = ["ukraine-balanced", "ukraine-rush", "russia-balanced", "russia-rush", "usa-balanced", "usa-rush"];
   assert.deepEqual(ruleset.ai.map((ai) => ai.id), ids);
   ids.forEach((id, i) => {
     const source = parse(readFileSync(join(root, `data/ai/${id}.yaml`), "utf8"));

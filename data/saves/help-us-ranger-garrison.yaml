@@ -1,6 +1,7 @@
 # Spec 48: help card of the rifleman. A squad waits by the apartment block with the Garrison button offered.
 id: help-us-ranger-garrison
-map: demo-town-usa
+map: demo-town
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

@@ -1,6 +1,7 @@
 # Spec 48: help card of the HIMARS. It fires a rocket salvo at a Russian power plant.
 id: help-us-paladin-fight
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

@@ -1,6 +1,7 @@
 # Spec 48: help card of the rifleman. Three soldiers repair a broken road bridge from the west bank.
 id: help-us-ranger-bridge
-map: demo-bridges-usa
+map: demo-bridges
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

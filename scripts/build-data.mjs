@@ -1531,11 +1531,13 @@ function setupSave(source, id, ruleset, validate, fail) {
 			"invalid-value",
 			`id ${data.id} is reserved for player slots`,
 		);
-	const map = ruleset.maps.find((m) => m.id === data.map);
-	if (!map) {
+	const mapDef = ruleset.maps.find((m) => m.id === data.map);
+	if (!mapDef) {
 		fail(file, "/map", "unknown-reference", `unknown map ${data.map}`);
 		return null;
 	}
+	// Spec 53: `armies` swaps the faction of each start; checks use the swap.
+	const map = withArmies(file, mapDef, data.armies, ruleset, fail);
 	const starts = data.starts ?? true;
 	const debug = data.debug ?? false;
 	(data.ai ?? []).forEach((ai, i) => {
@@ -1565,6 +1567,7 @@ function setupSave(source, id, ruleset, validate, fail) {
 		...(data.trenches === undefined ? {} : { trenches: data.trenches }),
 		// Spec 52: upgrade type ids each start owns at tick 0.
 		...(data.upgrades === undefined ? {} : { upgrades: data.upgrades }),
+		...(data.armies === undefined ? {} : { armies: data.armies }),
 	};
 	return {
 		format: SAVE_FILE_FORMAT,
@@ -1609,6 +1612,24 @@ function defaultCamera(data, map, starts, controlled, ruleset) {
 }
 
 /** References, placement and labels of a setup's entities (spec 19 §4.3). */
+/** `map` with each start's faction replaced by `armies[i]` (spec 53). */
+function withArmies(file, map, armies, ruleset, fail) {
+	if (armies === undefined) return map;
+	return {
+		...map,
+		starts: map.starts.map((start, i) => {
+			const id = armies[i];
+			if (id === undefined) return start;
+			const faction = ruleset.factions.findIndex((f) => f.id === id);
+			if (faction === -1) {
+				fail(file, `/armies/${i}`, "unknown-reference", `unknown faction ${id}`);
+				return start;
+			}
+			return { ...start, faction };
+		}),
+	};
+}
+
 function checkSetupEntities(file, data, map, starts, ruleset, fail) {
 	const typeById = new Map(ruleset.types.map((t) => [t.id, t]));
 	const inBounds = (x, y) =>

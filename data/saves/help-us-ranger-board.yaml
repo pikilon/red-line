@@ -1,6 +1,7 @@
 # Spec 48: help card of the rifleman. A squad boards a Kozak, which lets them fire from inside.
 id: help-us-ranger-board
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

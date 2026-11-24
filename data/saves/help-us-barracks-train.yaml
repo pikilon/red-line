@@ -1,6 +1,7 @@
 # Spec 48: help card of the barracks. Select it to see the three infantry it trains.
 id: help-us-barracks-train
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

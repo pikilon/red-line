@@ -1,6 +1,7 @@
 # Spec 48: help card of the supply center. A truck loads at a depot and returns to unload.
 id: help-us-supply-center-dropoff
-map: demo-ground-usa
+map: demo-ground
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

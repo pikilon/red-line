@@ -1,6 +1,7 @@
 # Spec 48: help card of the barracks. Select it to see Sell in the structure row.
 id: help-us-barracks-sell
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

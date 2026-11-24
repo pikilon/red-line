@@ -1,6 +1,7 @@
 # Spec 48: help card of the rifleman. A squad holds a trench line: two in the roofed shelter, two in the open piece, while Russian infantry advances.
 id: help-us-ranger-trench
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

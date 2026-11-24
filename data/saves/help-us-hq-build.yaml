@@ -1,6 +1,7 @@
 # Spec 48: help card of the headquarters. Select it to see the dozer it produces.
 id: help-us-hq-build
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

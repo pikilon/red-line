@@ -1,6 +1,7 @@
 # Spec 48: help card of the vehicle factory. A damaged Bradley waits beside the repair pad.
 id: help-us-vehicle-factory-repair
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

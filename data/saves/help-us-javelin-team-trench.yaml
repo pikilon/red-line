@@ -1,6 +1,7 @@
 # Spec 48: help card of the Stugna team. The crew holds a trench piece and fires its missile at a T-72.
 id: help-us-javelin-team-trench
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

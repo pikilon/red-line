@@ -1,6 +1,7 @@
 # Spec 48: help card of the Stugna-P emplacement. A base that consumes more power than its one plant produces; the selected emplacement holds its fire.
 id: help-us-firebase-power
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

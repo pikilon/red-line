@@ -1,6 +1,7 @@
 # Spec 48: help card of the power plant. A base that consumes more power than its one plant produces.
 id: help-us-power-plant-low
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

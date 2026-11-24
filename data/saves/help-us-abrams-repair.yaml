@@ -1,6 +1,7 @@
 # Spec 48: help card of the Leopard. A damaged Leopard waits beside its repair factory.
 id: help-us-abrams-repair
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false

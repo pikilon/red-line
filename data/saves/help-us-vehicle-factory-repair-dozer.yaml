@@ -1,6 +1,7 @@
 # Spec 48: help card of the vehicle factory. A damaged factory waits for its dozer.
 id: help-us-vehicle-factory-repair-dozer
-map: showcase-usa
+map: showcase
+armies: [usa, russia]
 victory: false
 debug: true
 starts: false
