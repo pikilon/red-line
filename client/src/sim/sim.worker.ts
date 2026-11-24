@@ -20,7 +20,10 @@ const handler = createWorkerHandler(
   (seed, n) => new Sim(seed, n),
   api_version(),
   (message, transfer) => scope.postMessage(message, transfer ?? []),
-  (seed, mapId) => Sim.skirmish(seed, mapId),
+  (seed, mapId, armies) =>
+    armies === undefined || armies.length === 0
+      ? Sim.skirmish(seed, mapId)
+      : Sim.skirmish_armies(seed, mapId, armies),
   (form, json) =>
     form === "world" ? Sim.load_state(json) : Sim.from_setup(json),
 );

@@ -1316,22 +1316,17 @@ fn nearest_ghost(world: &World, player: PlayerId, c: FxVec2) -> Option<FxVec2> {
 /// Footprint centre of the HQ of the first map start that is not `player`
 /// (§5.6 step 4).
 ///
-/// `World` does not retain the map it was built from, so the map is found among
-/// `Ruleset::maps` by matching the public start factions to the players
-/// (`skirmish` builds start `i` as player `i`).
+/// The map is the one the world was built from (`skirmish` builds start `i` as
+/// player `i`, with the army chosen for it, spec 53).
 fn enemy_start_center(world: &World, player: PlayerId) -> Option<FxVec2> {
     let players = world.players();
-    let map = world.rules().maps.iter().find(|map| {
-        map.starts.len() == players.len()
-            && map
-                .starts
-                .iter()
-                .zip(players)
-                .all(|(start, state)| start.faction == state.faction)
-    })?;
+    let map = world.rules().map(world.map_id.as_deref()?)?;
+    if map.starts.len() != players.len() {
+        return None;
+    }
     let index = (0..map.starts.len()).find(|&index| index != usize::from(player))?;
     let start = &map.starts[index];
-    let hq = world.rules().factions[usize::from(start.faction)].hq;
+    let hq = world.rules().factions[usize::from(players[index].faction)].hq;
     Some(footprint_center(
         Cell {
             x: start.hq[0],

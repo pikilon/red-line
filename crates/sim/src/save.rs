@@ -1511,6 +1511,9 @@ pub struct Setup {
     /// Spec 52: upgrade type ids each start owns at tick 0 (index = start).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub upgrades: Vec<Vec<String>>,
+    /// Spec 53: faction id of each start's army; absent = the map's own.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub armies: Vec<String>,
 }
 
 /// A trench (2x1 earthwork) at `at`, at `hp_percent` of its hit points.
@@ -1640,7 +1643,7 @@ impl World {
     /// order; their orders are enqueued for the first step.
     pub fn from_setup(rules: Ruleset, setup: &Setup) -> Result<World, SimError> {
         let invalid = |detail: String| SimError::InvalidSetup { detail };
-        let mut world = World::skirmish_with(rules, &setup.map, setup.starts)?;
+        let mut world = World::skirmish_as(rules, &setup.map, setup.starts, &setup.armies)?;
         let starts = world.players.len();
         if let Some(credits) = &setup.credits {
             if credits.len() != starts {

@@ -36,6 +36,9 @@ export interface Settings {
   hudVertical?: boolean;
   /** The side the player controls in a fresh match; absent: player 0. */
   side?: 1;
+  /** Spec 53: the armies picked for the player and the enemy in a fresh
+   *  skirmish; absent: the map's own factions. */
+  armies?: { player: string; enemy: string };
 }
 
 export const DEFAULT_SETTINGS: Settings = { gore: true };
@@ -110,6 +113,7 @@ export function loadSettings(storage?: Storage): Settings {
       ...(obj.hudMinimal === true ? { hudMinimal: true } : {}),
       ...(obj.hudVertical === true ? { hudVertical: true } : {}),
       ...(obj.side === 1 ? { side: 1 as const } : {}),
+      ...parseArmies(obj.armies),
     };
   } catch {
     return { ...DEFAULT_SETTINGS };
@@ -152,4 +156,14 @@ export function saveSettings(settings: Settings, storage?: Storage): void {
   } catch {
     // A full or locked storage must not break the game.
   }
+}
+
+/** The saved army choice as a settings fragment; ids are checked against the
+ *  ruleset when they are used, so only the shape is checked here. */
+function parseArmies(value: unknown): Pick<Settings, "armies"> {
+  if (typeof value !== "object" || value === null) return {};
+  const { player, enemy } = value as Record<string, unknown>;
+  return typeof player === "string" && typeof enemy === "string"
+    ? { armies: { player, enemy } }
+    : {};
 }

@@ -81,3 +81,10 @@ describe("HQ flags", () => {
     expect(renderer.cloths.russia?.count).toBe(1);
   });
 });
+
+describe("neutral fallback", () => {
+  it("a faction without a flag flies a plain neutral cloth", async () => {
+    const { flagOfFaction, NEUTRAL_FLAG } = await import("./flags");
+    expect(flagOfFaction("nowhere")).toBe(NEUTRAL_FLAG);
+  });
+});
