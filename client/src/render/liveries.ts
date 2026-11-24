@@ -88,7 +88,7 @@ export function liveryOf(
   armor: number,
 ): Livery | null {
   if (category !== "unit" || armor === INFANTRY_ARMOR) return null;
-  return FACTION_LIVERY[typeId.slice(0, 3)] ?? null;
+  return FACTION_LIVERY[typeId.slice(0, typeId.indexOf("-") + 1)] ?? null;
 }
 
 /** Deterministic lattice hash in 0..1. */

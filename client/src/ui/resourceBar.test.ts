@@ -63,6 +63,8 @@ describe("teamColors", () => {
     const ru = teamColors("russia");
     expect(ru?.flag.match(/#[0-9a-f]{6}/g)).toHaveLength(3);
     expect(ru?.accent).toBe("#d52b1e");
-    expect(teamColors("nobody")).toBeNull();
+    // A faction without a flag of its own gets the neutral cloth, not null.
+    expect(teamColors("nobody")?.accent).toBe("#8a8a8a");
+    expect(teamColors("")).toBeNull();
   });
 });

@@ -9,6 +9,22 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse } from "yaml";
 
+/** The one id-prefix to faction table of the audio tooling: a new faction is
+ *  a new row (`ua-` units belong to `ukraine`, ...). */
+export const FACTION_PREFIXES = {
+  ua: "ukraine",
+  ru: "russia",
+  us: "usa",
+};
+
+/** Faction folder of a unit type id by its prefix, or undefined. */
+export function factionOfTypeId(typeId) {
+  const prefix = String(typeId ?? "").split("-")[0];
+  return Object.hasOwn(FACTION_PREFIXES, prefix)
+    ? FACTION_PREFIXES[prefix]
+    : undefined;
+}
+
 export const CATEGORY_ORDER = [
   "weapon",
   "impact",
@@ -152,11 +168,7 @@ export function targetTemplate(eventId) {
   switch (parts[0]) {
     case "voice": {
       const [, typeId, event] = parts;
-      const faction = typeId?.startsWith("ua-")
-        ? "ukraine"
-        : typeId?.startsWith("ru-")
-          ? "russia"
-          : "common";
+      const faction = factionOfTypeId(typeId) ?? "common";
       return `audio/voice/${faction}/${typeId}/${event}_<n>.webm`;
     }
     case "eva": {

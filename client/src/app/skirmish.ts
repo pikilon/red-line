@@ -18,7 +18,7 @@ import {
   WebGLRenderer,
 } from "three";
 import { ambientEventFor } from "../audio/ambient";
-import { AUDIO_CATALOG } from "../audio/catalog";
+import { AUDIO_CATALOG, audioFactionOf } from "../audio/catalog";
 import {
   createAudioDebugOverlay,
   isAudioDebugEnabled,
@@ -246,6 +246,13 @@ import {
   nextTutorial,
   type TutorialMission,
 } from "../ui/tutorial";
+import {
+  defaultArmies,
+  factionIdOfPlayer,
+  personalityFor,
+  readArmies,
+  startArmies,
+} from "./armies";
 import { createCameraMemory, homeView } from "./cameraMemory";
 import { attachNetMatch, type NetBoot } from "./netMatch";
 import { sideParam, withSideParam } from "./sideParam";
@@ -263,6 +270,18 @@ export const DEFAULT_DIFFICULTY: AiDifficulty = "medium";
 function readDifficulty(params: URLSearchParams): AiDifficulty {
   const value = params.get("difficulty");
   return AI_DIFFICULTIES.find((d) => d === value) ?? DEFAULT_DIFFICULTY;
+}
+
+/** `search` with `army`/`enemy` set to `armies`, when the URL carries them. */
+function withArmies(
+  search: string,
+  armies: { player: string; enemy: string } | undefined,
+): string {
+  const params = new URLSearchParams(search);
+  if (armies === undefined || params.get("army") === null) return search;
+  params.set("army", armies.player);
+  params.set("enemy", armies.enemy);
+  return `?${params.toString()}`;
 }
 
 /** Ids of the example saves, in menu order (spec 19 §4.3). */
@@ -346,11 +365,11 @@ function ownHeadquarters(
   entities: readonly EntityState[],
   player: number,
 ): EntityState | null {
-  const faction = RULES.factions[player];
-  if (faction === undefined) return null;
   return (
     entities.find(
-      (entity) => entity.owner === player && entity.kind === faction.hq,
+      (entity) =>
+        entity.owner === player &&
+        RULES.factions.some((faction) => faction.hq === entity.kind),
     ) ?? null
   );
 }
@@ -400,7 +419,16 @@ function paramsBoot(params: URLSearchParams): SkirmishBoot {
   const debug = params.get("debug") === "1";
   // `?ai=off` keeps the Phase 2 hot-seat behaviour (spec 05 §7).
   const aiParam = params.get("ai");
-  const ai = aiParam === "off" ? null : (aiParam ?? DEFAULT_AI);
+  const settings = loadSettings();
+  const side = settings.side ?? 0;
+  // Spec 53: the armies picked in the menu (URL first, then the saved pick).
+  const armies = startArmies(readArmies(params, settings.armies), side);
+  const opponentArmy = armies[1];
+  const defaultAi =
+    opponentArmy === undefined
+      ? DEFAULT_AI
+      : personalityFor(opponentArmy, DEFAULT_AI.replace(/^[^-]*-/, ""));
+  const ai = aiParam === "off" ? null : (aiParam ?? defaultAi);
   const difficulty = readDifficulty(params);
   const speed = debug
     ? Math.min(MAX_SPEED_SKIRMISH, Math.max(1, readInt(params, "speed", 1)))
@@ -415,11 +443,12 @@ function paramsBoot(params: URLSearchParams): SkirmishBoot {
     start: {
       seed,
       mapId,
-      viewer: loadSettings().side ?? 0,
+      viewer: side,
       speed,
       debug,
       ai,
       difficulty,
+      ...(armies.length > 0 ? { armies } : {}),
     },
     client: null,
     applySettings: false,
@@ -650,7 +679,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   }
   /** The side whose voice/EVA/music set the local player hears. */
   const localFactionId = (): string =>
-    RULES.factions[controlled]?.id ?? "ukraine";
+    audioFactionOf(factionOfPlayer(controlled));
   /** Short UI click used by menu and command buttons (spec 25 §11). */
   const uiClick = (): void => {
     audioMixer.play({ eventId: "ui.click", relation: "self" });
@@ -1493,7 +1522,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     const home = homeView(
       snapshot.entities,
       controlled,
-      RULES.factions[controlled]?.hq ?? null,
+      RULES.factions.find(
+        (faction) =>
+          faction.id === factionIdOfPlayer(snapshot.entities, controlled),
+      )?.hq ?? null,
       (kind) => typeDef(kind).category === "building",
     );
     if (home === null) return;
@@ -1502,7 +1534,9 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
 
   /** `#res-player`, 1-based (spec §6.6, spec 08 §3.5). */
   function setHudPlayer(): void {
-    resourceBar.setPlayer(controlled + 1, controlled);
+    const id = factionOfPlayer(controlled);
+    const index = RULES.factions.findIndex((faction) => faction.id === id);
+    resourceBar.setPlayer(controlled + 1, Math.max(0, index));
   }
 
   /** Builds the scene once the map and the first snapshot are known. */
@@ -1860,6 +1894,14 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     sunLight.target.updateMatrixWorld();
   }
 
+  /** The faction id `player` commands: the start's chosen army (spec 53),
+   *  else the faction owning its entities, else the map's default. */
+  function factionOfPlayer(player: number): string {
+    const chosen =
+      "armies" in boot.start ? boot.start.armies?.[player] : undefined;
+    return chosen ?? factionIdOfPlayer(next?.entities ?? [], player);
+  }
+
   /** Gives the skirmish AI the side the player left (spec 08 §3.5). */
   function moveAiToOpponent(): void {
     if (aiActive === null) return;
@@ -1869,7 +1911,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     ).replace(/^[^-]*-/, "");
     interact.setAiSide(
       controlled,
-      `${RULES.factions[opponent]?.id ?? "russia"}-${suffix}`,
+      personalityFor(factionOfPlayer(opponent), suffix),
       "difficulty" in boot.start ? boot.start.difficulty : undefined,
     );
   }
@@ -1883,9 +1925,19 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       settings = { ...settings };
       if (player === 1) settings.side = 1;
       else delete settings.side;
+      // The armies stay with the bases: the player now commands the other one.
+      if (settings.armies !== undefined) {
+        settings.armies = {
+          player: settings.armies.enemy,
+          enemy: settings.armies.player,
+        };
+      }
       saveSettings(settings);
       moveAiToOpponent();
-      const search = withSideParam(window.location.search, player);
+      const search = withArmies(
+        withSideParam(window.location.search, player),
+        settings.armies,
+      );
       if (search !== window.location.search) {
         window.history.replaceState(null, "", search);
       }
@@ -2590,9 +2642,20 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       { capture: true },
     );
     createMainMenu(document.body, {
-      skirmish: (difficulty) => {
+      armies:
+        readArmies(new URLSearchParams(), settings.armies) ?? defaultArmies(),
+      skirmish: (difficulty, armies) => {
         uiClick();
-        window.location.assign(`?mode=skirmish&difficulty=${difficulty}`);
+        // Spec 53: remembered like the played side, and in the URL.
+        settings = { ...settings, armies };
+        saveSettings(settings);
+        const query = new URLSearchParams({
+          mode: "skirmish",
+          difficulty,
+          army: armies.player,
+          enemy: armies.enemy,
+        });
+        window.location.assign(`?${query.toString()}`);
       },
       loadGame: () => {
         uiClick();

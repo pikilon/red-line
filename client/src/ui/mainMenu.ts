@@ -1,4 +1,6 @@
+import { type ArmyChoice, armyIds, enemyArmyIds } from "../app/armies";
 import { type MessageKey, t } from "../i18n";
+import { factionLabel } from "../rules";
 import {
   CAMPAIGNS,
   type Campaign,
@@ -14,7 +16,9 @@ import { goalText, TUTORIALS, type TutorialMission } from "./tutorial";
 export interface MainMenuActions {
   /** Leaves the shell battle for a new skirmish against an AI of
    *  `difficulty` (spec 05 §9). */
-  skirmish(difficulty: string): void;
+  skirmish(difficulty: string, armies: ArmyChoice): void;
+  /** The armies last picked (spec 53), the map's own on a first visit. */
+  armies: ArmyChoice;
   /** Opens the save manager in load mode (spec 19 §5.5). */
   loadGame(): void;
   /** Starts a tutorial mission (spec 46). */
@@ -54,6 +58,31 @@ function menuButton(id: string, text: string, action: () => void): HTMLElement {
   button.textContent = text;
   button.addEventListener("click", action);
   return button;
+}
+
+/** A labelled drop-down of armies (spec 53). */
+function armyPicker(
+  id: string,
+  label: string,
+  choices: readonly string[],
+  current: string,
+  onPick: (army: string) => void,
+): HTMLElement {
+  const wrapper = document.createElement("label");
+  wrapper.className = "main-menu-army";
+  wrapper.append(`${label} `);
+  const select = document.createElement("select");
+  select.id = id;
+  for (const choice of choices) {
+    const option = document.createElement("option");
+    option.value = choice;
+    option.textContent = factionLabel(choice);
+    option.selected = choice === current;
+    select.appendChild(option);
+  }
+  select.addEventListener("change", () => onPick(select.value));
+  wrapper.appendChild(select);
+  return wrapper;
 }
 
 /** The `#main-menu` overlay drawn over the AI-vs-AI shell battle (spec 45). */
@@ -145,6 +174,28 @@ export function createMainMenu(
   tutorials.appendChild(
     menuButton("main-menu-back", t("mainMenu.back"), () => show(main)),
   );
+  // Spec 53: pick both armies from every faction of the ruleset.
+  const armies: ArmyChoice = { ...actions.armies };
+  skirmish.append(
+    armyPicker(
+      "main-menu-army-player",
+      t("mainMenu.yourArmy"),
+      armyIds(),
+      armies.player,
+      (id) => {
+        armies.player = id;
+      },
+    ),
+    armyPicker(
+      "main-menu-army-enemy",
+      t("mainMenu.enemyArmy"),
+      enemyArmyIds(),
+      armies.enemy,
+      (id) => {
+        armies.enemy = id;
+      },
+    ),
+  );
   // Spec 05 §9: pick the opponent's difficulty, as Zero Hour's skirmish slots.
   const opponent = document.createElement("h2");
   opponent.textContent = t("mainMenu.opponent");
@@ -152,7 +203,7 @@ export function createMainMenu(
   for (const [difficulty, key] of DIFFICULTY_ROWS) {
     skirmish.appendChild(
       menuButton(`main-menu-difficulty-${difficulty}`, t(key), () =>
-        actions.skirmish(difficulty),
+        actions.skirmish(difficulty, { ...armies }),
       ),
     );
   }

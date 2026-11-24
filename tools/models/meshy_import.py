@@ -26,31 +26,6 @@ RULESET_PATH = os.path.join(REPO, "data", "generated", "ruleset.json")
 MESHY_DIR = os.path.join(REPO, "client", "public", "models", "meshy")
 TERRAIN_DIR = os.path.join(REPO, "client", "public", "models", "terrain")
 
-TURRETED = {
-    "ua-bradley",
-    "ua-leopard-2a4",
-    "ua-himars",
-    "ua-kozak-scout",
-    "ua-defense",
-    "ua-tw-12-7",
-    "ua-gepard",
-    "ua-patriot",
-    "ru-bmp-2",
-    "ru-t-72b3",
-    "ru-tos-1a",
-    "ru-brdm-scout",
-    "ru-defense",
-    "ru-pantsir",
-}
-
-INFANTRY_TYPES = {
-    "ua-rifleman",
-    "ru-rifleman",
-    "ru-rpg-gunner",
-    "ua-stugna-team",
-    "ua-fpv-team",
-    "ru-molniya-crew",
-}
 
 BUDGETS = {"unit": 1500, "building": 3000, "depot": 1000}
 
@@ -323,7 +298,20 @@ def main():
         build_terrain_feature(type_id, input_glb)
         return
 
-    if type_id in INFANTRY_TYPES:
+    with open(RULESET_PATH, "r", encoding="utf-8") as f:
+        ruleset = json.load(f)
+    type_def = next((t for t in ruleset["types"] if t["id"] == type_id), None)
+    if type_def is None:
+        raise SystemExit(f"Unknown type_id in ruleset: {type_id}")
+
+    # Everything below derives from the ruleset, so a new faction is data only.
+    loco = type_def.get("locomotor", -1)
+    is_infantry = loco >= 0 and ruleset["locomotors"][loco]["kind"] == "foot"
+    is_turreted = type_def.get("turretTurnRateDeg", 0) > 0
+    fidx = type_def.get("faction", -1)
+    faction = ruleset["factions"][fidx]["id"] if fidx >= 0 else "neutral"
+
+    if is_infantry:
         script = os.path.join(HERE, f"{type_id}.py")
         subprocess.run(
             ["blender", "--background", "--factory-startup", "--python", script],
@@ -331,16 +319,9 @@ def main():
         )
         return
 
-    with open(RULESET_PATH, "r", encoding="utf-8") as f:
-        ruleset = json.load(f)
-    type_def = next((t for t in ruleset["types"] if t["id"] == type_id), None)
-    if type_def is None:
-        raise SystemExit(f"Unknown type_id in ruleset: {type_id}")
-
     w, h, d = [v / 100.0 for v in type_def["render"]["size"]]
     category = type_def["category"]
     budget = BUDGETS[category]
-    faction = "russia" if type_id.startswith("ru-") else "ukraine" if type_id.startswith("ua-") else "neutral"
 
     lib.reset_scene()
     m = lib.palette(faction)
@@ -357,7 +338,7 @@ def main():
     )
     root = lib.join([merged, strip], type_id)
 
-    if type_id in TURRETED:
+    if is_turreted:
         turret_obj = split_turret(root, m["body"], m["dark"], w, d, h)
         lib.parent(turret_obj, root)
 

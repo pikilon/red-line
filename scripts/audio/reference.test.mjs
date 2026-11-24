@@ -110,6 +110,10 @@ test("targetTemplate points only at shipping WebM files", () => {
     "audio/voice/ukraine/ua-rifleman/select_<n>.webm",
   );
   assert.equal(
+    targetTemplate("voice.us-rifleman.select"),
+    "audio/voice/usa/us-rifleman/select_<n>.webm",
+  );
+  assert.equal(
     targetTemplate("voice.building.die"),
     "audio/voice/common/building/die_<n>.webm",
   );

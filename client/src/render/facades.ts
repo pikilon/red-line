@@ -1,9 +1,13 @@
 import { Color, type MeshLambertMaterial, type Texture, Vector3 } from "three";
+import { artSetOf, hasOwnArt } from "./factionArt";
 import type { GeneratedTextureId } from "./generatedTextures";
 
 /** A vertex whose object-space normal has at least this `y` is roof (spec 16
  *  §3): 45° gables (0.707) count, walls (0) do not. */
 export const ROOF_NORMAL_Y = 0.6;
+
+/** Texture sets whose buildings wear a wall and a roof texture. */
+const FACADE_SETS: ReadonlySet<string> = new Set(["ua"]);
 
 /** The wall and roof textures of a building (spec 16 §3), or `null` for units,
  *  depots, Russian buildings (they keep `ru-concrete`, owner decision
@@ -12,7 +16,8 @@ export function facadeTextureIds(
   typeId: string,
   category: string,
 ): { wall: GeneratedTextureId; roof: GeneratedTextureId } | null {
-  if (category !== "building" || !typeId.startsWith("ua-")) return null;
+  if (category !== "building" || !hasOwnArt(typeId)) return null;
+  if (!FACADE_SETS.has(artSetOf(typeId))) return null;
   return { wall: "ua-wall", roof: "ua-roof" };
 }
 

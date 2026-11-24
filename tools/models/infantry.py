@@ -30,18 +30,20 @@ ARM = 0.165
 # Uniform base colours (sRGB), multiplied in game by the faction camouflage
 # texture: MM-14 (Ukraine) and EMR "Tsifra" (Russia) are light, so infantry
 # reads against the terrain instead of as a dark silhouette.
-UNIFORM = {"ukraine": "#9aa070", "russia": "#8a8a5c"}
+# `usa`: US Army OCP, a tan-green. Unknown factions use the neutral entry.
+UNIFORM = {"ukraine": "#9aa070", "russia": "#8a8a5c", "usa": "#a39a78", "neutral": "#8f8f70"}
 # Fixed-colour `mark`: the yellow of the Ukrainian flag under the team blue of
 # armbands and helmet tape, and the white Z sprayed on Russian helmets.
-MARK = {"ukraine": "#e3b72e", "russia": "#e8e4d8"}
+# `usa`: the white of a star insignia (no official logos).
+MARK = {"ukraine": "#e3b72e", "russia": "#e8e4d8", "usa": "#f2f2f2", "neutral": "#e8e4d8"}
 
 
 def palette(faction):
     """lib.palette() with the light uniform base for `body`, the faction `mark`
     colour, and `faction` to pick the insignia."""
     mats = lib.palette(faction)
-    mats["body"] = lib.material("body", UNIFORM[faction])
-    mats["mark"] = lib.material("mark", MARK[faction])
+    mats["body"] = lib.material("body", UNIFORM.get(faction, UNIFORM["neutral"]))
+    mats["mark"] = lib.material("mark", MARK.get(faction, MARK["neutral"]))
     mats["faction"] = faction
     return mats
 
@@ -481,8 +483,12 @@ def _current_script_id():
 
 def _find_meshy_glb(name, faction):
     script_id = _current_script_id()
-    fallback = "ua-rifleman" if faction == "ukraine" else "ru-rifleman"
-    for candidate in (script_id, name, fallback):
+    # Fall back to the faction's rifleman (`<prefix>-rifleman`), then any
+    # rifleman model, so a new faction needs no code edit here.
+    prefix = script_id.split("-")[0] if "-" in script_id else ""
+    fallbacks = [f"{prefix}-rifleman"] if prefix else []
+    fallbacks += ["ua-rifleman", "ru-rifleman"]
+    for candidate in (script_id, name, *fallbacks):
         if not candidate:
             continue
         path = os.path.join(MESHY_DIR, f"{candidate}.glb")

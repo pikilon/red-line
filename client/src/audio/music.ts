@@ -5,6 +5,8 @@
 // behaviour with a small testable director; the mixer owns the crossfade.
 // Victory/defeat are terminal states for the rest of the match.
 
+import { RULES } from "../rules";
+
 export type MusicResult = "ongoing" | "victory" | "defeat";
 
 export interface MusicUpdate {
@@ -19,7 +21,7 @@ export interface MusicUpdate {
 const MENU_EVENT = "music.menu";
 
 export class MusicDirector {
-  private faction = "ukraine";
+  private faction = RULES.factions[0]?.id ?? "";
   private lastCombatAtMs = -Infinity;
   private eventId = MENU_EVENT;
   private readonly combatHoldMs: number;
@@ -28,7 +30,7 @@ export class MusicDirector {
     this.combatHoldMs = combatHoldMs;
   }
 
-  /** Faction IDs follow `data/factions/*.yaml` (`ukraine`, `russia`). */
+  /** Faction IDs follow `data/factions/*.yaml`. */
   setFaction(faction: string): void {
     if (faction === this.faction) return;
     this.faction = faction;

@@ -48,7 +48,8 @@ export class EvaQueue {
     const nextAllowed = this.nextAllowedAtMs.get(eventId) ?? -Infinity;
     if (now < nextAllowed) return false;
 
-    const soundRef = def.sounds[faction] ?? def.sounds.ukraine ?? "synth:eva";
+    const soundRef =
+      def.sounds[faction] ?? Object.values(def.sounds)[0] ?? "synth:eva";
     if (!soundRef || soundRef === "NoSound") return false;
 
     this.waiting.push({

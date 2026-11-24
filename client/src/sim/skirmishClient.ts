@@ -73,6 +73,8 @@ export type SkirmishStart =
   | {
       seed: number;
       mapId: string;
+      /** Spec 53: faction id of each start's army; absent = the map's own. */
+      armies?: string[];
       viewer: number;
       speed: number;
       debug: boolean;
@@ -191,6 +193,9 @@ export function createSkirmishClient(
       speed: options.speed,
       debug: options.debug,
     };
+    if (options.armies !== undefined) {
+      init.armies = options.armies;
+    }
     if (options.ai !== undefined) {
       init.ai = options.ai;
     }

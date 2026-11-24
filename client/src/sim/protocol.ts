@@ -126,6 +126,8 @@ export type InitSkirmishMessage = {
   type: "initSkirmish";
   seed: number;
   mapId: string;
+  /** Spec 53: faction id of each start's army; absent = the map's own. */
+  armies?: string[];
   viewer: number;
   speed: number;
   debug: boolean;

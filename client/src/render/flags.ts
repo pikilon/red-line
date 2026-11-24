@@ -28,8 +28,19 @@ export const RU_RED = 0xd52b1e;
 export const FLAGS = {
   ukraine: [UA_BLUE, UA_YELLOW],
   russia: [RU_WHITE, RU_BLUE, RU_RED],
-} as const;
-type FlagId = keyof typeof FLAGS;
+} as const satisfies Readonly<Record<string, readonly number[]>>;
+
+/** Plain white-over-grey cloth flown by a faction that has no flag of its own
+ *  yet (a new army in the ruleset never crashes the renderer). */
+export const NEUTRAL_FLAG: readonly number[] = [0xf0f0f0, 0x8a8a8a];
+
+/** The stripes of faction `factionId`'s flag, neutral when it has none. */
+export function flagOfFaction(factionId: string): readonly number[] {
+  return (
+    (FLAGS as Readonly<Record<string, readonly number[]>>)[factionId] ??
+    NEUTRAL_FLAG
+  );
+}
 
 export const POLE_INSET = 0.2;
 export const POLE_ABOVE = 1.2;
@@ -43,15 +54,10 @@ const WAVE_SPEED = 4.5;
 const POLE_COLOR = 0x8a8a8a;
 const TEXTURE_SIZE = 64;
 
-function flagIdOf(factionId: string): FlagId | null {
-  return factionId in FLAGS ? (factionId as FlagId) : null;
-}
-
 /** The stripes of the flag flown on `kind`, or null when it is no faction's HQ. */
 export function flagOf(kind: number): readonly number[] | null {
   const faction = RULES.factions.find((entry) => entry.hq === kind);
-  const id = faction === undefined ? null : flagIdOf(faction.id);
-  return id === null ? null : FLAGS[id];
+  return faction === undefined ? null : flagOfFaction(faction.id);
 }
 
 /** The stripe colour at height `v` (0 bottom, 1 top). */
@@ -173,10 +179,10 @@ export function createFlagRenderer(capacity: number): FlagRenderer {
   // The hoist edge sits on the pole (x = 0), the cloth hangs below its top.
   cloth.translate(FLAG_LENGTH / 2, -FLAG_HEIGHT / 2, 0);
   const cloths: Record<string, InstancedMesh> = {};
-  for (const [id, stripes] of Object.entries(FLAGS)) {
+  for (const { id } of RULES.factions) {
     const mesh = new InstancedMesh(
       cloth,
-      clothMaterial(stripes, time),
+      clothMaterial(flagOfFaction(id), time),
       capacity,
     );
     cloths[id] = mesh;
@@ -209,7 +215,7 @@ export function createFlagRenderer(capacity: number): FlagRenderer {
         const faction = RULES.factions.find(
           (entry) => entry.hq === entity.kind,
         );
-        const id = faction === undefined ? null : flagIdOf(faction.id);
+        const id = faction === undefined ? null : faction.id;
         const mesh = id === null ? undefined : cloths[id];
         if (id === null || mesh === undefined || poleCount >= capacity)
           continue;
@@ -250,9 +256,9 @@ export function bandsOf(
   category: string,
 ): readonly number[] | null {
   if (category !== "building") return null;
-  if (typeId.startsWith("ua-")) return FLAGS.ukraine;
-  if (typeId.startsWith("ru-")) return FLAGS.russia;
-  return null;
+  const owner = RULES.types.find((type) => type.id === typeId)?.faction;
+  const faction = owner === undefined ? undefined : RULES.factions[owner];
+  return faction === undefined ? null : flagOfFaction(faction.id);
 }
 
 /** Adds the `band` attribute: 0 at the bottom and 1 at the top of each

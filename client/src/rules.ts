@@ -1,5 +1,6 @@
 import ruleset from "@data/ruleset.json";
 import { type MessageKey, t } from "./i18n";
+import messages from "./i18n/en.json";
 
 export interface TypeDef {
   id: string;
@@ -101,6 +102,8 @@ export interface Ruleset {
   locomotors: LocomotorDef[];
   types: TypeDef[];
   factions: FactionDef[];
+  /** AI personalities (`<faction>-<style>`) and the faction each plays. */
+  ai: { id: string; faction: number }[];
 } // other keys unused
 
 export const RULES: Ruleset = {
@@ -109,6 +112,7 @@ export const RULES: Ruleset = {
   locomotors: ruleset.locomotors as LocomotorDef[],
   types: ruleset.types as unknown as TypeDef[],
   factions: ruleset.factions as FactionDef[],
+  ai: ruleset.ai as { id: string; faction: number }[],
 };
 
 /** Visual block of a weapon (spec 17 §3.2); the simulation ignores it. */
@@ -185,4 +189,10 @@ export function factionName(faction: number): string {
     throw new RangeError(`Unknown faction index: ${faction}`);
   }
   return t(`faction.${factionDef.id}` as MessageKey);
+}
+
+/** Display name of the faction with id `id`; the raw id when no name exists. */
+export function factionLabel(id: string): string {
+  const key = `faction.${id}`;
+  return key in messages ? t(key as MessageKey) : id;
 }

@@ -359,6 +359,27 @@ impl World {
         map_id: &str,
         starts: bool,
     ) -> Result<World, SimError> {
+        World::skirmish_as(rules, map_id, starts, &[])
+    }
+
+    /// `World::skirmish` with the army of each start chosen by faction id
+    /// (spec 53): `armies[i]` replaces `map.starts[i].faction`, so start `i`
+    /// places that faction's HQ and dozer. Empty keeps the map's factions;
+    /// otherwise one id per start, mirror matches allowed.
+    pub fn skirmish_armies(
+        rules: Ruleset,
+        map_id: &str,
+        armies: &[String],
+    ) -> Result<World, SimError> {
+        World::skirmish_as(rules, map_id, true, armies)
+    }
+
+    pub(crate) fn skirmish_as(
+        rules: Ruleset,
+        map_id: &str,
+        starts: bool,
+        armies: &[String],
+    ) -> Result<World, SimError> {
         let map = rules
             .map(map_id)
             .cloned()
@@ -369,7 +390,28 @@ impl World {
         let base = map_terrain(&map);
         let features = features::from_map(&rules, &map);
         let terrain = features::with_blocks(&base, &features, &rules);
-        let factions: Vec<FactionId> = map.starts.iter().map(|start| start.faction).collect();
+        let mut factions: Vec<FactionId> = map.starts.iter().map(|start| start.faction).collect();
+        if !armies.is_empty() {
+            if armies.len() != factions.len() {
+                return Err(SimError::InvalidSetup {
+                    detail: format!(
+                        "armies: {} entries for {} starts",
+                        armies.len(),
+                        factions.len()
+                    ),
+                });
+            }
+            for (slot, id) in factions.iter_mut().zip(armies) {
+                let index = rules
+                    .factions
+                    .iter()
+                    .position(|f| &f.id == id)
+                    .ok_or_else(|| SimError::InvalidSetup {
+                        detail: format!("armies: unknown faction {id}"),
+                    })?;
+                *slot = index as FactionId;
+            }
+        }
         let mut world = World::sandbox(rules, terrain, &factions);
         world.terrain_foot = features::foot_blocks(&base, &features, &world.rules);
         world.terrain_water = features::water_blocks(&base, &features, &world.rules);
@@ -402,7 +444,7 @@ impl World {
                 break;
             }
             let player = index as PlayerId;
-            let faction = &world.rules.factions[usize::from(start.faction)];
+            let faction = &world.rules.factions[usize::from(factions[index])];
             let (hq, dozer) = (faction.hq, faction.dozer);
             world.place_building(
                 player,
@@ -1017,6 +1059,15 @@ impl World {
             self.apply_spread_move(player, units, target, true);
             return;
         }
+        // Spec 04 §5.2: a goal cut off from the unit becomes the closest
+        // reachable cell.
+        let (goal, target) = match commanded
+            .first()
+            .and_then(|&index| self.closest_goal(index, goal, &BTreeSet::new()))
+        {
+            Some(reached) if reached != goal => (reached, cell_center(reached)),
+            _ => (goal, target),
+        };
         self.field(layer, goal);
         let order_id = self.next_order_id;
         self.next_order_id += 1;
@@ -1089,6 +1140,18 @@ impl World {
             .collect()
     }
 
+    /// Spec 04 §5.2: `Some(cell)` closest to `goal` that unit `index` can
+    /// reach, when `goal` is cut off from it; `None` when `goal` is reachable
+    /// (or the unit cannot move at all).
+    fn closest_goal(&mut self, index: usize, goal: Cell, claimed: &BTreeSet<Cell>) -> Option<Cell> {
+        let layer = self.layer_of(index);
+        let from = cell_of(self.entities[index].pos);
+        if self.field(layer, goal).integration(from) != crate::flow::UNREACHABLE {
+            return None;
+        }
+        crate::flow::closest_reachable(self.grid(layer), from, goal, |c| !claimed.contains(&c))
+    }
+
     /// Spec 04 §5.1: a move into an impassable cell gives every commanded unit
     /// its own goal: centroid offset, near-to-far order, ring search over the
     /// cells not yet claimed by this command.
@@ -1146,6 +1209,7 @@ impl World {
             let Some(goal) = goal else {
                 continue;
             };
+            let goal = self.closest_goal(index, goal, &claimed).unwrap_or(goal);
             claimed.insert(goal);
             if gather && self.rules.ty(self.entities[index].kind).radius_centi >= 30 {
                 // Gathered vehicles leave one free cell between each other.
