@@ -1,0 +1,892 @@
+# USA voice/EVA script in plain American English (spec 25 section 5.3): `text` is the line, `speak` is what the TTS reads (same text, native accent). Original wording.
+eva.baseUnderAttack:
+- explicit: false
+  id: 1
+  speak: Base under attack.
+  text: Base under attack.
+- explicit: false
+  id: 2
+  speak: Commander, our base is under attack.
+  text: Commander, our base is under attack.
+- explicit: false
+  id: 3
+  speak: Enemy forces are attacking the base.
+  text: Enemy forces are attacking the base.
+- explicit: false
+  id: 4
+  speak: Warning. Base is taking fire.
+  text: Warning. Base is taking fire.
+eva.buildingLost:
+- explicit: false
+  id: 1
+  speak: Building lost.
+  text: Building lost.
+eva.buildingReady:
+- explicit: false
+  id: 1
+  speak: Building ready. Select a location.
+  text: Building ready. Select a location.
+eva.constructionComplete:
+- explicit: false
+  id: 1
+  speak: Construction complete.
+  text: Construction complete.
+- explicit: false
+  id: 2
+  speak: Building complete.
+  text: Building complete.
+- explicit: false
+  id: 3
+  speak: Construction finished.
+  text: Construction finished.
+eva.defeat:
+- explicit: false
+  id: 1
+  speak: Mission failed. Our base has fallen.
+  text: Mission failed. Our base has fallen.
+eva.insufficientFunds:
+- explicit: false
+  id: 1
+  speak: Insufficient funds.
+  text: Insufficient funds.
+eva.lowPower:
+- explicit: false
+  id: 1
+  speak: Warning. Low power.
+  text: Warning. Low power.
+eva.productionComplete:
+- explicit: false
+  id: 1
+  speak: Reinforcements have arrived.
+  text: Reinforcements have arrived.
+eva.unitLost:
+- explicit: false
+  id: 1
+  speak: Unit lost.
+  text: Unit lost.
+eva.upgradeComplete:
+- explicit: false
+  id: 1
+  speak: Upgrade complete.
+  text: Upgrade complete.
+eva.victory:
+- explicit: false
+  id: 1
+  speak: Mission accomplished. The area is secure.
+  text: Mission accomplished. The area is secure.
+us-abrams.attack:
+- explicit: false
+  id: 1
+  speak: Main gun, fire!
+  text: Main gun, fire!
+- explicit: false
+  id: 2
+  speak: Target acquired, shooting!
+  text: Target acquired, shooting!
+- explicit: false
+  id: 3
+  speak: Sabot away!
+  text: Sabot away!
+- explicit: false
+  id: 4
+  speak: On the way!
+  text: On the way!
+- explicit: false
+  id: 5
+  speak: Gunner, hit them!
+  text: Gunner, hit them!
+us-abrams.created:
+- explicit: false
+  id: 1
+  speak: Abrams has arrived.
+  text: Abrams has arrived.
+us-abrams.die:
+- explicit: false
+  id: 1
+  speak: We're hit!
+  text: We're hit!
+- explicit: false
+  id: 2
+  speak: Ammo is cooking off!
+  text: Ammo is cooking off!
+- explicit: false
+  id: 3
+  speak: Abandon the tank!
+  text: Abandon the tank!
+- explicit: false
+  id: 4
+  speak: Argh!
+  text: Argh!
+us-abrams.move:
+- explicit: false
+  id: 1
+  speak: Tank is moving.
+  text: Tank is moving.
+- explicit: false
+  id: 2
+  speak: Rolling out.
+  text: Rolling out.
+- explicit: false
+  id: 3
+  speak: Advancing.
+  text: Advancing.
+- explicit: false
+  id: 4
+  speak: Treads turning, roger.
+  text: Treads turning, roger.
+- explicit: false
+  id: 5
+  speak: Moving to position.
+  text: Moving to position.
+us-abrams.select:
+- explicit: false
+  id: 1
+  speak: Abrams ready.
+  text: Abrams ready.
+- explicit: false
+  id: 2
+  speak: Tank crew standing by.
+  text: Tank crew standing by.
+- explicit: false
+  id: 3
+  speak: Main gun is loaded.
+  text: Main gun is loaded.
+- explicit: false
+  id: 4
+  speak: Sixty-two tons, at your command.
+  text: Sixty-two tons, at your command.
+- explicit: false
+  id: 5
+  speak: Waiting on orders.
+  text: Waiting on orders.
+us-abrams.underFire:
+- explicit: false
+  id: 1
+  speak: Taking fire!
+  text: Taking fire!
+- explicit: false
+  id: 2
+  speak: Armor is taking hits!
+  text: Armor is taking hits!
+- explicit: false
+  id: 3
+  speak: Enemy armor, twelve o'clock!
+  text: Enemy armor, twelve o'clock!
+- explicit: false
+  id: 4
+  speak: We're in the thick of it!
+  text: We're in the thick of it!
+us-dozer.attack:
+- explicit: false
+  id: 1
+  speak: Pushing through!
+  text: Pushing through!
+- explicit: false
+  id: 2
+  speak: Ramming speed!
+  text: Ramming speed!
+- explicit: false
+  id: 3
+  speak: Out of my way!
+  text: Out of my way!
+- explicit: false
+  id: 4
+  speak: Plowing ahead!
+  text: Plowing ahead!
+- explicit: false
+  id: 5
+  speak: Here I come!
+  text: Here I come!
+us-dozer.created:
+- explicit: false
+  id: 1
+  speak: Ready to build, boss.
+  text: Ready to build, boss.
+us-dozer.die:
+- explicit: false
+  id: 1
+  speak: Argh!
+  text: Argh!
+- explicit: false
+  id: 2
+  speak: There goes my paycheck!
+  text: There goes my paycheck!
+- explicit: false
+  id: 3
+  speak: The blade's busted!
+  text: The blade's busted!
+- explicit: false
+  id: 4
+  speak: Oh no!
+  text: Oh no!
+us-dozer.move:
+- explicit: false
+  id: 1
+  speak: On my way.
+  text: On my way.
+- explicit: false
+  id: 2
+  speak: Heading over.
+  text: Heading over.
+- explicit: false
+  id: 3
+  speak: Moving the blade.
+  text: Moving the blade.
+- explicit: false
+  id: 4
+  speak: Rolling over there.
+  text: Rolling over there.
+- explicit: false
+  id: 5
+  speak: Right away.
+  text: Right away.
+us-dozer.select:
+- explicit: false
+  id: 1
+  speak: Dozer here.
+  text: Dozer here.
+- explicit: false
+  id: 2
+  speak: Ready to build.
+  text: Ready to build.
+- explicit: false
+  id: 3
+  speak: What's the job?
+  text: What's the job?
+- explicit: false
+  id: 4
+  speak: Ready when you are.
+  text: Ready when you are.
+- explicit: false
+  id: 5
+  speak: Hard hat on.
+  text: Hard hat on.
+us-dozer.underFire:
+- explicit: false
+  id: 1
+  speak: Hey, I'm just a builder!
+  text: Hey, I'm just a builder!
+- explicit: false
+  id: 2
+  speak: Incoming!
+  text: Incoming!
+- explicit: false
+  id: 3
+  speak: Somebody cover me!
+  text: Somebody cover me!
+- explicit: false
+  id: 4
+  speak: Taking fire!
+  text: Taking fire!
+us-humvee.attack:
+- explicit: false
+  id: 1
+  speak: Gun's hot!
+  text: Gun's hot!
+- explicit: false
+  id: 2
+  speak: Opening up with the fifty!
+  text: Opening up with the fifty!
+- explicit: false
+  id: 3
+  speak: Suppressing fire!
+  text: Suppressing fire!
+- explicit: false
+  id: 4
+  speak: Fire, fire, fire!
+  text: Fire, fire, fire!
+- explicit: false
+  id: 5
+  speak: Hitting them on the run!
+  text: Hitting them on the run!
+us-humvee.created:
+- explicit: false
+  id: 1
+  speak: Humvee on station.
+  text: Humvee on station.
+us-humvee.die:
+- explicit: false
+  id: 1
+  speak: We're hit!
+  text: We're hit!
+- explicit: false
+  id: 2
+  speak: Bail out!
+  text: Bail out!
+- explicit: false
+  id: 3
+  speak: Vehicle's gone!
+  text: Vehicle's gone!
+- explicit: false
+  id: 4
+  speak: Argh, she's burning!
+  text: Argh, she's burning!
+us-humvee.move:
+- explicit: false
+  id: 1
+  speak: Rolling out.
+  text: Rolling out.
+- explicit: false
+  id: 2
+  speak: Hold on, we're moving.
+  text: Hold on, we're moving.
+- explicit: false
+  id: 3
+  speak: Taking the fast route.
+  text: Taking the fast route.
+- explicit: false
+  id: 4
+  speak: On our way.
+  text: On our way.
+- explicit: false
+  id: 5
+  speak: Roger, driving.
+  text: Roger, driving.
+us-humvee.select:
+- explicit: false
+  id: 1
+  speak: Humvee ready.
+  text: Humvee ready.
+- explicit: false
+  id: 2
+  speak: Scout vehicle standing by.
+  text: Scout vehicle standing by.
+- explicit: false
+  id: 3
+  speak: Got eyes on the road.
+  text: Got eyes on the road.
+- explicit: false
+  id: 4
+  speak: Where to, commander?
+  text: Where to, commander?
+- explicit: false
+  id: 5
+  speak: Wheels are turning.
+  text: Wheels are turning.
+us-humvee.underFire:
+- explicit: false
+  id: 1
+  speak: We're taking fire!
+  text: We're taking fire!
+- explicit: false
+  id: 2
+  speak: Contact, break right!
+  text: Contact, break right!
+- explicit: false
+  id: 3
+  speak: Taking rounds!
+  text: Taking rounds!
+- explicit: false
+  id: 4
+  speak: They've spotted us!
+  text: They've spotted us!
+us-javelin-team.attack:
+- explicit: false
+  id: 1
+  speak: Missile away!
+  text: Missile away!
+- explicit: false
+  id: 2
+  speak: Launching!
+  text: Launching!
+- explicit: false
+  id: 3
+  speak: Armor in the crosshairs, firing!
+  text: Armor in the crosshairs, firing!
+- explicit: false
+  id: 4
+  speak: Javelin is hot!
+  text: Javelin is hot!
+- explicit: false
+  id: 5
+  speak: Target locked, shot out!
+  text: Target locked, shot out!
+us-javelin-team.created:
+- explicit: false
+  id: 1
+  speak: Javelin team in the field.
+  text: Javelin team in the field.
+us-javelin-team.die:
+- explicit: false
+  id: 1
+  speak: Argh!
+  text: Argh!
+- explicit: false
+  id: 2
+  speak: Launcher down!
+  text: Launcher down!
+- explicit: false
+  id: 3
+  speak: We're done for!
+  text: We're done for!
+- explicit: false
+  id: 4
+  speak: Medic!
+  text: Medic!
+us-javelin-team.move:
+- explicit: false
+  id: 1
+  speak: Relocating the launcher.
+  text: Relocating the launcher.
+- explicit: false
+  id: 2
+  speak: Moving to a firing position.
+  text: Moving to a firing position.
+- explicit: false
+  id: 3
+  speak: Shifting position.
+  text: Shifting position.
+- explicit: false
+  id: 4
+  speak: Team is moving.
+  text: Team is moving.
+- explicit: false
+  id: 5
+  speak: Roger, displacing.
+  text: Roger, displacing.
+us-javelin-team.select:
+- explicit: false
+  id: 1
+  speak: Javelin team ready.
+  text: Javelin team ready.
+- explicit: false
+  id: 2
+  speak: Tank hunters standing by.
+  text: Tank hunters standing by.
+- explicit: false
+  id: 3
+  speak: Missile locked and loaded.
+  text: Missile locked and loaded.
+- explicit: false
+  id: 4
+  speak: Send us a target.
+  text: Send us a target.
+- explicit: false
+  id: 5
+  speak: Team is up.
+  text: Team is up.
+us-javelin-team.underFire:
+- explicit: false
+  id: 1
+  speak: Incoming fire!
+  text: Incoming fire!
+- explicit: false
+  id: 2
+  speak: We're exposed out here!
+  text: We're exposed out here!
+- explicit: false
+  id: 3
+  speak: Need cover, now!
+  text: Need cover, now!
+- explicit: false
+  id: 4
+  speak: Taking hits!
+  text: Taking hits!
+us-paladin.attack:
+- explicit: false
+  id: 1
+  speak: Fire mission!
+  text: Fire mission!
+- explicit: false
+  id: 2
+  speak: Shot out!
+  text: Shot out!
+- explicit: false
+  id: 3
+  speak: Rounds away!
+  text: Rounds away!
+- explicit: false
+  id: 4
+  speak: Shells on the way!
+  text: Shells on the way!
+- explicit: false
+  id: 5
+  speak: Splash in ten seconds!
+  text: Splash in ten seconds!
+us-paladin.created:
+- explicit: false
+  id: 1
+  speak: Paladin battery reporting.
+  text: Paladin battery reporting.
+us-paladin.die:
+- explicit: false
+  id: 1
+  speak: We're hit!
+  text: We're hit!
+- explicit: false
+  id: 2
+  speak: Guns are lost!
+  text: Guns are lost!
+- explicit: false
+  id: 3
+  speak: Crew, out!
+  text: Crew, out!
+- explicit: false
+  id: 4
+  speak: Argh!
+  text: Argh!
+us-paladin.move:
+- explicit: false
+  id: 1
+  speak: Repositioning the guns.
+  text: Repositioning the guns.
+- explicit: false
+  id: 2
+  speak: Moving to a new firing point.
+  text: Moving to a new firing point.
+- explicit: false
+  id: 3
+  speak: Rolling out.
+  text: Rolling out.
+- explicit: false
+  id: 4
+  speak: Relocating.
+  text: Relocating.
+- explicit: false
+  id: 5
+  speak: Displacing.
+  text: Displacing.
+us-paladin.select:
+- explicit: false
+  id: 1
+  speak: Paladin ready.
+  text: Paladin ready.
+- explicit: false
+  id: 2
+  speak: Howitzer standing by.
+  text: Howitzer standing by.
+- explicit: false
+  id: 3
+  speak: Artillery is online.
+  text: Artillery is online.
+- explicit: false
+  id: 4
+  speak: Give us coordinates.
+  text: Give us coordinates.
+- explicit: false
+  id: 5
+  speak: Guns are up.
+  text: Guns are up.
+us-paladin.underFire:
+- explicit: false
+  id: 1
+  speak: Counter-battery fire!
+  text: Counter-battery fire!
+- explicit: false
+  id: 2
+  speak: They found us!
+  text: They found us!
+- explicit: false
+  id: 3
+  speak: Taking fire!
+  text: Taking fire!
+- explicit: false
+  id: 4
+  speak: We're under attack!
+  text: We're under attack!
+us-ranger.attack:
+- explicit: false
+  id: 1
+  speak: Engaging!
+  text: Engaging!
+- explicit: false
+  id: 2
+  speak: Weapons free!
+  text: Weapons free!
+- explicit: false
+  id: 3
+  speak: Contact, open fire!
+  text: Contact, open fire!
+- explicit: false
+  id: 4
+  speak: Lighting them up!
+  text: Lighting them up!
+- explicit: false
+  id: 5
+  speak: Push forward, take them down!
+  text: Push forward, take them down!
+us-ranger.created:
+- explicit: false
+  id: 1
+  speak: Rangers reporting for duty.
+  text: Rangers reporting for duty.
+us-ranger.die:
+- explicit: false
+  id: 1
+  speak: Argh!
+  text: Argh!
+- explicit: false
+  id: 2
+  speak: I'm hit!
+  text: I'm hit!
+- explicit: false
+  id: 3
+  speak: Man down!
+  text: Man down!
+- explicit: false
+  id: 4
+  speak: Tell them... I tried.
+  text: Tell them... I tried.
+us-ranger.move:
+- explicit: false
+  id: 1
+  speak: Moving out.
+  text: Moving out.
+- explicit: false
+  id: 2
+  speak: On the move.
+  text: On the move.
+- explicit: false
+  id: 3
+  speak: Rangers advancing.
+  text: Rangers advancing.
+- explicit: false
+  id: 4
+  speak: Roger, heading there.
+  text: Roger, heading there.
+- explicit: false
+  id: 5
+  speak: Staying low, moving up.
+  text: Staying low, moving up.
+us-ranger.select:
+- explicit: false
+  id: 1
+  speak: Ranger ready.
+  text: Ranger ready.
+- explicit: false
+  id: 2
+  speak: Squad standing by.
+  text: Squad standing by.
+- explicit: false
+  id: 3
+  speak: Go ahead, sir.
+  text: Go ahead, sir.
+- explicit: false
+  id: 4
+  speak: Eyes up, Rangers.
+  text: Eyes up, Rangers.
+- explicit: false
+  id: 5
+  speak: Awaiting orders.
+  text: Awaiting orders.
+us-ranger.underFire:
+- explicit: false
+  id: 1
+  speak: Taking fire!
+  text: Taking fire!
+- explicit: false
+  id: 2
+  speak: They've got us pinned!
+  text: They've got us pinned!
+- explicit: false
+  id: 3
+  speak: Get down, get down!
+  text: Get down, get down!
+- explicit: false
+  id: 4
+  speak: Contact, left flank!
+  text: Contact, left flank!
+us-stryker.attack:
+- explicit: false
+  id: 1
+  speak: Cannon firing!
+  text: Cannon firing!
+- explicit: false
+  id: 2
+  speak: Engaging the target!
+  text: Engaging the target!
+- explicit: false
+  id: 3
+  speak: Rounds downrange!
+  text: Rounds downrange!
+- explicit: false
+  id: 4
+  speak: Autocannon is hot!
+  text: Autocannon is hot!
+- explicit: false
+  id: 5
+  speak: Hit them hard!
+  text: Hit them hard!
+us-stryker.created:
+- explicit: false
+  id: 1
+  speak: Stryker rolling in.
+  text: Stryker rolling in.
+us-stryker.die:
+- explicit: false
+  id: 1
+  speak: We're hit!
+  text: We're hit!
+- explicit: false
+  id: 2
+  speak: Hull breach!
+  text: Hull breach!
+- explicit: false
+  id: 3
+  speak: Crew, bail out!
+  text: Crew, bail out!
+- explicit: false
+  id: 4
+  speak: Stryker down!
+  text: Stryker down!
+us-stryker.move:
+- explicit: false
+  id: 1
+  speak: Rolling.
+  text: Rolling.
+- explicit: false
+  id: 2
+  speak: Moving to the objective.
+  text: Moving to the objective.
+- explicit: false
+  id: 3
+  speak: Stryker on the move.
+  text: Stryker on the move.
+- explicit: false
+  id: 4
+  speak: Roger, advancing.
+  text: Roger, advancing.
+- explicit: false
+  id: 5
+  speak: Heading out.
+  text: Heading out.
+us-stryker.select:
+- explicit: false
+  id: 1
+  speak: Stryker ready.
+  text: Stryker ready.
+- explicit: false
+  id: 2
+  speak: Eight wheels, ready to roll.
+  text: Eight wheels, ready to roll.
+- explicit: false
+  id: 3
+  speak: Crew standing by.
+  text: Crew standing by.
+- explicit: false
+  id: 4
+  speak: Orders, commander?
+  text: Orders, commander?
+- explicit: false
+  id: 5
+  speak: Stryker online.
+  text: Stryker online.
+us-stryker.underFire:
+- explicit: false
+  id: 1
+  speak: Taking fire!
+  text: Taking fire!
+- explicit: false
+  id: 2
+  speak: Armor is holding, barely!
+  text: Armor is holding, barely!
+- explicit: false
+  id: 3
+  speak: Contact all around!
+  text: Contact all around!
+- explicit: false
+  id: 4
+  speak: They're shooting at us!
+  text: They're shooting at us!
+us-supply-truck.attack:
+- explicit: false
+  id: 1
+  speak: Heading in!
+  text: Heading in!
+- explicit: false
+  id: 2
+  speak: Making the run!
+  text: Making the run!
+- explicit: false
+  id: 3
+  speak: Delivering the goods!
+  text: Delivering the goods!
+- explicit: false
+  id: 4
+  speak: Keep it moving!
+  text: Keep it moving!
+- explicit: false
+  id: 5
+  speak: On my way!
+  text: On my way!
+us-supply-truck.created:
+- explicit: false
+  id: 1
+  speak: Supply truck in service.
+  text: Supply truck in service.
+us-supply-truck.die:
+- explicit: false
+  id: 1
+  speak: We're hit!
+  text: We're hit!
+- explicit: false
+  id: 2
+  speak: Lost the load!
+  text: Lost the load!
+- explicit: false
+  id: 3
+  speak: The truck's done!
+  text: The truck's done!
+- explicit: false
+  id: 4
+  speak: Argh!
+  text: Argh!
+us-supply-truck.move:
+- explicit: false
+  id: 1
+  speak: Heading out.
+  text: Heading out.
+- explicit: false
+  id: 2
+  speak: On the road.
+  text: On the road.
+- explicit: false
+  id: 3
+  speak: Hauling it over.
+  text: Hauling it over.
+- explicit: false
+  id: 4
+  speak: Moving the supplies.
+  text: Moving the supplies.
+- explicit: false
+  id: 5
+  speak: Roger that.
+  text: Roger that.
+us-supply-truck.select:
+- explicit: false
+  id: 1
+  speak: Supply truck here.
+  text: Supply truck here.
+- explicit: false
+  id: 2
+  speak: Ready to haul.
+  text: Ready to haul.
+- explicit: false
+  id: 3
+  speak: Truck is ready.
+  text: Truck is ready.
+- explicit: false
+  id: 4
+  speak: Where's the next load?
+  text: Where's the next load?
+- explicit: false
+  id: 5
+  speak: Engine's running.
+  text: Engine's running.
+us-supply-truck.underFire:
+- explicit: false
+  id: 1
+  speak: They're shooting at the truck!
+  text: They're shooting at the truck!
+- explicit: false
+  id: 2
+  speak: Taking fire!
+  text: Taking fire!
+- explicit: false
+  id: 3
+  speak: Keep the cargo safe!
+  text: Keep the cargo safe!
+- explicit: false
+  id: 4
+  speak: Hold on!
+  text: Hold on!

@@ -68,11 +68,17 @@
     "building.select.barracks.ukraine": [
       "/audio/sfx/building.select.barracks.ukraine_1.webm"
     ],
+    "building.select.barracks.usa": [
+      "/audio/sfx/building.select.barracks.usa_1.webm"
+    ],
     "building.select.factory.russia": [
       "/audio/sfx/building.select.factory.russia_1.webm"
     ],
     "building.select.factory.ukraine": [
       "/audio/sfx/building.select.factory.ukraine_1.webm"
+    ],
+    "building.select.factory.usa": [
+      "/audio/sfx/building.select.factory.usa_1.webm"
     ],
     "building.select.hq.russia": [
       "/audio/sfx/building.select.hq.russia_1.webm"
@@ -80,6 +86,7 @@
     "building.select.hq.ukraine": [
       "/audio/sfx/building.select.hq.ukraine_1.webm"
     ],
+    "building.select.hq.usa": ["/audio/sfx/building.select.hq.usa_1.webm"],
     "eva.russia.baseUnderAttack": [
       "/audio/eva/russia/baseUnderAttack_1.webm",
       "/audio/eva/russia/baseUnderAttack_2.webm",
@@ -131,6 +138,26 @@
       "/audio/eva/ukraine/upgradeComplete_1.webm"
     ],
     "eva.ukraine.victory": ["/audio/eva/ukraine/victory_1.webm"],
+    "eva.usa.baseUnderAttack": [
+      "/audio/eva/usa/baseUnderAttack_1.webm",
+      "/audio/eva/usa/baseUnderAttack_2.webm",
+      "/audio/eva/usa/baseUnderAttack_3.webm",
+      "/audio/eva/usa/baseUnderAttack_4.webm"
+    ],
+    "eva.usa.buildingLost": ["/audio/eva/usa/buildingLost_1.webm"],
+    "eva.usa.buildingReady": ["/audio/eva/usa/buildingReady_1.webm"],
+    "eva.usa.constructionComplete": [
+      "/audio/eva/usa/constructionComplete_1.webm",
+      "/audio/eva/usa/constructionComplete_2.webm",
+      "/audio/eva/usa/constructionComplete_3.webm"
+    ],
+    "eva.usa.defeat": ["/audio/eva/usa/defeat_1.webm"],
+    "eva.usa.insufficientFunds": ["/audio/eva/usa/insufficientFunds_1.webm"],
+    "eva.usa.lowPower": ["/audio/eva/usa/lowPower_1.webm"],
+    "eva.usa.productionComplete": ["/audio/eva/usa/productionComplete_1.webm"],
+    "eva.usa.unitLost": ["/audio/eva/usa/unitLost_1.webm"],
+    "eva.usa.upgradeComplete": ["/audio/eva/usa/upgradeComplete_1.webm"],
+    "eva.usa.victory": ["/audio/eva/usa/victory_1.webm"],
     "explosion.large": [
       "/audio/sfx/explosion.large_1.webm",
       "/audio/sfx/explosion.large_2.webm",
@@ -328,13 +355,17 @@
     ],
     "music.calm.russia": ["/audio/music/calm.russia_1.webm"],
     "music.calm.ukraine": ["/audio/music/calm.ukraine_1.webm"],
+    "music.calm.usa": ["/audio/music/calm.usa_1.webm"],
     "music.combat.russia": ["/audio/music/combat.russia_1.webm"],
     "music.combat.ukraine": ["/audio/music/combat.ukraine_1.webm"],
+    "music.combat.usa": ["/audio/music/combat.usa_1.webm"],
     "music.defeat.russia": ["/audio/music/defeat.russia_1.webm"],
     "music.defeat.ukraine": ["/audio/music/defeat.ukraine_1.webm"],
+    "music.defeat.usa": ["/audio/music/defeat.usa_1.webm"],
     "music.menu": ["/audio/music/menu_1.webm"],
     "music.victory.russia": ["/audio/music/victory.russia_1.webm"],
     "music.victory.ukraine": ["/audio/music/victory.ukraine_1.webm"],
+    "music.victory.usa": ["/audio/music/victory.usa_1.webm"],
     "ui.cashDown": ["/audio/ui/cashDown_1.webm"],
     "ui.cashUp": ["/audio/ui/cashUp_1.webm"],
     "ui.click": ["/audio/ui/click_1.webm"],
@@ -1188,6 +1219,282 @@
       "/audio/voice/common/unit/underFire_3.webm",
       "/audio/voice/common/unit/underFire_4.webm",
       "/audio/voice/common/unit/underFire_5.webm"
+    ],
+    "voice.us-abrams.attack": [
+      "/audio/voice/usa/us-abrams/attack_1.webm",
+      "/audio/voice/usa/us-abrams/attack_2.webm",
+      "/audio/voice/usa/us-abrams/attack_3.webm",
+      "/audio/voice/usa/us-abrams/attack_4.webm",
+      "/audio/voice/usa/us-abrams/attack_5.webm"
+    ],
+    "voice.us-abrams.created": ["/audio/voice/usa/us-abrams/created_1.webm"],
+    "voice.us-abrams.die": [
+      "/audio/voice/usa/us-abrams/die_1.webm",
+      "/audio/voice/usa/us-abrams/die_2.webm",
+      "/audio/voice/usa/us-abrams/die_3.webm",
+      "/audio/voice/usa/us-abrams/die_4.webm"
+    ],
+    "voice.us-abrams.move": [
+      "/audio/voice/usa/us-abrams/move_1.webm",
+      "/audio/voice/usa/us-abrams/move_2.webm",
+      "/audio/voice/usa/us-abrams/move_3.webm",
+      "/audio/voice/usa/us-abrams/move_4.webm",
+      "/audio/voice/usa/us-abrams/move_5.webm"
+    ],
+    "voice.us-abrams.select": [
+      "/audio/voice/usa/us-abrams/select_1.webm",
+      "/audio/voice/usa/us-abrams/select_2.webm",
+      "/audio/voice/usa/us-abrams/select_3.webm",
+      "/audio/voice/usa/us-abrams/select_4.webm",
+      "/audio/voice/usa/us-abrams/select_5.webm"
+    ],
+    "voice.us-abrams.underFire": [
+      "/audio/voice/usa/us-abrams/underFire_1.webm",
+      "/audio/voice/usa/us-abrams/underFire_2.webm",
+      "/audio/voice/usa/us-abrams/underFire_3.webm",
+      "/audio/voice/usa/us-abrams/underFire_4.webm"
+    ],
+    "voice.us-dozer.attack": [
+      "/audio/voice/usa/us-dozer/attack_1.webm",
+      "/audio/voice/usa/us-dozer/attack_2.webm",
+      "/audio/voice/usa/us-dozer/attack_3.webm",
+      "/audio/voice/usa/us-dozer/attack_4.webm",
+      "/audio/voice/usa/us-dozer/attack_5.webm"
+    ],
+    "voice.us-dozer.created": ["/audio/voice/usa/us-dozer/created_1.webm"],
+    "voice.us-dozer.die": [
+      "/audio/voice/usa/us-dozer/die_1.webm",
+      "/audio/voice/usa/us-dozer/die_2.webm",
+      "/audio/voice/usa/us-dozer/die_3.webm",
+      "/audio/voice/usa/us-dozer/die_4.webm"
+    ],
+    "voice.us-dozer.move": [
+      "/audio/voice/usa/us-dozer/move_1.webm",
+      "/audio/voice/usa/us-dozer/move_2.webm",
+      "/audio/voice/usa/us-dozer/move_3.webm",
+      "/audio/voice/usa/us-dozer/move_4.webm",
+      "/audio/voice/usa/us-dozer/move_5.webm"
+    ],
+    "voice.us-dozer.select": [
+      "/audio/voice/usa/us-dozer/select_1.webm",
+      "/audio/voice/usa/us-dozer/select_2.webm",
+      "/audio/voice/usa/us-dozer/select_3.webm",
+      "/audio/voice/usa/us-dozer/select_4.webm",
+      "/audio/voice/usa/us-dozer/select_5.webm"
+    ],
+    "voice.us-dozer.underFire": [
+      "/audio/voice/usa/us-dozer/underFire_1.webm",
+      "/audio/voice/usa/us-dozer/underFire_2.webm",
+      "/audio/voice/usa/us-dozer/underFire_3.webm",
+      "/audio/voice/usa/us-dozer/underFire_4.webm"
+    ],
+    "voice.us-humvee.attack": [
+      "/audio/voice/usa/us-humvee/attack_1.webm",
+      "/audio/voice/usa/us-humvee/attack_2.webm",
+      "/audio/voice/usa/us-humvee/attack_3.webm",
+      "/audio/voice/usa/us-humvee/attack_4.webm",
+      "/audio/voice/usa/us-humvee/attack_5.webm"
+    ],
+    "voice.us-humvee.created": ["/audio/voice/usa/us-humvee/created_1.webm"],
+    "voice.us-humvee.die": [
+      "/audio/voice/usa/us-humvee/die_1.webm",
+      "/audio/voice/usa/us-humvee/die_2.webm",
+      "/audio/voice/usa/us-humvee/die_3.webm",
+      "/audio/voice/usa/us-humvee/die_4.webm"
+    ],
+    "voice.us-humvee.move": [
+      "/audio/voice/usa/us-humvee/move_1.webm",
+      "/audio/voice/usa/us-humvee/move_2.webm",
+      "/audio/voice/usa/us-humvee/move_3.webm",
+      "/audio/voice/usa/us-humvee/move_4.webm",
+      "/audio/voice/usa/us-humvee/move_5.webm"
+    ],
+    "voice.us-humvee.select": [
+      "/audio/voice/usa/us-humvee/select_1.webm",
+      "/audio/voice/usa/us-humvee/select_2.webm",
+      "/audio/voice/usa/us-humvee/select_3.webm",
+      "/audio/voice/usa/us-humvee/select_4.webm",
+      "/audio/voice/usa/us-humvee/select_5.webm"
+    ],
+    "voice.us-humvee.underFire": [
+      "/audio/voice/usa/us-humvee/underFire_1.webm",
+      "/audio/voice/usa/us-humvee/underFire_2.webm",
+      "/audio/voice/usa/us-humvee/underFire_3.webm",
+      "/audio/voice/usa/us-humvee/underFire_4.webm"
+    ],
+    "voice.us-javelin-team.attack": [
+      "/audio/voice/usa/us-javelin-team/attack_1.webm",
+      "/audio/voice/usa/us-javelin-team/attack_2.webm",
+      "/audio/voice/usa/us-javelin-team/attack_3.webm",
+      "/audio/voice/usa/us-javelin-team/attack_4.webm",
+      "/audio/voice/usa/us-javelin-team/attack_5.webm"
+    ],
+    "voice.us-javelin-team.created": [
+      "/audio/voice/usa/us-javelin-team/created_1.webm"
+    ],
+    "voice.us-javelin-team.die": [
+      "/audio/voice/usa/us-javelin-team/die_1.webm",
+      "/audio/voice/usa/us-javelin-team/die_2.webm",
+      "/audio/voice/usa/us-javelin-team/die_3.webm",
+      "/audio/voice/usa/us-javelin-team/die_4.webm"
+    ],
+    "voice.us-javelin-team.move": [
+      "/audio/voice/usa/us-javelin-team/move_1.webm",
+      "/audio/voice/usa/us-javelin-team/move_2.webm",
+      "/audio/voice/usa/us-javelin-team/move_3.webm",
+      "/audio/voice/usa/us-javelin-team/move_4.webm",
+      "/audio/voice/usa/us-javelin-team/move_5.webm"
+    ],
+    "voice.us-javelin-team.select": [
+      "/audio/voice/usa/us-javelin-team/select_1.webm",
+      "/audio/voice/usa/us-javelin-team/select_2.webm",
+      "/audio/voice/usa/us-javelin-team/select_3.webm",
+      "/audio/voice/usa/us-javelin-team/select_4.webm",
+      "/audio/voice/usa/us-javelin-team/select_5.webm"
+    ],
+    "voice.us-javelin-team.underFire": [
+      "/audio/voice/usa/us-javelin-team/underFire_1.webm",
+      "/audio/voice/usa/us-javelin-team/underFire_2.webm",
+      "/audio/voice/usa/us-javelin-team/underFire_3.webm",
+      "/audio/voice/usa/us-javelin-team/underFire_4.webm"
+    ],
+    "voice.us-paladin.attack": [
+      "/audio/voice/usa/us-paladin/attack_1.webm",
+      "/audio/voice/usa/us-paladin/attack_2.webm",
+      "/audio/voice/usa/us-paladin/attack_3.webm",
+      "/audio/voice/usa/us-paladin/attack_4.webm",
+      "/audio/voice/usa/us-paladin/attack_5.webm"
+    ],
+    "voice.us-paladin.created": ["/audio/voice/usa/us-paladin/created_1.webm"],
+    "voice.us-paladin.die": [
+      "/audio/voice/usa/us-paladin/die_1.webm",
+      "/audio/voice/usa/us-paladin/die_2.webm",
+      "/audio/voice/usa/us-paladin/die_3.webm",
+      "/audio/voice/usa/us-paladin/die_4.webm"
+    ],
+    "voice.us-paladin.move": [
+      "/audio/voice/usa/us-paladin/move_1.webm",
+      "/audio/voice/usa/us-paladin/move_2.webm",
+      "/audio/voice/usa/us-paladin/move_3.webm",
+      "/audio/voice/usa/us-paladin/move_4.webm",
+      "/audio/voice/usa/us-paladin/move_5.webm"
+    ],
+    "voice.us-paladin.select": [
+      "/audio/voice/usa/us-paladin/select_1.webm",
+      "/audio/voice/usa/us-paladin/select_2.webm",
+      "/audio/voice/usa/us-paladin/select_3.webm",
+      "/audio/voice/usa/us-paladin/select_4.webm",
+      "/audio/voice/usa/us-paladin/select_5.webm"
+    ],
+    "voice.us-paladin.underFire": [
+      "/audio/voice/usa/us-paladin/underFire_1.webm",
+      "/audio/voice/usa/us-paladin/underFire_2.webm",
+      "/audio/voice/usa/us-paladin/underFire_3.webm",
+      "/audio/voice/usa/us-paladin/underFire_4.webm"
+    ],
+    "voice.us-ranger.attack": [
+      "/audio/voice/usa/us-ranger/attack_1.webm",
+      "/audio/voice/usa/us-ranger/attack_2.webm",
+      "/audio/voice/usa/us-ranger/attack_3.webm",
+      "/audio/voice/usa/us-ranger/attack_4.webm",
+      "/audio/voice/usa/us-ranger/attack_5.webm"
+    ],
+    "voice.us-ranger.created": ["/audio/voice/usa/us-ranger/created_1.webm"],
+    "voice.us-ranger.die": [
+      "/audio/voice/usa/us-ranger/die_1.webm",
+      "/audio/voice/usa/us-ranger/die_2.webm",
+      "/audio/voice/usa/us-ranger/die_3.webm",
+      "/audio/voice/usa/us-ranger/die_4.webm"
+    ],
+    "voice.us-ranger.move": [
+      "/audio/voice/usa/us-ranger/move_1.webm",
+      "/audio/voice/usa/us-ranger/move_2.webm",
+      "/audio/voice/usa/us-ranger/move_3.webm",
+      "/audio/voice/usa/us-ranger/move_4.webm",
+      "/audio/voice/usa/us-ranger/move_5.webm"
+    ],
+    "voice.us-ranger.select": [
+      "/audio/voice/usa/us-ranger/select_1.webm",
+      "/audio/voice/usa/us-ranger/select_2.webm",
+      "/audio/voice/usa/us-ranger/select_3.webm",
+      "/audio/voice/usa/us-ranger/select_4.webm",
+      "/audio/voice/usa/us-ranger/select_5.webm"
+    ],
+    "voice.us-ranger.underFire": [
+      "/audio/voice/usa/us-ranger/underFire_1.webm",
+      "/audio/voice/usa/us-ranger/underFire_2.webm",
+      "/audio/voice/usa/us-ranger/underFire_3.webm",
+      "/audio/voice/usa/us-ranger/underFire_4.webm"
+    ],
+    "voice.us-stryker.attack": [
+      "/audio/voice/usa/us-stryker/attack_1.webm",
+      "/audio/voice/usa/us-stryker/attack_2.webm",
+      "/audio/voice/usa/us-stryker/attack_3.webm",
+      "/audio/voice/usa/us-stryker/attack_4.webm",
+      "/audio/voice/usa/us-stryker/attack_5.webm"
+    ],
+    "voice.us-stryker.created": ["/audio/voice/usa/us-stryker/created_1.webm"],
+    "voice.us-stryker.die": [
+      "/audio/voice/usa/us-stryker/die_1.webm",
+      "/audio/voice/usa/us-stryker/die_2.webm",
+      "/audio/voice/usa/us-stryker/die_3.webm",
+      "/audio/voice/usa/us-stryker/die_4.webm"
+    ],
+    "voice.us-stryker.move": [
+      "/audio/voice/usa/us-stryker/move_1.webm",
+      "/audio/voice/usa/us-stryker/move_2.webm",
+      "/audio/voice/usa/us-stryker/move_3.webm",
+      "/audio/voice/usa/us-stryker/move_4.webm",
+      "/audio/voice/usa/us-stryker/move_5.webm"
+    ],
+    "voice.us-stryker.select": [
+      "/audio/voice/usa/us-stryker/select_1.webm",
+      "/audio/voice/usa/us-stryker/select_2.webm",
+      "/audio/voice/usa/us-stryker/select_3.webm",
+      "/audio/voice/usa/us-stryker/select_4.webm",
+      "/audio/voice/usa/us-stryker/select_5.webm"
+    ],
+    "voice.us-stryker.underFire": [
+      "/audio/voice/usa/us-stryker/underFire_1.webm",
+      "/audio/voice/usa/us-stryker/underFire_2.webm",
+      "/audio/voice/usa/us-stryker/underFire_3.webm",
+      "/audio/voice/usa/us-stryker/underFire_4.webm"
+    ],
+    "voice.us-supply-truck.attack": [
+      "/audio/voice/usa/us-supply-truck/attack_1.webm",
+      "/audio/voice/usa/us-supply-truck/attack_2.webm",
+      "/audio/voice/usa/us-supply-truck/attack_3.webm",
+      "/audio/voice/usa/us-supply-truck/attack_4.webm",
+      "/audio/voice/usa/us-supply-truck/attack_5.webm"
+    ],
+    "voice.us-supply-truck.created": [
+      "/audio/voice/usa/us-supply-truck/created_1.webm"
+    ],
+    "voice.us-supply-truck.die": [
+      "/audio/voice/usa/us-supply-truck/die_1.webm",
+      "/audio/voice/usa/us-supply-truck/die_2.webm",
+      "/audio/voice/usa/us-supply-truck/die_3.webm",
+      "/audio/voice/usa/us-supply-truck/die_4.webm"
+    ],
+    "voice.us-supply-truck.move": [
+      "/audio/voice/usa/us-supply-truck/move_1.webm",
+      "/audio/voice/usa/us-supply-truck/move_2.webm",
+      "/audio/voice/usa/us-supply-truck/move_3.webm",
+      "/audio/voice/usa/us-supply-truck/move_4.webm",
+      "/audio/voice/usa/us-supply-truck/move_5.webm"
+    ],
+    "voice.us-supply-truck.select": [
+      "/audio/voice/usa/us-supply-truck/select_1.webm",
+      "/audio/voice/usa/us-supply-truck/select_2.webm",
+      "/audio/voice/usa/us-supply-truck/select_3.webm",
+      "/audio/voice/usa/us-supply-truck/select_4.webm",
+      "/audio/voice/usa/us-supply-truck/select_5.webm"
+    ],
+    "voice.us-supply-truck.underFire": [
+      "/audio/voice/usa/us-supply-truck/underFire_1.webm",
+      "/audio/voice/usa/us-supply-truck/underFire_2.webm",
+      "/audio/voice/usa/us-supply-truck/underFire_3.webm",
+      "/audio/voice/usa/us-supply-truck/underFire_4.webm"
     ],
     "voice.wheeled.attack": [
       "/audio/voice/common/wheeled/attack_1.webm",
