@@ -274,6 +274,24 @@ path priority). Units of the same order (one group), idle units and older
 orders are not waited for: separation (§5.2) and arrival by contact handle
 them as before. The `Attack`, `Harvest` and `Build` approaches do not wait.
 
+### 5.2 Unreachable Goals (closest reachable point)
+
+When a move goal (after §5.1 snapping) is cut off from the unit on its
+locomotor layer (water for foot units, an island, an enclosure, a river without
+a bridge), the unit's goal becomes the cell of its own connected region that is
+closest to the goal: squared cell distance, ties to the smaller `y`, then `x`
+(`flow::closest_reachable`, breadth-first over `can_step`). In a group each
+unit resolves its own point and skips cells already claimed by the command, so
+formations spread along the shore. A unit with no reachable cell keeps its old
+behavior (the order ends idle).
+
+Precedent (generals-precedent, 2026-11-24): Zero Hour `AIUpdateInterface::
+computePath` falls back to `Pathfinder::findClosestPath` when `findPath` fails
+(`AIUpdate.cpp:1737`, `AIPathfind.cpp:8661`): the reachable cell with the
+smallest squared distance to the goal wins, cost ignored, and the unit stops
+there. Group goals are adjusted per member (`AIGroup.cpp:480-513`).
+Deviation: no 400-cell cap or 2x pruning; the whole region is scanned.
+
 ---
 
 ## 6. Acceptance Criteria
