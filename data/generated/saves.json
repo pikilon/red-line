@@ -465,7 +465,7 @@
     },
     {
       "id": "campaign-ua-02-irpin",
-      "map": "demo-bridges",
+      "map": "irpin",
       "form": "setup",
       "entities": 22
     },

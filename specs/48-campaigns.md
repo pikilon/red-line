@@ -82,8 +82,9 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
 ## 5. Assumptions
 
 * Missions reuse the existing maps (first-line, river-port, demo-coast,
-  demo-town, demo-bridges, showcase); the exception is mission 1 of both
-  campaigns, which plays on its own map `hostomel` (§6).
+  demo-town, showcase); the exceptions are mission 1 of both campaigns, which
+  plays on its own map `hostomel` (§6), and Ukraine 2, on `irpin` (§7). Own
+  maps for the remaining missions are tracked in issue #482.
 * The game has no ships: the cruiser Moskva is played as the Black Sea Fleet
   command post on the shore; Snake Island is the coast of demo-coast.
 * Stand-ins for units the game lacks: Su-34 for the Tu-95 and Tu-22M3 of
@@ -129,3 +130,22 @@ Hostomel saves keep their bases. It sketches the Antonov Airport (Hostomel,
 * Assumptions: neutral capturable buildings do not exist, so hangars and the
   terminal are plain garrisonable map features, not objectives; the runway is
   a ground patch (no aircraft takeoff mechanics).
+
+## 7. Map `irpin` (issue #482)
+
+`data/maps/irpin.yaml`, 64 x 48 (same size and HQ cells as demo-bridges, so
+the Ukraine 2 save keeps its bases, convoy and units). Existing feature types
+only:
+
+* A river runs north to south with a bend (shallow banks, deep channel). The
+  Romanivka road bridge is destroyed: no bridge feature, only rubble piles and
+  wrecked cars at both ends of the road. One wooden bridge in the north is the
+  only ground crossing; the FPV teams fly over the river.
+* Irpin (west bank): apartment blocks, houses, a shop and a townhouse row along
+  a main street around the Ukrainian base.
+* Bucha side (east bank): the Giraffe shopping centre (`factory` + `warehouse`
+  on a concrete car park), a petrol station, apartment blocks and houses along
+  the convoy road (y = 30), where the four supply trucks stand.
+* Pine, birch and fir stands along the river and map edges.
+* Assumption: the destroyed bridge is rubble, not a destructible-bridge state;
+  no mission script exists for this mission, so none needed re-pointing.
