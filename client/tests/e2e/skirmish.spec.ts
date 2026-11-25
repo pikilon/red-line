@@ -53,7 +53,7 @@ type DebugWindow = Window & { __redline?: SkirmishDebugView };
 async function bootDebug(page: Page, query: string): Promise<void> {
   // Skirmish attaches the `russia-balanced` AI to player 1 by default
   // (spec 05 §7); these Phase 2/3 tests exercise Phase 2 hot-seat behaviour.
-  await page.goto(`/?map=first-line&${query}&ai=off`);
+  await page.goto(`/?map=first-line&${query}&ai=off&mute=1`);
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
@@ -565,13 +565,29 @@ test("AC-03-57: produces and cancels through the UI", async ({ page }) => {
     (button as HTMLButtonElement).click();
     again()?.click();
   });
-  await expect(
-    page.locator("#command-panel .tile .qn:not([hidden])"),
-  ).toHaveText("2");
-  // Hold the worker clock while the page checks the queue and cancels, so the
-  // head cannot finish in between on a slow runner (#299). The cancel applies
-  // on the first step after resuming.
-  await debugCall(page, (api) => api.setSimPaused(true));
+  // Hold the worker clock from inside the page the frame the queue shows two
+  // (#299): a Playwright round trip per check lets a slow runner finish the
+  // head in between. The cancel applies on the first step after resuming.
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const started = performance.now();
+        const check = (): void => {
+          const qn = document.querySelector(
+            "#command-panel .tile .qn:not([hidden])",
+          );
+          if (qn?.textContent === "2") {
+            (window as DebugWindow).__redline?.setSimPaused(true);
+            resolve();
+          } else if (performance.now() - started > 20_000) {
+            reject(new Error("the queue never showed two riflemen"));
+          } else {
+            requestAnimationFrame(check);
+          }
+        };
+        check();
+      }),
+  );
   await expect(page.locator("#res-credits")).toHaveText("Credits 3700");
   // Right click on a produce tile still cancels (queue untouched, D5).
   await rifleButton.click({ button: "right" });

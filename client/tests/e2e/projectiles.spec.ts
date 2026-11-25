@@ -30,7 +30,7 @@ interface SkirmishProjectileDebugView {
 type DebugWindow = Window & { __redline?: SkirmishProjectileDebugView };
 
 async function boot(page: Page, save: string): Promise<void> {
-  await page.goto(`/?load=${save}&debug=1`);
+  await page.goto(`/?load=${save}&debug=1&mute=1`);
   await page.waitForFunction(
     () => (window as DebugWindow).__redline?.isReady() === true,
     undefined,
@@ -96,12 +96,16 @@ test("AC-17-16: RPG launch effects in the skirmish", async ({ page }) => {
     () =>
       new Promise<boolean>((resolve) => {
         const started = performance.now();
+        // The rocket and the launch dust are short-lived: a slow renderer can
+        // sample them on different frames, so each is latched when first seen
+        // (every launch makes both) and a timer samples as well as rAF.
+        let sawRocket = false;
+        let sawDust = false;
         const check = (): void => {
           const api = (window as DebugWindow).__redline;
-          if (
-            (api?.projectileCounts().rpg ?? 0) > 0 &&
-            (api?.effectCounts().dust ?? 0) >= 1
-          ) {
+          sawRocket ||= (api?.projectileCounts().rpg ?? 0) > 0;
+          sawDust ||= (api?.effectCounts().dust ?? 0) >= 1;
+          if (sawRocket && sawDust) {
             resolve(true);
             return;
           }
@@ -111,6 +115,11 @@ test("AC-17-16: RPG launch effects in the skirmish", async ({ page }) => {
           }
           requestAnimationFrame(check);
         };
+        setInterval(() => {
+          const api = (window as DebugWindow).__redline;
+          sawRocket ||= (api?.projectileCounts().rpg ?? 0) > 0;
+          sawDust ||= (api?.effectCounts().dust ?? 0) >= 1;
+        }, 16);
         check();
       }),
   );
