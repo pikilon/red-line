@@ -15,7 +15,7 @@ use crate::fixed::{Fx, FxVec2};
 use crate::map::Cell;
 use crate::map::cell_of;
 use crate::nav::footprint_cells;
-use crate::player::{Player, PlayerStats};
+use crate::player::{OwnedPower, Player, PlayerStats};
 use crate::rules::{Category, MapDef, fx_centi};
 use crate::rules::{Ruleset, TypeId, WeaponId};
 use crate::world::{Command, Layer, MAX_UNITS, Outcome, SimError, World, map_terrain};
@@ -129,6 +129,30 @@ pub struct PlayerState {
     /// while all are zero.
     #[serde(default, skip_serializing_if = "is_zero_stats")]
     pub stats: [u32; 8],
+    /// Spec 63: skill points earned; omitted at 0.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub general_xp: u32,
+    /// Spec 63: bought powers with the tick each is ready; omitted when none.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub powers: Vec<PowerState>,
+}
+
+/// Spec 63: a bought General's power.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PowerState {
+    pub id: String,
+    pub ready_tick: u32,
+}
+
+fn power_index(rules: &Ruleset, id: &str) -> Result<u16, String> {
+    rules
+        .general
+        .powers
+        .iter()
+        .position(|p| p.id == id)
+        .map(|i| i as u16)
+        .ok_or_else(|| format!("unknown power: {id}"))
 }
 
 fn is_zero_stats(stats: &[u32; 8]) -> bool {
@@ -497,6 +521,13 @@ pub enum CommandState {
     Reinforce {
         kind: String,
         pos: [i32; 2],
+    },
+    BuyPower {
+        power: String,
+    },
+    CastPower {
+        power: String,
+        target: [i32; 2],
     },
     DebugSpawn {
         kind: String,
@@ -896,6 +927,8 @@ fn save_player(player: &Player, rules: &Ruleset) -> PlayerState {
         income_percent,
         upgrades,
         stats,
+        general_xp,
+        powers,
     } = player;
     PlayerState {
         id: *id,
@@ -917,6 +950,14 @@ fn save_player(player: &Player, rules: &Ruleset) -> PlayerState {
         income_percent: *income_percent,
         upgrades: upgrades.iter().map(|&kind| type_id(rules, kind)).collect(),
         stats: stats.to_array(),
+        general_xp: *general_xp,
+        powers: powers
+            .iter()
+            .map(|owned| PowerState {
+                id: rules.general.powers[usize::from(owned.power)].id.clone(),
+                ready_tick: owned.ready_tick,
+            })
+            .collect(),
     }
 }
 
@@ -959,6 +1000,22 @@ fn load_player(state: &PlayerState, rules: &Ruleset, cells: usize) -> Result<Pla
             upgrades
         },
         stats: PlayerStats::from_array(state.stats),
+        general_xp: state.general_xp,
+        powers: {
+            let mut powers = state
+                .powers
+                .iter()
+                .map(|p| {
+                    Ok(OwnedPower {
+                        power: power_index(rules, &p.id)?,
+                        ready_tick: p.ready_tick,
+                    })
+                })
+                .collect::<Result<Vec<_>, String>>()?;
+            powers.sort_unstable_by_key(|p| p.power);
+            powers.dedup_by_key(|p| p.power);
+            powers
+        },
     })
 }
 
@@ -1471,6 +1528,13 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
             kind: type_id(rules, *kind),
             pos: vec2(*pos),
         },
+        Command::BuyPower { power } => CommandState::BuyPower {
+            power: rules.general.powers[usize::from(*power)].id.clone(),
+        },
+        Command::CastPower { power, target } => CommandState::CastPower {
+            power: rules.general.powers[usize::from(*power)].id.clone(),
+            target: vec2(*target),
+        },
         Command::DebugSpawn { kind, pos } => CommandState::DebugSpawn {
             kind: type_id(rules, *kind),
             pos: vec2(*pos),
@@ -1591,6 +1655,13 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
             kind: type_index(rules, kind)?,
             pos: fx_vec2(*pos),
         },
+        CommandState::BuyPower { power } => Command::BuyPower {
+            power: power_index(rules, power)?,
+        },
+        CommandState::CastPower { power, target } => Command::CastPower {
+            power: power_index(rules, power)?,
+            target: fx_vec2(*target),
+        },
         CommandState::DebugSpawn { kind, pos } => Command::DebugSpawn {
             kind: type_index(rules, kind)?,
             pos: fx_vec2(*pos),
@@ -1629,6 +1700,9 @@ pub struct Setup {
     /// Spec 52: upgrade type ids each start owns at tick 0 (index = start).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub upgrades: Vec<Vec<String>>,
+    /// Spec 63: skill points each start has earned at tick 0 (index = start).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub general_xp: Vec<u32>,
     /// Spec 53: faction id of each start's army; absent = the map's own.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub armies: Vec<String>,
@@ -1791,6 +1865,16 @@ impl World {
                     .ok_or_else(|| invalid(format!("upgrades: {id} is not an upgrade")))?;
                 world.grant_upgrade(player as crate::entity::PlayerId, kind);
             }
+        }
+
+        if setup.general_xp.len() > starts {
+            return Err(invalid(format!(
+                "generalXp: {} entries for {starts} starts",
+                setup.general_xp.len()
+            )));
+        }
+        for (player, &xp) in setup.general_xp.iter().enumerate() {
+            world.set_general_xp(player as crate::entity::PlayerId, xp);
         }
 
         let mut labels: BTreeMap<String, EntityId> = BTreeMap::new();

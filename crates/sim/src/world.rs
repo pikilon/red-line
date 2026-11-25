@@ -173,6 +173,16 @@ pub enum Command {
         kind: TypeId,
         pos: FxVec2,
     },
+    /// Spec 63 §4: spend General's points on power `power` (an index into
+    /// the rules' `general.powers`).
+    BuyPower {
+        power: u16,
+    },
+    /// Spec 63 §4: cast a bought, recharged power at a point.
+    CastPower {
+        power: u16,
+        target: FxVec2,
+    },
     DebugSpawn {
         kind: TypeId,
         pos: FxVec2,
@@ -1025,6 +1035,10 @@ impl World {
                 }
                 Command::Guard { units, target } => self.apply_guard(player, &units, target),
                 Command::Reinforce { kind, pos } => self.apply_reinforce(player, kind, pos),
+                Command::BuyPower { power } => self.apply_buy_power(player, power),
+                Command::CastPower { power, target } => {
+                    self.apply_cast_power(player, power, target);
+                }
                 Command::DebugSpawn { kind, pos } => self.apply_debug_spawn(player, kind, pos),
                 Command::DebugSetHp { entity, hp } => self.apply_debug_set_hp(entity, hp),
             }
@@ -1036,7 +1050,7 @@ impl World {
     /// column); ignored for a non-unit type, when no cell is free there or
     /// when `MAX_UNITS` entities exist. Costs and prerequisites are not
     /// consulted: a script grants the unit.
-    fn apply_reinforce(&mut self, player: PlayerId, kind: TypeId, pos: FxVec2) {
+    pub(crate) fn apply_reinforce(&mut self, player: PlayerId, kind: TypeId, pos: FxVec2) {
         const REINFORCE_RADIUS: i32 = 4;
         if usize::from(kind) >= self.rules.types.len()
             || usize::from(player) >= self.players.len()

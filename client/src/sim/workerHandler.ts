@@ -150,6 +150,13 @@ export interface SkirmishSimLike {
     xRaw: number,
     yRaw: number,
   ): void;
+  command_buy_power(player: number, power: number): void;
+  command_cast_power(
+    player: number,
+    power: number,
+    xRaw: number,
+    yRaw: number,
+  ): void;
   debug_spawn(player: number, kind: number, xRaw: number, yRaw: number): void;
   debug_set_hp(entity: number, hp: number): void;
 }
@@ -363,6 +370,17 @@ const COMMANDS = {
     sim.command_reinforce(
       command.player,
       command.typeIndex,
+      command.xRaw,
+      command.yRaw,
+    );
+  }),
+  buyPower: run((sim, command: Extract<SimCommand, { kind: "buyPower" }>) => {
+    sim.command_buy_power(command.player, command.power);
+  }),
+  castPower: run((sim, command: Extract<SimCommand, { kind: "castPower" }>) => {
+    sim.command_cast_power(
+      command.player,
+      command.power,
       command.xRaw,
       command.yRaw,
     );

@@ -156,7 +156,10 @@ impl World {
                 continue;
             }
             let value = experience.value[usize::from(entity.rank.min(MAX_RANK))];
+            let owner = credited.owner;
             self.gain_experience(killer, value);
+            // Spec 63 §3: the same value is the player's skill points.
+            self.add_general_xp(owner, value);
         }
     }
 

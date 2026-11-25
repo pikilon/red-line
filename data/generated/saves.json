@@ -530,6 +530,12 @@
       "entities": 11
     },
     {
+      "id": "generals-powers",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 10
+    },
+    {
       "id": "help-cn-barracks-heal",
       "map": "showcase",
       "form": "setup",

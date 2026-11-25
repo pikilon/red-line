@@ -237,6 +237,8 @@ describe("worker handler", () => {
       command_dig: vi.fn(),
       command_dig_line: vi.fn(),
       command_reinforce,
+      command_buy_power: vi.fn(),
+      command_cast_power: vi.fn(),
       debug_spawn,
       debug_set_hp,
     };
@@ -431,6 +433,8 @@ describe("worker handler", () => {
       command_dig: vi.fn(),
       command_dig_line: vi.fn(),
       command_reinforce: vi.fn(),
+      command_buy_power: vi.fn(),
+      command_cast_power: vi.fn(),
       debug_spawn: vi.fn(),
       debug_set_hp: vi.fn(),
     } satisfies SkirmishSimLike;
@@ -501,6 +505,8 @@ describe("worker handler", () => {
       command_dig: vi.fn(),
       command_dig_line: vi.fn(),
       command_reinforce: vi.fn(),
+      command_buy_power: vi.fn(),
+      command_cast_power: vi.fn(),
       debug_spawn: vi.fn(),
       debug_set_hp: vi.fn(),
     };
@@ -589,6 +595,8 @@ describe("worker handler", () => {
       command_dig: vi.fn(),
       command_dig_line: vi.fn(),
       command_reinforce: vi.fn(),
+      command_buy_power: vi.fn(),
+      command_cast_power: vi.fn(),
       debug_spawn: vi.fn(),
       debug_set_hp: vi.fn(),
     };
@@ -669,6 +677,8 @@ function saveSim(world: string, error?: string): SkirmishSimLike {
     command_dig: vi.fn(),
     command_dig_line: vi.fn(),
     command_reinforce: vi.fn(),
+    command_buy_power: vi.fn(),
+    command_cast_power: vi.fn(),
     debug_spawn: vi.fn(),
     debug_set_hp: vi.fn(),
   };

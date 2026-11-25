@@ -338,10 +338,20 @@ pub fn encode_match_snapshot_with_shots(
     // 8 counters)*`, written once any player has counted something. Every
     // section before them is then written too (zero when empty); a match
     // that has not started counting keeps the shorter layout.
-    let counted = world
+    // Spec 63: General's ranks follow the counters, `count, (player, skill
+    // points, powers, (power, ready tick)*)*`, for players that earned points
+    // or bought powers. Public, as in Zero Hour. They force every earlier
+    // section to be written too.
+    let ranked: Vec<_> = world
         .players()
         .iter()
-        .any(|p| *p.stats() != PlayerStats::default());
+        .filter(|p| p.general_xp() != 0 || !p.powers().is_empty())
+        .collect();
+    let counted = !ranked.is_empty()
+        || world
+            .players()
+            .iter()
+            .any(|p| *p.stats() != PlayerStats::default());
     if air_count > 0 || !upgrades.is_empty() || counted {
         out.push(air_count);
         out.extend_from_slice(&air);
@@ -365,6 +375,19 @@ pub fn encode_match_snapshot_with_shots(
                 stats.money_earned as i32,
                 stats.money_spent as i32,
             ]);
+        }
+        if !ranked.is_empty() {
+            out.push(ranked.len() as i32);
+        }
+        for player in ranked {
+            out.extend_from_slice(&[
+                i32::from(player.id),
+                player.general_xp() as i32,
+                player.powers().len() as i32,
+            ]);
+            for owned in player.powers() {
+                out.extend_from_slice(&[i32::from(owned.power), owned.ready_tick as i32]);
+            }
         }
     }
     out

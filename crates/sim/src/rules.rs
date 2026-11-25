@@ -166,6 +166,67 @@ pub struct SelfHealDef {
     pub permille: u32,
 }
 
+/// Spec 63: one player rank. `xp` is the skill-point total that reaches it
+/// and `points` the General's points it grants (`general.ranks`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GeneralRank {
+    pub xp: u32,
+    pub points: u32,
+}
+
+/// Spec 63 §4: what a General's power does when cast at a point.
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[serde(tag = "kind", rename_all = "camelCase")]
+pub enum PowerEffect {
+    /// Marks every cell within `radius_centi` explored for the caster.
+    #[serde(rename_all = "camelCase")]
+    Scan { radius_centi: u32 },
+    /// Heals the caster's vehicles within `radius_centi` by `percent` of
+    /// their maximum hit points.
+    #[serde(rename_all = "camelCase")]
+    Repair { radius_centi: u32, percent: u32 },
+    /// `impacts` blasts scattered within `spread_centi` of the target, each
+    /// hurting enemy ground entities within `splash_centi`.
+    #[serde(rename_all = "camelCase")]
+    Barrage {
+        spread_centi: u32,
+        impacts: u32,
+        damage: u32,
+        splash_centi: u32,
+        damage_type: u8,
+    },
+    /// `count` units of type `unit` land around the target.
+    #[serde(rename_all = "camelCase")]
+    Paradrop { unit: TypeId, count: u32 },
+}
+
+/// Spec 63 §4: a General's power of the shared catalogue.
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PowerDef {
+    pub id: String,
+    /// Player rank (1-based) needed to buy it.
+    pub rank: u8,
+    /// General's points it costs.
+    pub cost: u32,
+    pub recharge_ticks: u32,
+    /// Factions that may buy it; empty means every faction.
+    #[serde(default)]
+    pub factions: Vec<FactionId>,
+    pub effect: PowerEffect,
+}
+
+/// Spec 63: ranks (ascending `xp`, the first at 0) and the powers catalogue.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GeneralRules {
+    #[serde(default)]
+    pub ranks: Vec<GeneralRank>,
+    #[serde(default)]
+    pub powers: Vec<PowerDef>,
+}
+
 /// Spec 43 §4.5: an electronic-warfare vehicle.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -1068,6 +1129,9 @@ pub struct Ruleset {
     /// Spec 50 §3.3: rank bonuses (`veterancy` in `globals.yaml`).
     #[serde(default)]
     pub veterancy: VeterancyRules,
+    /// Spec 63: player ranks and General's powers (`general` in `globals.yaml`).
+    #[serde(default)]
+    pub general: GeneralRules,
 }
 
 /// Spec 49 §3.2: a guarding unit attacks enemies within `inner_percent` of its
@@ -1467,6 +1531,35 @@ impl Ruleset {
             .is_some_and(|heal| heal.interval_ticks == 0 || heal.from_rank > MAX_RANK)
         {
             return Err("veterancy.selfHeal is out of range".to_owned());
+        }
+        // Spec 63: ranks start at 0 and ascend; powers name real things.
+        let general = &self.general;
+        if !general.ranks.is_empty()
+            && (general.ranks[0].xp != 0 || general.ranks.windows(2).any(|w| w[0].xp >= w[1].xp))
+        {
+            return Err("general.ranks must start at 0 and ascend".to_owned());
+        }
+        for power in &general.powers {
+            let bad_effect = match power.effect {
+                PowerEffect::Paradrop { unit, count } => {
+                    count == 0 || usize::from(unit) >= self.types.len()
+                }
+                PowerEffect::Barrage { damage_type, .. } => {
+                    usize::from(damage_type) >= self.damage_types.len()
+                }
+                _ => false,
+            };
+            if bad_effect
+                || power.rank == 0
+                || usize::from(power.rank) > general.ranks.len()
+                || power.recharge_ticks == 0
+                || power
+                    .factions
+                    .iter()
+                    .any(|&f| usize::from(f) >= self.factions.len())
+            {
+                return Err(format!("general.powers {} is out of range", power.id));
+            }
         }
         for (i, t) in self.types.iter().enumerate() {
             if let Some([veteran, elite, heroic]) = t.experience.and_then(|e| e.required)

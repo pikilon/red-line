@@ -124,6 +124,16 @@ export type SimCommand =
       xRaw: number;
       yRaw: number;
     }
+  /** Spec 63 §4: spend General's points on power `power` (a catalogue index). */
+  | { kind: "buyPower"; player: number; power: number }
+  /** Spec 63 §4: cast a bought power at a point (raw 16.16 tiles). */
+  | {
+      kind: "castPower";
+      player: number;
+      power: number;
+      xRaw: number;
+      yRaw: number;
+    }
   | {
       kind: "debugSpawn";
       player: number;

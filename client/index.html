@@ -28,6 +28,21 @@
       #app { position: fixed; inset: 0; overflow: hidden; background: #000; touch-action: none; }
       #app canvas { display: block; width: 100%; height: 100%; touch-action: none; }
       #hud { position: fixed; top: calc(8px + env(safe-area-inset-top)); left: calc(8px + env(safe-area-inset-left)); pointer-events: none; color: #fff; font: 14px/1.4 system-ui, sans-serif; text-shadow: 0 1px 2px #000; }
+      #generals { position: fixed; top: calc(96px + env(safe-area-inset-top)); right: calc(8px + env(safe-area-inset-right)); z-index: 12; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; color: #e6e9ec; font: 13px/1.35 system-ui, sans-serif; }
+      #generals[hidden] { display: none; }
+      #generals-badge { padding: 6px 10px; border: 1px solid #4a525a; border-radius: 4px; background: #14181c; color: #e6e9ec; font: inherit; font-weight: 600; cursor: pointer; touch-action: manipulation; }
+      #generals-badge.pending { border-color: #facc15; color: #facc15; }
+      #generals-list { width: min(300px, calc(100vw - 24px)); max-height: 50vh; overflow-y: auto; padding: 6px; border: 1px solid #4a525a; border-radius: 4px; background: rgba(20, 24, 28, 0.94); }
+      #generals-list[hidden] { display: none; }
+      .generals-head { padding: 2px 4px 6px; color: #aeb6bd; font-size: 12px; }
+      .generals-power { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 6px 4px; border-top: 1px solid #2c343b; }
+      .generals-power[data-state="locked"] { opacity: 0.55; }
+      .generals-name { font-weight: 600; }
+      .generals-desc { grid-column: 1; color: #aeb6bd; font-size: 12px; }
+      .generals-cost { grid-column: 1; color: #facc15; font-size: 12px; }
+      .generals-action { grid-column: 2; grid-row: 1 / span 3; align-self: center; min-width: 64px; min-height: 36px; padding: 4px 8px; border: 1px solid #4a525a; border-radius: 3px; background: #1d2329; color: #e6e9ec; font: inherit; cursor: pointer; touch-action: manipulation; }
+      .generals-action:disabled { opacity: 0.5; cursor: default; }
+      .generals-power[data-state="ready"] .generals-action { border-color: #facc15; color: #facc15; }
       #perf-panel { position: fixed; top: calc(8px + env(safe-area-inset-top)); right: calc(8px + env(safe-area-inset-right)); pointer-events: none; color: #fff; font: 14px/1.4 system-ui, sans-serif; text-shadow: 0 1px 2px #000; }
       #perf-panel.perf-bad { color: #ff4d4d; }
       #perf-tick { margin-top: 2px; color: #9fb0bd; }

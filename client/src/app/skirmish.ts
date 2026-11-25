@@ -240,6 +240,7 @@ import {
   selectionLabel,
 } from "../ui/commandPanel";
 import { createGameMenu } from "../ui/gameMenu";
+import { createGeneralsPanel, generalView } from "../ui/generalsPanel";
 import { createHelpCard } from "../ui/helpCard";
 import { createHudBar } from "../ui/hudBar";
 import { disableLeaveGuard, enableLeaveGuard } from "../ui/leaveGuard";
@@ -764,6 +765,43 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         relation: "self",
       });
     },
+  });
+  // Spec 63: rank badge and General's powers panel; a cast waits for a click.
+  let pendingPower: number | null = null;
+  const generalsPanel = createGeneralsPanel(document.body, {
+    onBuy(power) {
+      uiClick();
+      interact.command({ kind: "buyPower", player: controlled, power });
+    },
+    onCast(power) {
+      uiClick();
+      const cancel = pendingPower === power;
+      controller?.pickGround(null);
+      pendingPower = null;
+      generalsPanel.setArmed(null);
+      if (cancel) return;
+      pendingPower = power;
+      generalsPanel.setArmed(power);
+      controller?.pickGround((point) => {
+        pendingPower = null;
+        generalsPanel.setArmed(null);
+        if (point === null) return;
+        interact.command({
+          kind: "castPower",
+          player: controlled,
+          power,
+          xRaw: Math.round(point.x * 65536),
+          yRaw: Math.round(point.y * 65536),
+        });
+      });
+    },
+  });
+  generalsPanel.root.hidden = RULES.general.ranks.length === 0;
+  window.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || pendingPower === null) return;
+    controller?.pickGround(null);
+    pendingPower = null;
+    generalsPanel.setArmed(null);
   });
   let lastOrderVoiceAtMs = -Infinity;
 
@@ -2119,6 +2157,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
    *  (spec §6.7, #140). */
   function refreshOverlay(): void {
     resourceBar.render(next);
+    if (next !== null) {
+      const faction = RULES.factions.findIndex(
+        (def) => def.id === factionOfPlayer(controlled),
+      );
+      generalsPanel.update(generalView(next, controlled, faction));
+    }
     if (next !== null) tutorialPanel?.update(next, controlled);
     quickBar.refresh();
     renderScoreScreen();
