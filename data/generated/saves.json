@@ -435,7 +435,7 @@
     },
     {
       "id": "campaign-ru-07-kursk-pipe",
-      "map": "first-line",
+      "map": "kursk-pipe",
       "form": "setup",
       "entities": 32
     },

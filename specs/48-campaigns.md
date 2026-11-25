@@ -253,6 +253,24 @@ Existing feature types only:
 * Assumptions: no tall chimney feature exists, so office towers stand in. No
   mission script exists for this mission.
 
+## 13. Map `kursk-pipe` (issue #482)
+
+`data/maps/kursk-pipe.yaml`, 128 x 128 (same size and HQ cells as first-line,
+so the Russia 7 save keeps its bases and units). Existing feature types only:
+
+* Late-winter fields: frozen mud (dirt) with grass, rock and sand patches,
+  thin birch, poplar, oak and pine belts and a few dead trees and stumps.
+* The pipeline is a long sand strip on y = 64 (spoil on both sides) ending in
+  a concrete exit pit, ringed by crate and container stacks (the exit points)
+  on the Ukrainian side.
+* Sudzha stands in the middle on gravel yards: church, shops, houses and
+  apartment blocks along the border road and a north-south street, with a
+  little rubble. The gas metering station (factory and warehouse halls,
+  containers, fence) stands north-east on a concrete yard.
+* Assumptions: the pipe is not a real mechanic (the strip is walkable
+  decoration); the exits and the station are plain scenery. No mission script
+  exists for this mission.
+
 ## 14. Map `oreshnik` (issue #482)
 
 `data/maps/oreshnik.yaml`, 128 x 128, same HQ cells and starts as first-line,

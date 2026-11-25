@@ -1,6 +1,6 @@
 # Spec 48: Russia 7: Operation Stream, assault troops crawl through the gas pipeline to Sudzha.
 id: campaign-ru-07-kursk-pipe
-map: first-line
+map: kursk-pipe
 victory: true
 debug: false
 starts: false
