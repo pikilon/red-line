@@ -26,12 +26,15 @@ export const RU_RED = 0xd52b1e;
 export const US_RED = 0xb22234;
 export const US_WHITE = 0xffffff;
 export const US_BLUE = 0x3c3b6e;
+export const CN_RED = 0xde2910;
+export const CN_YELLOW = 0xffde00;
 
 /** Horizontal stripes of each faction's flag, top to bottom (spec 16 §4). */
 export const FLAGS = {
   ukraine: [UA_BLUE, UA_YELLOW],
   russia: [RU_WHITE, RU_BLUE, RU_RED],
   usa: [US_RED, US_WHITE, US_RED, US_WHITE, US_RED, US_WHITE, US_RED],
+  china: [CN_RED],
 } as const satisfies Readonly<Record<string, readonly number[]>>;
 
 /** Upper-hoist canton of a flag's cloth texture (the USA's blue field), as a
@@ -40,6 +43,51 @@ export const CANTONS: ReadonlyMap<
   readonly number[],
   { color: number; width: number; height: number }
 > = new Map([[FLAGS.usa, { color: US_BLUE, width: 0.4, height: 0.54 }]]);
+
+/** Five-pointed stars drawn over a flag's cloth: centre as
+ *  fractions of the cloth (`y` from the top), outer radius `r` as a fraction of
+ *  its height, `turn` the rotation in radians. */
+export const STARS: ReadonlyMap<
+  readonly number[],
+  readonly { x: number; y: number; r: number; turn: number; color: number }[]
+> = new Map([
+  [
+    FLAGS.china,
+    [
+      { x: 0.2, y: 0.25, r: 0.17, turn: 0, color: CN_YELLOW },
+      { x: 0.4, y: 0.1, r: 0.06, turn: 0.54, color: CN_YELLOW },
+      { x: 0.48, y: 0.2, r: 0.06, turn: 0.1, color: CN_YELLOW },
+      { x: 0.48, y: 0.33, r: 0.06, turn: -0.3, color: CN_YELLOW },
+      { x: 0.4, y: 0.43, r: 0.06, turn: 0.2, color: CN_YELLOW },
+    ],
+  ],
+]);
+
+/** Whether the cloth point (`u` from the pole, `v` up from the bottom) lies
+ *  inside the star `star` (even-odd test on its ten vertices). */
+function inStar(
+  star: { x: number; y: number; r: number; turn: number },
+  u: number,
+  v: number,
+): boolean {
+  const px = (u - star.x) * (FLAG_LENGTH / FLAG_HEIGHT);
+  const py = 1 - v - star.y;
+  const points: [number, number][] = [];
+  for (let k = 0; k < 10; k++) {
+    const angle = star.turn - Math.PI / 2 + (k * Math.PI) / 5;
+    const radius = k % 2 === 0 ? star.r : star.r * 0.382;
+    points.push([Math.cos(angle) * radius, Math.sin(angle) * radius]);
+  }
+  let inside = false;
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    const [xi, yi] = points[i] as [number, number];
+    const [xj, yj] = points[j] as [number, number];
+    if (yi > py !== yj > py && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
 
 /** Plain white-over-grey cloth flown by a faction that has no flag of its own
  *  yet (a new army in the ruleset never crashes the renderer). */
@@ -95,6 +143,7 @@ function flagTexture(stripes: readonly number[]): DataTexture {
   const height = TEXTURE_SIZE;
   const data = new Uint8Array(width * height * 4);
   const canton = CANTONS.get(stripes);
+  const stars = STARS.get(stripes) ?? [];
   for (let y = 0; y < height; y++) {
     const v = (y + 0.5) / height;
     const stripe = flagSample(stripes, v);
@@ -103,7 +152,8 @@ function flagTexture(stripes: readonly number[]): DataTexture {
         canton !== undefined &&
         (x + 0.5) / width < canton.width &&
         v > 1 - canton.height;
-      const color = inCanton ? canton.color : stripe;
+      const star = stars.find((entry) => inStar(entry, (x + 0.5) / width, v));
+      const color = star?.color ?? (inCanton ? canton.color : stripe);
       const i = (y * width + x) * 4;
       data[i] = (color >> 16) & 0xff;
       data[i + 1] = (color >> 8) & 0xff;

@@ -1,0 +1,225 @@
+id: china                            # required, must equal the file name
+hq: cn-hq                            # required, a building type of this file
+dozer: cn-dozer                      # required, a unit type of this file
+weapons:                             # required (spec 53 §4, spec 56 §4)
+  - { id: cn-qbz-95, damageType: smallArms, damage: 10, rangeCenti: 430, cooldownTicks: 14, speedCenti: 400, antiAir: low, delivery: homing, aimToleranceDeg: 15 }
+  - { id: cn-hj-12, damageType: antiTank, damage: 125, rangeCenti: 900, minRangeCenti: 150, cooldownTicks: 90, speedCenti: 45, delivery: homing, interceptable: true, render: { model: atgm, flight: loft, apexCenti: 40, launch: softLaunch, trail: smoke }, aimToleranceDeg: 15 }
+  - { id: cn-qjc-88, damageType: smallArms, damage: 11, rangeCenti: 520, cooldownTicks: 10, speedCenti: 450, antiAir: low, delivery: homing }
+  - { id: cn-zbl-09-cannon, damageType: autocannon, damage: 15, rangeCenti: 600, cooldownTicks: 8, speedCenti: 500, antiAir: low, delivery: homing, render: { model: tracerHeavy, flight: straight, apexCenti: 0, launch: muzzle, trail: none } }
+  - { id: cn-zpt-99a, damageType: antiTank, damage: 105, rangeCenti: 750, cooldownTicks: 30, speedCenti: 900, delivery: ballistic, render: { model: shell, flight: straight, apexCenti: 0, launch: cannon, trail: none } }
+  - { id: cn-phl-03-rockets, damageType: highExplosive, damage: 50, rangeCenti: 2800, minRangeCenti: 800, cooldownTicks: 240, splashCenti: 170, speedCenti: 55, delivery: ballistic, scatterCenti: 120, salvo: 6, salvoIntervalTicks: 4, render: { model: rocket, flight: ballistic, apexCenti: 0, launch: rocketLaunch, trail: smoke } }
+  - { id: cn-sidearm, damageType: smallArms, damage: 4, rangeCenti: 300, cooldownTicks: 20, speedCenti: 400, antiAir: low, delivery: homing }   # spec 35 §5c: trench fights
+  - { id: cn-gattling-post, damageType: autocannon, damage: 9, rangeCenti: 800, cooldownTicks: 3, speedCenti: 600, antiAir: low, delivery: homing, render: { model: tracerHeavy, flight: straight, apexCenti: 0, launch: muzzle, trail: none } }
+types:                               # required
+  - id: cn-rifle-squad
+    category: unit
+    locomotor: foot
+    armor: infantry
+    hp: 100
+    sightCenti: 600
+    cost: 90
+    buildTicks: 60
+    speedCenti: 8
+    turnRateDeg: 720
+    weapon: cn-qbz-95
+    render: { size: [30, 60, 30] }
+    experience: { value: [9, 18, 27, 36], required: [36, 72, 144] }
+  - id: cn-hj-team
+    category: unit
+    locomotor: foot
+    armor: infantry
+    hp: 85
+    sightCenti: 650
+    cost: 330
+    buildTicks: 140
+    speedCenti: 6
+    turnRateDeg: 540
+    weapon: cn-hj-12
+    stowTicks: 17
+    trenchWeapon: cn-sidearm
+    radiusCenti: 25
+    render: { size: [40, 50, 40] }
+    experience: { value: [33, 66, 99, 132], required: [132, 264, 528] }
+  - id: cn-mengshi
+    category: unit
+    locomotor: wheeled
+    armor: light
+    hp: 260
+    sightCenti: 1200
+    cost: 400
+    buildTicks: 140
+    speedCenti: 27
+    turnRateDeg: 300
+    turretTurnRateDeg: 270
+    weapon: cn-qjc-88
+    radiusCenti: 34
+    transport: { slots: 5, fireFromInside: true, damagePct: 100, exitTicks: 4 }
+    render: { size: [60, 50, 90] }
+    experience: { value: [40, 80, 120, 160], required: [160, 320, 640] }
+  - id: cn-zbl-09
+    category: unit
+    locomotor: wheeled
+    armor: light
+    hp: 430
+    sightCenti: 700
+    cost: 650
+    buildTicks: 200
+    speedCenti: 25
+    turnRateDeg: 220
+    turretTurnRateDeg: 180
+    weapon: cn-zbl-09-cannon
+    radiusCenti: 41
+    transport: { slots: 8, damagePct: 10, exitTicks: 4 }
+    render: { size: [70, 60, 110] }
+    experience: { value: [65, 130, 195, 260], required: [260, 520, 1040] }
+  - id: cn-type-99a
+    category: unit
+    locomotor: tracked
+    armor: armored
+    hp: 850
+    sightCenti: 700
+    cost: 1350
+    buildTicks: 300
+    speedCenti: 20
+    turnRateDeg: 180
+    turretTurnRateDeg: 135
+    weapon: cn-zpt-99a
+    radiusCenti: 45
+    render: { size: [80, 55, 130] }
+    experience: { value: [135, 270, 405, 540], required: [540, 1080, 2160] }
+  - id: cn-phl-03
+    category: unit
+    locomotor: wheeled
+    armor: light
+    hp: 280
+    sightCenti: 600
+    cost: 1300
+    buildTicks: 330
+    speedCenti: 18
+    turnRateDeg: 140
+    weapon: cn-phl-03-rockets
+    radiusCenti: 45
+    render: { size: [75, 65, 125] }
+    experience: { value: [130, 260, 390, 520], required: [520, 1040, 2080] }
+  - id: cn-dozer
+    category: unit
+    locomotor: tracked
+    armor: light
+    hp: 300
+    sightCenti: 500
+    cost: 800
+    buildTicks: 200
+    speedCenti: 15
+    turnRateDeg: 150
+    builds: [cn-power-plant, cn-supply-center, cn-barracks, cn-vehicle-factory, cn-gattling-nest]
+    articulation: blade
+    radiusCenti: 38
+    render: { size: [80, 60, 100] }
+    experience: { value: [80, 160, 240, 320] }
+  - id: cn-supply-truck
+    category: unit
+    locomotor: wheeled
+    armor: light
+    hp: 250
+    sightCenti: 500
+    cost: 600
+    buildTicks: 150
+    speedCenti: 20
+    turnRateDeg: 150
+    capacity: 300
+    loadTicks: 45
+    unloadTicks: 15
+    radiusCenti: 38
+    render: { size: [60, 60, 100] }
+    experience: { value: [60, 120, 180, 240] }
+  - id: cn-hq
+    category: building
+    armor: structure
+    hp: 3000
+    sightCenti: 900
+    cost: 0
+    buildTicks: 0
+    footprint: [4, 4]
+    power: 0
+    produces: [cn-dozer]
+    render: { height: 150 }
+    experience: { value: [40, 80, 120, 160] }
+  - id: cn-power-plant
+    category: building
+    armor: structure
+    hp: 1000
+    sightCenti: 500
+    cost: 600
+    buildTicks: 150
+    footprint: [3, 3]
+    power: 10
+    render: { height: 120 }
+    experience: { value: [60, 120, 180, 240] }
+  - id: cn-supply-center
+    category: building
+    armor: structure
+    hp: 1500
+    sightCenti: 500
+    cost: 1500
+    buildTicks: 225
+    footprint: [4, 3]
+    power: -2
+    produces: [cn-supply-truck]
+    dropOff: true
+    freeUnit: cn-supply-truck
+    render: { height: 100 }
+    experience: { value: [150, 300, 450, 600] }
+  - id: cn-barracks
+    category: building
+    armor: structure
+    hp: 1000
+    sightCenti: 500
+    cost: 450
+    buildTicks: 140
+    footprint: [3, 3]
+    power: -2
+    produces: [cn-rifle-squad, cn-hj-team, cn-nationalism]
+    healsInfantry: true
+    requires: [cn-power-plant]
+    render: { height: 90 }
+    experience: { value: [50, 100, 150, 200] }
+  - id: cn-vehicle-factory
+    category: building
+    armor: structure
+    hp: 2000
+    sightCenti: 500
+    cost: 2000
+    buildTicks: 300
+    footprint: [4, 4]
+    power: -4
+    produces: [cn-mengshi, cn-zbl-09, cn-type-99a, cn-phl-03, cn-composite-armor]
+    repairsVehicles: true
+    requires: [cn-supply-center]
+    render: { height: 110 }
+    experience: { value: [200, 400, 600, 800] }
+  - id: cn-gattling-nest
+    category: building
+    armor: structure
+    hp: 1200
+    sightCenti: 1000
+    cost: 700
+    buildTicks: 150
+    footprint: [2, 2]
+    power: -3
+    requires: [cn-barracks]
+    requiresPower: true
+    weapon: cn-gattling-post
+    turretTurnRateDeg: 150
+    render: { height: 70 }
+    experience: { value: [70, 140, 210, 280] }
+upgrades:                            # spec 52
+  - id: cn-nationalism               # drilled, motivated infantry
+    category: upgrade
+    cost: 800
+    buildTicks: 420
+    upgrade: { appliesTo: [cn-rifle-squad, cn-hj-team], damagePercent: 115 }
+  - id: cn-composite-armor           # composite and ceramic add-on plates
+    category: upgrade
+    cost: 1300
+    buildTicks: 600
+    upgrade: { appliesTo: [cn-mengshi, cn-zbl-09, cn-type-99a], healthPercent: 120 }

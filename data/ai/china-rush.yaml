@@ -1,0 +1,19 @@
+id: china-rush
+faction: china
+harvesters: 6
+defenseRadiusCenti: 1500
+garrisonRadiusCenti: 800
+buildOrder: [cn-power-plant, cn-barracks, cn-supply-center, cn-vehicle-factory, cn-barracks, cn-power-plant, cn-gattling-nest]
+taskForces:
+  - { id: rifles, units: { cn-rifle-squad: 10 } }
+  - { id: raid, units: { cn-mengshi: 3, cn-rifle-squad: 4 } }
+  - { id: hunters, units: { cn-hj-team: 3, cn-rifle-squad: 4 } }
+  - { id: armor, units: { cn-type-99a: 2, cn-zbl-09: 2 } }
+upgrades:                                                    # spec 52: bought at an idle producer from minTick on
+  - { upgrade: cn-nationalism, minTick: 5400 }
+  - { upgrade: cn-composite-armor, minTick: 7200 }
+triggers:
+  - { taskForce: rifles, weight: 60, minTick: 0 }
+  - { taskForce: raid, weight: 50, minTick: 1800 }
+  - { taskForce: hunters, weight: 30, minTick: 2700 }
+  - { taskForce: armor, weight: 40, minTick: 3600 }
