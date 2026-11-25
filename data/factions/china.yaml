@@ -17,7 +17,7 @@ types:                               # required
     armor: infantry
     hp: 100
     sightCenti: 600
-    cost: 90
+    cost: 115
     buildTicks: 60
     speedCenti: 8
     turnRateDeg: 720
@@ -31,7 +31,7 @@ types:                               # required
     armor: infantry
     hp: 85
     sightCenti: 650
-    cost: 330
+    cost: 360
     buildTicks: 140
     speedCenti: 6
     turnRateDeg: 540
@@ -64,7 +64,7 @@ types:                               # required
     armor: light
     hp: 430
     sightCenti: 700
-    cost: 650
+    cost: 800
     buildTicks: 200
     speedCenti: 25
     turnRateDeg: 220
@@ -80,7 +80,7 @@ types:                               # required
     armor: armored
     hp: 850
     sightCenti: 700
-    cost: 1350
+    cost: 1600
     buildTicks: 300
     speedCenti: 20
     turnRateDeg: 180

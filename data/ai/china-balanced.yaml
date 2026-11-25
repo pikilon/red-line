@@ -2,6 +2,7 @@ id: china-balanced
 faction: china
 harvesters: 4
 defenseRadiusCenti: 2000
+alertRadiusCenti: 4500
 garrisonRadiusCenti: 800
 buildOrder: [cn-power-plant, cn-supply-center, cn-barracks, cn-power-plant, cn-vehicle-factory, cn-gattling-nest, cn-power-plant, cn-gattling-nest]
 taskForces:
