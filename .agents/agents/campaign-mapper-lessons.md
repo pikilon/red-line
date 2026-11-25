@@ -12,3 +12,4 @@
 * Decoration ids that exist: `warehouse-barn`, `factory`, `house-small`, `shop`, `lamp-post`, `crate-stack`, `stone-wall`, `bush`, `dead-tree`, `lighthouse`, `pier`, `buoy`, `fishing-boat`.
 * Mariupol (#482): roads may not touch deep water ("road on deep water"): stop road paths at the river banks and let a bridge feature carry the crossing; start rivers one row below a road. `pier` takes `at`, bridges take `from`/`to`.
 * To view a map in a worktree run `node --run build:wasm` first (crates/sim/pkg is untracked), then start Vite after it exists.
+* Bakhmut (#482): `trench` is a dug-in-match feature no map can place; use `stone-wall`/`hedge` lines. A river between the bases needs a bridge feature on the road; roads stop at the banks. `build:data` passed first try with 128x128 and ~150 features.

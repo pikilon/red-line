@@ -417,7 +417,7 @@
     },
     {
       "id": "campaign-ru-04-bakhmut",
-      "map": "first-line",
+      "map": "bakhmut",
       "form": "setup",
       "entities": 28
     },
