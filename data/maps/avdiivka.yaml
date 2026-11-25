@@ -1,0 +1,217 @@
+id: avdiivka                         # required, equals the file name
+width: 128
+height: 128
+blocked: []
+# Spec 48 §11: the battle of Avdiivka (2023-24). In the north the huge Koksokhim coke plant: factory and warehouse
+# halls on a concrete yard crossed by rail sidings (concrete strips), with office towers for the chimneys. East of it
+# the ash heaps and spoil tips are hills and a ridge. West and south the town: the Khimik district of apartment blocks
+# and the "Tsarskaya Okhota" restaurant strongpoint (shop, fence and walls on a concrete forecourt) near the Zenit
+# position. The Russian approach from the east and south is open fields, hedgerows and tree belts. HQ cells and start
+# positions equal first-line, so the Russia 6 save keeps every entity cell.
+depots:
+  - { origin: [12, 54], amount: 15000 }
+  - { origin: [114, 72], amount: 15000 }
+  - { origin: [36, 20], amount: 10000 }
+  - { origin: [90, 106], amount: 10000 }
+  - { origin: [36, 100], amount: 10000 }
+  - { origin: [90, 26], amount: 10000 }
+elevation:
+  hills:
+    - { center: [68, 18], radius: 9, height: 30 }      # ash heap
+    - { center: [84, 30], radius: 8, height: 24 }      # spoil tip
+    - { center: [78, 100], radius: 8, height: 20 }
+  ridges:
+    - { from: [60, 6], to: [78, 10], radius: 5, height: 18 }
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: dirt, rect: [3, 50, 26, 70] }              # Ukrainian base
+      - { material: dirt, rect: [104, 56, 124, 74] }           # Russian base
+      - { material: concrete, rect: [22, 6, 58, 24] }          # Koksokhim yard
+      - { material: concrete, rect: [22, 25, 62, 25] }         # rail siding, east-west
+      - { material: concrete, rect: [22, 27, 62, 27] }         # second siding
+      - { material: concrete, rect: [60, 6, 61, 26] }          # rail spur, north-south
+      - { material: concrete, rect: [50, 50, 57, 56] }         # restaurant forecourt
+      - { material: gravel, rect: [58, 28, 70, 40] }
+      - { material: dirt, rect: [64, 40, 96, 54] }             # fields on the eastern approach
+      - { material: dirt, rect: [64, 72, 98, 92] }             # fields on the southern approach
+      - { material: rock, rect: [62, 10, 74, 22] }             # ash heap
+  roads:
+    - { type: asphalt, path: [[16, 62], [56, 62]], width: 2 }
+    - { type: asphalt, path: [[58, 62], [104, 62]], width: 2 }
+    - { type: asphalt, path: [[36, 30], [36, 94]], width: 2 }  # town main street
+    - { type: asphalt, path: [[20, 36], [60, 36]], width: 2 }
+    - { type: asphalt, path: [[20, 82], [60, 82]], width: 2 }
+    - { type: dirt, path: [[62, 36], [100, 36]], width: 2 }
+    - { type: dirt, path: [[62, 82], [102, 82]], width: 2 }
+  water: []
+features:
+  # Koksokhim: battery halls, coal and chemical workshops.
+  - { type: factory, at: [26, 9], rot: 0, variant: 0 }
+  - { type: factory, at: [32, 9], rot: 0, variant: 1 }
+  - { type: factory, at: [38, 9], rot: 0, variant: 2 }
+  - { type: factory, at: [44, 9], rot: 0, variant: 0 }
+  - { type: factory, at: [50, 9], rot: 0, variant: 1 }
+  - { type: warehouse, at: [26, 16], rot: 0, variant: 0 }
+  - { type: warehouse, at: [32, 16], rot: 0, variant: 1 }
+  - { type: factory, at: [38, 16], rot: 0, variant: 2 }
+  - { type: warehouse, at: [44, 16], rot: 0, variant: 0 }
+  - { type: factory, at: [50, 16], rot: 0, variant: 0 }
+  - { type: warehouse, at: [54, 21], rot: 1, variant: 1 }
+  - { type: office-tower, at: [24, 21], rot: 0, variant: 0 }     # chimney stand-in
+  - { type: office-tower, at: [58, 12], rot: 0, variant: 1 }
+  - { type: container-stack, at: [29, 22], rot: 0, variant: 0 }
+  - { type: container-stack, at: [47, 22], rot: 0, variant: 1 }
+  - { type: crate-stack, at: [34, 23], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [22, 5], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [23, 5], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [24, 5], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [25, 5], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [27, 5], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [28, 5], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [29, 5], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [30, 5], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [31, 5], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [32, 5], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [34, 5], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [35, 5], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [36, 5], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [37, 5], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [38, 5], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [39, 5], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [41, 5], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [42, 5], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [43, 5], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [44, 5], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [45, 5], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [46, 5], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [48, 5], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [49, 5], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [50, 5], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [51, 5], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [52, 5], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [53, 5], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [55, 5], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [56, 5], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [57, 5], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [58, 5], rot: 0, variant: 1 }
+  - { type: rubble-pile, at: [42, 24], rot: 1, variant: 0 }
+  - { type: rubble-pile, at: [52, 14], rot: 2, variant: 1 }
+  - { type: burnt-stump, at: [30, 26], rot: 0, variant: 0 }
+  # Khimik district: apartment blocks, north and south of the main street.
+  - { type: apartment-block, at: [24, 39], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [29, 39], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [40, 39], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [46, 39], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [52, 39], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [24, 45], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [29, 45], rot: 2, variant: 0 }
+  - { type: townhouse-row, at: [40, 46], rot: 2, variant: 0 }
+  - { type: house-small, at: [30, 52], rot: 1, variant: 1 }
+  - { type: house-small, at: [30, 57], rot: 1, variant: 2 }
+  - { type: shop, at: [26, 66], rot: 3, variant: 0 }
+  - { type: apartment-block, at: [24, 72], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [29, 72], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [40, 72], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [46, 72], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [52, 72], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [24, 86], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [29, 86], rot: 2, variant: 1 }
+  - { type: townhouse-row, at: [42, 86], rot: 2, variant: 1 }
+  - { type: house-small, at: [48, 88], rot: 0, variant: 0 }
+  - { type: gas-station, at: [38, 66], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [34, 40], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [34, 74], rot: 0, variant: 0 }
+  - { type: parked-car, at: [38, 38], rot: 1, variant: 0 }
+  - { type: rubble-pile, at: [44, 44], rot: 3, variant: 1 }
+  - { type: rubble-pile, at: [50, 68], rot: 0, variant: 0 }
+  # "Tsarskaya Okhota" restaurant strongpoint beside the Zenit position.
+  - { type: shop, at: [52, 52], rot: 3, variant: 1 }
+  - { type: fence, at: [50, 50], rot: 0, variant: 0 }
+  - { type: fence, at: [52, 50], rot: 0, variant: 1 }
+  - { type: fence, at: [53, 50], rot: 0, variant: 2 }
+  - { type: fence, at: [54, 50], rot: 0, variant: 0 }
+  - { type: fence, at: [55, 50], rot: 0, variant: 1 }
+  - { type: fence, at: [56, 50], rot: 0, variant: 2 }
+  - { type: fence, at: [57, 50], rot: 0, variant: 0 }
+  - { type: fence, at: [50, 56], rot: 0, variant: 0 }
+  - { type: fence, at: [51, 56], rot: 0, variant: 1 }
+  - { type: fence, at: [53, 56], rot: 0, variant: 2 }
+  - { type: fence, at: [54, 56], rot: 0, variant: 0 }
+  - { type: fence, at: [55, 56], rot: 0, variant: 1 }
+  - { type: fence, at: [56, 56], rot: 0, variant: 2 }
+  - { type: fence, at: [57, 56], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [58, 51], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [58, 52], rot: 1, variant: 1 }
+  - { type: stone-wall, at: [58, 53], rot: 1, variant: 2 }
+  - { type: stone-wall, at: [58, 54], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [58, 55], rot: 1, variant: 1 }
+  - { type: stone-wall, at: [58, 56], rot: 1, variant: 2 }
+  - { type: crate-stack, at: [55, 54], rot: 0, variant: 1 }
+  - { type: parked-car, at: [53, 56], rot: 2, variant: 1 }
+  # Russian approach: hedgerows, field edges, tree belts, shell holes.
+  - { type: hedge, at: [66, 44], rot: 0, variant: 0 }
+  - { type: hedge, at: [68, 44], rot: 0, variant: 2 }
+  - { type: hedge, at: [70, 44], rot: 0, variant: 1 }
+  - { type: hedge, at: [72, 44], rot: 0, variant: 2 }
+  - { type: hedge, at: [74, 44], rot: 0, variant: 1 }
+  - { type: hedge, at: [76, 44], rot: 0, variant: 0 }
+  - { type: hedge, at: [79, 44], rot: 0, variant: 2 }
+  - { type: hedge, at: [81, 44], rot: 0, variant: 1 }
+  - { type: hedge, at: [83, 44], rot: 0, variant: 0 }
+  - { type: hedge, at: [86, 44], rot: 0, variant: 2 }
+  - { type: hedge, at: [88, 44], rot: 0, variant: 1 }
+  - { type: hedge, at: [90, 44], rot: 0, variant: 0 }
+  - { type: hedge, at: [66, 50], rot: 0, variant: 0 }
+  - { type: hedge, at: [68, 50], rot: 0, variant: 2 }
+  - { type: hedge, at: [70, 50], rot: 0, variant: 1 }
+  - { type: hedge, at: [73, 50], rot: 0, variant: 0 }
+  - { type: hedge, at: [75, 50], rot: 0, variant: 2 }
+  - { type: hedge, at: [77, 50], rot: 0, variant: 1 }
+  - { type: hedge, at: [80, 50], rot: 0, variant: 0 }
+  - { type: hedge, at: [82, 50], rot: 0, variant: 2 }
+  - { type: hedge, at: [84, 50], rot: 0, variant: 1 }
+  - { type: hedge, at: [87, 50], rot: 0, variant: 0 }
+  - { type: hedge, at: [89, 50], rot: 0, variant: 2 }
+  - { type: hedge, at: [66, 76], rot: 0, variant: 0 }
+  - { type: hedge, at: [68, 76], rot: 0, variant: 1 }
+  - { type: hedge, at: [70, 76], rot: 0, variant: 0 }
+  - { type: hedge, at: [72, 76], rot: 0, variant: 2 }
+  - { type: hedge, at: [75, 76], rot: 0, variant: 1 }
+  - { type: hedge, at: [77, 76], rot: 0, variant: 0 }
+  - { type: hedge, at: [79, 76], rot: 0, variant: 2 }
+  - { type: hedge, at: [82, 76], rot: 0, variant: 1 }
+  - { type: hedge, at: [84, 76], rot: 0, variant: 0 }
+  - { type: hedge, at: [86, 76], rot: 0, variant: 2 }
+  - { type: hedge, at: [89, 76], rot: 0, variant: 1 }
+  - { type: hedge, at: [91, 76], rot: 0, variant: 0 }
+  - { type: hedge, at: [93, 76], rot: 0, variant: 2 }
+  - { type: hedge, at: [66, 88], rot: 0, variant: 0 }
+  - { type: hedge, at: [68, 88], rot: 0, variant: 2 }
+  - { type: hedge, at: [70, 88], rot: 0, variant: 0 }
+  - { type: hedge, at: [72, 88], rot: 0, variant: 2 }
+  - { type: hedge, at: [74, 88], rot: 0, variant: 1 }
+  - { type: hedge, at: [77, 88], rot: 0, variant: 0 }
+  - { type: hedge, at: [79, 88], rot: 0, variant: 2 }
+  - { type: hedge, at: [81, 88], rot: 0, variant: 1 }
+  - { type: hedge, at: [84, 88], rot: 0, variant: 0 }
+  - { type: hedge, at: [86, 88], rot: 0, variant: 2 }
+  - { type: hedge, at: [88, 88], rot: 0, variant: 1 }
+  - { type: hedge, at: [91, 88], rot: 0, variant: 0 }
+  - { type: hedge, at: [93, 88], rot: 0, variant: 2 }
+  - { type: poplar, area: [64, 56, 80, 58], density: 35, seed: 21 }
+  - { type: poplar, area: [64, 66, 80, 68], density: 35, seed: 23 }
+  - { type: oak, area: [84, 38, 96, 46], density: 25, seed: 25 }
+  - { type: pine, area: [66, 94, 100, 104], density: 35, seed: 27 }
+  - { type: oak, area: [88, 76, 100, 92], density: 20, seed: 29 }
+  - { type: pine, area: [70, 108, 110, 120], density: 30, seed: 31 }
+  - { type: birch, area: [2, 100, 20, 118], density: 30, seed: 33 }
+  - { type: burnt-stump, area: [70, 46, 92, 54], density: 10, seed: 35 }
+  - { type: rubble-pile, area: [68, 78, 96, 90], density: 6, seed: 37 }
+  - { type: dead-tree, area: [74, 62, 92, 64], density: 20, seed: 39 }
+  - { type: farmhouse, at: [90, 46], rot: 1, variant: 0 }
+  - { type: farmhouse, at: [84, 84], rot: 3, variant: 0 }
+starts:
+  - { faction: ukraine, hq: [12, 60], dozerCenti: [1850, 6150] }
+  - { faction: russia, hq: [112, 64], dozerCenti: [10950, 6650] }
