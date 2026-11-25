@@ -88,8 +88,8 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
   `mariupol` (§9), Russia 4, on `bakhmut` (§10), Russia 5, on `surovikin-line`
   (§11), Russia 6, on `avdiivka` (§12), Russia 7, on `kursk-pipe` (§13),
   Russia 8, on `oreshnik` (§14), Russia 9, on `kyiv` (§15), Russia 10, on
-  `narva` (§16), and Ukraine 3, on `moskva` (§17). Own maps for the remaining
-  missions are tracked in issue #482.
+  `narva` (§16), Ukraine 3, on `moskva` (§17), and Ukraine 5, on `kharkiv`
+  (§18). Own maps for the remaining missions are tracked in issue #482.
 * The game has no ships: the cruiser Moskva is played as the Black Sea Fleet
   command post on the shore. Snake Island is no longer the coast of
   demo-coast: it has its own map (§8).
@@ -345,3 +345,22 @@ Existing feature types only:
 * East: the Black Sea Fleet command post (the Moskva stand-in, kept on the
   shore as the game has no ships) on a gravel spit with a few walls.
 * Campaign wiring: unchanged, no mission script exists for this mission.
+
+## 18. Map `kharkiv` (issue #482)
+
+`data/maps/kharkiv.yaml`, 128 x 128, same HQ cells and starts as first-line,
+so `campaign-ua-05-kharkiv` keeps every entity cell and only changes `map:`.
+Existing feature types only:
+
+* Open farmland: dirt patches read as sunflower and wheat fields, with tree
+  belts (oak, poplar, birch), pine forest patches and hedge lines.
+* The Oskil river runs north to south (shallow banks, deep channel) between
+  the Ukrainian base and the three Russian hubs; a `road-bridge` at y=30
+  (Balakliia), y=64 (Izium) and y=96 (Kupiansk) carries the asphalt roads of
+  the armoured thrust east.
+* Balakliia: houses, apartment blocks, a shop and a church on gravel yards.
+  Izium: a rail junction, concrete strips with warehouse rows on both sides
+  of the supply hub. Kupiansk: houses, a church and a townhouse row.
+* Assumption: the river is placed west of the hubs so the thrust has one
+  crossing per town; the real Oskil flows near Kupiansk only.
+* No mission script exists for this mission.

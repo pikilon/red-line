@@ -1,6 +1,6 @@
 # Spec 48: Ukraine 5: the Kharkiv counteroffensive punches through Balakliia, Izium and Kupiansk.
 id: campaign-ua-05-kharkiv
-map: first-line
+map: kharkiv
 victory: true
 debug: false
 starts: false
