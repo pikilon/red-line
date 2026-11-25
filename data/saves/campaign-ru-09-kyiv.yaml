@@ -1,6 +1,6 @@
 # Spec 48: Russia 9: the alternate-history march on the government quarter in Kyiv.
 id: campaign-ru-09-kyiv
-map: river-port
+map: kyiv
 victory: true
 debug: false
 starts: false

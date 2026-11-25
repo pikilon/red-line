@@ -1,0 +1,191 @@
+id: kyiv
+width: 128
+height: 96
+blocked: []
+# Spec 48 §15: Kyiv city centre (fictional Russian assault). The wide Dnipro runs north to south through the map
+# (shallow banks, deep channel); the right bank (west) holds the Ukrainian base, the government quarter around the
+# Maidan (a concrete plaza ringed by towers and halls) and dense apartment blocks; Mariinskyi park stands on the
+# river bluff. Three crossings: a Paton-style road bridge (y=42), a rail and road bridge (y=70) and a footbridge
+# (y=16). The left bank (east) is residential blocks and open ground around the Russian base. HQ cells and starts
+# equal river-port so the Russia 9 save keeps every entity cell; the Ukrainian base is on the right (west) bank
+# and the Russian one on the left (east) bank, as in reality.
+depots:
+  - { origin: [12, 36], amount: 15000 }
+  - { origin: [114, 36], amount: 15000 }
+  - { origin: [47, 7], amount: 15000 }
+  - { origin: [79, 7], amount: 15000 }
+  - { origin: [30, 64], amount: 10000 }
+  - { origin: [96, 64], amount: 10000 }
+elevation:
+  hills:
+    - { center: [52, 24], radius: 6, height: 24 }     # Mariinskyi park bluff
+    - { center: [52, 62], radius: 6, height: 20 }
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: concrete, rect: [32, 36, 48, 50] }        # Maidan
+      - { material: concrete, rect: [26, 28, 50, 33] }
+      - { material: dirt, rect: [3, 38, 24, 48] }
+      - { material: dirt, rect: [100, 36, 124, 50] }
+      - { material: sand, rect: [57, 0, 58, 95] }
+      - { material: sand, rect: [70, 0, 71, 95] }
+  roads:
+    - { type: asphalt, path: [[2, 42], [57, 42]], width: 2 }    # Khreshchatyk avenue to the bridge
+    - { type: asphalt, path: [[70, 42], [126, 42]], width: 2 }
+    - { type: asphalt, path: [[2, 70], [57, 70]], width: 2 }
+    - { type: asphalt, path: [[70, 70], [126, 70]], width: 2 }
+    - { type: asphalt, path: [[26, 4], [26, 90]], width: 2 }
+    - { type: asphalt, path: [[52, 4], [52, 90]], width: 2 }
+    - { type: asphalt, path: [[78, 4], [78, 90]], width: 2 }
+    - { type: dirt, path: [[2, 16], [57, 16]], width: 2 }
+    - { type: dirt, path: [[70, 16], [126, 16]], width: 2 }
+  water:
+    - { kind: river, depth: shallow, path: [[64, 0], [64, 95]], width: 8 }
+    - { kind: river, depth: deep, path: [[64, 0], [64, 95]], width: 4 }
+features:
+  - { type: road-bridge, from: [58, 42], to: [69, 42], variant: 0 }   # Paton-style road bridge
+  - { type: road-bridge, from: [58, 70], to: [69, 70], variant: 1 }   # rail and road bridge
+  - { type: wooden-bridge, from: [58, 16], to: [69, 16], variant: 0 }   # northern pedestrian crossing
+  # Government quarter around the Maidan plaza (concrete x 32-48, y 36-50): towers and halls on three sides
+  - { type: office-tower, at: [33, 27], rot: 0, variant: 1 }
+  - { type: office-tower, at: [33, 57], rot: 0, variant: 2 }
+  - { type: office-tower, at: [39, 27], rot: 0, variant: 0 }
+  - { type: office-tower, at: [39, 57], rot: 0, variant: 1 }
+  - { type: office-tower, at: [45, 27], rot: 0, variant: 2 }
+  - { type: office-tower, at: [45, 57], rot: 0, variant: 0 }
+  - { type: factory, at: [33, 19], rot: 0, variant: 1 }
+  - { type: factory, at: [40, 19], rot: 0, variant: 2 }
+  - { type: factory, at: [33, 65], rot: 0, variant: 0 }
+  - { type: factory, at: [40, 65], rot: 0, variant: 1 }
+  - { type: office-tower, at: [52, 34], rot: 0, variant: 2 }
+  - { type: office-tower, at: [52, 50], rot: 0, variant: 0 }
+  # Dense apartment blocks west and north/south of the base streets
+  - { type: apartment-block, at: [4, 8], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [4, 16], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [4, 24], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [4, 62], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [4, 70], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [4, 78], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [10, 8], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [10, 16], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [10, 24], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [10, 62], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [10, 70], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [10, 78], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [16, 8], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [16, 16], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [16, 76], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [16, 84], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [22, 8], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [22, 16], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [22, 76], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [22, 84], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [28, 8], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [28, 86], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [34, 8], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [34, 86], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [40, 8], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [40, 86], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [46, 86], rot: 0, variant: 1 }
+  - { type: townhouse-row, at: [28, 16], rot: 1, variant: 0 }
+  - { type: townhouse-row, at: [28, 24], rot: 1, variant: 1 }
+  - { type: townhouse-row, at: [28, 62], rot: 1, variant: 2 }
+  - { type: townhouse-row, at: [28, 70], rot: 1, variant: 0 }
+  - { type: townhouse-row, at: [28, 78], rot: 1, variant: 1 }
+  # Shops and houses along the main avenue
+  - { type: shop, at: [22, 47], rot: 0, variant: 0 }
+  - { type: shop, at: [30, 39], rot: 0, variant: 1 }
+  - { type: shop, at: [30, 47], rot: 0, variant: 2 }
+  - { type: shop, at: [38, 39], rot: 0, variant: 0 }
+  - { type: shop, at: [38, 47], rot: 0, variant: 1 }
+  - { type: shop, at: [46, 39], rot: 0, variant: 2 }
+  - { type: shop, at: [46, 47], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [24, 41], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [24, 45], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [32, 41], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [32, 45], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [40, 41], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [40, 45], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [48, 41], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [48, 45], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [54, 41], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [54, 45], rot: 0, variant: 1 }
+  - { type: church, at: [56, 26], rot: 0, variant: 0 }
+  - { type: church, at: [56, 60], rot: 0, variant: 1 }
+  # Mariinskyi park on the river bluff: tree belts
+  - { type: oak, area: [49, 18, 56, 31], density: 35, seed: 3 }
+  - { type: poplar, area: [49, 54, 56, 66], density: 30, seed: 5 }
+  - { type: birch, area: [50, 70, 56, 90], density: 25, seed: 7 }
+  - { type: oak, area: [50, 2, 56, 14], density: 30, seed: 9 }
+  # Left bank (east): residential blocks and open ground around the Russian base
+  - { type: apartment-block, at: [74, 6], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [74, 14], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [74, 22], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [74, 62], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [74, 78], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [74, 86], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [80, 14], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [80, 22], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [80, 62], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [80, 78], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [80, 86], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [86, 6], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [86, 14], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [86, 22], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [86, 62], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [86, 78], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [86, 86], rot: 0, variant: 1 }
+  - { type: townhouse-row, at: [92, 6], rot: 1, variant: 2 }
+  - { type: townhouse-row, at: [92, 14], rot: 1, variant: 0 }
+  - { type: townhouse-row, at: [92, 22], rot: 1, variant: 1 }
+  - { type: townhouse-row, at: [92, 62], rot: 1, variant: 2 }
+  - { type: townhouse-row, at: [92, 78], rot: 1, variant: 0 }
+  - { type: townhouse-row, at: [92, 86], rot: 1, variant: 1 }
+  - { type: house-small, at: [98, 8], rot: 2, variant: 0 }
+  - { type: house-small, at: [98, 16], rot: 1, variant: 2 }
+  - { type: house-small, at: [98, 80], rot: 0, variant: 1 }
+  - { type: house-small, at: [98, 88], rot: 2, variant: 0 }
+  - { type: house-small, at: [104, 8], rot: 1, variant: 2 }
+  - { type: house-small, at: [104, 16], rot: 0, variant: 1 }
+  - { type: house-small, at: [104, 80], rot: 2, variant: 0 }
+  - { type: house-small, at: [104, 88], rot: 1, variant: 2 }
+  - { type: house-small, at: [110, 8], rot: 0, variant: 1 }
+  - { type: house-small, at: [110, 16], rot: 2, variant: 0 }
+  - { type: house-small, at: [110, 80], rot: 1, variant: 2 }
+  - { type: house-small, at: [110, 88], rot: 0, variant: 1 }
+  - { type: house-small, at: [118, 8], rot: 2, variant: 0 }
+  - { type: house-small, at: [118, 16], rot: 1, variant: 2 }
+  - { type: house-small, at: [118, 24], rot: 0, variant: 1 }
+  - { type: house-small, at: [118, 70], rot: 2, variant: 0 }
+  - { type: house-small, at: [118, 78], rot: 1, variant: 2 }
+  - { type: house-small, at: [118, 86], rot: 0, variant: 1 }
+  - { type: house-small, at: [122, 8], rot: 2, variant: 0 }
+  - { type: house-small, at: [122, 16], rot: 1, variant: 2 }
+  - { type: house-small, at: [122, 24], rot: 0, variant: 1 }
+  - { type: house-small, at: [122, 70], rot: 2, variant: 0 }
+  - { type: house-small, at: [122, 78], rot: 1, variant: 2 }
+  - { type: house-small, at: [122, 86], rot: 0, variant: 1 }
+  - { type: factory, at: [74, 48], rot: 0, variant: 0 }
+  - { type: warehouse, at: [74, 56], rot: 0, variant: 1 }
+  - { type: shop, at: [76, 36], rot: 0, variant: 1 }
+  - { type: fence, at: [96, 30], rot: 1, variant: 2 }
+  - { type: fence, at: [96, 34], rot: 1, variant: 0 }
+  - { type: fence, at: [96, 52], rot: 1, variant: 1 }
+  - { type: fence, at: [96, 56], rot: 1, variant: 2 }
+  - { type: poplar, area: [66, 2, 72, 14], density: 30, seed: 11 }
+  - { type: birch, area: [66, 72, 74, 92], density: 25, seed: 13 }
+  - { type: bush, area: [94, 30, 126, 34], density: 15, seed: 15 }
+  - { type: bush, area: [94, 50, 126, 56], density: 15, seed: 17 }
+  # Rubble from the first days of the assault
+  - { type: rubble-pile, at: [72, 40], rot: 0, variant: 1 }
+  - { type: rubble-pile, at: [72, 45], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [56, 40], rot: 1, variant: 0 }
+  - { type: rubble-pile, at: [56, 45], rot: 0, variant: 1 }
+  - { type: rubble-pile, at: [75, 68], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [54, 72], rot: 1, variant: 0 }
+  - { type: parked-car, at: [60, 38], rot: 1, variant: 0 }
+  - { type: parked-car, at: [66, 46], rot: 3, variant: 1 }
+starts:
+  - { faction: ukraine, hq: [12, 42], dozerCenti: [1850, 4350] }
+  - { faction: russia, hq: [112, 42], dozerCenti: [10950, 4450] }

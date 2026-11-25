@@ -5,7 +5,7 @@
   "savedAt": "1970-01-01T00:00:00.000Z",
   "tick": 0,
   "match": {
-    "mapId": "river-port",
+    "mapId": "kyiv",
     "seed": "1",
     "debug": false,
     "speed": 1
@@ -25,7 +25,7 @@
     "selected": []
   },
   "setup": {
-    "map": "river-port",
+    "map": "kyiv",
     "seed": "1",
     "victory": true,
     "debug": false,

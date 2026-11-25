@@ -447,7 +447,7 @@
     },
     {
       "id": "campaign-ru-09-kyiv",
-      "map": "river-port",
+      "map": "kyiv",
       "form": "setup",
       "entities": 14
     },
