@@ -67,6 +67,7 @@ import {
 import { disembarkOffer } from "../input/transport";
 import { LOCKSTEP } from "../net/lockstep";
 import { createPerfPanel } from "../perfPanel";
+import { loadProfile, recordMatch } from "../profile";
 import { type AirOverlay, createAirOverlay } from "../render/airOverlay";
 import { type Animator, createAnimator } from "../render/animation";
 import { type AttackMarker, createAttackMarker } from "../render/attackMarker";
@@ -652,6 +653,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   const camera = createIsometricCamera(1);
   const hud = createHud(hudRoot);
   const scoreScreen = createScoreScreen(document.body);
+  const profileName = loadProfile().name;
 
   let settings: Settings = loadSettings();
   if (restored !== null && boot.applySettings) {
@@ -2035,6 +2037,18 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   function renderScoreScreen(): void {
     if (next === null || boot.shell || scoreScreen.settled) return;
     if (next.outcome === "ongoing" && missionEnd === null) return;
+    // Spec 59: a finished skirmish or multiplayer match enters the profile
+    // statistics once (this screen shows once); missions have their own record.
+    if (missionEnd === null) {
+      recordMatch(
+        factionOfPlayer(controlled),
+        next.outcome === "winner"
+          ? next.winner === controlled
+            ? "won"
+            : "lost"
+          : "draw",
+      );
+    }
     const buttons: EndButton[] = [
       ...(missionEnd?.buttons ?? [
         ...(boot.net === undefined
@@ -2059,6 +2073,11 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
           ? t("campaign.failed")
           : undefined,
       nameOf: (player) => {
+        // Spec 59: the local profile names the player, the peer its own.
+        if (player === controlled && !boot.shell) return profileName;
+        if (boot.net !== undefined && player !== boot.net.localPlayer) {
+          if (boot.net.opponentName !== undefined) return boot.net.opponentName;
+        }
         const index = RULES.factions.findIndex(
           (faction) => faction.id === factionOfPlayer(player),
         );

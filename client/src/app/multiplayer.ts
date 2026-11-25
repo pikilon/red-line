@@ -4,6 +4,7 @@
  *  the same match without reloading the page. */
 import { t } from "../i18n";
 import { hostRoom, joinRoom, newRoomCode, type PeerLink } from "../net/peer";
+import { cleanName, loadProfile } from "../profile";
 import { appendDiv, setText } from "../ui/dom";
 import { DEFAULT_MAP, startNetSkirmish } from "./skirmish";
 
@@ -46,9 +47,14 @@ export function startMultiplayer(params: URLSearchParams): void {
     mapId: string,
     link: PeerLink,
     player: number,
+    opponentName?: string,
   ) => {
     overlay.remove();
-    startNetSkirmish(seed, mapId, { link, localPlayer: player });
+    startNetSkirmish(seed, mapId, {
+      link,
+      localPlayer: player,
+      ...(opponentName !== undefined && { opponentName }),
+    });
   };
   const fail = (): void => {
     setText(status, t("net.failed"));
@@ -77,7 +83,12 @@ export function startMultiplayer(params: URLSearchParams): void {
     back.addEventListener("click", hosted.cancel);
     void hosted.link.then((link) => {
       const seed = randomSeed();
-      link.send({ t: "start", seed, mapId: DEFAULT_MAP });
+      link.send({
+        t: "start",
+        seed,
+        mapId: DEFAULT_MAP,
+        name: loadProfile().name,
+      });
       begin(seed, DEFAULT_MAP, link, 0);
     }, fail);
     return;
@@ -90,7 +101,13 @@ export function startMultiplayer(params: URLSearchParams): void {
     link.onMessage((message) => {
       if (message.t !== "start" || started) return;
       started = true;
-      begin(message.seed, message.mapId, link, 1);
+      begin(
+        message.seed,
+        message.mapId,
+        link,
+        1,
+        message.name === undefined ? undefined : cleanName(message.name),
+      );
     });
     link.onClose(() => {
       if (!started) fail();

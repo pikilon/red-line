@@ -1,5 +1,13 @@
 import { type ArmyChoice, armyIds, enemyArmyIds } from "../app/armies";
 import { type MessageKey, t } from "../i18n";
+import {
+  exportProfile,
+  importProfile,
+  loadProfile,
+  MAX_NAME_LENGTH,
+  saveProfile,
+  totals,
+} from "../profile";
 import { factionLabel } from "../rules";
 import {
   CAMPAIGNS,
@@ -111,6 +119,10 @@ export function createMainMenu(
   const campaigns = document.createElement("div");
   campaigns.className = "main-menu-page";
   campaigns.hidden = true;
+  const profile = document.createElement("div");
+  profile.className = "main-menu-page";
+  profile.id = "main-menu-profile-page";
+  profile.hidden = true;
   const skirmish = document.createElement("div");
   skirmish.className = "main-menu-page";
   skirmish.id = "main-menu-skirmish-page";
@@ -120,6 +132,7 @@ export function createMainMenu(
     skirmish.hidden = page !== skirmish;
     tutorials.hidden = page !== tutorials;
     sound.hidden = page !== sound;
+    profile.hidden = page !== profile;
     campaigns.hidden = page !== campaigns;
     panel.hidden = false;
     briefing.hidden = true;
@@ -151,6 +164,14 @@ export function createMainMenu(
     ],
     ["main-menu-tutorials", "mainMenu.tutorials", () => show(tutorials)],
     ["main-menu-load", "mainMenu.loadGame", actions.loadGame],
+    [
+      "main-menu-profile",
+      "mainMenu.profile",
+      () => {
+        fillProfile(profile, () => show(main));
+        show(profile);
+      },
+    ],
     ["main-menu-sound", "menu.sound", () => show(sound)],
   ];
   for (const [id, key, action] of buttons) {
@@ -232,7 +253,7 @@ export function createMainMenu(
   sound.appendChild(
     menuButton("main-menu-sound-back", t("mainMenu.back"), () => show(main)),
   );
-  panel.append(main, skirmish, tutorials, sound, campaigns);
+  panel.append(main, skirmish, tutorials, sound, campaigns, profile);
   element.appendChild(panel);
   const open = actions.openCampaign ?? null;
   const target = findCampaignMission(open);
@@ -386,4 +407,101 @@ function createBriefing(
       element.hidden = false;
     },
   };
+}
+
+/** Spec 59: `#main-menu-profile-page`: name, colour, match statistics and
+ *  export / import of the local profile. */
+function fillProfile(page: HTMLElement, back: () => void): void {
+  const profile = loadProfile();
+  page.replaceChildren();
+  const field = (labelKey: MessageKey, input: HTMLInputElement): void => {
+    const label = document.createElement("label");
+    label.textContent = t(labelKey);
+    label.appendChild(input);
+    page.appendChild(label);
+  };
+  const name = document.createElement("input");
+  name.id = "profile-name";
+  name.type = "text";
+  name.maxLength = MAX_NAME_LENGTH;
+  name.value = profile.name;
+  const colour = document.createElement("input");
+  colour.id = "profile-colour";
+  colour.type = "color";
+  colour.value = profile.colour;
+  const save = (): void => {
+    saveProfile({
+      ...loadProfile(),
+      name: name.value,
+      colour: colour.value,
+    });
+  };
+  name.addEventListener("change", save);
+  colour.addEventListener("input", save);
+  field("profile.name", name);
+  field("profile.colour", colour);
+
+  const stats = document.createElement("p");
+  stats.id = "profile-stats";
+  stats.className = "main-menu-aim";
+  const sum = totals(profile);
+  const lines =
+    sum.played === 0
+      ? [t("profile.noStats")]
+      : [
+          t("profile.stats", { ...sum }),
+          ...Object.entries(profile.stats).map(([faction, record]) =>
+            t("profile.faction", {
+              faction: t(`faction.${faction}` as MessageKey),
+              ...record,
+            }),
+          ),
+        ];
+  stats.append(
+    ...lines.flatMap((line, i) =>
+      i === 0 ? [line] : [document.createElement("br"), line],
+    ),
+  );
+  page.appendChild(stats);
+
+  const status = document.createElement("p");
+  status.id = "profile-status";
+  status.className = "main-menu-aim";
+  const picker = document.createElement("input");
+  picker.type = "file";
+  picker.accept = "application/json,.json";
+  picker.id = "profile-file";
+  picker.hidden = true;
+  picker.addEventListener("change", () => {
+    const file = picker.files?.[0];
+    if (file === undefined) return;
+    void file.text().then((text) => {
+      const ok = importProfile(text);
+      picker.value = "";
+      if (!ok) {
+        status.textContent = t("profile.importFailed");
+        return;
+      }
+      fillProfile(page, back);
+      const note = page.querySelector("#profile-status");
+      if (note !== null) note.textContent = t("profile.imported");
+    });
+  });
+  page.append(
+    menuButton("profile-export", t("profile.export"), () => {
+      save();
+      const url = URL.createObjectURL(
+        new Blob([exportProfile()], { type: "application/json" }),
+      );
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = t("profile.fileName");
+      link.click();
+      URL.revokeObjectURL(url);
+    }),
+    menuButton("profile-import", t("profile.import"), () => picker.click()),
+    picker,
+    status,
+    menuButton("profile-back", t("mainMenu.back"), back),
+  );
 }
