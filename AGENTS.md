@@ -36,7 +36,12 @@ C&C Generals. Behavior lives in `specs/*.md`; decisions in `docs/decisions.md`
   `node --run check`; CI fails on any Biome error (import order included).
 * To let the owner try a situation, give a `?load=<id>` URL from an example
   save (`node --run saves:list`; spec 19).
-* Any page you open in a browser to test gets `&mute=1` (`?mute=1` alone for
+* Never let a local test play through the speakers. The dev server starts
+  the master volume at 0 (`client/.env.development`,
+  `VITE_DEFAULT_MASTER_VOLUME`); the public build keeps 50. A page driven by
+  automation (Playwright, scripts: `navigator.webdriver`) starts silent by
+  default (`?mute=0` opts back in); launch Chromium with `--mute-audio` too.
+  Any other browser page you open to test gets `&mute=1` (`?mute=1` alone for
   the main menu): it starts silent without changing the saved volumes.
 * Tester invite links for in-game reports (spec 47): `node --run
   testers:invite -- "Name"`, `testers:list`, `testers:revoke -- "Name"`.

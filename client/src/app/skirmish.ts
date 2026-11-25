@@ -29,6 +29,7 @@ import {
   type ScreenProjector,
 } from "../audio/derive";
 import { AudioMixer } from "../audio/mixer";
+import { startsMuted } from "../audio/startMuted";
 import { createIsometricCamera, setCameraTarget } from "../camera";
 import {
   createFrameStats,
@@ -696,8 +697,11 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let viewer = boot.start.viewer;
   const audioMixer = new AudioMixer(AUDIO_CATALOG, {
     ...resolveAudioVolumes(settings),
-    // `?mute=1` starts silent without touching the saved volumes.
-    ...(pageParams.get("mute") === "1" && { audioMaster: 0 }),
+    // `?mute=1`, or a page driven by automation, starts silent without
+    // touching the saved volumes.
+    ...(startsMuted(pageParams, navigator.webdriver === true) && {
+      audioMaster: 0,
+    }),
     strongLanguage: settings.strongLanguage,
   });
   audioMixer.setMenuMix(boot.shell === true);
