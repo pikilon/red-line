@@ -887,6 +887,11 @@ pub struct AiDef {
     /// make the AI garrison it; `0` turns the rule off.
     #[serde(default)]
     pub garrison_radius_centi: u32,
+    /// Enemy ground units this close to the base hold task-force launches and
+    /// call the launched attackers home (Zero Hour keeps its teams home while
+    /// an attack is sighted); `0` turns the rule off.
+    #[serde(default)]
+    pub alert_radius_centi: u32,
     pub build_order: Vec<TypeId>,
     /// Spec 52: upgrades bought in list order.
     #[serde(default)]

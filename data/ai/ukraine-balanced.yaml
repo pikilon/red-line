@@ -2,9 +2,10 @@ id: ukraine-balanced
 faction: ukraine
 harvesters: 6
 defenseRadiusCenti: 2000
+alertRadiusCenti: 4500
 garrisonRadiusCenti: 800
 # Spec 43 §5: interceptors early, then the missile site and the workshop; the Patriot closes the order.
-buildOrder: [ua-power-plant, ua-supply-center, ua-barracks, ua-vehicle-factory, ua-power-plant, ua-sting-nest, ua-drone-workshop, ua-power-plant, ua-missile-site, ua-defense, ua-power-plant, ua-patriot]
+buildOrder: [ua-power-plant, ua-supply-center, ua-vehicle-factory, ua-barracks, ua-power-plant, ua-sting-nest, ua-defense, ua-power-plant, ua-drone-workshop, ua-missile-site, ua-patriot]
 taskForces:
   - { id: infantry, units: { ua-rifleman: 4, ua-stugna-team: 2 } }
   - { id: mechanized, units: { ua-bradley: 3, ua-rifleman: 4 } }
@@ -21,9 +22,9 @@ upgrades:                                                    # spec 52: bought a
   - { upgrade: ua-western-optics, minTick: 2400 }
   - { upgrade: ua-western-ammo, minTick: 4200 }
 triggers:
-  - { taskForce: infantry, weight: 60, minTick: 0 }
-  - { taskForce: mechanized, weight: 50, minTick: 1800 }
-  - { taskForce: armor, weight: 50, minTick: 3000 }
+  - { taskForce: infantry, weight: 20, minTick: 0 }
+  - { taskForce: mechanized, weight: 100, minTick: 600 }
+  - { taskForce: armor, weight: 80, minTick: 1500 }
   - { taskForce: fires, weight: 20, minTick: 6300 }
   # Spec 43 §5: openings, one of each arm in turn, spaced so the ground forces still get their turns.
   - { taskForce: fpv, weight: 1, minTick: 3000, once: true }

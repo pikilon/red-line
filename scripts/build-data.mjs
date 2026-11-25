@@ -1382,6 +1382,9 @@ const assemble = (
 			...(a.garrisonRadiusCenti === undefined
 				? {}
 				: { garrisonRadiusCenti: a.garrisonRadiusCenti }),
+			...(a.alertRadiusCenti === undefined
+				? {}
+				: { alertRadiusCenti: a.alertRadiusCenti }),
 			buildOrder: types(a.buildOrder),
 			// Spec 52: upgrades the AI buys; omitted when there are none.
 			...((a.upgrades ?? []).length === 0

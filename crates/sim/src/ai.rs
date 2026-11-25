@@ -323,6 +323,38 @@ impl Ai {
         // stop production, since ground units cannot answer them.
         let air_threats = threats_in(world, player, def.defense_radius_centi, true);
         let defending = !threats.is_empty();
+        // Zero Hour's skirmish AI keeps its teams home while an attack is
+        // sighted near the base: enemy ground units inside the wider alert
+        // radius hold the launch and call the launched attackers back.
+        let alert_threats = if def.alert_radius_centi > def.defense_radius_centi {
+            threats_in(world, player, def.alert_radius_centi, false)
+        } else {
+            Vec::new()
+        };
+        let alerted = !alert_threats.is_empty();
+        if alerted && !defending {
+            let center = anchor_center(world, player, faction).unwrap_or(FxVec2::ZERO);
+            if let Some(&target) = alert_threats
+                .iter()
+                .min_by_key(|&&id| squared_distance(entity_pos(world, id), center))
+            {
+                let units: Vec<EntityId> = self
+                    .attackers
+                    .iter()
+                    .copied()
+                    .filter(|&id| {
+                        world.entity(id).is_some_and(|entity| {
+                            !is_strike(world, entity)
+                                && !entity.contained()
+                                && !matches!(entity.order, Order::Attack { .. })
+                        })
+                    })
+                    .collect();
+                if !units.is_empty() {
+                    commands.push(Command::Attack { units, target });
+                }
+            }
+        }
         if defending {
             let center = anchor_center(world, player, faction).unwrap_or(FxVec2::ZERO);
             if let Some(&target) = threats
@@ -408,11 +440,10 @@ impl Ai {
         // target them twice.
         let mut launched: Vec<EntityId> = Vec::new();
 
-        // Spec 43 §5 (a fix to §5.4 step 5): with intruders in the base and nobody
-        // left to answer them, production goes on, or the AI would sit on its
-        // credits for the rest of the match.
-        let stranded = defending && pool(world, player, faction, &self.attackers).is_empty();
-        if !defending || stranded {
+        // Zero Hour refills its teams before it starts a new wave, so
+        // production goes on while intruders are in the base; only the launch
+        // below waits for them to leave.
+        {
             // 6. Production: select a task force, then produce its missing
             // units, stopping when the budget or the producers run out.
             // Spec 05 §9 (Hard and Brutal): only task forces the base can
@@ -466,7 +497,10 @@ impl Ai {
             }
 
             // 7. Launch: once the whole force waits in the pool, commit it.
-            if !defending && let Some(force_index) = self.force {
+            if !defending
+                && !alerted
+                && let Some(force_index) = self.force
+            {
                 let force = &def.task_forces[usize::from(force_index)];
                 let percent = self.tuning.force_percent;
                 let ready = force.units.iter().all(|&(kind, count)| {
