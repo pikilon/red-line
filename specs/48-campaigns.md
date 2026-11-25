@@ -81,8 +81,8 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
 
 ## 5. Assumptions
 
-* Missions reuse the existing maps (first-line, river-port, demo-coast, demo-
-  town, demo-bridges, showcase); the exceptions are mission 1 of both
+* Missions reuse the existing maps (first-line, river-port, demo-coast,
+  demo-town, demo-bridges, showcase); the exceptions are mission 1 of both
   campaigns, which plays on its own map `hostomel` (§6), Ukraine 2, on `irpin`
   (§7), the two Snake Island missions, on `snake-island` (§8), Russia 3, on
   `mariupol` (§9), Russia 4, on `bakhmut` (§10), Russia 5, on `surovikin-line`
