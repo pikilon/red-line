@@ -166,7 +166,9 @@ test("AC-03-61: shows victory and defeat", async ({ page }) => {
   await debugCall(page, (api) =>
     api.command({ kind: "debugSetHp", entity: 8, hp: 0 }),
   );
-  await expect(page.locator("#outcome")).toHaveText("Victory", {
+  // Spec 57: the score screen replaced the centred outcome text; its heading
+  // is written once for the player in control when the match ends.
+  await expect(page.locator("#score-heading")).toHaveText("Victory", {
     timeout: ms(5000),
   });
 
@@ -174,7 +176,10 @@ test("AC-03-61: shows victory and defeat", async ({ page }) => {
   await expect
     .poll(() => debugCall(page, (api) => api.controlledPlayer()))
     .toBe(1);
-  await expect(page.locator("#outcome")).toHaveText("Defeat");
+  expect(await debugCall(page, (api) => api.outcome())).toEqual({
+    outcome: "winner",
+    winner: 0,
+  });
 });
 
 /** Fixed-point scale, `client/src/sim/fixed.ts` (spec §3). */
