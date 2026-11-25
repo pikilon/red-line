@@ -286,6 +286,17 @@ impl Sim {
         );
     }
 
+    /// Spec 54 §5.2: `unit_ids` throw a flash-bang at the enemy-held feature `feature`.
+    pub fn command_flash_bang(&mut self, player: u8, unit_ids: &[u32], feature: u32) {
+        self.world.enqueue_as(
+            player,
+            Command::FlashBang {
+                units: unit_ids.to_vec(),
+                feature,
+            },
+        );
+    }
+
     /// Spec 35: `unit_ids` dig a trench with its top-left cell at `(x, y)`.
     pub fn command_repair_building(&mut self, player: u8, unit_ids: &[u32], building: u32) {
         self.world.enqueue_as(

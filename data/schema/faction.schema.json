@@ -160,6 +160,16 @@
         "requiresPower": { "type": "boolean" },
         "dropOff": { "type": "boolean" },
         "freeUnit": { "$ref": "#/$defs/id" },
+        "flashBang": {
+          "description": "Spec 54 §5.2: the unit throws a stun grenade at an enemy-held building, forcing its occupants out stunned.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["rangeCenti", "stunTicks"],
+          "properties": {
+            "rangeCenti": { "$ref": "#/$defs/positive" },
+            "stunTicks": { "$ref": "#/$defs/positive" }
+          }
+        },
         "activeProtection": {
           "description": "Spec 54 §5.1: hard-kill system that destroys one interceptable projectile of a stopped damage type, then reloads.",
           "type": "object",

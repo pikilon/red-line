@@ -10,6 +10,7 @@ import { boxSelect, clickSelect, selectAllOwnUnits } from "./entitySelection";
 import {
   blockSelection,
   type GarrisonFeature,
+  resolveFlashBangClick,
   resolveGarrisonClick,
   selectOccupantsAt,
 } from "./garrison";
@@ -308,6 +309,10 @@ export function createSkirmishController(
     y: number;
   }): SimCommand[][] {
     return [
+      resolveFlashBangClick({
+        ...args,
+        features: options.garrisonFeatures?.() ?? [],
+      }),
       resolveGarrisonClick({
         ...args,
         features: options.garrisonFeatures?.() ?? [],

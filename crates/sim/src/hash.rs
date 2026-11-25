@@ -183,6 +183,10 @@ fn put_entity(out: &mut Vec<u8>, entity: &Entity, world: &World) {
     if entity.rank > 0 {
         out.extend_from_slice(&[11, entity.rank]);
     }
+    if entity.stun > 0 {
+        out.push(12);
+        put_u32(out, entity.stun);
+    }
 }
 
 fn put_order(out: &mut Vec<u8>, order: &Order) {
@@ -246,6 +250,11 @@ fn put_order(out: &mut Vec<u8>, order: &Order) {
         }
         Order::Repair { order_id, feature } => {
             out.push(8);
+            put_u32(out, order_id);
+            put_u32(out, feature);
+        }
+        Order::FlashBang { order_id, feature } => {
+            out.push(15);
             put_u32(out, order_id);
             put_u32(out, feature);
         }

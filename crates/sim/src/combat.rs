@@ -61,6 +61,7 @@ impl World {
         if hp == 0
             || !self.can_fire(index)
             || !self.rider_may_fire(index)
+            || self.entities[index].stun > 0
             || self.jam_stopped(index)
         {
             return;

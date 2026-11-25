@@ -428,6 +428,16 @@ pub struct ActiveProtection {
     pub stops: Vec<u8>,
 }
 
+/// Spec 54 §5.2: a thrown stun grenade that clears a garrisoned building.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FlashBang {
+    /// How close (centi-tiles from the footprint edge) the thrower stands.
+    pub range_centi: u32,
+    /// How long the evicted occupants stay stunned.
+    pub stun_ticks: u32,
+}
+
 /// The `render` field is unknown to the sim and ignored on parse.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -488,6 +498,9 @@ pub struct TypeDef {
     /// Spec 54 §5.1: hard-kill protection against interceptable projectiles.
     #[serde(default)]
     pub active_protection: Option<ActiveProtection>,
+    /// Spec 54 §5.2: the unit can throw a flash-bang at an enemy-held building.
+    #[serde(default)]
+    pub flash_bang: Option<FlashBang>,
     /// Spec 39: this completed building is a vehicle repair pad.
     #[serde(default)]
     pub repairs_vehicles: bool,

@@ -470,6 +470,7 @@ impl World {
                 | Order::Garrison { order_id, .. }
                 | Order::Board { order_id, .. }
                 | Order::Repair { order_id, .. }
+                | Order::FlashBang { order_id, .. }
                 | Order::RepairBuilding { order_id, .. }
                 | Order::Heal { order_id, .. }
                 | Order::RepairVehicle { order_id, .. }

@@ -9,3 +9,7 @@ Fix: copy the behaviour it describes, take numbers relative to our existing Ukra
 ### 2026-11-24 Stop missiles, not shells: tag the weapon
 Problem: Abrams shells and Javelins are both `antiTank`, so a damage-type filter would also stop shells.
 Fix: weapon flag `interceptable` (missiles/rockets) plus the type filter `stops`; reuse `Entity::reload` as the countdown for non-sortie types. Tests of buildings need a powered owner (add a power plant).
+
+### 2026-11-25 New order/command/entity field touches ~10 files
+Problem: a new `Order`, `Command` or `Entity` field must be added to hash.rs, save.rs (both state enums plus both conversions, entity field with `skip_serializing_if`), world.rs, economy.rs and reload.rs order lists, wasm_api, and the client `SkirmishSimLike` mocks in workerHandler/combatSnapshot tests.
+Fix: reuse `garrison_goal` for walk-to-building orders; grep `Order::Repair` to find every site. `skirmish_with` is crate-private, so garrison tests live in `garrison.rs`; put new impl blocks before `mod tests` (clippy).
