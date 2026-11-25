@@ -85,8 +85,9 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
   demo-town, demo-bridges, showcase); the exceptions are mission 1 of both
   campaigns, which plays on its own map `hostomel` (§6), Ukraine 2, on
   `irpin` (§7), the two Snake Island missions, on `snake-island` (§8),
-  Russia 3, on `mariupol` (§9), and Russia 4, on `bakhmut` (§10). Own maps for the remaining missions are
-  tracked in issue #482.
+  Russia 3, on `mariupol` (§9), Russia 4, on `bakhmut` (§10), and Russia 5,
+  on `surovikin-line` (§11). Own maps for the remaining missions are tracked
+  in issue #482.
 * The game has no ships: the cruiser Moskva is played as the Black Sea Fleet
   command post on the shore. Snake Island is no longer the coast of
   demo-coast: it has its own map (§8).
@@ -214,3 +215,21 @@ Existing feature types only:
 * Assumptions: trenches are dug in match (spec 35), no map places them, so
   breastworks stand in for trench lines. No mission script exists for this
   mission.
+
+## 11. Map `surovikin-line` (issue #482)
+
+`data/maps/surovikin-line.yaml`, 128 x 128 (same size and HQ cells as
+first-line, so the Russia 5 save keeps its bases and units). Existing feature
+types only:
+
+* Open steppe: ploughed wheat (dirt) and dry sunflower (sand) fields cut by
+  poplar and oak windbreaks (tree belts).
+* The Russian layered defence runs north to south across the middle: sand
+  strips as minefield stand-ins, an anti-tank ditch (a dirt strip with
+  `rubble-pile` spoil), two staggered rows of dragon's teeth (`stone-wall`),
+  then container and crate strongpoints. The Melitopol road crosses every
+  layer on y = 64 through a gap in the walls.
+* Robotyne stands in front of the line: houses, shops, farmhouses and a
+  church on gravel yards on both sides of the road, with a little rubble.
+* Assumptions: mines and the ditch are not real mechanics (the ditch is
+  decoration, walkable), and the village is plain garrisonable scenery.

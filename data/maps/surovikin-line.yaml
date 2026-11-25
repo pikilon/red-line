@@ -1,0 +1,190 @@
+id: surovikin-line
+width: 128
+height: 128
+blocked: []
+# Spec 48 §10: the Surovikin line on the Zaporizhzhia front (summer 2023, the Robotyne / Tokmak axis). Open steppe of
+# wheat and sunflower fields (dirt and sand patches) is cut by poplar windbreaks. The Russian defence lies in layers
+# across the middle: sparse minefield strips, an anti-tank ditch (a dirt strip with rubble), two staggered rows of
+# dragon's teeth (stone walls with a gap at the road) and strongpoints behind them. The village of Robotyne stands
+# in front of the line with its church; the Melitopol road crosses the line on y=64. Same size and HQ cells as first-line.
+depots:
+  - { origin: [12, 54], amount: 15000 }
+  - { origin: [114, 72], amount: 15000 }
+  - { origin: [26, 34], amount: 10000 }
+  - { origin: [98, 26], amount: 10000 }
+  - { origin: [30, 100], amount: 10000 }
+  - { origin: [112, 116], amount: 10000 }
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: dirt, rect: [4, 52, 24, 68] }
+      - { material: dirt, rect: [104, 56, 122, 74] }
+      - { material: dirt, rect: [26, 10, 56, 46] }      # ploughed wheat fields
+      - { material: sand, rect: [26, 80, 56, 118] }     # sunflower fields, dry
+      - { material: dirt, rect: [96, 80, 126, 112] }
+      - { material: sand, rect: [96, 8, 126, 40] }
+      - { material: dirt, rect: [87, 6, 89, 122] }      # anti-tank ditch
+      - { material: sand, rect: [66, 14, 70, 56] }      # minefield strips
+      - { material: sand, rect: [66, 74, 70, 114] }
+      - { material: sand, rect: [74, 20, 77, 52] }
+      - { material: sand, rect: [74, 76, 77, 108] }
+      - { material: gravel, rect: [58, 56, 78, 72] }    # Robotyne yards
+  roads:
+    - { type: asphalt, path: [[24, 64], [108, 64]], width: 3 }    # Melitopol road across the line
+    - { type: dirt, path: [[40, 8], [40, 120]], width: 2 }
+    - { type: dirt, path: [[100, 8], [100, 120]], width: 2 }
+    - { type: dirt, path: [[60, 64], [60, 30], [48, 14]], width: 2 }
+    - { type: dirt, path: [[60, 64], [60, 98], [48, 116]], width: 2 }
+features:
+  # Dragon's teeth: two staggered rows, open at the road.
+  - { type: stone-wall, at: [84, 8], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 10], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 11], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 12], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 14], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 15], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 16], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 18], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 19], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 20], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 22], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 23], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 24], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 26], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 27], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 30], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 31], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 32], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 34], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 35], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 36], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 38], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 39], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 40], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 42], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 43], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 44], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 46], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 47], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 48], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 50], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 51], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 52], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 54], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 55], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 56], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 58], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 59], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 60], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 68], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 70], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 71], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 72], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 74], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 75], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 76], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 78], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 79], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 80], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 82], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 83], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 84], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 86], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 87], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 88], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 90], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 91], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 92], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 94], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 95], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 96], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 98], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 99], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 100], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 102], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 103], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 104], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 106], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 107], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 108], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 110], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 111], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 112], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 114], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 115], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 116], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 118], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [80, 119], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [84, 120], rot: 0, variant: 0 }
+  # Anti-tank ditch spoil: rubble along the ditch.
+  - { type: rubble-pile, at: [90, 10], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [90, 16], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [90, 22], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [90, 28], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [90, 34], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [90, 40], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [90, 46], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [90, 52], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [90, 58], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [90, 70], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [90, 76], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [90, 82], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [90, 88], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [90, 94], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [90, 100], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [90, 106], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [90, 112], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [90, 118], rot: 2, variant: 0 }
+  # Robotyne: houses, shops, a church and a farmhouse on both sides of the road.
+  - { type: house-small, at: [63, 58], rot: 0, variant: 0 }
+  - { type: house-small, at: [67, 58], rot: 2, variant: 1 }
+  - { type: house-small, at: [71, 58], rot: 0, variant: 2 }
+  - { type: house-small, at: [75, 58], rot: 2, variant: 0 }
+  - { type: house-small, at: [63, 69], rot: 0, variant: 1 }
+  - { type: house-small, at: [67, 69], rot: 2, variant: 2 }
+  - { type: house-small, at: [71, 69], rot: 0, variant: 0 }
+  - { type: house-small, at: [75, 69], rot: 2, variant: 1 }
+  - { type: house-small, at: [65, 52], rot: 0, variant: 2 }
+  - { type: house-small, at: [73, 52], rot: 2, variant: 0 }
+  - { type: house-small, at: [65, 76], rot: 0, variant: 1 }
+  - { type: house-small, at: [73, 76], rot: 2, variant: 2 }
+  - { type: church, at: [69, 50], rot: 0, variant: 0 }
+  - { type: shop, at: [78, 58], rot: 1, variant: 0 }
+  - { type: shop, at: [78, 69], rot: 3, variant: 0 }
+  - { type: farmhouse, at: [77, 46], rot: 0, variant: 0 }
+  - { type: farmhouse, at: [77, 80], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [66, 62], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [70, 67], rot: 1, variant: 1 }
+  - { type: parked-car, at: [73, 63], rot: 1, variant: 0 }
+  - { type: lamp-post, at: [69, 62], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [75, 62], rot: 0, variant: 0 }
+  # Strongpoints behind the ditch.
+  - { type: container-stack, at: [94, 18], rot: 0, variant: 0 }
+  - { type: crate-stack, at: [96, 20], rot: 0, variant: 0 }
+  - { type: container-stack, at: [94, 34], rot: 0, variant: 0 }
+  - { type: crate-stack, at: [96, 36], rot: 0, variant: 0 }
+  - { type: container-stack, at: [94, 50], rot: 0, variant: 0 }
+  - { type: crate-stack, at: [96, 52], rot: 0, variant: 0 }
+  - { type: container-stack, at: [94, 78], rot: 0, variant: 0 }
+  - { type: crate-stack, at: [96, 80], rot: 0, variant: 0 }
+  - { type: container-stack, at: [94, 94], rot: 0, variant: 0 }
+  - { type: crate-stack, at: [96, 96], rot: 0, variant: 0 }
+  - { type: container-stack, at: [94, 110], rot: 0, variant: 0 }
+  - { type: crate-stack, at: [96, 112], rot: 0, variant: 0 }
+  # Windbreaks: tree belts between the fields.
+  - { type: poplar, area: [24, 8, 26, 50], density: 60, seed: 3 }
+  - { type: poplar, area: [24, 78, 26, 122], density: 60, seed: 5 }
+  - { type: poplar, area: [56, 8, 58, 46], density: 60, seed: 7 }
+  - { type: poplar, area: [56, 80, 58, 120], density: 60, seed: 9 }
+  - { type: poplar, area: [32, 48, 50, 50], density: 60, seed: 11 }
+  - { type: poplar, area: [32, 82, 50, 84], density: 60, seed: 13 }
+  - { type: poplar, area: [94, 8, 96, 30], density: 60, seed: 15 }
+  - { type: poplar, area: [94, 98, 96, 122], density: 60, seed: 17 }
+  - { type: poplar, area: [104, 42, 124, 44], density: 60, seed: 19 }
+  - { type: poplar, area: [104, 86, 124, 88], density: 60, seed: 21 }
+  - { type: poplar, area: [110, 22, 112, 40], density: 60, seed: 23 }
+starts:
+  - { faction: ukraine, hq: [12, 60], dozerCenti: [1850, 6150] }
+  - { faction: russia, hq: [112, 64], dozerCenti: [10950, 6650] }

@@ -423,7 +423,7 @@
     },
     {
       "id": "campaign-ru-05-surovikin-line",
-      "map": "first-line",
+      "map": "surovikin-line",
       "form": "setup",
       "entities": 30
     },
