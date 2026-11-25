@@ -85,8 +85,8 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
   demo-town, demo-bridges, showcase); the exceptions are mission 1 of both
   campaigns, which plays on its own map `hostomel` (§6), Ukraine 2, on
   `irpin` (§7), the two Snake Island missions, on `snake-island` (§8),
-  Russia 3, on `mariupol` (§9), Russia 4, on `bakhmut` (§10), and Russia 5,
-  on `surovikin-line` (§11). Own maps for the remaining missions are tracked
+  Russia 3, on `mariupol` (§9), Russia 4, on `bakhmut` (§10), Russia 5,
+  on `surovikin-line` (§11), and Russia 6, on `avdiivka` (§12). Own maps for the remaining missions are tracked
   in issue #482.
 * The game has no ships: the cruiser Moskva is played as the Black Sea Fleet
   command post on the shore. Snake Island is no longer the coast of
@@ -233,3 +233,22 @@ types only:
   church on gravel yards on both sides of the road, with a little rubble.
 * Assumptions: mines and the ditch are not real mechanics (the ditch is
   decoration, walkable), and the village is plain garrisonable scenery.
+
+## 12. Map `avdiivka` (issue #482)
+
+`data/maps/avdiivka.yaml`, 128 x 128, same HQ cells and starts as first-line,
+so `campaign-ru-06-avdiivka` keeps every entity cell and only changes `map:`.
+Existing feature types only:
+
+* North: the Koksokhim coke plant, two rows of factory and warehouse halls on
+  a concrete yard, rail sidings as concrete strips, office towers standing in
+  for the chimneys, a perimeter wall.
+* East of the plant: ash heaps and spoil tips as hills and a ridge.
+* West and south: the Khimik district (apartment blocks, townhouses, a petrol
+  station) along a main street; the "Tsarskaya Okhota" restaurant strongpoint
+  (shop, fences, wall, crates on a concrete forecourt) next to the Zenit
+  position.
+* East and south, the Russian approach: dirt fields with hedgerows, poplar,
+  oak and pine belts, farmhouses, rubble and burnt stumps.
+* Assumptions: no tall chimney feature exists, so office towers stand in. No
+  mission script exists for this mission.

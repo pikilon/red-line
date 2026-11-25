@@ -1,6 +1,6 @@
 # Spec 48: Russia 6: glide bombs crack the Avdiivka coke plant and the Zenit strongpoint.
 id: campaign-ru-06-avdiivka
-map: first-line
+map: avdiivka
 victory: true
 debug: false
 starts: false
