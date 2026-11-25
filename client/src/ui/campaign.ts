@@ -1,5 +1,7 @@
+import scriptData from "@data/mission-scripts.json";
 import type { MessageKey } from "../i18n";
 import { TICK_RATE_HZ } from "../sim/protocol";
+import { type RawScript, resolveScripts } from "./missionScript";
 import type { TutorialGoal, TutorialMission } from "./tutorial";
 
 /** One campaign mission (spec 48 §3): a tutorial mission (objectives over an
@@ -76,6 +78,13 @@ function goalsOf(id: string, k: string): Goals {
   };
 }
 
+/** The `scripts` field of mission `id`, absent without scripts (spec 62). */
+function scriptsOf(id: string, k: string): Pick<TutorialMission, "scripts"> {
+  const raw = (scriptData as Record<string, RawScript[]>)[id];
+  if (raw === undefined) return {};
+  return { scripts: resolveScripts(raw, k, (label) => labelIndex(id, label)) };
+}
+
 /** Builds mission `number` of `faction` on save `campaign-<p>-<nn>-<slug>`. */
 function mission(
   faction: CampaignFaction,
@@ -96,6 +105,8 @@ function mission(
     video: `${k}.video` as MessageKey,
     briefing: `${k}.briefing` as MessageKey,
     goals: goals(goalsOf(id, k)),
+    // Spec 62: scripted events from data/campaign/mission-scripts.yaml.
+    ...scriptsOf(id, k),
   };
 }
 

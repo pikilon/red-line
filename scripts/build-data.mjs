@@ -12,6 +12,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import { parse } from "yaml";
 import { expandBridges } from "./map-bridges.mjs";
+import { readMissionScripts, writeMissionScripts } from "./mission-scripts.mjs";
 import {
 	checkTerrainShapes,
 	expandFeatures,
@@ -1851,4 +1852,11 @@ if (
 		process.exit(1);
 	}
 	writeSaves(root, built);
+	// Spec 62: mission scripts check their labels against the fresh saves.
+	const missions = readMissionScripts(root, ruleset);
+	if (missions.errors.length > 0) {
+		missions.errors.forEach((e) => console.error(`mission-scripts: ${e}`));
+		process.exit(1);
+	}
+	writeMissionScripts(root, missions.scripts);
 }

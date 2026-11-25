@@ -444,6 +444,17 @@ impl Sim {
         );
     }
 
+    /// Spec 62 §4: a mission script grants `player` a unit near the point.
+    pub fn command_reinforce(&mut self, player: u8, kind: TypeId, x_raw: i32, y_raw: i32) {
+        self.world.enqueue_as(
+            player,
+            Command::Reinforce {
+                kind,
+                pos: FxVec2::new(Fx::from_raw(x_raw), Fx::from_raw(y_raw)),
+            },
+        );
+    }
+
     pub fn debug_spawn(&mut self, player: u8, kind: TypeId, x_raw: i32, y_raw: i32) {
         self.world.enqueue_as(
             player,

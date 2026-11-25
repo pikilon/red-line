@@ -188,6 +188,10 @@ describe("worker handler", () => {
       vi.fn<(player: number, unitIds: Uint32Array) => void>();
     const command_reload =
       vi.fn<(player: number, unitIds: Uint32Array) => void>();
+    const command_reinforce =
+      vi.fn<
+        (player: number, kind: number, xRaw: number, yRaw: number) => void
+      >();
     const debug_spawn =
       vi.fn<
         (player: number, kind: number, xRaw: number, yRaw: number) => void
@@ -231,6 +235,7 @@ describe("worker handler", () => {
       command_repair_vehicle,
       command_dig: vi.fn(),
       command_dig_line: vi.fn(),
+      command_reinforce,
       debug_spawn,
       debug_set_hp,
     };
@@ -314,6 +319,7 @@ describe("worker handler", () => {
       { kind: "rally", player: 1, building: 16, xRaw: 4194304, yRaw: 2097152 },
       { kind: "stop", player: 1, units: [4, 5] },
       { kind: "reload", player: 1, units: [4, 5] },
+      { kind: "reinforce", player: 1, typeIndex: 5, xRaw: 3, yRaw: 4 },
       { kind: "debugSpawn", player: 1, typeIndex: 5, xRaw: 1, yRaw: 2 },
       { kind: "debugSetHp", entity: 8, hp: 0 },
     ];
@@ -351,6 +357,7 @@ describe("worker handler", () => {
     expect(command_rally).toHaveBeenCalledWith(1, 16, 4194304, 2097152);
     expect(command_stop).toHaveBeenCalledWith(1, new Uint32Array([4, 5]));
     expect(command_reload).toHaveBeenCalledWith(1, new Uint32Array([4, 5]));
+    expect(command_reinforce).toHaveBeenCalledWith(1, 5, 3, 4);
     expect(debug_spawn).toHaveBeenCalledWith(1, 5, 1, 2);
     expect(debug_set_hp).toHaveBeenCalledWith(8, 0);
 
@@ -421,6 +428,7 @@ describe("worker handler", () => {
       command_repair_vehicle: vi.fn(),
       command_dig: vi.fn(),
       command_dig_line: vi.fn(),
+      command_reinforce: vi.fn(),
       debug_spawn: vi.fn(),
       debug_set_hp: vi.fn(),
     } satisfies SkirmishSimLike;
@@ -489,6 +497,7 @@ describe("worker handler", () => {
       command_repair_vehicle: vi.fn(),
       command_dig: vi.fn(),
       command_dig_line: vi.fn(),
+      command_reinforce: vi.fn(),
       debug_spawn: vi.fn(),
       debug_set_hp: vi.fn(),
     };
@@ -575,6 +584,7 @@ describe("worker handler", () => {
       command_repair_vehicle: vi.fn(),
       command_dig: vi.fn(),
       command_dig_line: vi.fn(),
+      command_reinforce: vi.fn(),
       debug_spawn: vi.fn(),
       debug_set_hp: vi.fn(),
     };
@@ -653,6 +663,7 @@ function saveSim(world: string, error?: string): SkirmishSimLike {
     command_repair_vehicle: vi.fn(),
     command_dig: vi.fn(),
     command_dig_line: vi.fn(),
+    command_reinforce: vi.fn(),
     debug_spawn: vi.fn(),
     debug_set_hp: vi.fn(),
   };

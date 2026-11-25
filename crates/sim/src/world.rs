@@ -162,6 +162,12 @@ pub enum Command {
         units: Vec<EntityId>,
         factory: EntityId,
     },
+    /// Spec 62 §4: a mission script's reinforcement. A unit of `kind` appears
+    /// for the issuing player at the free cell nearest `pos`.
+    Reinforce {
+        kind: TypeId,
+        pos: FxVec2,
+    },
     DebugSpawn {
         kind: TypeId,
         pos: FxVec2,
@@ -1004,10 +1010,56 @@ impl World {
                     self.apply_attack_move(player, &units, target);
                 }
                 Command::Guard { units, target } => self.apply_guard(player, &units, target),
+                Command::Reinforce { kind, pos } => self.apply_reinforce(player, kind, pos),
                 Command::DebugSpawn { kind, pos } => self.apply_debug_spawn(player, kind, pos),
                 Command::DebugSetHp { entity, hp } => self.apply_debug_set_hp(entity, hp),
             }
         }
+    }
+
+    /// Spec 62 §4: spawns a unit of `kind` for `player` at the passable cell
+    /// nearest `pos` within `REINFORCE_RADIUS` cells (ties by row, then
+    /// column); ignored for a non-unit type, when no cell is free there or
+    /// when `MAX_UNITS` entities exist. Costs and prerequisites are not
+    /// consulted: a script grants the unit.
+    fn apply_reinforce(&mut self, player: PlayerId, kind: TypeId, pos: FxVec2) {
+        const REINFORCE_RADIUS: i32 = 4;
+        if usize::from(kind) >= self.rules.types.len()
+            || usize::from(player) >= self.players.len()
+            || self.entities.len() as u32 >= MAX_UNITS
+            || self.rules.ty(kind).category != Category::Unit
+        {
+            return;
+        }
+        let air = self.rules.ty(kind).is_air();
+        let centre = cell_of(pos);
+        let mut best: Option<(i32, Cell)> = None;
+        for dy in -REINFORCE_RADIUS..=REINFORCE_RADIUS {
+            for dx in -REINFORCE_RADIUS..=REINFORCE_RADIUS {
+                let cell = Cell {
+                    x: centre.x + dx,
+                    y: centre.y + dy,
+                };
+                let inside = cell.x >= 0
+                    && cell.y >= 0
+                    && cell.x < self.terrain.width() as i32
+                    && cell.y < self.terrain.height() as i32;
+                if !inside || (!air && !self.nav.is_passable(cell)) {
+                    continue;
+                }
+                let dist = dx * dx + dy * dy;
+                if best.is_none_or(|(d, _)| dist < d) {
+                    best = Some((dist, cell));
+                }
+            }
+        }
+        let Some((dist, cell)) = best else { return };
+        // The point itself when it is free; otherwise the middle of the cell.
+        let at = if dist == 0 { pos } else { cell_center(cell) };
+        let hp = self.upgraded(player, kind, self.rules.ty(kind).hp, |def| {
+            def.health_percent
+        });
+        self.push_entity(player, kind, at, hp, None);
     }
 
     /// §5.8: ignored unless `debug_commands`. Spawns a unit of `kind` for
