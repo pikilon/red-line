@@ -13,7 +13,8 @@ export const LOCKSTEP: LockstepConfig = {
 export type PeerMessage =
   | { t: "turn"; turn: number; commands: SimCommand[] }
   | { t: "hash"; turn: number; hash: string }
-  | { t: "start"; seed: number; mapId: string }
+  | { t: "start"; seed: number; mapId: string; name?: string }
+  | { t: "hello"; name: string }
   | { t: "bye" };
 
 export interface LockstepHooks {

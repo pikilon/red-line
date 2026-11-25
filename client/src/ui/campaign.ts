@@ -298,7 +298,7 @@ export function campaignUrl(target: CampaignMission | CampaignFaction): string {
   return `?campaign=${id}`;
 }
 
-const STORAGE_KEY = "redline.campaign";
+export const STORAGE_KEY = "redline.campaign";
 
 /** Missions won per campaign; missions are played in order, so mission n
  *  is open once n - 1 are won (spec 48 §4). Kept in the browser. */

@@ -4,6 +4,7 @@
 import { t } from "../i18n";
 import { createLockstep } from "../net/lockstep";
 import type { PeerLink } from "../net/peer";
+import { cleanName, loadProfile } from "../profile";
 import type { SkirmishClient } from "../sim/skirmishClient";
 import { appendDiv, setText } from "../ui/dom";
 
@@ -15,6 +16,8 @@ export const WAIT_DROP_MS = 60_000;
 export interface NetBoot {
   link: PeerLink;
   localPlayer: number;
+  /** Spec 59: the opponent's profile name, once known. */
+  opponentName?: string;
 }
 
 export function attachNetMatch(
@@ -63,7 +66,15 @@ export function attachNetMatch(
       banner.hidden = false;
     },
   });
-  net.link.onMessage((message) => lockstep.receive(message));
+  net.link.onMessage((message) => {
+    if (message.t === "hello") {
+      net.opponentName = cleanName(message.name);
+      return;
+    }
+    lockstep.receive(message);
+  });
+  // Spec 59: tell the opponent which name to show.
+  net.link.send({ t: "hello", name: loadProfile().name });
   net.link.onClose(end);
   window.addEventListener("pagehide", () => net.link.close());
 
