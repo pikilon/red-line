@@ -369,6 +369,18 @@ lateTypes:                           # spec 43: after the common late types, so 
     jammer: { radiusCenti: 900 }
     render: { size: [75, 110, 110] }
     experience: { value: [90, 180, 270, 360] }
+  - id: ru-oreshnik-launcher                 # spec 64: the faction's superweapon; one per player, expensive, charges for a long time
+    category: building
+    armor: structure
+    hp: 1800
+    sightCenti: 500
+    cost: 5500
+    buildTicks: 900
+    footprint: [3, 4]
+    power: -10
+    requires: [ru-airfield]
+    render: { height: 110 }
+    experience: { value: [400, 800, 1200, 1600] }
 upgrades:                            # spec 52: bought at buildings; after every other type, so earlier type indices stay
   - id: ru-ratnik-armor              # Ratnik body armour and helmets for the infantry
     category: upgrade

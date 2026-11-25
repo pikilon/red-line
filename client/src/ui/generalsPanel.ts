@@ -67,6 +67,8 @@ export function generalView(
   const views: PowerView[] = [];
   powers.forEach((def, index) => {
     if (def.factions.length > 0 && !def.factions.includes(faction)) return;
+    // Spec 64: superweapons live in their own strip, not in the buy list.
+    if (def.building !== undefined) return;
     const readyTick = bought.get(index);
     let powerState: PowerState;
     let secondsLeft = 0;

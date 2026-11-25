@@ -115,6 +115,14 @@
           16,
           70
         ]
+      },
+      {
+        "player": 0,
+        "type": "ua-atacms-battery",
+        "origin": [
+          28,
+          70
+        ]
       }
     ]
   }

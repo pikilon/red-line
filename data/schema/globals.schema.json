@@ -112,7 +112,8 @@
             "properties": {
               "id": { "$ref": "faction.schema.json#/$defs/id" },
               "rank": { "type": "integer", "minimum": 1 },
-              "cost": { "type": "integer", "minimum": 1 },
+              "cost": { "type": "integer", "minimum": 0, "description": "0 for a superweapon (spec 64)." },
+              "building": { "$ref": "faction.schema.json#/$defs/id", "description": "Spec 64: the building whose completion grants the power." },
               "rechargeTicks": { "type": "integer", "minimum": 1 },
               "factions": { "type": "array", "items": { "$ref": "faction.schema.json#/$defs/id" } },
               "effect": {

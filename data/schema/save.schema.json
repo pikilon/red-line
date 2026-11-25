@@ -66,6 +66,19 @@
       "type": "array",
       "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" }
     },
+    "powers": {
+      "description": "Spec 64: powers each start owns at tick 0 (index = start) with the tick each is ready, e.g. a charged superweapon.",
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "readyTick"],
+          "properties": { "id": { "type": "string", "minLength": 1 }, "readyTick": { "type": "integer", "minimum": 0 } }
+        }
+      }
+    },
     "generalXp": {
       "description": "Spec 63: skill points each start has earned at tick 0 (index = start); they set the player rank.",
       "type": "array",

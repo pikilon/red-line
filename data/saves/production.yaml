@@ -20,3 +20,4 @@ entities:
   - { player: 0, type: ua-sting-nest, origin: [20, 58] }
   - { player: 0, type: ua-patriot, origin: [24, 60] }
   - { player: 0, type: ua-missile-site, origin: [16, 70] }
+  - { player: 0, type: ua-atacms-battery, origin: [28, 70] }

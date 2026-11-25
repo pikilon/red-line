@@ -212,6 +212,78 @@
         }
       },
       {
+        "id": "strike-usa",
+        "rank": 1,
+        "cost": 0,
+        "rechargeTicks": 5400,
+        "building": 44,
+        "factions": [
+          2
+        ],
+        "effect": {
+          "kind": "barrage",
+          "spreadCenti": 300,
+          "impacts": 8,
+          "damage": 350,
+          "splashCenti": 450,
+          "damageType": 3
+        }
+      },
+      {
+        "id": "strike-russia",
+        "rank": 1,
+        "cost": 0,
+        "rechargeTicks": 5400,
+        "building": 85,
+        "factions": [
+          1
+        ],
+        "effect": {
+          "kind": "barrage",
+          "spreadCenti": 200,
+          "impacts": 5,
+          "damage": 600,
+          "splashCenti": 600,
+          "damageType": 4
+        }
+      },
+      {
+        "id": "strike-ukraine",
+        "rank": 1,
+        "cost": 0,
+        "rechargeTicks": 5400,
+        "building": 74,
+        "factions": [
+          0
+        ],
+        "effect": {
+          "kind": "barrage",
+          "spreadCenti": 400,
+          "impacts": 10,
+          "damage": 300,
+          "splashCenti": 400,
+          "damageType": 3
+        }
+      },
+      {
+        "id": "strike-china",
+        "rank": 1,
+        "cost": 0,
+        "rechargeTicks": 5400,
+        "building": 59,
+        "factions": [
+          3
+        ],
+        "effect": {
+          "kind": "barrage",
+          "spreadCenti": 600,
+          "impacts": 12,
+          "damage": 250,
+          "splashCenti": 350,
+          "damageType": 3
+        }
+      },
+      {
         "id": "paradrop-china",
         "rank": 4,
         "cost": 3,
@@ -221,7 +293,7 @@
         ],
         "effect": {
           "kind": "paradrop",
-          "unit": 44,
+          "unit": 45,
           "count": 5
         }
       }
@@ -1210,7 +1282,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
-      "launches": 67,
+      "launches": 69,
       "render": {
         "model": "tracer",
         "flight": "straight",
@@ -1259,7 +1331,7 @@
       "salvoIntervalTicks": 0,
       "antiAir": "low",
       "antiGround": false,
-      "launches": 68,
+      "launches": 70,
       "render": {
         "model": "tracer",
         "flight": "straight",
@@ -1496,7 +1568,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
-      "launches": 79,
+      "launches": 82,
       "render": {
         "model": "tracer",
         "flight": "straight",
@@ -1976,10 +2048,10 @@
         13,
         14,
         15,
-        59,
-        60,
         61,
-        62
+        62,
+        63,
+        64
       ],
       "footprint": [
         0,
@@ -2230,8 +2302,8 @@
       "produces": [
         2,
         3,
-        66,
-        82
+        68,
+        86
       ],
       "builds": [],
       "footprint": [
@@ -2289,8 +2361,8 @@
         5,
         6,
         7,
-        69,
-        83
+        71,
+        87
       ],
       "builds": [],
       "footprint": [
@@ -2737,8 +2809,8 @@
         27,
         28,
         29,
-        72,
-        73
+        75,
+        76
       ],
       "footprint": [
         0,
@@ -2989,8 +3061,8 @@
       "produces": [
         16,
         17,
-        78,
-        84
+        81,
+        88
       ],
       "builds": [],
       "footprint": [
@@ -3048,9 +3120,9 @@
         19,
         20,
         21,
-        80,
-        81,
-        85
+        83,
+        84,
+        89
       ],
       "builds": [],
       "footprint": [
@@ -3754,7 +3826,7 @@
       "produces": [
         30,
         31,
-        86
+        90
       ],
       "builds": [],
       "footprint": [
@@ -3811,7 +3883,7 @@
         33,
         34,
         35,
-        87
+        91
       ],
       "builds": [],
       "footprint": [
@@ -3889,6 +3961,56 @@
           200,
           80,
           200
+        ]
+      }
+    },
+    {
+      "id": "us-strike-battery",
+      "faction": 2,
+      "category": "building",
+      "armor": 3,
+      "hp": 1500,
+      "sightCenti": 500,
+      "cost": 5000,
+      "buildTicks": 900,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [
+        43
+      ],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        3,
+        3
+      ],
+      "power": -10,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          400,
+          800,
+          1200,
+          1600
+        ]
+      },
+      "render": {
+        "size": [
+          300,
+          100,
+          300
         ]
       }
     },
@@ -4263,11 +4385,11 @@
       "requires": [],
       "produces": [],
       "builds": [
-        53,
         54,
         55,
         56,
-        57
+        57,
+        58
       ],
       "footprint": [
         0,
@@ -4364,7 +4486,7 @@
       "weapon": -1,
       "requires": [],
       "produces": [
-        50
+        51
       ],
       "builds": [],
       "footprint": [
@@ -4462,7 +4584,7 @@
       "weapon": -1,
       "requires": [],
       "produces": [
-        51
+        52
       ],
       "builds": [],
       "footprint": [
@@ -4475,7 +4597,7 @@
       "capacity": 0,
       "loadTicks": 0,
       "unloadTicks": 0,
-      "freeUnit": 51,
+      "freeUnit": 52,
       "experience": {
         "value": [
           150,
@@ -4511,12 +4633,12 @@
       "locomotor": -1,
       "weapon": -1,
       "requires": [
-        53
+        54
       ],
       "produces": [
-        44,
         45,
-        88
+        46,
+        92
       ],
       "builds": [],
       "footprint": [
@@ -4566,14 +4688,14 @@
       "locomotor": -1,
       "weapon": -1,
       "requires": [
-        54
+        55
       ],
       "produces": [
-        46,
         47,
         48,
         49,
-        89
+        50,
+        93
       ],
       "builds": [],
       "footprint": [
@@ -4623,7 +4745,7 @@
       "locomotor": -1,
       "weapon": 31,
       "requires": [
-        55
+        56
       ],
       "produces": [],
       "builds": [],
@@ -4651,6 +4773,56 @@
           200,
           70,
           200
+        ]
+      }
+    },
+    {
+      "id": "cn-rocket-salvo-park",
+      "faction": 3,
+      "category": "building",
+      "armor": 3,
+      "hp": 1600,
+      "sightCenti": 500,
+      "cost": 5000,
+      "buildTicks": 900,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [
+        57
+      ],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        3,
+        3
+      ],
+      "power": -10,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          400,
+          800,
+          1200,
+          1600
+        ]
+      },
+      "render": {
+        "size": [
+          300,
+          100,
+          300
         ]
       }
     },
@@ -4717,9 +4889,9 @@
         13
       ],
       "produces": [
-        63,
-        64,
-        65
+        65,
+        66,
+        67
       ],
       "builds": [],
       "footprint": [
@@ -4876,8 +5048,8 @@
         14
       ],
       "produces": [
-        70,
-        71
+        72,
+        73
       ],
       "builds": [],
       "footprint": [
@@ -5407,6 +5579,56 @@
       }
     },
     {
+      "id": "ua-atacms-battery",
+      "faction": 0,
+      "category": "building",
+      "armor": 3,
+      "hp": 1400,
+      "sightCenti": 500,
+      "cost": 5000,
+      "buildTicks": 900,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [
+        64
+      ],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        3,
+        3
+      ],
+      "power": -10,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          400,
+          800,
+          1200,
+          1600
+        ]
+      },
+      "render": {
+        "size": [
+          300,
+          100,
+          300
+        ]
+      }
+    },
+    {
       "id": "ru-airfield",
       "faction": 1,
       "category": "building",
@@ -5428,8 +5650,8 @@
         28
       ],
       "produces": [
-        74,
-        75
+        77,
+        78
       ],
       "builds": [],
       "footprint": [
@@ -5481,8 +5703,8 @@
         26
       ],
       "produces": [
-        76,
-        77
+        79,
+        80
       ],
       "builds": [],
       "footprint": [
@@ -5945,6 +6167,56 @@
       }
     },
     {
+      "id": "ru-oreshnik-launcher",
+      "faction": 1,
+      "category": "building",
+      "armor": 3,
+      "hp": 1800,
+      "sightCenti": 500,
+      "cost": 5500,
+      "buildTicks": 900,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [
+        75
+      ],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        3,
+        4
+      ],
+      "power": -10,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          400,
+          800,
+          1200,
+          1600
+        ]
+      },
+      "render": {
+        "size": [
+          300,
+          110,
+          400
+        ]
+      }
+    },
+    {
       "id": "ua-western-optics",
       "faction": 0,
       "category": "upgrade",
@@ -5980,7 +6252,7 @@
         "appliesTo": [
           2,
           3,
-          66
+          68
         ],
         "healthPercent": 100,
         "damagePercent": 120,
@@ -6080,7 +6352,7 @@
         "appliesTo": [
           16,
           17,
-          78
+          81
         ],
         "healthPercent": 125,
         "damagePercent": 100,
@@ -6277,8 +6549,8 @@
       "freeUnit": -1,
       "upgrade": {
         "appliesTo": [
-          44,
-          45
+          45,
+          46
         ],
         "healthPercent": 100,
         "damagePercent": 115,
@@ -6326,9 +6598,9 @@
       "freeUnit": -1,
       "upgrade": {
         "appliesTo": [
-          46,
           47,
-          48
+          48,
+          49
         ],
         "healthPercent": 120,
         "damagePercent": 100,
@@ -6361,8 +6633,8 @@
     },
     {
       "id": "china",
-      "hq": 52,
-      "dozer": 50
+      "hq": 53,
+      "dozer": 51
     }
   ],
   "layerNames": {
@@ -32449,20 +32721,20 @@
         14,
         13,
         11,
-        60,
+        62,
         15,
         11,
-        59,
-        62,
-        61
+        61,
+        64,
+        63
       ],
       "upgrades": [
         {
-          "upgrade": 82,
+          "upgrade": 86,
           "minTick": 2400
         },
         {
-          "upgrade": 83,
+          "upgrade": 87,
           "minTick": 4200
         }
       ],
@@ -32527,11 +32799,11 @@
           "id": "robots",
           "units": [
             [
-              63,
+              65,
               3
             ],
             [
-              64,
+              66,
               2
             ]
           ]
@@ -32540,7 +32812,7 @@
           "id": "fpv",
           "units": [
             [
-              66,
+              68,
               3
             ],
             [
@@ -32553,7 +32825,7 @@
           "id": "flamingo",
           "units": [
             [
-              70,
+              72,
               1
             ]
           ]
@@ -32562,7 +32834,7 @@
           "id": "storm-shadow",
           "units": [
             [
-              71,
+              73,
               1
             ]
           ]
@@ -32571,7 +32843,7 @@
           "id": "bombers",
           "units": [
             [
-              65,
+              67,
               2
             ]
           ]
@@ -32579,7 +32851,7 @@
       ],
       "guards": [
         {
-          "unit": 69,
+          "unit": 71,
           "count": 1,
           "minTick": 3600
         }
@@ -32675,15 +32947,15 @@
         14,
         13,
         11,
-        60
+        62
       ],
       "upgrades": [
         {
-          "upgrade": 82,
+          "upgrade": 86,
           "minTick": 5400
         },
         {
-          "upgrade": 83,
+          "upgrade": 87,
           "minTick": 7200
         }
       ],
@@ -32740,7 +33012,7 @@
           "id": "fpv",
           "units": [
             [
-              66,
+              68,
               3
             ]
           ]
@@ -32748,7 +33020,7 @@
       ],
       "guards": [
         {
-          "unit": 69,
+          "unit": 71,
           "count": 1,
           "minTick": 5400
         }
@@ -32794,17 +33066,17 @@
         27,
         28,
         25,
-        73,
-        72,
+        76,
+        75,
         25
       ],
       "upgrades": [
         {
-          "upgrade": 84,
+          "upgrade": 88,
           "minTick": 3600
         },
         {
-          "upgrade": 85,
+          "upgrade": 89,
           "minTick": 6000
         }
       ],
@@ -32865,7 +33137,7 @@
           "id": "waves",
           "units": [
             [
-              76,
+              79,
               6
             ]
           ]
@@ -32874,11 +33146,11 @@
           "id": "air-strike",
           "units": [
             [
-              74,
+              77,
               1
             ],
             [
-              77,
+              80,
               2
             ]
           ]
@@ -32887,7 +33159,7 @@
           "id": "fibre",
           "units": [
             [
-              78,
+              81,
               2
             ],
             [
@@ -32899,12 +33171,12 @@
       ],
       "guards": [
         {
-          "unit": 80,
+          "unit": 83,
           "count": 2,
           "minTick": 4800
         },
         {
-          "unit": 81,
+          "unit": 84,
           "count": 1,
           "minTick": 6000
         }
@@ -32979,16 +33251,16 @@
         27,
         25,
         29,
-        73,
+        76,
         25
       ],
       "upgrades": [
         {
-          "upgrade": 84,
+          "upgrade": 88,
           "minTick": 5400
         },
         {
-          "upgrade": 85,
+          "upgrade": 89,
           "minTick": 7200
         }
       ],
@@ -33049,7 +33321,7 @@
           "id": "waves",
           "units": [
             [
-              76,
+              79,
               8
             ]
           ]
@@ -33057,7 +33329,7 @@
       ],
       "guards": [
         {
-          "unit": 80,
+          "unit": 83,
           "count": 1,
           "minTick": 5400
         }
@@ -33109,11 +33381,11 @@
       ],
       "upgrades": [
         {
-          "upgrade": 86,
+          "upgrade": 90,
           "minTick": 3600
         },
         {
-          "upgrade": 87,
+          "upgrade": 91,
           "minTick": 6000
         }
       ],
@@ -33215,11 +33487,11 @@
       ],
       "upgrades": [
         {
-          "upgrade": 86,
+          "upgrade": 90,
           "minTick": 5400
         },
         {
-          "upgrade": 87,
+          "upgrade": 91,
           "minTick": 7200
         }
       ],
@@ -33304,22 +33576,22 @@
       "garrisonRadiusCenti": 800,
       "alertRadiusCenti": 4500,
       "buildOrder": [
-        53,
         54,
         55,
-        53,
         56,
+        54,
         57,
-        53,
-        57
+        58,
+        54,
+        58
       ],
       "upgrades": [
         {
-          "upgrade": 88,
+          "upgrade": 92,
           "minTick": 3600
         },
         {
-          "upgrade": 89,
+          "upgrade": 93,
           "minTick": 6000
         }
       ],
@@ -33328,11 +33600,11 @@
           "id": "infantry",
           "units": [
             [
-              44,
+              45,
               4
             ],
             [
-              45,
+              46,
               2
             ]
           ]
@@ -33341,11 +33613,11 @@
           "id": "mechanized",
           "units": [
             [
-              47,
+              48,
               3
             ],
             [
-              44,
+              45,
               4
             ]
           ]
@@ -33354,11 +33626,11 @@
           "id": "armor",
           "units": [
             [
-              48,
+              49,
               3
             ],
             [
-              47,
+              48,
               2
             ]
           ]
@@ -33367,15 +33639,15 @@
           "id": "fires",
           "units": [
             [
+              50,
+              2
+            ],
+            [
               49,
               2
             ],
             [
-              48,
-              2
-            ],
-            [
-              45,
+              46,
               3
             ]
           ]
@@ -33411,21 +33683,21 @@
       "defenseRadiusCenti": 1500,
       "garrisonRadiusCenti": 800,
       "buildOrder": [
-        53,
-        55,
         54,
         56,
         55,
-        53,
-        57
+        57,
+        56,
+        54,
+        58
       ],
       "upgrades": [
         {
-          "upgrade": 88,
+          "upgrade": 92,
           "minTick": 5400
         },
         {
-          "upgrade": 89,
+          "upgrade": 93,
           "minTick": 7200
         }
       ],
@@ -33434,7 +33706,7 @@
           "id": "rifles",
           "units": [
             [
-              44,
+              45,
               10
             ]
           ]
@@ -33443,11 +33715,11 @@
           "id": "raid",
           "units": [
             [
-              46,
+              47,
               3
             ],
             [
-              44,
+              45,
               4
             ]
           ]
@@ -33456,11 +33728,11 @@
           "id": "hunters",
           "units": [
             [
-              45,
+              46,
               3
             ],
             [
-              44,
+              45,
               4
             ]
           ]
@@ -33469,11 +33741,11 @@
           "id": "armor",
           "units": [
             [
-              48,
+              49,
               2
             ],
             [
-              47,
+              48,
               2
             ]
           ]

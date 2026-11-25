@@ -38,6 +38,7 @@ entities:
   - { player: 0, type: ua-sting-nest, origin: [9, 11] }
   - { player: 0, type: ua-patriot, origin: [13, 11] }
   - { player: 0, type: ua-missile-site, origin: [18, 11] }
+  - { player: 0, type: ua-atacms-battery, origin: [23, 11] }
   - { player: 0, type: ua-ratel, atCenti: [750, 2450] }
   - { player: 0, type: ua-tw-12-7, atCenti: [1150, 2450] }
   - { player: 0, type: ua-gepard, atCenti: [1550, 2450] }
@@ -49,6 +50,7 @@ entities:
   - { player: 0, type: ua-storm-shadow, atCenti: [2050, 1520] }   # on its pad
   - { player: 1, type: ru-airfield, origin: [54, 11] }
   - { player: 1, type: ru-geran-site, origin: [61, 11] }
+  - { player: 1, type: ru-oreshnik-launcher, origin: [66, 11] }
   - { player: 1, type: ru-pantsir, atCenti: [5750, 2450] }
   - { player: 1, type: ru-pole-21, atCenti: [6150, 2450] }
   - { player: 1, type: ru-molniya-crew, atCenti: [6550, 2450] }

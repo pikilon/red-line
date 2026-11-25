@@ -734,6 +734,7 @@ impl World {
         };
         owner.credits >= ty.cost
             && self.requirements_met(player, &ty.requires)
+            && !self.superweapon_taken(player, kind)
             && self.footprint_free(origin, ty.footprint)
             && self.footprint_explored(player, origin, ty.footprint)
     }
@@ -871,6 +872,7 @@ impl World {
         self.events.clear();
         self.apply_commands();
         self.update_economy();
+        self.update_superweapons();
         self.air_pass();
         self.yield_to_movers();
         self.release_stray_dockers();

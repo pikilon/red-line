@@ -5,13 +5,13 @@
       "id": "showcase",
       "map": "showcase",
       "form": "setup",
-      "entities": 47
+      "entities": 49
     },
     {
       "id": "showcase-units",
       "map": "showcase",
       "form": "setup",
-      "entities": 47
+      "entities": 49
     },
     {
       "id": "armor-duel",
@@ -71,7 +71,7 @@
       "id": "production",
       "map": "first-line",
       "form": "setup",
-      "entities": 10
+      "entities": 11
     },
     {
       "id": "rally-points",
@@ -540,6 +540,12 @@
       "map": "showcase",
       "form": "setup",
       "entities": 5
+    },
+    {
+      "id": "superweapons",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 14
     },
     {
       "id": "help-cn-barracks-heal",

@@ -1708,6 +1708,10 @@ pub struct Setup {
     /// Spec 63: skill points each start has earned at tick 0 (index = start).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub general_xp: Vec<u32>,
+    /// Spec 64: powers each start owns at tick 0 with the tick they are ready
+    /// (index = start), e.g. a charged superweapon.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub powers: Vec<Vec<PowerState>>,
     /// Spec 53: faction id of each start's army; absent = the map's own.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub armies: Vec<String>,
@@ -1880,6 +1884,19 @@ impl World {
         }
         for (player, &xp) in setup.general_xp.iter().enumerate() {
             world.set_general_xp(player as crate::entity::PlayerId, xp);
+        }
+
+        if setup.powers.len() > starts {
+            return Err(invalid(format!(
+                "powers: {} entries for {starts} starts",
+                setup.powers.len()
+            )));
+        }
+        for (player, owned) in setup.powers.iter().enumerate() {
+            for power in owned {
+                let index = power_index(&world.rules, &power.id).map_err(invalid)?;
+                world.grant_power(player as crate::entity::PlayerId, index, power.ready_tick);
+            }
         }
 
         let mut labels: BTreeMap<String, EntityId> = BTreeMap::new();
