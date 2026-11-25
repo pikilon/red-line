@@ -28,6 +28,7 @@ pub mod rng;
 pub mod rules;
 pub mod save;
 pub mod snapshot;
+mod stats;
 pub mod transport;
 pub mod trench;
 mod upgrades;

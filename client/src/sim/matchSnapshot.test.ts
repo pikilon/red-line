@@ -76,6 +76,7 @@ describe("matchSnapshot", () => {
       rallies: [{ building: 12, x: 30, y: 40 }],
       air: [],
       upgrades: [],
+      stats: [],
     });
 
     // Observer viewer (255): credits and power are 0, no queues.
@@ -130,6 +131,7 @@ describe("matchSnapshot", () => {
       rallies: [],
       air: [],
       upgrades: [],
+      stats: [],
     });
 
     // Layout constants.

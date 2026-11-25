@@ -94,6 +94,7 @@ impl World {
                 site.queue.remove(0);
             }
             let unit = self.spawn(owner, head.kind, cell_center(exit));
+            self.bump_stats(owner, |stats| stats.units_built += 1);
             // Spec 43 §4.2: a one-way unit waits at its launcher until ordered.
             if self.rules.ty(head.kind).one_way.is_some() {
                 continue;
@@ -188,6 +189,7 @@ impl World {
             return;
         }
         self.players[usize::from(player)].credits -= cost;
+        self.bump_stats(player, |stats| stats.money_spent += cost);
         if let Some(site) = self.entities[index].site.as_mut() {
             site.queue.push(QueueItem { kind, progress: 0 });
         }
@@ -217,6 +219,9 @@ impl World {
             if let Some(owner) = self.players.get_mut(usize::from(player)) {
                 owner.credits = owner.credits.saturating_add(refund);
             }
+            self.bump_stats(player, |stats| {
+                stats.money_spent = stats.money_spent.saturating_sub(refund);
+            });
             for unit in &mut self.entities {
                 if let Order::Build { order_id, building } = unit.order
                     && building == id
@@ -239,6 +244,9 @@ impl World {
         if let Some(owner) = self.players.get_mut(usize::from(player)) {
             owner.credits = owner.credits.saturating_add(refund);
         }
+        self.bump_stats(player, |stats| {
+            stats.money_spent = stats.money_spent.saturating_sub(refund);
+        });
     }
 
     /// Spec 37: a sale refunds every queued item and half the building cost,
@@ -350,6 +358,7 @@ impl World {
             }
             site.complete = true;
             let origin = site.origin;
+            self.bump_stats(owner, |stats| stats.buildings_built += 1);
             for &i in &builders {
                 if let Order::Build { order_id, .. } = self.entities[i].order {
                     self.entities[i].order = Order::Idle {
@@ -372,6 +381,7 @@ impl World {
         };
         let unit_kind = free_unit as TypeId;
         let unit = self.spawn(owner, unit_kind, cell_center(exit));
+        self.bump_stats(owner, |stats| stats.units_built += 1);
         if self.rules.ty(unit_kind).capacity > 0 {
             self.send_to_harvest(unit);
         }
@@ -400,6 +410,7 @@ impl World {
             return;
         }
         self.players[usize::from(player)].credits -= cost;
+        self.bump_stats(player, |stats| stats.money_spent += cost);
         let building = self.place_building(player, kind, origin, false);
         let order_id = self.next_order_id;
         self.next_order_id += 1;
@@ -721,6 +732,8 @@ impl World {
                             let paid = u64::from(cargo) * u64::from(player.income_percent) / 100;
                             let paid = u32::try_from(paid).unwrap_or(u32::MAX);
                             player.credits = player.credits.saturating_add(paid);
+                            player.stats.money_earned =
+                                player.stats.money_earned.saturating_add(paid);
                         }
                         if let Some(c) = center {
                             let next = self.nearest_depot(pos);

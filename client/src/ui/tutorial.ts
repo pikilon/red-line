@@ -7,6 +7,7 @@ import {
 } from "../sim/matchSnapshot";
 import { type SimCommand, TICK_RATE_HZ } from "../sim/protocol";
 import { appendDiv } from "./dom";
+import type { EndButton } from "./scoreScreen";
 
 /** One objective of a tutorial (spec 46 §3), like a Zero Hour one-shot
  *  script: `own` is BUILT_BY_PLAYER, `destroy` holds once every listed
@@ -309,6 +310,8 @@ export interface TutorialActions {
   retry?(): void;
   /** Back to the main menu. */
   menu(): void;
+  /** The mission ended: the score screen offers these actions (spec 57 §4). */
+  finished(won: boolean, buttons: readonly EndButton[]): void;
   /** Issues a command to the sim, as a mission script would. */
   command(command: SimCommand): void;
   /** Which entity ids are alive, regardless of fog, as a script knows. */
@@ -480,19 +483,13 @@ export function createTutorialPanel(
     if (won) actions.won?.(mission);
     hint.textContent = t(won ? "tutorial.complete" : "campaign.failed");
     const next = won ? actions.next(mission) : null;
-    const buttons: [MessageKey, () => void][] = [];
-    if (next !== null) buttons.push([next.label, next.go]);
+    const buttons: EndButton[] = [];
+    if (next !== null) buttons.push({ label: next.label, go: next.go });
     if (!won && actions.retry !== undefined)
-      buttons.push(["campaign.retry", actions.retry]);
-    buttons.push(["tutorial.menu", actions.menu]);
-    for (const [key, action] of buttons) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.textContent = t(key);
-      button.addEventListener("click", action);
-      element.appendChild(button);
-    }
+      buttons.push({ label: "campaign.retry", go: actions.retry });
+    buttons.push({ label: "tutorial.menu", go: actions.menu });
     element.classList.add("complete");
+    actions.finished(won, buttons);
   }
 
   let finished = false;

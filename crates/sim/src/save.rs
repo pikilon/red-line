@@ -15,7 +15,7 @@ use crate::fixed::{Fx, FxVec2};
 use crate::map::Cell;
 use crate::map::cell_of;
 use crate::nav::footprint_cells;
-use crate::player::Player;
+use crate::player::{Player, PlayerStats};
 use crate::rules::{Category, MapDef, fx_centi};
 use crate::rules::{Ruleset, TypeId, WeaponId};
 use crate::world::{Command, Layer, MAX_UNITS, Outcome, SimError, World, map_terrain};
@@ -118,6 +118,14 @@ pub struct PlayerState {
     /// Spec 52: owned upgrade type ids, ascending; omitted when none.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub upgrades: Vec<String>,
+    /// Spec 57: score-screen counters (`PlayerStats::to_array`); omitted
+    /// while all are zero.
+    #[serde(default, skip_serializing_if = "is_zero_stats")]
+    pub stats: [u32; 8],
+}
+
+fn is_zero_stats(stats: &[u32; 8]) -> bool {
+    stats.iter().all(|&n| n == 0)
 }
 
 fn default_income_percent() -> u32 {
@@ -846,6 +854,7 @@ fn save_player(player: &Player, rules: &Ruleset) -> PlayerState {
         ghosts,
         income_percent,
         upgrades,
+        stats,
     } = player;
     PlayerState {
         id: *id,
@@ -866,6 +875,7 @@ fn save_player(player: &Player, rules: &Ruleset) -> PlayerState {
             .collect(),
         income_percent: *income_percent,
         upgrades: upgrades.iter().map(|&kind| type_id(rules, kind)).collect(),
+        stats: stats.to_array(),
     }
 }
 
@@ -907,6 +917,7 @@ fn load_player(state: &PlayerState, rules: &Ruleset, cells: usize) -> Result<Pla
             upgrades.dedup();
             upgrades
         },
+        stats: PlayerStats::from_array(state.stats),
     })
 }
 

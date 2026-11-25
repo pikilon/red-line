@@ -154,7 +154,13 @@ fn ac_03_37_match_snapshot_layout() {
     });
     world.step();
     let snapshot = encode_match_snapshot(&world, 0);
-    let queue = &snapshot[snapshot.len() - 14..];
+    // Spec 57: the tail now holds the counters (air 0, upgrades 0, 1 player,
+    // 9 numbers) once the first order has been paid for.
+    assert_eq!(
+        &snapshot[snapshot.len() - 12..],
+        &[0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 100]
+    );
+    let queue = &snapshot[snapshot.len() - 14 - 12..snapshot.len() - 12];
     assert_eq!(
         &queue[..9],
         &[1, 2, 100, 2, 9, 9, -1, -1, -1],

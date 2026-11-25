@@ -6,6 +6,7 @@ export const ENTITY_STRIDE = 11;
 export const QUEUE_SLOTS = 9;
 export const QUEUE_STRIDE = 12; // building_id, headPermille, queue_len, kind_0..kind_8
 export const RALLY_STRIDE = 3; // building_id, x raw, y raw (spec 33)
+export const STATS_STRIDE = 9; // player, then the eight counters (spec 57)
 export const AIR_STRIDE = 5; // entity id, ammo, clip, fuel permille, master or -1 (spec 43)
 export const NEUTRAL = 255;
 export const OBSERVER = 255;
@@ -66,6 +67,19 @@ export interface UpgradeState {
   kind: number;
 }
 
+/** Spec 57: what one player did this match (score screen). */
+export interface PlayerStats {
+  player: number;
+  unitsBuilt: number;
+  unitsLost: number;
+  unitsDestroyed: number;
+  buildingsBuilt: number;
+  buildingsLost: number;
+  buildingsDestroyed: number;
+  moneyEarned: number;
+  moneySpent: number;
+}
+
 export interface AirState {
   id: number;
   /** Rounds left in the clip. */
@@ -94,6 +108,8 @@ export interface MatchSnapshot {
   air?: AirState[];
   /** Spec 52: the upgrades every player owns. */
   upgrades?: UpgradeState[];
+  /** Spec 57: every player's counters; empty until something is counted. */
+  stats?: PlayerStats[];
 }
 
 // decodeMatchSnapshot(data): per spec §5.15 — header (8), entity_count entities (11 each),
@@ -178,6 +194,25 @@ export function decodeMatchSnapshot(data: Int32Array): MatchSnapshot {
     upgrades.push({ player: data[base] ?? 0, kind: data[base + 1] ?? 0 });
   }
 
+  // Spec 57: the counters close the snapshot; absent until one is non-zero.
+  const statsBase = upgradeBase + 1 + upgradeCount * 2;
+  const statsCount = data[statsBase] ?? 0;
+  const stats: PlayerStats[] = [];
+  for (let i = 0; i < statsCount; i++) {
+    const base = statsBase + 1 + i * STATS_STRIDE;
+    stats.push({
+      player: data[base] ?? 0,
+      unitsBuilt: data[base + 1] ?? 0,
+      unitsLost: data[base + 2] ?? 0,
+      unitsDestroyed: data[base + 3] ?? 0,
+      buildingsBuilt: data[base + 4] ?? 0,
+      buildingsLost: data[base + 5] ?? 0,
+      buildingsDestroyed: data[base + 6] ?? 0,
+      moneyEarned: data[base + 7] ?? 0,
+      moneySpent: data[base + 8] ?? 0,
+    });
+  }
+
   return {
     tick: data[0] ?? 0,
     viewer,
@@ -191,6 +226,7 @@ export function decodeMatchSnapshot(data: Int32Array): MatchSnapshot {
     rallies,
     air,
     upgrades,
+    stats,
   };
 }
 
