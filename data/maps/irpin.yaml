@@ -1,0 +1,75 @@
+id: irpin                            # required, equals the file name
+width: 64
+height: 48
+blocked: []
+# Spec 48 §7: the Irpin river crossing (Feb-Mar 2022). The river runs north to south with a gentle bend through the
+# middle of the map; the Romanivka road bridge is destroyed (only rubble and the two approach roads remain) and one
+# surviving wooden footbridge in the north is the only ground crossing. Irpin town (apartment blocks, houses) stands on
+# the west bank around the Ukrainian base, the Bucha side on the east bank holds a shopping-centre block (the Giraffe
+# mall: a factory and warehouse group) and the Russian base. The convoy road runs along y=30 on the east bank.
+depots:
+  - { origin: [4, 38], amount: 10000 }
+  - { origin: [56, 38], amount: 10000 }
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: dirt, rect: [3, 12, 16, 34] }
+      - { material: dirt, rect: [50, 6, 62, 24] }
+      - { material: concrete, rect: [40, 36, 54, 44] }      # mall car park
+  roads:
+    - { type: asphalt, path: [[2, 30], [26, 30]], width: 2 }   # road to the destroyed bridge, west
+    - { type: asphalt, path: [[38, 30], [62, 30]], width: 2 }  # Bucha side, the convoy road
+    - { type: asphalt, path: [[15, 12], [15, 44]], width: 2 }  # Irpin main street
+    - { type: asphalt, path: [[46, 8], [46, 44]], width: 2 }
+    - { type: dirt, path: [[2, 8], [26, 8]], width: 2 }
+    - { type: dirt, path: [[38, 8], [60, 8]], width: 2 }
+  water:
+    - { kind: river, depth: shallow, path: [[32, 0], [31, 14], [33, 30], [31, 47]], width: 6 }
+    - { kind: river, depth: deep, path: [[32, 0], [31, 14], [33, 30], [31, 47]], width: 4 }
+features:
+  - { type: wooden-bridge, from: [28, 7], to: [35, 7], variant: 0 }
+  # The Romanivka bridge: destroyed, rubble on both banks.
+  - { type: rubble-pile, at: [26, 29], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [27, 31], rot: 1, variant: 1 }
+  - { type: rubble-pile, at: [37, 29], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [37, 31], rot: 3, variant: 1 }
+  - { type: parked-car, at: [24, 31], rot: 1, variant: 0 }
+  - { type: parked-car, at: [40, 31], rot: 3, variant: 1 }
+  # Irpin, west bank: apartment blocks and houses along the main street, north and south of the base.
+  - { type: apartment-block, at: [17, 3], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [21, 3], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [17, 13], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [21, 13], rot: 0, variant: 0 }
+  - { type: house-small, at: [18, 20], rot: 1, variant: 0 }
+  - { type: house-small, at: [18, 24], rot: 1, variant: 1 }
+  - { type: house-small, at: [22, 20], rot: 3, variant: 2 }
+  - { type: shop, at: [22, 24], rot: 3, variant: 0 }
+  - { type: townhouse-row, at: [18, 34], rot: 2, variant: 0 }
+  - { type: house-small, at: [23, 35], rot: 2, variant: 1 }
+  - { type: house-small, at: [18, 41], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [22, 40], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [16, 28], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [16, 33], rot: 0, variant: 0 }
+  # Bucha side, east bank: the Giraffe shopping centre on its car park, houses along the convoy road.
+  - { type: factory, at: [42, 37], rot: 0, variant: 0 }
+  - { type: warehouse, at: [48, 37], rot: 0, variant: 0 }
+  - { type: gas-station, at: [49, 33], rot: 2, variant: 0 }
+  - { type: house-small, at: [40, 25], rot: 1, variant: 1 }
+  - { type: house-small, at: [40, 21], rot: 1, variant: 2 }
+  - { type: shop, at: [41, 16], rot: 1, variant: 0 }
+  - { type: apartment-block, at: [48, 21], rot: 3, variant: 2 }
+  - { type: apartment-block, at: [57, 33], rot: 3, variant: 0 }
+  - { type: house-small, at: [40, 4], rot: 2, variant: 0 }
+  - { type: house-small, at: [44, 4], rot: 2, variant: 1 }
+  - { type: lamp-post, at: [45, 29], rot: 0, variant: 0 }
+  # Forest edges along the river and the map's north and south.
+  - { type: pine, area: [24, 1, 28, 6], density: 40, seed: 3 }
+  - { type: pine, area: [36, 1, 40, 6], density: 40, seed: 5 }
+  - { type: birch, area: [24, 36, 28, 46], density: 35, seed: 7 }
+  - { type: birch, area: [36, 14, 39, 27], density: 25, seed: 9 }
+  - { type: fir, area: [2, 44, 14, 46], density: 40, seed: 11 }
+  - { type: pine, area: [55, 40, 62, 46], density: 30, seed: 13 }
+starts:
+  - { faction: ukraine, hq: [4, 14], dozerCenti: [1000, 2000] }
+  - { faction: russia, hq: [57, 14], dozerCenti: [5500, 2000] }

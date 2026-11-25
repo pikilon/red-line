@@ -1,6 +1,6 @@
 # Spec 48: Ukraine 2: Aerorozvidka drone teams ambush the convoy on the far bank of the Irpin.
 id: campaign-ua-02-irpin
-map: demo-bridges
+map: irpin
 victory: true
 debug: false
 starts: false
