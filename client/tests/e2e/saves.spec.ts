@@ -64,7 +64,7 @@ test("AC-19-17: example saves and load errors", async ({ page }) => {
         () => (window as DebugWindow).__redline?.entities().length ?? 0,
       ),
     )
-    .toBe(51);
+    .toBe(53);
   const state = await page.evaluate(() => {
     const api = (window as DebugWindow).__redline as SavesDebug;
     return {
