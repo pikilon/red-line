@@ -453,7 +453,7 @@
     },
     {
       "id": "campaign-ru-10-narva",
-      "map": "demo-bridges",
+      "map": "narva",
       "form": "setup",
       "entities": 21
     },

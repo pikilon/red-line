@@ -1,0 +1,125 @@
+id: narva
+width: 64
+height: 48
+blocked: []
+# Spec 48 §15: the Narva river border between Estonia (west) and Russia (east). The river runs north to south with a
+# slight bend; the Friendship Bridge carries the main road across at y=22, a wooden footbridge crosses in the south.
+# Hermann Castle (stone ring, keep and hall) on the Narva bank faces Ivangorod Fortress on the Russian bank.
+depots:
+  - { origin: [4, 38], amount: 10000 }
+  - { origin: [56, 38], amount: 10000 }
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: dirt, rect: [2, 10, 20, 34] }
+      - { material: dirt, rect: [44, 8, 62, 32] }
+      - { material: concrete, rect: [35, 2, 46, 15] }      # power plant yard
+      - { material: gravel, rect: [23, 16, 28, 27] }       # castle courtyard
+      - { material: gravel, rect: [36, 16, 40, 27] }       # fortress courtyard
+  roads:
+    - { type: asphalt, path: [[2, 22], [27, 22]], width: 2 }
+    - { type: asphalt, path: [[36, 22], [62, 22]], width: 2 }
+    - { type: dirt, path: [[2, 40], [27, 40]], width: 2 }
+    - { type: dirt, path: [[36, 40], [60, 40]], width: 2 }
+  water:
+    - { kind: river, depth: shallow, path: [[32, 0], [33, 16], [31, 32], [32, 47]], width: 6 }
+    - { kind: river, depth: deep, path: [[32, 0], [33, 16], [31, 32], [32, 47]], width: 4 }
+features:
+  # Friendship Bridge (Narva - Ivangorod) and a wooden footbridge in the south.
+  - { type: road-bridge, from: [28, 22], to: [35, 22], variant: 0 }
+  - { type: wooden-bridge, from: [28, 40], to: [35, 40], variant: 0 }
+  # Hermann Castle, Narva bank: a stone ring with the keep (factory) and the bailey hall (barn).
+  - { type: stone-wall, at: [23, 16], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [23, 17], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [23, 18], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [23, 19], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [23, 20], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [23, 24], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [23, 25], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [23, 26], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [23, 27], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [24, 16], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [24, 27], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [25, 16], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [25, 27], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [26, 16], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [26, 27], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [27, 16], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [27, 27], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [28, 16], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [28, 17], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [28, 18], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [28, 19], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [28, 20], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [28, 24], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [28, 25], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [28, 26], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [28, 27], rot: 0, variant: 0 }
+  - { type: factory, at: [24, 17], rot: 0, variant: 0 }
+  - { type: warehouse-barn, at: [24, 24], rot: 0, variant: 1 }
+  # Ivangorod Fortress, Russian bank: a smaller ring around a church-like tower and a shop.
+  - { type: stone-wall, at: [36, 16], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [36, 17], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [36, 18], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [36, 19], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [36, 20], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [36, 24], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [36, 25], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [36, 26], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [36, 27], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [37, 16], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [37, 27], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [38, 16], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [38, 27], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [39, 16], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [39, 27], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [40, 16], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [40, 17], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [40, 18], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [40, 19], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [40, 20], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [40, 24], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [40, 25], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [40, 26], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [40, 27], rot: 0, variant: 0 }
+  - { type: church, at: [37, 17], rot: 0, variant: 0 }
+  - { type: shop, at: [37, 24], rot: 0, variant: 0 }
+  # Narva town: Soviet apartment blocks and houses on the west bank.
+  - { type: apartment-block, at: [16, 3], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [20, 3], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [16, 36], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [20, 36], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [15, 22], rot: 1, variant: 1 }
+  - { type: apartment-block, at: [15, 27], rot: 1, variant: 2 }
+  - { type: apartment-block, at: [10, 40], rot: 0, variant: 1 }
+  - { type: house-small, at: [18, 32], rot: 1, variant: 0 }
+  - { type: house-small, at: [12, 34], rot: 1, variant: 0 }
+  - { type: house-small, at: [18, 43], rot: 1, variant: 0 }
+  - { type: townhouse-row, at: [11, 3], rot: 2, variant: 0 }
+  # Ivangorod town, east bank: apartment blocks along the road.
+  - { type: apartment-block, at: [46, 3], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [50, 2], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [44, 36], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [48, 36], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [46, 41], rot: 0, variant: 1 }
+  # Narva power plant: halls on a concrete yard, the chimneys area, east bank north.
+  - { type: factory, at: [36, 3], rot: 0, variant: 0 }
+  - { type: factory, at: [41, 3], rot: 0, variant: 1 }
+  - { type: factory, at: [36, 8], rot: 0, variant: 2 }
+  - { type: factory, at: [41, 8], rot: 0, variant: 0 }
+  - { type: warehouse-barn, at: [36, 12], rot: 0, variant: 2 }
+  - { type: crate-stack, at: [40, 13], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [27, 21], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [36, 21], rot: 0, variant: 0 }
+  # Pine forest.
+  - { type: pine, area: [2, 1, 9, 7], density: 35, seed: 3 }
+  - { type: pine, area: [24, 1, 28, 12], density: 30, seed: 5 }
+  - { type: pine, area: [2, 44, 9, 46], density: 40, seed: 7 }
+  - { type: pine, area: [25, 40, 28, 46], density: 35, seed: 9 }
+  - { type: pine, area: [37, 30, 40, 38], density: 30, seed: 11 }
+  - { type: pine, area: [55, 40, 62, 46], density: 35, seed: 13 }
+  - { type: pine, area: [56, 1, 62, 6], density: 35, seed: 15 }
+starts:
+  - { faction: ukraine, hq: [4, 14], dozerCenti: [1000, 2000] }
+  - { faction: russia, hq: [57, 14], dozerCenti: [5500, 2000] }

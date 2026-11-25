@@ -83,11 +83,13 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
 
 * Missions reuse the existing maps (first-line, river-port, demo-coast,
   demo-town, demo-bridges, showcase); the exceptions are mission 1 of both
-  campaigns, which plays on its own map `hostomel` (§6), Ukraine 2, on
-  `irpin` (§7), the two Snake Island missions, on `snake-island` (§8),
-  Russia 3, on `mariupol` (§9), Russia 4, on `bakhmut` (§10), Russia 5,
-  on `surovikin-line` (§11), Russia 6, on `avdiivka` (§12), Russia 7, on `kursk-pipe` (§13), Russia 8, on `oreshnik` (§14), and Russia 9, on `kyiv` (§15). Own maps for the remaining missions are tracked
-  in issue #482.
+  campaigns, which plays on its own map `hostomel` (§6), Ukraine 2, on `irpin`
+  (§7), the two Snake Island missions, on `snake-island` (§8), Russia 3, on
+  `mariupol` (§9), Russia 4, on `bakhmut` (§10), Russia 5, on `surovikin-line`
+  (§11), Russia 6, on `avdiivka` (§12), Russia 7, on `kursk-pipe` (§13),
+  Russia 8, on `oreshnik` (§14), Russia 9, on `kyiv` (§15), and Russia 10, on
+  `narva` (§16). Own maps for the remaining missions are tracked in issue
+  #482.
 * The game has no ships: the cruiser Moskva is played as the Black Sea Fleet
   command post on the shore. Snake Island is no longer the coast of
   demo-coast: it has its own map (§8).
@@ -308,3 +310,21 @@ Existing feature types only:
   Russian base.
 * Assumption: the bases sit on opposite banks, as in the real city; the
   Russians must cross a bridge. No mission script exists for this mission.
+
+## 16. Map `narva` (issue #482)
+
+`data/maps/narva.yaml`, 64 x 48, same size and HQ cells as demo-bridges, so
+`campaign-ru-10-narva` keeps every entity cell and only changes `map:`.
+Existing feature types only:
+
+* The river runs north to south with a slight bend (shallow banks, deep
+  channel). The Friendship Bridge (`road-bridge`, y=22) carries the main road;
+  a `wooden-bridge` crosses in the south (y=40).
+* Narva bank (west): Hermann Castle, a `stone-wall` ring with a factory keep
+  and a warehouse-barn hall; Soviet apartment blocks, houses and a townhouse
+  row; the two bridgehead defences of the save stand north and south of it.
+* Russian bank (east): Ivangorod Fortress, a smaller wall ring with a church
+  tower and a shop; apartment blocks along the road.
+* East bank north: the Narva power plant, four factory halls and a barn on a
+  concrete yard (the chimneys area). Pine forest on the borders.
+* Fictional scenario; no mission script exists for this mission.
