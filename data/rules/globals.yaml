@@ -1,6 +1,6 @@
 factions: [ukraine, russia, usa, china]          # required; file order of data/factions/<id>.yaml
 features: [vegetation, buildings, props, port, bridges, earthworks]   # optional; file order of data/features/<id>.yaml (spec 26)
-maps: [first-line, river-port, showcase, landscape-lab, demo-town, demo-forest, demo-ground, demo-coast, demo-bridges, demo-destruction, demo-cover, hostomel, irpin]       # required; file order of data/maps/<id>.yaml
+maps: [first-line, river-port, showcase, landscape-lab, demo-town, demo-forest, demo-ground, demo-coast, demo-bridges, demo-destruction, demo-cover, hostomel, irpin, snake-island]       # required; file order of data/maps/<id>.yaml
 ai: [ukraine-balanced, ukraine-rush, russia-balanced, russia-rush, usa-balanced, usa-rush, china-balanced, china-rush]   # required; file order of data/ai/<id>.yaml
 # Spec 05 §9: AI difficulty levels, easiest first (Zero Hour's Easy / Medium / Hard armies, plus Brutal).
 # medium must stay the AI as it played before difficulty levels. Tuned by bot-vs-bot runs (spec 05 §9.4).
