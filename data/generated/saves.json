@@ -471,7 +471,7 @@
     },
     {
       "id": "campaign-ua-03-moskva",
-      "map": "demo-coast",
+      "map": "moskva",
       "form": "setup",
       "entities": 17
     },

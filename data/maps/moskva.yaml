@@ -1,0 +1,84 @@
+id: moskva                           # required, equals the file name
+width: 64
+height: 64
+blocked: []
+# Spec 48 §16 (issue #482): the Black Sea coast near Odesa, April 2022. The open sea fills the north and south,
+# a port quarter (quay, cranes, warehouses, containers) sits on the north shore, and a gulf cuts into the
+# middle. West: the Ukrainian start among fields and tree belts hiding the Neptune batteries; east: the Russian
+# Black Sea Fleet command post (the Moskva stand-in) on a spit between an inlet and the gulf. HQ cells are
+# the same as demo-coast, so the save keeps every entity cell.
+depots:
+  - { origin: [8, 44], amount: 10000 }
+  - { origin: [54, 44], amount: 10000 }
+  - { origin: [26, 19], amount: 10000, type: port-depot }   # the port's cargo yard never runs out
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: sand, rect: [0, 13, 63, 14] }
+      - { material: concrete, rect: [8, 13, 38, 22] }       # port quarter
+      - { material: sand, rect: [22, 36, 22, 50] }          # gulf beach
+      - { material: sand, rect: [45, 36, 45, 50] }
+      - { material: dirt, rect: [2, 24, 18, 26] }           # field tracks
+      - { material: gravel, rect: [44, 24, 62, 26] }
+  water:
+    - { kind: sea, depth: deep, rect: [0, 0, 63, 11] }
+    - { kind: sea, depth: shallow, rect: [0, 12, 63, 12] }
+    - { kind: sea, depth: shallow, rect: [46, 13, 63, 21] }     # inlet north of the spit
+    - { kind: sea, depth: deep, rect: [49, 13, 63, 19] }
+    - { kind: sea, depth: shallow, rect: [0, 55, 63, 56] }
+    - { kind: sea, depth: deep, rect: [0, 57, 63, 63] }
+    - { kind: sea, depth: shallow, rect: [23, 38, 44, 54] }     # the gulf
+    - { kind: sea, depth: deep, rect: [26, 42, 41, 54] }
+features:
+  # Port quarter: quay, piers, boats, cranes, warehouses and containers.
+  - { type: quay, at: [8, 13], rot: 2, variant: 0 }
+  - { type: quay, at: [12, 13], rot: 2, variant: 1 }
+  - { type: quay, at: [16, 13], rot: 2, variant: 0 }
+  - { type: quay, at: [20, 13], rot: 2, variant: 1 }
+  - { type: quay, at: [23, 13], rot: 2, variant: 0 }
+  - { type: quay, at: [31, 13], rot: 2, variant: 0 }
+  - { type: pier, at: [24, 7], rot: 0, variant: 1 }
+  - { type: pier, at: [32, 7], rot: 0, variant: 0 }
+  - { type: fishing-boat, at: [21, 7], rot: 0, variant: 0 }
+  - { type: fishing-boat, at: [27, 8], rot: 0, variant: 1 }
+  - { type: cargo-ship, at: [35, 3], rot: 1, variant: 0 }
+  - { type: cargo-ship, at: [4, 5], rot: 1, variant: 1 }
+  - { type: dock-crane, at: [10, 15], rot: 2, variant: 0 }
+  - { type: dock-crane, at: [28, 15], rot: 2, variant: 1 }
+  - { type: warehouse, at: [10, 19], rot: 0, variant: 0 }
+  - { type: warehouse, at: [15, 19], rot: 0, variant: 1 }
+  - { type: warehouse, at: [20, 19], rot: 0, variant: 2 }
+  - { type: container-stack, at: [14, 15], rot: 0, variant: 0 }
+  - { type: container-stack, at: [18, 15], rot: 0, variant: 1 }
+  - { type: container-stack, at: [24, 16], rot: 0, variant: 2 }
+  - { type: container-stack, at: [32, 16], rot: 1, variant: 1 }
+  - { type: container-stack, at: [34, 19], rot: 0, variant: 0 }
+  # Buoys and lighthouses.
+  - { type: buoy, at: [14, 4], variant: 0 }
+  - { type: buoy, at: [17, 9], variant: 1 }
+  - { type: buoy, at: [46, 5], variant: 0 }
+  - { type: buoy, at: [52, 9], variant: 1 }
+  - { type: buoy, at: [10, 60], variant: 0 }
+  - { type: buoy, at: [50, 60], variant: 1 }
+  - { type: lighthouse, at: [3, 15], variant: 0 }
+  - { type: lighthouse, at: [44, 16], variant: 1 }
+  # Fields and tree belts hiding the Neptune batteries (barns and a hangar among the trees).
+  - { type: poplar, area: [1, 22, 20, 23], density: 40, seed: 11 }
+  - { type: oak, area: [1, 40, 20, 42], density: 30, seed: 13 }
+  - { type: poplar, area: [18, 28, 20, 40], density: 35, seed: 15 }
+  - { type: oak, area: [21, 23, 36, 25], density: 30, seed: 17 }
+  - { type: warehouse-barn, at: [22, 29], rot: 0, variant: 0 }
+  - { type: warehouse-barn, at: [27, 29], rot: 1, variant: 1 }
+  - { type: hedge, at: [16, 37], rot: 0, variant: 0 }
+  - { type: hedge, at: [16, 25], rot: 0, variant: 0 }
+  - { type: bush, area: [2, 44, 6, 50], density: 20, seed: 19 }
+  # The fleet command post on the spit: sparse, a few harbour props and a wall.
+  - { type: stone-wall, at: [49, 27], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [49, 31], rot: 0, variant: 0 }
+  - { type: container-stack, at: [56, 24], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [50, 33], rot: 0, variant: 0 }
+  - { type: bush, area: [46, 38, 62, 40], density: 25, seed: 21 }
+starts:
+  - { faction: ukraine, hq: [8, 28], dozerCenti: [1350, 3300] }
+  - { faction: russia, hq: [52, 28], dozerCenti: [5100, 3300] }

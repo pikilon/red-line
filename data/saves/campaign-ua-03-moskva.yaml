@@ -1,6 +1,6 @@
 # Spec 48: Ukraine 3: Neptune-style strike on the Black Sea Fleet flagship's coastal cover.
 id: campaign-ua-03-moskva
-map: demo-coast
+map: moskva
 victory: true
 debug: false
 starts: false

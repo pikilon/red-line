@@ -87,9 +87,9 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
   (§7), the two Snake Island missions, on `snake-island` (§8), Russia 3, on
   `mariupol` (§9), Russia 4, on `bakhmut` (§10), Russia 5, on `surovikin-line`
   (§11), Russia 6, on `avdiivka` (§12), Russia 7, on `kursk-pipe` (§13),
-  Russia 8, on `oreshnik` (§14), Russia 9, on `kyiv` (§15), and Russia 10, on
-  `narva` (§16). Own maps for the remaining missions are tracked in issue
-  #482.
+  Russia 8, on `oreshnik` (§14), Russia 9, on `kyiv` (§15), Russia 10, on
+  `narva` (§16), and Ukraine 3, on `moskva` (§17). Own maps for the remaining
+  missions are tracked in issue #482.
 * The game has no ships: the cruiser Moskva is played as the Black Sea Fleet
   command post on the shore. Snake Island is no longer the coast of
   demo-coast: it has its own map (§8).
@@ -328,3 +328,20 @@ Existing feature types only:
 * East bank north: the Narva power plant, four factory halls and a barn on a
   concrete yard (the chimneys area). Pine forest on the borders.
 * Fictional scenario; no mission script exists for this mission.
+
+## 17. Map `moskva` (issue #482)
+
+`data/maps/moskva.yaml`, 64 x 64, same HQ cells and starts as demo-coast, so
+`campaign-ua-03-moskva` keeps every entity cell and only changes `map:`.
+Existing feature types only:
+
+* Open sea fills the north (deep, with piers, boats, a cargo ship and buoys)
+  and the south; a gulf cuts into the middle and an inlet separates the
+  Russian spit from the north shore.
+* North shore: the port quarter on a concrete apron with quays, two dock
+  cranes, warehouses and container stacks, and lighthouses at both ends.
+* West: Ukrainian fields with poplar and oak belts; barns among the trees
+  stand in for the hidden Neptune batteries.
+* East: the Black Sea Fleet command post (the Moskva stand-in, kept on the
+  shore as the game has no ships) on a gravel spit with a few walls.
+* Campaign wiring: unchanged, no mission script exists for this mission.
