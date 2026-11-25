@@ -1,0 +1,145 @@
+id: kharkiv                          # required, equals the file name
+width: 128
+height: 128
+blocked: []
+# Spec 48 §17: the Kharkiv counteroffensive (September 2022). Open farmland and sunflower fields (dirt patches) with
+# tree belts; the Oskil river runs north to south with bridges at Balakliia (y=30), Izium (y=64) and Kupiansk (y=96).
+# On the Russian side stand the three towns of the mission: Balakliia (houses, apartment blocks, church), Izium with its
+# rail junction (concrete strips and warehouses) and Kupiansk. Roads give the armoured thrust a fast way east.
+depots:
+  - { origin: [12, 54], amount: 15000 }
+  - { origin: [114, 72], amount: 15000 }
+  - { origin: [36, 20], amount: 10000 }
+  - { origin: [90, 106], amount: 10000 }
+  - { origin: [36, 100], amount: 10000 }
+  - { origin: [90, 26], amount: 10000 }
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: dirt, rect: [22, 4, 46, 26] }              # sunflower and wheat fields
+      - { material: dirt, rect: [22, 80, 48, 124] }
+      - { material: dirt, rect: [96, 44, 126, 70] }
+      - { material: dirt, rect: [96, 96, 126, 124] }
+      - { material: gravel, rect: [68, 14, 94, 46] }           # Balakliia yards
+      - { material: gravel, rect: [68, 86, 94, 114] }          # Kupiansk yards
+      - { material: concrete, rect: [84, 62, 108, 63] }        # Izium rail yard strips
+      - { material: concrete, rect: [84, 66, 108, 67] }
+      - { material: concrete, rect: [84, 69, 108, 70] }
+      - { material: concrete, rect: [84, 54, 108, 55] }
+  roads:
+    - { type: asphalt, path: [[2, 30], [56, 30]], width: 2 }
+    - { type: asphalt, path: [[69, 30], [126, 30]], width: 2 }
+    - { type: asphalt, path: [[2, 64], [56, 64]], width: 2 }
+    - { type: asphalt, path: [[69, 64], [126, 64]], width: 2 }
+    - { type: asphalt, path: [[2, 96], [56, 96]], width: 2 }
+    - { type: asphalt, path: [[69, 96], [126, 96]], width: 2 }
+    - { type: asphalt, path: [[73, 12], [73, 116]], width: 2 }     # town street along the east bank
+    - { type: dirt, path: [[2, 46], [56, 46]], width: 2 }
+    - { type: dirt, path: [[70, 46], [124, 46]], width: 2 }
+  water:
+    - { kind: river, depth: shallow, path: [[62, 0], [61, 40], [63, 80], [62, 127]], width: 6 }
+    - { kind: river, depth: deep, path: [[62, 0], [61, 40], [63, 80], [62, 127]], width: 4 }
+features:
+  - { type: road-bridge, from: [57, 30], to: [68, 30], variant: 0 }
+  - { type: road-bridge, from: [57, 64], to: [68, 64], variant: 0 }
+  - { type: road-bridge, from: [57, 96], to: [68, 96], variant: 0 }
+  # Balakliia: houses, apartment blocks and a church on the main street.
+  - { type: apartment-block, at: [70, 16], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [75, 16], rot: 1, variant: 1 }
+  - { type: house-small, at: [81, 16], rot: 2, variant: 2 }
+  - { type: house-small, at: [86, 16], rot: 3, variant: 0 }
+  - { type: house-small, at: [70, 22], rot: 0, variant: 1 }
+  - { type: shop, at: [86, 22], rot: 1, variant: 2 }
+  - { type: church, at: [88, 40], rot: 2, variant: 0 }
+  - { type: house-small, at: [70, 42], rot: 3, variant: 1 }
+  - { type: house-small, at: [84, 42], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [92, 28], rot: 1, variant: 0 }
+  - { type: townhouse-row, at: [92, 34], rot: 2, variant: 1 }
+  - { type: shop, at: [70, 38], rot: 3, variant: 2 }
+  - { type: lamp-post, at: [74, 28], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [74, 32], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [80, 28], rot: 0, variant: 0 }
+  # Izium: rail yard (warehouses beside concrete strips) east of the supply hub.
+  - { type: warehouse, at: [88, 57], rot: 0, variant: 0 }
+  - { type: warehouse, at: [88, 72], rot: 2, variant: 0 }
+  - { type: warehouse, at: [93, 57], rot: 0, variant: 0 }
+  - { type: warehouse, at: [93, 72], rot: 2, variant: 0 }
+  - { type: warehouse, at: [98, 57], rot: 0, variant: 0 }
+  - { type: warehouse, at: [98, 72], rot: 2, variant: 0 }
+  - { type: warehouse, at: [103, 57], rot: 0, variant: 0 }
+  - { type: warehouse, at: [103, 72], rot: 2, variant: 0 }
+  - { type: factory, at: [96, 43], rot: 0, variant: 0 }
+  - { type: gas-station, at: [72, 76], rot: 2, variant: 0 }
+  - { type: house-small, at: [70, 56], rot: 1, variant: 1 }
+  - { type: house-small, at: [70, 72], rot: 1, variant: 2 }
+  - { type: shop, at: [72, 60], rot: 1, variant: 0 }
+  # Kupiansk: houses, shops, a church at the river crossing.
+  - { type: house-small, at: [70, 88], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [75, 88], rot: 1, variant: 1 }
+  - { type: house-small, at: [81, 88], rot: 2, variant: 2 }
+  - { type: house-small, at: [86, 88], rot: 3, variant: 0 }
+  - { type: house-small, at: [70, 106], rot: 0, variant: 1 }
+  - { type: shop, at: [86, 106], rot: 1, variant: 2 }
+  - { type: church, at: [90, 100], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [70, 112], rot: 3, variant: 1 }
+  - { type: house-small, at: [80, 112], rot: 0, variant: 2 }
+  - { type: townhouse-row, at: [88, 92], rot: 1, variant: 0 }
+  # West bank: a village and war damage near the bridges.
+  - { type: house-small, at: [40, 20], rot: 0, variant: 0 }
+  - { type: house-small, at: [44, 20], rot: 1, variant: 1 }
+  - { type: house-small, at: [48, 24], rot: 2, variant: 2 }
+  - { type: house-small, at: [40, 106], rot: 3, variant: 0 }
+  - { type: house-small, at: [46, 108], rot: 0, variant: 1 }
+  - { type: house-small, at: [52, 104], rot: 1, variant: 2 }
+  - { type: house-small, at: [30, 84], rot: 2, variant: 0 }
+  - { type: house-small, at: [34, 40], rot: 3, variant: 1 }
+  - { type: rubble-pile, at: [55, 28], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [55, 32], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [69, 62], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [69, 66], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [55, 94], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [69, 98], rot: 0, variant: 0 }
+  - { type: parked-car, at: [54, 62], rot: 1, variant: 0 }
+  - { type: parked-car, at: [70, 66], rot: 3, variant: 1 }
+  - { type: parked-car, at: [54, 98], rot: 1, variant: 1 }
+  # Tree belts along the fields and the river, forest patches, hedges.
+  - { type: oak, area: [50, 2, 56, 26], density: 45, seed: 3 }
+  - { type: poplar, area: [50, 34, 56, 56], density: 40, seed: 5 }
+  - { type: oak, area: [50, 72, 56, 92], density: 45, seed: 7 }
+  - { type: poplar, area: [50, 100, 56, 124], density: 40, seed: 9 }
+  - { type: birch, area: [68, 2, 72, 12], density: 40, seed: 11 }
+  - { type: pine, area: [92, 2, 124, 12], density: 35, seed: 13 }
+  - { type: pine, area: [96, 76, 124, 92], density: 30, seed: 15 }
+  - { type: birch, area: [30, 2, 46, 12], density: 30, seed: 17 }
+  - { type: oak, area: [24, 32, 40, 38], density: 35, seed: 19 }
+  - { type: birch, area: [26, 90, 44, 100], density: 35, seed: 21 }
+  - { type: pine, area: [100, 100, 124, 124], density: 40, seed: 23 }
+  - { type: birch, area: [100, 18, 124, 40], density: 30, seed: 25 }
+  - { type: poplar, area: [76, 50, 80, 54], density: 30, seed: 27 }
+  - { type: poplar, area: [66, 44, 68, 56], density: 30, seed: 29 }
+  - { type: poplar, area: [66, 72, 68, 88], density: 30, seed: 31 }
+  - { type: oak, area: [100, 46, 124, 54], density: 25, seed: 33 }
+  - { type: hedge, at: [30, 50], rot: 0, variant: 0 }
+  - { type: hedge, at: [30, 78], rot: 0, variant: 0 }
+  - { type: hedge, at: [32, 50], rot: 0, variant: 0 }
+  - { type: hedge, at: [32, 78], rot: 0, variant: 0 }
+  - { type: hedge, at: [34, 50], rot: 0, variant: 0 }
+  - { type: hedge, at: [34, 78], rot: 0, variant: 0 }
+  - { type: hedge, at: [36, 50], rot: 0, variant: 0 }
+  - { type: hedge, at: [36, 78], rot: 0, variant: 0 }
+  - { type: hedge, at: [38, 50], rot: 0, variant: 0 }
+  - { type: hedge, at: [38, 78], rot: 0, variant: 0 }
+  - { type: hedge, at: [40, 50], rot: 0, variant: 0 }
+  - { type: hedge, at: [40, 78], rot: 0, variant: 0 }
+  - { type: hedge, at: [42, 50], rot: 0, variant: 0 }
+  - { type: hedge, at: [42, 78], rot: 0, variant: 0 }
+  - { type: hedge, at: [44, 50], rot: 0, variant: 0 }
+  - { type: hedge, at: [44, 78], rot: 0, variant: 0 }
+  - { type: hedge, at: [46, 50], rot: 0, variant: 0 }
+  - { type: hedge, at: [46, 78], rot: 0, variant: 0 }
+  - { type: hedge, at: [48, 50], rot: 0, variant: 0 }
+  - { type: hedge, at: [48, 78], rot: 0, variant: 0 }
+starts:
+  - { faction: ukraine, hq: [12, 60], dozerCenti: [1850, 6150] }
+  - { faction: russia, hq: [112, 64], dozerCenti: [10950, 6650] }
