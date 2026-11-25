@@ -1,0 +1,17 @@
+# Spec 48: help card of the power plant. A base that consumes more power than its one plant produces.
+id: help-cn-power-plant-low
+map: showcase
+armies: [china, usa]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 45, y: 22, zoom: 1.4 }
+entities:
+  - { player: 0, type: cn-power-plant, origin: [37, 20] }
+  - { player: 0, type: cn-supply-center, origin: [40, 20] }
+  - { player: 0, type: cn-barracks, origin: [44, 20] }
+  - { player: 0, type: cn-vehicle-factory, origin: [47, 20] }
+  - { player: 0, type: cn-gattling-nest, origin: [51, 21] }

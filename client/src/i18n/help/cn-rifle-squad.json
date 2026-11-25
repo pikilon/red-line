@@ -1,0 +1,44 @@
+{
+  "id": "cn-rifle-squad",
+  "role": "Cheap line infantry",
+  "summary": "A cheap line soldier with a bullpup rifle. China wins by numbers, so it fields these soldiers in quantity and uses cover to make each rifle count.",
+  "sections": [
+    {
+      "title": "Rifle",
+      "how": "Select the squad and left-click an enemy, or let it fire at anything in range.",
+      "body": "The bullpup rifle hits infantry hard and can also shoot low drones. Against light and armoured vehicles it does little, and against a building almost nothing.",
+      "shots": ["cn-rifle-squad-fight"]
+    },
+    {
+      "title": "Ride in vehicles",
+      "how": "Select one or more riflemen, then left-click your own Mengshi or ZBL-09.",
+      "body": "They climb aboard and cannot be selected until they get out. A Mengshi has firing ports, so its riders shoot from inside; a ZBL-09 has none, so its riders are protected but silent. If the vehicle is destroyed, everyone aboard a Mengshi dies with it. Select the loaded vehicle and press Unload (n) to let them out.",
+      "shots": ["cn-rifle-squad-board"]
+    },
+    {
+      "title": "Garrison buildings",
+      "how": "Select riflemen and left-click a civilian building, or press Garrison.",
+      "body": "They take cover inside and fire from the windows with more range and damage. The building changes hands to your side while they hold it and returns to neutral when they leave. A wrecked building throws them out, and one that collapses can kill them.",
+      "shots": ["cn-rifle-squad-garrison"]
+    },
+    {
+      "title": "Heal at the barracks",
+      "how": "Select damaged riflemen and left-click your barracks.",
+      "body": "They walk in and heal for free while the barracks keeps training. A patient leaves on its own when whole; a full-health rifleman stays outside. If the barracks is destroyed or sold, the patients are thrown out.",
+      "shots": ["cn-rifle-squad-heal"]
+    }
+  ],
+  "strong": ["Enemy infantry", "Low drones", "Filling the line cheaply"],
+  "weak": [
+    "Tanks and armoured vehicles",
+    "Artillery and explosives",
+    "Aircraft",
+    "Open ground against vehicles"
+  ],
+  "tips": [
+    "Build them in numbers: a crowd of cheap riflemen holds more ground than a few careful ones.",
+    "Get them under cover before the shooting starts; a rifle in the open loses to almost any vehicle.",
+    "Research Nationalism at the barracks to raise the damage of riflemen and HJ-12 teams.",
+    "They can answer low drones, but they cannot reach high aircraft."
+  ]
+}

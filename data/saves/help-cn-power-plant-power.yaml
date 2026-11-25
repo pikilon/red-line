@@ -1,0 +1,13 @@
+# Spec 48: help card of the power plant. Select it to see the power it adds to the base.
+id: help-cn-power-plant-power
+map: showcase
+armies: [china, usa]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 44, y: 18, zoom: 2.4 }
+entities:
+  - { player: 0, type: cn-power-plant, origin: [41, 18] }

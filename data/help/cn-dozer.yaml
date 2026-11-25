@@ -1,0 +1,7 @@
+# Spec 48: help card screenshots. `node --run help:shots -- --type cn-dozer`
+- { id: cn-dozer-build, save: help-cn-dozer-build, ticks: 5, select: [cn-dozer], hud: true, tab: build }
+- { id: cn-dozer-resume, save: help-cn-dozer-build, ticks: 10, select: [cn-dozer] }
+- { id: cn-dozer-repair-building, save: help-cn-dozer-repair-building, ticks: 10, select: [cn-dozer] }
+- { id: cn-dozer-dig, save: help-cn-dozer-dig, ticks: 100, select: [cn-dozer] }
+- { id: cn-dozer-bridge, save: help-cn-dozer-bridge, ticks: 300, select: [cn-dozer] }
+- { id: cn-dozer-repair, save: help-cn-dozer-repair, ticks: 10, select: [cn-dozer], hud: true, tab: orders }

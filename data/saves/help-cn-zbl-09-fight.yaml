@@ -1,0 +1,14 @@
+# Spec 48: help card of the ZBL-09. Its 30 mm cannon fires at Russian infantry beside a scout vehicle.
+id: help-cn-zbl-09-fight
+map: showcase
+armies: [china, russia]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 46, y: 20.5, zoom: 3 }
+entities:
+  - { player: 0, type: cn-zbl-09, atCenti: [4300, 2000], label: bradley, order: { attack: bmp } }
+  - { player: 1, type: ru-bmp-2, atCenti: [4900, 2000], label: bmp, hpPercent: 60 }

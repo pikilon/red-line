@@ -275,7 +275,7 @@ test("AC-05-01: personality sources build", () => {
 
   // Personality values are tuned by the balance work (spec 05 §4.3), so this
   // checks the assembly against the YAML sources instead of pinning numbers.
-  const ids = ["ukraine-balanced", "ukraine-rush", "russia-balanced", "russia-rush", "usa-balanced", "usa-rush"];
+  const ids = ["ukraine-balanced", "ukraine-rush", "russia-balanced", "russia-rush", "usa-balanced", "usa-rush", "china-balanced", "china-rush"];
   assert.deepEqual(ruleset.ai.map((ai) => ai.id), ids);
   ids.forEach((id, i) => {
     const source = parse(readFileSync(join(root, `data/ai/${id}.yaml`), "utf8"));

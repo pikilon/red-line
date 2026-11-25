@@ -1,0 +1,55 @@
+{
+  "id": "cn-barracks",
+  "role": "Infantry production and healing",
+  "summary": "The barracks trains the Chinese foot soldiers and heals wounded ones for free. It also sells the Nationalism upgrade. It has no weapon, draws power and needs a power plant before a dozer can raise it.",
+  "sections": [
+    {
+      "title": "Train infantry",
+      "how": "Select the barracks, open the Build tab and press Rifle squad or HJ-12 team.",
+      "body": "The barracks trains both foot units. Press a tile to queue one, press + on its tile to queue another and − to cancel the last one. The head item shows a clock wipe while it is being trained. New soldiers leave by the building exit; set a rally point so they walk where they are needed. The Nationalism upgrade adds damage to rifle squads and HJ-12 teams.",
+      "shots": ["cn-barracks-train"]
+    },
+    {
+      "title": "Rally point",
+      "how": "Select the barracks, press Rally point and left-click the ground.",
+      "body": "Infantry trained afterwards leaves the barracks and walks to the rally point. Changing the point only affects units produced later. The marker shows while the barracks is selected.",
+      "shots": ["cn-barracks-rally"]
+    },
+    {
+      "title": "Heal infantry",
+      "how": "Select damaged rifle squads or HJ-12 teams and left-click the barracks.",
+      "body": "The patients walk in and heal free of charge while the barracks keeps training. They are hidden and safe inside, and leave on their own once whole. Full-health infantry stay outside. If the barracks is destroyed or sold, its patients are thrown out, and one with nowhere to stand can die in the collapse.",
+      "shots": ["cn-barracks-heal"]
+    },
+    {
+      "title": "Repair with a dozer",
+      "how": "Select a dozer and left-click the damaged barracks.",
+      "body": "The dozer drives to the building and restores it until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle.",
+      "shots": ["cn-barracks-repair"]
+    },
+    {
+      "title": "Sell",
+      "how": "Select the barracks and press Sell twice.",
+      "body": "It sells for half its price and disappears at once. Any infantry still in its queue is cancelled and refunded in full, and its patients are thrown out. Selling your last building loses the match.",
+      "shots": ["cn-barracks-sell"]
+    }
+  ],
+  "strong": [
+    "Training rifle squads and HJ-12 teams",
+    "Healing infantry between fights",
+    "A base close to the front line"
+  ],
+  "weak": [
+    "It has no weapon",
+    "Tanks and artillery",
+    "Aircraft and long-range fire",
+    "Raids behind the line"
+  ],
+  "tips": [
+    "Build a power plant first: the barracks needs one and draws power from it.",
+    "Place it behind the line but within walking distance of the front, so wounded infantry can reach it.",
+    "Set a rally point toward the front so new infantry do not crowd the exit.",
+    "Keep a dozer nearby: the barracks cannot repair itself.",
+    "Queue infantry before a fight; training continues while the barracks heals its patients."
+  ]
+}

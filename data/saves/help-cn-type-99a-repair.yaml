@@ -1,0 +1,14 @@
+# Spec 48: help card of the Type 99A. A damaged Type 99A waits beside its repair factory.
+id: help-cn-type-99a-repair
+map: showcase
+armies: [china, russia]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 49, y: 21, zoom: 3 }
+entities:
+  - { player: 0, type: cn-vehicle-factory, origin: [50, 18] }
+  - { player: 0, type: cn-type-99a, atCenti: [4600, 2000], hpPercent: 40 }

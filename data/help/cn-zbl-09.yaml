@@ -1,0 +1,5 @@
+# Spec 48: help card screenshots of the ZBL-09. `node --run help:shots -- --type cn-zbl-09`
+- { id: cn-zbl-09-fight, save: help-cn-zbl-09-fight, ticks: 40, select: [cn-zbl-09] }
+- { id: cn-zbl-09-carry, save: help-cn-zbl-09-carry, ticks: 12, select: [cn-rifle-squad, cn-hj-team] }
+- { id: cn-zbl-09-unload, save: help-cn-zbl-09-carry, ticks: 200, select: [cn-zbl-09], hud: true }
+- { id: cn-zbl-09-repair, save: help-cn-zbl-09-repair, ticks: 10, select: [cn-zbl-09], hud: true }

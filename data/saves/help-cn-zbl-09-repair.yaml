@@ -1,0 +1,18 @@
+# Spec 48: help card of the ZBL-09. A damaged ZBL-09 waits beside its repair factory.
+# The first docked vehicle repairs its initial deficit in five seconds; the second waits and production continues.
+id: help-cn-zbl-09-repair
+map: first-line
+armies: [china, russia]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 13, y: 64, zoom: 1.1 }
+entities:
+  - { player: 0, type: cn-power-plant, origin: [6, 60] }
+  - { player: 0, type: cn-supply-center, origin: [17, 55] }
+  - { player: 0, type: cn-vehicle-factory, origin: [12, 66] }
+  - { player: 0, type: cn-type-99a, atCenti: [1100, 6600], hpPercent: 40 }
+  - { player: 0, type: cn-zbl-09, atCenti: [1100, 6700], hpPercent: 50 }

@@ -14,8 +14,8 @@ fn builtin_json() -> String {
 fn ac_05_03_ai_definitions_parse() {
     let rules = Ruleset::builtin();
 
-    // Six builtin personalities, indexed by first-match id order.
-    assert_eq!(rules.ai.len(), 6);
+    // Eight builtin personalities, indexed by first-match id order.
+    assert_eq!(rules.ai.len(), 8);
     assert_eq!(rules.ai_index("russia-rush"), Some(3));
     assert_eq!(rules.ai_index("nope"), None);
 

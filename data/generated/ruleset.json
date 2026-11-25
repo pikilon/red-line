@@ -786,6 +786,196 @@
       }
     },
     {
+      "id": "cn-qbz-95",
+      "damageType": 0,
+      "damage": 10,
+      "rangeCenti": 430,
+      "minRangeCenti": 0,
+      "cooldownTicks": 14,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 400,
+      "aimToleranceDeg": 15,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "antiAir": "low",
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "cn-hj-12",
+      "damageType": 2,
+      "damage": 125,
+      "rangeCenti": 900,
+      "minRangeCenti": 150,
+      "cooldownTicks": 90,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 45,
+      "aimToleranceDeg": 15,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "interceptable": true,
+      "render": {
+        "model": "atgm",
+        "flight": "loft",
+        "apexCenti": 40,
+        "launch": "softLaunch",
+        "trail": "smoke"
+      }
+    },
+    {
+      "id": "cn-qjc-88",
+      "damageType": 0,
+      "damage": 11,
+      "rangeCenti": 520,
+      "minRangeCenti": 0,
+      "cooldownTicks": 10,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 450,
+      "aimToleranceDeg": 2,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "antiAir": "low",
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "cn-zbl-09-cannon",
+      "damageType": 1,
+      "damage": 15,
+      "rangeCenti": 600,
+      "minRangeCenti": 0,
+      "cooldownTicks": 8,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 500,
+      "aimToleranceDeg": 2,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "antiAir": "low",
+      "render": {
+        "model": "tracerHeavy",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "cn-zpt-99a",
+      "damageType": 2,
+      "damage": 105,
+      "rangeCenti": 750,
+      "minRangeCenti": 0,
+      "cooldownTicks": 30,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 900,
+      "aimToleranceDeg": 2,
+      "delivery": 1,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "render": {
+        "model": "shell",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "cannon",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "cn-phl-03-rockets",
+      "damageType": 3,
+      "damage": 50,
+      "rangeCenti": 2800,
+      "minRangeCenti": 800,
+      "cooldownTicks": 240,
+      "splashCenti": 170,
+      "projectileTicks": 0,
+      "speedCenti": 55,
+      "aimToleranceDeg": 2,
+      "delivery": 1,
+      "scatterCenti": 120,
+      "salvo": 6,
+      "salvoIntervalTicks": 4,
+      "render": {
+        "model": "rocket",
+        "flight": "ballistic",
+        "apexCenti": 0,
+        "launch": "rocketLaunch",
+        "trail": "smoke"
+      }
+    },
+    {
+      "id": "cn-sidearm",
+      "damageType": 0,
+      "damage": 4,
+      "rangeCenti": 300,
+      "minRangeCenti": 0,
+      "cooldownTicks": 20,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 400,
+      "aimToleranceDeg": 2,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "antiAir": "low",
+      "render": {
+        "model": "tracer",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
+      "id": "cn-gattling-post",
+      "damageType": 1,
+      "damage": 9,
+      "rangeCenti": 800,
+      "minRangeCenti": 0,
+      "cooldownTicks": 3,
+      "splashCenti": 0,
+      "projectileTicks": 0,
+      "speedCenti": 600,
+      "aimToleranceDeg": 2,
+      "delivery": 0,
+      "scatterCenti": 0,
+      "salvo": 1,
+      "salvoIntervalTicks": 0,
+      "antiAir": "low",
+      "render": {
+        "model": "tracerHeavy",
+        "flight": "straight",
+        "apexCenti": 0,
+        "launch": "muzzle",
+        "trail": "none"
+      }
+    },
+    {
       "id": "ua-ratel-warhead",
       "damageType": 3,
       "damage": 700,
@@ -870,7 +1060,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
-      "launches": 53,
+      "launches": 67,
       "render": {
         "model": "tracer",
         "flight": "straight",
@@ -919,7 +1109,7 @@
       "salvoIntervalTicks": 0,
       "antiAir": "low",
       "antiGround": false,
-      "launches": 54,
+      "launches": 68,
       "render": {
         "model": "tracer",
         "flight": "straight",
@@ -1156,7 +1346,7 @@
       "scatterCenti": 0,
       "salvo": 1,
       "salvoIntervalTicks": 0,
-      "launches": 65,
+      "launches": 79,
       "render": {
         "model": "tracer",
         "flight": "straight",
@@ -1628,10 +1818,10 @@
         13,
         14,
         15,
-        45,
-        46,
-        47,
-        48
+        59,
+        60,
+        61,
+        62
       ],
       "footprint": [
         0,
@@ -1882,8 +2072,8 @@
       "produces": [
         2,
         3,
-        52,
-        68
+        66,
+        82
       ],
       "builds": [],
       "footprint": [
@@ -1941,8 +2131,8 @@
         5,
         6,
         7,
-        55,
-        69
+        69,
+        83
       ],
       "builds": [],
       "footprint": [
@@ -2381,8 +2571,8 @@
         27,
         28,
         29,
-        58,
-        59
+        72,
+        73
       ],
       "footprint": [
         0,
@@ -2633,8 +2823,8 @@
       "produces": [
         16,
         17,
-        64,
-        70
+        78,
+        84
       ],
       "builds": [],
       "footprint": [
@@ -2692,9 +2882,9 @@
         19,
         20,
         21,
-        66,
-        67,
-        71
+        80,
+        81,
+        85
       ],
       "builds": [],
       "footprint": [
@@ -3390,7 +3580,7 @@
       "produces": [
         30,
         31,
-        72
+        86
       ],
       "builds": [],
       "footprint": [
@@ -3447,7 +3637,7 @@
         33,
         34,
         35,
-        73
+        87
       ],
       "builds": [],
       "footprint": [
@@ -3529,6 +3719,748 @@
       }
     },
     {
+      "id": "cn-rifle-squad",
+      "faction": 3,
+      "category": "unit",
+      "armor": 0,
+      "hp": 100,
+      "sightCenti": 600,
+      "cost": 90,
+      "buildTicks": 60,
+      "speedCenti": 8,
+      "turnRateDeg": 720,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 0,
+      "weapon": 24,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          9,
+          18,
+          27,
+          36
+        ],
+        "required": [
+          36,
+          72,
+          144
+        ]
+      },
+      "render": {
+        "size": [
+          30,
+          60,
+          30
+        ]
+      }
+    },
+    {
+      "id": "cn-hj-team",
+      "faction": 3,
+      "category": "unit",
+      "armor": 0,
+      "hp": 85,
+      "sightCenti": 650,
+      "cost": 330,
+      "buildTicks": 140,
+      "speedCenti": 6,
+      "turnRateDeg": 540,
+      "radiusCenti": 25,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": true,
+      "stowTicks": 17,
+      "locomotor": 0,
+      "weapon": 25,
+      "trenchWeapon": 30,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          33,
+          66,
+          99,
+          132
+        ],
+        "required": [
+          132,
+          264,
+          528
+        ]
+      },
+      "render": {
+        "size": [
+          40,
+          50,
+          40
+        ]
+      }
+    },
+    {
+      "id": "cn-mengshi",
+      "faction": 3,
+      "category": "unit",
+      "armor": 1,
+      "hp": 260,
+      "sightCenti": 1200,
+      "cost": 400,
+      "buildTicks": 140,
+      "speedCenti": 27,
+      "turnRateDeg": 300,
+      "radiusCenti": 34,
+      "turretTurnRateDeg": 270,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 2,
+      "weapon": 26,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "transport": {
+        "slots": 5,
+        "fireFromInside": true,
+        "damagePct": 100,
+        "exitTicks": 4
+      },
+      "experience": {
+        "value": [
+          40,
+          80,
+          120,
+          160
+        ],
+        "required": [
+          160,
+          320,
+          640
+        ]
+      },
+      "render": {
+        "size": [
+          60,
+          50,
+          90
+        ]
+      }
+    },
+    {
+      "id": "cn-zbl-09",
+      "faction": 3,
+      "category": "unit",
+      "armor": 1,
+      "hp": 430,
+      "sightCenti": 700,
+      "cost": 650,
+      "buildTicks": 200,
+      "speedCenti": 25,
+      "turnRateDeg": 220,
+      "radiusCenti": 41,
+      "turretTurnRateDeg": 180,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 2,
+      "weapon": 27,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "transport": {
+        "slots": 8,
+        "damagePct": 10,
+        "exitTicks": 4
+      },
+      "experience": {
+        "value": [
+          65,
+          130,
+          195,
+          260
+        ],
+        "required": [
+          260,
+          520,
+          1040
+        ]
+      },
+      "render": {
+        "size": [
+          70,
+          60,
+          110
+        ]
+      }
+    },
+    {
+      "id": "cn-type-99a",
+      "faction": 3,
+      "category": "unit",
+      "armor": 2,
+      "hp": 850,
+      "sightCenti": 700,
+      "cost": 1350,
+      "buildTicks": 300,
+      "speedCenti": 20,
+      "turnRateDeg": 180,
+      "radiusCenti": 45,
+      "turretTurnRateDeg": 135,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 1,
+      "weapon": 28,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          135,
+          270,
+          405,
+          540
+        ],
+        "required": [
+          540,
+          1080,
+          2160
+        ]
+      },
+      "render": {
+        "size": [
+          80,
+          55,
+          130
+        ]
+      }
+    },
+    {
+      "id": "cn-phl-03",
+      "faction": 3,
+      "category": "unit",
+      "armor": 1,
+      "hp": 280,
+      "sightCenti": 600,
+      "cost": 1300,
+      "buildTicks": 330,
+      "speedCenti": 18,
+      "turnRateDeg": 140,
+      "radiusCenti": 45,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 2,
+      "weapon": 29,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          130,
+          260,
+          390,
+          520
+        ],
+        "required": [
+          520,
+          1040,
+          2080
+        ]
+      },
+      "render": {
+        "size": [
+          75,
+          65,
+          125
+        ]
+      }
+    },
+    {
+      "id": "cn-dozer",
+      "faction": 3,
+      "category": "unit",
+      "armor": 1,
+      "hp": 300,
+      "sightCenti": 500,
+      "cost": 800,
+      "buildTicks": 200,
+      "speedCenti": 15,
+      "turnRateDeg": 150,
+      "radiusCenti": 38,
+      "turretTurnRateDeg": 0,
+      "articulation": "blade",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [
+        53,
+        54,
+        55,
+        56,
+        57
+      ],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          80,
+          160,
+          240,
+          320
+        ]
+      },
+      "render": {
+        "size": [
+          80,
+          60,
+          100
+        ]
+      }
+    },
+    {
+      "id": "cn-supply-truck",
+      "faction": 3,
+      "category": "unit",
+      "armor": 1,
+      "hp": 250,
+      "sightCenti": 500,
+      "cost": 600,
+      "buildTicks": 150,
+      "speedCenti": 20,
+      "turnRateDeg": 150,
+      "radiusCenti": 38,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": 2,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 300,
+      "loadTicks": 45,
+      "unloadTicks": 15,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          60,
+          120,
+          180,
+          240
+        ]
+      },
+      "render": {
+        "size": [
+          60,
+          60,
+          100
+        ]
+      }
+    },
+    {
+      "id": "cn-hq",
+      "faction": 3,
+      "category": "building",
+      "armor": 3,
+      "hp": 3000,
+      "sightCenti": 900,
+      "cost": 0,
+      "buildTicks": 0,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [
+        50
+      ],
+      "builds": [],
+      "footprint": [
+        4,
+        4
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          40,
+          80,
+          120,
+          160
+        ]
+      },
+      "render": {
+        "size": [
+          400,
+          150,
+          400
+        ]
+      }
+    },
+    {
+      "id": "cn-power-plant",
+      "faction": 3,
+      "category": "building",
+      "armor": 3,
+      "hp": 1000,
+      "sightCenti": 500,
+      "cost": 600,
+      "buildTicks": 150,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        3,
+        3
+      ],
+      "power": 10,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          60,
+          120,
+          180,
+          240
+        ]
+      },
+      "render": {
+        "size": [
+          300,
+          120,
+          300
+        ]
+      }
+    },
+    {
+      "id": "cn-supply-center",
+      "faction": 3,
+      "category": "building",
+      "armor": 3,
+      "hp": 1500,
+      "sightCenti": 500,
+      "cost": 1500,
+      "buildTicks": 225,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [
+        51
+      ],
+      "builds": [],
+      "footprint": [
+        4,
+        3
+      ],
+      "power": -2,
+      "requiresPower": false,
+      "dropOff": true,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": 51,
+      "experience": {
+        "value": [
+          150,
+          300,
+          450,
+          600
+        ]
+      },
+      "render": {
+        "size": [
+          400,
+          100,
+          300
+        ]
+      }
+    },
+    {
+      "id": "cn-barracks",
+      "faction": 3,
+      "category": "building",
+      "armor": 3,
+      "hp": 1000,
+      "sightCenti": 500,
+      "cost": 450,
+      "buildTicks": 140,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [
+        53
+      ],
+      "produces": [
+        44,
+        45,
+        88
+      ],
+      "builds": [],
+      "footprint": [
+        3,
+        3
+      ],
+      "power": -2,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "healsInfantry": true,
+      "experience": {
+        "value": [
+          50,
+          100,
+          150,
+          200
+        ]
+      },
+      "render": {
+        "size": [
+          300,
+          90,
+          300
+        ]
+      }
+    },
+    {
+      "id": "cn-vehicle-factory",
+      "faction": 3,
+      "category": "building",
+      "armor": 3,
+      "hp": 2000,
+      "sightCenti": 500,
+      "cost": 2000,
+      "buildTicks": 300,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [
+        54
+      ],
+      "produces": [
+        46,
+        47,
+        48,
+        49,
+        89
+      ],
+      "builds": [],
+      "footprint": [
+        4,
+        4
+      ],
+      "power": -4,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "repairsVehicles": true,
+      "experience": {
+        "value": [
+          200,
+          400,
+          600,
+          800
+        ]
+      },
+      "render": {
+        "size": [
+          400,
+          110,
+          400
+        ]
+      }
+    },
+    {
+      "id": "cn-gattling-nest",
+      "faction": 3,
+      "category": "building",
+      "armor": 3,
+      "hp": 1200,
+      "sightCenti": 1000,
+      "cost": 700,
+      "buildTicks": 150,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 150,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": 31,
+      "requires": [
+        55
+      ],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        2,
+        2
+      ],
+      "power": -3,
+      "requiresPower": true,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "experience": {
+        "value": [
+          70,
+          140,
+          210,
+          280
+        ]
+      },
+      "render": {
+        "size": [
+          200,
+          70,
+          200
+        ]
+      }
+    },
+    {
       "id": "port-depot",
       "faction": -1,
       "category": "depot",
@@ -3591,9 +4523,9 @@
         13
       ],
       "produces": [
-        49,
-        50,
-        51
+        63,
+        64,
+        65
       ],
       "builds": [],
       "footprint": [
@@ -3640,7 +4572,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": -1,
-      "weapon": 29,
+      "weapon": 37,
       "requires": [
         12
       ],
@@ -3695,7 +4627,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": -1,
-      "weapon": 32,
+      "weapon": 40,
       "requires": [
         12
       ],
@@ -3750,8 +4682,8 @@
         14
       ],
       "produces": [
-        56,
-        57
+        70,
+        71
       ],
       "builds": [],
       "footprint": [
@@ -3814,7 +4746,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "oneWay": {
-        "warhead": 24,
+        "warhead": 32,
         "fuelTicks": 0,
         "armTiles": 0
       },
@@ -3852,7 +4784,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": 1,
-      "weapon": 25,
+      "weapon": 33,
       "requires": [],
       "produces": [],
       "builds": [],
@@ -3906,7 +4838,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": 3,
-      "weapon": 26,
+      "weapon": 34,
       "requires": [],
       "produces": [],
       "builds": [],
@@ -3964,7 +4896,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": 0,
-      "weapon": 27,
+      "weapon": 35,
       "trenchWeapon": 6,
       "requires": [],
       "produces": [],
@@ -4039,7 +4971,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "oneWay": {
-        "warhead": 28,
+        "warhead": 36,
         "fuelTicks": 300,
         "armTiles": 0
       },
@@ -4094,7 +5026,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "oneWay": {
-        "warhead": 30,
+        "warhead": 38,
         "fuelTicks": 150,
         "armTiles": 0
       },
@@ -4133,7 +5065,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": 2,
-      "weapon": 31,
+      "weapon": 39,
       "requires": [],
       "produces": [],
       "builds": [],
@@ -4202,7 +5134,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "oneWay": {
-        "warhead": 33,
+        "warhead": 41,
         "fuelTicks": 3000,
         "armTiles": 3
       },
@@ -4257,7 +5189,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "oneWay": {
-        "warhead": 34,
+        "warhead": 42,
         "fuelTicks": 3000,
         "armTiles": 3
       },
@@ -4302,8 +5234,8 @@
         28
       ],
       "produces": [
-        60,
-        61
+        74,
+        75
       ],
       "builds": [],
       "footprint": [
@@ -4355,8 +5287,8 @@
         26
       ],
       "produces": [
-        62,
-        63
+        76,
+        77
       ],
       "builds": [],
       "footprint": [
@@ -4403,7 +5335,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": 4,
-      "weapon": 35,
+      "weapon": 43,
       "requires": [],
       "produces": [],
       "builds": [],
@@ -4524,7 +5456,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "oneWay": {
-        "warhead": 36,
+        "warhead": 44,
         "fuelTicks": 1800,
         "armTiles": 3
       },
@@ -4579,7 +5511,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "oneWay": {
-        "warhead": 37,
+        "warhead": 45,
         "fuelTicks": 1500,
         "armTiles": 3
       },
@@ -4618,7 +5550,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": 0,
-      "weapon": 39,
+      "weapon": 47,
       "trenchWeapon": 14,
       "requires": [],
       "produces": [],
@@ -4693,7 +5625,7 @@
       "unloadTicks": 0,
       "freeUnit": -1,
       "oneWay": {
-        "warhead": 38,
+        "warhead": 46,
         "fuelTicks": 240,
         "armTiles": 0
       },
@@ -4731,7 +5663,7 @@
       "stationaryFire": false,
       "stowTicks": 0,
       "locomotor": 2,
-      "weapon": 40,
+      "weapon": 48,
       "requires": [],
       "produces": [],
       "builds": [],
@@ -4854,7 +5786,7 @@
         "appliesTo": [
           2,
           3,
-          52
+          66
         ],
         "healthPercent": 100,
         "damagePercent": 120
@@ -4952,7 +5884,7 @@
         "appliesTo": [
           16,
           17,
-          64
+          78
         ],
         "healthPercent": 125,
         "damagePercent": 100
@@ -5110,6 +6042,103 @@
           0
         ]
       }
+    },
+    {
+      "id": "cn-nationalism",
+      "faction": 3,
+      "category": "upgrade",
+      "armor": 0,
+      "hp": 0,
+      "sightCenti": 0,
+      "cost": 800,
+      "buildTicks": 420,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "upgrade": {
+        "appliesTo": [
+          44,
+          45
+        ],
+        "healthPercent": 100,
+        "damagePercent": 115
+      },
+      "render": {
+        "size": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "cn-composite-armor",
+      "faction": 3,
+      "category": "upgrade",
+      "armor": 0,
+      "hp": 0,
+      "sightCenti": 0,
+      "cost": 1300,
+      "buildTicks": 600,
+      "speedCenti": 0,
+      "turnRateDeg": 0,
+      "radiusCenti": 0,
+      "turretTurnRateDeg": 0,
+      "articulation": "none",
+      "stationaryFire": false,
+      "stowTicks": 0,
+      "locomotor": -1,
+      "weapon": -1,
+      "requires": [],
+      "produces": [],
+      "builds": [],
+      "footprint": [
+        0,
+        0
+      ],
+      "power": 0,
+      "requiresPower": false,
+      "dropOff": false,
+      "capacity": 0,
+      "loadTicks": 0,
+      "unloadTicks": 0,
+      "freeUnit": -1,
+      "upgrade": {
+        "appliesTo": [
+          46,
+          47,
+          48
+        ],
+        "healthPercent": 120,
+        "damagePercent": 100
+      },
+      "render": {
+        "size": [
+          0,
+          0,
+          0
+        ]
+      }
     }
   ],
   "factions": [
@@ -5127,6 +6156,11 @@
       "id": "usa",
       "hq": 38,
       "dozer": 36
+    },
+    {
+      "id": "china",
+      "hq": 52,
+      "dozer": 50
     }
   ],
   "layerNames": {
@@ -30059,21 +31093,21 @@
         13,
         14,
         11,
-        46,
-        45,
+        60,
+        59,
         11,
-        48,
+        62,
         15,
         11,
-        47
+        61
       ],
       "upgrades": [
         {
-          "upgrade": 68,
+          "upgrade": 82,
           "minTick": 2400
         },
         {
-          "upgrade": 69,
+          "upgrade": 83,
           "minTick": 4200
         }
       ],
@@ -30138,11 +31172,11 @@
           "id": "robots",
           "units": [
             [
-              49,
+              63,
               3
             ],
             [
-              50,
+              64,
               2
             ]
           ]
@@ -30151,7 +31185,7 @@
           "id": "fpv",
           "units": [
             [
-              52,
+              66,
               3
             ],
             [
@@ -30164,7 +31198,7 @@
           "id": "flamingo",
           "units": [
             [
-              56,
+              70,
               1
             ]
           ]
@@ -30173,7 +31207,7 @@
           "id": "storm-shadow",
           "units": [
             [
-              57,
+              71,
               1
             ]
           ]
@@ -30182,7 +31216,7 @@
           "id": "bombers",
           "units": [
             [
-              51,
+              65,
               2
             ]
           ]
@@ -30190,7 +31224,7 @@
       ],
       "guards": [
         {
-          "unit": 55,
+          "unit": 69,
           "count": 1,
           "minTick": 3600
         }
@@ -30286,15 +31320,15 @@
         14,
         13,
         11,
-        46
+        60
       ],
       "upgrades": [
         {
-          "upgrade": 68,
+          "upgrade": 82,
           "minTick": 5400
         },
         {
-          "upgrade": 69,
+          "upgrade": 83,
           "minTick": 7200
         }
       ],
@@ -30351,7 +31385,7 @@
           "id": "fpv",
           "units": [
             [
-              52,
+              66,
               3
             ]
           ]
@@ -30359,7 +31393,7 @@
       ],
       "guards": [
         {
-          "unit": 55,
+          "unit": 69,
           "count": 1,
           "minTick": 5400
         }
@@ -30404,17 +31438,17 @@
         27,
         28,
         25,
-        59,
-        58,
+        73,
+        72,
         25
       ],
       "upgrades": [
         {
-          "upgrade": 70,
+          "upgrade": 84,
           "minTick": 3600
         },
         {
-          "upgrade": 71,
+          "upgrade": 85,
           "minTick": 6000
         }
       ],
@@ -30475,7 +31509,7 @@
           "id": "waves",
           "units": [
             [
-              62,
+              76,
               6
             ]
           ]
@@ -30484,11 +31518,11 @@
           "id": "air-strike",
           "units": [
             [
-              60,
+              74,
               1
             ],
             [
-              63,
+              77,
               2
             ]
           ]
@@ -30497,7 +31531,7 @@
           "id": "fibre",
           "units": [
             [
-              64,
+              78,
               2
             ],
             [
@@ -30509,12 +31543,12 @@
       ],
       "guards": [
         {
-          "unit": 66,
+          "unit": 80,
           "count": 2,
           "minTick": 4800
         },
         {
-          "unit": 67,
+          "unit": 81,
           "count": 1,
           "minTick": 6000
         }
@@ -30589,16 +31623,16 @@
         27,
         25,
         29,
-        59,
+        73,
         25
       ],
       "upgrades": [
         {
-          "upgrade": 70,
+          "upgrade": 84,
           "minTick": 5400
         },
         {
-          "upgrade": 71,
+          "upgrade": 85,
           "minTick": 7200
         }
       ],
@@ -30659,7 +31693,7 @@
           "id": "waves",
           "units": [
             [
-              62,
+              76,
               8
             ]
           ]
@@ -30667,7 +31701,7 @@
       ],
       "guards": [
         {
-          "unit": 66,
+          "unit": 80,
           "count": 1,
           "minTick": 5400
         }
@@ -30718,11 +31752,11 @@
       ],
       "upgrades": [
         {
-          "upgrade": 72,
+          "upgrade": 86,
           "minTick": 3600
         },
         {
-          "upgrade": 73,
+          "upgrade": 87,
           "minTick": 6000
         }
       ],
@@ -30824,11 +31858,11 @@
       ],
       "upgrades": [
         {
-          "upgrade": 72,
+          "upgrade": 86,
           "minTick": 5400
         },
         {
-          "upgrade": 73,
+          "upgrade": 87,
           "minTick": 7200
         }
       ],
@@ -30877,6 +31911,211 @@
             ],
             [
               33,
+              2
+            ]
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "taskForce": 0,
+          "weight": 60,
+          "minTick": 0
+        },
+        {
+          "taskForce": 1,
+          "weight": 50,
+          "minTick": 1800
+        },
+        {
+          "taskForce": 2,
+          "weight": 30,
+          "minTick": 2700
+        },
+        {
+          "taskForce": 3,
+          "weight": 40,
+          "minTick": 3600
+        }
+      ]
+    },
+    {
+      "id": "china-balanced",
+      "faction": 3,
+      "harvesters": 4,
+      "defenseRadiusCenti": 2000,
+      "garrisonRadiusCenti": 800,
+      "buildOrder": [
+        53,
+        54,
+        55,
+        53,
+        56,
+        57,
+        53,
+        57
+      ],
+      "upgrades": [
+        {
+          "upgrade": 88,
+          "minTick": 3600
+        },
+        {
+          "upgrade": 89,
+          "minTick": 6000
+        }
+      ],
+      "taskForces": [
+        {
+          "id": "infantry",
+          "units": [
+            [
+              44,
+              4
+            ],
+            [
+              45,
+              2
+            ]
+          ]
+        },
+        {
+          "id": "mechanized",
+          "units": [
+            [
+              47,
+              3
+            ],
+            [
+              44,
+              4
+            ]
+          ]
+        },
+        {
+          "id": "armor",
+          "units": [
+            [
+              48,
+              3
+            ],
+            [
+              47,
+              2
+            ]
+          ]
+        },
+        {
+          "id": "fires",
+          "units": [
+            [
+              49,
+              2
+            ],
+            [
+              48,
+              2
+            ],
+            [
+              45,
+              3
+            ]
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "taskForce": 0,
+          "weight": 50,
+          "minTick": 0
+        },
+        {
+          "taskForce": 1,
+          "weight": 40,
+          "minTick": 2700
+        },
+        {
+          "taskForce": 2,
+          "weight": 40,
+          "minTick": 4500
+        },
+        {
+          "taskForce": 3,
+          "weight": 20,
+          "minTick": 6300
+        }
+      ]
+    },
+    {
+      "id": "china-rush",
+      "faction": 3,
+      "harvesters": 6,
+      "defenseRadiusCenti": 1500,
+      "garrisonRadiusCenti": 800,
+      "buildOrder": [
+        53,
+        55,
+        54,
+        56,
+        55,
+        53,
+        57
+      ],
+      "upgrades": [
+        {
+          "upgrade": 88,
+          "minTick": 5400
+        },
+        {
+          "upgrade": 89,
+          "minTick": 7200
+        }
+      ],
+      "taskForces": [
+        {
+          "id": "rifles",
+          "units": [
+            [
+              44,
+              10
+            ]
+          ]
+        },
+        {
+          "id": "raid",
+          "units": [
+            [
+              46,
+              3
+            ],
+            [
+              44,
+              4
+            ]
+          ]
+        },
+        {
+          "id": "hunters",
+          "units": [
+            [
+              45,
+              3
+            ],
+            [
+              44,
+              4
+            ]
+          ]
+        },
+        {
+          "id": "armor",
+          "units": [
+            [
+              48,
+              2
+            ],
+            [
+              47,
               2
             ]
           ]

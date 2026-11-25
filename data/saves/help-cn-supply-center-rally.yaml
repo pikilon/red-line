@@ -1,0 +1,13 @@
+# Spec 48: help card of the supply center. Its rally point sits east of the building.
+id: help-cn-supply-center-rally
+map: showcase
+armies: [china, usa]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 46, y: 16.5, zoom: 2.2 }
+entities:
+  - { player: 0, type: cn-supply-center, origin: [45, 14], order: { rally: [5200, 1550] } }

@@ -1,0 +1,42 @@
+{
+  "id": "cn-zbl-09",
+  "role": "Wheeled infantry fighting vehicle",
+  "summary": "An eight-wheeled infantry fighting vehicle with a turret cannon. It moves fast, shreds infantry and light vehicles, and carries a full squad to the front, though its passengers cannot fire out.",
+  "sections": [
+    {
+      "title": "Turret cannon",
+      "how": "Select the ZBL-09 and left-click an enemy, or let it fire at anything in range.",
+      "body": "The turret cannon fires quick, accurate shots. It is deadly against infantry, scouts and light vehicles, and can answer low drones, but it barely scratches a main battle tank.",
+      "shots": ["cn-zbl-09-fight"]
+    },
+    {
+      "title": "Carry infantry",
+      "how": "Select infantry, then left-click the ZBL-09.",
+      "body": "Up to eight soldiers ride inside. If the ZBL-09 is destroyed its riders get out with light wounds, but while inside they cannot shoot out: the ZBL-09 has no firing ports. Riders cannot be selected until they leave.",
+      "shots": ["cn-zbl-09-carry"]
+    },
+    {
+      "title": "Unload",
+      "how": "Select the loaded ZBL-09 and press Unload (n).",
+      "body": "The riders step out one after another beside the vehicle. Drive close to the objective first, then unload.",
+      "shots": ["cn-zbl-09-unload"]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged ZBL-09 and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The ZBL-09 drives to the factory and is repaired for half its price, paid as the health comes back.",
+      "shots": ["cn-zbl-09-repair"]
+    }
+  ],
+  "strong": [
+    "Infantry",
+    "Scouts and light vehicles",
+    "Carrying a squad to the front"
+  ],
+  "weak": ["Tanks", "Anti-tank teams", "Artillery"],
+  "tips": [
+    "Pair it with the Type 99A: the tank fights armour, the ZBL-09 clears the infantry around it.",
+    "Unload anti-tank teams behind cover instead of driving the ZBL-09 into a tank.",
+    "Composite armour from the vehicle factory adds health to the ZBL-09."
+  ]
+}

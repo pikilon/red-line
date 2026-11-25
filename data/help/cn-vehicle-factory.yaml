@@ -1,0 +1,6 @@
+# Spec 48: help card screenshots. `node --run help:shots -- --type cn-vehicle-factory`
+- { id: cn-vehicle-factory-produce, save: help-cn-vehicle-factory-build, ticks: 5, select: [cn-vehicle-factory], hud: true, tab: build }
+- { id: cn-vehicle-factory-rally, save: help-cn-vehicle-factory-rally, ticks: 5, select: [cn-vehicle-factory], hud: true, tab: orders }
+- { id: cn-vehicle-factory-repair, save: help-cn-vehicle-factory-repair, ticks: 10, select: [cn-mengshi], hud: true, tab: orders }
+- { id: cn-vehicle-factory-repair-dozer, save: help-cn-vehicle-factory-repair-dozer, ticks: 10, select: [cn-dozer] }
+- { id: cn-vehicle-factory-sell, save: help-cn-vehicle-factory-sell, ticks: 5, select: [cn-vehicle-factory], hud: true, tab: orders }

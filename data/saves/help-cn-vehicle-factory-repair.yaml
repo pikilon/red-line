@@ -1,0 +1,15 @@
+# Spec 48: help card of the vehicle factory. A damaged Mengshi waits beside the repair pad.
+id: help-cn-vehicle-factory-repair
+map: showcase
+armies: [china, usa]
+victory: false
+debug: true
+starts: false
+credits: [10000, 0]
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 49, y: 21.2, zoom: 2.4 }
+entities:
+  - { player: 0, type: cn-vehicle-factory, origin: [50, 18] }
+  - { player: 0, type: cn-mengshi, atCenti: [4600, 2000], hpPercent: 40 }

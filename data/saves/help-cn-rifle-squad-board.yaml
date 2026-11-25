@@ -1,0 +1,16 @@
+# Spec 48: help card of the Red Guard rifle squad. A squad boards a Mengshi, which lets them fire from inside.
+id: help-cn-rifle-squad-board
+map: showcase
+armies: [china, russia]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 44, y: 20, zoom: 3 }
+entities:
+  - { player: 0, type: cn-mengshi, atCenti: [4500, 2000], label: mengshi }
+  - { player: 0, type: cn-rifle-squad, atCenti: [4100, 1850], order: { board: mengshi } }
+  - { player: 0, type: cn-rifle-squad, atCenti: [4000, 2000], order: { board: mengshi } }
+  - { player: 0, type: cn-rifle-squad, atCenti: [4100, 2150], order: { board: mengshi } }

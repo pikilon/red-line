@@ -1,0 +1,3 @@
+# Spec 48: help card screenshots of the Type 99A. `node --run help:shots -- --type cn-type-99a`
+- { id: cn-type-99a-fight, save: help-cn-type-99a-fight, ticks: 55, select: [cn-type-99a] }
+- { id: cn-type-99a-repair, save: help-cn-type-99a-repair, ticks: 10, select: [cn-type-99a], hud: true }

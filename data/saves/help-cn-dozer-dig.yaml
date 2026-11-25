@@ -1,0 +1,13 @@
+# Spec 48: help card of the dozer. It digs a trench on open ground.
+id: help-cn-dozer-dig
+map: showcase
+armies: [china, usa]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45.5, y: 20, zoom: 3 }
+entities:
+  - { player: 0, type: cn-dozer, atCenti: [4400, 2000], order: { dig: [45, 20] } }

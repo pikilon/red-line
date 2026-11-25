@@ -1,0 +1,14 @@
+# Spec 48: help card of the vehicle factory. Select it to see Sell in the structure row.
+id: help-cn-vehicle-factory-sell
+map: showcase
+armies: [china, usa]
+victory: false
+debug: true
+starts: false
+credits: [10000, 0]
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 47.5, y: 17.2, zoom: 2.2 }
+entities:
+  - { player: 0, type: cn-vehicle-factory, origin: [45, 13] }

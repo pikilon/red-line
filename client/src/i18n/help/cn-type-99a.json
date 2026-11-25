@@ -1,0 +1,31 @@
+{
+  "id": "cn-type-99a",
+  "role": "Main battle tank",
+  "summary": "A tracked main battle tank with a long-barrelled gun. It is built to win tank duels and hold the line against armour, but it needs support against massed soldiers and anti-tank teams.",
+  "sections": [
+    {
+      "title": "Main gun",
+      "how": "Select the Type 99A and left-click an enemy, or let it fire at anything in range.",
+      "body": "The long gun fires one armour-piercing shell at a time. It is made for tank duels and punches through light vehicles, but the shell does little against infantry, and the gun cannot fire at aircraft.",
+      "shots": ["cn-type-99a-fight"]
+    },
+    {
+      "title": "Composite armour",
+      "how": "Buy Composite armour at your vehicle factory.",
+      "body": "Add-on composite and ceramic plates raise the health of the Type 99A, the ZBL-09 and the Mengshi."
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged Type 99A and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The Type 99A drives to the factory and is repaired for half its price, paid as the health comes back.",
+      "shots": ["cn-type-99a-repair"]
+    }
+  ],
+  "strong": ["Tanks and armoured vehicles", "Light vehicles"],
+  "weak": ["Anti-tank teams", "Massed infantry", "Aircraft"],
+  "tips": [
+    "Pair it with a ZBL-09 or riflemen: the tank fights armour while they clear the enemy infantry around it.",
+    "Do not drive it alone into a crowd of soldiers; infantry and anti-tank teams close in on it.",
+    "Pull damaged Type 99As back to the vehicle factory; repairs cost half the price."
+  ]
+}

@@ -1,0 +1,5 @@
+# Spec 48: help card screenshots. `node --run help:shots -- --type cn-gattling-nest`
+- { id: cn-gattling-nest-fight, save: help-cn-gattling-nest-fight, ticks: 20, select: [cn-gattling-nest] }
+- { id: cn-gattling-nest-power, save: help-cn-gattling-nest-power, ticks: 5, select: [cn-gattling-nest], hud: true }
+- { id: cn-gattling-nest-repair, save: help-cn-gattling-nest-repair, ticks: 10, select: [cn-dozer] }
+- { id: cn-gattling-nest-sell, save: help-cn-gattling-nest-sell, ticks: 5, select: [cn-gattling-nest], hud: true, tab: orders }

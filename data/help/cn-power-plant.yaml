@@ -1,0 +1,5 @@
+# Spec 48: help card screenshots. `node --run help:shots -- --type cn-power-plant`
+- { id: cn-power-plant-power, save: help-cn-power-plant-power, ticks: 5, select: [cn-power-plant], hud: true }
+- { id: cn-power-plant-low, save: help-cn-power-plant-low, ticks: 5, select: [], hud: true }
+- { id: cn-power-plant-repair, save: help-cn-power-plant-repair, ticks: 5, select: [cn-dozer] }
+- { id: cn-power-plant-sell, save: help-cn-power-plant-sell, ticks: 5, select: [cn-power-plant], hud: true, tab: orders }

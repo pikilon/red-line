@@ -1,0 +1,4 @@
+# Spec 48: help card screenshots of the China HJ-12 team. `node --run help:shots -- --type cn-hj-team`
+- { id: cn-hj-team-fight, save: help-cn-hj-team-fight, ticks: 30, select: [cn-hj-team] }
+- { id: cn-hj-team-move, save: help-cn-hj-team-move, ticks: 35, select: [cn-hj-team] }
+- { id: cn-hj-team-trench, save: help-cn-hj-team-trench, ticks: 40, select: [cn-hj-team] }

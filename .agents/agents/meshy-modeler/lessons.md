@@ -26,3 +26,13 @@ Reference image nano-banana with pose_mode a-pose (3 credits), image_to_3d from 
 ### 2026-11-24 Grey previews
 Problem: `preview.py` rendered materials flat grey, so texture problems were invisible.
 Fix: it now renders with `color_type = "TEXTURE"`; check colours in the preview.
+
+### 2026-11-25 Building batch pipeline and preview framing
+Problem: `preview.py` at the default spacing crops buildings to a zoomed corner, so the silhouette is unreadable.
+Fix: set `PREVIEW_SPACING=3` to `4` for buildings. Image tasks finish in about 11 s and meshy-t2 5000 buildings in about 20 s, so two image tasks, then two mesh tasks, then two downloads and imports fits a 2-task limit. Use `target_formats: ["glb"]` and `save_to` straight into `.tmp/meshy/<id>.glb`. The Blender "MeshOptimizer not available" line is harmless. Meshy drew the Gattling nest with a twin barrel pointing away from the camera, not seven barrels toward the lower-left; ask for more orientation emphasis if it matters.
+
+### 2026-11-25 Vehicle batch of 6 runs in about 6 minutes
+Fast path for vehicles: nano-banana image (3) then image_to_3d meshy-t2 smart-topology, meshy-n1, 3000, target_formats ["glb"] (15) = 18 per type; both finish in under 40 s. Run 2 at a time (image pair, mesh pair), download with save_to straight to .tmp/meshy/<id>.glb, import and preview in one bash loop. Turreted types (turretTurnRateDeg > 0) split the turret automatically ("Extracting primitive: turret"); put "gun pointing toward the lower-left" in the brief for them.
+
+### 2026-11-25 Infantry batch of 2 takes about 2 minutes
+Fast path: two nano-banana a-pose images (3 each), then two image_to_3d meshy-t2.5 smart-topology, meshy-n1, 3000, a-pose, target_formats ["glb"] (15 each); both stages finish in under 35 s. 36 credits for two types; download with save_to into .tmp/meshy/<id>.glb and stop (unit-animator imports).

@@ -1,0 +1,14 @@
+# Spec 48: help card of the power plant. Select it to see Sell in the structure row.
+id: help-cn-power-plant-sell
+map: showcase
+armies: [china, usa]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: false
+  camera: { x: 46, y: 19, zoom: 2 }
+entities:
+  - { player: 0, type: cn-power-plant, origin: [41, 18] }
+  - { player: 0, type: cn-supply-center, origin: [44, 18] }

@@ -1,0 +1,48 @@
+{
+  "id": "cn-phl-03",
+  "role": "Rocket artillery",
+  "summary": "A wheeled 8x8 truck carrying a rack of heavy rocket tubes. It fires salvos far beyond the front, breaks buildings and infantry clusters, and cannot defend itself up close.",
+  "sections": [
+    {
+      "title": "Rocket salvo",
+      "how": "Select the PHL-03 and left-click an enemy, or let it fire at any spotted target in range.",
+      "body": "Each volley is a salvo of high-explosive rockets. They climb high over the battlefield and land on the target. The blast is strongest against buildings and infantry and weaker against tanks.",
+      "shots": ["cn-phl-03-fight"]
+    },
+    {
+      "title": "Splash damage",
+      "how": "Fire at a cluster, or at the ground beside it.",
+      "body": "The rockets land in a loose spread over a wide area, not just on the unit they were aimed at. They hurt enemy and friendly units alike, so keep your own troops clear of the target.",
+      "shots": ["cn-phl-03-splash"]
+    },
+    {
+      "title": "Minimum range",
+      "how": "Keep the PHL-03 behind the line; if an enemy closes in, select it and left-click the ground to drive away.",
+      "body": "The rockets cannot hit targets closer than the minimum range. Enemy tanks and fast units that reach it can attack without reply, so keep an escort between it and the front.",
+      "shots": ["cn-phl-03-min-range"]
+    },
+    {
+      "title": "Attack ground",
+      "how": "Select the PHL-03, hold Ctrl and left-click the ground, or press Force fire and tap the ground.",
+      "body": "The PHL-03 fires salvos at the chosen point even when no enemy is in sight, and keeps firing until you give another order or press Stop. A scout can spot the target, but the blast still hurts your own units.",
+      "shots": ["cn-phl-03-attack-ground"]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged PHL-03 and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The PHL-03 drives to the factory and is repaired for half its price, paid as the health comes back.",
+      "shots": ["cn-phl-03-repair"]
+    }
+  ],
+  "strong": [
+    "Buildings and static defenses",
+    "Infantry clusters",
+    "Long-range fire on the approach"
+  ],
+  "weak": ["Tanks", "Fast units that close in", "Aircraft"],
+  "tips": [
+    "Keep a scout ahead: the PHL-03 sees less far than it shoots.",
+    "Aim at the ground beside a cluster so the blast catches more of it.",
+    "Save rockets for buildings and groups; a single tank is a poor target."
+  ]
+}

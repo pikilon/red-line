@@ -1,0 +1,4 @@
+# Spec 48: help card screenshots of the China supply truck. `node --run help:shots -- --type cn-supply-truck`
+- { id: cn-supply-truck-harvest, save: help-cn-supply-truck-harvest, ticks: 8, select: [cn-supply-truck] }
+- { id: cn-supply-truck-unload, save: help-cn-supply-truck-harvest, ticks: 75, select: [cn-supply-truck] }
+- { id: cn-supply-truck-repair, save: help-cn-supply-truck-repair, ticks: 10, select: [cn-supply-truck], hud: true, tab: orders }

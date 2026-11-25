@@ -1,0 +1,45 @@
+{
+  "id": "cn-mengshi",
+  "role": "Light utility vehicle",
+  "summary": "A fast 4x4 with a roof machine gun and room for five soldiers. It sees far, shreds infantry and light vehicles, and carries its passengers into the fight with their weapons ready.",
+  "sections": [
+    {
+      "title": "Roof machine gun",
+      "how": "Select the Mengshi and left-click an enemy, or let it fire at anything in range.",
+      "body": "The roof-mounted machine gun fires quick bursts. It tears through infantry, scouts and other light vehicles, and can answer low drones. Against a main battle tank it struggles badly.",
+      "shots": ["cn-mengshi-fight"]
+    },
+    {
+      "title": "Carry infantry",
+      "how": "Select one or more riflemen or HJ-12 teams, then left-click your own Mengshi.",
+      "body": "Up to five soldiers ride hidden inside and cannot be selected until they get out. If the Mengshi is destroyed, everyone aboard dies with it.",
+      "shots": ["cn-mengshi-carry"]
+    },
+    {
+      "title": "Fire from inside",
+      "how": "Load riflemen into the Mengshi and drive close to the enemy; the passengers fire on their own.",
+      "body": "The Mengshi has firing ports, so its passengers shoot from inside with their own weapons instead of standing in the open. They stay hidden and untargetable while they ride.",
+      "shots": ["cn-mengshi-fireports"]
+    },
+    {
+      "title": "Unload",
+      "how": "Select the loaded Mengshi and press Unload (n).",
+      "body": "The riders step out one after another beside the vehicle. Drive close to the objective first, then unload.",
+      "shots": ["cn-mengshi-unload"]
+    },
+    {
+      "title": "Repair at the vehicle factory",
+      "how": "Select the damaged Mengshi and press Repair at factory, or left-click your vehicle factory.",
+      "body": "The Mengshi drives to the factory and is repaired for half its price, paid as the health comes back.",
+      "shots": ["cn-mengshi-repair"]
+    }
+  ],
+  "strong": ["Infantry", "Scouts and light vehicles", "Low drones"],
+  "weak": ["Tanks and armoured vehicles", "Anti-tank teams", "Artillery"],
+  "tips": [
+    "Use its sight to find the enemy first: the Mengshi sees further than it shoots.",
+    "Load a squad before driving into the open so the passengers keep firing from inside.",
+    "Do not lead with it: let tanks take the hits while the Mengshi hunts infantry and light vehicles.",
+    "Composite armour from the vehicle factory adds health to the Mengshi."
+  ]
+}

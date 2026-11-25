@@ -1,0 +1,19 @@
+id: china-balanced
+faction: china
+harvesters: 4
+defenseRadiusCenti: 2000
+garrisonRadiusCenti: 800
+buildOrder: [cn-power-plant, cn-supply-center, cn-barracks, cn-power-plant, cn-vehicle-factory, cn-gattling-nest, cn-power-plant, cn-gattling-nest]
+taskForces:
+  - { id: infantry, units: { cn-rifle-squad: 4, cn-hj-team: 2 } }
+  - { id: mechanized, units: { cn-zbl-09: 3, cn-rifle-squad: 4 } }
+  - { id: armor, units: { cn-type-99a: 3, cn-zbl-09: 2 } }
+  - { id: fires, units: { cn-phl-03: 2, cn-type-99a: 2, cn-hj-team: 3 } }
+upgrades:                                                    # spec 52: bought at an idle producer from minTick on
+  - { upgrade: cn-nationalism, minTick: 3600 }
+  - { upgrade: cn-composite-armor, minTick: 6000 }
+triggers:
+  - { taskForce: infantry, weight: 50, minTick: 0 }
+  - { taskForce: mechanized, weight: 40, minTick: 2700 }
+  - { taskForce: armor, weight: 40, minTick: 4500 }
+  - { taskForce: fires, weight: 20, minTick: 6300 }
