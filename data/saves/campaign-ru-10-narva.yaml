@@ -1,6 +1,6 @@
 # Spec 48: Russia 10: the alternate-history crossing of the Narva river, the last border of the Union.
 id: campaign-ru-10-narva
-map: demo-bridges
+map: narva
 victory: true
 debug: false
 starts: false
