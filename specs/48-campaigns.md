@@ -82,11 +82,13 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
 ## 5. Assumptions
 
 * Missions reuse the existing maps (first-line, river-port, demo-coast,
-  demo-town, showcase); the exceptions are mission 1 of both campaigns, which
-  plays on its own map `hostomel` (§6), and Ukraine 2, on `irpin` (§7). Own
-  maps for the remaining missions are tracked in issue #482.
+  demo-town, demo-bridges, showcase); the exceptions are mission 1 of both
+  campaigns, which plays on its own map `hostomel` (§6), Ukraine 2, on
+  `irpin` (§7), and the two Snake Island missions, on `snake-island` (§8).
+  Own maps for the remaining missions are tracked in issue #482.
 * The game has no ships: the cruiser Moskva is played as the Black Sea Fleet
-  command post on the shore; Snake Island is the coast of demo-coast.
+  command post on the shore. Snake Island is no longer the coast of
+  demo-coast: it has its own map (§7).
 * Stand-ins for units the game lacks: Su-34 for the Tu-95 and Tu-22M3 of
   Spiderweb, power plants for refineries and pipeline stations, supply centers
   for warehouses and supply hubs, Storm Shadow / Flamingo for the Neptune,
@@ -149,3 +151,25 @@ only:
 * Pine, birch and fir stands along the river and map edges.
 * Assumption: the destroyed bridge is rubble, not a destructible-bridge state;
   no mission script exists for this mission, so none needed re-pointing.
+
+## 8. Map `snake-island` (issue #482)
+
+`data/maps/snake-island.yaml`, 64 x 64, same HQ cells and start positions as
+demo-coast, so `campaign-ru-02-snake-island` and `campaign-ua-04-snake-island`
+keep every entity cell and only change `map:`:
+
+* A flat island (land x 1..62, y 20..44) of bare dirt with a grass patch in
+  the middle, sand beaches north and south and rounded corners; deep sea north
+  and south, shallow sea fringe around it.
+* The lighthouse stands on the north shore with a pier running out into the
+  sea beside a fishing boat and buoys; in the middle, on a concrete yard, the
+  old radar post (`factory`), two barns, houses and a shop as garrison
+  buildings, with lamp posts, crates, a wall and scattered bushes and dead
+  trees.
+* Campaign wiring: unchanged. Russia 2 destroys the two Ukrainian guard
+  posts and the HQ at the west end; Ukraine 4 builds 2 HIMARS and destroys the
+  two Pantsir at the east end.
+* Assumptions: the island is scaled up from the real 0.17 km2 so two bases and
+  a field of fire fit; the game still has no ships or landing craft, so no
+  mission needs the sea to be crossed. These two missions have no mission
+  script, so no areas needed moving.

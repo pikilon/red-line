@@ -405,7 +405,7 @@
     },
     {
       "id": "campaign-ru-02-snake-island",
-      "map": "demo-coast",
+      "map": "snake-island",
       "form": "setup",
       "entities": 21
     },
@@ -477,7 +477,7 @@
     },
     {
       "id": "campaign-ua-04-snake-island",
-      "map": "demo-coast",
+      "map": "snake-island",
       "form": "setup",
       "entities": 15
     },

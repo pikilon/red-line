@@ -1,6 +1,6 @@
 # Spec 48: Russia 2: the flagship's group takes Zmiinyi on the first day.
 id: campaign-ru-02-snake-island
-map: demo-coast
+map: snake-island
 victory: true
 debug: false
 starts: false

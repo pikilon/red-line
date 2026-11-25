@@ -1,6 +1,6 @@
 # Spec 48: Ukraine 4: HIMARS and drones force the garrison off Zmiinyi.
 id: campaign-ua-04-snake-island
-map: demo-coast
+map: snake-island
 victory: true
 debug: false
 starts: false
