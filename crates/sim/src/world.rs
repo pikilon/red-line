@@ -686,6 +686,7 @@ impl World {
             xp: 0,
             rank: 0,
             stun: 0,
+            horde: false,
         });
         id
     }
@@ -859,6 +860,7 @@ impl World {
         self.arrive_on_contact();
         self.update_visibility();
         self.advance_in_trenches();
+        self.update_horde();
         self.update_combat();
         self.unload_transports();
         self.empty_dead_transports();

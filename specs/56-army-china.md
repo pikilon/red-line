@@ -96,7 +96,7 @@ artillery 10 % cheaper, a little less health each, so China fields more.
 
 ## 5. Unique abilities
 
-### 5.1 Horde bonus (to be built by the `ability-engineer`; NOT implemented yet)
+### 5.1 Horde bonus (implemented)
 
 Infantry fight better in a crowd. A `cn-rifle-squad` or `cn-hj-team` that has
 at least `count - 1` other living infantry of its own type of the same player
@@ -111,11 +111,13 @@ of GameData and are not known here).
   iteration); stored as an entity flag; the weapon cooldown is multiplied by
   `rateOfFirePercent` while the flag is set. Fixed-point, integer percentages.
 * Numbers in data (assumed): `horde: { count: 5, radiusCenti: 300,
-  rubOffRadiusCenti: 150, rateOfFirePercent: 125, nationalismPercent: 140 }`
-  on `cn-rifle-squad` and `cn-hj-team`. Not yet in `china.yaml`: the faction
-  schema has no `horde` key until the ability lands (its schema change belongs
-  to that stage).
-* Client: a faint ring under the units of a horde and a line in the help page.
+  rubOffRadiusCenti: 150, rateOfFirePercent: 125 }` on `cn-rifle-squad` and
+  `cn-hj-team`; `cn-nationalism` carries `hordePercent: 112`, which multiplies
+  the horde rate (125 -> 140). Code: `crates/sim/src/horde.rs`, applied in
+  `rank_weapon`; the flag is `Entity::horde` (hashed, saved, snapshot flag
+  `FLAG_HORDE` = 2048).
+* Client: a faint gold ring under the units of a horde (`hordeRings.ts`) and a
+  "Horde bonus" section in both help pages.
 * Acceptance: five rifle squads standing together fire 25 % faster than one
   alone; moving one beyond the rub-off radius of all the others removes the
   bonus from it only; a squad of a different type or an enemy next to them does

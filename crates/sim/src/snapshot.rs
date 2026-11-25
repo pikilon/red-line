@@ -158,6 +158,8 @@ pub const FLAG_ABOARD: i32 = 64;
 pub const FLAG_AIRBORNE: i32 = 128;
 /// Spec 43 §4.5: a `radio` or `gnss` unit inside a hostile jammer's radius.
 pub const FLAG_JAMMED: i32 = 256;
+/// Spec 56 §5.1: the unit is in a horde.
+pub const FLAG_HORDE: i32 = 2048;
 /// Spec 50: the rank (0 regular to 3 heroic) sits in the two bits from this
 /// shift: `(flags >> RANK_SHIFT) & 3`.
 pub const RANK_SHIFT: u32 = 9;
@@ -532,6 +534,9 @@ fn entity_flags(world: &World, entity: &Entity) -> i32 {
     }
     if world.is_jammed(entity.id) {
         flags |= FLAG_JAMMED;
+    }
+    if entity.horde {
+        flags |= FLAG_HORDE;
     }
     flags |= i32::from(entity.rank.min(3)) << RANK_SHIFT;
     flags

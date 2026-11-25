@@ -43,7 +43,8 @@
           "properties": {
             "appliesTo": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/id" } },
             "healthPercent": { "type": "integer", "minimum": 100, "maximum": 400 },
-            "damagePercent": { "type": "integer", "minimum": 100, "maximum": 400 }
+            "damagePercent": { "type": "integer", "minimum": 100, "maximum": 400 },
+            "hordePercent": { "type": "integer", "minimum": 100, "maximum": 400 }
           }
         }
       }
@@ -160,6 +161,18 @@
         "requiresPower": { "type": "boolean" },
         "dropOff": { "type": "boolean" },
         "freeUnit": { "$ref": "#/$defs/id" },
+        "horde": {
+          "description": "Spec 56 §5.1: with count - 1 allies of the same type within radiusCenti the unit fires at rateOfFirePercent; it stays in the horde while a member is within rubOffRadiusCenti.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["count", "radiusCenti", "rubOffRadiusCenti", "rateOfFirePercent"],
+          "properties": {
+            "count": { "$ref": "#/$defs/positive" },
+            "radiusCenti": { "$ref": "#/$defs/positive" },
+            "rubOffRadiusCenti": { "$ref": "#/$defs/positive" },
+            "rateOfFirePercent": { "type": "integer", "minimum": 100, "maximum": 400 }
+          }
+        },
         "flashBang": {
           "description": "Spec 54 §5.2: the unit throws a stun grenade at an enemy-held building, forcing its occupants out stunned.",
           "type": "object",

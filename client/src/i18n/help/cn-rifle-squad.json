@@ -10,6 +10,11 @@
       "shots": ["cn-rifle-squad-fight"]
     },
     {
+      "title": "Horde bonus",
+      "how": "Keep at least five of your riflemen close together; no order is needed.",
+      "body": "Five riflemen within a few tiles of each other form a horde: each of them fires a quarter faster, and a faint gold ring shows under it. A member stays in the horde while another member is close, so a tight group keeps the bonus as it advances, but a straggler that wanders off loses it. Only soldiers of the same type count, and the Nationalism upgrade makes the bonus larger."
+    },
+    {
       "title": "Ride in vehicles",
       "how": "Select one or more riflemen, then left-click your own Mengshi or ZBL-09.",
       "body": "They climb aboard and cannot be selected until they get out. A Mengshi has firing ports, so its riders shoot from inside; a ZBL-09 has none, so its riders are protected but silent. If the vehicle is destroyed, everyone aboard a Mengshi dies with it. Select the loaded vehicle and press Unload (n) to let them out.",

@@ -428,6 +428,18 @@ pub struct ActiveProtection {
     pub stops: Vec<u8>,
 }
 
+/// Spec 56 §5.1: a unit with `count - 1` allies of its kind within
+/// `radius_centi` fires at `rate_of_fire_percent` and keeps the bonus while a
+/// horde member stays within `rub_off_radius_centi`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Horde {
+    pub count: u32,
+    pub radius_centi: u32,
+    pub rub_off_radius_centi: u32,
+    pub rate_of_fire_percent: u32,
+}
+
 /// Spec 54 §5.2: a thrown stun grenade that clears a garrisoned building.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -501,6 +513,9 @@ pub struct TypeDef {
     /// Spec 54 §5.2: the unit can throw a flash-bang at an enemy-held building.
     #[serde(default)]
     pub flash_bang: Option<FlashBang>,
+    /// Spec 56 §5.1: group fire-rate bonus.
+    #[serde(default)]
+    pub horde: Option<Horde>,
     /// Spec 39: this completed building is a vehicle repair pad.
     #[serde(default)]
     pub repairs_vehicles: bool,
@@ -555,6 +570,9 @@ pub struct UpgradeDef {
     pub health_percent: u32,
     #[serde(default = "hundred")]
     pub damage_percent: u32,
+    /// Spec 56 §5.1: multiplies the horde fire-rate percent of `applies_to`.
+    #[serde(default = "hundred")]
+    pub horde_percent: u32,
 }
 
 /// A faction's HQ and starting dozer type.

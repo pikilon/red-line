@@ -10,6 +10,11 @@
       "shots": ["cn-hj-team-fight"]
     },
     {
+      "title": "Horde bonus",
+      "how": "Keep at least five of your HJ-12 teams close together; no order is needed.",
+      "body": "Five HJ-12 teams within a few tiles of each other form a horde: each of them fires a quarter faster, and a faint gold ring shows under it. A member stays in the horde while another member is close, so a tight group keeps the bonus as it advances, but a straggler that wanders off loses it. Only soldiers of the same type count, and the Nationalism upgrade makes the bonus larger."
+    },
+    {
       "title": "Stow and set up",
       "how": "Select the team and left-click the ground; on touch, tap.",
       "body": "The team cannot walk with the launcher ready. It first stows the launcher on its shoulder, walks, then readies the launcher again on the new spot, and only then can it fire. Give the move order before the enemy arrives, not in the middle of a duel.",
