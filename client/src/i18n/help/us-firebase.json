@@ -6,22 +6,26 @@
     {
       "title": "Shell the ground",
       "how": "Select a dozer, open the Build tab, press Fire base and left-click the ground. Once built it fires on its own.",
-      "body": "The howitzer turns toward the nearest enemy it can see and fires one shell at a time. The blast covers a small area, so it is strong against infantry, buildings and parked vehicles. It cannot hit aircraft or drones, and it cannot fire at anything too close to it, so enemies that reach the emplacement are safe from it."
+      "body": "The howitzer turns toward the nearest enemy it can see and fires one shell at a time. The blast covers a small area, so it is strong against infantry, buildings and parked vehicles. It cannot hit aircraft or drones, and it cannot fire at anything too close to it, so enemies that reach the emplacement are safe from it.",
+      "shots": ["us-firebase-fight"]
     },
     {
       "title": "Needs power",
       "how": "Watch the power reading in the HUD; keep production at least equal to consumption.",
-      "body": "The fire base draws power from the base. While the base consumes more than it produces, the reading turns red and the fire base holds its fire until the deficit is fixed. Build another power plant or sell something that draws power."
+      "body": "The fire base draws power from the base. While the base consumes more than it produces, the reading turns red and the fire base holds its fire until the deficit is fixed. Build another power plant or sell something that draws power.",
+      "shots": ["us-firebase-power"]
     },
     {
       "title": "Repair with a dozer",
       "how": "Select a dozer and left-click the damaged fire base.",
-      "body": "The dozer drives over and restores the fire base until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle."
+      "body": "The dozer drives over and restores the fire base until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle.",
+      "shots": ["us-firebase-repair"]
     },
     {
       "title": "Sell",
       "how": "Select the fire base and press Sell twice.",
-      "body": "It sells for half its price and disappears at once, opening the ground it held. Selling your last building loses the match."
+      "body": "It sells for half its price and disappears at once, opening the ground it held. Selling your last building loses the match.",
+      "shots": ["us-firebase-sell"]
     }
   ],
   "strong": [

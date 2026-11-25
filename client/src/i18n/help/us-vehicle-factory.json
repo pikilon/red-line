@@ -6,27 +6,32 @@
     {
       "title": "Produce vehicles",
       "how": "Select the factory, open the Build tab and press a vehicle tile. Press + on a tile to queue another and − to cancel the last one.",
-      "body": "The factory builds the Humvee, Stryker, Abrams and Paladin. Each vehicle is paid when you press its tile and shows a clock wipe while it is being built, then rolls out of the door. The factory also offers the Reactive armor upgrade, which adds health to the Humvee, Stryker and Abrams."
+      "body": "The factory builds the Humvee, Stryker, Abrams and Paladin. Each vehicle is paid when you press its tile and shows a clock wipe while it is being built, then rolls out of the door. The factory also offers the Reactive armor upgrade, which adds health to the Humvee, Stryker and Abrams.",
+      "shots": ["us-vehicle-factory-produce"]
     },
     {
       "title": "Rally point",
       "how": "Select the factory, press Rally point and left-click the ground.",
-      "body": "Vehicles built afterwards leave the factory and drive to the rally point. Changing the point only affects vehicles produced later. The marker shows while the factory is selected."
+      "body": "Vehicles built afterwards leave the factory and drive to the rally point. Changing the point only affects vehicles produced later. The marker shows while the factory is selected.",
+      "shots": ["us-vehicle-factory-rally"]
     },
     {
       "title": "Repair vehicles",
       "how": "Select a damaged vehicle and press Repair at factory, or left-click your vehicle factory.",
-      "body": "The vehicle drives to the outside of the factory and is restored over five seconds, one vehicle at a time. The work costs half its price as the health comes back. Production carries on meanwhile. If the credits run out, the vehicle leaves the pad and stops."
+      "body": "The vehicle drives to the outside of the factory and is restored over five seconds, one vehicle at a time. The work costs half its price as the health comes back. Production carries on meanwhile. If the credits run out, the vehicle leaves the pad and stops.",
+      "shots": ["us-vehicle-factory-repair"]
     },
     {
       "title": "Repair with a dozer",
       "how": "Select a dozer and left-click the damaged factory.",
-      "body": "The dozer drives to the factory and restores it until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle."
+      "body": "The dozer drives to the factory and restores it until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle.",
+      "shots": ["us-vehicle-factory-repair-dozer"]
     },
     {
       "title": "Sell",
       "how": "Select the factory and press Sell twice.",
-      "body": "It sells for half its price and disappears at once. Every vehicle in its queue is cancelled and refunded in full. Selling your last building loses the match."
+      "body": "It sells for half its price and disappears at once. Every vehicle in its queue is cancelled and refunded in full. Selling your last building loses the match.",
+      "shots": ["us-vehicle-factory-sell"]
     }
   ],
   "strong": [

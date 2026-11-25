@@ -6,37 +6,44 @@
     {
       "title": "Rifle",
       "how": "Select the Ranger and left-click an enemy, or let him fire at anything in range.",
-      "body": "The rifle hits infantry hard and can also shoot low drones. Against light and armoured vehicles it does little, and against a building almost nothing."
+      "body": "The rifle hits infantry hard and can also shoot low drones. Against light and armoured vehicles it does little, and against a building almost nothing.",
+      "shots": ["us-ranger-fight"]
     },
     {
       "title": "Ride in vehicles",
       "how": "Select one or more Rangers, then left-click your own Humvee or Stryker.",
-      "body": "They climb aboard and cannot be selected until they get out. A Humvee has firing ports, so its riders shoot from inside; a Stryker has none, so its riders are protected but silent. If the vehicle is destroyed, its riders are hurt or killed. Select the loaded vehicle and press Unload to let them out."
+      "body": "They climb aboard and cannot be selected until they get out. A Humvee has firing ports, so its riders shoot from inside; a Stryker has none, so its riders are protected but silent. If the vehicle is destroyed, its riders are hurt or killed. Select the loaded vehicle and press Unload to let them out.",
+      "shots": ["us-ranger-board"]
     },
     {
       "title": "Garrison buildings",
       "how": "Select Rangers and left-click a civilian building, or press Garrison.",
-      "body": "They take cover inside and fire from the windows with more range and damage. The building changes hands to your side while they hold it and returns to neutral when they leave. A wrecked building throws them out, and one that collapses can kill them."
+      "body": "They take cover inside and fire from the windows with more range and damage. The building changes hands to your side while they hold it and returns to neutral when they leave. A wrecked building throws them out, and one that collapses can kill them.",
+      "shots": ["us-ranger-garrison"]
     },
     {
       "title": "Dig trenches",
       "how": "Select the soldiers, press Dig trench and left-click the ground. Drag to draw a line; Shift turns a single trench or keeps the button armed after a line.",
-      "body": "A squad digs a two-cell trench; more diggers finish faster. A finished trench halves the damage its infantry take, and a section with a roof protects the first two soldiers completely. Wheeled vehicles cannot cross it once it is half dug; tracked vehicles and infantry can."
+      "body": "A squad digs a two-cell trench; more diggers finish faster. A finished trench halves the damage its infantry take, and a section with a roof protects the first two soldiers completely. Wheeled vehicles cannot cross it once it is half dug; tracked vehicles and infantry can.",
+      "shots": ["us-ranger-dig"]
     },
     {
       "title": "Fight from a trench",
       "how": "Select Rangers and left-click a finished trench, or press Garrison.",
-      "body": "A piece holds three soldiers. Fire from outside the trench only grazes them, while high explosives and thermobaric shells wear the trench down and can destroy it. In a trench line the squad moves from piece to piece toward the enemy, and soldiers in a roofed piece are sheltered from small arms."
+      "body": "A piece holds three soldiers. Fire from outside the trench only grazes them, while high explosives and thermobaric shells wear the trench down and can destroy it. In a trench line the squad moves from piece to piece toward the enemy, and soldiers in a roofed piece are sheltered from small arms.",
+      "shots": ["us-ranger-trench"]
     },
     {
       "title": "Repair bridges",
       "how": "Select one or more soldiers and left-click a damaged or broken bridge.",
-      "body": "The soldiers walk to the bank and repair the bridge for free. Every worker adds a share, up to six; a dozer counts for three. A broken bridge opens again once it is repaired enough to carry traffic."
+      "body": "The soldiers walk to the bank and repair the bridge for free. Every worker adds a share, up to six; a dozer counts for three. A broken bridge opens again once it is repaired enough to carry traffic.",
+      "shots": ["us-ranger-bridge"]
     },
     {
       "title": "Heal at the barracks",
       "how": "Select damaged Rangers and left-click your barracks.",
-      "body": "They walk in and heal for free while the barracks keeps training. A patient leaves on his own when whole; a full-health Ranger stays outside. If the barracks is destroyed or sold, the patients are thrown out."
+      "body": "They walk in and heal for free while the barracks keeps training. A patient leaves on his own when whole; a full-health Ranger stays outside. If the barracks is destroyed or sold, the patients are thrown out.",
+      "shots": ["us-ranger-heal"]
     }
   ],
   "strong": ["Enemy infantry", "Low drones"],

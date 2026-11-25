@@ -104,7 +104,7 @@ async function waitFor(url, ms) {
 
 async function capture(page, base, recipe) {
   const ai = recipe.ai === true ? "" : "&ai=off";
-  await page.goto(`${base}/?load=${recipe.save}${ai}`);
+  await page.goto(`${base}/?load=${recipe.save}${ai}&mute=1`);
   await page.waitForFunction(() => window.__redline?.isReady?.() === true && window.__redline.modelsReady?.() !== false, undefined, { timeout: 60_000 });
   const ticks = recipe.ticks ?? 30;
   await page.waitForFunction((n) => window.__redline.tick() >= n, ticks, { timeout: 120_000, polling: 100 });
@@ -153,6 +153,16 @@ async function main() {
   const missingSaves = todo.filter((r) => saveText(r.save) === "");
   if (missingSaves.length > 0) throw new Error(`missing saves: ${missingSaves.map((r) => r.save).join(", ")}`);
   execFileSync("node", ["scripts/build-data.mjs"], { cwd: ROOT, stdio: "inherit" });
+  // Without the wasm sim the worker never starts and every shot times out
+  // waiting for the game to be ready.
+  if (!existsSync(join(ROOT, "crates/sim/pkg/sim.js"))) {
+    console.log("building the wasm sim (crates/sim/pkg is missing)");
+    execFileSync("node", ["--run", "build:wasm"], {
+      cwd: ROOT,
+      stdio: "inherit",
+      env: { ...process.env, PATH: `${process.env.HOME}/.cargo/bin:${process.env.PATH}` },
+    });
+  }
   mkdirSync(OUT, { recursive: true });
 
   let base = value("--url");

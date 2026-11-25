@@ -6,12 +6,14 @@
     {
       "title": "120 mm cannon",
       "how": "Select the Abrams and left-click an enemy, or let it fire at anything in range.",
-      "body": "The 120 mm smoothbore fires one armour-piercing shell at a time. It is made for tank duels and punches through light vehicles, but the shell does little against infantry, and the gun cannot fire at aircraft."
+      "body": "The 120 mm smoothbore fires one armour-piercing shell at a time. It is made for tank duels and punches through light vehicles, but the shell does little against infantry, and the gun cannot fire at aircraft.",
+      "shots": ["us-abrams-fight"]
     },
     {
       "title": "Crush infantry",
       "how": "Select the Abrams and left-click the ground beyond the enemy infantry.",
-      "body": "While it moves, the Abrams runs over enemy soldiers in its path and kills them outright. It never hurts friendly infantry, and it cannot crush other vehicles."
+      "body": "While it moves, the Abrams runs over enemy soldiers in its path and kills them outright. It never hurts friendly infantry, and it cannot crush other vehicles.",
+      "shots": ["us-abrams-crush"]
     },
     {
       "title": "Active protection",
@@ -21,7 +23,8 @@
     {
       "title": "Repair at the vehicle factory",
       "how": "Select the damaged Abrams and press Repair at factory, or left-click your vehicle factory.",
-      "body": "The Abrams drives to the factory and is repaired for half its price, paid as the health comes back."
+      "body": "The Abrams drives to the factory and is repaired for half its price, paid as the health comes back.",
+      "shots": ["us-abrams-repair"]
     }
   ],
   "strong": ["Tanks and armoured vehicles", "Light vehicles"],
