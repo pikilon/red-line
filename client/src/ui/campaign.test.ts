@@ -8,6 +8,9 @@ import {
   createCampaignProgress,
   findCampaignMission,
   nextCampaignMission,
+  readCampaignDifficulty,
+  withCampaignDifficulty,
+  writeCampaignDifficulty,
 } from "./campaign";
 import { advance } from "./tutorial";
 
@@ -123,5 +126,23 @@ describe("campaigns (spec 48)", () => {
     // The victory step holds once the sim names the player the winner.
     const won = { ...view, dead: () => true, won: () => true };
     expect(advance(mission, 1, won)).toBe(3);
+  });
+
+  it("remembers the chosen difficulty and applies it to every AI", () => {
+    const storage = memoryStorage();
+    expect(readCampaignDifficulty(storage)).toBe("medium");
+    writeCampaignDifficulty("brutal", storage);
+    expect(readCampaignDifficulty(storage)).toBe("brutal");
+    const setup = JSON.stringify({
+      ai: [{ player: 1, personality: "russia-rush", active: true }],
+    });
+    expect(JSON.parse(withCampaignDifficulty(setup, "hard")).ai).toEqual([
+      {
+        player: 1,
+        personality: "russia-rush",
+        active: true,
+        difficulty: "hard",
+      },
+    ]);
   });
 });

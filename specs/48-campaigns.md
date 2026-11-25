@@ -94,9 +94,16 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
   Russian finale fights with Ukrainian units.
 * Ukraine 10 and Russia 9–10 are fiction, and the briefings say so; Nord
   Stream is told as a fictionalised version of the German investigation.
-* Difficulty is fixed per mission (credits and AI personality in the save);
-  there is no difficulty selector or voice-over yet; the score screen is
-  spec 57.
+* The briefing offers Easy, Medium, Hard and Brutal (the skirmish levels,
+  spec 05 §9); Medium is the default. The choice sets the difficulty of every
+  enemy AI of the mission (the save keeps its credits and personality), applies
+  to every mission and is remembered per browser (`redline.campaign.difficulty`).
+  There is no voice-over yet; the score screen is spec 57.
+
+  Acceptance: the briefing shows the four levels with the saved one marked;
+  picking one marks it and survives a reload; starting the mission loads its
+  save with that difficulty on the enemy AI; an unreadable stored value plays
+  Medium.
 * Progress lives in the browser like the settings, not in a save slot.
 
 ## 6. Map `hostomel` (issue #450)

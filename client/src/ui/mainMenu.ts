@@ -4,9 +4,12 @@ import { factionLabel } from "../rules";
 import {
   CAMPAIGNS,
   type Campaign,
+  type CampaignDifficulty,
   type CampaignMission,
   type CampaignProgress,
   findCampaignMission,
+  readCampaignDifficulty,
+  writeCampaignDifficulty,
 } from "./campaign";
 import { appendDiv } from "./dom";
 import type { VolumeSliderChannel } from "./gameMenu";
@@ -371,6 +374,31 @@ function createBriefing(
         list.appendChild(item);
       }
       element.append(heading, list);
+      const levels = document.createElement("div");
+      levels.id = "campaign-briefing-difficulty";
+      levels.className = "campaign-briefing-buttons";
+      const marks: [string, HTMLElement][] = [];
+      const refresh = (current: string) => {
+        for (const [level, button] of marks) {
+          button.setAttribute("aria-pressed", String(level === current));
+        }
+      };
+      for (const [level, key] of DIFFICULTY_ROWS) {
+        const button = menuButton(
+          `campaign-briefing-difficulty-${level}`,
+          t(key),
+          () => {
+            writeCampaignDifficulty(level as CampaignDifficulty);
+            refresh(level);
+          },
+        );
+        marks.push([level, button]);
+        levels.appendChild(button);
+      }
+      refresh(readCampaignDifficulty());
+      const levelsHeading = document.createElement("h3");
+      levelsHeading.textContent = t("campaign.difficulty");
+      element.append(levelsHeading, levels);
       buttons([
         ["campaign-briefing-start", "campaign.start", start],
         ["campaign-briefing-back", "mainMenu.back", back],

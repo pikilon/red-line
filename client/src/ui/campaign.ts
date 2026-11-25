@@ -344,3 +344,54 @@ function safeStorage(): Storage | null {
     return null;
   }
 }
+
+const DIFFICULTY_KEY = "redline.campaign.difficulty";
+
+/** Spec 48 §5: the levels of the briefing, the skirmish ones (spec 05 §9). */
+export const CAMPAIGN_DIFFICULTIES = [
+  "easy",
+  "medium",
+  "hard",
+  "brutal",
+] as const;
+export type CampaignDifficulty = (typeof CAMPAIGN_DIFFICULTIES)[number];
+export const DEFAULT_CAMPAIGN_DIFFICULTY: CampaignDifficulty = "medium";
+
+/** The difficulty chosen at a briefing, kept per browser; Medium when unset
+ *  or unreadable. */
+export function readCampaignDifficulty(
+  storage: Pick<Storage, "getItem"> | null = safeStorage(),
+): CampaignDifficulty {
+  try {
+    const raw = storage?.getItem(DIFFICULTY_KEY);
+    return (
+      CAMPAIGN_DIFFICULTIES.find((d) => d === raw) ??
+      DEFAULT_CAMPAIGN_DIFFICULTY
+    );
+  } catch {
+    return DEFAULT_CAMPAIGN_DIFFICULTY;
+  }
+}
+
+export function writeCampaignDifficulty(
+  difficulty: CampaignDifficulty,
+  storage: Pick<Storage, "setItem"> | null = safeStorage(),
+): void {
+  try {
+    storage?.setItem(DIFFICULTY_KEY, difficulty);
+  } catch {
+    // Private mode: the choice lasts for this page only.
+  }
+}
+
+/** `setup` JSON of a mission save with every AI set to `difficulty`
+ *  (spec 48 §5); the save's own personality and credits stay. */
+export function withCampaignDifficulty(
+  setupJson: string,
+  difficulty: CampaignDifficulty,
+): string {
+  const setup = JSON.parse(setupJson) as { ai?: Record<string, unknown>[] };
+  if (setup.ai === undefined) return setupJson;
+  setup.ai = setup.ai.map((ai) => ({ ...ai, difficulty }));
+  return JSON.stringify(setup);
+}
