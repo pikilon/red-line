@@ -377,7 +377,7 @@ function createBriefing(
       const levels = document.createElement("div");
       levels.id = "campaign-briefing-difficulty";
       levels.className = "campaign-briefing-buttons";
-      const marks: [string, HTMLButtonElement][] = [];
+      const marks: [string, HTMLElement][] = [];
       const refresh = (current: string) => {
         for (const [level, button] of marks) {
           button.setAttribute("aria-pressed", String(level === current));
