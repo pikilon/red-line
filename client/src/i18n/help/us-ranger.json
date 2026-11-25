@@ -22,6 +22,11 @@
       "shots": ["us-ranger-garrison"]
     },
     {
+      "title": "Flash-bang",
+      "how": "Select Rangers and left-click a building held by the enemy.",
+      "body": "The Rangers walk up and throw a flash-bang through the windows. Everyone inside is forced out and stunned for a few seconds, unable to move or shoot, while the building stays standing. It does nothing to your own or empty buildings."
+    },
+    {
       "title": "Dig trenches",
       "how": "Select the soldiers, press Dig trench and left-click the ground. Drag to draw a line; Shift turns a single trench or keeps the button armed after a line.",
       "body": "A squad digs a two-cell trench; more diggers finish faster. A finished trench halves the damage its infantry take, and a section with a roof protects the first two soldiers completely. Wheeled vehicles cannot cross it once it is half dug; tracked vehicles and infantry can.",
