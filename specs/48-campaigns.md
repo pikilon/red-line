@@ -84,8 +84,9 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
 * Missions reuse the existing maps (first-line, river-port, demo-coast,
   demo-town, demo-bridges, showcase); the exceptions are mission 1 of both
   campaigns, which plays on its own map `hostomel` (§6), Ukraine 2, on
-  `irpin` (§7), and the two Snake Island missions, on `snake-island` (§8).
-  Own maps for the remaining missions are tracked in issue #482.
+  `irpin` (§7), the two Snake Island missions, on `snake-island` (§8), and
+  Russia 3, on `mariupol` (§9). Own maps for the remaining missions are
+  tracked in issue #482.
 * The game has no ships: the cruiser Moskva is played as the Black Sea Fleet
   command post on the shore. Snake Island is no longer the coast of
   demo-coast: it has its own map (§7).
@@ -173,3 +174,21 @@ keep every entity cell and only change `map:`:
   a field of fire fit; the game still has no ships or landing craft, so no
   mission needs the sea to be crossed. These two missions have no mission
   script, so no areas needed moving.
+
+## 9. Map `mariupol` (issue #482)
+
+`data/maps/mariupol.yaml`, 64 x 56 (same size and HQ cells as demo-town, so the
+Russia 3 save keeps its bases and units). Existing feature types only:
+
+* The Sea of Azov (deep sea, shallow fringe, a short pier) fills the south; the
+  Kalmius river runs north to south down the middle into it, crossed by one road
+  bridge on y = 30.
+* West of the river, Azovstal (Ukrainian side): large `factory` and `warehouse`
+  halls on concrete yards and a dirt apron towards the shore, crates, walls and
+  dead trees.
+* East of the river, the city (Russian side): rows of apartment blocks,
+  townhouses, houses and shops along asphalt streets, and the drama theatre
+  square, an open concrete plaza with one large building (`office-tower`) and
+  some rubble and a parked car.
+* Assumptions: the theatre is a garrisonable tower, not a special objective;
+  the save has no mission script, so none was re-pointed.
