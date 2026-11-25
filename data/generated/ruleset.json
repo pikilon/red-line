@@ -30050,33 +30050,31 @@
     {
       "id": "ukraine-balanced",
       "faction": 0,
-      "harvesters": 4,
+      "harvesters": 6,
       "defenseRadiusCenti": 2000,
       "garrisonRadiusCenti": 800,
       "buildOrder": [
         11,
         12,
         13,
-        11,
         14,
-        15,
         11,
-        15,
         46,
-        48,
-        11,
         45,
-        47,
-        11
+        11,
+        48,
+        15,
+        11,
+        47
       ],
       "upgrades": [
         {
           "upgrade": 68,
-          "minTick": 3600
+          "minTick": 2400
         },
         {
           "upgrade": 69,
-          "minTick": 6000
+          "minTick": 4200
         }
       ],
       "taskForces": [
@@ -30200,18 +30198,18 @@
       "triggers": [
         {
           "taskForce": 0,
-          "weight": 50,
+          "weight": 60,
           "minTick": 0
         },
         {
           "taskForce": 1,
-          "weight": 40,
-          "minTick": 2700
+          "weight": 50,
+          "minTick": 1800
         },
         {
           "taskForce": 2,
-          "weight": 40,
-          "minTick": 4500
+          "weight": 50,
+          "minTick": 3000
         },
         {
           "taskForce": 3,
@@ -30250,27 +30248,27 @@
         },
         {
           "taskForce": 5,
-          "weight": 15,
+          "weight": 8,
           "minTick": 3000
         },
         {
           "taskForce": 6,
-          "weight": 15,
+          "weight": 8,
           "minTick": 3600
         },
         {
           "taskForce": 7,
-          "weight": 15,
+          "weight": 8,
           "minTick": 5400
         },
         {
           "taskForce": 8,
-          "weight": 15,
+          "weight": 8,
           "minTick": 4800
         },
         {
           "taskForce": 4,
-          "weight": 15,
+          "weight": 8,
           "minTick": 6000
         }
       ]
@@ -30397,14 +30395,13 @@
     {
       "id": "russia-balanced",
       "faction": 1,
-      "harvesters": 4,
+      "harvesters": 6,
       "defenseRadiusCenti": 2000,
       "garrisonRadiusCenti": 800,
       "buildOrder": [
         25,
         26,
         27,
-        25,
         28,
         25,
         59,
@@ -30530,13 +30527,13 @@
         },
         {
           "taskForce": 1,
-          "weight": 40,
-          "minTick": 2700
+          "weight": 50,
+          "minTick": 1800
         },
         {
           "taskForce": 2,
-          "weight": 40,
-          "minTick": 4500
+          "weight": 50,
+          "minTick": 3000
         },
         {
           "taskForce": 3,

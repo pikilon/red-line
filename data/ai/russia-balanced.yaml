@@ -1,10 +1,10 @@
 id: russia-balanced
 faction: russia
-harvesters: 4
+harvesters: 6
 defenseRadiusCenti: 2000
 garrisonRadiusCenti: 800
 # Spec 43 §5: the Shahed site and the airfield come right after the vehicle factory.
-buildOrder: [ru-power-plant, ru-supply-center, ru-barracks, ru-power-plant, ru-vehicle-factory, ru-power-plant, ru-geran-site, ru-airfield, ru-power-plant]
+buildOrder: [ru-power-plant, ru-supply-center, ru-barracks, ru-vehicle-factory, ru-power-plant, ru-geran-site, ru-airfield, ru-power-plant]
 taskForces:
   - { id: infantry, units: { ru-rifleman: 6, ru-rpg-gunner: 2 } }
   - { id: mechanized, units: { ru-bmp-2: 2, ru-rifleman: 4 } }
@@ -21,8 +21,8 @@ upgrades:                                                    # spec 52: bought a
   - { upgrade: ru-kontakt-5, minTick: 6000 }
 triggers:
   - { taskForce: infantry, weight: 50, minTick: 0 }
-  - { taskForce: mechanized, weight: 40, minTick: 2700 }
-  - { taskForce: armor, weight: 40, minTick: 4500 }
+  - { taskForce: mechanized, weight: 50, minTick: 1800 }
+  - { taskForce: armor, weight: 50, minTick: 3000 }
   - { taskForce: fires, weight: 20, minTick: 6300 }
   # Spec 43 §5: openings, then the arms join the weighted roll.
   - { taskForce: waves, weight: 1, minTick: 3000, once: true }

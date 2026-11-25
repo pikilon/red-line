@@ -161,7 +161,7 @@ fn the_balanced_ais_field_every_new_arm_and_its_answers() {
         UKRAINIAN_ARMS,
         UKRAINIAN_ANSWERS,
     ]);
-    let report = play_until("ukraine-balanced", "russia-balanced", 30, |report| {
+    let report = play_until("ukraine-balanced", "russia-balanced", 6, |report| {
         report.missing(&wanted).is_empty() && report.resorties > 0
     });
 
