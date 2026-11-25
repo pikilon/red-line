@@ -1,6 +1,6 @@
 # Spec 48: Russia 3: the siege of Mariupol ends at the Azovstal steelworks.
 id: campaign-ru-03-mariupol
-map: demo-town
+map: mariupol
 victory: true
 debug: false
 starts: false

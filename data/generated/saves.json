@@ -411,7 +411,7 @@
     },
     {
       "id": "campaign-ru-03-mariupol",
-      "map": "demo-town",
+      "map": "mariupol",
       "form": "setup",
       "entities": 24
     },

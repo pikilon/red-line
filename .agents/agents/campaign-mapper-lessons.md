@@ -10,3 +10,5 @@
 * When the saves put bases 45+ cells apart, the island must be as wide as the old HQ span: scale the real place up and say so in the spec.
 * Most missions have no `mission-scripts.yaml` entry (only Hostomel so far): `grep -n "^campaign-" data/campaign/mission-scripts.yaml` first.
 * Decoration ids that exist: `warehouse-barn`, `factory`, `house-small`, `shop`, `lamp-post`, `crate-stack`, `stone-wall`, `bush`, `dead-tree`, `lighthouse`, `pier`, `buoy`, `fishing-boat`.
+* Mariupol (#482): roads may not touch deep water ("road on deep water"): stop road paths at the river banks and let a bridge feature carry the crossing; start rivers one row below a road. `pier` takes `at`, bridges take `from`/`to`.
+* To view a map in a worktree run `node --run build:wasm` first (crates/sim/pkg is untracked), then start Vite after it exists.
