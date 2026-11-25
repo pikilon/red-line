@@ -1,0 +1,94 @@
+id: kursk-pipe                       # required, equals the file name
+width: 128
+height: 128
+blocked: []
+# Spec 48 §12: Operation "Potok" near Sudzha, Kursk oblast (March 2025). Russian assault troops crawled through the
+# disused gas pipeline (a long straight dirt strip along y=64) and emerged behind the Ukrainian lines. The town of
+# Sudzha stands in the middle on both sides of the border road, its gas metering station (industrial halls on a concrete
+# yard) lies north-east of the town, and the pipeline exits (crate and container stacks) are on the Ukrainian side. The
+# fields are still frozen mud and dirt with thin tree belts.
+depots:
+  - { origin: [20, 70], amount: 10000 }
+  - { origin: [104, 72], amount: 10000 }
+terrain:
+  ground:
+    default: dirt
+    patches:
+      - { material: gravel, rect: [58, 40, 96, 90] }          # Sudzha town yards
+      - { material: grass, rect: [2, 2, 40, 30] }
+      - { material: grass, rect: [88, 100, 126, 126] }
+      - { material: rock, rect: [2, 96, 30, 126] }
+      - { material: concrete, rect: [84, 42, 100, 54] }       # gas metering station yard
+      - { material: sand, rect: [40, 62, 104, 65] }           # the pipeline strip, spoil on both sides
+      - { material: concrete, rect: [62, 60, 66, 68] }        # exit pit
+  roads:
+    - { type: asphalt, path: [[2, 74], [60, 74], [76, 74], [126, 74]], width: 2 }   # road towards the border
+    - { type: asphalt, path: [[76, 36], [76, 58]], width: 2 }
+    - { type: asphalt, path: [[76, 70], [76, 100]], width: 2 }
+    - { type: dirt, path: [[2, 50], [58, 50]], width: 2 }
+    - { type: dirt, path: [[96, 50], [126, 50]], width: 2 }
+features:
+  # Sudzha: houses along the roads north and south of the centre, a church and shops, kept off the entity cells.
+  - { type: church, at: [70, 52], rot: 0, variant: 0 }
+  - { type: shop, at: [66, 52], rot: 0, variant: 0 }
+  - { type: house-small, at: [62, 52], rot: 0, variant: 0 }
+  - { type: house-small, at: [66, 46], rot: 0, variant: 1 }
+  - { type: house-small, at: [70, 46], rot: 0, variant: 2 }
+  - { type: house-small, at: [72, 40], rot: 0, variant: 0 }
+  - { type: shop, at: [80, 52], rot: 2, variant: 1 }
+  - { type: house-small, at: [80, 46], rot: 2, variant: 2 }
+  - { type: house-small, at: [80, 40], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [60, 78], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [66, 78], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [80, 78], rot: 0, variant: 2 }
+  - { type: townhouse-row, at: [86, 78], rot: 0, variant: 0 }
+  - { type: house-small, at: [62, 86], rot: 1, variant: 1 }
+  - { type: house-small, at: [68, 86], rot: 1, variant: 2 }
+  - { type: house-small, at: [80, 86], rot: 3, variant: 0 }
+  - { type: house-small, at: [86, 86], rot: 3, variant: 1 }
+  - { type: shop, at: [72, 80], rot: 2, variant: 2 }
+  - { type: lamp-post, at: [75, 56], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [75, 72], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [78, 72], rot: 0, variant: 0 }
+  - { type: parked-car, at: [68, 72], rot: 0, variant: 0 }
+  - { type: parked-car, at: [88, 72], rot: 2, variant: 1 }
+  - { type: rubble-pile, at: [64, 56], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [86, 56], rot: 1, variant: 1 }
+  - { type: rubble-pile, at: [90, 76], rot: 2, variant: 0 }
+  # The gas metering station: industrial halls and storage on the concrete yard.
+  - { type: factory, at: [86, 44], rot: 0, variant: 0 }
+  - { type: factory, at: [92, 44], rot: 0, variant: 1 }
+  - { type: warehouse, at: [86, 50], rot: 0, variant: 0 }
+  - { type: warehouse-barn, at: [94, 50], rot: 0, variant: 0 }
+  - { type: container-stack, at: [98, 46], rot: 0, variant: 0 }
+  - { type: container-stack, at: [98, 49], rot: 0, variant: 1 }
+  - { type: fence, at: [84, 42], rot: 0, variant: 0 }
+  - { type: fence, at: [88, 42], rot: 0, variant: 0 }
+  - { type: fence, at: [92, 42], rot: 0, variant: 0 }
+  - { type: fence, at: [96, 42], rot: 0, variant: 0 }
+  # Pipeline exit points on the Ukrainian side: crate and container stacks around the pit.
+  - { type: container-stack, at: [62, 58], rot: 0, variant: 0 }
+  - { type: crate-stack, at: [60, 62], rot: 0, variant: 0 }
+  - { type: crate-stack, at: [60, 66], rot: 1, variant: 1 }
+  - { type: container-stack, at: [62, 70], rot: 0, variant: 1 }
+  - { type: crate-stack, at: [92, 60], rot: 0, variant: 0 }
+  - { type: crate-stack, at: [92, 68], rot: 1, variant: 1 }
+  - { type: crate-stack, at: [48, 60], rot: 0, variant: 1 }
+  - { type: crate-stack, at: [48, 68], rot: 1, variant: 0 }
+  - { type: rubble-pile, at: [56, 63], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [100, 66], rot: 2, variant: 1 }
+  # Tree belts and bare field edges.
+  - { type: birch, area: [30, 40, 56, 46], density: 20, seed: 3 }
+  - { type: poplar, area: [30, 82, 56, 88], density: 20, seed: 5 }
+  - { type: pine, area: [100, 80, 120, 90], density: 25, seed: 7 }
+  - { type: birch, area: [100, 30, 120, 40], density: 25, seed: 9 }
+  - { type: pine, area: [2, 100, 28, 124], density: 20, seed: 11 }
+  - { type: oak, area: [40, 20, 70, 30], density: 15, seed: 13 }
+  - { type: poplar, area: [8, 76, 30, 80], density: 25, seed: 15 }
+  - { type: dead-tree, area: [30, 52, 56, 58], density: 8, seed: 17 }
+  - { type: dead-tree, area: [100, 52, 124, 56], density: 8, seed: 19 }
+  - { type: burnt-stump, area: [44, 66, 56, 72], density: 10, seed: 21 }
+  - { type: bush, area: [4, 40, 24, 48], density: 15, seed: 23 }
+starts:
+  - { faction: ukraine, hq: [12, 60], dozerCenti: [1850, 6150] }
+  - { faction: russia, hq: [112, 64], dozerCenti: [10950, 6650] }
