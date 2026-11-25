@@ -31087,18 +31087,18 @@
       "harvesters": 6,
       "defenseRadiusCenti": 2000,
       "garrisonRadiusCenti": 800,
+      "alertRadiusCenti": 4500,
       "buildOrder": [
         11,
         12,
-        13,
         14,
+        13,
         11,
         60,
-        59,
-        11,
-        62,
         15,
         11,
+        59,
+        62,
         61
       ],
       "upgrades": [
@@ -31232,18 +31232,18 @@
       "triggers": [
         {
           "taskForce": 0,
-          "weight": 60,
+          "weight": 20,
           "minTick": 0
         },
         {
           "taskForce": 1,
-          "weight": 50,
-          "minTick": 1800
+          "weight": 100,
+          "minTick": 600
         },
         {
           "taskForce": 2,
-          "weight": 50,
-          "minTick": 3000
+          "weight": 80,
+          "minTick": 1500
         },
         {
           "taskForce": 3,
@@ -31432,6 +31432,7 @@
       "harvesters": 6,
       "defenseRadiusCenti": 2000,
       "garrisonRadiusCenti": 800,
+      "alertRadiusCenti": 4500,
       "buildOrder": [
         25,
         26,
@@ -31740,6 +31741,7 @@
       "harvesters": 4,
       "defenseRadiusCenti": 2000,
       "garrisonRadiusCenti": 800,
+      "alertRadiusCenti": 4500,
       "buildOrder": [
         39,
         40,

@@ -2,6 +2,7 @@ id: russia-balanced
 faction: russia
 harvesters: 6
 defenseRadiusCenti: 2000
+alertRadiusCenti: 4500
 garrisonRadiusCenti: 800
 # Spec 43 §5: the Shahed site and the airfield come right after the vehicle factory.
 buildOrder: [ru-power-plant, ru-supply-center, ru-barracks, ru-vehicle-factory, ru-power-plant, ru-geran-site, ru-airfield, ru-power-plant]
