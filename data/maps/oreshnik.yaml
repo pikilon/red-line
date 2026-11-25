@@ -1,0 +1,232 @@
+id: oreshnik
+width: 128
+height: 128
+blocked: []
+# Spec 48 §14: Dnipro, November 2024. The wide Dnipro runs along the north edge, crossed by one long road bridge at x=62.
+# South of the bridge the city: an avenue of apartment blocks and office towers; north-west of it the Pivdenmash
+# (Yuzhmash) missile and machine-building plant, halls on a concrete yard with rail sidings and a perimeter wall, and
+# air-defence positions around it. The Russian base sits in the east, the Ukrainian base in the west. HQ cells and
+# starts equal first-line so the Russia 8 save keeps every entity cell.
+depots:
+  - { origin: [12, 54], amount: 15000 }
+  - { origin: [114, 72], amount: 15000 }
+  - { origin: [36, 20], amount: 10000 }
+  - { origin: [90, 106], amount: 10000 }
+  - { origin: [36, 100], amount: 10000 }
+  - { origin: [90, 26], amount: 10000 }
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: dirt, rect: [3, 50, 26, 70] }
+      - { material: dirt, rect: [104, 56, 124, 74] }
+      - { material: concrete, rect: [12, 11, 65, 27] }         # plant yard
+      - { material: concrete, rect: [10, 29, 66, 29] }         # rail siding
+      - { material: concrete, rect: [10, 31, 24, 31] }         # second siding
+      - { material: gravel, rect: [24, 26, 48, 46] }           # plant outskirts
+      - { material: sand, rect: [0, 10, 127, 11] }              # river bank
+      - { material: dirt, rect: [64, 100, 100, 118] }
+  roads:
+    - { type: asphalt, path: [[62, 12], [62, 62]], width: 2 }    # bridge avenue
+    - { type: asphalt, path: [[16, 62], [104, 62]], width: 2 }
+    - { type: asphalt, path: [[10, 38], [60, 38]], width: 2 }
+    - { type: asphalt, path: [[62, 62], [62, 100]], width: 2 }
+    - { type: dirt, path: [[64, 40], [104, 40]], width: 2 }
+  water:
+    - { kind: river, depth: shallow, path: [[0, 6], [127, 6]], width: 7 }
+    - { kind: river, depth: deep, path: [[0, 6], [127, 6]], width: 4 }
+features:
+  - { type: road-bridge, from: [62, 2], to: [62, 10], variant: 0 }
+  # Pivdenmash: two rows of halls on the concrete yard, rail sidings south of it, office towers for the tall workshops.
+  - { type: factory, at: [16, 13], rot: 0, variant: 1 }
+  - { type: factory, at: [16, 19], rot: 0, variant: 2 }
+  - { type: factory, at: [22, 13], rot: 0, variant: 0 }
+  - { type: warehouse, at: [22, 19], rot: 0, variant: 1 }
+  - { type: factory, at: [28, 13], rot: 0, variant: 2 }
+  - { type: factory, at: [28, 19], rot: 0, variant: 0 }
+  - { type: factory, at: [34, 13], rot: 0, variant: 1 }
+  - { type: factory, at: [40, 13], rot: 0, variant: 0 }
+  - { type: factory, at: [40, 19], rot: 0, variant: 1 }
+  - { type: factory, at: [46, 13], rot: 0, variant: 2 }
+  - { type: warehouse, at: [46, 19], rot: 0, variant: 0 }
+  - { type: factory, at: [52, 13], rot: 0, variant: 1 }
+  - { type: factory, at: [52, 19], rot: 0, variant: 2 }
+  - { type: factory, at: [58, 13], rot: 0, variant: 0 }
+  - { type: warehouse, at: [58, 19], rot: 0, variant: 1 }
+  - { type: office-tower, at: [12, 13], rot: 0, variant: 2 }
+  - { type: office-tower, at: [62, 13], rot: 0, variant: 0 }
+  - { type: office-tower, at: [62, 20], rot: 0, variant: 1 }
+  - { type: container-stack, at: [20, 24], rot: 0, variant: 2 }
+  - { type: container-stack, at: [32, 24], rot: 0, variant: 0 }
+  - { type: container-stack, at: [44, 24], rot: 0, variant: 1 }
+  - { type: container-stack, at: [54, 24], rot: 0, variant: 2 }
+  - { type: crate-stack, at: [16, 10], rot: 0, variant: 0 }
+  - { type: crate-stack, at: [28, 10], rot: 0, variant: 1 }
+  - { type: crate-stack, at: [40, 10], rot: 0, variant: 0 }
+  - { type: crate-stack, at: [52, 10], rot: 0, variant: 0 }
+  # Plant perimeter wall, north (gate gap at x 36-37) and east.
+  - { type: stone-wall, at: [10, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [11, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [12, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [13, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [14, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [15, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [16, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [17, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [18, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [19, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [20, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [21, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [22, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [23, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [24, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [25, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [26, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [27, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [28, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [29, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [30, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [31, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [32, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [33, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [34, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [35, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [38, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [39, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [40, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [41, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [42, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [43, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [44, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [45, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [46, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [47, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [48, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [49, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [50, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [51, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [52, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [53, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [54, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [55, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [56, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [57, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [58, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [59, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [60, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [61, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [62, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [63, 28], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [64, 28], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [65, 28], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [66, 11], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [66, 12], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [66, 13], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [66, 14], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [66, 15], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [66, 16], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [66, 17], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [66, 20], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [66, 21], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [66, 22], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [66, 23], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [66, 24], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [66, 25], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [66, 26], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [66, 27], rot: 0, variant: 1 }
+  # Air-defence positions: sandbag-style wall pockets and crates around the plant.
+  - { type: stone-wall, at: [26, 40], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [27, 40], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [28, 40], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [26, 41], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [28, 41], rot: 0, variant: 1 }
+  - { type: crate-stack, at: [27, 41], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [38, 41], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [39, 41], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [40, 41], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [38, 42], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [40, 42], rot: 0, variant: 1 }
+  - { type: crate-stack, at: [39, 42], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [50, 32], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [51, 32], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [52, 32], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [50, 33], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [52, 33], rot: 0, variant: 1 }
+  - { type: crate-stack, at: [51, 33], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [8, 40], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [9, 40], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [10, 40], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [8, 41], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [10, 41], rot: 0, variant: 1 }
+  - { type: crate-stack, at: [9, 41], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [22, 52], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [23, 52], rot: 0, variant: 1 }
+  - { type: stone-wall, at: [24, 52], rot: 0, variant: 2 }
+  - { type: stone-wall, at: [22, 53], rot: 0, variant: 0 }
+  - { type: stone-wall, at: [24, 53], rot: 0, variant: 1 }
+  - { type: crate-stack, at: [23, 53], rot: 0, variant: 0 }
+  # Downtown Dnipro: apartment blocks and office towers along the bridge avenue.
+  - { type: apartment-block, at: [66, 14], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [72, 14], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [78, 14], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [84, 14], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [90, 14], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [66, 20], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [78, 20], rot: 2, variant: 1 }
+  - { type: apartment-block, at: [90, 20], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [70, 44], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [76, 44], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [82, 44], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [88, 44], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [94, 44], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [70, 50], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [82, 50], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [94, 50], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [58, 40], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [58, 46], rot: 0, variant: 0 }
+  - { type: office-tower, at: [72, 22], rot: 0, variant: 1 }
+  - { type: office-tower, at: [84, 22], rot: 0, variant: 2 }
+  - { type: office-tower, at: [76, 52], rot: 0, variant: 0 }
+  - { type: office-tower, at: [88, 52], rot: 0, variant: 1 }
+  - { type: shop, at: [60, 36], rot: 0, variant: 2 }
+  - { type: shop, at: [100, 40], rot: 0, variant: 0 }
+  - { type: shop, at: [100, 48], rot: 0, variant: 1 }
+  - { type: shop, at: [60, 74], rot: 0, variant: 2 }
+  - { type: shop, at: [80, 70], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [63, 16], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [63, 22], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [63, 28], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [63, 34], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [63, 40], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [63, 46], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [63, 52], rot: 0, variant: 1 }
+  - { type: lamp-post, at: [63, 58], rot: 0, variant: 0 }
+  - { type: house-small, at: [20, 76], rot: 1, variant: 0 }
+  - { type: house-small, at: [25, 76], rot: 1, variant: 1 }
+  - { type: house-small, at: [30, 76], rot: 1, variant: 2 }
+  - { type: house-small, at: [35, 76], rot: 1, variant: 0 }
+  - { type: house-small, at: [40, 76], rot: 1, variant: 1 }
+  - { type: house-small, at: [45, 76], rot: 1, variant: 2 }
+  - { type: house-small, at: [20, 84], rot: 3, variant: 0 }
+  - { type: house-small, at: [25, 84], rot: 3, variant: 1 }
+  - { type: house-small, at: [30, 84], rot: 3, variant: 2 }
+  - { type: house-small, at: [35, 84], rot: 3, variant: 0 }
+  - { type: house-small, at: [40, 84], rot: 3, variant: 1 }
+  - { type: house-small, at: [45, 84], rot: 3, variant: 2 }
+  - { type: townhouse-row, at: [70, 76], rot: 2, variant: 0 }
+  - { type: townhouse-row, at: [78, 76], rot: 2, variant: 1 }
+  - { type: townhouse-row, at: [86, 76], rot: 2, variant: 2 }
+  - { type: townhouse-row, at: [94, 76], rot: 2, variant: 0 }
+  - { type: townhouse-row, at: [102, 76], rot: 2, variant: 1 }
+  # Left-bank approach: gravel yards, a few farmhouses, tree belts.
+  - { type: farmhouse, at: [92, 90], rot: 0, variant: 0 }
+  - { type: farmhouse, at: [100, 96], rot: 0, variant: 1 }
+  - { type: farmhouse, at: [30, 100], rot: 0, variant: 2 }
+  - { type: gas-station, at: [64, 64], rot: 0, variant: 0 }
+  - { type: poplar, area: [8, 90, 30, 118], density: 35, seed: 3 }
+  - { type: oak, area: [100, 100, 124, 124], density: 30, seed: 5 }
+  - { type: birch, area: [64, 100, 90, 124], density: 30, seed: 7 }
+  - { type: bush, area: [0, 10, 8, 30], density: 30, seed: 9 }
+starts:
+  - { faction: ukraine, hq: [12, 60], dozerCenti: [1850, 6150] }
+  - { faction: russia, hq: [112, 64], dozerCenti: [10950, 6650] }
