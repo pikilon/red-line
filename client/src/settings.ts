@@ -3,8 +3,19 @@
 export const SETTINGS_KEY = "redline.settings.v1";
 
 /** Master volume 0..100 (spec 25 §10). The game starts quiet (owner request,
- *  2026-10-28); the player turns it up in the menu. */
-export const DEFAULT_AUDIO_MASTER = 50;
+ *  2026-10-28); the player turns it up in the menu. The local dev server sets
+ *  `VITE_DEFAULT_MASTER_VOLUME=0` (`client/.env.development`), so every local
+ *  run, test tab and agent check starts with the master slider at 0 until the
+ *  player moves it (owner request, 2026-11-25); the public build keeps 50. */
+export const DEFAULT_AUDIO_MASTER = defaultMaster(
+  import.meta.env?.VITE_DEFAULT_MASTER_VOLUME,
+);
+
+/** The master default from the env flag: a whole number 0..100, else 50. */
+export function defaultMaster(flag: string | undefined): number {
+  if (flag === undefined || !/^\d{1,3}$/.test(flag)) return 50;
+  return Math.min(100, Number(flag));
+}
 export const DEFAULT_AUDIO_SFX = 60;
 export const DEFAULT_AUDIO_AMBIENT = 30;
 export const DEFAULT_AUDIO_VOICE = 60;
