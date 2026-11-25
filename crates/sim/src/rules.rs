@@ -678,6 +678,9 @@ pub struct FeatureTypeDef {
     /// Spec 35 §5c: trench rules of a garrisonable earthwork.
     #[serde(default)]
     pub trench: Option<TrenchDef>,
+    /// Spec 58: a neutral tech building infantry capture.
+    #[serde(default)]
+    pub tech: Option<TechDef>,
     /// Spec 35: repair (or dig) speed of this type, percent of the base rate.
     #[serde(default = "hundred", rename = "repairPct")]
     pub repair_pct: u32,
@@ -735,6 +738,45 @@ pub struct GarrisonDef {
     /// Zero Hour `AllowEnemiesInside`: riders may join a building held by another player.
     #[serde(default)]
     pub allow_enemies: bool,
+}
+
+/// Spec 58: a capturable neutral tech building (Zero Hour `KINDOF_CAPTURABLE`
+/// `TECH_BUILDING`, `AutoDepositUpdate`, `AutoHealBehavior`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TechDef {
+    /// Ticks an infantry unit works at the building before it changes hands.
+    pub capture_ticks: u32,
+    /// Credits the owner earns; nothing while the building is neutral.
+    #[serde(default)]
+    pub income: Option<TechIncome>,
+    /// Infantry of the owner healed around the building.
+    #[serde(default)]
+    pub heal: Option<TechHeal>,
+}
+
+/// Spec 58: periodic income of an owned tech building (`AutoDepositUpdate`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TechIncome {
+    /// Credits per deposit (`DepositAmount`).
+    pub amount: u32,
+    /// Ticks between deposits (`DepositTiming`).
+    pub every_ticks: u32,
+    /// Credits paid once to the player who captures it (`InitialCaptureBonus`).
+    #[serde(default)]
+    pub capture_bonus: u32,
+}
+
+/// Spec 58: the heal aura of an owned tech building (`AutoHealBehavior`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TechHeal {
+    /// Radius in centi-tiles measured from the footprint edge.
+    pub radius_centi: u32,
+    /// Hit points restored every `every_ticks` ticks (`HealingAmount`).
+    pub amount: u32,
+    pub every_ticks: u32,
 }
 
 /// Spec 35 §5c: trench rules (no Zero Hour precedent, decision D3).

@@ -31,6 +31,8 @@ export interface GarrisonFeature {
 export interface GarrisonTypeInfo {
   readonly footprint: readonly [number, number];
   readonly garrison?: { readonly slots: number };
+  /** Spec 58: a capturable tech building. */
+  readonly tech?: unknown;
 }
 
 /** The parts of a map feature row read here. */
@@ -62,6 +64,73 @@ export function garrisonFeaturesOf(
     });
   });
   return found;
+}
+
+/** Spec 58: the capturable tech buildings of a map, in the sim's row order.
+ *  They hold no riders: `slots` is 1 and `occupants` is 1 while owned, which
+ *  lets the garrison markers show the owner's colour as one pip. */
+export function techFeaturesOf(
+  features: readonly GarrisonMapFeature[],
+  types: readonly GarrisonTypeInfo[],
+): GarrisonFeature[] {
+  const found: GarrisonFeature[] = [];
+  features.forEach((feature, index) => {
+    const info = types[feature.type];
+    if (info?.tech === undefined) return;
+    const swap = feature.rot % 2 === 1;
+    found.push({
+      index,
+      kind: feature.type,
+      x: feature.x,
+      y: feature.y,
+      width: swap ? info.footprint[1] : info.footprint[0],
+      height: swap ? info.footprint[0] : info.footprint[1],
+      slots: 1,
+    });
+  });
+  return found;
+}
+
+/** The tech buildings still standing as placed, with their owner (from the
+ *  sim's feature table). Before the first table arrives all are kept. */
+export function withTechState(
+  features: readonly GarrisonFeature[],
+  rows: readonly FeatureRow[] | null,
+): GarrisonFeature[] {
+  if (rows === null) return [...features];
+  const live: GarrisonFeature[] = [];
+  for (const feature of features) {
+    const row = rows[feature.index];
+    if (row === undefined || !row.alive || row.kind !== feature.kind) continue;
+    live.push({
+      ...feature,
+      owner: row.owner,
+      occupants: row.owner === FEATURE_NO_OWNER ? 0 : 1,
+    });
+  }
+  return live;
+}
+
+/** Spec 58: right or left click on a tech building the selection's infantry
+ *  do not own yet sends them to capture it. */
+export function resolveCaptureClick(args: {
+  player: number;
+  selected: readonly number[];
+  entities: readonly EntityState[];
+  techFeatures: readonly GarrisonFeature[];
+  x: number;
+  y: number;
+}): SimCommand[] {
+  const { player, selected, entities, techFeatures, x, y } = args;
+  const feature = featureUnder(techFeatures, x, y);
+  if (feature === null || feature.owner === player) return [];
+  const units = ownSelected(selected, entities, player)
+    .filter(isFreeInfantry)
+    .map((entity) => entity.id)
+    .sort((a, b) => a - b);
+  return units.length === 0
+    ? []
+    : [{ kind: "capture", player, units, feature: feature.index }];
 }
 
 /** The garrisonable features still standing as their placed type, given the

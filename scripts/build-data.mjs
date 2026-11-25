@@ -1337,6 +1337,8 @@ const assemble = (
 				? {}
 				: { wheelsBlockedState: t.wheelsBlockedState }),
 			...(t.heightCenti === undefined ? {} : { heightCenti: t.heightCenti }),
+			// Spec 58: capturable tech building.
+			...(t.tech === undefined ? {} : { tech: t.tech }),
 			// Spec 35 §5c: trench rules (breaksWith as indices of the damage types).
 			...(t.trench === undefined
 				? {}

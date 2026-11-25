@@ -290,6 +290,8 @@
   "saves.crowd.description": "Sixty units per side advancing through each other.",
   "saves.gore.name": "Gore",
   "saves.gore.description": "Twenty riflemen per side at close range; toggle gore with G.",
+  "saves.tech-capture.name": "Tech buildings",
+  "saves.tech-capture.description": "Riflemen capture an oil derrick and a field hospital; the Russian AI goes for the other derrick.",
   "saves.victory-near.name": "Victory",
   "saves.victory-near.description": "The last Russian building at 5 % HP under attack.",
   "saves.ai-attack.name": "AI attack",

@@ -436,6 +436,10 @@ impl Ai {
             def.garrison_radius_centi,
         ));
 
+        // 5c. Tech buildings (spec 58): one idle pool infantry unit captures
+        // each neutral or foe-held tech building within reach.
+        commands.extend(capture_orders(world, player, faction, &self.attackers));
+
         // Units that received the launch order this pass, so step 8 does not
         // target them twice.
         let mut launched: Vec<EntityId> = Vec::new();
@@ -1089,6 +1093,72 @@ fn garrison_orders(
         commands.push(Command::Garrison { units, feature });
     }
     commands
+}
+
+/// Spec 58: how far (centi-tiles) the AI sends a unit to capture a tech building.
+const TECH_REACH_CENTI: u32 = 4000;
+
+/// Spec 58: for each tech building the player does not own and none of its
+/// units is already working on, the nearest idle pool infantry unit within
+/// `TECH_REACH_CENTI` captures it. Ascending feature index; a unit is used once.
+fn capture_orders(
+    world: &World,
+    player: PlayerId,
+    faction: FactionId,
+    attackers: &[EntityId],
+) -> Vec<Command> {
+    let mut commands = Vec::new();
+    let reach = i64::from(fx_centi(TECH_REACH_CENTI).raw());
+    let mut candidates: Vec<EntityId> = pool(world, player, faction, attackers)
+        .into_iter()
+        .filter(|&id| {
+            world
+                .entity(id)
+                .is_some_and(|entity| matches!(entity.order, Order::Idle { .. }))
+        })
+        .collect();
+    for feature in 0..world.features().len() as u32 {
+        if world.tech_def(feature).is_none()
+            || world.tech_owner(feature) == player
+            || candidates.is_empty()
+        {
+            continue;
+        }
+        let busy = world.entities().iter().any(|entity| {
+            entity.owner == player
+                && matches!(entity.order, Order::Capture { feature: f, .. } if f == feature)
+        });
+        let Some(center) = world.feature_center(feature) else {
+            continue;
+        };
+        if busy {
+            continue;
+        }
+        let best = candidates
+            .iter()
+            .filter_map(|&id| {
+                let distance = squared_distance(entity_pos(world, id), center);
+                (distance <= reach * reach && world.can_capture(id, feature))
+                    .then_some((distance, id))
+            })
+            .min();
+        let Some((_, unit)) = best else {
+            continue;
+        };
+        candidates.retain(|&id| id != unit);
+        commands.push(Command::Capture {
+            units: vec![unit],
+            feature,
+        });
+    }
+    commands
+}
+
+/// Test hook: `capture_orders` for the first faction of `player`.
+#[cfg(test)]
+pub(crate) fn capture_orders_for_test(world: &World, player: PlayerId) -> Vec<Command> {
+    let faction = world.player(player).map_or(0, |p| p.faction);
+    capture_orders(world, player, faction, &[])
 }
 
 /// Test hook: `garrison_orders` for the first faction of `player`, no attackers.

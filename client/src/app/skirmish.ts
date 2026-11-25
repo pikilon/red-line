@@ -45,8 +45,10 @@ import {
   garrisonFeaturesOf,
   garrisonOffers,
   isFreeInfantry,
+  techFeaturesOf,
   trenchGarrisons,
   withLiveState,
+  withTechState,
 } from "../input/garrison";
 import { type ReloadPlan, reloadPlan } from "../input/reload";
 import {
@@ -1155,6 +1157,18 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   /** The placed buildings the sim still accepts riders in, with their holder
    *  and occupants, from the latest feature table (spec 31 block 2). */
   let garrisonFeatures = withLiveState(placedGarrisons, null);
+  /** Spec 58: the map's capturable tech buildings and their owners. */
+  const placedTech = techFeaturesOf(
+    (
+      ruleset.maps.find((entry) => entry.id === mapId) as
+        | { features?: readonly GarrisonMapFeature[] }
+        | undefined
+    )?.features ?? [],
+    (ruleset as unknown as { featureTypes?: readonly GarrisonTypeInfo[] })
+      .featureTypes ?? [],
+  );
+  const techIndexes = new Set(placedTech.map((feature) => feature.index));
+  let techFeatures = withTechState(placedTech, null);
   /** The map's bridges, in the sim's feature row order (spec 35). */
   const placedBridges = repairJobsOf(
     (
@@ -1805,6 +1819,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
       entities: () => next?.entities ?? [],
       altitudeOf: (entity) => entities?.flyers.altitudeOf(entity) ?? 0,
       garrisonFeatures: () => garrisonFeatures,
+      techFeatures: () => techFeatures,
       repairJobs: () => repairJobs,
       tiles: () => mapInfo.tiles,
       hardCells: () => hardCells,
@@ -2253,6 +2268,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
             .featureTypes ?? [],
         ),
       ];
+      techFeatures = withTechState(placedTech, features);
       repairJobs = [
         ...withRepairState(placedBridges, features),
         ...unfinishedTrenchJobs(features, earthworkKinds),
@@ -2673,9 +2689,12 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
             entity.owner === controlled &&
             isFreeInfantry(entity),
         );
-      garrisonMarkers.update(garrisonFeatures, {
+      garrisonMarkers.update([...garrisonFeatures, ...techFeatures], {
         ready: (feature) =>
-          infantrySelected && acceptsRiders(feature, controlled),
+          infantrySelected &&
+          (techIndexes.has(feature.index)
+            ? feature.owner !== controlled
+            : acceptsRiders(feature, controlled)),
         colour: (owner) =>
           `#${ownerColor(owner).toString(16).padStart(6, "0")}`,
       });

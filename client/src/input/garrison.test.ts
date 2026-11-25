@@ -9,9 +9,12 @@ import {
   type GarrisonFeature,
   garrisonFeaturesOf,
   garrisonOffers,
+  resolveCaptureClick,
   resolveGarrisonClick,
   selectOccupantsAt,
+  techFeaturesOf,
   withLiveState,
+  withTechState,
 } from "./garrison";
 
 const unit = (
@@ -218,5 +221,59 @@ describe("spec 35 §5c: a trench is one block", () => {
   it("evacuate empties every piece of the trench we hold", () => {
     expect(evacuationOf(1, features, entities, 0)).toEqual([1, 2]);
     expect(evacuationOf(3, features, entities, 0)).toEqual([3]);
+  });
+});
+
+describe("capture (spec 58)", () => {
+  const techTypes = [
+    { footprint: [2, 2] as const, tech: {} },
+    { footprint: [1, 1] as const },
+  ];
+  const tech = techFeaturesOf(
+    [
+      { type: 1, x: 5, y: 5, rot: 0 },
+      { type: 0, x: 10, y: 10, rot: 0 },
+    ],
+    techTypes,
+  );
+
+  it("lists only the tech buildings, keeping the map row index", () => {
+    expect(tech.map((feature) => feature.index)).toEqual([1]);
+  });
+
+  it("sends the selected free infantry to capture a building they do not own", () => {
+    const rifleman = unit(1, 0, "ua-rifleman", 8, 8);
+    expect(
+      resolveCaptureClick({
+        player: 0,
+        selected: [1],
+        entities: [rifleman],
+        techFeatures: tech,
+        x: 10.5,
+        y: 10.5,
+      }),
+    ).toEqual([{ kind: "capture", player: 0, units: [1], feature: 1 }]);
+  });
+
+  it("does nothing on an own building, off a building or without infantry", () => {
+    const rifleman = unit(1, 0, "ua-rifleman", 8, 8);
+    const owned = withTechState(tech, [
+      { alive: true, kind: 0, owner: 0 } as unknown as FeatureRow,
+      { alive: true, kind: 0, owner: 0 } as unknown as FeatureRow,
+    ]);
+    const args = {
+      player: 0,
+      selected: [1],
+      entities: [rifleman],
+      x: 10.5,
+      y: 10.5,
+    };
+    expect(resolveCaptureClick({ ...args, techFeatures: owned })).toEqual([]);
+    expect(
+      resolveCaptureClick({ ...args, techFeatures: tech, x: 0, y: 0 }),
+    ).toEqual([]);
+    expect(
+      resolveCaptureClick({ ...args, techFeatures: tech, selected: [] }),
+    ).toEqual([]);
   });
 });

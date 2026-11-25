@@ -277,6 +277,7 @@ impl World {
             to: None,
             burn: 0,
             collapse: 0,
+            owner: crate::entity::NEUTRAL,
         });
         Some((self.features.len() - 1) as u32)
     }

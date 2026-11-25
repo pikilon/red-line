@@ -297,6 +297,17 @@ impl Sim {
         );
     }
 
+    /// Spec 58: `unit_ids` walk to the tech building `feature` and capture it.
+    pub fn command_capture(&mut self, player: u8, unit_ids: &[u32], feature: u32) {
+        self.world.enqueue_as(
+            player,
+            Command::Capture {
+                units: unit_ids.to_vec(),
+                feature,
+            },
+        );
+    }
+
     /// Spec 35: `unit_ids` dig a trench with its top-left cell at `(x, y)`.
     pub fn command_repair_building(&mut self, player: u8, unit_ids: &[u32], building: u32) {
         self.world.enqueue_as(

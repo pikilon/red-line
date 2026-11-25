@@ -80,6 +80,7 @@ export type SimCommand =
   | { kind: "garrison"; player: number; units: number[]; feature: number }
   /** Spec 54 §5.2: units throw a flash-bang at the enemy-held feature `feature`. */
   | { kind: "flashBang"; player: number; units: number[]; feature: number }
+  | { kind: "capture"; player: number; units: number[]; feature: number }
   /** Spec 31 block 2: evacuate the garrisoned feature `feature`. */
   | { kind: "unload"; player: number; feature: number }
   /** Spec 34: infantry walk to the own vehicle `carrier` and board it. */

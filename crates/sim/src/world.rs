@@ -147,6 +147,11 @@ pub enum Command {
         units: Vec<EntityId>,
         feature: u32,
     },
+    /// Spec 58: infantry walk to the tech building `feature` and capture it.
+    Capture {
+        units: Vec<EntityId>,
+        feature: u32,
+    },
     /// Spec 38: dozers repair an own damaged entity building.
     RepairBuilding {
         units: Vec<EntityId>,
@@ -855,6 +860,7 @@ impl World {
         self.repair_works();
         self.repair_vehicles();
         self.heal_infirmaries();
+        self.tech_buildings();
         self.heal_veterans();
         self.separate_units();
         self.arrive_on_contact();
@@ -981,6 +987,9 @@ impl World {
                 Command::Board { units, carrier } => self.apply_board(player, &units, carrier),
                 Command::Disembark { carrier } => self.apply_disembark(player, carrier),
                 Command::Repair { units, feature } => self.apply_repair(player, &units, feature),
+                Command::Capture { units, feature } => {
+                    self.apply_capture(player, &units, feature);
+                }
                 Command::FlashBang { units, feature } => {
                     self.apply_flash_bang(player, &units, feature);
                 }
@@ -1369,6 +1378,13 @@ impl World {
                 }
                 Order::Board { order_id, carrier } => self.step_board(index, order_id, carrier),
                 Order::Repair { order_id, feature } => self.step_repair(index, order_id, feature),
+                Order::Capture {
+                    order_id,
+                    feature,
+                    progress,
+                } => {
+                    self.step_capture(index, order_id, feature, progress);
+                }
                 Order::FlashBang { order_id, feature } => {
                     self.step_flash_bang(index, order_id, feature);
                 }
@@ -1869,7 +1885,7 @@ impl World {
                     Order::Repair { feature, .. } => self
                         .repair_goal(index, feature)
                         .map(|goal| self.nav.index(goal)),
-                    Order::FlashBang { feature, .. } => self
+                    Order::Capture { feature, .. } | Order::FlashBang { feature, .. } => self
                         .garrison_goal(self.entities[index].pos, feature)
                         .map(|goal| self.nav.index(goal)),
                     Order::RepairBuilding { building, .. } => {
