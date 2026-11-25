@@ -86,7 +86,7 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
   campaigns, which plays on its own map `hostomel` (§6), Ukraine 2, on
   `irpin` (§7), the two Snake Island missions, on `snake-island` (§8),
   Russia 3, on `mariupol` (§9), Russia 4, on `bakhmut` (§10), Russia 5,
-  on `surovikin-line` (§11), Russia 6, on `avdiivka` (§12), Russia 7, on `kursk-pipe` (§13), and Russia 8, on `oreshnik` (§14). Own maps for the remaining missions are tracked
+  on `surovikin-line` (§11), Russia 6, on `avdiivka` (§12), Russia 7, on `kursk-pipe` (§13), Russia 8, on `oreshnik` (§14), and Russia 9, on `kyiv` (§15). Own maps for the remaining missions are tracked
   in issue #482.
 * The game has no ships: the cruiser Moskva is played as the Black Sea Fleet
   command post on the shore. Snake Island is no longer the coast of
@@ -290,3 +290,21 @@ Existing feature types only:
 * Assumptions: the Oreshnik strike stays a stand-in (Geran-2 swarm); the save
   does not add `ru-oreshnik-launcher` (spec 64) because it would make the
   Yuzhmash goal trivial. No mission script exists for this mission.
+
+## 15. Map `kyiv` (issue #482)
+
+`data/maps/kyiv.yaml`, 128 x 96, same HQ cells and starts as river-port, so
+`campaign-ru-09-kyiv` keeps every entity cell and only changes `map:`.
+Existing feature types only:
+
+* The wide Dnipro runs north to south at x=64 (shallow banks, deep channel)
+  with three crossings: a Paton-style `road-bridge` (y=42), a rail and road
+  `road-bridge` (y=70) and a `wooden-bridge` footbridge (y=16).
+* Right bank (west): the Ukrainian base, the government quarter (office towers
+  and factory-sized halls around the open concrete Maidan plaza), dense
+  apartment blocks, townhouse rows, shops and churches; Mariinskyi park (tree
+  belts on two hills) on the river bluff.
+* Left bank (east): residential blocks, houses and open ground around the
+  Russian base.
+* Assumption: the bases sit on opposite banks, as in the real city; the
+  Russians must cross a bridge. No mission script exists for this mission.
