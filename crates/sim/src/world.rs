@@ -878,6 +878,7 @@ impl World {
     /// id order (spec 17 §4.5).
     fn remove_dead(&mut self) {
         self.score_kills();
+        self.count_deaths();
         let mut removed_building = false;
         let mut kept = Vec::with_capacity(self.entities.len());
         for entity in std::mem::take(&mut self.entities) {

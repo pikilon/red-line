@@ -732,6 +732,7 @@ impl World {
             }
             let price = owed(target) - owed(before);
             self.players[usize::from(owner)].credits -= price as u32;
+            self.players[usize::from(owner)].stats.money_spent += price as u32;
         }
         self.entities[index].hp = target;
         paid

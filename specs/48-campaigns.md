@@ -68,10 +68,10 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
   and **Start mission** / **Back**. Start opens `?load=<mission id>`.
 * In the mission, `#tutorial` lists the objectives (spec 46 §4). When every
   step is done, or the sim names the player the winner, the mission is won:
-  progress is recorded and the panel offers **Next mission** (the next
-  briefing) or, after the tenth, **Epilogue**; and **Main menu**.
-* When the sim names another winner (every player building is gone) the panel
-  says **Mission failed.** with **Retry** (reloads the mission) and **Main
+  progress is recorded and the score screen (spec 57) offers **Next mission**
+  (the next briefing) or, after the tenth, **Epilogue**; and **Main menu**.
+* When the sim names another winner (every player building is gone) the score
+  screen (spec 57) says **Mission failed.** with **Retry** (reloads the mission) and **Main
   menu**.
 * `?campaign=<mission id>` opens the main menu with that briefing, if the
   mission is open; `?campaign=<ukraine|russia>-ending` opens the epilogue once
@@ -95,7 +95,8 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
 * Ukraine 10 and Russia 9–10 are fiction, and the briefings say so; Nord
   Stream is told as a fictionalised version of the German investigation.
 * Difficulty is fixed per mission (credits and AI personality in the save);
-  there is no difficulty selector, voice-over or score screen yet.
+  there is no difficulty selector or voice-over yet; the score screen is
+  spec 57.
 * Progress lives in the browser like the settings, not in a save slot.
 
 ## 6. Map `hostomel` (issue #450)

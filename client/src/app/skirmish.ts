@@ -172,7 +172,14 @@ import {
   type Weather,
 } from "../render/weather";
 import { reportsEnabled } from "../report/api";
-import { RULES, typeDef, typeIndex, typeName, WEAPONS } from "../rules";
+import {
+  factionName,
+  RULES,
+  typeDef,
+  typeIndex,
+  typeName,
+  WEAPONS,
+} from "../rules";
 import { loadSource, readExample, readSave } from "../saves/boot";
 import {
   buildSaveFile,
@@ -233,12 +240,12 @@ import { createHudBar } from "../ui/hudBar";
 import { disableLeaveGuard, enableLeaveGuard } from "../ui/leaveGuard";
 import { createMainMenu } from "../ui/mainMenu";
 import { createMinimap, type MinimapTerrain } from "../ui/minimap";
-import { createOutcomeOverlay, outcomeText } from "../ui/outcome";
 import { createPlacementHint } from "../ui/placementHint";
 import { createQuickBar } from "../ui/quickBar";
 import { createReportPage, type ReportCapture } from "../ui/reportPage";
 import { createResourceBar } from "../ui/resourceBar";
 import { createSaveManager, type SlotView } from "../ui/saveManager";
+import { createScoreScreen, type EndButton } from "../ui/scoreScreen";
 import { createSelectionBox } from "../ui/selectionBox";
 import { createTouchControls, isTouchDevice } from "../ui/touchControls";
 import {
@@ -644,7 +651,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   scene.background = new Color(0x101820);
   const camera = createIsometricCamera(1);
   const hud = createHud(hudRoot);
-  const outcome = createOutcomeOverlay(document.body);
+  const scoreScreen = createScoreScreen(document.body);
 
   let settings: Settings = loadSettings();
   if (restored !== null && boot.applySettings) {
@@ -751,6 +758,9 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   const campaignMission = findCampaignMission(boot.loadedId);
   const campaignProgress = createCampaignProgress();
   const tutorialMission = campaignMission ?? findTutorial(boot.loadedId);
+  /** Set once a mission is won or lost: the score screen's next actions
+   *  (spec 57 §4, spec 48 §4). */
+  let missionEnd: { won: boolean; buttons: readonly EndButton[] } | null = null;
   const tutorialPanel =
     tutorialMission === null
       ? null
@@ -787,6 +797,9 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
           menu: () => {
             disableLeaveGuard();
             window.location.assign(window.location.pathname);
+          },
+          finished: (won, buttons) => {
+            missionEnd = { won, buttons };
           },
           command: (command) => interact.command(command),
           alive: (ids) => interact.requestAlive(ids),
@@ -2017,15 +2030,54 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     });
   }
 
+  /** Spec 57: the score screen shows once the sim names an outcome or a
+   *  mission script ends; the player may close it to look around. */
+  function renderScoreScreen(): void {
+    if (next === null || boot.shell || scoreScreen.settled) return;
+    if (next.outcome === "ongoing" && missionEnd === null) return;
+    const buttons: EndButton[] = [
+      ...(missionEnd?.buttons ?? [
+        ...(boot.net === undefined
+          ? [
+              {
+                label: "menu.restart" as const,
+                go: () => {
+                  disableLeaveGuard();
+                  window.location.reload();
+                },
+              },
+            ]
+          : []),
+        { label: "tutorial.menu" as const, go: leaveToMenu },
+      ]),
+    ];
+    scoreScreen.show({
+      snapshot: next,
+      controlled,
+      heading:
+        missionEnd !== null && !missionEnd.won
+          ? t("campaign.failed")
+          : undefined,
+      nameOf: (player) => {
+        const index = RULES.factions.findIndex(
+          (faction) => faction.id === factionOfPlayer(player),
+        );
+        return t("hud.player", {
+          player: player + 1,
+          faction: factionName(Math.max(0, index)),
+        });
+      },
+      buttons,
+    });
+  }
+
   /** Refreshes the DOM overlay; called on events only, never per frame
    *  (spec §6.7, #140). */
   function refreshOverlay(): void {
     resourceBar.render(next);
     if (next !== null) tutorialPanel?.update(next, controlled);
     quickBar.refresh();
-    outcome.render(
-      next === null || boot.shell ? null : outcomeText(next, controlled),
-    );
+    renderScoreScreen();
     const queue = next === null ? null : selectedQueue();
     const selection = selectedEntities();
     const panel: PanelInput = {

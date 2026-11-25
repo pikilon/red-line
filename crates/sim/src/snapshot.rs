@@ -6,6 +6,7 @@ use crate::entity::{Entity, EntityId, Ghost, NEUTRAL, Order, PlayerId, Projectil
 use crate::fixed::{Fx, FxVec2};
 use crate::map::{Cell, cell_of};
 use crate::nav::footprint_center;
+use crate::player::PlayerStats;
 use crate::rules::QUEUE_SLOTS;
 use crate::world::{CombatEvent, Outcome, World};
 
@@ -321,10 +322,9 @@ pub fn encode_match_snapshot_with_shots(
             entity.master.map_or(-1, |master| master as i32),
         ]);
     }
-    // Spec 52: every player's upgrades follow the air tail, which is then
-    // always written: `count, (player, type)*`. Upgrades are public, as in
-    // Zero Hour, so every client sizes health bars right. Both are left out
-    // when empty, so older layouts stay.
+    // Spec 52: every player's upgrades follow the air tail: `count, (player,
+    // type)*`. Upgrades are public, as in Zero Hour, so every client sizes
+    // health bars right.
     let upgrades: Vec<i32> = world
         .players()
         .iter()
@@ -334,14 +334,38 @@ pub fn encode_match_snapshot_with_shots(
                 .flat_map(|&kind| [i32::from(p.id), i32::from(kind)])
         })
         .collect();
-    // Written only when there is one, so a match without flyers keeps its layout.
-    if air_count > 0 || !upgrades.is_empty() {
+    // Spec 57: the score-screen counters close the snapshot, `count, (player,
+    // 8 counters)*`, written once any player has counted something. Every
+    // section before them is then written too (zero when empty); a match
+    // that has not started counting keeps the shorter layout.
+    let counted = world
+        .players()
+        .iter()
+        .any(|p| *p.stats() != PlayerStats::default());
+    if air_count > 0 || !upgrades.is_empty() || counted {
         out.push(air_count);
         out.extend_from_slice(&air);
     }
-    if !upgrades.is_empty() {
+    if !upgrades.is_empty() || counted {
         out.push((upgrades.len() / 2) as i32);
         out.extend_from_slice(&upgrades);
+    }
+    if counted {
+        out.push(world.players().len() as i32);
+        for player in world.players() {
+            let stats = player.stats();
+            out.extend_from_slice(&[
+                i32::from(player.id),
+                stats.units_built as i32,
+                stats.units_lost as i32,
+                stats.units_destroyed as i32,
+                stats.buildings_built as i32,
+                stats.buildings_lost as i32,
+                stats.buildings_destroyed as i32,
+                stats.money_earned as i32,
+                stats.money_spent as i32,
+            ]);
+        }
     }
     out
 }
