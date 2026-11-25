@@ -202,6 +202,8 @@ pub struct Entity {
     /// Spec 54 §5.2: ticks left stunned by a flash-bang; a stunned unit
     /// neither moves nor fires.
     pub stun: u32,
+    /// Spec 56 §5.1: the unit is in a horde and fires faster.
+    pub horde: bool,
 }
 
 /// The locomotion and turret state of an entity (spec 11 §5.1). Read and written

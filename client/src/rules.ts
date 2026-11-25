@@ -35,6 +35,13 @@ export interface TypeDef {
   /** Collision radius in centi-tiles; 0 uses the sim default. */
   radiusCenti?: number;
   /** Spec 54 §5.2: the unit throws a flash-bang at an enemy-held building. */
+  /** Spec 56 §5.1: group fire-rate bonus. */
+  horde?: {
+    count: number;
+    radiusCenti: number;
+    rubOffRadiusCenti: number;
+    rateOfFirePercent: number;
+  };
   flashBang?: { rangeCenti: number; stunTicks: number };
   /** Spec 40: damaged infantry heal inside this building. */
   healsInfantry?: boolean;
@@ -71,6 +78,7 @@ export interface TypeDef {
     appliesTo: number[];
     healthPercent: number;
     damagePercent: number;
+    hordePercent: number;
   };
   render: { size: [number, number, number] };
 }

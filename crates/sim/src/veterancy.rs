@@ -46,6 +46,19 @@ impl World {
         weapon.damage = self.upgraded(entity.owner, entity.kind, weapon.damage, |def| {
             def.damage_percent
         });
+        if entity.horde
+            && let Some(horde) = self.rules.ty(entity.kind).horde
+        {
+            // Spec 56 §5.1: a horde member fires faster; Nationalism adds more.
+            let percent = self.upgraded(
+                entity.owner,
+                entity.kind,
+                horde.rate_of_fire_percent,
+                |def| def.horde_percent,
+            );
+            weapon.cooldown_ticks =
+                (u64::from(weapon.cooldown_ticks) * 100 / u64::from(percent.max(1))).max(1) as u32;
+        }
         let rank = entity.rank;
         if rank == 0 {
             return weapon;

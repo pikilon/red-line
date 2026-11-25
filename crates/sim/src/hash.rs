@@ -187,6 +187,9 @@ fn put_entity(out: &mut Vec<u8>, entity: &Entity, world: &World) {
         out.push(12);
         put_u32(out, entity.stun);
     }
+    if entity.horde {
+        out.push(13);
+    }
 }
 
 fn put_order(out: &mut Vec<u8>, order: &Order) {

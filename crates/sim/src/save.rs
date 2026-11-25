@@ -199,6 +199,13 @@ pub struct EntityState {
     /// Spec 54 §5.2: ticks left stunned.
     #[serde(default, skip_serializing_if = "is_zero")]
     pub stun: u32,
+    /// Spec 56 §5.1: in a horde.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub horde: bool,
+}
+
+fn is_false(value: &bool) -> bool {
+    !*value
 }
 
 fn is_zero(value: &u32) -> bool {
@@ -1151,6 +1158,7 @@ fn save_entity(entity: &Entity, rules: &Ruleset) -> EntityState {
         xp: entity.xp,
         rank: u32::from(entity.rank),
         stun: entity.stun,
+        horde: entity.horde,
     }
 }
 
@@ -1233,6 +1241,7 @@ fn load_entity(state: &EntityState, rules: &Ruleset) -> Result<Entity, String> {
         }),
         charge_clock: state.charge_clock,
         stun: state.stun,
+        horde: state.horde,
         xp: state.xp,
         // Only a type that can be promoted holds a rank.
         rank: if rules

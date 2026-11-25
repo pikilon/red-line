@@ -138,6 +138,7 @@ import {
   createGroundImpacts,
   type GroundImpacts,
 } from "../render/groundImpacts";
+import { createHordeRings, type HordeRings } from "../render/hordeRings";
 import { createKnockback } from "../render/knockback";
 import { loadModels, type ModelRegistry } from "../render/models";
 import {
@@ -1360,6 +1361,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   let attackMarker: AttackMarker | null = null;
   let airOverlay: AirOverlay | null = null;
   let rankMarkers: RankMarkers | null = null;
+  let hordeRings: HordeRings | null = null;
   let rallyMarker: RallyMarker | null = null;
   let garrisonMarkers: GarrisonMarkers | null = null;
   let garrisonMarkersAt = Number.NEGATIVE_INFINITY;
@@ -1651,6 +1653,8 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
     scene.add(airOverlay.group);
     rankMarkers = createRankMarkers();
     scene.add(rankMarkers.group);
+    hordeRings = createHordeRings();
+    scene.add(hordeRings.group);
     scene.add(vehicleFx.group);
     effects = createEffects();
     scene.add(effects.group);
@@ -2521,6 +2525,10 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         effectTime(now),
         camera.quaternion,
         controlled,
+      );
+      hordeRings?.update(
+        drawn,
+        (entity) => entities?.flyers.altitudeOf(entity) ?? 0,
       );
       rankMarkers?.update(
         drawn,

@@ -3750,6 +3750,12 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "horde": {
+        "count": 5,
+        "radiusCenti": 300,
+        "rubOffRadiusCenti": 150,
+        "rateOfFirePercent": 125
+      },
       "experience": {
         "value": [
           9,
@@ -3804,6 +3810,12 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "horde": {
+        "count": 5,
+        "radiusCenti": 300,
+        "rubOffRadiusCenti": 150,
+        "rateOfFirePercent": 125
+      },
       "experience": {
         "value": [
           33,
@@ -5789,7 +5801,8 @@
           66
         ],
         "healthPercent": 100,
-        "damagePercent": 120
+        "damagePercent": 120,
+        "hordePercent": 100
       },
       "render": {
         "size": [
@@ -5838,7 +5851,8 @@
           6
         ],
         "healthPercent": 100,
-        "damagePercent": 120
+        "damagePercent": 120,
+        "hordePercent": 100
       },
       "render": {
         "size": [
@@ -5887,7 +5901,8 @@
           78
         ],
         "healthPercent": 125,
-        "damagePercent": 100
+        "damagePercent": 100,
+        "hordePercent": 100
       },
       "render": {
         "size": [
@@ -5936,7 +5951,8 @@
           20
         ],
         "healthPercent": 125,
-        "damagePercent": 100
+        "damagePercent": 100,
+        "hordePercent": 100
       },
       "render": {
         "size": [
@@ -5984,7 +6000,8 @@
           31
         ],
         "healthPercent": 100,
-        "damagePercent": 120
+        "damagePercent": 120,
+        "hordePercent": 100
       },
       "render": {
         "size": [
@@ -6033,7 +6050,8 @@
           34
         ],
         "healthPercent": 120,
-        "damagePercent": 100
+        "damagePercent": 100,
+        "hordePercent": 100
       },
       "render": {
         "size": [
@@ -6081,7 +6099,8 @@
           45
         ],
         "healthPercent": 100,
-        "damagePercent": 115
+        "damagePercent": 115,
+        "hordePercent": 112
       },
       "render": {
         "size": [
@@ -6130,7 +6149,8 @@
           48
         ],
         "healthPercent": 120,
-        "damagePercent": 100
+        "damagePercent": 100,
+        "hordePercent": 100
       },
       "render": {
         "size": [

@@ -22,6 +22,7 @@ types:                               # required
     speedCenti: 8
     turnRateDeg: 720
     weapon: cn-qbz-95
+    horde: { count: 5, radiusCenti: 300, rubOffRadiusCenti: 150, rateOfFirePercent: 125 }
     render: { size: [30, 60, 30] }
     experience: { value: [9, 18, 27, 36], required: [36, 72, 144] }
   - id: cn-hj-team
@@ -38,6 +39,7 @@ types:                               # required
     stowTicks: 17
     trenchWeapon: cn-sidearm
     radiusCenti: 25
+    horde: { count: 5, radiusCenti: 300, rubOffRadiusCenti: 150, rateOfFirePercent: 125 }
     render: { size: [40, 50, 40] }
     experience: { value: [33, 66, 99, 132], required: [132, 264, 528] }
   - id: cn-mengshi
@@ -217,7 +219,7 @@ upgrades:                            # spec 52
     category: upgrade
     cost: 800
     buildTicks: 420
-    upgrade: { appliesTo: [cn-rifle-squad, cn-hj-team], damagePercent: 115 }
+    upgrade: { appliesTo: [cn-rifle-squad, cn-hj-team], damagePercent: 115, hordePercent: 112 }
   - id: cn-composite-armor           # composite and ceramic add-on plates
     category: upgrade
     cost: 1300

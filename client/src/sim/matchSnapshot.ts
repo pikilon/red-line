@@ -25,6 +25,8 @@ export const ENTITY_FLAGS = {
   airborne: 128,
   /** Spec 43 §4.5: inside a hostile jammer's radius. */
   jammed: 256,
+  /** Spec 56 §5.1: in a horde (faster fire). */
+  horde: 2048,
 } as const;
 export const OUTCOMES = ["ongoing", "winner", "draw"] as const;
 export type Outcome = (typeof OUTCOMES)[number];

@@ -1227,6 +1227,8 @@ const assemble = (
 							}),
 						},
 					}),
+			// Spec 56 §5.1: group fire-rate bonus.
+			...(t.horde === undefined ? {} : { horde: t.horde }),
 			// Spec 54 §5.2: flash-bang that clears an enemy-held building.
 			...(t.flashBang === undefined
 				? {}
@@ -1288,6 +1290,7 @@ const assemble = (
 							appliesTo: types(t.upgrade.appliesTo),
 							healthPercent: t.upgrade.healthPercent ?? 100,
 							damagePercent: t.upgrade.damagePercent ?? 100,
+							hordePercent: t.upgrade.hordePercent ?? 100,
 						},
 					}),
 			render: { size: renderSize(t) },
