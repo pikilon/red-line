@@ -713,6 +713,7 @@ impl World {
             rank: 0,
             stun: 0,
             horde: false,
+            exposed: 0,
         });
         id
     }
@@ -886,6 +887,7 @@ impl World {
         self.separate_units();
         self.arrive_on_contact();
         self.update_visibility();
+        self.update_stealth();
         self.advance_in_trenches();
         self.update_horde();
         self.update_combat();
@@ -1340,7 +1342,10 @@ impl World {
     /// listed unit of `player` with a weapon receives it.
     pub(crate) fn apply_attack(&mut self, player: PlayerId, units: &[EntityId], target: EntityId) {
         let valid = self.entity(target).is_some_and(|entity| {
-            entity.hp > 0 && entity.owner != player && entity.owner != NEUTRAL
+            entity.hp > 0
+                && entity.owner != player
+                && entity.owner != NEUTRAL
+                && !self.is_stealthed(entity)
         });
         if !valid {
             return;

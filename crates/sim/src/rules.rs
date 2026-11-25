@@ -501,6 +501,26 @@ pub struct Horde {
     pub rate_of_fire_percent: u32,
 }
 
+/// Spec 61 §5.1: Zero Hour `StealthUpdate`. The unit is hidden from the
+/// enemy until it is exposed; a shot, a hit (and a move when `breaks_on_move`)
+/// expose it for `delay_ticks`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Stealth {
+    pub delay_ticks: u32,
+    #[serde(default)]
+    pub breaks_on_move: bool,
+}
+
+/// Spec 61 §5.2: Zero Hour `StealthDetectorUpdate`. Every `rate_ticks` the
+/// unit exposes the enemy stealthed units within `range_centi`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Detector {
+    pub range_centi: u32,
+    pub rate_ticks: u32,
+}
+
 /// Spec 54 §5.2: a thrown stun grenade that clears a garrisoned building.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -577,6 +597,12 @@ pub struct TypeDef {
     /// Spec 56 §5.1: group fire-rate bonus.
     #[serde(default)]
     pub horde: Option<Horde>,
+    /// Spec 61 §5.1: hidden from the enemy until exposed.
+    #[serde(default)]
+    pub stealth: Option<Stealth>,
+    /// Spec 61 §5.2: exposes enemy stealthed units nearby.
+    #[serde(default)]
+    pub detector: Option<Detector>,
     /// Spec 39: this completed building is a vehicle repair pad.
     #[serde(default)]
     pub repairs_vehicles: bool,

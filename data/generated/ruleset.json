@@ -1698,6 +1698,10 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "stealth": {
+        "delayTicks": 45,
+        "breaksOnMove": true
+      },
       "experience": {
         "value": [
           35,
@@ -1751,6 +1755,10 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "detector": {
+        "rangeCenti": 1000,
+        "rateTicks": 15
+      },
       "transport": {
         "slots": 5,
         "fireFromInside": true,
@@ -2449,6 +2457,10 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "stealth": {
+        "delayTicks": 45,
+        "breaksOnMove": true
+      },
       "experience": {
         "value": [
           20,
@@ -2502,6 +2514,10 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "detector": {
+        "rangeCenti": 1000,
+        "rateTicks": 15
+      },
       "amphibious": true,
       "transport": {
         "slots": 4,
@@ -3205,6 +3221,10 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "stealth": {
+        "delayTicks": 45,
+        "breaksOnMove": true
+      },
       "experience": {
         "value": [
           40,
@@ -3258,6 +3278,10 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "detector": {
+        "rangeCenti": 1000,
+        "rateTicks": 15
+      },
       "transport": {
         "slots": 5,
         "fireFromInside": true,
@@ -3966,6 +3990,10 @@
         "rubOffRadiusCenti": 150,
         "rateOfFirePercent": 125
       },
+      "stealth": {
+        "delayTicks": 45,
+        "breaksOnMove": true
+      },
       "experience": {
         "value": [
           33,
@@ -4019,6 +4047,10 @@
       "loadTicks": 0,
       "unloadTicks": 0,
       "freeUnit": -1,
+      "detector": {
+        "rangeCenti": 1000,
+        "rateTicks": 15
+      },
       "transport": {
         "slots": 5,
         "fireFromInside": true,

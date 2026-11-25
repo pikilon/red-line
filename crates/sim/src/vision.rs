@@ -159,6 +159,10 @@ impl World {
         if entity.owner == player.id || entity.owner == NEUTRAL {
             return true;
         }
+        // Spec 61: an undetected stealth unit is not seen, whatever the fog.
+        if self.is_stealthed(entity) {
+            return false;
+        }
         match &entity.site {
             Some(site) => {
                 let size = self.rules.ty(entity.kind).footprint;

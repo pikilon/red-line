@@ -1271,6 +1271,9 @@ const assemble = (
 					}),
 			// Spec 56 §5.1: group fire-rate bonus.
 			...(t.horde === undefined ? {} : { horde: t.horde }),
+			// Spec 61: stealth and detection.
+			...(t.stealth === undefined ? {} : { stealth: t.stealth }),
+			...(t.detector === undefined ? {} : { detector: t.detector }),
 			// Spec 54 §5.2: flash-bang that clears an enemy-held building.
 			...(t.flashBang === undefined
 				? {}

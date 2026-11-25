@@ -1,0 +1,16 @@
+# Spec 61: two hidden Stugna teams ambush a T-72 column; the BRDM scout following it exposes them when it gets within ten tiles.
+id: stealth
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 36, y: 15, zoom: 1.2 }
+entities:
+  - { player: 0, type: ua-stugna-team, atCenti: [3600, 1450] }
+  - { player: 0, type: ua-stugna-team, atCenti: [3600, 1650] }
+  - { player: 1, type: ru-t-72b3, atCenti: [2400, 1550], order: { moveCenti: [5200, 1550] } }
+  - { player: 1, type: ru-t-72b3, atCenti: [2300, 1450], order: { moveCenti: [5200, 1450] } }
+  - { player: 1, type: ru-brdm-scout, atCenti: [1000, 1550], order: { moveCenti: [5200, 1550] } }
