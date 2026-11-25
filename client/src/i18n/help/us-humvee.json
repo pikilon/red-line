@@ -6,27 +6,32 @@
     {
       "title": "Heavy machine gun",
       "how": "Select the Humvee and left-click an enemy, or let it fire at anything in range.",
-      "body": "The roof-mounted heavy machine gun fires quick bursts. It tears through infantry, scouts and other light vehicles, and can answer low drones. Against a main battle tank it struggles badly."
+      "body": "The roof-mounted heavy machine gun fires quick bursts. It tears through infantry, scouts and other light vehicles, and can answer low drones. Against a main battle tank it struggles badly.",
+      "shots": ["us-humvee-fight"]
     },
     {
       "title": "Carry infantry",
       "how": "Select one or more Rangers or Javelin teams, then left-click your own Humvee.",
-      "body": "Up to five soldiers ride hidden inside and cannot be selected until they get out. If the Humvee is destroyed, everyone aboard dies with it."
+      "body": "Up to five soldiers ride hidden inside and cannot be selected until they get out. If the Humvee is destroyed, everyone aboard dies with it.",
+      "shots": ["us-humvee-carry"]
     },
     {
       "title": "Fire from inside",
       "how": "Load Rangers into the Humvee and drive close to the enemy; the passengers fire on their own.",
-      "body": "The Humvee has firing ports, so its passengers shoot from inside with their own weapons instead of standing in the open. They stay hidden and untargetable while they ride."
+      "body": "The Humvee has firing ports, so its passengers shoot from inside with their own weapons instead of standing in the open. They stay hidden and untargetable while they ride.",
+      "shots": ["us-humvee-fireports"]
     },
     {
       "title": "Unload",
       "how": "Select the loaded Humvee and press Unload (n).",
-      "body": "The riders step out one after another beside the vehicle. Drive close to the objective first, then unload."
+      "body": "The riders step out one after another beside the vehicle. Drive close to the objective first, then unload.",
+      "shots": ["us-humvee-unload"]
     },
     {
       "title": "Repair at the vehicle factory",
       "how": "Select the damaged Humvee and press Repair at factory, or left-click your vehicle factory.",
-      "body": "The Humvee drives to the factory and is repaired for half its price, paid as the health comes back."
+      "body": "The Humvee drives to the factory and is repaired for half its price, paid as the health comes back.",
+      "shots": ["us-humvee-repair"]
     }
   ],
   "strong": ["Infantry", "Scouts and light vehicles", "Low drones"],

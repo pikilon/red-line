@@ -6,22 +6,26 @@
     {
       "title": "Produce dozers",
       "how": "Select the headquarters, open the Build tab and press Dozer.",
-      "body": "Each dozer leaves the headquarters ready to build power plants, supply centers, barracks, vehicle factories and fire bases. Queue another one when the base must grow faster."
+      "body": "Each dozer leaves the headquarters ready to build power plants, supply centers, barracks, vehicle factories and fire bases. Queue another one when the base must grow faster.",
+      "shots": ["us-hq-build"]
     },
     {
       "title": "Rally point",
       "how": "Select the headquarters, press Rally point and left-click the ground.",
-      "body": "New dozers leave the headquarters and drive to the rally point. Changing the point only affects dozers produced afterwards. The marker shows while the headquarters is selected."
+      "body": "New dozers leave the headquarters and drive to the rally point. Changing the point only affects dozers produced afterwards. The marker shows while the headquarters is selected.",
+      "shots": ["us-hq-rally"]
     },
     {
       "title": "Repair with a dozer",
       "how": "Select a dozer and left-click the damaged headquarters.",
-      "body": "The dozer drives over and restores the headquarters a little every second until it is whole. The headquarters costs nothing, so repairing it is free. A second dozer does not speed it up."
+      "body": "The dozer drives over and restores the headquarters a little every second until it is whole. The headquarters costs nothing, so repairing it is free. A second dozer does not speed it up.",
+      "shots": ["us-hq-repair"]
     },
     {
       "title": "Sell the headquarters",
       "how": "Select the headquarters and press Sell twice.",
-      "body": "It sells like any completed building. The refund is zero because it costs nothing, but every dozer in its queue is cancelled and refunded in full. Selling your last building loses the match."
+      "body": "It sells like any completed building. The refund is zero because it costs nothing, but every dozer in its queue is cancelled and refunded in full. Selling your last building loses the match.",
+      "shots": ["us-hq-sell"]
     }
   ],
   "strong": [

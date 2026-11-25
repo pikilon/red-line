@@ -6,17 +6,20 @@
     {
       "title": "Harvest supply",
       "how": "Select one or more supply trucks and left-click a supply depot. A new truck from the supply center starts harvesting the nearest depot on its own unless it has a rally point.",
-      "body": "The truck drives to the depot, fills its cargo, then returns to the nearest completed supply center and unloads it as credits. It keeps cycling until the depot runs dry, then moves to the nearest depot that still has supply."
+      "body": "The truck drives to the depot, fills its cargo, then returns to the nearest completed supply center and unloads it as credits. It keeps cycling until the depot runs dry, then moves to the nearest depot that still has supply.",
+      "shots": ["us-supply-truck-harvest"]
     },
     {
       "title": "Deliver the load",
       "how": "There is no drop-off order: a loaded truck returns to your supply center by itself and unloads when it arrives.",
-      "body": "The cargo becomes credits the moment unloading finishes. The truck then drives back to its depot for another load. If the supply center is destroyed, the truck looks for another complete one; with no supply center left it waits, so rebuild one to restart the income."
+      "body": "The cargo becomes credits the moment unloading finishes. The truck then drives back to its depot for another load. If the supply center is destroyed, the truck looks for another complete one; with no supply center left it waits, so rebuild one to restart the income.",
+      "shots": ["us-supply-truck-unload"]
     },
     {
       "title": "Repair at the vehicle factory",
       "how": "Select the damaged supply truck and press Repair at factory, or left-click your vehicle factory.",
-      "body": "The truck drives to the factory and is repaired for half its price, paid as the health comes back. Production continues while it is repaired. If the credits run out, it leaves the dock and stops."
+      "body": "The truck drives to the factory and is repaired for half its price, paid as the health comes back. Production continues while it is repaired. If the credits run out, it leaves the dock and stops.",
+      "shots": ["us-supply-truck-repair"]
     }
   ],
   "strong": [

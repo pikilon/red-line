@@ -6,27 +6,32 @@
     {
       "title": "155 mm shells",
       "how": "Select the Paladin and left-click an enemy, or let it fire at any spotted target in range.",
-      "body": "Each shot is one high-explosive shell that arcs high over the battlefield and drops onto the target. The blast is strongest against buildings and infantry and weaker against tanks."
+      "body": "Each shot is one high-explosive shell that arcs high over the battlefield and drops onto the target. The blast is strongest against buildings and infantry and weaker against tanks.",
+      "shots": ["us-paladin-fight"]
     },
     {
       "title": "Splash damage",
       "how": "Fire at a cluster, or at the ground beside it.",
-      "body": "A shell blasts a wide area, not just the unit it was aimed at. It hurts enemy and friendly units alike, so keep your own troops clear of the target."
+      "body": "A shell blasts a wide area, not just the unit it was aimed at. It hurts enemy and friendly units alike, so keep your own troops clear of the target.",
+      "shots": ["us-paladin-splash"]
     },
     {
       "title": "Minimum range",
       "how": "Keep the Paladin behind the line; if an enemy closes in, select it and left-click the ground to drive away.",
-      "body": "The gun cannot fire at targets closer than its minimum range. Enemy tanks and fast units that reach it can attack without reply, so keep an escort between it and the front."
+      "body": "The gun cannot fire at targets closer than its minimum range. Enemy tanks and fast units that reach it can attack without reply, so keep an escort between it and the front.",
+      "shots": ["us-paladin-min-range"]
     },
     {
       "title": "Attack ground",
       "how": "Select the Paladin, hold Ctrl and left-click the ground, or press Force fire and tap the ground.",
-      "body": "The Paladin shells the chosen point even when no enemy is in sight, and keeps firing until you give another order or press Stop. A scout can spot the target, but the blast still hurts your own units."
+      "body": "The Paladin shells the chosen point even when no enemy is in sight, and keeps firing until you give another order or press Stop. A scout can spot the target, but the blast still hurts your own units.",
+      "shots": ["us-paladin-attack-ground"]
     },
     {
       "title": "Repair at the vehicle factory",
       "how": "Select the damaged Paladin and press Repair at factory, or left-click your vehicle factory.",
-      "body": "The Paladin drives to the factory and is repaired for half its price, paid as the health comes back."
+      "body": "The Paladin drives to the factory and is repaired for half its price, paid as the health comes back.",
+      "shots": ["us-paladin-repair"]
     }
   ],
   "strong": [

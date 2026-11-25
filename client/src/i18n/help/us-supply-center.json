@@ -6,27 +6,32 @@
     {
       "title": "Produce supply trucks",
       "how": "Select the supply center, open the Build tab and press Supply truck.",
-      "body": "Each truck leaves the center ready to harvest. The first one arrives free when the center finishes, so a new center starts earning at once. Queue another when the old trucks are far away."
+      "body": "Each truck leaves the center ready to harvest. The first one arrives free when the center finishes, so a new center starts earning at once. Queue another when the old trucks are far away.",
+      "shots": ["us-supply-center-produce"]
     },
     {
       "title": "Receive supply loads",
       "how": "There is no drop-off order: a loaded truck drives back to the nearest completed supply center and unloads by itself.",
-      "body": "The cargo becomes credits when unloading finishes, and the truck heads back to its depot. A truck chooses the nearest completed supply center, so build one close to the depots you work. If the center is destroyed, trucks look for another; with none left they wait."
+      "body": "The cargo becomes credits when unloading finishes, and the truck heads back to its depot. A truck chooses the nearest completed supply center, so build one close to the depots you work. If the center is destroyed, trucks look for another; with none left they wait.",
+      "shots": ["us-supply-center-dropoff"]
     },
     {
       "title": "Rally point",
       "how": "Select the supply center, press Rally point and left-click the ground.",
-      "body": "Produced trucks drive to the rally point. Without one they start harvesting the nearest depot on their own. Changing the point only affects trucks produced afterwards, and the marker shows while the center is selected."
+      "body": "Produced trucks drive to the rally point. Without one they start harvesting the nearest depot on their own. Changing the point only affects trucks produced afterwards, and the marker shows while the center is selected.",
+      "shots": ["us-supply-center-rally"]
     },
     {
       "title": "Repair with a dozer",
       "how": "Select a dozer and left-click the damaged supply center.",
-      "body": "The dozer drives to the center and restores it until it is whole. The work costs half the build price as the health comes back, and only one dozer works on a building at a time. If the credits run out, the repair stops and the dozer goes idle."
+      "body": "The dozer drives to the center and restores it until it is whole. The work costs half the build price as the health comes back, and only one dozer works on a building at a time. If the credits run out, the repair stops and the dozer goes idle.",
+      "shots": ["us-supply-center-repair"]
     },
     {
       "title": "Sell",
       "how": "Select the supply center and press Sell twice.",
-      "body": "It sells for half its price and disappears at once. Any truck in its queue is cancelled and refunded in full. Selling your last building loses the match."
+      "body": "It sells for half its price and disappears at once. Any truck in its queue is cancelled and refunded in full. Selling your last building loses the match.",
+      "shots": ["us-supply-center-sell"]
     }
   ],
   "strong": [
