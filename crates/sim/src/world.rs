@@ -264,6 +264,9 @@ pub struct World {
     /// for wheeled vehicles (derived); `None` while no such trench exists.
     pub(crate) terrain_wheels: Option<MapGrid>,
     pub(crate) nav_wheels: Option<MapGrid>,
+    /// Spec 60: crater depth per cell in centi-tiles, in `MapGrid::index`
+    /// order; empty until the first crater is dug.
+    pub(crate) craters: Vec<u8>,
     pub(crate) players: Vec<Player>,
     /// Ascending id; removed entities leave gaps.
     pub(crate) entities: Vec<Entity>,
@@ -328,6 +331,7 @@ impl World {
             nav_water: None,
             terrain_wheels: None,
             nav_wheels: None,
+            craters: Vec::new(),
             players: vec![Player::new(0, 0, 0, cells)],
             entities: Vec::new(),
             next_entity_id: 0,
@@ -432,7 +436,8 @@ impl World {
         let mut world = World::sandbox(rules, terrain, &factions);
         world.terrain_foot = features::foot_blocks(&base, &features, &world.rules);
         world.terrain_water = features::water_blocks(&base, &features, &world.rules);
-        world.terrain_wheels = features::wheels_blocks(&base, &features, &world.rules);
+        world.terrain_wheels =
+            features::wheels_blocks(&base, &features, &world.craters, &world.rules);
         world.terrain_base = base;
         world.features = features;
         world.rebuild_nav();
@@ -1593,8 +1598,7 @@ impl World {
     /// handed to the locomotor of the type with the straight-line distance.
     pub(crate) fn step_move(&mut self, index: usize, order_id: u32, target: FxVec2, goal: Cell) {
         let pos = self.entities[index].pos;
-        let kind = self.entities[index].kind;
-        let motion = self.rules.ty(kind).motion;
+        let motion = self.cratered_motion(index);
         let cell = cell_of(pos);
         let in_goal = cell == goal;
         let delta = target - pos;
@@ -1691,8 +1695,7 @@ impl World {
         };
         let field = &self.fields[&(layer, map.index(goal))];
         let pos = self.entities[index].pos;
-        let kind = self.entities[index].kind;
-        let motion = self.rules.ty(kind).motion;
+        let motion = self.cratered_motion(index);
         let cell = cell_of(pos);
         let target = cell_center(goal);
         let in_goal = cell == goal;
@@ -1727,7 +1730,7 @@ impl World {
             Layer::Wheels => self.nav_wheels.as_ref().unwrap_or(&self.nav),
             Layer::Vehicle => &self.nav,
         };
-        let motion = self.rules.ty(self.entities[index].kind).motion;
+        let motion = self.cratered_motion(index);
         let delta = point - self.entities[index].pos;
         locomotor::drive(
             &mut self.entities[index],

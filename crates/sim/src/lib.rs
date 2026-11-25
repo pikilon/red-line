@@ -6,6 +6,7 @@ pub mod ai;
 pub mod air;
 pub mod angle;
 pub mod combat;
+pub mod crater;
 pub mod crush;
 pub mod economy;
 pub mod entity;

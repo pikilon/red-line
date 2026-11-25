@@ -63,6 +63,10 @@ pub struct SimState {
     /// before spec 31, which load with the map's features at full hit points.
     #[serde(default)]
     pub features: Vec<FeatureSaveState>,
+    /// Spec 60: cells with a crater as `[x, y, depth]` in centi-tiles; absent
+    /// on flat ground and in saves from before the spec.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub craters: Vec<[i32; 3]>,
 }
 
 /// Spec 31: one feature row; `kind` is the feature type's id.
@@ -542,6 +546,7 @@ pub fn save_state(world: &World, seed: u64, ais: &[Ai]) -> Result<SimState, Stri
         nav_water: _,
         terrain_wheels: _,
         nav_wheels: _,
+        craters: _,
         players,
         entities,
         next_entity_id,
@@ -608,6 +613,11 @@ pub fn save_state(world: &World, seed: u64, ais: &[Ai]) -> Result<SimState, Stri
         features: features
             .iter()
             .map(|row| save_feature(row, rules))
+            .collect(),
+        craters: world
+            .crater_cells()
+            .into_iter()
+            .map(|(x, y, depth)| [x, y, i32::from(depth)])
             .collect(),
     })
 }
@@ -698,7 +708,19 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
     let terrain = features::with_blocks(&base, &features, &rules);
     let terrain_foot = features::foot_blocks(&base, &features, &rules);
     let terrain_water = features::water_blocks(&base, &features, &rules);
-    let terrain_wheels = features::wheels_blocks(&base, &features, &rules);
+    let mut craters = Vec::new();
+    for &[x, y, depth] in &state.craters {
+        let in_map =
+            (0..i32::from(map.width)).contains(&x) && (0..i32::from(map.height)).contains(&y);
+        if !in_map || !(1..=255).contains(&depth) {
+            return Err(format!("crater {x},{y},{depth} is out of range"));
+        }
+        if craters.is_empty() {
+            craters = vec![0u8; cells];
+        }
+        craters[(y * i32::from(map.width) + x) as usize] = depth as u8;
+    }
+    let terrain_wheels = features::wheels_blocks(&base, &features, &craters, &rules);
     let nav = terrain.clone();
 
     let players = state
@@ -738,6 +760,7 @@ fn load(state: &SimState) -> Result<(World, u64, Vec<Ai>), String> {
         nav_water: None,
         terrain_wheels,
         nav_wheels: None,
+        craters,
         players,
         entities,
         next_entity_id: state.next_entity_id,

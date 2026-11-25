@@ -1,0 +1,17 @@
+# Spec 60: a HIMARS shells one spot until it is a deep crater field. A supply truck (wheels) and a Leopard (tracks) are ordered across it:
+# the truck cannot enter the deep cells and drives around, the tank crosses slowly.
+id: crater-field
+map: showcase
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 48, y: 19, zoom: 1.8 }
+entities:
+  - { player: 0, type: ua-hq, origin: [4, 30] }
+  - { player: 1, type: ru-hq, origin: [92, 30] }
+  - { player: 0, type: ua-himars, atCenti: [4000, 1000], order: { attackGroundCenti: [4800, 1900] } }
+  - { player: 0, type: ua-supply-truck, atCenti: [3300, 1850], order: { moveCenti: [6300, 1850] } }
+  - { player: 0, type: ua-leopard-2a4, atCenti: [3300, 1950], order: { moveCenti: [6300, 1950] } }

@@ -130,6 +130,36 @@
       "slots": 2
     }
   },
+  "craters": {
+    "maxDepthCenti": 50,
+    "digs": [
+      {
+        "damageType": 2,
+        "radiusCenti": 65,
+        "depthCenti": 4
+      },
+      {
+        "damageType": 3,
+        "radiusCenti": 130,
+        "depthCenti": 12
+      },
+      {
+        "damageType": 4,
+        "radiusCenti": 220,
+        "depthCenti": 4
+      }
+    ],
+    "foot": {
+      "slowPct": 0
+    },
+    "tracks": {
+      "slowPct": 35
+    },
+    "wheels": {
+      "slowPct": 55,
+      "blockDepthCenti": 20
+    }
+  },
   "locomotors": [
     {
       "id": "foot",
