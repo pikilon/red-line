@@ -1,6 +1,6 @@
 # Spec 48: Russia 4: Wagner's meat grinder in Bakhmut.
 id: campaign-ru-04-bakhmut
-map: first-line
+map: bakhmut
 victory: true
 debug: false
 starts: false

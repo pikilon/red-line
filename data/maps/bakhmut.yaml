@@ -1,0 +1,198 @@
+id: bakhmut                          # required, equals the file name
+width: 128
+height: 128
+blocked: []
+# Spec 48 §9: the battle of Bakhmut (2022-23). The Bakhmutka river runs north to south through the middle of the map
+# and splits the town: the old centre (apartment blocks around the Mig-17 monument square, an open concrete plaza) on
+# the west bank with the Ukrainian base, a smaller suburb on the east bank. North of the town the AZOM works and the
+# winery / salt-mine halls (factories and warehouses on concrete yards) frame the approach. The eastern approach, the
+# Russian side, is shell-cratered dirt and mud with breastwork lines (walls, hedges, crates) and tree belts. HQ cells
+# and start positions equal first-line, so the Russia 4 save keeps every entity cell.
+depots:
+  - { origin: [12, 54], amount: 15000 }
+  - { origin: [114, 72], amount: 15000 }
+  - { origin: [36, 20], amount: 10000 }
+  - { origin: [90, 106], amount: 10000 }
+  - { origin: [36, 100], amount: 10000 }
+  - { origin: [90, 26], amount: 10000 }
+terrain:
+  ground:
+    default: grass
+    patches:
+      - { material: dirt, rect: [3, 50, 26, 70] }              # Ukrainian base
+      - { material: dirt, rect: [104, 56, 124, 74] }           # Russian base
+      - { material: concrete, rect: [48, 56, 56, 70] }         # Mig-17 monument square
+      - { material: concrete, rect: [20, 8, 50, 24] }          # AZOM yard
+      - { material: concrete, rect: [68, 8, 88, 22] }          # winery and salt-mine yard
+      - { material: gravel, rect: [26, 28, 40, 34] }
+      - { material: mud, rect: [74, 36, 100, 56] }             # shell-cratered fields, east
+      - { material: mud, rect: [76, 74, 102, 96] }
+      - { material: dirt, rect: [70, 56, 100, 74] }
+      - { material: dirt, rect: [34, 96, 56, 112] }
+  roads:
+    - { type: asphalt, path: [[22, 62], [55, 62]], width: 2 }
+    - { type: asphalt, path: [[68, 62], [104, 62]], width: 2 }
+    - { type: asphalt, path: [[43, 24], [43, 112]], width: 2 }   # town main street
+    - { type: asphalt, path: [[28, 30], [55, 30]], width: 2 }
+    - { type: asphalt, path: [[68, 24], [104, 24]], width: 2 }
+    - { type: dirt, path: [[68, 96], [104, 96]], width: 2 }
+    - { type: dirt, path: [[28, 96], [55, 96]], width: 2 }
+  water:
+    - { kind: river, depth: shallow, path: [[60, 0], [58, 40], [62, 64], [58, 90], [60, 127]], width: 6 }
+    - { kind: river, depth: deep, path: [[60, 0], [58, 40], [62, 64], [58, 90], [60, 127]], width: 4 }
+features:
+  - { type: road-bridge, from: [57, 62], to: [67, 62], variant: 0 }
+  - { type: wooden-bridge, from: [55, 29], to: [65, 29], variant: 0 }
+  - { type: wooden-bridge, from: [55, 96], to: [65, 96], variant: 0 }
+  # Town centre: apartment blocks round the monument square, houses and shops on the side streets.
+  - { type: apartment-block, at: [48, 50], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [53, 50], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [48, 72], rot: 2, variant: 2 }
+  - { type: apartment-block, at: [53, 72], rot: 2, variant: 0 }
+  - { type: apartment-block, at: [30, 44], rot: 1, variant: 1 }
+  - { type: apartment-block, at: [30, 78], rot: 1, variant: 2 }
+  - { type: apartment-block, at: [36, 84], rot: 0, variant: 0 }
+  - { type: apartment-block, at: [36, 40], rot: 0, variant: 1 }
+  - { type: apartment-block, at: [47, 40], rot: 0, variant: 2 }
+  - { type: apartment-block, at: [47, 84], rot: 0, variant: 1 }
+  - { type: shop, at: [40, 56], rot: 1, variant: 0 }
+  - { type: shop, at: [40, 68], rot: 1, variant: 1 }
+  - { type: townhouse-row, at: [30, 52], rot: 1, variant: 0 }
+  - { type: townhouse-row, at: [30, 70], rot: 1, variant: 1 }
+  - { type: house-small, at: [30, 90], rot: 1, variant: 0 }
+  - { type: house-small, at: [34, 92], rot: 1, variant: 1 }
+  - { type: house-small, at: [48, 92], rot: 3, variant: 2 }
+  - { type: house-small, at: [48, 98], rot: 3, variant: 0 }
+  - { type: house-small, at: [30, 34], rot: 1, variant: 2 }
+  - { type: house-small, at: [34, 36], rot: 1, variant: 0 }
+  - { type: gas-station, at: [49, 33], rot: 2, variant: 0 }
+  - { type: lamp-post, at: [45, 56], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [45, 68], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [47, 60], rot: 0, variant: 0 }
+  - { type: lamp-post, at: [47, 65], rot: 0, variant: 0 }
+  # Shelled streets: rubble and wrecked cars.
+  - { type: rubble-pile, at: [42, 48], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [44, 74], rot: 1, variant: 1 }
+  - { type: rubble-pile, at: [38, 46], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [52, 66], rot: 3, variant: 1 }
+  - { type: parked-car, at: [42, 58], rot: 1, variant: 0 }
+  - { type: parked-car, at: [44, 66], rot: 3, variant: 1 }
+  - { type: parked-car, at: [42, 80], rot: 0, variant: 0 }
+  # East bank suburb.
+  - { type: house-small, at: [68, 52], rot: 3, variant: 0 }
+  - { type: house-small, at: [68, 58], rot: 3, variant: 1 }
+  - { type: house-small, at: [68, 68], rot: 3, variant: 2 }
+  - { type: house-small, at: [72, 72], rot: 3, variant: 0 }
+  - { type: shop, at: [72, 54], rot: 3, variant: 1 }
+  - { type: apartment-block, at: [70, 44], rot: 3, variant: 1 }
+  - { type: apartment-block, at: [70, 78], rot: 3, variant: 2 }
+  # AZOM works, north-west: factory halls and warehouses on the yard.
+  - { type: factory, at: [22, 10], rot: 0, variant: 0 }
+  - { type: factory, at: [30, 10], rot: 0, variant: 0 }
+  - { type: warehouse, at: [38, 10], rot: 0, variant: 0 }
+  - { type: warehouse, at: [44, 10], rot: 0, variant: 0 }
+  - { type: factory, at: [22, 17], rot: 2, variant: 0 }
+  - { type: warehouse, at: [32, 18], rot: 2, variant: 0 }
+  - { type: container-stack, at: [40, 19], rot: 0, variant: 0 }
+  - { type: container-stack, at: [44, 20], rot: 0, variant: 1 }
+  - { type: crate-stack, at: [28, 22], rot: 0, variant: 0 }
+  # Winery and salt mines, north-east.
+  - { type: warehouse, at: [70, 10], rot: 0, variant: 0 }
+  - { type: warehouse, at: [76, 10], rot: 0, variant: 0 }
+  - { type: factory, at: [82, 10], rot: 0, variant: 0 }
+  - { type: warehouse-barn, at: [72, 16], rot: 2, variant: 0 }
+  - { type: crate-stack, at: [80, 18], rot: 0, variant: 0 }
+  - { type: oil-derrick, at: [86, 18], rot: 0, variant: 0 }
+  # Eastern approach: breastwork lines (walls, hedges, crates) across the fields, with gaps.
+
+  - { type: hedge, at: [80, 42], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [82, 42], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [84, 42], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [86, 42], rot: 1, variant: 0 }
+  - { type: hedge, at: [88, 42], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [90, 42], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [92, 42], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [94, 42], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [82, 50], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [84, 50], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [86, 50], rot: 1, variant: 0 }
+  - { type: hedge, at: [88, 50], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [90, 50], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [92, 50], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [94, 50], rot: 1, variant: 0 }
+  - { type: hedge, at: [96, 50], rot: 1, variant: 0 }
+  - { type: hedge, at: [80, 66], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [82, 66], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [84, 66], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [86, 66], rot: 1, variant: 0 }
+  - { type: hedge, at: [88, 66], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [90, 66], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [92, 66], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [94, 66], rot: 1, variant: 0 }
+  - { type: hedge, at: [96, 66], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [82, 84], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [84, 84], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [86, 84], rot: 1, variant: 0 }
+  - { type: hedge, at: [88, 84], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [90, 84], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [92, 84], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [94, 84], rot: 1, variant: 0 }
+  - { type: hedge, at: [96, 84], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [84, 90], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [86, 90], rot: 1, variant: 0 }
+  - { type: hedge, at: [88, 90], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [90, 90], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [92, 90], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [94, 90], rot: 1, variant: 0 }
+  - { type: hedge, at: [96, 90], rot: 1, variant: 0 }
+  - { type: stone-wall, at: [98, 90], rot: 1, variant: 0 }
+  - { type: rubble-pile, at: [79, 77], rot: 3, variant: 0 }
+  - { type: rubble-pile, at: [74, 74], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [79, 91], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [98, 39], rot: 0, variant: 1 }
+  - { type: rubble-pile, at: [97, 44], rot: 2, variant: 1 }
+  - { type: rubble-pile, at: [92, 76], rot: 3, variant: 0 }
+  - { type: rubble-pile, at: [77, 89], rot: 0, variant: 1 }
+  - { type: rubble-pile, at: [72, 92], rot: 1, variant: 1 }
+  - { type: rubble-pile, at: [85, 83], rot: 3, variant: 0 }
+  - { type: rubble-pile, at: [79, 45], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [86, 82], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [93, 76], rot: 1, variant: 1 }
+  - { type: rubble-pile, at: [80, 85], rot: 2, variant: 0 }
+  - { type: rubble-pile, at: [100, 46], rot: 1, variant: 1 }
+  - { type: rubble-pile, at: [96, 54], rot: 0, variant: 1 }
+  - { type: rubble-pile, at: [101, 83], rot: 0, variant: 0 }
+  - { type: rubble-pile, at: [83, 83], rot: 0, variant: 1 }
+  - { type: rubble-pile, at: [81, 78], rot: 0, variant: 1 }
+  - { type: rubble-pile, at: [91, 88], rot: 1, variant: 1 }
+  - { type: rubble-pile, at: [84, 79], rot: 0, variant: 1 }
+  - { type: rubble-pile, at: [73, 79], rot: 2, variant: 1 }
+  - { type: rubble-pile, at: [90, 39], rot: 3, variant: 0 }
+  - { type: rubble-pile, at: [75, 37], rot: 1, variant: 0 }
+  - { type: rubble-pile, at: [91, 91], rot: 1, variant: 1 }
+  - { type: rubble-pile, at: [73, 90], rot: 3, variant: 0 }
+  - { type: rubble-pile, at: [87, 81], rot: 3, variant: 1 }
+  - { type: burnt-stump, at: [75, 50], rot: 0, variant: 0 }
+  - { type: burnt-stump, at: [87, 64], rot: 0, variant: 0 }
+  - { type: burnt-stump, at: [81, 77], rot: 0, variant: 0 }
+  - { type: burnt-stump, at: [87, 89], rot: 0, variant: 0 }
+  - { type: burnt-stump, at: [80, 67], rot: 0, variant: 0 }
+  - { type: burnt-stump, at: [80, 38], rot: 0, variant: 0 }
+  - { type: burnt-stump, at: [75, 52], rot: 0, variant: 0 }
+  - { type: burnt-stump, at: [82, 51], rot: 0, variant: 0 }
+  - { type: burnt-stump, at: [90, 49], rot: 0, variant: 0 }
+  - { type: burnt-stump, at: [98, 50], rot: 0, variant: 0 }
+  # Tree belts along the eastern fields and the river banks.
+  - { type: poplar, area: [76, 28, 79, 40], density: 50, seed: 3 }
+  - { type: poplar, area: [76, 78, 79, 94], density: 50, seed: 5 }
+  - { type: oak, area: [88, 26, 98, 31], density: 30, seed: 7 }
+  - { type: pine, area: [104, 30, 118, 44], density: 40, seed: 9 }
+  - { type: pine, area: [104, 82, 118, 98], density: 40, seed: 11 }
+  - { type: oak, area: [66, 100, 76, 112], density: 30, seed: 13 }
+  - { type: birch, area: [52, 3, 56, 24], density: 30, seed: 15 }
+  - { type: birch, area: [52, 100, 56, 124], density: 30, seed: 17 }
+  - { type: dead-tree, area: [84, 58, 100, 60], density: 20, seed: 19 }
+  - { type: bush, area: [6, 76, 24, 84], density: 30, seed: 21 }
+starts:
+  - { faction: ukraine, hq: [12, 60], dozerCenti: [1850, 6150] }
+  - { faction: russia, hq: [112, 64], dozerCenti: [10950, 6650] }

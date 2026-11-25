@@ -84,12 +84,12 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
 * Missions reuse the existing maps (first-line, river-port, demo-coast,
   demo-town, demo-bridges, showcase); the exceptions are mission 1 of both
   campaigns, which plays on its own map `hostomel` (§6), Ukraine 2, on
-  `irpin` (§7), the two Snake Island missions, on `snake-island` (§8), and
-  Russia 3, on `mariupol` (§9). Own maps for the remaining missions are
+  `irpin` (§7), the two Snake Island missions, on `snake-island` (§8),
+  Russia 3, on `mariupol` (§9), and Russia 4, on `bakhmut` (§10). Own maps for the remaining missions are
   tracked in issue #482.
 * The game has no ships: the cruiser Moskva is played as the Black Sea Fleet
   command post on the shore. Snake Island is no longer the coast of
-  demo-coast: it has its own map (§7).
+  demo-coast: it has its own map (§8).
 * Stand-ins for units the game lacks: Su-34 for the Tu-95 and Tu-22M3 of
   Spiderweb, power plants for refineries and pipeline stations, supply centers
   for warehouses and supply hubs, Storm Shadow / Flamingo for the Neptune,
@@ -192,3 +192,25 @@ Russia 3 save keeps its bases and units). Existing feature types only:
   some rubble and a parked car.
 * Assumptions: the theatre is a garrisonable tower, not a special objective;
   the save has no mission script, so none was re-pointed.
+
+## 10. Map `bakhmut` (issue #482)
+
+`data/maps/bakhmut.yaml`, 128 x 128, same HQ cells and starts as first-line, so
+`campaign-ru-04-bakhmut` keeps every entity cell and only changes `map:`.
+Existing feature types only:
+
+* The Bakhmutka river runs north to south through the middle (shallow banks,
+  deep channel) with a road bridge on the main street and two wooden bridges
+  north and south.
+* West bank: the old town centre, apartment blocks round the Mig-17 monument
+  square (an open concrete plaza), townhouses, shops, a petrol station,
+  rubble and wrecked cars; the Ukrainian strongpoints and the "Artemivsk"
+  barracks stand in it. A smaller suburb on the east bank.
+* North: the AZOM works (factory and warehouse halls on a concrete yard) and
+  the winery / salt-mine halls.
+* East, the Russian approach: mud and dirt fields pocked with rubble piles
+  and burnt stumps, breastwork lines of walls and hedges, poplar, oak and
+  pine tree belts.
+* Assumptions: trenches are dug in match (spec 35), no map places them, so
+  breastworks stand in for trench lines. No mission script exists for this
+  mission.
