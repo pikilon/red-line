@@ -97,6 +97,7 @@ impl World {
             return;
         };
         if p.defeated
+            || def.building.is_some()
             || !self.power_allowed(player, def)
             || self.general_rank(player) < def.rank
             || self.general_points(player) < def.cost
@@ -129,6 +130,12 @@ impl World {
         let def = self.rules.general.powers[usize::from(power)].clone();
         let cell = cell_of(target);
         if p.defeated || p.powers[slot].ready_tick > self.tick || !self.terrain.in_bounds(cell) {
+            return;
+        }
+        // Spec 64 §3: a superweapon needs its building standing and powered.
+        if let Some(building) = def.building
+            && (self.low_power(player) || !self.owns_complete(player, building))
+        {
             return;
         }
         self.players[usize::from(player)].powers[slot].ready_tick =
@@ -235,6 +242,91 @@ impl World {
                 let modifier = self.rules.modifier(damage_type, ty.armor);
                 let hurt = damage_dealt(damage, modifier);
                 self.entities[index].hp = self.entities[index].hp.saturating_sub(hurt);
+            }
+        }
+    }
+}
+
+impl World {
+    /// Spec 64 §3: `player` consumes more power than it produces.
+    pub fn low_power(&self, player: PlayerId) -> bool {
+        self.player(player).is_some_and(|p| {
+            let (produced, consumed) = p.power();
+            produced < consumed
+        })
+    }
+
+    /// Spec 64 §3: `player` owns a finished, living building of `kind`.
+    fn owns_complete(&self, player: PlayerId, kind: u16) -> bool {
+        self.entities.iter().any(|e| {
+            e.owner == player
+                && e.kind == kind
+                && e.hp > 0
+                && e.site.as_ref().is_some_and(|site| site.complete)
+        })
+    }
+
+    /// Spec 64 §3: `player` already owns or is raising a building of `kind`
+    /// that is a superweapon (one per player).
+    pub fn superweapon_taken(&self, player: PlayerId, kind: u16) -> bool {
+        self.rules
+            .general
+            .powers
+            .iter()
+            .any(|p| p.building == Some(kind))
+            && self
+                .entities
+                .iter()
+                .any(|e| e.owner == player && e.kind == kind)
+    }
+
+    /// Setups and tests: gives `player` a power with the tick it is ready.
+    pub fn grant_power(&mut self, player: PlayerId, power: u16, ready_tick: u32) {
+        if usize::from(power) >= self.rules.general.powers.len() {
+            return;
+        }
+        let Some(p) = self.players.get_mut(usize::from(player)) else {
+            return;
+        };
+        match p.powers.binary_search_by_key(&power, |o| o.power) {
+            Ok(slot) => p.powers[slot].ready_tick = ready_tick,
+            Err(slot) => p.powers.insert(slot, OwnedPower { power, ready_tick }),
+        }
+    }
+
+    /// Spec 64 §3, every tick after the economy: the first finished
+    /// superweapon building starts the player's countdown, which then
+    /// belongs to the player (losing or rebuilding the building neither
+    /// resets nor pauses it, as Zero Hour's shared timer); low power halts
+    /// it.
+    pub(crate) fn update_superweapons(&mut self) {
+        for index in 0..self.rules.general.powers.len() {
+            let Some(building) = self.rules.general.powers[index].building else {
+                continue;
+            };
+            let recharge = self.rules.general.powers[index].recharge_ticks;
+            for player in 0..self.players.len() {
+                let id = self.players[player].id;
+                if self.players[player].defeated {
+                    continue;
+                }
+                let power = index as u16;
+                let tick = self.tick;
+                let slot = self.players[player]
+                    .powers
+                    .binary_search_by_key(&power, |o| o.power);
+                match slot {
+                    Ok(slot) => {
+                        if self.low_power(id) && self.players[player].powers[slot].ready_tick > tick
+                        {
+                            self.players[player].powers[slot].ready_tick += 1;
+                        }
+                    }
+                    Err(_) if self.owns_complete(id, building) => {
+                        self.grant_power(id, power, tick.saturating_add(recharge));
+                    }
+                    Err(_) => {}
+                }
             }
         }
     }

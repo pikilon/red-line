@@ -1,0 +1,163 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "superweapons",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 38,
+      "y": 22,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          24,
+          18
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-power-plant",
+        "origin": [
+          24,
+          22
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-atacms-battery",
+        "origin": [
+          28,
+          20
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3300,
+          2600
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          3150,
+          2700
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          68,
+          14
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-power-plant",
+        "origin": [
+          72,
+          14
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-oreshnik-launcher",
+        "origin": [
+          68,
+          18
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          5600,
+          2200
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          5700,
+          2300
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          5600,
+          2400
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          5500,
+          2500
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          5600,
+          2550
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          5700,
+          2500
+        ]
+      }
+    ],
+    "powers": [
+      [
+        {
+          "id": "strike-ukraine",
+          "readyTick": 0
+        }
+      ],
+      [
+        {
+          "id": "strike-russia",
+          "readyTick": 2700
+        }
+      ]
+    ]
+  }
+}

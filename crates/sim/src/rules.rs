@@ -215,6 +215,10 @@ pub struct PowerDef {
     #[serde(default)]
     pub factions: Vec<FactionId>,
     pub effect: PowerEffect,
+    /// Spec 64: the building whose completion grants the power (a
+    /// superweapon); such a power is never bought and has no cost.
+    #[serde(default)]
+    pub building: Option<TypeId>,
 }
 
 /// Spec 63: ranks (ascending `xp`, the first at 0) and the powers catalogue.
@@ -1575,7 +1579,17 @@ impl Ruleset {
                 }
                 _ => false,
             };
+            let bad_building = match power.building {
+                Some(b) => {
+                    self.types
+                        .get(usize::from(b))
+                        .is_none_or(|t| t.category != Category::Building)
+                        || power.cost != 0
+                }
+                None => power.cost == 0,
+            };
             if bad_effect
+                || bad_building
                 || power.rank == 0
                 || usize::from(power.rank) > general.ranks.len()
                 || power.recharge_ticks == 0

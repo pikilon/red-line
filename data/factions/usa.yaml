@@ -217,6 +217,18 @@ types:                               # required
     turretTurnRateDeg: 90
     render: { height: 80 }
     experience: { value: [100, 200, 300, 400] }
+  - id: us-strike-battery                 # spec 64: the faction's superweapon; one per player, expensive, charges for a long time
+    category: building
+    armor: structure
+    hp: 1500
+    sightCenti: 500
+    cost: 5000
+    buildTicks: 900
+    footprint: [3, 3]
+    power: -10
+    requires: [us-firebase]
+    render: { height: 100 }
+    experience: { value: [400, 800, 1200, 1600] }
 upgrades:                            # spec 52
   - id: us-advanced-optics           # thermal sights and better optics for the infantry
     category: upgrade

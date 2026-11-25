@@ -258,6 +258,14 @@
       },
       {
         "player": 0,
+        "type": "ua-atacms-battery",
+        "origin": [
+          23,
+          11
+        ]
+      },
+      {
+        "player": 0,
         "type": "ua-ratel",
         "atCenti": [
           750,
@@ -341,6 +349,14 @@
         "type": "ru-geran-site",
         "origin": [
           61,
+          11
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-oreshnik-launcher",
+        "origin": [
+          66,
           11
         ]
       },

@@ -422,6 +422,18 @@ lateTypes:                           # spec 43: after the common late types, so 
     lowObservable: true
     render: { size: [100, 28, 140] }
     experience: { value: [180, 360, 540, 720] }
+  - id: ua-atacms-battery                 # spec 64: the faction's superweapon; one per player, expensive, charges for a long time
+    category: building
+    armor: structure
+    hp: 1400
+    sightCenti: 500
+    cost: 5000
+    buildTicks: 900
+    footprint: [3, 3]
+    power: -10
+    requires: [ua-missile-site]
+    render: { height: 100 }
+    experience: { value: [400, 800, 1200, 1600] }
 upgrades:                            # spec 52: bought at buildings; after every other type, so earlier type indices stay
   - id: ua-western-optics            # thermal sights and red dots for the infantry
     category: upgrade

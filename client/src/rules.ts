@@ -115,6 +115,8 @@ export interface GeneralPowerDef {
   /** Faction indices that may buy it; empty means every faction. */
   factions: number[];
   effect: { kind: "scan" | "repair" | "barrage" | "paradrop" };
+  /** Spec 64: type index of the superweapon building that grants the power. */
+  building?: number;
 }
 
 /** Spec 63: player ranks (skill points, General's points granted) and powers. */

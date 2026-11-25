@@ -1101,6 +1101,7 @@ const assemble = (
 							rank: p.rank,
 							cost: p.cost,
 							rechargeTicks: p.rechargeTicks,
+							...(p.building ? { building: typeIndex.get(p.building) } : {}),
 							factions: (p.factions ?? []).map((id) =>
 								globals.factions.indexOf(id),
 							),
@@ -1651,6 +1652,8 @@ function setupSave(source, id, ruleset, validate, fail) {
 		...(data.upgrades === undefined ? {} : { upgrades: data.upgrades }),
 		// Spec 63: skill points each start has earned at tick 0.
 		...(data.generalXp === undefined ? {} : { generalXp: data.generalXp }),
+		// Spec 64: powers (a charged superweapon) each start owns at tick 0.
+		...(data.powers === undefined ? {} : { powers: data.powers }),
 		...(data.armies === undefined ? {} : { armies: data.armies }),
 	};
 	return {

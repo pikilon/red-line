@@ -1,0 +1,22 @@
+{
+  "id": "us-strike-battery",
+  "role": "Superweapon",
+  "summary": "The army's superweapon. Once built it starts a six-minute countdown that every player can see; when the countdown ends you fire it at any point of the map: eight heavy missiles that each blast 4.5 tiles around their impact. It costs 5000 credits or more, needs a Firebase, and each player may own only one.",
+  "sections": [
+    {
+      "title": "Charge and fire",
+      "how": "Build it, watch its countdown in the strip at the top of the screen, then press Fire and left-click the target point.",
+      "body": "The countdown belongs to you, not to the building: if the building is destroyed the countdown keeps its progress and a new building can fire when it reaches zero. After a shot the countdown starts again. Your own units are spared by the blast."
+    },
+    {
+      "title": "Everyone sees it coming",
+      "how": "Watch the countdown strip for the enemy's timers too.",
+      "body": "Every player sees every superweapon countdown and is told when one is built and when one is launched, so expect the enemy to spread out or to hunt the building before it is ready."
+    },
+    {
+      "title": "Needs power",
+      "how": "Keep power production at least equal to consumption.",
+      "body": "While your base consumes more power than it produces the countdown stops, and a ready superweapon cannot fire. Build another power plant or sell something that draws power."
+    }
+  ]
+}

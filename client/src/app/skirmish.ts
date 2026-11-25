@@ -36,7 +36,7 @@ import {
   type SkirmishDebug,
 } from "../debug";
 import { createHud } from "../hud";
-import { t } from "../i18n";
+import { type MessageKey, t } from "../i18n";
 import {
   evacuationOf,
   type GarrisonMapFeature,
@@ -253,6 +253,11 @@ import { createResourceBar } from "../ui/resourceBar";
 import { createSaveManager, type SlotView } from "../ui/saveManager";
 import { createScoreScreen, type EndButton } from "../ui/scoreScreen";
 import { createSelectionBox } from "../ui/selectionBox";
+import {
+  createSuperweaponStrip,
+  playerLabel,
+  superweaponEvents,
+} from "../ui/superweaponStrip";
 import { createTouchControls, isTouchDevice } from "../ui/touchControls";
 import {
   createTutorialPanel,
@@ -768,40 +773,50 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   });
   // Spec 63: rank badge and General's powers panel; a cast waits for a click.
   let pendingPower: number | null = null;
+  /** Arms power `power` so the next ground click casts it there; a second
+   *  press (or Escape, or a right click) cancels. */
+  function beginCast(power: number): void {
+    uiClick();
+    const cancel = pendingPower === power;
+    controller?.pickGround(null);
+    pendingPower = null;
+    generalsPanel.setArmed(null);
+    superweaponStrip.setArmed(null);
+    if (cancel) return;
+    pendingPower = power;
+    generalsPanel.setArmed(power);
+    superweaponStrip.setArmed(power);
+    controller?.pickGround((point) => {
+      pendingPower = null;
+      generalsPanel.setArmed(null);
+      superweaponStrip.setArmed(null);
+      if (point === null) return;
+      interact.command({
+        kind: "castPower",
+        player: controlled,
+        power,
+        xRaw: Math.round(point.x * 65536),
+        yRaw: Math.round(point.y * 65536),
+      });
+    });
+  }
   const generalsPanel = createGeneralsPanel(document.body, {
     onBuy(power) {
       uiClick();
       interact.command({ kind: "buyPower", player: controlled, power });
     },
-    onCast(power) {
-      uiClick();
-      const cancel = pendingPower === power;
-      controller?.pickGround(null);
-      pendingPower = null;
-      generalsPanel.setArmed(null);
-      if (cancel) return;
-      pendingPower = power;
-      generalsPanel.setArmed(power);
-      controller?.pickGround((point) => {
-        pendingPower = null;
-        generalsPanel.setArmed(null);
-        if (point === null) return;
-        interact.command({
-          kind: "castPower",
-          player: controlled,
-          power,
-          xRaw: Math.round(point.x * 65536),
-          yRaw: Math.round(point.y * 65536),
-        });
-      });
-    },
+    onCast: beginCast,
   });
+  // Spec 64: the superweapon countdowns of every player, Fire for the own one.
+  const superweaponStrip = createSuperweaponStrip(document.body, beginCast);
+  let eventSnapshot: MatchSnapshot | null = null;
   generalsPanel.root.hidden = RULES.general.ranks.length === 0;
   window.addEventListener("keydown", (event) => {
     if (event.key !== "Escape" || pendingPower === null) return;
     controller?.pickGround(null);
     pendingPower = null;
     generalsPanel.setArmed(null);
+    superweaponStrip.setArmed(null);
   });
   let lastOrderVoiceAtMs = -Infinity;
 
@@ -2162,6 +2177,20 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
         (def) => def.id === factionOfPlayer(controlled),
       );
       generalsPanel.update(generalView(next, controlled, faction));
+      superweaponStrip.update(next, controlled);
+      for (const event of superweaponEvents(eventSnapshot, next)) {
+        const key =
+          event.kind === "launch"
+            ? "superweapon.toast.launch"
+            : "superweapon.toast.building";
+        showToast(
+          t(key, {
+            who: playerLabel(event.player, controlled),
+            name: t(`superweapon.${event.id}.name` as MessageKey),
+          }),
+        );
+      }
+      eventSnapshot = next;
     }
     if (next !== null) tutorialPanel?.update(next, controlled);
     quickBar.refresh();
