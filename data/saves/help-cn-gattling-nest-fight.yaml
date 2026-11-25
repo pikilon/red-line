@@ -1,0 +1,15 @@
+# Spec 48: help card of the gattling nest. Its rotary cannon fires at a Humvee.
+id: help-cn-gattling-nest-fight
+map: showcase
+armies: [china, usa]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 46.5, y: 18.4, zoom: 3.5 }
+entities:
+  - { player: 0, type: cn-power-plant, origin: [33, 14] }
+  - { player: 0, type: cn-gattling-nest, origin: [42, 17], label: defense, order: { attack: target } }
+  - { player: 1, type: us-humvee, atCenti: [5000, 1800], label: target, hpPercent: 60 }

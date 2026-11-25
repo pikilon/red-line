@@ -1,0 +1,16 @@
+# Spec 48: help card of the Mengshi. Its roof gun cuts into Russian infantry beside a scout vehicle.
+id: help-cn-mengshi-fight
+map: showcase
+armies: [china, russia]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 46, y: 20.5, zoom: 3 }
+entities:
+  - { player: 0, type: cn-mengshi, atCenti: [4300, 2000], label: mengshi }
+  - { player: 1, type: ru-rifleman, atCenti: [4750, 1930], hpPercent: 70 }
+  - { player: 1, type: ru-rifleman, atCenti: [4750, 2070], hpPercent: 70 }
+  - { player: 1, type: ru-brdm-scout, atCenti: [5000, 2000], hpPercent: 60 }

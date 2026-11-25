@@ -1,0 +1,42 @@
+{
+  "id": "cn-hj-team",
+  "role": "Anti-tank missile team",
+  "summary": "A two-man team with a shoulder-fired HJ-12 missile. The missile flies a low arc and does not dive onto a tank's roof. The team is fragile, slow to move and nearly helpless against infantry that reaches it.",
+  "sections": [
+    {
+      "title": "Anti-tank missile",
+      "how": "Select the HJ-12 team and left-click an enemy vehicle, or let it fire at anything in range.",
+      "body": "The missile flies a low arc and strikes the hull of its target, not the roof. Once it is away the team needs no further aim. It punches through tank armour and destroys light vehicles. Against infantry it does little, it cannot hit aircraft, and it has a minimum range: anything that gets too close is safe from it.",
+      "shots": ["cn-hj-team-fight"]
+    },
+    {
+      "title": "Stow and set up",
+      "how": "Select the team and left-click the ground; on touch, tap.",
+      "body": "The team cannot walk with the launcher ready. It first stows the launcher on its shoulder, walks, then readies the launcher again on the new spot, and only then can it fire. Give the move order before the enemy arrives, not in the middle of a duel.",
+      "shots": ["cn-hj-team-move"]
+    },
+    {
+      "title": "Fight from a trench",
+      "how": "Select the team and left-click a finished trench, or press Garrison.",
+      "body": "Inside a trench the team is protected: small arms and most fire only graze it, though high explosives and thermobaric shells wear the trench down and can destroy it. It fires its missile out at vehicles. When an enemy holds the next piece of the line, the team switches to its sidearm and fights as infantry, never firing the launcher point-blank, and in a trench line it advances from piece to piece toward the enemy. Press Unload to get out.",
+      "shots": ["cn-hj-team-trench"]
+    }
+  ],
+  "strong": [
+    "Tanks and armoured vehicles",
+    "Light vehicles and transports",
+    "Buildings"
+  ],
+  "weak": [
+    "Infantry",
+    "Aircraft and drones",
+    "Anything inside its minimum range",
+    "Artillery"
+  ],
+  "tips": [
+    "Stow the launcher before a move: the team must ready it again before it can fire.",
+    "Keep it behind a tank or in a trench; in the open it dies to the first infantry squad that reaches it.",
+    "In a trench line it fights with a sidearm at close quarters, so back it with riflemen.",
+    "It cannot hit drones or aircraft; pair it with a Mengshi or riflemen that can."
+  ]
+}

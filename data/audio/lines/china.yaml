@@ -1,0 +1,892 @@
+# China voice/EVA script in neutral-accent English (spec 25 section 5.3): `text` is the line, `speak` is what the TTS reads. Original wording.
+cn-dozer.attack:
+- explicit: false
+  id: 1
+  speak: Building it now.
+  text: Building it now.
+- explicit: false
+  id: 2
+  speak: Laying the foundation.
+  text: Laying the foundation.
+- explicit: false
+  id: 3
+  speak: Repairing.
+  text: Repairing.
+- explicit: false
+  id: 4
+  speak: Work has begun.
+  text: Work has begun.
+- explicit: false
+  id: 5
+  speak: Pouring the concrete.
+  text: Pouring the concrete.
+cn-dozer.created:
+- explicit: false
+  id: 1
+  speak: Dozer reporting for work.
+  text: Dozer reporting for work.
+cn-dozer.die:
+- explicit: false
+  id: 1
+  speak: The blade is broken!
+  text: The blade is broken!
+- explicit: false
+  id: 2
+  speak: Engine failure!
+  text: Engine failure!
+- explicit: false
+  id: 3
+  speak: I am done for!
+  text: I am done for!
+- explicit: false
+  id: 4
+  speak: Aaah!
+  text: Aaah!
+cn-dozer.move:
+- explicit: false
+  id: 1
+  speak: Rolling over.
+  text: Rolling over.
+- explicit: false
+  id: 2
+  speak: Heading to the site.
+  text: Heading to the site.
+- explicit: false
+  id: 3
+  speak: On my way.
+  text: On my way.
+- explicit: false
+  id: 4
+  speak: Clearing the path.
+  text: Clearing the path.
+- explicit: false
+  id: 5
+  speak: Moving the blade.
+  text: Moving the blade.
+cn-dozer.select:
+- explicit: false
+  id: 1
+  speak: Dozer ready.
+  text: Dozer ready.
+- explicit: false
+  id: 2
+  speak: Blade is down.
+  text: Blade is down.
+- explicit: false
+  id: 3
+  speak: Work crew reporting.
+  text: Work crew reporting.
+- explicit: false
+  id: 4
+  speak: What shall we build?
+  text: What shall we build?
+- explicit: false
+  id: 5
+  speak: Awaiting your plan.
+  text: Awaiting your plan.
+cn-dozer.underFire:
+- explicit: false
+  id: 1
+  speak: We are under fire!
+  text: We are under fire!
+- explicit: false
+  id: 2
+  speak: Shots at the dozer!
+  text: Shots at the dozer!
+- explicit: false
+  id: 3
+  speak: Get me out of here!
+  text: Get me out of here!
+- explicit: false
+  id: 4
+  speak: I am only a builder!
+  text: I am only a builder!
+cn-hj-team.attack:
+- explicit: false
+  id: 1
+  speak: Missile away!
+  text: Missile away!
+- explicit: false
+  id: 2
+  speak: Firing at the armor!
+  text: Firing at the armor!
+- explicit: false
+  id: 3
+  speak: Launch!
+  text: Launch!
+- explicit: false
+  id: 4
+  speak: Tank in the sights!
+  text: Tank in the sights!
+- explicit: false
+  id: 5
+  speak: Loader, reload!
+  text: Loader, reload!
+cn-hj-team.created:
+- explicit: false
+  id: 1
+  speak: Missile team deployed.
+  text: Missile team deployed.
+cn-hj-team.die:
+- explicit: false
+  id: 1
+  speak: The launcher is lost!
+  text: The launcher is lost!
+- explicit: false
+  id: 2
+  speak: We are hit!
+  text: We are hit!
+- explicit: false
+  id: 3
+  speak: Argh!
+  text: Argh!
+- explicit: false
+  id: 4
+  speak: No more rockets...
+  text: No more rockets...
+cn-hj-team.move:
+- explicit: false
+  id: 1
+  speak: Carrying the launcher.
+  text: Carrying the launcher.
+- explicit: false
+  id: 2
+  speak: Moving up.
+  text: Moving up.
+- explicit: false
+  id: 3
+  speak: Changing position.
+  text: Changing position.
+- explicit: false
+  id: 4
+  speak: Understood, advancing.
+  text: Understood, advancing.
+- explicit: false
+  id: 5
+  speak: Heading there.
+  text: Heading there.
+cn-hj-team.select:
+- explicit: false
+  id: 1
+  speak: Missile team ready.
+  text: Missile team ready.
+- explicit: false
+  id: 2
+  speak: Launcher is loaded.
+  text: Launcher is loaded.
+- explicit: false
+  id: 3
+  speak: Gunner and loader here.
+  text: Gunner and loader here.
+- explicit: false
+  id: 4
+  speak: Armor hunters standing by.
+  text: Armor hunters standing by.
+- explicit: false
+  id: 5
+  speak: Give us a target.
+  text: Give us a target.
+cn-hj-team.underFire:
+- explicit: false
+  id: 1
+  speak: Under fire! Take cover!
+  text: Under fire! Take cover!
+- explicit: false
+  id: 2
+  speak: Protect the launcher!
+  text: Protect the launcher!
+- explicit: false
+  id: 3
+  speak: Enemy infantry!
+  text: Enemy infantry!
+- explicit: false
+  id: 4
+  speak: Keep your head down!
+  text: Keep your head down!
+cn-mengshi.attack:
+- explicit: false
+  id: 1
+  speak: Roof gun firing!
+  text: Roof gun firing!
+- explicit: false
+  id: 2
+  speak: Shooting from the window!
+  text: Shooting from the window!
+- explicit: false
+  id: 3
+  speak: Engaging!
+  text: Engaging!
+- explicit: false
+  id: 4
+  speak: Contact, firing!
+  text: Contact, firing!
+- explicit: false
+  id: 5
+  speak: Gunner, open up!
+  text: Gunner, open up!
+cn-mengshi.created:
+- explicit: false
+  id: 1
+  speak: Mengshi ready for action.
+  text: Mengshi ready for action.
+cn-mengshi.die:
+- explicit: false
+  id: 1
+  speak: Vehicle is hit!
+  text: Vehicle is hit!
+- explicit: false
+  id: 2
+  speak: Bail out!
+  text: Bail out!
+- explicit: false
+  id: 3
+  speak: The engine is burning!
+  text: The engine is burning!
+- explicit: false
+  id: 4
+  speak: Aaah!
+  text: Aaah!
+cn-mengshi.move:
+- explicit: false
+  id: 1
+  speak: Driving fast.
+  text: Driving fast.
+- explicit: false
+  id: 2
+  speak: Scouting ahead.
+  text: Scouting ahead.
+- explicit: false
+  id: 3
+  speak: Off we go.
+  text: Off we go.
+- explicit: false
+  id: 4
+  speak: Taking the road.
+  text: Taking the road.
+- explicit: false
+  id: 5
+  speak: Changing position.
+  text: Changing position.
+cn-mengshi.select:
+- explicit: false
+  id: 1
+  speak: Scout vehicle ready.
+  text: Scout vehicle ready.
+- explicit: false
+  id: 2
+  speak: Mengshi, engine running.
+  text: Mengshi, engine running.
+- explicit: false
+  id: 3
+  speak: Eyes open.
+  text: Eyes open.
+- explicit: false
+  id: 4
+  speak: Driver at the wheel.
+  text: Driver at the wheel.
+- explicit: false
+  id: 5
+  speak: Where to, commander?
+  text: Where to, commander?
+cn-mengshi.underFire:
+- explicit: false
+  id: 1
+  speak: Taking fire!
+  text: Taking fire!
+- explicit: false
+  id: 2
+  speak: Swerving! Hold on!
+  text: Swerving! Hold on!
+- explicit: false
+  id: 3
+  speak: Enemy contact!
+  text: Enemy contact!
+- explicit: false
+  id: 4
+  speak: They have found us!
+  text: They have found us!
+cn-phl-03.attack:
+- explicit: false
+  id: 1
+  speak: Salvo away!
+  text: Salvo away!
+- explicit: false
+  id: 2
+  speak: Rockets launched!
+  text: Rockets launched!
+- explicit: false
+  id: 3
+  speak: Firing for effect!
+  text: Firing for effect!
+- explicit: false
+  id: 4
+  speak: Barrage on the way!
+  text: Barrage on the way!
+- explicit: false
+  id: 5
+  speak: Fire all tubes!
+  text: Fire all tubes!
+cn-phl-03.created:
+- explicit: false
+  id: 1
+  speak: Rocket battery in position.
+  text: Rocket battery in position.
+cn-phl-03.die:
+- explicit: false
+  id: 1
+  speak: The launcher is hit!
+  text: The launcher is hit!
+- explicit: false
+  id: 2
+  speak: Rockets are exploding!
+  text: Rockets are exploding!
+- explicit: false
+  id: 3
+  speak: Battery lost!
+  text: Battery lost!
+- explicit: false
+  id: 4
+  speak: Aargh!
+  text: Aargh!
+cn-phl-03.move:
+- explicit: false
+  id: 1
+  speak: Relocating the battery.
+  text: Relocating the battery.
+- explicit: false
+  id: 2
+  speak: Moving to a new position.
+  text: Moving to a new position.
+- explicit: false
+  id: 3
+  speak: Driving to the firing line.
+  text: Driving to the firing line.
+- explicit: false
+  id: 4
+  speak: On the move.
+  text: On the move.
+- explicit: false
+  id: 5
+  speak: Rolling out.
+  text: Rolling out.
+cn-phl-03.select:
+- explicit: false
+  id: 1
+  speak: Rocket launcher ready.
+  text: Rocket launcher ready.
+- explicit: false
+  id: 2
+  speak: Salvo is loaded.
+  text: Salvo is loaded.
+- explicit: false
+  id: 3
+  speak: Battery awaiting orders.
+  text: Battery awaiting orders.
+- explicit: false
+  id: 4
+  speak: Coordinates, please.
+  text: Coordinates, please.
+- explicit: false
+  id: 5
+  speak: Long range guns standing by.
+  text: Long range guns standing by.
+cn-phl-03.underFire:
+- explicit: false
+  id: 1
+  speak: Counter fire!
+  text: Counter fire!
+- explicit: false
+  id: 2
+  speak: They found the battery!
+  text: They found the battery!
+- explicit: false
+  id: 3
+  speak: We are too exposed!
+  text: We are too exposed!
+- explicit: false
+  id: 4
+  speak: Protect the launcher!
+  text: Protect the launcher!
+cn-rifle-squad.attack:
+- explicit: false
+  id: 1
+  speak: Open fire!
+  text: Open fire!
+- explicit: false
+  id: 2
+  speak: For the homeland, fire!
+  text: For the homeland, fire!
+- explicit: false
+  id: 3
+  speak: Shoot together!
+  text: Shoot together!
+- explicit: false
+  id: 4
+  speak: Volley!
+  text: Volley!
+- explicit: false
+  id: 5
+  speak: Hit them hard!
+  text: Hit them hard!
+cn-rifle-squad.created:
+- explicit: false
+  id: 1
+  speak: Squad has joined.
+  text: Squad has joined.
+cn-rifle-squad.die:
+- explicit: false
+  id: 1
+  speak: I am hit!
+  text: I am hit!
+- explicit: false
+  id: 2
+  speak: Tell my family...
+  text: Tell my family...
+- explicit: false
+  id: 3
+  speak: Aaargh!
+  text: Aaargh!
+- explicit: false
+  id: 4
+  speak: The line is broken!
+  text: The line is broken!
+cn-rifle-squad.move:
+- explicit: false
+  id: 1
+  speak: Moving out.
+  text: Moving out.
+- explicit: false
+  id: 2
+  speak: Advancing together.
+  text: Advancing together.
+- explicit: false
+  id: 3
+  speak: Forward, in step.
+  text: Forward, in step.
+- explicit: false
+  id: 4
+  speak: Following the order.
+  text: Following the order.
+- explicit: false
+  id: 5
+  speak: Marching.
+  text: Marching.
+cn-rifle-squad.select:
+- explicit: false
+  id: 1
+  speak: Squad ready.
+  text: Squad ready.
+- explicit: false
+  id: 2
+  speak: Red Guard, standing by.
+  text: Red Guard, standing by.
+- explicit: false
+  id: 3
+  speak: Comrades at your side.
+  text: Comrades at your side.
+- explicit: false
+  id: 4
+  speak: Rifles are clean.
+  text: Rifles are clean.
+- explicit: false
+  id: 5
+  speak: Awaiting orders, commander.
+  text: Awaiting orders, commander.
+cn-rifle-squad.underFire:
+- explicit: false
+  id: 1
+  speak: Enemy fire!
+  text: Enemy fire!
+- explicit: false
+  id: 2
+  speak: Hold the line!
+  text: Hold the line!
+- explicit: false
+  id: 3
+  speak: Keep together!
+  text: Keep together!
+- explicit: false
+  id: 4
+  speak: They are shooting at us!
+  text: They are shooting at us!
+cn-supply-truck.attack:
+- explicit: false
+  id: 1
+  speak: Collecting supplies.
+  text: Collecting supplies.
+- explicit: false
+  id: 2
+  speak: Loading the crates.
+  text: Loading the crates.
+- explicit: false
+  id: 3
+  speak: Unloading cargo.
+  text: Unloading cargo.
+- explicit: false
+  id: 4
+  speak: Gathering resources.
+  text: Gathering resources.
+- explicit: false
+  id: 5
+  speak: Another full load.
+  text: Another full load.
+cn-supply-truck.created:
+- explicit: false
+  id: 1
+  speak: Supply truck ready.
+  text: Supply truck ready.
+cn-supply-truck.die:
+- explicit: false
+  id: 1
+  speak: The truck is lost!
+  text: The truck is lost!
+- explicit: false
+  id: 2
+  speak: Tires blown!
+  text: Tires blown!
+- explicit: false
+  id: 3
+  speak: Cargo is burning!
+  text: Cargo is burning!
+- explicit: false
+  id: 4
+  speak: Aaah!
+  text: Aaah!
+cn-supply-truck.move:
+- explicit: false
+  id: 1
+  speak: Delivering now.
+  text: Delivering now.
+- explicit: false
+  id: 2
+  speak: On the road.
+  text: On the road.
+- explicit: false
+  id: 3
+  speak: Heading out.
+  text: Heading out.
+- explicit: false
+  id: 4
+  speak: Wheels turning.
+  text: Wheels turning.
+- explicit: false
+  id: 5
+  speak: Taking the convoy road.
+  text: Taking the convoy road.
+cn-supply-truck.select:
+- explicit: false
+  id: 1
+  speak: Supply truck here.
+  text: Supply truck here.
+- explicit: false
+  id: 2
+  speak: Cargo is loaded.
+  text: Cargo is loaded.
+- explicit: false
+  id: 3
+  speak: Ready to haul.
+  text: Ready to haul.
+- explicit: false
+  id: 4
+  speak: Driver waiting.
+  text: Driver waiting.
+- explicit: false
+  id: 5
+  speak: The route is clear.
+  text: The route is clear.
+cn-supply-truck.underFire:
+- explicit: false
+  id: 1
+  speak: Ambush!
+  text: Ambush!
+- explicit: false
+  id: 2
+  speak: They are shooting at the convoy!
+  text: They are shooting at the convoy!
+- explicit: false
+  id: 3
+  speak: Hold on, I will drive!
+  text: Hold on, I will drive!
+- explicit: false
+  id: 4
+  speak: Under attack!
+  text: Under attack!
+cn-type-99a.attack:
+- explicit: false
+  id: 1
+  speak: Main gun, fire!
+  text: Main gun, fire!
+- explicit: false
+  id: 2
+  speak: One hundred twenty-five, away!
+  text: One hundred twenty-five, away!
+- explicit: false
+  id: 3
+  speak: Shell is on its way!
+  text: Shell is on its way!
+- explicit: false
+  id: 4
+  speak: Gunner, destroy it!
+  text: Gunner, destroy it!
+- explicit: false
+  id: 5
+  speak: Crush them!
+  text: Crush them!
+cn-type-99a.created:
+- explicit: false
+  id: 1
+  speak: Tank is ready for battle.
+  text: Tank is ready for battle.
+cn-type-99a.die:
+- explicit: false
+  id: 1
+  speak: The tank is lost!
+  text: The tank is lost!
+- explicit: false
+  id: 2
+  speak: Ammunition is exploding!
+  text: Ammunition is exploding!
+- explicit: false
+  id: 3
+  speak: Abandon the tank!
+  text: Abandon the tank!
+- explicit: false
+  id: 4
+  speak: Aargh!
+  text: Aargh!
+cn-type-99a.move:
+- explicit: false
+  id: 1
+  speak: Tracks rolling.
+  text: Tracks rolling.
+- explicit: false
+  id: 2
+  speak: Tank is advancing.
+  text: Tank is advancing.
+- explicit: false
+  id: 3
+  speak: Moving ahead.
+  text: Moving ahead.
+- explicit: false
+  id: 4
+  speak: Steel on the move.
+  text: Steel on the move.
+- explicit: false
+  id: 5
+  speak: Heading to position.
+  text: Heading to position.
+cn-type-99a.select:
+- explicit: false
+  id: 1
+  speak: Type ninety-nine ready.
+  text: Type ninety-nine ready.
+- explicit: false
+  id: 2
+  speak: Tank crew at their posts.
+  text: Tank crew at their posts.
+- explicit: false
+  id: 3
+  speak: Armor is sealed.
+  text: Armor is sealed.
+- explicit: false
+  id: 4
+  speak: Main gun is loaded.
+  text: Main gun is loaded.
+- explicit: false
+  id: 5
+  speak: Ready to crush them.
+  text: Ready to crush them.
+cn-type-99a.underFire:
+- explicit: false
+  id: 1
+  speak: Armor under fire!
+  text: Armor under fire!
+- explicit: false
+  id: 2
+  speak: Hit on the turret!
+  text: Hit on the turret!
+- explicit: false
+  id: 3
+  speak: Enemy armor ahead!
+  text: Enemy armor ahead!
+- explicit: false
+  id: 4
+  speak: The crew holds firm!
+  text: The crew holds firm!
+cn-zbl-09.attack:
+- explicit: false
+  id: 1
+  speak: Cannon firing!
+  text: Cannon firing!
+- explicit: false
+  id: 2
+  speak: Thirty millimeter, fire!
+  text: Thirty millimeter, fire!
+- explicit: false
+  id: 3
+  speak: Suppressing them!
+  text: Suppressing them!
+- explicit: false
+  id: 4
+  speak: Gunner, engage!
+  text: Gunner, engage!
+- explicit: false
+  id: 5
+  speak: Rounds going out!
+  text: Rounds going out!
+cn-zbl-09.created:
+- explicit: false
+  id: 1
+  speak: Carrier has arrived.
+  text: Carrier has arrived.
+cn-zbl-09.die:
+- explicit: false
+  id: 1
+  speak: The hull is breached!
+  text: The hull is breached!
+- explicit: false
+  id: 2
+  speak: Everybody out!
+  text: Everybody out!
+- explicit: false
+  id: 3
+  speak: We are burning!
+  text: We are burning!
+- explicit: false
+  id: 4
+  speak: Aargh!
+  text: Aargh!
+cn-zbl-09.move:
+- explicit: false
+  id: 1
+  speak: Rolling out.
+  text: Rolling out.
+- explicit: false
+  id: 2
+  speak: Carrying the troops.
+  text: Carrying the troops.
+- explicit: false
+  id: 3
+  speak: Moving to the front.
+  text: Moving to the front.
+- explicit: false
+  id: 4
+  speak: Wheels turning.
+  text: Wheels turning.
+- explicit: false
+  id: 5
+  speak: Advancing.
+  text: Advancing.
+cn-zbl-09.select:
+- explicit: false
+  id: 1
+  speak: Armored carrier ready.
+  text: Armored carrier ready.
+- explicit: false
+  id: 2
+  speak: Eight wheels, ready to roll.
+  text: Eight wheels, ready to roll.
+- explicit: false
+  id: 3
+  speak: Troops are aboard.
+  text: Troops are aboard.
+- explicit: false
+  id: 4
+  speak: Driver standing by.
+  text: Driver standing by.
+- explicit: false
+  id: 5
+  speak: Cannon is loaded.
+  text: Cannon is loaded.
+cn-zbl-09.underFire:
+- explicit: false
+  id: 1
+  speak: Hits on the hull!
+  text: Hits on the hull!
+- explicit: false
+  id: 2
+  speak: We are under fire!
+  text: We are under fire!
+- explicit: false
+  id: 3
+  speak: Keep the troops safe!
+  text: Keep the troops safe!
+- explicit: false
+  id: 4
+  speak: Enemy ahead!
+  text: Enemy ahead!
+eva.baseUnderAttack:
+- explicit: false
+  id: 1
+  speak: Base under attack.
+  text: Base under attack.
+- explicit: false
+  id: 2
+  speak: Commander, the base is under attack.
+  text: Commander, the base is under attack.
+- explicit: false
+  id: 3
+  speak: Enemy forces are striking our base.
+  text: Enemy forces are striking our base.
+- explicit: false
+  id: 4
+  speak: Warning. The base is taking fire.
+  text: Warning. The base is taking fire.
+eva.buildingLost:
+- explicit: false
+  id: 1
+  speak: Building lost.
+  text: Building lost.
+eva.buildingReady:
+- explicit: false
+  id: 1
+  speak: Building ready. Choose a site.
+  text: Building ready. Choose a site.
+eva.constructionComplete:
+- explicit: false
+  id: 1
+  speak: Construction complete.
+  text: Construction complete.
+- explicit: false
+  id: 2
+  speak: Building finished.
+  text: Building finished.
+- explicit: false
+  id: 3
+  speak: Structure complete.
+  text: Structure complete.
+eva.defeat:
+- explicit: false
+  id: 1
+  speak: Our command has fallen. The battle is lost.
+  text: Our command has fallen. The battle is lost.
+eva.insufficientFunds:
+- explicit: false
+  id: 1
+  speak: Insufficient funds.
+  text: Insufficient funds.
+eva.lowPower:
+- explicit: false
+  id: 1
+  speak: Low power.
+  text: Low power.
+eva.productionComplete:
+- explicit: false
+  id: 1
+  speak: Unit ready.
+  text: Unit ready.
+eva.unitLost:
+- explicit: false
+  id: 1
+  speak: Unit lost.
+  text: Unit lost.
+eva.upgradeComplete:
+- explicit: false
+  id: 1
+  speak: Upgrade complete.
+  text: Upgrade complete.
+eva.victory:
+- explicit: false
+  id: 1
+  speak: All enemy forces are destroyed. Victory is ours.
+  text: All enemy forces are destroyed. Victory is ours.

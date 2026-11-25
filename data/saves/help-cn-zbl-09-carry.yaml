@@ -1,0 +1,17 @@
+# Spec 48: help card of the ZBL-09. A squad boards it; select the ZBL-09 to see Unload (n).
+id: help-cn-zbl-09-carry
+map: showcase
+armies: [china, russia]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 44, y: 20, zoom: 3 }
+entities:
+  - { player: 0, type: cn-zbl-09, atCenti: [4500, 2000], label: zbl }
+  - { player: 0, type: cn-rifle-squad, atCenti: [4000, 1850], order: { board: zbl } }
+  - { player: 0, type: cn-rifle-squad, atCenti: [4000, 2000], order: { board: zbl } }
+  - { player: 0, type: cn-rifle-squad, atCenti: [4000, 2150], order: { board: zbl } }
+  - { player: 0, type: cn-hj-team, atCenti: [3900, 2000], order: { board: zbl } }

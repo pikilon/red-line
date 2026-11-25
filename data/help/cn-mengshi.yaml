@@ -1,0 +1,6 @@
+# Spec 48: help card screenshots of the Mengshi. `node --run help:shots -- --type cn-mengshi`
+- { id: cn-mengshi-fight, save: help-cn-mengshi-fight, ticks: 50, select: [cn-mengshi] }
+- { id: cn-mengshi-carry, save: help-cn-mengshi-carry, ticks: 12, select: [cn-rifle-squad, cn-hj-team] }
+- { id: cn-mengshi-fireports, save: help-cn-mengshi-fireports, ticks: 60, select: [cn-mengshi], hud: true }
+- { id: cn-mengshi-unload, save: help-cn-mengshi-carry, ticks: 200, select: [cn-mengshi], hud: true }
+- { id: cn-mengshi-repair, save: help-cn-mengshi-repair, ticks: 10, select: [cn-mengshi], hud: true }

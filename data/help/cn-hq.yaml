@@ -1,0 +1,5 @@
+# Spec 48: help card screenshots. `node --run help:shots -- --type cn-hq`
+- { id: cn-hq-build, save: help-cn-hq-build, ticks: 5, select: [cn-hq], hud: true, tab: build }
+- { id: cn-hq-rally, save: help-cn-hq-rally, ticks: 5, select: [cn-hq], hud: true, tab: orders }
+- { id: cn-hq-repair, save: help-cn-hq-repair, ticks: 5, select: [cn-dozer] }
+- { id: cn-hq-sell, save: help-cn-hq-sell, ticks: 5, select: [cn-hq], hud: true, tab: orders }

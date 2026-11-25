@@ -1,0 +1,44 @@
+{
+  "id": "cn-gattling-nest",
+  "role": "Base defence gun",
+  "summary": "A sandbagged rotary 30 mm cannon that guards the base against enemy ground units and low drones at close range. It fires very fast, but it cannot reach high aircraft, and it needs power.",
+  "sections": [
+    {
+      "title": "Guard the base",
+      "how": "Select a dozer, open the Build tab, press Gattling nest and left-click the ground. Once built it fires on its own.",
+      "body": "The turret turns toward the nearest enemy ground unit it can see and fires bursts from its rotary barrels. Each shot is small, but they come quickly, so it is strong against infantry and light vehicles. A barracks must stand in the base before a dozer can raise it.",
+      "shots": ["cn-gattling-nest-fight"]
+    },
+    {
+      "title": "Needs power",
+      "how": "Watch the power reading in the HUD; keep production at least equal to consumption.",
+      "body": "The gattling nest draws power from the base. While the base consumes more than it produces, the reading turns red and the nest holds its fire until the deficit is fixed. Build another power plant or sell something that draws power.",
+      "shots": ["cn-gattling-nest-power"]
+    },
+    {
+      "title": "Repair with a dozer",
+      "how": "Select a dozer and left-click the damaged gattling nest.",
+      "body": "The dozer drives over and restores the nest until it is whole. The work costs half the build price as the health comes back, and only one dozer works on it at a time. If the credits run out, the repair stops and the dozer goes idle.",
+      "shots": ["cn-gattling-nest-repair"]
+    },
+    {
+      "title": "Sell",
+      "how": "Select the gattling nest and press Sell twice.",
+      "body": "It sells for half its price and disappears at once, opening the ground it held. Selling your last building loses the match.",
+      "shots": ["cn-gattling-nest-sell"]
+    }
+  ],
+  "strong": [
+    "Rapid fire at enemy ground units",
+    "Low drones",
+    "Holding a position without units",
+    "A sturdy sandbagged emplacement"
+  ],
+  "weak": ["High aircraft", "Anything beyond its range", "A power deficit"],
+  "tips": [
+    "Build a barracks first: the gattling nest needs one before a dozer can raise it.",
+    "Place it where enemy ground units will come, and cover its close approaches with infantry.",
+    "Keep enough power for it: while the base is short, the nest holds its fire.",
+    "Keep a dozer nearby: the gattling nest cannot repair itself."
+  ]
+}

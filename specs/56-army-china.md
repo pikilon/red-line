@@ -148,8 +148,29 @@ military, no text, no logos, no people`):
 | `cn-type-99a` | green and tan camouflage modern main battle tank, flat angular turret, long 125 mm gun, side skirts, reactive armour blocks |
 | `cn-phl-03` | green camouflage 8x8 truck carrying a rack of twelve large rocket tubes on top, armoured cab |
 
-Generation log: filled in by stage 2 (image task, mesh task, rig and combat
-tasks per type, same pipeline as spec 54 §6).
+Generation log (2026-11-25; image task / image-to-3d task; nano-banana, then
+meshy-t2 + meshy-n1, infantry meshy-t2.5 + rig and one combat clip). 268
+credits in total:
+
+| Id | Image | Mesh | Credits |
+|---|---|---|---|
+| `cn-hq` | 01a21040-840b | 01a21040-c184 | 18 |
+| `cn-power-plant` | 01a21040-8673 | 01a21040-c6ac | 18 |
+| `cn-supply-center` | 01a21041-24c6 | 01a21041-4ee9 | 18 |
+| `cn-barracks` | 01a21041-26f8 | 01a21041-5478 | 18 |
+| `cn-vehicle-factory` | 01a21041-babe | 01a21042-22c1 | 18 |
+| `cn-gattling-nest` | 01a21041-bdfb | 01a21042-26ad | 18 |
+| `cn-dozer` | 01a21040-9127 | 01a21040-cccd | 18 |
+| `cn-supply-truck` | 01a21040-9364 | 01a21040-d0d4 | 18 |
+| `cn-mengshi` | 01a21041-428d | 01a21041-78ae | 18 |
+| `cn-zbl-09` | 01a21041-442b | 01a21041-7ca8 | 18 |
+| `cn-type-99a` | 01a21042-1c4e | 01a21042-44e8 | 18 |
+| `cn-phl-03` | 01a21042-1eaa | 01a21042-49a0 | 18 |
+| `cn-rifle-squad` | 01a21043-1c34 | 01a21043-7145 | 26 |
+| `cn-hj-team` | 01a21043-205a | 01a21043-7806 | 26 |
+
+Known gap: the Gattling nest model shows a twin barrel, not seven.
+
 
 Until the models exist the types load in the client without a `.glb`:
 `assets:check` only warns "missing" and the renderer draws the type's

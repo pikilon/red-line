@@ -1,0 +1,13 @@
+# Spec 48: help card of the gattling nest. Without a power plant the base is short and the reading is red.
+id: help-cn-gattling-nest-power
+map: showcase
+armies: [china, usa]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 42, y: 17, zoom: 3 }
+entities:
+  - { player: 0, type: cn-gattling-nest, origin: [42, 17] }

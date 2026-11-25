@@ -13,3 +13,7 @@ Fix: `uv pip install --python /mnt/ia/entornos/audio-kokoro/bin/python <en_core_
 ### 2026-11-24 Do not run process.py on a partial raw folder; shared music needs symlinks
 Problem: `process.py` rewrites `manifest.json` from only the files it finds in RAW, dropping every other event. `check:audio` also rejects two inventory entries with the same `target`.
 Fix: encode only the new faction's files with ffmpeg (same filter chains as process.py) and merge them into the manifest by hand; when a faction reuses another's music or building clicks, add relative symlinks `calm.<faction>_1.webm -> calm.ukraine_1.webm` and give the inventory entry the symlink name.
+
+### 2026-11-25 British Kokoro voices give a neutral accent; check:audio needs reference.yaml entries
+Problem: a new faction's inventory entries fail `check:audio` ("N extra") until `data/audio/reference.yaml` lists the same ids; and the American voices are already used by USA.
+Fix: for a neutral non-American accent use `KPipeline(lang_code="b")` with bf_emma, bf_alice, bf_lily, bm_george, bm_lewis, bm_daniel, bm_fable (they download on first use into the /mnt/ia HF cache). Generate in one background process (about 200 lines take over 2 minutes; the Bash tool times out at 120 s). Add a `reference.yaml` line per event id, then `node --run build:data && node --run check:audio`.

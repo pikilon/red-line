@@ -1,0 +1,5 @@
+# Spec 48: help card screenshots of the China rifle squad. `node --run help:shots -- --type cn-rifle-squad`
+- { id: cn-rifle-squad-fight, save: help-cn-rifle-squad-fight, ticks: 40, select: [cn-rifle-squad] }
+- { id: cn-rifle-squad-board, save: help-cn-rifle-squad-board, ticks: 30, select: [cn-rifle-squad] }
+- { id: cn-rifle-squad-garrison, save: help-cn-rifle-squad-garrison, ticks: 10, select: [cn-rifle-squad], hud: true }
+- { id: cn-rifle-squad-heal, save: help-cn-rifle-squad-heal, ticks: 10, select: [cn-rifle-squad] }

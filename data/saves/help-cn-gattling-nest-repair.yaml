@@ -1,0 +1,14 @@
+# Spec 48: help card of the gattling nest. A damaged nest waits for its dozer.
+id: help-cn-gattling-nest-repair
+map: showcase
+armies: [china, usa]
+victory: false
+debug: true
+starts: false
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 45, y: 18, zoom: 3 }
+entities:
+  - { player: 0, type: cn-gattling-nest, origin: [42, 17], hpPercent: 45 }
+  - { player: 0, type: cn-dozer, atCenti: [4400, 1900] }

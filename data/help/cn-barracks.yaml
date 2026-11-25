@@ -1,0 +1,6 @@
+# Spec 48: help card screenshots. `node --run help:shots -- --type cn-barracks`
+- { id: cn-barracks-train, save: help-cn-barracks-train, ticks: 5, select: [cn-barracks], hud: true, tab: build }
+- { id: cn-barracks-rally, save: help-cn-barracks-rally, ticks: 5, select: [cn-barracks], hud: true, tab: orders }
+- { id: cn-barracks-heal, save: help-cn-barracks-heal, ticks: 10, select: [cn-rifle-squad] }
+- { id: cn-barracks-repair, save: help-cn-barracks-repair, ticks: 10, select: [cn-dozer] }
+- { id: cn-barracks-sell, save: help-cn-barracks-sell, ticks: 5, select: [cn-barracks], hud: true, tab: orders }

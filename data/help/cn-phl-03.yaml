@@ -1,0 +1,6 @@
+# Spec 48: help card screenshots of the PHL-03. `node --run help:shots -- --type cn-phl-03`
+- { id: cn-phl-03-fight, save: help-cn-phl-03-fight, ticks: 43, select: [cn-phl-03] }
+- { id: cn-phl-03-splash, save: help-cn-phl-03-splash, ticks: 50, select: [cn-phl-03] }
+- { id: cn-phl-03-min-range, save: help-cn-phl-03-min-range, ticks: 8, select: [cn-phl-03] }
+- { id: cn-phl-03-attack-ground, save: help-cn-phl-03-attack-ground, ticks: 44, select: [cn-phl-03], hud: true, tab: orders }
+- { id: cn-phl-03-repair, save: help-cn-phl-03-repair, ticks: 10, select: [cn-phl-03], hud: true }

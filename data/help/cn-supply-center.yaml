@@ -1,0 +1,6 @@
+# Spec 48: help card screenshots. `node --run help:shots -- --type cn-supply-center`
+- { id: cn-supply-center-produce, save: help-cn-supply-center-produce, ticks: 5, select: [cn-supply-center], hud: true, tab: build }
+- { id: cn-supply-center-dropoff, save: help-cn-supply-center-dropoff, ticks: 95, select: [cn-supply-truck] }
+- { id: cn-supply-center-rally, save: help-cn-supply-center-rally, ticks: 5, select: [cn-supply-center], hud: true, tab: orders }
+- { id: cn-supply-center-repair, save: help-cn-supply-center-repair, ticks: 10, select: [cn-dozer] }
+- { id: cn-supply-center-sell, save: help-cn-supply-center-sell, ticks: 5, select: [cn-supply-center], hud: true, tab: orders }
