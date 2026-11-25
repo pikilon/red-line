@@ -31,7 +31,7 @@ export interface GarrisonFeature {
 export interface GarrisonTypeInfo {
   readonly footprint: readonly [number, number];
   readonly garrison?: { readonly slots: number };
-  /** Spec 57: a capturable tech building. */
+  /** Spec 58: a capturable tech building. */
   readonly tech?: unknown;
 }
 
@@ -66,7 +66,7 @@ export function garrisonFeaturesOf(
   return found;
 }
 
-/** Spec 57: the capturable tech buildings of a map, in the sim's row order.
+/** Spec 58: the capturable tech buildings of a map, in the sim's row order.
  *  They hold no riders: `slots` is 1 and `occupants` is 1 while owned, which
  *  lets the garrison markers show the owner's colour as one pip. */
 export function techFeaturesOf(
@@ -111,7 +111,7 @@ export function withTechState(
   return live;
 }
 
-/** Spec 57: right or left click on a tech building the selection's infantry
+/** Spec 58: right or left click on a tech building the selection's infantry
  *  do not own yet sends them to capture it. */
 export function resolveCaptureClick(args: {
   player: number;

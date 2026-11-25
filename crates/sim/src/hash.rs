@@ -50,7 +50,7 @@ pub fn state_hash(world: &World) -> u64 {
         put_u32(&mut out, row.hp);
         put_u32(&mut out, row.burn);
         put_u32(&mut out, row.collapse);
-        // Spec 57: written only for captured tech buildings.
+        // Spec 58: written only for captured tech buildings.
         if row.owner != crate::entity::NEUTRAL {
             out.push(row.owner);
         }

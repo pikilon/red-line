@@ -75,7 +75,7 @@ pub enum Order {
         order_id: u32,
         feature: u32,
     },
-    /// Spec 57: walk to the tech building `feature` and work on capturing it;
+    /// Spec 58: walk to the tech building `feature` and work on capturing it;
     /// `progress` counts the ticks worked once the unit is beside it.
     Capture {
         order_id: u32,

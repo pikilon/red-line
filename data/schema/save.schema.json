@@ -112,7 +112,7 @@
               "harvest": { "$ref": "#/$defs/id" },
               "attackGroundCenti": { "$ref": "#/$defs/pair" },
               "garrison": { "$ref": "#/$defs/pair" },
-              "capture": { "description": "Spec 57: a cell inside a tech building the unit captures.", "$ref": "#/$defs/pair" },
+              "capture": { "description": "Spec 58: a cell inside a tech building the unit captures.", "$ref": "#/$defs/pair" },
               "board": { "$ref": "#/$defs/id" },
               "repair": { "$ref": "#/$defs/pair" },
               "dig": { "$ref": "#/$defs/pair" },

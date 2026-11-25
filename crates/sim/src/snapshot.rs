@@ -441,7 +441,7 @@ fn garrisons(world: &World) -> (Vec<PlayerId>, Vec<u32>) {
             counts[index] += 1;
         }
     }
-    // Spec 57: a captured tech building shows its owner (no occupants).
+    // Spec 58: a captured tech building shows its owner (no occupants).
     for (index, owner) in owners.iter_mut().enumerate() {
         let captured = world.tech_owner(index as u32);
         if captured != NEUTRAL {

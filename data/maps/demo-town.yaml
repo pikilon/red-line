@@ -174,7 +174,7 @@ features:
   - { type: rubble-pile, at: [60, 52], rot: 0, variant: 0 }
   - { type: stone-wall, at: [61, 50], rot: 0, variant: 0, state: damaged }
   - { type: stone-wall, at: [62, 50], rot: 0, variant: 0, state: wrecked }
-  # Spec 57: neutral tech buildings north of the main street.
+  # Spec 58: neutral tech buildings north of the main street.
   - { type: oil-derrick, at: [22, 14], rot: 0, variant: 0 }
   - { type: oil-derrick, at: [42, 14], rot: 0, variant: 0 }
   - { type: field-hospital, at: [36, 18], rot: 0, variant: 0 }

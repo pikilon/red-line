@@ -40,7 +40,7 @@ pub struct FeatureState {
     /// Ticks until a building at zero hit points turns into rubble; 0 when it
     /// is not collapsing.
     pub collapse: u32,
-    /// Spec 57: the player that captured a tech building; `NEUTRAL` otherwise.
+    /// Spec 58: the player that captured a tech building; `NEUTRAL` otherwise.
     pub owner: PlayerId,
 }
 

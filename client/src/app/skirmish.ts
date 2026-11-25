@@ -1145,7 +1145,7 @@ function runSkirmish(boot: SkirmishBoot, store: SaveStore): void {
   /** The placed buildings the sim still accepts riders in, with their holder
    *  and occupants, from the latest feature table (spec 31 block 2). */
   let garrisonFeatures = withLiveState(placedGarrisons, null);
-  /** Spec 57: the map's capturable tech buildings and their owners. */
+  /** Spec 58: the map's capturable tech buildings and their owners. */
   const placedTech = techFeaturesOf(
     (
       ruleset.maps.find((entry) => entry.id === mapId) as

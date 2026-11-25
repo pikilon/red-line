@@ -147,7 +147,7 @@ pub enum Command {
         units: Vec<EntityId>,
         feature: u32,
     },
-    /// Spec 57: infantry walk to the tech building `feature` and capture it.
+    /// Spec 58: infantry walk to the tech building `feature` and capture it.
     Capture {
         units: Vec<EntityId>,
         feature: u32,

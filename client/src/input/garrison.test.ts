@@ -224,7 +224,7 @@ describe("spec 35 §5c: a trench is one block", () => {
   });
 });
 
-describe("capture (spec 57)", () => {
+describe("capture (spec 58)", () => {
   const techTypes = [
     { footprint: [2, 2] as const, tech: {} },
     { footprint: [1, 1] as const },

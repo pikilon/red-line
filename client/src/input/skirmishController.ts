@@ -82,7 +82,7 @@ export interface SkirmishControllerOptions {
   command(command: SimCommand): void;
   /** Garrisonable features of the map (spec 31 block 2); none when absent. */
   garrisonFeatures?(): readonly GarrisonFeature[];
-  /** Spec 57: the capturable tech buildings, with their owners. */
+  /** Spec 58: the capturable tech buildings, with their owners. */
   techFeatures?(): readonly GarrisonFeature[];
   /** Spec 35: the map's bridges with their live damage; none when absent. */
   repairJobs?(): readonly RepairJob[];

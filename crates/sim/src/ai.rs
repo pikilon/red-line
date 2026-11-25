@@ -436,7 +436,7 @@ impl Ai {
             def.garrison_radius_centi,
         ));
 
-        // 5c. Tech buildings (spec 57): one idle pool infantry unit captures
+        // 5c. Tech buildings (spec 58): one idle pool infantry unit captures
         // each neutral or foe-held tech building within reach.
         commands.extend(capture_orders(world, player, faction, &self.attackers));
 
@@ -1095,10 +1095,10 @@ fn garrison_orders(
     commands
 }
 
-/// Spec 57: how far (centi-tiles) the AI sends a unit to capture a tech building.
+/// Spec 58: how far (centi-tiles) the AI sends a unit to capture a tech building.
 const TECH_REACH_CENTI: u32 = 4000;
 
-/// Spec 57: for each tech building the player does not own and none of its
+/// Spec 58: for each tech building the player does not own and none of its
 /// units is already working on, the nearest idle pool infantry unit within
 /// `TECH_REACH_CENTI` captures it. Ascending feature index; a unit is used once.
 fn capture_orders(

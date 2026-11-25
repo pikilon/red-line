@@ -1,4 +1,4 @@
-//! Spec 57: capturable neutral tech buildings (Zero Hour `KINDOF_CAPTURABLE`
+//! Spec 58: capturable neutral tech buildings (Zero Hour `KINDOF_CAPTURABLE`
 //! `TECH_BUILDING`). Infantry walk beside one and work on it for
 //! `captureTicks`; it then belongs to their player until another player
 //! captures it. An owned building pays periodic credits (`AutoDepositUpdate`)

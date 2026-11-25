@@ -297,7 +297,7 @@ impl Sim {
         );
     }
 
-    /// Spec 57: `unit_ids` walk to the tech building `feature` and capture it.
+    /// Spec 58: `unit_ids` walk to the tech building `feature` and capture it.
     pub fn command_capture(&mut self, player: u8, unit_ids: &[u32], feature: u32) {
         self.world.enqueue_as(
             player,

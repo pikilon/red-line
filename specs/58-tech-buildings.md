@@ -1,4 +1,4 @@
-# 57 — Capturable neutral tech buildings
+# 58 — Capturable neutral tech buildings
 
 Status: built (issue #475). Amends `26-map-features-plan.md` (section 6.3, tech
 buildings) and `48-unit-help.md` section 6 (listed as missing).
@@ -92,15 +92,15 @@ shown in the feature table) and starts neutral.
 
 ## 7. Acceptance criteria
 
-* AC-57-01: infantry capture a neutral building after `captureTicks` and the owner
+* AC-58-01: infantry capture a neutral building after `captureTicks` and the owner
   gets the capture bonus.
-* AC-57-02: an owned building pays its income; a neutral one pays nothing.
-* AC-57-03: an owned hospital heals the owner's infantry in range, nobody else.
-* AC-57-04: an enemy can recapture an owned building; the owner's own infantry have
+* AC-58-02: an owned building pays its income; a neutral one pays nothing.
+* AC-58-03: an owned hospital heals the owner's infantry in range, nobody else.
+* AC-58-04: an enemy can recapture an owned building; the owner's own infantry have
   nothing to capture.
-* AC-57-05: only the unit's owner can order the capture.
-* AC-57-06: the owner survives save and load and changes the state hash.
-* AC-57-07: the AI sends one idle infantry unit per uncaptured building.
+* AC-58-05: only the unit's owner can order the capture.
+* AC-58-06: the owner survives save and load and changes the state hash.
+* AC-58-07: the AI sends one idle infantry unit per uncaptured building.
 
 Deferred: artillery platform, reinforcement pad and other tech kinds; capture time
 per unit type; capture by engineers only; garrison-and-defend; capture sound and

@@ -1045,7 +1045,7 @@ export const farmhouse: BuilderFn = (b) => {
   if (b.wrecked) b.rubble(v, 10, [wall, roof, 0x3a3430]);
 };
 
-/** Spec 57: a derrick over a concrete pad, a pump jack and a tank. */
+/** Spec 58: a derrick over a concrete pad, a pump jack and a tank. */
 export const oilDerrick: BuilderFn = (b) => {
   const steel = b.byVariant([0x5a6068]);
   slab(b, -0.95, -0.95, 0.95, 0.95, 0x8a8880, 0.04);
@@ -1085,7 +1085,7 @@ export const oilDerrick: BuilderFn = (b) => {
   b.bag.box(-0.36, 0.04, -0.2, -0.3, 0.12, 0.62, b.c(0x44484e));
 };
 
-/** Spec 57: a low white clinic with a red cross on its front and roof. */
+/** Spec 58: a low white clinic with a red cross on its front and roof. */
 export const fieldHospital: BuilderFn = (b) => {
   const v: Vol = { x0: -1.4, z0: -0.9, x1: 1.4, z1: 0.6, h: 0.62 };
   slab(b, -1.5, -1.0, 1.5, 1.0, 0xb4aea2, 0.03);

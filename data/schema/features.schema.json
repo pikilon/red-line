@@ -125,7 +125,7 @@
             }
           },
           "tech": {
-            "description": "Spec 57: a neutral tech building free infantry capture by working beside it for captureTicks. Owned, it pays income and heals the owner's infantry; neutral, it does nothing.",
+            "description": "Spec 58: a neutral tech building free infantry capture by working beside it for captureTicks. Owned, it pays income and heals the owner's infantry; neutral, it does nothing.",
             "type": "object",
             "additionalProperties": false,
             "required": ["captureTicks"],

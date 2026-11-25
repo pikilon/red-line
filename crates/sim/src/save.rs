@@ -83,7 +83,7 @@ pub struct FeatureSaveState {
     /// Ticks until the building collapses; missing means not collapsing.
     #[serde(default)]
     pub collapse: u32,
-    /// Spec 57: the player that captured a tech building; missing means neutral.
+    /// Spec 58: the player that captured a tech building; missing means neutral.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub owner: Option<u8>,
 }
@@ -1681,7 +1681,7 @@ pub enum SetupOrder {
     Garrison([i32; 2]),
     /// Spec 34: label of an own transport to board.
     Board(String),
-    /// Spec 57: a cell inside the footprint of a tech building to capture.
+    /// Spec 58: a cell inside the footprint of a tech building to capture.
     Capture([i32; 2]),
     /// Spec 35: a cell on the deck of the bridge to repair.
     Repair([i32; 2]),

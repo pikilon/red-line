@@ -678,7 +678,7 @@ pub struct FeatureTypeDef {
     /// Spec 35 §5c: trench rules of a garrisonable earthwork.
     #[serde(default)]
     pub trench: Option<TrenchDef>,
-    /// Spec 57: a neutral tech building infantry capture.
+    /// Spec 58: a neutral tech building infantry capture.
     #[serde(default)]
     pub tech: Option<TechDef>,
     /// Spec 35: repair (or dig) speed of this type, percent of the base rate.
@@ -740,7 +740,7 @@ pub struct GarrisonDef {
     pub allow_enemies: bool,
 }
 
-/// Spec 57: a capturable neutral tech building (Zero Hour `KINDOF_CAPTURABLE`
+/// Spec 58: a capturable neutral tech building (Zero Hour `KINDOF_CAPTURABLE`
 /// `TECH_BUILDING`, `AutoDepositUpdate`, `AutoHealBehavior`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -755,7 +755,7 @@ pub struct TechDef {
     pub heal: Option<TechHeal>,
 }
 
-/// Spec 57: periodic income of an owned tech building (`AutoDepositUpdate`).
+/// Spec 58: periodic income of an owned tech building (`AutoDepositUpdate`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TechIncome {
@@ -768,7 +768,7 @@ pub struct TechIncome {
     pub capture_bonus: u32,
 }
 
-/// Spec 57: the heal aura of an owned tech building (`AutoHealBehavior`).
+/// Spec 58: the heal aura of an owned tech building (`AutoHealBehavior`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TechHeal {
