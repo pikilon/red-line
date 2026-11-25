@@ -989,7 +989,7 @@ fn every_new_type_is_defined_and_the_old_indices_hold() {
     }
     assert_eq!(rules.type_index("ua-rifleman"), Some(2));
     assert_eq!(rules.type_index("ru-defense"), Some(29));
-    assert_eq!(rules.type_index("port-depot"), Some(58));
+    assert_eq!(rules.type_index("port-depot"), Some(60));
     assert_eq!(rules.weapons[0].id, "ua-rifle");
     assert!(
         rules
@@ -1677,7 +1677,7 @@ fn the_showcase_examples_keep_every_unit_when_left_alone() {
     for id in ["showcase", "showcase-units"] {
         let (mut world, _, _) = load_example(id);
         let before: Vec<(EntityId, u32)> = world.entities().iter().map(|e| (e.id, e.hp)).collect();
-        assert_eq!(before.len(), 51, "{id}");
+        assert_eq!(before.len(), 53, "{id}");
         steps(&mut world, 900);
         let after: Vec<(EntityId, u32)> = world.entities().iter().map(|e| (e.id, e.hp)).collect();
         assert_eq!(after, before, "{id}: 60 seconds on, nothing changed");
