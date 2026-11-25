@@ -1,6 +1,6 @@
 # Spec 48: Russia 5: the Surovikin line holds against the 2023 counteroffensive while Wagner marches on Moscow.
 id: campaign-ru-05-surovikin-line
-map: first-line
+map: surovikin-line
 victory: true
 debug: false
 starts: false
