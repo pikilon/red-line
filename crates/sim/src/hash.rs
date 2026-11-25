@@ -55,6 +55,13 @@ pub fn state_hash(world: &World) -> u64 {
             out.push(row.owner);
         }
     }
+    // Spec 60: written only once a crater exists, like the features above.
+    for (index, &depth) in world.craters.iter().enumerate() {
+        if depth > 0 {
+            put_u32(&mut out, index as u32);
+            out.push(depth);
+        }
+    }
     for projectile in &world.projectiles {
         put_u32(&mut out, projectile.id);
         out.push(projectile.owner);

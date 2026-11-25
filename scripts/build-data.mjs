@@ -1115,6 +1115,19 @@ const assemble = (
 					},
 				}
 			: {}),
+		// Spec 60: craters as terrain; damage types resolve to their index.
+		...(environment?.craters
+			? {
+					craters: {
+						maxDepthCenti: environment.craters.maxDepthCenti,
+						digs: Object.entries(environment.craters.digs).map(([id, dig]) => ({
+							damageType: globals.damageTypes.indexOf(id),
+							...dig,
+						})),
+						...environment.craters.movers,
+					},
+				}
+			: {}),
 		locomotors: Object.entries(globals.locomotors ?? {}).map(([id, l]) => ({
 			id,
 			kind: { foot: "foot", tracks: "tracks", wheels: "wheels", air: "air" }[

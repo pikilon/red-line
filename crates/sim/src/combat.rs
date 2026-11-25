@@ -562,6 +562,10 @@ impl World {
                 }
             }
         };
+        // Spec 60: a shell that lands on open ground digs a crater.
+        if hit.is_none() {
+            self.dig_crater(weapon.damage_type, projectile.impact);
+        }
         self.events.push(CombatEvent::Detonate {
             projectile: projectile.id,
             owner: projectile.owner,

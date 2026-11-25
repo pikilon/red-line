@@ -52,6 +52,37 @@
         }
       }
     },
+    "craters": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Spec 60: craters as simulation terrain.",
+      "required": ["maxDepthCenti", "digs", "movers"],
+      "properties": {
+        "maxDepthCenti": { "type": "integer", "minimum": 1, "maximum": 255 },
+        "digs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["radiusCenti", "depthCenti"],
+            "properties": {
+              "radiusCenti": { "type": "integer", "minimum": 10, "maximum": 1000 },
+              "depthCenti": { "type": "integer", "minimum": 1, "maximum": 255 }
+            }
+          }
+        },
+        "movers": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["foot", "tracks", "wheels"],
+          "properties": {
+            "foot": { "$ref": "#/$defs/mover" },
+            "tracks": { "$ref": "#/$defs/mover" },
+            "wheels": { "$ref": "#/$defs/mover" }
+          }
+        }
+      }
+    },
     "repair": {
       "type": "object",
       "additionalProperties": false,
@@ -117,6 +148,15 @@
     }
   },
   "$defs": {
+    "mover": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slowPct"],
+      "properties": {
+        "slowPct": { "type": "integer", "minimum": 0, "maximum": 90 },
+        "blockDepthCenti": { "type": "integer", "minimum": 1, "maximum": 255 }
+      }
+    },
     "cover": {
       "type": "object",
       "additionalProperties": false,

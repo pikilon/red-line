@@ -1,7 +1,7 @@
 # Spec 31 section 6: height and cover in combat. All values are percentages or whole tiles.
 highGround: { minTiles: 2, rangePct: 115 }   # shooter >= minTiles above the target reaches rangePct percent of its range
 cover:                                       # pct = damage the target avoids; the best cover applies, never the sum (A3)
-  crater: { pct: 30 }                        # read when the sim tracks craters (spec 24); not applied yet
+  crater: { pct: 30 }                        # spec 60: craters are terrain now, but shelter is still not applied
   trench: { pct: 50 }                        # spec 35: infantry standing in a finished trench (no Zero Hour precedent)
   forest: { pct: 25 }                        # target on or beside a living tree or hedge (stumps and bushes give none)
   wall:   { pct: 40, blocksShots: false }    # the shot crosses a wall or building footprint; reduces, does not stop (spec 31 section 9, question 2)
@@ -18,3 +18,14 @@ repair:
 infirmary:
   healTicks: 30   # 2000 ms at 15 Hz
   slots: 2        # spec 55: two patients inside at once (owner request); the rest wait outside
+# Spec 60: craters as simulation terrain. Depths and radii are centi-tiles; stacked craters add up to maxDepthCenti.
+craters:
+  maxDepthCenti: 50          # spec 24 section 3.1: a crater field never sinks more than half a tile
+  digs:                      # what a shell that lands on open ground digs, by damage type (matches data/render/impacts.json)
+    antiTank:      { radiusCenti: 65,  depthCenti: 4 }
+    highExplosive: { radiusCenti: 130, depthCenti: 12 }
+    thermobaric:   { radiusCenti: 220, depthCenti: 4 }
+  movers:                    # slowPct: speed lost at maxDepthCenti, linear with depth; blockDepthCenti: the cell closes at this depth
+    foot:   { slowPct: 0 }
+    tracks: { slowPct: 35 }
+    wheels: { slowPct: 55, blockDepthCenti: 20 }

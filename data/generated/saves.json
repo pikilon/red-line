@@ -182,6 +182,12 @@
       "entities": 4
     },
     {
+      "id": "crater-field",
+      "map": "showcase",
+      "form": "setup",
+      "entities": 5
+    },
+    {
       "id": "friendly-fire",
       "map": "showcase",
       "form": "setup",

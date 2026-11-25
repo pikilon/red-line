@@ -250,6 +250,8 @@
   "saves.tank-friendly-fire.description": "A Leopard force-fires at a point while its own Kozak scout drives into it: the shell lands on the friendly scout and hurts it.",
   "saves.crater-crossing.name": "Crater crossing",
   "saves.crater-crossing.description": "A HIMARS salvo digs a crater under a Leopard that has just stopped, so the hull drops and tilts with the relief.",
+  "saves.crater-field.name": "Crater field",
+  "saves.crater-field.description": "A HIMARS digs deep craters; a supply truck drives around them while a Leopard crosses them slowed.",
   "saves.rpg-ambush.name": "RPG ambush",
   "saves.rpg-ambush.description": "RPG gunners on both sides of the road as four Bradleys drive past.",
   "saves.artillery-range.name": "Artillery range",

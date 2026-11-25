@@ -1059,6 +1059,9 @@ pub struct Ruleset {
     /// Spec 31 block 3: high ground and cover (`data/balance/environment.yaml`).
     #[serde(default)]
     pub environment: EnvironmentDef,
+    /// Spec 60: craters as terrain (`craters` in `data/balance/environment.yaml`).
+    #[serde(default)]
+    pub craters: CraterRules,
     /// Spec 49 §3.2: guard radii and chase time (`guard` in `globals.yaml`).
     #[serde(default)]
     pub guard: GuardRules,
@@ -1087,6 +1090,38 @@ impl Default for GuardRules {
             chase_ticks: 150,
         }
     }
+}
+
+/// Spec 60: what digs a crater and how a crater treats each mover kind. The
+/// default (no digs) leaves the ground flat.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CraterRules {
+    /// Deepest a cell can get, in centi-tiles.
+    pub max_depth_centi: u32,
+    pub digs: Vec<CraterDig>,
+    pub foot: CraterMover,
+    pub tracks: CraterMover,
+    pub wheels: CraterMover,
+}
+
+/// The crater a shell of one damage type digs on open ground.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CraterDig {
+    pub damage_type: u8,
+    pub radius_centi: u32,
+    pub depth_centi: u32,
+}
+
+/// How a crater affects one locomotor kind: speed lost at the maximum depth
+/// (percent, linear in depth) and the depth at which the cell closes.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CraterMover {
+    pub slow_pct: u32,
+    #[serde(default)]
+    pub block_depth_centi: Option<u32>,
 }
 
 /// Spec 31 block 3: balance of height and cover. The default changes nothing.

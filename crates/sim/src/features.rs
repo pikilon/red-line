@@ -139,14 +139,23 @@ fn wheels_stopped(def: &FeatureTypeDef, row: &FeatureState) -> bool {
 pub fn wheels_blocks(
     base: &MapGrid,
     features: &[FeatureState],
+    craters: &[u8],
     rules: &Ruleset,
 ) -> Option<MapGrid> {
     let stops = |row: &FeatureState| wheels_stopped(&rules.feature_types[row.kind as usize], row);
-    features.iter().any(stops).then(|| {
+    // Spec 60: craters at or past the wheels' block depth close the cell.
+    let limit = rules.craters.wheels.block_depth_centi;
+    let deep = |depth: u8| limit.is_some_and(|limit| u32::from(depth) >= limit);
+    (features.iter().any(stops) || craters.iter().any(|&depth| deep(depth))).then(|| {
         let mut terrain = blocks_for(base, features, rules, false, false);
         for row in features.iter().filter(|row| stops(row)) {
             let (w, h) = footprint(&rules.feature_types[row.kind as usize], row.rot);
             terrain.block_footprint(Cell { x: row.x, y: row.y }, w, h);
+        }
+        for (index, &depth) in craters.iter().enumerate() {
+            if deep(depth) {
+                terrain.set_blocked(terrain.cell(index as u32), true);
+            }
         }
         terrain
     })
@@ -492,7 +501,12 @@ impl World {
         self.terrain = with_blocks(&self.terrain_base, &self.features, &self.rules);
         self.terrain_foot = foot_blocks(&self.terrain_base, &self.features, &self.rules);
         self.terrain_water = water_blocks(&self.terrain_base, &self.features, &self.rules);
-        self.terrain_wheels = wheels_blocks(&self.terrain_base, &self.features, &self.rules);
+        self.terrain_wheels = wheels_blocks(
+            &self.terrain_base,
+            &self.features,
+            &self.craters,
+            &self.rules,
+        );
         self.rebuild_nav();
     }
 }
