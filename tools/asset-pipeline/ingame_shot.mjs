@@ -24,7 +24,7 @@ const settings = JSON.stringify({
   generatedTextures: mode !== "procedural",
 });
 const browser = await chromium.launch({
-  args: ["--ignore-gpu-blocklist", "--use-angle=metal"],
+  args: ["--ignore-gpu-blocklist", "--use-angle=metal", "--mute-audio"],
 });
 const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
 await page.addInitScript(

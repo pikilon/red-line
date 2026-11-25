@@ -43,7 +43,7 @@ export default defineConfig({
       grep: PERF_TAG,
       use: {
         launchOptions: {
-          args: ["--ignore-gpu-blocklist", "--use-angle=metal"],
+          args: ["--ignore-gpu-blocklist", "--use-angle=metal", "--mute-audio"],
         },
       },
     },

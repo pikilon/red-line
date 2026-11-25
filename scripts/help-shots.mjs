@@ -178,7 +178,7 @@ async function main() {
     await waitFor(base, 60_000);
   }
   const { chromium } = createRequire(join(ROOT, "client/package.json"))("@playwright/test");
-  const browser = await chromium.launch({ args: ["--ignore-gpu-blocklist", "--use-angle=metal", "--enable-unsafe-swiftshader"] });
+  const browser = await chromium.launch({ args: ["--ignore-gpu-blocklist", "--use-angle=metal", "--enable-unsafe-swiftshader", "--mute-audio"] });
   const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
