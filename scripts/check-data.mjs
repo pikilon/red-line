@@ -2,6 +2,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readMissionScripts } from "./mission-scripts.mjs";
 import { buildRuleset, buildSaves, checkLocomotorCoverage, formatError, readSources, serializeJson, serializeRuleset } from "./build-data.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -38,6 +39,16 @@ const extra = existsSync(join(root, "data", "generated", "saves"))
   : [];
 if (!current("saves.json", saves.index) || extra.length > 0 || saves.saves.some(({ id, file }) => !current(`saves/${id}.json`, file))) {
   console.error("data/generated/saves is stale: run node --run build:data");
+  process.exit(1);
+}
+// Spec 62: scripted mission events.
+const missions = readMissionScripts(root, ruleset);
+if (missions.errors.length > 0) {
+  missions.errors.forEach((e) => console.error(`mission-scripts: ${e}`));
+  process.exit(1);
+}
+if (!current("mission-scripts.json", missions.scripts)) {
+  console.error("data/generated/mission-scripts.json is stale: run node --run build:data");
   process.exit(1);
 }
 console.log("check:data: ok");

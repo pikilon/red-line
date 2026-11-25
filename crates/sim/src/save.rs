@@ -490,6 +490,10 @@ pub enum CommandState {
     Reload {
         units: Vec<u32>,
     },
+    Reinforce {
+        kind: String,
+        pos: [i32; 2],
+    },
     DebugSpawn {
         kind: String,
         pos: [i32; 2],
@@ -1440,6 +1444,10 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
             units: units.clone(),
             segments: segments.iter().map(|(c, rot)| (cell(*c), *rot)).collect(),
         },
+        Command::Reinforce { kind, pos } => CommandState::Reinforce {
+            kind: type_id(rules, *kind),
+            pos: vec2(*pos),
+        },
         Command::DebugSpawn { kind, pos } => CommandState::DebugSpawn {
             kind: type_id(rules, *kind),
             pos: vec2(*pos),
@@ -1555,6 +1563,10 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
                 .iter()
                 .map(|(c, rot)| (to_cell(*c), *rot))
                 .collect(),
+        },
+        CommandState::Reinforce { kind, pos } => Command::Reinforce {
+            kind: type_index(rules, kind)?,
+            pos: fx_vec2(*pos),
         },
         CommandState::DebugSpawn { kind, pos } => Command::DebugSpawn {
             kind: type_index(rules, kind)?,

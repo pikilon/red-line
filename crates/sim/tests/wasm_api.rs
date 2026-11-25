@@ -179,3 +179,42 @@ fn ac_14_01_debug_spawn_places_buildings() {
     sim.step();
     assert_eq!(sim.unit_count(), before + 1);
 }
+
+/// Spec 62 §4: a scripted reinforcement needs no debug mode, grants a unit
+/// of a unit type to the issuing player and ignores buildings.
+#[test]
+fn ac_62_01_reinforce_spawns_a_unit_for_the_player() {
+    let rules = sim::rules::Ruleset::builtin();
+    let rifleman = rules.type_index("ua-rifleman").unwrap();
+    let barracks = rules.type_index("ua-barracks").unwrap();
+    let mut sim = Sim::skirmish(1, "first-line").unwrap();
+    let before = sim.unit_count();
+
+    sim.command_reinforce(0, rifleman, 24 * 65536 + 32768, 64 * 65536 + 32768);
+    sim.step();
+    assert_eq!(sim.unit_count(), before + 1);
+
+    sim.command_reinforce(0, barracks, 30 * 65536, 64 * 65536);
+    sim.step();
+    assert_eq!(sim.unit_count(), before + 1);
+
+    // The same point again: the new unit is placed in a free cell, not lost.
+    sim.command_reinforce(1, rifleman, 24 * 65536 + 32768, 64 * 65536 + 32768);
+    sim.step();
+    assert_eq!(sim.unit_count(), before + 2);
+}
+
+/// Spec 62 §4: the same reinforcement at the same tick gives the same world.
+#[test]
+fn ac_62_02_reinforce_is_deterministic() {
+    let rules = sim::rules::Ruleset::builtin();
+    let rifleman = rules.type_index("ua-rifleman").unwrap();
+    let run = || {
+        let mut sim = Sim::skirmish(7, "first-line").unwrap();
+        sim.step_n(3);
+        sim.command_reinforce(0, rifleman, 24 * 65536, 64 * 65536);
+        sim.step_n(20);
+        sim.state_hash_hex()
+    };
+    assert_eq!(run(), run());
+}

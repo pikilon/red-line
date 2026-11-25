@@ -27,7 +27,7 @@ entities:
   - { player: 0, type: ua-defense, origin: [22, 64] }
   - { player: 1, type: ru-hq, origin: [44, 56], label: lz }
   - { player: 1, type: ru-barracks, origin: [44, 62], label: lz-barracks }
-  - { player: 1, type: ru-dozer, atCenti: [4950, 6050] }
+  - { player: 1, type: ru-dozer, atCenti: [4950, 6050], label: lz-dozer }
   - { player: 1, type: ru-rifleman, atCenti: [3600, 5400], order: { attack: ua-hq } }
   - { player: 1, type: ru-rifleman, atCenti: [3600, 5500], order: { attack: ua-hq } }
   - { player: 1, type: ru-rifleman, atCenti: [3600, 5600], order: { attack: ua-hq } }

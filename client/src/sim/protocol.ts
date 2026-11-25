@@ -116,6 +116,14 @@ export type SimCommand =
     }
   /** Spec 35 §5b.1: workers dig a line; `segments` holds x, y, rot triples. */
   | { kind: "digLine"; player: number; units: number[]; segments: number[] }
+  /** Spec 62 §4: a mission script grants `player` a unit near the point. */
+  | {
+      kind: "reinforce";
+      player: number;
+      typeIndex: number;
+      xRaw: number;
+      yRaw: number;
+    }
   | {
       kind: "debugSpawn";
       player: number;

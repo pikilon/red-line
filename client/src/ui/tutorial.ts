@@ -7,6 +7,11 @@ import {
 } from "../sim/matchSnapshot";
 import { type SimCommand, TICK_RATE_HZ } from "../sim/protocol";
 import { appendDiv } from "./dom";
+import {
+  createScriptRunner,
+  type MissionScript,
+  type ScriptEffect,
+} from "./missionScript";
 import type { EndButton } from "./scoreScreen";
 
 /** One objective of a tutorial (spec 46 §3), like a Zero Hour one-shot
@@ -43,6 +48,8 @@ export interface TutorialMission {
   title: MessageKey;
   goals: readonly TutorialGoal[];
   wave?: TutorialWave;
+  /** Scripted events (spec 62). */
+  scripts?: readonly MissionScript[];
 }
 
 function own(type: string, count = 1, hint?: MessageKey): TutorialGoal {
@@ -342,6 +349,33 @@ function saveCollapsed(collapsed: boolean): void {
   }
 }
 
+/** How long a script message stays on screen. */
+const MESSAGE_MS = 9000;
+
+/** `#mission-messages`: the lines mission scripts show, newest last; each
+ *  fades after `MESSAGE_MS` (spec 62 §4). A speaker makes it a dialogue. */
+function createMessageBox(root: HTMLElement): {
+  show(text: string, speaker?: string): void;
+} {
+  const box = appendDiv(root, "mission-messages");
+  box.setAttribute("role", "log");
+  box.setAttribute("aria-live", "polite");
+  return {
+    show(text, speaker) {
+      const line = document.createElement("p");
+      if (speaker !== undefined) {
+        const name = document.createElement("strong");
+        name.textContent = `${speaker}: `;
+        line.appendChild(name);
+      }
+      line.appendChild(document.createTextNode(text));
+      box.appendChild(line);
+      while (box.childElementCount > 3) box.firstElementChild?.remove();
+      setTimeout(() => line.remove(), MESSAGE_MS);
+    },
+  };
+}
+
 /** `#tutorial`: the objective list of `mission` and, once every step is
  *  done, the mission-complete panel (spec 46 §4). */
 export function createTutorialPanel(
@@ -376,6 +410,7 @@ export function createTutorialPanel(
   const hint = document.createElement("p");
   hint.id = "tutorial-hint";
   element.append(header, list, hint);
+  const messages = createMessageBox(root);
   let collapsed = readCollapsed();
   let flashTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -427,6 +462,9 @@ export function createTutorialPanel(
   /** Entity id of the save's first entity, the player's HQ. */
   let firstId: number | null = null;
   const built = createBuiltTracker();
+  const runner = createScriptRunner(mission.scripts ?? []);
+  /** Objectives scripts added mid-mission (spec 62 §3): optional lines. */
+  const extras: { item: HTMLLIElement; entities: readonly number[] }[] = [];
   /** Tick each survive step became current, and the latest tick seen. */
   const stepStarts = new Map<number, number>();
   let tick = 0;
@@ -444,9 +482,14 @@ export function createTutorialPanel(
 
   /** Asks the sim which entities of the current `destroy` goal live. */
   function poll(goal: TutorialGoal | undefined, base: number): void {
-    if (goal?.kind !== "destroy" || asking) return;
+    // Spec 62: entities that scripts and added objectives wait on too.
+    const indices = [
+      ...(goal?.kind === "destroy" ? goal.entities : []),
+      ...runner.watched(),
+      ...extras.flatMap((extra) => extra.entities),
+    ].filter((index) => !dead.has(index));
+    if (indices.length === 0 || asking) return;
     asking = true;
-    const indices = goal.entities;
     void actions.alive(indices.map((index) => base + index)).then((alive) => {
       asking = false;
       indices.forEach((index, i) => {
@@ -475,6 +518,49 @@ export function createTutorialPanel(
       .map((index) => base + index);
     if (target === undefined || units.length === 0) return;
     actions.command({ kind: "attack", player: 1 - player, units, target });
+  }
+
+  /** Carries out what the scripts fired this tick (spec 62 §4). */
+  function applyEffects(effects: readonly ScriptEffect[], player: number) {
+    for (const effect of effects) {
+      switch (effect.kind) {
+        case "message":
+          messages.show(t(effect.text));
+          break;
+        case "dialogue":
+          messages.show(t(effect.text), t(effect.speaker));
+          break;
+        case "objective": {
+          const item = document.createElement("li");
+          item.textContent = t(effect.text);
+          item.className = "current";
+          list.appendChild(item);
+          extras.push({ item, entities: effect.entities });
+          flashHeader();
+          break;
+        }
+        case "reinforce": {
+          const owner = effect.side === "own" ? player : 1 - player;
+          for (let i = 0; i < effect.count; i++) {
+            // A small block of cells around the point; the sim moves a unit
+            // off a blocked cell to the nearest free one.
+            const x = effect.at[0] + (i % 3) + 0.5;
+            const y = effect.at[1] + Math.floor(i / 3) + 0.5;
+            actions.command({
+              kind: "reinforce",
+              player: owner,
+              typeIndex: typeIndex(effect.type),
+              xRaw: Math.round(x * 65536),
+              yRaw: Math.round(y * 65536),
+            });
+          }
+          break;
+        }
+        case "end":
+          if (!finished) finish(effect.won);
+          break;
+      }
+    }
   }
 
   /** Ends the mission: won shows what comes next, lost offers a retry. */
@@ -518,6 +604,21 @@ export function createTutorialPanel(
         orderWave(wave, snapshot, player, firstId);
       }
       poll(mission.goals[step], firstId);
+      for (const extra of extras) {
+        if (extra.entities.every((index) => dead.has(index)))
+          extra.item.className = "done";
+      }
+      applyEffects(
+        runner.update({
+          tick,
+          player,
+          entities: snapshot.entities,
+          goalsDone: step,
+          dead: (index) => dead.has(index),
+        }),
+        player,
+      );
+      if (finished) return;
       if (winner) {
         for (const item of items) item.className = "done";
         finish(true);

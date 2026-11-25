@@ -1,0 +1,172 @@
+{
+  "campaign-ua-01-hostomel": [
+    {
+      "id": "intro",
+      "when": [
+        {
+          "after": 3
+        }
+      ],
+      "do": [
+        {
+          "dialogue": "intro"
+        }
+      ]
+    },
+    {
+      "id": "counter-dozer",
+      "when": [
+        {
+          "after": 60
+        }
+      ],
+      "do": [
+        {
+          "objective": {
+            "text": "dozer",
+            "destroy": [
+              "lz-dozer"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "first-reinforcements",
+      "when": [
+        {
+          "after": 120
+        }
+      ],
+      "do": [
+        {
+          "message": "reinforcements"
+        },
+        {
+          "reinforce": {
+            "side": "own",
+            "type": "ua-rifleman",
+            "count": 4,
+            "at": [
+              24,
+              60
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "brigade-arrives",
+      "when": [
+        {
+          "goal": 1
+        }
+      ],
+      "do": [
+        {
+          "dialogue": "brigade"
+        },
+        {
+          "reinforce": {
+            "side": "own",
+            "type": "ua-stugna-team",
+            "count": 2,
+            "at": [
+              26,
+              60
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "campaign-ru-01-hostomel": [
+    {
+      "id": "intro",
+      "when": [
+        {
+          "after": 3
+        }
+      ],
+      "do": [
+        {
+          "dialogue": "intro"
+        }
+      ]
+    },
+    {
+      "id": "ambush",
+      "when": [
+        {
+          "enters": {
+            "side": "own",
+            "area": [
+              58,
+              20,
+              92,
+              46
+            ]
+          }
+        }
+      ],
+      "do": [
+        {
+          "message": "ambush"
+        },
+        {
+          "reinforce": {
+            "side": "enemy",
+            "type": "ua-rifleman",
+            "count": 3,
+            "at": [
+              72,
+              34
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "second-lift",
+      "when": [
+        {
+          "after": 90
+        }
+      ],
+      "do": [
+        {
+          "message": "lift"
+        },
+        {
+          "reinforce": {
+            "side": "own",
+            "type": "ru-rifleman",
+            "count": 4,
+            "at": [
+              48,
+              60
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "finish-the-job",
+      "when": [
+        {
+          "destroyed": "tower1"
+        }
+      ],
+      "do": [
+        {
+          "objective": {
+            "text": "headquarters",
+            "destroy": [
+              "ua-hq"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
