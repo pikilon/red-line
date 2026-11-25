@@ -885,6 +885,10 @@ pub struct AiDef {
     pub guards: Vec<GuardDef>,
 }
 
+fn default_dock_slots() -> u32 {
+    2
+}
+
 fn default_sell_refund_percent() -> u32 {
     50
 }
@@ -948,6 +952,9 @@ pub struct Ruleset {
     pub low_power_max_speed_percent: u32,
     pub max_queue: u32,
     pub dock_range_centi: u32,
+    /// Spec 55: units serviced inside one dock building at once.
+    #[serde(default = "default_dock_slots")]
+    pub dock_slots: u32,
     /// Spec 28 §6: how far past its nose a moving vehicle makes enemy
     /// soldiers dodge; 0 turns dodging off.
     #[serde(default)]

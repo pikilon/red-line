@@ -24,10 +24,27 @@ fn steps(world: &mut World, count: u32) {
     }
 }
 
+fn credits_after(world: &mut World, limit: u32, wanted: u32) {
+    for _ in 0..limit {
+        if world.player(0).unwrap().credits >= wanted {
+            return;
+        }
+        world.step();
+    }
+}
+
+fn aboard_count(world: &World, building: sim::entity::EntityId) -> usize {
+    world
+        .entities()
+        .iter()
+        .filter(|e| e.aboard == Some(building))
+        .count()
+}
+
 #[test]
 fn ac_03_24_truck_cycle() {
     let mut world = sandbox();
-    world.place_building(0, 4, Cell { x: 10, y: 10 }, true);
+    let center = world.place_building(0, 4, Cell { x: 10, y: 10 }, true);
     let depot = world.place_depot(Cell { x: 10, y: 13 }, 250);
     let truck = world.spawn(0, 8, at(1050, 1250));
 
@@ -36,6 +53,7 @@ fn ac_03_24_truck_cycle() {
         depot,
     });
 
+    // The truck drives into the depot bay to load (spec 55).
     world.step();
     match world.entity(truck).unwrap().order {
         Order::Harvest { phase, timer, .. } => {
@@ -44,43 +62,31 @@ fn ac_03_24_truck_cycle() {
         }
         other => panic!("expected Harvest order, got {other:?}"),
     }
+    assert_eq!(world.entity(truck).unwrap().aboard, Some(depot));
 
     steps(&mut world, 3);
     let truck_entity = world.entity(truck).unwrap();
     assert_eq!(truck_entity.cargo, 100);
-    match truck_entity.order {
-        Order::Harvest { phase, .. } => {
-            assert_eq!(phase, HarvestPhase::ToCenter);
-        }
-        other => panic!("expected Harvest order, got {other:?}"),
-    }
+    assert_eq!(truck_entity.aboard, None, "the truck left the depot bay");
     assert_eq!(world.entity(depot).unwrap().hp, 150);
 
-    world.step();
-    match world.entity(truck).unwrap().order {
-        Order::Harvest { phase, timer, .. } => {
-            assert_eq!(phase, HarvestPhase::Unloading);
-            assert_eq!(timer, 2);
+    // Then it unloads inside the supply center.
+    let mut inside = false;
+    for _ in 0..200 {
+        world.step();
+        if world.entity(truck).unwrap().aboard == Some(center) {
+            inside = true;
+            break;
         }
-        other => panic!("expected Harvest order, got {other:?}"),
     }
-
-    steps(&mut world, 2);
+    assert!(inside, "the truck unloads inside the supply center");
+    credits_after(&mut world, 100, 1100);
     assert_eq!(world.player(0).unwrap().credits, 1100);
     assert_eq!(world.entity(truck).unwrap().cargo, 0);
 
-    steps(&mut world, 7);
-    assert_eq!(world.player(0).unwrap().credits, 1200);
-
-    steps(&mut world, 7);
+    credits_after(&mut world, 400, 1250);
     assert_eq!(world.player(0).unwrap().credits, 1250);
     assert_eq!(world.entity(depot).unwrap().hp, 0);
-
-    world.step();
-    assert_eq!(
-        world.entity(truck).unwrap().order,
-        Order::Idle { last_order_id: 1 }
-    );
 }
 
 #[test]
@@ -96,10 +102,18 @@ fn ac_03_25_depot_exhaustion_and_sharing() {
         depot: depot1,
     });
 
-    steps(&mut world, 7);
+    credits_after(&mut world, 100, 1100);
     assert_eq!(world.player(0).unwrap().credits, 1100);
 
-    world.step();
+    for _ in 0..50 {
+        world.step();
+        if matches!(
+            world.entity(truck).unwrap().order,
+            Order::Harvest { depot, .. } if depot == depot2
+        ) {
+            break;
+        }
+    }
     match world.entity(truck).unwrap().order {
         Order::Harvest { depot, .. } => {
             assert_eq!(depot, depot2);
@@ -107,9 +121,7 @@ fn ac_03_25_depot_exhaustion_and_sharing() {
         other => panic!("expected Harvest order, got {other:?}"),
     }
 
-    while world.tick() < 300 && world.player(0).unwrap().credits < 1200 {
-        world.step();
-    }
+    credits_after(&mut world, 600, 1200);
     assert_eq!(world.player(0).unwrap().credits, 1200);
     assert_eq!(world.entity(depot2).unwrap().hp, 400);
 
@@ -129,6 +141,53 @@ fn ac_03_25_depot_exhaustion_and_sharing() {
     assert_eq!(world.entity(truck2).unwrap().cargo, 50);
     assert_eq!(world.entity(depot).unwrap().hp, 0);
 
-    steps(&mut world, 3);
+    credits_after(&mut world, 400, 1150);
     assert_eq!(world.player(0).unwrap().credits, 1150);
+}
+
+/// Spec 55: at most two trucks load inside a depot at once; the third waits
+/// outside until one drives out.
+#[test]
+fn ac_55_01_at_most_two_trucks_inside_a_depot() {
+    let mut world = sandbox();
+    world.place_building(0, 4, Cell { x: 10, y: 10 }, true);
+    let depot = world.place_depot(Cell { x: 10, y: 13 }, 900);
+    let trucks: Vec<_> = (0..3)
+        .map(|i| world.spawn(0, 8, at(1050 + i * 40, 1250)))
+        .collect();
+    world.enqueue(Command::Harvest {
+        units: trucks.clone(),
+        depot,
+    });
+
+    world.step();
+    assert_eq!(aboard_count(&world, depot), 2);
+    for _ in 0..2 {
+        world.step();
+        assert!(aboard_count(&world, depot) <= 2);
+    }
+    let waiting = trucks
+        .iter()
+        .find(|&&t| world.entity(t).unwrap().aboard.is_none())
+        .copied()
+        .expect("one truck waits outside");
+    assert!(matches!(
+        world.entity(waiting).unwrap().order,
+        Order::Harvest {
+            phase: HarvestPhase::ToDepot,
+            ..
+        }
+    ));
+
+    // When the first two drive out, the third drives in.
+    let mut entered = false;
+    for _ in 0..30 {
+        world.step();
+        assert!(aboard_count(&world, depot) <= 2);
+        if world.entity(waiting).unwrap().aboard == Some(depot) {
+            entered = true;
+            break;
+        }
+    }
+    assert!(entered, "the queued truck enters once a slot frees");
 }

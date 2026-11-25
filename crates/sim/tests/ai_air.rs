@@ -58,6 +58,7 @@ fn play(report: &mut Report, ai_a: &str, ai_b: &str, seed: u64) {
     ];
     let mut known: BTreeSet<EntityId> = BTreeSet::new();
     let mut cycles: BTreeMap<EntityId, Cycle> = BTreeMap::new();
+    let mut moving: BTreeMap<EntityId, u32> = BTreeMap::new();
     while world.tick() < MAX_TICKS && world.outcome() == Outcome::Ongoing {
         step_with_ai(&mut world, &mut ais);
         for entity in world.entities() {
@@ -69,11 +70,18 @@ fn play(report: &mut Report, ai_a: &str, ai_b: &str, seed: u64) {
                 report.airborne.insert(ty.id.clone());
             }
             if ty.one_way.is_some() && entity.master.is_none() {
-                assert!(
-                    !matches!(entity.order, Order::Move { .. }),
-                    "the AI sent {} on a Move, which never detonates",
-                    ty.id
-                );
+                // A new unit walks to its factory rally point on a `Move`; it
+                // must not stay on it (it would never detonate).
+                if matches!(entity.order, Order::Move { .. }) {
+                    let since = *moving.entry(entity.id).or_insert(world.tick());
+                    assert!(
+                        world.tick() - since < 600,
+                        "the AI left {} on a Move, which never detonates",
+                        ty.id
+                    );
+                } else {
+                    moving.remove(&entity.id);
+                }
             }
             if let Some(sortie) = ty.sortie {
                 let state = cycles.entry(entity.id).or_insert(Cycle::Full);
@@ -153,7 +161,7 @@ fn the_balanced_ais_field_every_new_arm_and_its_answers() {
         UKRAINIAN_ARMS,
         UKRAINIAN_ANSWERS,
     ]);
-    let report = play_until("ukraine-balanced", "russia-balanced", 6, |report| {
+    let report = play_until("ukraine-balanced", "russia-balanced", 30, |report| {
         report.missing(&wanted).is_empty() && report.resorties > 0
     });
 

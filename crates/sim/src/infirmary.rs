@@ -38,9 +38,9 @@ impl World {
         let (Some(patient), Some(infirmary)) = (self.entity(unit), self.entity(building)) else {
             return false;
         };
-        let Some(def) = self.infirmary_def() else {
+        if self.infirmary_def().is_none() {
             return false;
-        };
+        }
         let patient_ty = self.rules.ty(patient.kind);
         let building_ty = self.rules.ty(infirmary.kind);
         patient.owner == infirmary.owner
@@ -54,7 +54,6 @@ impl World {
             && building_ty.category == Category::Building
             && building_ty.heals_infantry
             && infirmary.site.as_ref().is_some_and(|site| site.complete)
-            && (self.patients(building).len() as u32) < def.slots
     }
 
     /// `HealAt` command: every eligible unit walks to the building and enters.
@@ -111,6 +110,13 @@ impl World {
             return;
         };
         let pos = self.entities[index].pos;
+        // Spec 55: only `slots` patients inside; the rest queue outside.
+        if footprint_distance(pos, origin, size) <= fx_centi(ENTER_RANGE_CENTI)
+            && self.patients(building).len() as u32 >= def.slots
+        {
+            self.entities[index].speed = Fx::ZERO;
+            return;
+        }
         if footprint_distance(pos, origin, size) <= fx_centi(ENTER_RANGE_CENTI) {
             let max = self.max_hp_at(index);
             let hp = self.entities[index].hp;

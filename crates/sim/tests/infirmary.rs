@@ -126,7 +126,7 @@ fn ac_40_02_full_health_wrong_units_and_wrong_buildings_are_rejected() {
 }
 
 #[test]
-fn ac_40_03_at_most_ten_patients_per_barracks() {
+fn ac_40_03_at_most_two_patients_per_barracks() {
     let (mut world, barracks) = sandbox();
     let spots = [
         (8, 8),
@@ -154,21 +154,32 @@ fn ac_40_03_at_most_ten_patients_per_barracks() {
     });
     for _ in 0..120 {
         world.step();
-        if world.patients(barracks).len() == 10 {
+        if world.patients(barracks).len() == 2 {
             break;
         }
     }
-    assert_eq!(world.patients(barracks).len(), 10);
-    assert_eq!(world.infirmary_def().unwrap().slots, 10);
+    assert_eq!(world.patients(barracks).len(), 2);
+    assert_eq!(world.infirmary_def().unwrap().slots, 2);
     let outside = patients
         .iter()
         .copied()
         .find(|id| world.entity(*id).unwrap().aboard.is_none())
-        .expect("two patients wait outside");
-    assert!(
-        !world.can_heal_at(outside, barracks),
-        "the barracks is full"
-    );
+        .expect("the rest wait outside");
+    // Spec 55: the queue keeps its order and never exceeds two inside.
+    let mut healed = 0;
+    for _ in 0..600 {
+        world.step();
+        assert!(world.patients(barracks).len() <= 2);
+        healed = patients
+            .iter()
+            .filter(|id| world.entity(**id).unwrap().hp == max_hp(&world, **id))
+            .count();
+        if healed == patients.len() {
+            break;
+        }
+    }
+    assert_eq!(healed, patients.len(), "queued patients heal in turn");
+    assert!(world.entity(outside).unwrap().aboard.is_none());
 }
 
 #[test]

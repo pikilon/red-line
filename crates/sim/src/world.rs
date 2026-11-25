@@ -838,6 +838,7 @@ impl World {
         self.update_economy();
         self.air_pass();
         self.yield_to_movers();
+        self.release_stray_dockers();
         self.move_units();
         self.dodge_crushers();
         self.carry_riders();
@@ -1760,10 +1761,17 @@ impl World {
                     return false;
                 }
                 match orders[b] {
-                    Order::Idle { last_order_id } => last_order_id == order_id,
+                    // Spec 55: in the goal cell, a unit standing idle there is
+                    // an obstacle whatever order it finished (a queue outside a
+                    // dock sits on the rally point).
+                    Order::Idle { last_order_id } => last_order_id == order_id || in_goal,
                     Order::Move {
                         order_id: other, ..
                     } => in_goal && other == order_id && cell_of(positions[b]) == goal && b < a,
+                    // Spec 55: a unit queued outside a dock is a fixed obstacle.
+                    Order::Harvest { .. } | Order::RepairVehicle { .. } | Order::Heal { .. } => {
+                        in_goal && self.entities[b].speed == Fx::ZERO
+                    }
                     _ => false,
                 }
             });

@@ -1081,6 +1081,7 @@ const assemble = (
 		lowPowerMaxSpeedPercent: globals.lowPowerMaxSpeedPercent,
 		maxQueue: globals.maxQueue,
 		dockRangeCenti: globals.dockRangeCenti,
+		dockSlots: globals.dockSlots ?? 2,
 		crushDodgeLookaheadCenti: globals.crushDodgeLookaheadCenti ?? 0,
 		crushDodgeMissOneIn: globals.crushDodgeMissOneIn ?? 0,
 		aimToleranceDeg: globals.aimToleranceDeg ?? 0,

@@ -25,6 +25,7 @@ lowPowerMinSpeedPercent: 25          # required, 1..100
 lowPowerMaxSpeedPercent: 75          # required, 1..100
 maxQueue: 9                          # required, 1..9 (semantic check: <= QUEUE_SLOTS)
 dockRangeCenti: 100                  # required, >= 1
+dockSlots: 2                         # optional, 1..10, default 2: units a supply depot, supply center or repair factory services inside at once; the rest queue outside (spec 55)
 crushDodgeLookaheadCenti: 150        # optional, >= 0: tiles*100 past a moving vehicle's nose that enemy soldiers dodge (spec 28 §6); 0 = off
 crushDodgeMissOneIn: 3               # optional, >= 0: one half-second window in N a soldier fails to react (spec 28 §6); 0 = always reacts
 aimToleranceDeg: 2                   # required, 1..45: default weapon aim tolerance (spec 11 §4.1)

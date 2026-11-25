@@ -230,7 +230,7 @@ fn ac_38_03_building_repair_survives_a_save() {
 }
 
 #[test]
-fn ac_39_01_factory_repairs_one_vehicle_in_75_ticks_without_pausing_production() {
+fn ac_39_01_factory_repairs_two_vehicles_in_75_ticks_without_pausing_production() {
     let mut world = World::sandbox(Ruleset::builtin(), MapGrid::open(40, 24), &[0, 0]);
     world.place_building(
         0,
@@ -264,8 +264,14 @@ fn ac_39_01_factory_repairs_one_vehicle_in_75_ticks_without_pausing_production()
     });
     world.step();
     let first_gain = (first_max / 2) / 75;
+    let second_gain = (second_max / 2) / 75;
     assert_eq!(world.entity(first).unwrap().hp, first_max / 2 + first_gain);
-    assert_eq!(world.entity(second).unwrap().hp, second_max / 2);
+    assert_eq!(
+        world.entity(second).unwrap().hp,
+        second_max / 2 + second_gain,
+        "both vehicles inside the bay repair at once (spec 55)"
+    );
+    assert_eq!(world.entity(first).unwrap().aboard, Some(factory));
     assert!(
         world.entity(factory).unwrap().site.as_ref().unwrap().queue[0].progress > 0,
         "production advances during vehicle repair"
@@ -274,16 +280,67 @@ fn ac_39_01_factory_repairs_one_vehicle_in_75_ticks_without_pausing_production()
         world.step();
     }
     assert_eq!(world.entity(first).unwrap().hp, first_max);
-    assert_eq!(world.entity(second).unwrap().hp, second_max / 2);
+    assert_eq!(world.entity(second).unwrap().hp, second_max);
     assert!(matches!(
         world.entity(first).unwrap().order,
         Order::Idle { .. }
     ));
-    world.step();
-    assert_eq!(
-        world.entity(second).unwrap().hp,
-        second_max / 2 + (second_max / 2) / 75
+    assert_eq!(world.entity(first).unwrap().aboard, None, "it drove out");
+}
+
+/// Spec 55: a third vehicle waits outside until a bay slot frees.
+#[test]
+fn ac_55_02_third_vehicle_queues_outside_the_repair_bay() {
+    let mut world = World::sandbox(Ruleset::builtin(), MapGrid::open(40, 24), &[0, 0]);
+    world.place_building(
+        0,
+        world.rules().type_index("ua-supply-center").unwrap(),
+        Cell { x: 20, y: 10 },
+        true,
     );
+    let factory = world.place_building(
+        0,
+        world.rules().type_index("ua-vehicle-factory").unwrap(),
+        Cell { x: 10, y: 10 },
+        true,
+    );
+    let ids: Vec<_> = [(9, 10), (9, 11), (9, 12)]
+        .into_iter()
+        .map(|(x, y)| {
+            let id = spawn(&mut world, "ua-leopard-2a4", x, y);
+            let max = world.rules().ty(world.entity(id).unwrap().kind).hp;
+            world.set_hp(id, max / 2);
+            id
+        })
+        .collect();
+    world.enqueue(Command::RepairVehicle {
+        units: ids.clone(),
+        factory,
+    });
+    let inside = |world: &World| {
+        ids.iter()
+            .filter(|id| world.entity(**id).unwrap().aboard == Some(factory))
+            .count()
+    };
+    world.step();
+    assert_eq!(inside(&world), 2, "only two fit in the bay");
+    for _ in 0..70 {
+        world.step();
+        assert!(inside(&world) <= 2);
+    }
+    let waiting = ids
+        .iter()
+        .copied()
+        .find(|id| world.entity(*id).unwrap().aboard.is_none())
+        .expect("one vehicle waits outside");
+    let max = world.rules().ty(world.entity(waiting).unwrap().kind).hp;
+    assert_eq!(world.entity(waiting).unwrap().hp, max / 2);
+    // Once the first two leave, the third drives in and is repaired.
+    for _ in 0..200 {
+        world.step();
+        assert!(inside(&world) <= 2);
+    }
+    assert_eq!(world.entity(waiting).unwrap().hp, max);
 }
 
 #[test]

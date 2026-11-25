@@ -1,5 +1,7 @@
 # 40 — Infantry heal at the barracks
 
+> Amended by `55-dock-bays.md`: the barracks holds two patients at once (`slots: 2`); the rest wait outside.
+
 Status: built (owner request 2026-10-29, backlog item 7). Depends on
 `19-save-games.md` and `34-infantry-transport.md` (containment).
 Decisions: D-02 (deterministic fixed point), D-05 (balance in data).

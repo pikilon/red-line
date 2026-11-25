@@ -174,7 +174,7 @@ impl World {
         vehicle.owner == pad.owner
             && vehicle.hp > 0
             && vehicle.hp < self.max_hp(vehicle)
-            && !vehicle.contained()
+            && (!vehicle.contained() || vehicle.aboard == Some(factory))
             && vehicle_ty.category == Category::Unit
             && vehicle_ty.motion.kind != LocoKind::Foot
             && pad.hp > 0
@@ -513,6 +513,8 @@ impl World {
             self.entity_distance(pos, target) <= fx_centi(self.rules.dock_range_centi)
         });
         if docked {
+            // Spec 55: drive into the bay when a slot is free, else wait outside.
+            self.try_enter_dock(index, factory);
             self.entities[index].speed = Fx::ZERO;
             return;
         }
@@ -634,7 +636,7 @@ impl World {
         let Some(repair) = self.rules.environment.repair else {
             return;
         };
-        let mut bays: BTreeMap<EntityId, EntityId> = BTreeMap::new();
+        let mut bays: Vec<(EntityId, EntityId)> = Vec::new();
         for index in 0..self.entities.len() {
             let Order::RepairVehicle { factory, .. } = self.entities[index].order else {
                 continue;
@@ -643,12 +645,8 @@ impl World {
             if !self.can_repair_vehicle_at(id, factory) {
                 continue;
             }
-            let pos = self.entities[index].pos;
-            let docked = self.entity(factory).is_some_and(|target| {
-                self.entity_distance(pos, target) <= fx_centi(self.rules.dock_range_centi)
-            });
-            if docked {
-                bays.entry(factory).or_insert(id);
+            if self.entities[index].aboard == Some(factory) {
+                bays.push((factory, id));
             }
         }
         for (factory, id) in bays {
@@ -676,6 +674,7 @@ impl World {
             let paid = self.repair_entity(id, (after - before) as u32);
             let hp = self.entities[index].hp;
             self.entities[index].order = if hp == max || !paid {
+                self.leave_dock(index, factory, None);
                 Order::Idle {
                     last_order_id: order_id,
                 }
