@@ -50,6 +50,15 @@ impl PlayerStats {
     }
 }
 
+/// Spec 63: a General's power the player bought; it can be cast once `tick`
+/// reaches `ready_tick`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct OwnedPower {
+    /// Index into `GeneralRules::powers`.
+    pub power: u16,
+    pub ready_tick: u32,
+}
+
 pub struct Player {
     pub id: PlayerId,
     pub faction: FactionId,
@@ -70,6 +79,10 @@ pub struct Player {
     pub(crate) upgrades: Vec<TypeId>,
     /// Spec 57: score-screen counters.
     pub(crate) stats: PlayerStats,
+    /// Spec 63: skill points earned from kills; the rank derives from them.
+    pub(crate) general_xp: u32,
+    /// Spec 63: bought powers, ascending by power.
+    pub(crate) powers: Vec<OwnedPower>,
 }
 
 impl Player {
@@ -88,12 +101,24 @@ impl Player {
             income_percent: 100,
             upgrades: Vec::new(),
             stats: PlayerStats::default(),
+            general_xp: 0,
+            powers: Vec::new(),
         }
     }
 
     /// Spec 52: the upgrade types this player owns, ascending.
     pub fn upgrades(&self) -> &[TypeId] {
         &self.upgrades
+    }
+
+    /// Spec 63: skill points earned from kills.
+    pub fn general_xp(&self) -> u32 {
+        self.general_xp
+    }
+
+    /// Spec 63: bought powers, ascending by power index.
+    pub fn powers(&self) -> &[OwnedPower] {
+        &self.powers
     }
 
     /// Spec 57: the score-screen counters.

@@ -83,6 +83,86 @@
         }
       }
     },
+    "general": {
+      "description": "Spec 63: player ranks (skill points that reach each, General's points each grants) and the General's powers catalogue.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ranks", "powers"],
+      "properties": {
+        "ranks": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 9,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["xp", "points"],
+            "properties": {
+              "xp": { "type": "integer", "minimum": 0 },
+              "points": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "powers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "rank", "cost", "rechargeTicks", "effect"],
+            "properties": {
+              "id": { "$ref": "faction.schema.json#/$defs/id" },
+              "rank": { "type": "integer", "minimum": 1 },
+              "cost": { "type": "integer", "minimum": 1 },
+              "rechargeTicks": { "type": "integer", "minimum": 1 },
+              "factions": { "type": "array", "items": { "$ref": "faction.schema.json#/$defs/id" } },
+              "effect": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["kind", "radiusCenti"],
+                    "properties": { "kind": { "const": "scan" }, "radiusCenti": { "type": "integer", "minimum": 100 } }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["kind", "radiusCenti", "percent"],
+                    "properties": {
+                      "kind": { "const": "repair" },
+                      "radiusCenti": { "type": "integer", "minimum": 100 },
+                      "percent": { "type": "integer", "minimum": 1, "maximum": 100 }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["kind", "spreadCenti", "impacts", "damage", "splashCenti", "damageType"],
+                    "properties": {
+                      "kind": { "const": "barrage" },
+                      "spreadCenti": { "type": "integer", "minimum": 0 },
+                      "impacts": { "type": "integer", "minimum": 1, "maximum": 60 },
+                      "damage": { "type": "integer", "minimum": 1 },
+                      "splashCenti": { "type": "integer", "minimum": 1 },
+                      "damageType": { "type": "string", "minLength": 1 }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["kind", "unit", "count"],
+                    "properties": {
+                      "kind": { "const": "paradrop" },
+                      "unit": { "$ref": "faction.schema.json#/$defs/id" },
+                      "count": { "type": "integer", "minimum": 1, "maximum": 8 }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
     "crushDodgeLookaheadCenti": { "type": "integer", "minimum": 0 },
     "crushDodgeMissOneIn": { "type": "integer", "minimum": 0 },
     "locomotors": { "type": "object", "additionalProperties": { "$ref": "#/$defs/locomotor" } },

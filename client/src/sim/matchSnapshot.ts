@@ -80,6 +80,14 @@ export interface PlayerStats {
   moneySpent: number;
 }
 
+/** Spec 63: a player's skill points and the General's powers bought. */
+export interface GeneralState {
+  player: number;
+  xp: number;
+  /** Bought powers: catalogue index and the tick each is ready to cast. */
+  powers: { power: number; readyTick: number }[];
+}
+
 export interface AirState {
   id: number;
   /** Rounds left in the clip. */
@@ -110,6 +118,8 @@ export interface MatchSnapshot {
   upgrades?: UpgradeState[];
   /** Spec 57: every player's counters; empty until something is counted. */
   stats?: PlayerStats[];
+  /** Spec 63: skill points and powers of the players that have any. */
+  generals?: GeneralState[];
 }
 
 // decodeMatchSnapshot(data): per spec §5.15 — header (8), entity_count entities (11 each),
@@ -213,6 +223,26 @@ export function decodeMatchSnapshot(data: Int32Array): MatchSnapshot {
     });
   }
 
+  // Spec 63: the ranks follow the counters; absent until someone has points.
+  const generals: GeneralState[] = [];
+  if (statsCount > 0) {
+    let at = statsBase + 1 + statsCount * STATS_STRIDE;
+    const generalCount = data[at] ?? 0;
+    at += 1;
+    for (let i = 0; i < generalCount; i++) {
+      const powerCount = data[at + 2] ?? 0;
+      const powers: GeneralState["powers"] = [];
+      for (let p = 0; p < powerCount; p++) {
+        powers.push({
+          power: data[at + 3 + p * 2] ?? 0,
+          readyTick: data[at + 4 + p * 2] ?? 0,
+        });
+      }
+      generals.push({ player: data[at] ?? 0, xp: data[at + 1] ?? 0, powers });
+      at += 3 + powerCount * 2;
+    }
+  }
+
   return {
     tick: data[0] ?? 0,
     viewer,
@@ -227,6 +257,7 @@ export function decodeMatchSnapshot(data: Int32Array): MatchSnapshot {
     air,
     upgrades,
     stats,
+    ...(generals.length > 0 ? { generals } : {}),
   };
 }
 

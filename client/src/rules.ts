@@ -106,8 +106,26 @@ export interface FactionDef {
   dozer: number;
 } // other keys unused
 
+/** Spec 63: a General's power of the shared catalogue. */
+export interface GeneralPowerDef {
+  id: string;
+  rank: number;
+  cost: number;
+  rechargeTicks: number;
+  /** Faction indices that may buy it; empty means every faction. */
+  factions: number[];
+  effect: { kind: "scan" | "repair" | "barrage" | "paradrop" };
+}
+
+/** Spec 63: player ranks (skill points, General's points granted) and powers. */
+export interface GeneralRules {
+  ranks: { xp: number; points: number }[];
+  powers: GeneralPowerDef[];
+}
+
 export interface Ruleset {
   maxQueue: number;
+  general: GeneralRules;
   sellRefundPercent: number;
   locomotors: LocomotorDef[];
   types: TypeDef[];
@@ -118,6 +136,10 @@ export interface Ruleset {
 
 export const RULES: Ruleset = {
   maxQueue: ruleset.maxQueue,
+  general: (ruleset as { general?: GeneralRules }).general ?? {
+    ranks: [],
+    powers: [],
+  },
   sellRefundPercent: ruleset.sellRefundPercent,
   locomotors: ruleset.locomotors as LocomotorDef[],
   types: ruleset.types as unknown as TypeDef[],

@@ -1091,6 +1091,34 @@ const assemble = (
 		...(globals.guard ? { guard: globals.guard } : {}),
 		// Spec 50 §3.3: rank bonuses.
 		...(globals.veterancy ? { veterancy: globals.veterancy } : {}),
+		// Spec 63: player ranks and General's powers, ids resolved to indices.
+		...(globals.general
+			? {
+					general: {
+						ranks: globals.general.ranks,
+						powers: globals.general.powers.map((p) => ({
+							id: p.id,
+							rank: p.rank,
+							cost: p.cost,
+							rechargeTicks: p.rechargeTicks,
+							factions: (p.factions ?? []).map((id) =>
+								globals.factions.indexOf(id),
+							),
+							effect:
+								p.effect.kind === "paradrop"
+									? { ...p.effect, unit: typeIndex.get(p.effect.unit) }
+									: p.effect.kind === "barrage"
+										? {
+												...p.effect,
+												damageType: globals.damageTypes.indexOf(
+													p.effect.damageType,
+												),
+											}
+										: p.effect,
+						})),
+					},
+				}
+			: {}),
 		// Spec 31 block 3: only what the sim reads; omitted without the balance file.
 		...(environment
 			? {
@@ -1618,6 +1646,8 @@ function setupSave(source, id, ruleset, validate, fail) {
 		...(data.trenches === undefined ? {} : { trenches: data.trenches }),
 		// Spec 52: upgrade type ids each start owns at tick 0.
 		...(data.upgrades === undefined ? {} : { upgrades: data.upgrades }),
+		// Spec 63: skill points each start has earned at tick 0.
+		...(data.generalXp === undefined ? {} : { generalXp: data.generalXp }),
 		...(data.armies === undefined ? {} : { armies: data.armies }),
 	};
 	return {

@@ -66,6 +66,11 @@
       "type": "array",
       "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" }
     },
+    "generalXp": {
+      "description": "Spec 63: skill points each start has earned at tick 0 (index = start); they set the player rank.",
+      "type": "array",
+      "items": { "type": "integer", "minimum": 0 }
+    },
     "upgrades": {
       "description": "Spec 52: upgrade type ids each start owns at tick 0 (index = start).",
       "type": "array",

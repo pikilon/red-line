@@ -53,6 +53,8 @@ function skirmishSim(
     command_dig: vi.fn(),
     command_dig_line: vi.fn(),
     command_reinforce: vi.fn(),
+    command_buy_power: vi.fn(),
+    command_cast_power: vi.fn(),
     debug_spawn: vi.fn(),
     debug_set_hp: vi.fn(),
     ...overrides,

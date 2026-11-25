@@ -107,6 +107,126 @@
       "permille": 10
     }
   },
+  "general": {
+    "ranks": [
+      {
+        "xp": 0,
+        "points": 1
+      },
+      {
+        "xp": 300,
+        "points": 1
+      },
+      {
+        "xp": 800,
+        "points": 1
+      },
+      {
+        "xp": 1600,
+        "points": 1
+      },
+      {
+        "xp": 3000,
+        "points": 3
+      }
+    ],
+    "powers": [
+      {
+        "id": "recon-scan",
+        "rank": 1,
+        "cost": 1,
+        "rechargeTicks": 900,
+        "factions": [],
+        "effect": {
+          "kind": "scan",
+          "radiusCenti": 1500
+        }
+      },
+      {
+        "id": "emergency-repair",
+        "rank": 2,
+        "cost": 1,
+        "rechargeTicks": 1800,
+        "factions": [],
+        "effect": {
+          "kind": "repair",
+          "radiusCenti": 600,
+          "percent": 50
+        }
+      },
+      {
+        "id": "artillery-barrage",
+        "rank": 3,
+        "cost": 2,
+        "rechargeTicks": 3600,
+        "factions": [],
+        "effect": {
+          "kind": "barrage",
+          "spreadCenti": 400,
+          "impacts": 12,
+          "damage": 40,
+          "splashCenti": 150,
+          "damageType": 3
+        }
+      },
+      {
+        "id": "paradrop-ukraine",
+        "rank": 4,
+        "cost": 3,
+        "rechargeTicks": 3600,
+        "factions": [
+          0
+        ],
+        "effect": {
+          "kind": "paradrop",
+          "unit": 2,
+          "count": 5
+        }
+      },
+      {
+        "id": "paradrop-russia",
+        "rank": 4,
+        "cost": 3,
+        "rechargeTicks": 3600,
+        "factions": [
+          1
+        ],
+        "effect": {
+          "kind": "paradrop",
+          "unit": 16,
+          "count": 5
+        }
+      },
+      {
+        "id": "paradrop-usa",
+        "rank": 4,
+        "cost": 3,
+        "rechargeTicks": 3600,
+        "factions": [
+          2
+        ],
+        "effect": {
+          "kind": "paradrop",
+          "unit": 30,
+          "count": 5
+        }
+      },
+      {
+        "id": "paradrop-china",
+        "rank": 4,
+        "cost": 3,
+        "rechargeTicks": 3600,
+        "factions": [
+          3
+        ],
+        "effect": {
+          "kind": "paradrop",
+          "unit": 44,
+          "count": 5
+        }
+      }
+    ]
+  },
   "environment": {
     "highGround": {
       "minTiles": 2,

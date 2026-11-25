@@ -466,6 +466,22 @@ impl Sim {
         );
     }
 
+    /// Spec 63 §4: spend General's points on power `power`.
+    pub fn command_buy_power(&mut self, player: u8, power: u16) {
+        self.world.enqueue_as(player, Command::BuyPower { power });
+    }
+
+    /// Spec 63 §4: cast a bought power at a point.
+    pub fn command_cast_power(&mut self, player: u8, power: u16, x_raw: i32, y_raw: i32) {
+        self.world.enqueue_as(
+            player,
+            Command::CastPower {
+                power,
+                target: FxVec2::new(Fx::from_raw(x_raw), Fx::from_raw(y_raw)),
+            },
+        );
+    }
+
     pub fn debug_spawn(&mut self, player: u8, kind: TypeId, x_raw: i32, y_raw: i32) {
         self.world.enqueue_as(
             player,

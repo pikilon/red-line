@@ -1,0 +1,123 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "generals-powers",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "showcase",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": false,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 38,
+      "y": 22,
+      "zoom": 1.2
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "showcase",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": false,
+    "ai": [],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3300,
+          2200
+        ],
+        "hpPercent": 30
+      },
+      {
+        "player": 0,
+        "type": "ua-leopard-2a4",
+        "atCenti": [
+          3450,
+          2300
+        ],
+        "hpPercent": 40
+      },
+      {
+        "player": 0,
+        "type": "ua-bradley",
+        "atCenti": [
+          3300,
+          2400
+        ],
+        "hpPercent": 35
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          3150,
+          2300
+        ]
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          3150,
+          2400
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          5600,
+          2200
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-t-72b3",
+        "atCenti": [
+          5700,
+          2300
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          5500,
+          2400
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          5600,
+          2450
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          5700,
+          2400
+        ]
+      }
+    ],
+    "generalXp": [
+      900
+    ]
+  }
+}

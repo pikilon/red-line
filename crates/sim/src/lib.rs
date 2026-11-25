@@ -15,6 +15,7 @@ pub mod features;
 pub mod fixed;
 pub mod flow;
 pub mod garrison;
+pub mod generals;
 pub mod hash;
 mod horde;
 pub mod infirmary;

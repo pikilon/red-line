@@ -115,6 +115,16 @@ fn put_player(out: &mut Vec<u8>, player: &Player) {
             put_u16(out, kind);
         }
     }
+    // Spec 63: only once the player has skill points or powers.
+    if player.general_xp != 0 || !player.powers.is_empty() {
+        out.push(0x63);
+        put_u32(out, player.general_xp);
+        put_u32(out, player.powers.len() as u32);
+        for owned in &player.powers {
+            put_u16(out, owned.power);
+            put_u32(out, owned.ready_tick);
+        }
+    }
 }
 
 fn put_entity(out: &mut Vec<u8>, entity: &Entity, world: &World) {

@@ -111,6 +111,12 @@ export interface SkirmishController {
   /** Spec 41: the Force fire button; the next left tap/click force-fires, a
    *  second press disarms. */
   toggleForceFire(): void;
+  /** Spec 63: the next left click on the ground goes to `callback` (a
+   *  General's power target) instead of selecting; a right click or Escape
+   *  hands it `null`. Passing `null` drops a pending pick silently. */
+  pickGround(
+    callback: ((point: { x: number; y: number } | null) => void) | null,
+  ): void;
   /** Spec 41: the Rally point button; the next left tap sets the rally of the
    *  selected producer. */
   toggleRally(): void;
@@ -168,6 +174,9 @@ export function createSkirmishController(
   // next click force-fires. On macOS the same gesture also raises contextmenu,
   // which the canvas only prevents; the pointerup does the ordering.
   let forceFireArmed = false;
+  /** Spec 63: a General's power waits for its target. */
+  let groundPick: ((point: { x: number; y: number } | null) => void) | null =
+    null;
   /** Spec 35: the Dig button was pressed; the next left click digs there. */
   let digArmed = false;
   /** Spec 41: the panel's Force fire / Rally point buttons armed the next tap. */
@@ -511,6 +520,16 @@ export function createSkirmishController(
       options.selectionBox.show(null);
       return;
     }
+    if (groundPick !== null) {
+      // Spec 63: the press only picks the target; the release delivers it.
+      if (event.button === RIGHT_BUTTON) {
+        const cancel = groundPick;
+        groundPick = null;
+        cancel(null);
+      }
+      dragStart = null;
+      return;
+    }
     // Ctrl + click is Zero Hour's force-attack mode (spec 20 §3): it fires,
     // never starts a selection box.
     forceFireArmed =
@@ -527,6 +546,12 @@ export function createSkirmishController(
   canvas.addEventListener("pointerup", (event) => {
     if (pinch.up(event)) return;
     if (event.button !== LEFT_BUTTON) return;
+    if (groundPick !== null) {
+      const pick = groundPick;
+      groundPick = null;
+      pick(groundAt({ x: event.clientX, y: event.clientY }));
+      return;
+    }
     if (forceFireArmed) {
       forceFireArmed = false;
       armedMode = null;
@@ -891,6 +916,9 @@ export function createSkirmishController(
         }
         return { ...segment, valid };
       });
+    },
+    pickGround(callback) {
+      groundPick = callback;
     },
     toggleForceFire() {
       armedMode = armedMode === "force" ? null : "force";
