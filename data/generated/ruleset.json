@@ -72,6 +72,7 @@
   "lowPowerMaxSpeedPercent": 75,
   "maxQueue": 9,
   "dockRangeCenti": 100,
+  "dockSlots": 2,
   "crushDodgeLookaheadCenti": 150,
   "crushDodgeMissOneIn": 3,
   "aimToleranceDeg": 2,
@@ -126,7 +127,7 @@
     },
     "infirmary": {
       "healTicks": 30,
-      "slots": 10
+      "slots": 2
     }
   },
   "locomotors": [

@@ -47,6 +47,7 @@
     "lowPowerMaxSpeedPercent": { "$ref": "#/$defs/percent" },
     "maxQueue": { "type": "integer", "minimum": 1, "maximum": 9 },
     "dockRangeCenti": { "type": "integer", "minimum": 1 },
+    "dockSlots": { "type": "integer", "minimum": 1, "maximum": 10 },
     "sellRefundPercent": { "$ref": "#/$defs/percent" },
     "aimToleranceDeg": { "$ref": "#/$defs/aimDeg" },
     "turretRecenterTicks": { "type": "integer", "minimum": 0 },

@@ -3,8 +3,8 @@
 
 use crate::entity::{Entity, EntityId, HarvestPhase, Order, PlayerId, QueueItem};
 use crate::fixed::{Fx, FxVec2};
-use crate::map::{Cell, cell_center};
-use crate::nav::{exit_cell, footprint_cells, footprint_distance};
+use crate::map::{Cell, cell_center, cell_of};
+use crate::nav::{exit_cell, footprint_cells, footprint_center, footprint_distance};
 use crate::rules::{Category, TypeId, fx_centi};
 use crate::world::{MAX_UNITS, World};
 
@@ -508,6 +508,100 @@ impl World {
         }
     }
 
+    /// Spec 55: how many units are serviced inside `building` right now.
+    pub(crate) fn dock_occupants(&self, building: EntityId) -> u32 {
+        self.entities
+            .iter()
+            .filter(|e| e.aboard == Some(building))
+            .count() as u32
+    }
+
+    /// Spec 55: drives unit `index` into the bay of `building` when a slot is
+    /// free; otherwise it keeps waiting outside.
+    pub(crate) fn try_enter_dock(&mut self, index: usize, building: EntityId) -> bool {
+        if self.dock_occupants(building) >= self.rules.dock_slots {
+            return false;
+        }
+        let Some(target) = self.entity(building) else {
+            return false;
+        };
+        let Some(site) = target.site.as_ref() else {
+            return false;
+        };
+        let center = footprint_center(site.origin, self.rules.ty(target.kind).footprint);
+        let unit = &mut self.entities[index];
+        unit.aboard = Some(building);
+        unit.pos = center;
+        unit.speed = Fx::ZERO;
+        unit.reversing = false;
+        unit.aim = None;
+        true
+    }
+
+    /// Spec 55: a unit inside a building whose order is not a service order
+    /// (it was given another command) drives out at once.
+    pub(crate) fn release_stray_dockers(&mut self) {
+        for index in 0..self.entities.len() {
+            let Some(building) = self.entities[index].aboard else {
+                continue;
+            };
+            if !self.entity(building).is_some_and(|b| b.site.is_some()) {
+                continue;
+            }
+            let serving = match self.entities[index].order {
+                Order::Harvest {
+                    depot,
+                    center,
+                    phase,
+                    ..
+                } => match phase {
+                    HarvestPhase::Loading => depot == building,
+                    HarvestPhase::Unloading => center == Some(building),
+                    _ => false,
+                },
+                Order::Heal { building: b, .. } => b == building,
+                Order::RepairVehicle { factory, .. } => factory == building,
+                _ => false,
+            };
+            if !serving {
+                self.leave_dock(index, building, None);
+            }
+        }
+    }
+
+    /// Spec 55: the unit drives out of the bay onto the building's approach cell.
+    /// It leaves on the side facing `toward` (its next stop) when known.
+    pub(crate) fn leave_dock(
+        &mut self,
+        index: usize,
+        building: EntityId,
+        toward: Option<EntityId>,
+    ) {
+        let facing = toward.and_then(|id| self.entity(id)).and_then(|next| {
+            let site = self.entity(building)?.site.as_ref()?;
+            let size = self.rules.ty(self.entity(building)?.kind).footprint;
+            let there = cell_of(next.pos);
+            Some(Cell {
+                x: there
+                    .x
+                    .clamp(site.origin.x, site.origin.x + i32::from(size[0]) - 1),
+                y: there
+                    .y
+                    .clamp(site.origin.y, site.origin.y + i32::from(size[1]) - 1),
+            })
+        });
+        let exit = facing
+            .or_else(|| self.build_goal(building))
+            .and_then(|cell| self.grid(self.layer_of(index)).nearest_passable(cell))
+            .map(cell_center);
+        let unit = &mut self.entities[index];
+        unit.aboard = None;
+        unit.speed = Fx::ZERO;
+        if let Some(pos) = exit {
+            unit.pos = pos;
+        }
+    }
+
     fn is_depot(&self, id: EntityId) -> bool {
         self.entity(id)
             .is_some_and(|e| self.rules.ty(e.kind).category == Category::Depot)
@@ -568,7 +662,7 @@ impl World {
                         };
                         depot = found;
                     }
-                    if self.docked(index, depot) {
+                    if self.docked(index, depot) && self.try_enter_dock(index, depot) {
                         phase = HarvestPhase::Loading;
                         // Spec 36: a port makes the truck wait its own load time too.
                         let extra = self
@@ -595,6 +689,7 @@ impl World {
                         });
                         let cargo = cargo + take;
                         self.entities[index].cargo = cargo;
+                        self.leave_dock(index, depot, self.nearest_center(owner, pos));
                         if cargo > 0 {
                             phase = HarvestPhase::ToCenter;
                             center = None;
@@ -610,7 +705,9 @@ impl World {
                     if !valid {
                         center = self.nearest_center(owner, pos);
                     }
-                    if center.is_some_and(|c| self.docked(index, c)) {
+                    if let Some(c) = center.filter(|&c| self.docked(index, c))
+                        && self.try_enter_dock(index, c)
+                    {
                         phase = HarvestPhase::Unloading;
                         timer = self.rules.ty(kind).unload_ticks;
                     }
@@ -624,6 +721,10 @@ impl World {
                             let paid = u64::from(cargo) * u64::from(player.income_percent) / 100;
                             let paid = u32::try_from(paid).unwrap_or(u32::MAX);
                             player.credits = player.credits.saturating_add(paid);
+                        }
+                        if let Some(c) = center {
+                            let next = self.nearest_depot(pos);
+                            self.leave_dock(index, c, next);
                         }
                         phase = HarvestPhase::ToDepot;
                     }

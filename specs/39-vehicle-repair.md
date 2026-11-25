@@ -1,5 +1,7 @@
 # 39 — Vehicle repair at the factory
 
+> Amended by `55-dock-bays.md`: vehicles now drive inside the factory bay, two at a time; the rest queue outside.
+
 Status: built (owner request 2026-10-29, backlog item 6). Depends on
 `35-engineering-works.md` (repair helpers) and `19-save-games.md`.
 Decisions: D-02 (deterministic fixed point), D-05 (balance in data).
