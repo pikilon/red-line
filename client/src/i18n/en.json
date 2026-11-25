@@ -472,6 +472,7 @@
   "campaign.objectives": "Objectives",
   "campaign.hideObjectives": "Hide objectives",
   "campaign.showObjectives": "Show objectives",
+  "campaign.difficulty": "Enemy difficulty",
   "campaign.start": "Start mission",
   "campaign.failed": "Mission failed.",
   "campaign.retry": "Retry",

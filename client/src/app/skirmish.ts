@@ -224,6 +224,8 @@ import {
   createCampaignProgress,
   findCampaignMission,
   nextCampaignMission,
+  readCampaignDifficulty,
+  withCampaignDifficulty,
 } from "../ui/campaign";
 import {
   commandButtons,
@@ -489,6 +491,14 @@ function saveBoot(
     ? Math.min(MAX_SPEED_SKIRMISH, Math.max(1, match.speed))
     : 1;
   const form = save.world === undefined ? "setup" : "world";
+  // Spec 48 §5: a campaign mission plays at the difficulty of its briefing.
+  const json =
+    form === "setup" && findCampaignMission(id) !== null
+      ? withCampaignDifficulty(
+          JSON.stringify(save.setup),
+          readCampaignDifficulty(),
+        )
+      : JSON.stringify(save.world ?? save.setup);
   return {
     seed: Number.parseInt(match.seed, 10) || DEFAULT_SEED,
     seedText: match.seed,
@@ -497,7 +507,7 @@ function saveBoot(
     speed,
     aiActive: savedAiActive(save),
     start: {
-      save: { form, json: JSON.stringify(save.world ?? save.setup) },
+      save: { form, json },
       viewer: client.revealed ? OBSERVER : client.controlled,
       speed,
     },
