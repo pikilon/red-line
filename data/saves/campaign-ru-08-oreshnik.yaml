@@ -1,6 +1,6 @@
 # Spec 48: Russia 8: Shahed swarms saturate the Patriots over Dnipro before the strike on Yuzhmash.
 id: campaign-ru-08-oreshnik
-map: first-line
+map: oreshnik
 victory: true
 debug: false
 starts: false

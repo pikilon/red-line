@@ -86,7 +86,7 @@ keys `campaign.<ua|ru>.<nn>.*` in `client/src/i18n/en.json`.
   campaigns, which plays on its own map `hostomel` (§6), Ukraine 2, on
   `irpin` (§7), the two Snake Island missions, on `snake-island` (§8),
   Russia 3, on `mariupol` (§9), Russia 4, on `bakhmut` (§10), Russia 5,
-  on `surovikin-line` (§11), and Russia 6, on `avdiivka` (§12). Own maps for the remaining missions are tracked
+  on `surovikin-line` (§11), Russia 6, on `avdiivka` (§12), Russia 7, on `kursk-pipe` (§13), and Russia 8, on `oreshnik` (§14). Own maps for the remaining missions are tracked
   in issue #482.
 * The game has no ships: the cruiser Moskva is played as the Black Sea Fleet
   command post on the shore. Snake Island is no longer the coast of
@@ -252,3 +252,23 @@ Existing feature types only:
   oak and pine belts, farmhouses, rubble and burnt stumps.
 * Assumptions: no tall chimney feature exists, so office towers stand in. No
   mission script exists for this mission.
+
+## 14. Map `oreshnik` (issue #482)
+
+`data/maps/oreshnik.yaml`, 128 x 128, same HQ cells and starts as first-line,
+so `campaign-ru-08-oreshnik` keeps every entity cell and only changes `map:`.
+Existing feature types only:
+
+* North edge: the wide Dnipro (shallow banks, deep channel) crossed by one
+  long `road-bridge` at x=62; the bridge avenue runs south from it.
+* North-west: the Pivdenmash (Yuzhmash) plant, two rows of factory and
+  warehouse halls on a concrete yard, rail sidings as concrete strips, office
+  towers, container stacks, a perimeter wall with a gate gap.
+* Air-defence positions (stone-wall pockets with crates) around the plant,
+  near the Patriot sites of the save.
+* Centre and east of the avenue: downtown Dnipro, apartment blocks and office
+  towers; houses and townhouse rows south; tree belts and farmhouses on the
+  southern approach.
+* Assumptions: the Oreshnik strike stays a stand-in (Geran-2 swarm); the save
+  does not add `ru-oreshnik-launcher` (spec 64) because it would make the
+  Yuzhmash goal trivial. No mission script exists for this mission.
