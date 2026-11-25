@@ -85,11 +85,11 @@ artillery 10 % cheaper, a little less health each, so China fields more.
 
 | Id | HP | Cost | Speed | Weapon |
 |---|---|---|---|---|
-| `cn-rifle-squad` | 100 | 90 | 8 | rifle 10 dmg, 430 range, 14 cd |
-| `cn-hj-team` | 85 | 330 | 6 | antiTank 125, 900 range, min 150, 90 cd, loft |
+| `cn-rifle-squad` | 100 | 115 | 8 | rifle 10 dmg, 430 range, 14 cd |
+| `cn-hj-team` | 85 | 360 | 6 | antiTank 125, 900 range, min 150, 90 cd, loft |
 | `cn-mengshi` | 260 | 400 | 27 | smallArms 11, 520, 10 cd |
-| `cn-zbl-09` | 430 | 650 | 25 | autocannon 15, 600, 8 cd |
-| `cn-type-99a` | 850 | 1350 | 20 | antiTank 105, 750, 30 cd |
+| `cn-zbl-09` | 430 | 800 | 25 | autocannon 15, 600, 8 cd |
+| `cn-type-99a` | 850 | 1600 | 20 | antiTank 105, 750, 30 cd |
 | `cn-phl-03` | 280 | 1300 | 18 | highExplosive 50 x 6 salvo, 2800 range, min 800, 240 cd, splash 170 |
 | `cn-gattling-nest` | 1200 | 700 | — | autocannon 9, 800 range, 3 cd, low air |
 | `cn-dozer`, `cn-supply-truck`, buildings | as USA | as USA | | barracks 450, hq/plants/centers as USA |
@@ -186,6 +186,12 @@ personalities: no side above 70 % (`balance-tuner`, report in
 `docs/balance/`). `china-balanced` and `china-rush` start as the USA
 personalities with the roster mapped one to one (the rush opens with ten rifle
 squads); expect them to be retuned toward mass infantry.
+
+Result (2026-11-25, `docs/balance/2026-11-25-china.md`): the horde bonus made
+China too strong (82 / 76 / 69 % vs Russia / Ukraine / USA), so rifle squads,
+HJ teams, ZBL-09 and Type 99A cost 10-25 % more (table in section 4 updated).
+Now 67 / 63 / 43 %; `china-balanced` beats `china-rush` in 69 % of decided
+games. `china-balanced` gets `alertRadiusCenti: 4500` like the other armies.
 
 ## 8. Acceptance criteria
 
