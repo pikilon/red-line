@@ -83,6 +83,9 @@ pub struct FeatureSaveState {
     /// Ticks until the building collapses; missing means not collapsing.
     #[serde(default)]
     pub collapse: u32,
+    /// Spec 57: the player that captured a tech building; missing means neutral.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub owner: Option<u8>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -292,6 +295,11 @@ pub enum OrderState {
         order_id: u32,
         feature: u32,
     },
+    Capture {
+        order_id: u32,
+        feature: u32,
+        progress: u32,
+    },
     RepairBuilding {
         order_id: u32,
         building: u32,
@@ -417,6 +425,10 @@ pub enum CommandState {
         feature: u32,
     },
     FlashBang {
+        units: Vec<u32>,
+        feature: u32,
+    },
+    Capture {
         units: Vec<u32>,
         feature: u32,
     },
@@ -608,6 +620,7 @@ fn save_feature(row: &FeatureState, rules: &Ruleset) -> FeatureSaveState {
         alive: row.alive,
         burn: row.burn,
         collapse: row.collapse,
+        owner: (row.owner != crate::entity::NEUTRAL).then_some(row.owner),
     }
 }
 
@@ -651,6 +664,7 @@ fn load_features(
                 to,
                 burn: row.burn,
                 collapse: row.collapse,
+                owner: row.owner.unwrap_or(crate::entity::NEUTRAL),
             })
         })
         .collect()
@@ -961,6 +975,15 @@ fn save_order(order: Order) -> OrderState {
         Order::Board { order_id, carrier } => OrderState::Board { order_id, carrier },
         Order::Repair { order_id, feature } => OrderState::Repair { order_id, feature },
         Order::FlashBang { order_id, feature } => OrderState::FlashBang { order_id, feature },
+        Order::Capture {
+            order_id,
+            feature,
+            progress,
+        } => OrderState::Capture {
+            order_id,
+            feature,
+            progress,
+        },
         Order::RepairBuilding { order_id, building } => {
             OrderState::RepairBuilding { order_id, building }
         }
@@ -1052,6 +1075,15 @@ fn load_order(order: OrderState) -> Order {
         OrderState::Board { order_id, carrier } => Order::Board { order_id, carrier },
         OrderState::Repair { order_id, feature } => Order::Repair { order_id, feature },
         OrderState::FlashBang { order_id, feature } => Order::FlashBang { order_id, feature },
+        OrderState::Capture {
+            order_id,
+            feature,
+            progress,
+        } => Order::Capture {
+            order_id,
+            feature,
+            progress,
+        },
         OrderState::RepairBuilding { order_id, building } => {
             Order::RepairBuilding { order_id, building }
         }
@@ -1383,6 +1415,10 @@ fn save_command(command: &Command, rules: &Ruleset) -> CommandState {
             units: units.clone(),
             feature: *feature,
         },
+        Command::Capture { units, feature } => CommandState::Capture {
+            units: units.clone(),
+            feature: *feature,
+        },
         Command::RepairBuilding { units, building } => CommandState::RepairBuilding {
             units: units.clone(),
             building: *building,
@@ -1485,6 +1521,10 @@ fn load_command(state: &CommandState, rules: &Ruleset) -> Result<Command, String
         },
         CommandState::Disembark { carrier } => Command::Disembark { carrier: *carrier },
         CommandState::Repair { units, feature } => Command::Repair {
+            units: units.clone(),
+            feature: *feature,
+        },
+        CommandState::Capture { units, feature } => Command::Capture {
             units: units.clone(),
             feature: *feature,
         },
@@ -1641,6 +1681,8 @@ pub enum SetupOrder {
     Garrison([i32; 2]),
     /// Spec 34: label of an own transport to board.
     Board(String),
+    /// Spec 57: a cell inside the footprint of a tech building to capture.
+    Capture([i32; 2]),
     /// Spec 35: a cell on the deck of the bridge to repair.
     Repair([i32; 2]),
     /// Spec 35: top-left cell of a trench to dig (turned 0).
@@ -1895,6 +1937,12 @@ impl World {
                 SetupOrder::Board(carrier) => Command::Board {
                     units,
                     carrier: label(carrier)?,
+                },
+                SetupOrder::Capture(cell) => Command::Capture {
+                    units,
+                    feature: world
+                        .feature_at(to_cell(*cell))
+                        .ok_or_else(|| at(format!("no feature at {},{}", cell[0], cell[1])))?,
                 },
                 SetupOrder::Garrison(cell) => Command::Garrison {
                     units,

@@ -92,6 +92,7 @@ export interface SkirmishSimLike {
   ): void;
   command_harvest(player: number, unitIds: Uint32Array, depot: number): void;
   command_garrison(player: number, unitIds: Uint32Array, feature: number): void;
+  command_capture(player: number, unitIds: Uint32Array, feature: number): void;
   command_flash_bang(
     player: number,
     unitIds: Uint32Array,
@@ -328,6 +329,13 @@ const COMMANDS = {
   }),
   disembark: run((sim, command: Extract<SimCommand, { kind: "disembark" }>) => {
     sim.command_disembark(command.player, command.carrier);
+  }),
+  capture: run((sim, command: Extract<SimCommand, { kind: "capture" }>) => {
+    sim.command_capture(
+      command.player,
+      Uint32Array.from(command.units),
+      command.feature,
+    );
   }),
   flashBang: run((sim, command: Extract<SimCommand, { kind: "flashBang" }>) => {
     sim.command_flash_bang(

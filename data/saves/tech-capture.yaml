@@ -1,0 +1,23 @@
+# Spec 58: neutral tech buildings on demo-town. Two Ukrainian riflemen walk to the west oil derrick and a third to the
+# field hospital; they capture them in five seconds (select a rifleman and right click any building to send it).
+# The derrick pays 100 credits every ten seconds once yours and the hospital heals your infantry around it (the two
+# wounded riflemen beside it recover). The Russian AI sends its infantry to take the east derrick.
+id: tech-capture
+map: demo-town
+victory: false
+debug: true
+starts: true
+credits: [3000, 3000]
+ai: [{ player: 1, personality: russia-balanced, active: true }]
+client:
+  controlled: 0
+  revealed: true
+  camera: { x: 32, y: 17, zoom: 1 }
+entities:
+  - { player: 0, type: ua-rifleman, atCenti: [2000, 1800], order: { capture: [22, 14] } }
+  - { player: 0, type: ua-rifleman, atCenti: [2100, 1900], order: { capture: [22, 14] } }
+  - { player: 0, type: ua-rifleman, atCenti: [3300, 2000], order: { capture: [36, 18] } }
+  - { player: 0, type: ua-rifleman, atCenti: [3500, 2000], hpPercent: 30 }
+  - { player: 0, type: ua-rifleman, atCenti: [3600, 2000], hpPercent: 40 }
+  - { player: 1, type: ru-rifleman, atCenti: [4400, 1800] }
+  - { player: 1, type: ru-rifleman, atCenti: [4500, 1900] }

@@ -248,6 +248,12 @@
       "entities": 16
     },
     {
+      "id": "tech-capture",
+      "map": "demo-town",
+      "form": "setup",
+      "entities": 7
+    },
+    {
       "id": "environment-cover",
       "map": "demo-cover",
       "form": "setup",

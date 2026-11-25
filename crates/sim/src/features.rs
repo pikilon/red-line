@@ -3,6 +3,7 @@
 //! follows. Rows are created from the map in map order and never removed, so
 //! a row's index is stable for saves, hashes and later snapshots.
 
+use crate::entity::{NEUTRAL, PlayerId};
 use crate::fixed::{Fx, FxVec2};
 use crate::map::{Cell, MapGrid, WATER_DEEP, WATER_DEPTH_MASK};
 use crate::rng::SplitMix64;
@@ -39,6 +40,8 @@ pub struct FeatureState {
     /// Ticks until a building at zero hit points turns into rubble; 0 when it
     /// is not collapsing.
     pub collapse: u32,
+    /// Spec 57: the player that captured a tech building; `NEUTRAL` otherwise.
+    pub owner: PlayerId,
 }
 
 impl FeatureState {
@@ -56,6 +59,7 @@ impl FeatureState {
             to: instance.to,
             burn: 0,
             collapse: 0,
+            owner: NEUTRAL,
         }
     }
 }
@@ -628,6 +632,7 @@ mod tests {
             to: None,
             burn: 0,
             collapse: 0,
+            owner: crate::entity::NEUTRAL,
         });
         world.refresh_feature_blocks();
         world.features.len() - 1

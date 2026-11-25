@@ -1,0 +1,123 @@
+{
+  "format": "redline-save",
+  "version": 1,
+  "name": "tech-capture",
+  "savedAt": "1970-01-01T00:00:00.000Z",
+  "tick": 0,
+  "match": {
+    "mapId": "demo-town",
+    "seed": "1",
+    "debug": true,
+    "speed": 1
+  },
+  "client": {
+    "controlled": 0,
+    "revealed": true,
+    "gore": true,
+    "generatedTextures": true,
+    "fpsPanel": true,
+    "camera": {
+      "x": 32,
+      "y": 17,
+      "zoom": 1
+    },
+    "cameraMemory": {},
+    "selected": []
+  },
+  "setup": {
+    "map": "demo-town",
+    "seed": "1",
+    "victory": false,
+    "debug": true,
+    "starts": true,
+    "credits": [
+      3000,
+      3000
+    ],
+    "ai": [
+      {
+        "player": 1,
+        "personality": "russia-balanced",
+        "active": true
+      }
+    ],
+    "entities": [
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2000,
+          1800
+        ],
+        "order": {
+          "capture": [
+            22,
+            14
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          2100,
+          1900
+        ],
+        "order": {
+          "capture": [
+            22,
+            14
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          3300,
+          2000
+        ],
+        "order": {
+          "capture": [
+            36,
+            18
+          ]
+        }
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          3500,
+          2000
+        ],
+        "hpPercent": 30
+      },
+      {
+        "player": 0,
+        "type": "ua-rifleman",
+        "atCenti": [
+          3600,
+          2000
+        ],
+        "hpPercent": 40
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4400,
+          1800
+        ]
+      },
+      {
+        "player": 1,
+        "type": "ru-rifleman",
+        "atCenti": [
+          4500,
+          1900
+        ]
+      }
+    ]
+  }
+}

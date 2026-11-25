@@ -181,6 +181,7 @@ mod tests {
             to: None,
             burn: 0,
             collapse: 0,
+            owner: crate::entity::NEUTRAL,
         });
         world.refresh_feature_blocks();
     }

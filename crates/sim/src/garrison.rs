@@ -51,7 +51,7 @@ impl World {
 
     /// The rider half of Zero Hour's entry rules: a free, living infantry unit
     /// of a player.
-    fn can_ride(&self, unit: EntityId) -> bool {
+    pub(crate) fn can_ride(&self, unit: EntityId) -> bool {
         let Some(entity) = self.entity(unit) else {
             return false;
         };

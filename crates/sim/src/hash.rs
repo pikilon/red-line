@@ -50,6 +50,10 @@ pub fn state_hash(world: &World) -> u64 {
         put_u32(&mut out, row.hp);
         put_u32(&mut out, row.burn);
         put_u32(&mut out, row.collapse);
+        // Spec 57: written only for captured tech buildings.
+        if row.owner != crate::entity::NEUTRAL {
+            out.push(row.owner);
+        }
     }
     for projectile in &world.projectiles {
         put_u32(&mut out, projectile.id);
@@ -255,6 +259,16 @@ fn put_order(out: &mut Vec<u8>, order: &Order) {
             out.push(8);
             put_u32(out, order_id);
             put_u32(out, feature);
+        }
+        Order::Capture {
+            order_id,
+            feature,
+            progress,
+        } => {
+            out.push(16);
+            put_u32(out, order_id);
+            put_u32(out, feature);
+            put_u32(out, progress);
         }
         Order::FlashBang { order_id, feature } => {
             out.push(15);

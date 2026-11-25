@@ -1045,12 +1045,89 @@ export const farmhouse: BuilderFn = (b) => {
   if (b.wrecked) b.rubble(v, 10, [wall, roof, 0x3a3430]);
 };
 
+/** Spec 57: a derrick over a concrete pad, a pump jack and a tank. */
+export const oilDerrick: BuilderFn = (b) => {
+  const steel = b.byVariant([0x5a6068]);
+  slab(b, -0.95, -0.95, 0.95, 0.95, 0x8a8880, 0.04);
+  if (b.wrecked) {
+    b.bag.cyl(-0.3, -0.2, 0.28, 0.04, 0.5, b.c(steel), 6, 0.1);
+    b.rubble({ x0: -0.9, z0: -0.9, x1: 0.9, z1: 0.9, h: 1 }, 12, [
+      steel,
+      0x6a625a,
+      0x3a3430,
+    ]);
+    return;
+  }
+  // Lattice-like tower: a tapering four-sided frame with cross bands.
+  b.bag.cyl(-0.3, -0.2, 0.3, 0.04, 1.5, b.c(steel), 4, 0.07);
+  for (const y of [0.35, 0.7, 1.05]) {
+    b.bag.cyl(
+      -0.3,
+      -0.2,
+      0.3 - ((y - 0.04) / 1.46) * 0.23 + 0.03,
+      y,
+      y + 0.04,
+      b.c(0x2c3036),
+      4,
+    );
+  }
+  b.bag.box(-0.36, 1.5, -0.26, -0.24, 1.58, -0.14, b.c(0xc8302a), {
+    glow: b.intact,
+  });
+  // Pump jack: base, post, walking beam and counterweight.
+  b.bag.box(0.2, 0.04, -0.3, 0.8, 0.14, 0.1, b.c(0x44484e));
+  b.bag.box(0.46, 0.14, -0.16, 0.54, 0.62, -0.08, b.c(0xc8a020));
+  b.bag.box(0.12, 0.62, -0.18, 0.88, 0.7, -0.06, b.c(0xc8a020));
+  b.bag.box(0.78, 0.5, -0.2, 0.9, 0.7, -0.04, b.c(0x44484e));
+  // Storage tank and a pipe to the tower.
+  b.bag.cyl(0.4, 0.6, 0.28, 0.04, 0.5, b.c(0xb8b6b0), 10, 0.28, b.c(0xc8c6c0));
+  b.bag.box(-0.3, 0.06, 0.55, 0.12, 0.12, 0.62, b.c(0x44484e));
+  b.bag.box(-0.36, 0.04, -0.2, -0.3, 0.12, 0.62, b.c(0x44484e));
+};
+
+/** Spec 57: a low white clinic with a red cross on its front and roof. */
+export const fieldHospital: BuilderFn = (b) => {
+  const v: Vol = { x0: -1.4, z0: -0.9, x1: 1.4, z1: 0.6, h: 0.62 };
+  slab(b, -1.5, -1.0, 1.5, 1.0, 0xb4aea2, 0.03);
+  plinth(b, v);
+  b.body(v, 0xf0eee8, 0.05);
+  b.windows(v, "f", {
+    cols: 4,
+    rows: 1,
+    y0: 0.22,
+    floorH: 0.5,
+    w: 0.3,
+    h: 0.26,
+  });
+  b.door(v, "f", 1.4, 0.34, 0.4, 0xc8302a);
+  b.wear(v);
+  b.roofFlat(v, 0xdcdad4, 0.06);
+  if (b.wrecked) {
+    b.rubble(v, 10, [0xf0eee8, 0x6a625a, 0x3a3430]);
+    return;
+  }
+  // Red cross on the roof.
+  const y = v.h + 0.07;
+  b.bag.box(-0.12, y, -0.5, 0.12, y + 0.02, 0.1, b.c(0xc8302a), {
+    glow: b.intact,
+  });
+  b.bag.box(-0.36, y, -0.26, 0.36, y + 0.02, -0.14, b.c(0xc8302a), {
+    glow: b.intact,
+  });
+  // Ambulance bay canopy.
+  b.bag.box(-1.2, 0.5, 0.6, -0.4, 0.55, 0.95, b.c(0xe8e8e0));
+  for (const x of [-1.15, -0.45])
+    b.bag.box(x - 0.03, 0, 0.88, x + 0.03, 0.5, 0.94, b.c(0xcfcfc8));
+};
+
 export const BUILDERS: Readonly<Record<string, BuilderFn>> = {
   "house-small": house,
   "townhouse-row": townhouses,
   "apartment-block": apartment,
   shop: shop,
   "gas-station": gasStation,
+  "oil-derrick": oilDerrick,
+  "field-hospital": fieldHospital,
   "office-tower": officeTower,
   factory: factory,
   church: church,
