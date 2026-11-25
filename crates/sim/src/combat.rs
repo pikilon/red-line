@@ -239,6 +239,7 @@ impl World {
         }
         self.entities[index].cooldown = weapon.cooldown_ticks;
         self.entities[index].last_target = Some(target_id);
+        self.expose_after_shot(index);
         // Spec 43 §4.3: a shot spends one round of a sortie clip.
         if self.rules.ty(self.entities[index].kind).sortie.is_some() {
             self.entities[index].ammo = self.entities[index].ammo.saturating_sub(1);
@@ -649,6 +650,7 @@ impl World {
             || target.contained()
             || target.owner == attacker.owner
             || target.owner == NEUTRAL
+            || self.is_stealthed(target)
             || self
                 .rules
                 .modifier(weapon.damage_type, self.rules.ty(target.kind).armor)
@@ -696,6 +698,7 @@ impl World {
         let damage = reduce_damage(damage, cover);
         self.entities[target_index].hp = self.entities[target_index].hp.saturating_sub(damage);
         self.entities[target_index].last_hit = Some((shooter, weapon_id));
+        self.expose_after_hit(target_index);
         self.interrupt_dock_repair(target_index);
         self.retaliate(target_index, shooter);
     }

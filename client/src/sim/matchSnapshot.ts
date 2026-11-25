@@ -28,6 +28,8 @@ export const ENTITY_FLAGS = {
   jammed: 256,
   /** Spec 56 §5.1: in a horde (faster fire). */
   horde: 2048,
+  /** Spec 61: an own stealth unit that is currently hidden from the enemy. */
+  stealthed: 4096,
 } as const;
 export const OUTCOMES = ["ongoing", "winner", "draw"] as const;
 export type Outcome = (typeof OUTCOMES)[number];

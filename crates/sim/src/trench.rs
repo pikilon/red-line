@@ -281,6 +281,7 @@ impl World {
         }
         self.entities[index].cooldown = weapon.cooldown_ticks;
         self.entities[index].last_target = Some(victim_id);
+        self.expose_after_shot(index);
     }
 
     /// Every `advanceTicks`, soldiers of one trench network that holds

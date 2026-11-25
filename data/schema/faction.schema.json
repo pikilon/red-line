@@ -173,6 +173,26 @@
             "rateOfFirePercent": { "type": "integer", "minimum": 100, "maximum": 400 }
           }
         },
+        "stealth": {
+          "description": "Spec 61 §5.1: hidden from the enemy until exposed; a shot or a hit (and a move with breaksOnMove) exposes the unit for delayTicks.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["delayTicks"],
+          "properties": {
+            "delayTicks": { "$ref": "#/$defs/positive" },
+            "breaksOnMove": { "type": "boolean" }
+          }
+        },
+        "detector": {
+          "description": "Spec 61 §5.2: every rateTicks the unit exposes the enemy stealth units within rangeCenti for one scan period.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["rangeCenti", "rateTicks"],
+          "properties": {
+            "rangeCenti": { "$ref": "#/$defs/positive" },
+            "rateTicks": { "$ref": "#/$defs/positive" }
+          }
+        },
         "flashBang": {
           "description": "Spec 54 §5.2: the unit throws a stun grenade at an enemy-held building, forcing its occupants out stunned.",
           "type": "object",

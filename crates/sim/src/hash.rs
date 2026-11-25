@@ -211,6 +211,10 @@ fn put_entity(out: &mut Vec<u8>, entity: &Entity, world: &World) {
     if entity.horde {
         out.push(13);
     }
+    if entity.exposed > 0 {
+        out.push(14);
+        put_u32(out, entity.exposed);
+    }
 }
 
 fn put_order(out: &mut Vec<u8>, order: &Order) {

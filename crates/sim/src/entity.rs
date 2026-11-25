@@ -211,6 +211,9 @@ pub struct Entity {
     pub stun: u32,
     /// Spec 56 §5.1: the unit is in a horde and fires faster.
     pub horde: bool,
+    /// Spec 61 §5.1: ticks the unit stays visible to the enemy (after a shot,
+    /// a hit, a move or a detector sweep); a stealth unit hides at `0`.
+    pub exposed: u32,
 }
 
 /// The locomotion and turret state of an entity (spec 11 §5.1). Read and written

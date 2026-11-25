@@ -31,6 +31,7 @@ pub mod rules;
 pub mod save;
 pub mod snapshot;
 mod stats;
+mod stealth;
 pub mod tech;
 pub mod transport;
 pub mod trench;

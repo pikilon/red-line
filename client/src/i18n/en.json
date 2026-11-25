@@ -238,6 +238,8 @@
   "saves.storageUnavailable": "Saved games are unavailable in this browser.",
   "saves.armor-duel.name": "Armor duel",
   "saves.armor-duel.description": "Leopards and Bradleys against T-72s and BMPs at close range.",
+  "saves.stealth.name": "Stealth ambush",
+  "saves.stealth.description": "Hidden Stugna teams ambush a tank column until a scout exposes them.",
   "saves.vehicle-deaths.name": "Vehicle deaths",
   "saves.vehicle-deaths.description": "Tanks and scouts trade fire at close range: sparks, smoke, fire and burning wrecks.",
   "saves.infantry-vs-armor.name": "Infantry vs armor",

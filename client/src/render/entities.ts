@@ -1228,7 +1228,9 @@ export function createEntityRenderer(
             model.turret.size === 0 &&
             (model.limbs?.length ?? 0) === 0);
 
-        if (isGhost) {
+        // Spec 61: an own unit hidden from the enemy is drawn as a translucent
+        // silhouette (the ghost mesh), like a remembered building.
+        if (isGhost || hasFlag(entity, ENTITY_FLAGS.stealthed)) {
           if (counts.ghosts < capacity) {
             position.set(entity.x, ground + h / 2, entity.y);
             scale.set(w, h, d);

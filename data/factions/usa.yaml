@@ -31,6 +31,7 @@ types:                               # required
     armor: infantry
     hp: 90
     sightCenti: 650
+    stealth: { delayTicks: 45, breaksOnMove: true }   # spec 61 §5.1: 3 s at 15 ticks/s
     cost: 400
     buildTicks: 150
     speedCenti: 6
@@ -47,6 +48,7 @@ types:                               # required
     armor: light
     hp: 280
     sightCenti: 1200
+    detector: { rangeCenti: 1000, rateTicks: 15 }   # spec 61 §5.2: scans once a second
     cost: 450
     buildTicks: 150
     speedCenti: 27
